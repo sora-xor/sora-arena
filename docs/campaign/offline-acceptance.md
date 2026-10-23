@@ -1,6 +1,16 @@
 # Offline campaign progression acceptance
 
-The latest directed horse checkpoint is `3a3a3d3`: CargoUnload, BuntaLeadFear
+The latest directed cargo checkpoint is `ec91382`: seven cargo, horse, carry
+and Playthrough tests pass with zero selected errors/warnings, along with all
+43 gameplay source gates. Actual pack/stand components show accepted transfers
+30 → 20 → 10 → 0, including a foot unload, checkpoint reconstruction, and final
+state before teardown. Source/build/EOF/log authentication is recorded in the
+[cargo transfer checkpoint](../complete-release-plan.md#october-24-cargo-transfer-checkpoint).
+The fixtures still use assisted placement and frozen threats. Rendered
+readability, numeric HUD, connecting lead rope, ordinary pacing and final art
+remain unqualified.
+
+The preceding directed horse checkpoint is `3a3a3d3`: CargoUnload, BuntaLeadFear
 and KurimaruSpookDismount pass together with zero selected errors/warnings.
 The cargo fixture remounts normally after the authored Shimo-route spook;
 three unique deliveries still require their full holds. At `2ab5d01`, Mount,
@@ -9,7 +19,7 @@ gameplay source gates pass. Both actor orders preserve Kurimaru's once-only
 spook dismount, net priority and three-second pause-aware recall. Earlier
 failed assertions and the diagnosed cargo traversal failure are preserved in
 the [horse checkpoint](../complete-release-plan.md#october-23-horse-behavior-and-bounded-proof-checkpoint).
-Visible cargo transfer and the connecting lead remain open.
+That earlier checkpoint did not implement visible cargo transfer or the connecting lead.
 
 The earlier `d21013d` checkpoint passes CargoUnload, Mount,
 CarrySealAndSetDown, CarryDifficulty and the full campaign Playthrough pass.

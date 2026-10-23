@@ -11,6 +11,38 @@ production. Work runs in isolated worktrees, with a single coordinated Unreal
 and GPU rendering lane. The shared checkout is not a build or render workspace.
 The local coordination mailboxes record current ownership, commits and lane use.
 
+## October 24 cargo transfer checkpoint
+
+Signed author candidate `d8ae065` is integrated as `ec91382`. The authored
+30 sheaves and ten per destination are now strictly admitted in generated and
+runtime data. Remaining load derives from accepted delivery credit, and each
+stand derives from its unique destination credit; there is no second inventory.
+The paired pack bundles and three drying stands are functional basic meshes,
+with no new collision, proximity requirement, loss policy or return gate.
+
+At clean `ec91382962d342bdd23d37b2e06689f072275819`, the Mac editor build and all
+seven CargoUnload, BuntaLeadFear, KurimaruSpookDismount, Mount,
+CarrySealAndSetDown, CarryDifficulty and Playthrough tests pass with zero
+selected errors/warnings. All 43 gameplay source gates also pass. The cargo
+fixture observes 30 → 20 → 10 → 0, ten at each completed stand, cancellation,
+pause, foot unloading with the horses behind, retry after a completed transfer,
+final state before teardown, and the ordinary mapped remount after Shimo spook.
+Six destination orders have host-rule coverage; UE traversal uses Kami, Naka,
+then Shimo. Assisted checkpoint placement and frozen threats remain explicit.
+
+Independent runtime review `82fe0a1e` and source review `b4862d67` authenticate
+original build receipts, terminal EOF, all logs, exact source/configuration and
+kernel/native inputs. Root rehashes 60 file references and 112 Git blob records.
+Evidence is under `Saved/Qualification/2026-10-24/cargo-transfer-d8ae065/`.
+The editor log's 855-byte TraceServer appendix is retained separately from its
+original recorded prefix. Two existing chapter-two host pacing overruns remain.
+
+This establishes functional component visibility, not rendered readability or
+photoreal acceptance. The numeric cargo HUD and connecting lead rope are being
+implemented separately. New source remains uncooked; ordinary play, current
+packages, actual M1/Windows/performance, full native/network/settlement and the
+complete first release remain open. Claude retains art ownership.
+
 ## October 23 horse behavior and bounded proof checkpoint
 
 Bunta's own proximity fear now starts her authored 2.5-second recovery and a

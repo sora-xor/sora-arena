@@ -8,6 +8,17 @@ remains a historical recovery record. This is a progress record, not a claim
 that the release is complete. Backward compatibility,
 legacy formats, aliases, and fallback decoders are prohibited.
 
+## 2026-10-24 functional cargo transfer
+
+At `ec91382`, all seven selected cargo/horse/carry/Playthrough editor tests
+pass with zero selected errors/warnings, and all 43 gameplay source gates pass.
+The pack and drying stands conserve 30 sheaves across accepted ten-sheaf
+transfers, including on-foot unloading, pause/cancellation and checkpoint retry.
+Independent authentication and [exact scope](complete-release-plan.md#october-24-cargo-transfer-checkpoint)
+are recorded. These are assisted functional checks of basic mesh visibility.
+Rendered readability, cargo HUD/lead rope, final art and ordinary pacing remain
+open; newer source has not been packaged.
+
 ## 2026-10-23 horse behavior and native cohort checkpoint
 
 Bunta's fear and steering tug, and Kurimaru's separate cargo-ride spook
