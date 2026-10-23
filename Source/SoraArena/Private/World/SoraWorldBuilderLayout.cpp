@@ -42,7 +42,9 @@ void ASoraWorldBuilder::BuildCampaign(const FSoraChapter& Chapter)
             { return B.Space.Zone==Index&&B.Space.Flood.bEnabled; });
         const FSoraBeat* Climb=Chapter.Beats.FindByPredicate([Index](const FSoraBeat& B)
             { return B.Space.Zone==Index&&B.Space.Climb.bEnabled; });
-        if(Climb) BuildClimb(*Climb); else if(Wind) BuildWindSpace(*Wind); else if(Flood) BuildFlood(*Flood); else if(Spire) BuildSpire(*Spire); else if(Summit) BuildSummit(*Summit); else BuildZone(Space.Zones[Index],Index,Recovery);
+        const FSoraBeat* Moat=Chapter.Beats.FindByPredicate([Index](const FSoraBeat& B)
+            { return B.Space.Zone==Index&&B.Space.Moat.bEnabled; });
+        if(Moat) BuildMoat(*Moat); else if(Climb) BuildClimb(*Climb); else if(Wind) BuildWindSpace(*Wind); else if(Flood) BuildFlood(*Flood); else if(Spire) BuildSpire(*Spire); else if(Summit) BuildSummit(*Summit); else BuildZone(Space.Zones[Index],Index,Recovery);
     }
     BuildChapterWood(Chapter);
     NodePositions.Reset(); Nodes.Reset(); SiteEffects.Reset(); SiteRestoredColors.Reset();

@@ -14,6 +14,7 @@
 #include "SoraGameEvents.h"
 #include "SoraGameMode.h"
 #include "SoraProjectile.h"
+#include "SoraPlayerCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -482,7 +483,8 @@ void ASoraEnemy::StrikeMelee(const FSoraEnemyAttack& Attack,ASoraCharacterBase& 
 void ASoraEnemy::FireRound(const FSoraEnemyAttack& Attack,ASoraCharacterBase& Target,bool bPattern)
 {
     const FVector From=Eye();
-    const FVector To=Target.GetActorLocation()+FVector(0.f,0.f,SoraEnemyBody::ChestHeight);
+    const auto* WaterCraft=USoraFieldcraft::Get(this);
+    const FVector To=WaterCraft&&WaterCraft->IsMoatSwimming()&&Cast<ASoraPlayerCharacter>(&Target)?WaterCraft->MoatHead():Target.GetActorLocation()+FVector(0.f,0.f,SoraEnemyBody::ChestHeight);
     FHitResult Trace;
     FCollisionQueryParams Query(SCENE_QUERY_STAT(BotNavigation),false,this);
     GetWorld()->LineTraceSingleByChannel(Trace,From,To,ECC_Visibility,Query);
@@ -503,7 +505,7 @@ void ASoraEnemy::FireRound(const FSoraEnemyAttack& Attack,ASoraCharacterBase& Ta
     }
     if(bMiss) return;
     FSoraHit Hit=FSoraHit::Ranged(From,INDEX_NONE);
-    Hit.AttackId=Attack.Id;
+    Hit.AttackId=Attack.Id;Hit.bHitscan=true;
     SoraDamage::Strike(&Target,Attack.Damage,Hit,Direction,Trace,GetController(),this);
 }
 void ASoraEnemy::Lob(const FSoraEnemyAttack& Attack,ASoraCharacterBase& Target)

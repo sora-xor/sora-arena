@@ -48,6 +48,8 @@ bool USoraCampaignDirector::ObjectivePoint(FVector& Location,bool& bInteract) co
     if(IsToriiEpilogue()) return EpilogueObjective(Location,bInteract);
     if(IsArcheryLesson()) { Location=ArcheryLine(); bInteract=false; return !AtArcheryLine(); }
     if(bLiftGallery) { bInteract=false; return LiftExitPoint(Location); }
+    if(Beat->Space.Moat.bEnabled)
+        if(const auto* Craft=USoraFieldcraft::Get(this);Craft&&Craft->MoatObjective(Location)) { bInteract=false;return true; }
     if(Beat->Space.Flood.bEnabled)
         if(const auto* Craft=USoraFieldcraft::Get(this);Craft&&Craft->FloodObjective(Location)) { bInteract=false; return true; }
     const FSoraBeatSpace& Space=Beat->Space;
@@ -193,6 +195,7 @@ FVector USoraCampaignDirector::SpawnLocation(int32 Slot) const
         // the hull so members never begin intersecting one another.
         return FVector(Space->Wind.Origin,0)+FVector((Group==0?2000:Group==1?9000:16000)+Member*120,Group==0?-2500:Group==1?0:2000,Group==0?600:Group==1?1500:800);
     }
+    if(Space->Moat.bEnabled)return FVector(Space->Spawns[FMath::Abs(Slot)%Space->Spawns.Num()],1840.f);
     if(Space->Flood.bEnabled)
     {
         const int32 Pick=FMath::Abs(Slot)%Space->Spawns.Num();

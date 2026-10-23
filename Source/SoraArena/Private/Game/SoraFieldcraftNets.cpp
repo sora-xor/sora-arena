@@ -75,6 +75,7 @@ void USoraFieldcraft::StageNets()
 
 void USoraFieldcraft::OpponentJoined(ASoraEnemy& Enemy, int32 Wave)
 {
+    if(MoatSpace) { AssignMoatGuard(Enemy,MoatGuards.Num());return; }
     if (!Staged || !Staged->bNets || Enemy.ArchetypeId() != TEXT("drone")) return;
     const FSoraNets& Nets = Staged->Nets;
     // A net wave's first drones, as many as it nets with, take quarry; the
