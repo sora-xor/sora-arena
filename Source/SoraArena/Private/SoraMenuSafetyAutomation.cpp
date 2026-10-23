@@ -355,8 +355,11 @@ bool FSoraMenuPausesWorldTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("Opponents hold still under the pause menu"), Scope.OpponentLocations() == Opponents);
 
     // Settings opened from the pause menu keep the world paused and return to it.
-    Scope.Key(EKeys::Gamepad_DPad_Down);
-    Scope.Key(EKeys::Gamepad_DPad_Down);
+    for (int32 Step = 0; Step < Scope.FrontEnd()->Rows().Num() &&
+         Scope.FrontEnd()->Rows()[Scope.FrontEnd()->Focus()].Action != SoraUI::EAction::Settings; ++Step)
+        if (!Scope.Key(EKeys::Gamepad_DPad_Down)) return false;
+    if (!TestTrue(TEXT("Pad selects Settings through the current pause rows"),
+        Scope.FrontEnd()->Rows()[Scope.FrontEnd()->Focus()].Action == SoraUI::EAction::Settings)) return false;
     Scope.Key(EKeys::Gamepad_FaceButton_Bottom);
     TestTrue(TEXT("Settings open over the paused round"), Scope.On(SoraUI::EScreen::Settings) && Scope.Paused());
     Scope.Key(EKeys::Gamepad_FaceButton_Right);
