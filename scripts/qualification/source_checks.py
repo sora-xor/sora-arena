@@ -116,6 +116,7 @@ def checks(python: str = sys.executable) -> list[Check]:
         ("rust-pin-guards", "scripts/toolchain/test_doctor_rust.py"),
         ("import-vfx-guards", "scripts/toolchain/test_import_vfx_gate.py"),
         ("capture-report-guards", "scripts/toolchain/test_capture_report.py"),
+        ("nanite-draw-evidence", "scripts/toolchain/test_nanite_capture.py"),
         ("mac-candidate-guards", "scripts/toolchain/test_mac_candidate.py"),
         ("automation-report-guards", "scripts/toolchain/test_packaged_report.py"),
         ("capture-log-completion", "scripts/toolchain/test_logged_process.py"),
