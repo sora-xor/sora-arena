@@ -996,10 +996,10 @@ ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int
     Senses.SightCm=Guard.SightCm; Senses.DarkSightCm=Guard.DarkSightCm; Senses.ViewDegrees=Guard.ViewDegrees;
     Senses.HearingCm=Guard.HearingCm; Senses.SuspicionPermille=Guard.SuspicionPermille;
     Senses.ScanDegrees=Guard.ScanDegrees; Senses.ScanMs=Guard.ScanMs; Senses.TurnMs=Guard.TurnMs;
-    auto* Spawned=ASoraEnemy::SpawnArchetype(*GetWorld(),Guard.Type,Slot,Post,FRotator(0,180,0),&Route,&Senses);
-    if(Spawned&&Space->Climb.bEnabled&&GuardIndex==Space->Climb.GuardIndex)
-        if(auto* Craft=USoraFieldcraft::Get(this)) Craft->AssignClimbSentry(*Spawned);
-    return Spawned;
+    auto* GuardActor=ASoraEnemy::SpawnArchetype(*GetWorld(),Guard.Type,Slot,Post,FRotator(0,180,0),&Route,&Senses);
+    if(GuardActor&&Space->Climb.bEnabled&&GuardIndex==Space->Climb.GuardIndex)
+        if(auto* Craft=USoraFieldcraft::Get(this)) Craft->AssignClimbSentry(*GuardActor);
+    return GuardActor;
 }
 ASoraEnemy* USoraCampaignDirector::SpawnDuelOpponent(FName Opponent,bool bSparring,int32 Slot)
 {
