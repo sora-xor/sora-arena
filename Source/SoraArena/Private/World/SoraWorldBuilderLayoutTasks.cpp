@@ -122,6 +122,7 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
     BeatLight(Beat);   // the beat's authored sun and sky (SoraWorldBuilderLighting.cpp)
     StageEpilogue(Beat);
     StageSupply(Beat);
+    StageHelm(Beat);
     StageGalleryPois(Chapter,Beat);
     bSummitActive=Space.Summit.Enabled();
     ResetSpireAlarm(Space.Spire.Enabled());
@@ -423,6 +424,7 @@ void ASoraWorldBuilder::ClearKit()
     KitLooseLoads.Reset(); CarrySeal=nullptr;
     BellowsNotches.Reset(); BellowsSparks.Reset(); BellowsFeet.Reset(); BellowsShownBand=0;
     WorkshopParts.Reset(); WorkshopRing.Reset(); WorkshopStep=-1; bWorkshopHammer=false;
+    HelmWheel=nullptr; HelmNeedle=nullptr;
     KitGauge=nullptr; KitWheel=nullptr; KitFill=nullptr; KitLight=nullptr; Lift=nullptr;
     KitWork=NAME_None; KitHoldRadius=0.f;
 }

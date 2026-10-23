@@ -1,4 +1,5 @@
 #include "SoraGameMode.h"
+#include "SoraHelmAutomation.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
 #include "SoraAutomationWorld.h"
@@ -1097,10 +1098,16 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
                 return false;
             if (Rules.Goal == EGoal::Hold && !TendFires(Test, State))
                 return false;
+            if(Director->HelmNeedsTrim()&&!SoraHelmAutomation::Correct(*State.World))
+                return Fail(Test,State,TEXT("The helm requires its actual wheel correction"));
             Standing.Reset();
             for (ASoraEnemy* Enemy : LiveEnemies(State))
                 Standing.Add(Enemy);
-            if (Director->ObjectiveAnchor(Anchor)) MoveTo(State, Anchor);
+            if (Director->ObjectiveAnchor(Anchor))
+            {
+                if(Director->IsHelmHold()) { if(!SoraRecoveryAutomation::WalkTo(*State.World,Anchor)) return false; }
+                else MoveTo(State,Anchor);
+            }
             if (!Advance(Test, State, 1, FastSeconds))
                 return false;
         }

@@ -8,6 +8,7 @@
 #include "SoraDojoRules.h"
 #include "SoraArcheryRules.h"
 #include "SoraRegistry.h"
+#include "SoraHelmRules.h"
 #include "SoraCampaignDirector.generated.h"
 class ACameraActor;
 class ASoraBoss;
@@ -221,6 +222,11 @@ public:
     // pickup (ch03.b05's 釣瓶, waiting while a guard watches) or an objective
     // worked with Interact held (a charge planted, a relay node pulled).
     float HeldWorkProgress() const;
+    bool IsHelmHold() const;
+    bool HelmNeedsTrim() const { return IsHelmHold()&&Helm.Pending>=0; }
+    const SoraHelmRules::FState& HelmState() const { return Helm; }
+    FVector HelmWheelPoint() const;
+    bool AtHelmWheel() const;
     bool IsHoisting() const { return HeldWork == EHeldWork::Hoist; }
     bool IsPryingCarryGate() const { return bPryingCarryGate; }
     bool InLiftGallery() const { return bLiftGallery; }
@@ -415,6 +421,12 @@ private:
     double WhistleAt=-1.0;
     // Work held at a point: what it is, the pickup or objective, the ms held
     // and whether a guard watches.
+    SoraHelmRules::FState Helm;
+    void ResetHelm();
+    bool TickHelm(SoraBeatRules::FTick Step);
+    bool InteractHelm(ASoraPlayerCharacter& Player);
+    bool InHelmFloor(const FVector& At) const;
+    FString HelmText(bool English) const;
     enum class EHeldWork : uint8 { None, Hoist, Objective };
     EHeldWork HeldWork=EHeldWork::None;
     int32 HeldPoint=INDEX_NONE;

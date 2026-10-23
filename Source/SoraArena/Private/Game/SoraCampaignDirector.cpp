@@ -118,6 +118,7 @@ void USoraCampaignDirector::HeroDamaged(const FSoraDamagedEvent& Event)
     const ASoraGameMode& M=Mode();
     if(!ActiveBeatData()||Event.Victim!=M.Hero()) return;
     if(bPryingCarryGate) bCarryGateHit=true;
+    if(IsHelmHold()) SoraHelmRules::Cancel(Helm);
     StopPlayerCrank();
     if(SpineCut.Active) SoraSummitRules::Interrupt(SpineCut);
     CancelConstructCut();
@@ -436,6 +437,7 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     SoraBeatRules::ApplyCarryDifficulty(Task,static_cast<int32>(SoraAccessibility::CampaignDifficulty(this)));
     SoraBeatRules::ApplyRhythmDifficulty(Task,static_cast<int32>(SoraAccessibility::CampaignDifficulty(this)));
     TaskState=SoraBeatRules::StartTask(Task,Phase);
+    ResetHelm();
     SpineCut={}; SpineReadyMs=0; bSpinePromptShown=false; bSpineMutoRaised=false;
     PendingSummitPhaseSave=INDEX_NONE;
     ResetCarryWork();
@@ -711,7 +713,8 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
         Fire(TEXT("ai_event:first_rear_reach"));
     Step.CrankHelpers=CrankHelpers();
     Step.CrankDecayMultiplier=LiftDecayMultiplier();
-    SoraBeatRules::Tick(TaskState,Task,Step);
+    if(!TickHelm(Step)) SoraBeatRules::Tick(TaskState,Task,Step);
+    if(M.bDefeated) return;
     TickArchery(DeltaMs);
     TickMaai(DeltaMs);
     if(ActiveBeatData()!=&Beat) return;
@@ -831,6 +834,7 @@ void USoraCampaignDirector::TickHeldWork(int32 DeltaMs)
 }
 float USoraCampaignDirector::HeldWorkProgress() const
 {
+    if(IsHelmHold()&&Helm.Working) return static_cast<float>(Helm.HeldMs)/ActiveSpace()->Helm.Contract.WorkMs;
     if(SpineCut.Active&&ActiveBeatData()&&ActiveBeatData()->CaptureHoldMs>0)
         return static_cast<float>(SpineCut.HeldMs)/ActiveBeatData()->CaptureHoldMs;
     if(bPryingCarryGate&&Task.CarryGateMs>0) return static_cast<float>(TaskState.CarryGateHeldMs)/Task.CarryGateMs;
@@ -1112,6 +1116,7 @@ bool USoraCampaignDirector::AwaitingCapture() const
 }
 void USoraCampaignDirector::ClearEncounter()
 {
+    Helm={};
     CloseStealthZone();
     if(USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this)) Fieldcraft->Clear();
     ClearOpponents();
@@ -1393,6 +1398,7 @@ bool USoraCampaignDirector::HeroAtTask() const
 {
     const FSoraBeatSpace* Space=ActiveSpace();
     if(!Space) return false;
+    if(IsHelmHold()) return Mode().Hero()&&Mode().Hero()->GetCharacterMovement()->IsMovingOnGround()&&InHelmFloor(Mode().Hero()->GetActorLocation());
     if(Task.Goal==SoraBeatRules::EGoal::Hold) return Near(ASoraWorldBuilder::Floor(Space->Anchor),SoraCampaignReach::Hold);
     // The escorted party walks while the hero keeps up and all of it is free,
     // standing and in the open (SoraFieldcraftRules::PartyWalks).
@@ -1410,7 +1416,7 @@ bool USoraCampaignDirector::Contested() const
     if(Task.Goal!=SoraBeatRules::EGoal::Hold||!Space) return false;
     const FVector Anchor=ASoraWorldBuilder::Floor(Space->Anchor);
     for(const auto& Enemy:Enemies)
-        if(IsValid(Enemy)&&Enemy->IsEnemy()&&Enemy->IsAlive()&&FVector::Dist2D(Enemy->GetActorLocation(),Anchor)<SoraCampaignReach::Contest) return true;
+        if(IsValid(Enemy)&&Enemy->IsEnemy()&&Enemy->IsAlive()&&(IsHelmHold()?InHelmFloor(Enemy->GetActorLocation()):FVector::Dist2D(Enemy->GetActorLocation(),Anchor)<SoraCampaignReach::Contest)) return true;
     return false;
 }
 TArray<int32> USoraCampaignDirector::AvailableCaches() const
@@ -1632,6 +1638,7 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
     if(!M.bCampaign) { ArenaInteract(Player); return; }
     const FSoraBeat* Beat=ActiveBeatData();
     if(!Beat||M.bChapterComplete) return;
+    if(InteractHelm(Player)) return;
     if(InteractEpilogue(Player)) return;
     if(InteractRecovery(Player)) return;
     if(InteractCarryGate(Player)) return;
@@ -2088,6 +2095,7 @@ FString USoraCampaignDirector::ObjectiveText() const
     if(bWoodTransit) return TEXT("林を散策するか、南の道から鍛冶場へ進む");
     if(IsToriiEpilogue()) return EpilogueObjectiveText(false);
     if(IsArcheryLesson()) return ArcheryText(false);
+    if(IsHelmHold()) return HelmText(false);
     if(NeedsCarryGate()) return TEXT("蔵の封印で操作を長押しし、槍の石突でこじ開ける");
     if(NeedsEquipmentRecovery()) return AtRecoveryBottom()?TEXT("包みの前で操作を 3 秒長押しし、弓に弦を張る"):
         TEXT("空井戸の縄で操作を長押しし、底の刀の包みを取り戻す");
@@ -2126,6 +2134,7 @@ FString USoraCampaignDirector::ObjectiveTextEnglish() const
     if(bWoodTransit) return TEXT("Explore the wood, or take the south terrace to the smithy");
     if(IsToriiEpilogue()) return EpilogueObjectiveText(true);
     if(IsArcheryLesson()) return ArcheryText(true);
+    if(IsHelmHold()) return HelmText(true);
     if(NeedsCarryGate()) return TEXT("Hold Interact at the granary seal to pry it off with the spear butt");
     if(NeedsEquipmentRecovery()) return AtRecoveryBottom()?TEXT("Hold Interact at the bundle for 3 seconds to string the bow"):
         TEXT("Hold Interact at the dry-well rope to recover the sword bundle below");
