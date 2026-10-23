@@ -868,6 +868,8 @@ The mapped release must emit exactly one shot and leave eleven arrows.
 Cleanup drops held inputs, removes delegates, restores HUD/title/save-slot
 state, removes the throwaway save and checks control mappings and saved
 control/settings bytes, restoring bytes if a failed check detects a change.
+It also restores the original campaign slot's exact bytes or original absence
+after the title/reset path, which can otherwise persist a default save.
 
 Run each viewport separately on the exclusive engine lane:
 

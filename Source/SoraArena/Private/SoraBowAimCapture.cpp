@@ -111,8 +111,8 @@ private:
     FString Slot,OriginalSlot,ControlSlot,SettingsSlot,Folder,PendingFile;
     TArray<FInputActionKeyMapping> Actions;
     TArray<FInputAxisKeyMapping> Axes;
-    TArray<uint8> ControlBytes,SettingsBytes;
-    bool HadControls=false,HadSettings=false,ShowHUD=true,Started=false,Failed=false,Cleaned=false;
+    TArray<uint8> CampaignBytes,ControlBytes,SettingsBytes;
+    bool HadCampaign=false,HadControls=false,HadSettings=false,ShowHUD=true,Started=false,Failed=false,Cleaned=false;
     bool WasCampaign=false,WasPractice=false;
     int32 Stage=0,Phase=0,Shots=0;
     uint64 ShotFrame=0;
@@ -154,9 +154,11 @@ private:
         ShowHUD=HUD->bShowHUD;
         WasCampaign=M->bCampaign; WasPractice=M->bDeterministicPractice;
         OriginalSlot=M->SaveSlotName; ControlSlot=M->ControlSlotName; SettingsSlot=M->SettingsSlotName;
+        HadCampaign=UGameplayStatics::DoesSaveGameExist(OriginalSlot,0);
         HadControls=UGameplayStatics::DoesSaveGameExist(ControlSlot,0);
         HadSettings=UGameplayStatics::DoesSaveGameExist(SettingsSlot,0);
-        if((HadControls&&!UGameplayStatics::LoadDataFromSlot(ControlBytes,ControlSlot,0))||
+        if((HadCampaign&&!UGameplayStatics::LoadDataFromSlot(CampaignBytes,OriginalSlot,0))||
+            (HadControls&&!UGameplayStatics::LoadDataFromSlot(ControlBytes,ControlSlot,0))||
             (HadSettings&&!UGameplayStatics::LoadDataFromSlot(SettingsBytes,SettingsSlot,0))) { Fail(TEXT("Could not preserve profile bytes")); return; }
         Actions=PC()->PlayerInput->ActionMappings; Axes=PC()->PlayerInput->AxisMappings;
         const FString Id=FGuid::NewGuid().ToString(EGuidFormats::Digits);
@@ -277,18 +279,26 @@ private:
             M->SetMenuOpen(true); M->SaveSlotName=OriginalSlot;
             M->bCampaign=WasCampaign; M->bDeterministicPractice=WasPractice;
             C()->LoadSave(); M->ResetRound(); M->FrontEnd()->ShowTitle();
-            for(int32 I=0;I<2;++I)
+            for(int32 I=0;I<3;++I)
             {
-                const FString& Name=I?SettingsSlot:ControlSlot; const bool Existed=I?HadSettings:HadControls;
-                const auto& Before=I?SettingsBytes:ControlBytes; TArray<uint8> After;
-                const bool Same=UGameplayStatics::DoesSaveGameExist(Name,0)==Existed&&
-                    (!Existed||(UGameplayStatics::LoadDataFromSlot(After,Name,0)&&Before==After));
-                Test.TestTrue(TEXT("Bow capture leaves saved controls and settings byte-identical"),Same);
+                const FString& Name=I==0?OriginalSlot:I==1?ControlSlot:SettingsSlot;
+                const bool Existed=I==0?HadCampaign:I==1?HadControls:HadSettings;
+                const auto& Before=I==0?CampaignBytes:I==1?ControlBytes:SettingsBytes; TArray<uint8> After;
+                const auto Identical=[&]() {
+                    return UGameplayStatics::DoesSaveGameExist(Name,0)==Existed&&
+                        (!Existed||(UGameplayStatics::LoadDataFromSlot(After,Name,0)&&Before==After));
+                };
+                const bool Same=Identical();
+                // Loading/resetting the player's original slot may persist a
+                // default or normalized save. Restore its original bytes (or
+                // absence) after that work; never leave the capture's reset.
+                if(I>0) Test.TestTrue(TEXT("Bow capture does not modify saved controls/settings"),Same);
                 if(!Same)
                 {
                     if(Existed) UGameplayStatics::SaveDataToSlot(Before,Name,0);
                     else UGameplayStatics::DeleteGameInSlot(Name,0);
                 }
+                Test.TestTrue(FString::Printf(TEXT("Bow capture preserves original profile bytes/existence: %s"),*Name),Identical());
             }
         }
         if(!Slot.IsEmpty()) UGameplayStatics::DeleteGameInSlot(Slot,0);
