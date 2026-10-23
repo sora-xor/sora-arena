@@ -249,7 +249,12 @@ bool USoraFieldcraft::MoveFloodCompanion(ASoraCompanion& Companion,float Dt)
     FVector Delta=Goal-P;
     if(Delta.Size2D()<90) Delta.X=Delta.Y=0;
     const FVector Step=Delta.GetClampedToMaxSize(240.f*Dt);
-    Companion.SetActorLocation(Companion.GetActorLocation()+Step,true);
+    // A single diagonal sweep pins the carrier when its downward component
+    // meets the floor, or its forward component meets the submerged roof.
+    // Resolve each axis against real collision so the other may still move.
+    // Keep the same bounded displacement and start from each reached point.
+    Companion.SetActorLocation(Companion.GetActorLocation()+FVector(0,0,Step.Z),true);
+    Companion.SetActorLocation(Companion.GetActorLocation()+FVector(Step.X,Step.Y,0),true);
     if(Step.SizeSquared2D()>1) Companion.SetActorRotation(FRotator(0,Step.Rotation().Yaw,0));
     return true;
 }
