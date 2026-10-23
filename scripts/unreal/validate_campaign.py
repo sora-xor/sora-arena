@@ -56,6 +56,7 @@ import textwrap
 from pathlib import Path
 
 from campaign_flood import flood_valid
+from campaign_climb import climb_valid
 from campaign_space import arena_blockers
 from campaign_registry import validate_registry
 from campaign_crank import player_work
@@ -395,6 +396,7 @@ def check_space(chapter, beats, rewards, labels, where):
                 f"{what} at {point[:2]} is off its floor or inside a wall or cover")
 
     require(flood_valid(chapter), f"{where}: physical flood contract")
+    require(climb_valid(chapter), f"{where}: authored corner/extrusion climb contract")
     records = space["beats"]
     require([record["beat"] for record in records] == [beat["id"] for beat in beats], f"{where}: one space per beat")
     require(space["start"] == records[0]["entry"], f"{where}: the chapter starts at its first beat")
