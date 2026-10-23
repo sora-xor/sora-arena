@@ -12,6 +12,22 @@ import unittest
 ROOT=Path(__file__).resolve().parents[2]
 
 class RidgeTests(unittest.TestCase):
+    def test_shared_hangar_markers_have_capsule_room_outside_shuttle_solids(self):
+        c=json.loads((ROOT/'Content/Data/campaign/chapter_07.json').read_text())
+        origin=c['space']['beats'][7]['wind']['origin']
+        # These are the three collidable 18 x 14 m shuttle footprints in
+        # BuildWindSpace. Include the capsule radius, not just point centres.
+        for index in (7,8,14):
+            r=c['space']['beats'][index]
+            points=[r['entry'][:2],r['anchor'],*r['spawns'],
+                    *(p for loop in r['patrols'] for p in loop)]
+            for point in points:
+                x,y=(point[i]-origin[i] for i in range(2))
+                for shuttle_x in (1500,4000,6500):
+                    dx=max(abs(x-shuttle_x)-900,0)
+                    dy=max(abs(y-2500)-700,0)
+                    self.assertGreater(dx*dx+dy*dy,34*34,(r['beat'],point,shuttle_x))
+
     def test_generated_contract_preserves_authored_space_waves_and_wind(self):
         c=json.loads((ROOT/'Content/Data/campaign/chapter_07.json').read_text())
         w=c['ext']['chapter_systems']['ridge_wind']

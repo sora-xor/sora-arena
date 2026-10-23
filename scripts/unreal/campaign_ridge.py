@@ -25,7 +25,9 @@ def place_wind(beats, records, zones, fail):
             z.cover=[]; z.props=[]
             r['entry']=[x+400,y+600,0]; z.entry=tuple(r['entry'])
             r['anchor']=[x+4000,y+1600]
-            r['spawns']=[[x+7200,y+2200],[x+4000,y+200],[x+4000,y+2500],
+            # Group markers use the same clear forward/shuttle aisles as
+            # production SpawnLocation, not the solid shuttle interiors.
+            r['spawns']=[[x+7600,y+1900],[x+4000,y+200],[x+4000,y+3500],
                          [x+6600,y+200],[x+4000,y+4300]]
             r['patrols']=[]
             r['exit']={'center':[x+7750,y+1000],'size':[500,600]}
@@ -34,6 +36,13 @@ def place_wind(beats, records, zones, fail):
                 if 'dorsal_hatch' in v['event']: v.update(center=[x+7750,y+1000],size=[500,600])
                 elif 'sled_bay' in v['event']:v.update(center=[x+2500,y+3700],size=[1000,1400])
                 elif 'canisters' in v['event']:v.update(center=[x+4000,y+1200],size=[2800,700])
+    # The return cinematic shares this physical hangar. Its generic anchor
+    # and patrol markers must not remain inside the newly solid shuttles.
+    r=by['ch07.b15']; z=zones[r['zone']]; x,y=z.rect[:2]
+    r['anchor']=[x+4000,y+1600]
+    r['patrols']=[[[x+a,y+b] for a,b in loop] for loop in (
+        ((2600,1400),(2900,1400),(2900,3500),(2600,3500)),
+        ((5100,1400),(5400,1400),(5400,3500),(5100,3500)))]
 
 def wind_valid(chapter):
     """Strict, scoped normalized contract; other chapters may not opt in."""
@@ -56,4 +65,6 @@ def wind_valid(chapter):
         x,y=w['origin']
         if ridge and (r['entry']!=[x+200,0,0] or r['anchor']!=[x+17800,0] or
                       r['exit']!={'center':[x+17800,0],'size':[400,400],'floor_cm':-198}):return False
+        if not ridge and r['spawns']!=[[x+7600,y+1900],[x+4000,y+200],[x+4000,y+3500],
+                                      [x+6600,y+200],[x+4000,y+4300]]:return False
     return True

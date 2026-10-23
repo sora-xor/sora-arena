@@ -8,6 +8,8 @@
 #include "SoraSaveGame.h"
 #include "SoraWorldBuilder.h"
 #include "SoraLiftRules.h"
+#include "SoraFloodRules.h"
+#include "SoraRidgeRules.h"
 #include "Algo/AllOf.h"
 #include "Components/PrimitiveComponent.h"
 #include "Engine/World.h"
@@ -19,9 +21,12 @@
 // that it can be played: a floor under every zone's and road's entry, and
 // under every point a beat uses (its entry, anchor, objectives, pickups,
 // drop-offs, defended targets, stations, spawns, patrol posts, trigger
-// volumes, exit, cache and horse) and every loose collectible, each with room
-// for a standing cat (no wall, cover, lantern pole or building overlaps a
-// capsule there); production sites stand on their bases where their beats
+// volumes, exit, cache and horse) and every loose collectible. Grounded
+// interaction/spawn markers also need standing capsule clearance; a deep
+// water trigger needs channel support, with actual swim clearance and
+// compulsory submersion covered by FloodTraversal. No wall, cover, lantern
+// pole or building may overlap a grounded capsule. Production sites stand
+// on their bases where their beats
 // restore them; and the hero begins the chapter at its first beat's entry.
 namespace SoraCampaignSpace
 {
@@ -36,17 +41,45 @@ struct FProbe
     int32 Points = 0;
     bool bOk = true;
     float HeightCm = 0.f;
-    // A trace down meets the beat's authored floor, including the spire.
+    const FSoraBeatSpace* SupportSpace = nullptr;
+    float FloorHeight(const FVector2D& Point) const
+    {
+        if(SupportSpace && SupportSpace->Wind.Ridge())
+        {
+            const FVector2D Local=Point-SupportSpace->Wind.Origin;
+            return SoraRidgeRules::Height(Local.X,Local.Y);
+        }
+        if(SupportSpace && SupportSpace->Wind.Kind==TEXT("hangar"))
+        {
+            const FVector2D Local=Point-SupportSpace->Wind.Origin;
+            // The gallery's authored standing surface is eight metres up.
+            if(Local.X>=500 && Local.X<=7500 && Local.Y>=0 && Local.Y<=400) return 800.f;
+        }
+        if(SupportSpace && SupportSpace->Flood.bEnabled)
+        {
+            const FVector2D Local=Point-SupportSpace->Flood.Origin;
+            if(Local.Y<=SoraFloodRules::BankEdgeY) return SoraFloodRules::BankTop;
+            if(Local.Y<SoraFloodRules::BankWaterY)
+                return SoraFloodRules::DeepFloor+(SoraFloodRules::BankWaterY-Local.Y)*
+                    (SoraFloodRules::BankTop-SoraFloodRules::DeepFloor)/(SoraFloodRules::BankWaterY-SoraFloodRules::BankEdgeY);
+            if(Local.Y<=-400) return SoraFloodRules::DeepFloor;
+            return SoraFloodRules::Floor(FMath::RoundToInt(Local.X));
+        }
+        return HeightCm;
+    }
+    // A trace down meets the contract's support surface. Deep-water volumes
+    // require actual channel support, not a standing body at the water line.
     bool Floor(const FVector2D& Point, const FString& What)
     {
+        const float Expected=FloorHeight(Point);
         FHitResult Hit;
         FCollisionQueryParams Params(SCENE_QUERY_STAT(SpaceFloor), false, Hero);
-        const bool bTraced = World.LineTraceSingleByChannel(Hit, FVector(Point.X, Point.Y, HeightCm+60.f), FVector(Point.X, Point.Y, HeightCm-200.f),
+        const bool bTraced = World.LineTraceSingleByChannel(Hit, FVector(Point.X, Point.Y, Expected+60.f), FVector(Point.X, Point.Y, Expected-200.f),
             ECC_Visibility, Params);
-        const bool bHit = bTraced && FMath::IsNearlyEqual(Hit.ImpactPoint.Z,HeightCm,2.f);
+        const bool bHit = bTraced && !Hit.bStartPenetrating && FMath::IsNearlyEqual(Hit.ImpactPoint.Z,Expected,2.f);
         if (!bHit)
             Test.AddInfo(FString::Printf(TEXT("SORA_SPACE_FLOOR: %s xy=(%.3f,%.3f) expected_z=%.3f traced=%d blocking=%d start_penetrating=%d actor=%s component=%s impact=%s normal=%s"),
-                *What, Point.X, Point.Y, HeightCm, bTraced, Hit.bBlockingHit, Hit.bStartPenetrating,
+                *What, Point.X, Point.Y, Expected, bTraced, Hit.bBlockingHit, Hit.bStartPenetrating,
                 *GetNameSafe(Hit.GetActor()), *GetNameSafe(Hit.GetComponent()),
                 *Hit.ImpactPoint.ToString(), *Hit.ImpactNormal.ToString()));
         ++Points;
@@ -58,11 +91,20 @@ struct FProbe
         if (!Floor(Point, What))
             return false;
         FCollisionQueryParams Params(SCENE_QUERY_STAT(SpaceRoom), false, Hero);
-        const bool bBlocked = World.OverlapBlockingTestByChannel(FVector(Point.X, Point.Y, HeightCm+CapsuleHalfHeight + 4.f), FQuat::Identity,
+        const bool bBlocked = World.OverlapBlockingTestByChannel(FVector(Point.X, Point.Y, FloorHeight(Point)+CapsuleHalfHeight + 4.f), FQuat::Identity,
             ECC_Pawn, FCollisionShape::MakeCapsule(CapsuleRadius, CapsuleHalfHeight), Params);
         return !bBlocked || (bOk = Test.TestFalse(*(What + TEXT(" has room to stand")), true));
     }
 };
+
+const FSoraBeatSpace* SupportForZone(const FSoraChapter& Chapter,int32 Zone)
+{
+    // A later beat can revisit a previously built hangar without enabling
+    // wind. Its support still belongs to the same physical place.
+    for(const FSoraBeat& Beat:Chapter.Beats)
+        if(Beat.Space.Zone==Zone && (Beat.Space.Wind.Enabled() || Beat.Space.Flood.bEnabled)) return &Beat.Space;
+    return nullptr;
+}
 
 bool CheckChapter(FAutomationTestBase& Test, int32 Chapter)
 {
@@ -81,8 +123,10 @@ bool CheckChapter(FAutomationTestBase& Test, int32 Chapter)
         const FString Name = Data.Id;
         bOk &= Test.TestTrue(*(Name + TEXT(": the hero begins at the first beat's entry")),
             FVector2D::Distance(FVector2D(Hero->GetActorLocation()), Data.Space.Start) < 50.f);
-        for (const FSoraZone& Zone : Data.Space.Zones)
+        for (int32 ZoneIndex=0;ZoneIndex<Data.Space.Zones.Num();++ZoneIndex)
         {
+            const FSoraZone& Zone=Data.Space.Zones[ZoneIndex];
+            Probe.SupportSpace=SupportForZone(Data,ZoneIndex);
             Probe.HeightCm=Zone.bHeightBounds&&Zone.MinZ>0?16000:0;
             Probe.Stand(Zone.Entry, Name + TEXT(" ") + Zone.Id + TEXT(" entry"));
             for (const FVector2D& Node : Zone.Route)
@@ -108,6 +152,7 @@ bool CheckChapter(FAutomationTestBase& Test, int32 Chapter)
             if(Space.HeightCm==0&&World.Mode()->Arena()->CampaignLift()) World.Mode()->Arena()->ClearKit();
             if(Space.Summit.Enabled()) World.Mode()->Arena()->ClearKit();
             Probe.HeightCm=Space.HeightCm;
+            Probe.SupportSpace=SupportForZone(Data,Space.Zone);
             Probe.Stand(Space.Entry, What + TEXT(" entry"));
             // A beat that restores a site is worked at the site's own base.
             if (!Data.Space.Sites.Contains(Space.Anchor))
@@ -151,7 +196,10 @@ bool CheckChapter(FAutomationTestBase& Test, int32 Chapter)
         }
         Probe.HeightCm=0;
         for (const FSoraPickup& Pickup : Data.Space.Pickups)
+        {
+            Probe.SupportSpace=SupportForZone(Data,Pickup.Zone);
             Probe.Stand(Pickup.At, Name + TEXT(" ") + Data.Collectibles[Pickup.Collectible].Id);
+        }
         bOk &= Probe.bOk;
         // Explore caches stand still while the objective refreshes (many times
         // a second as a hold fills): the same caches again leave the same
