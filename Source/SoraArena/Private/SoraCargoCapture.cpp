@@ -91,6 +91,9 @@ public:
                 auto Hold=MakeShared<FJsonObject>();
                 Hold->SetNumberField(TEXT("destination"),Point);
                 Hold->SetNumberField(TEXT("before"),Point); Hold->SetNumberField(TEXT("after"),Point+1);
+                Hold->SetNumberField(TEXT("resume_frame"),double(ResumeFrame));
+                Hold->SetNumberField(TEXT("resume_world_s"),ResumeWorld); Hold->SetNumberField(TEXT("resume_wall_s"),ResumeWall-BeganWall);
+                Hold->SetNumberField(TEXT("start_frame"),double(HoldFrame)); Hold->SetNumberField(TEXT("end_frame"),double(GFrameCounter));
                 Hold->SetNumberField(TEXT("start_world_s"),HoldWorld); Hold->SetNumberField(TEXT("end_world_s"),WorldTime());
                 Hold->SetNumberField(TEXT("start_wall_s"),HoldWall-BeganWall); Hold->SetNumberField(TEXT("end_wall_s"),Now-BeganWall);
                 Hold->SetNumberField(TEXT("world_elapsed_s"),WorldTime()-HoldWorld);
@@ -144,8 +147,9 @@ private:
     bool Started=false,Failed=false,Cleaned=false,ShowHUD=true,WasCampaign=false,WasPractice=false,WasEnglish=true;
     bool HadCampaign=false,HadControls=false,HadSettings=false,Dismounted=false,FirstFrame=false,CinemaEnded=false;
     int32 Phase=0,Point=0,CinemaElapsedMs=0,Completions=0;
-    uint64 RequestFrame=0;
+    uint64 RequestFrame=0,ResumeFrame=0,HoldFrame=0;
     double BeganWall=0,QuietAt=0,HoldWorld=0,HoldWall=0,PauseWorld=0;
+    double ResumeWorld=0,ResumeWall=0;
     double CinemaWorldStart=-1,CinemaWallStart=-1,CinemaWorldEnd=-1,CinemaWallEnd=-1;
     ASoraPlayerCharacter* Hero() const { return M.IsValid()?M->Hero():nullptr; }
     APlayerController* PC() const { return Hero()?Cast<APlayerController>(Hero()->GetController()):nullptr; }
@@ -203,11 +207,12 @@ private:
     }
     void StartHold()
     {
-        if(M->GetWorld()->IsPaused()||C()->ActiveBeat()!=13||C()->IsMounted()||C()->TaskProgress().Done!=Point||
+        if(M->GetWorld()->IsPaused()||GFrameCounter<=ResumeFrame||WorldTime()<=ResumeWorld||FPlatformTime::Seconds()-ResumeWall<1||
+            C()->IsUnloadingCargo()||PC()->PlayerInput->IsPressed(Interact)||C()->ActiveBeat()!=13||C()->IsMounted()||C()->TaskProgress().Done!=Point||
             !Hero()->GetCharacterMovement()->IsMovingOnGround()||FVector::Dist2D(Hero()->GetActorLocation(),Dropoff)>260||
             !C()->Steed()||FVector::Dist2D(Hero()->GetActorLocation(),C()->Steed()->GetActorLocation())<=420)
         { Fail(TEXT("Cargo hold did not start from its on-foot accepted state")); return; }
-        HoldWorld=WorldTime(); HoldWall=FPlatformTime::Seconds();
+        HoldFrame=GFrameCounter; HoldWorld=WorldTime(); HoldWall=FPlatformTime::Seconds();
         if(!Key(IE_Pressed)||!C()->IsUnloadingCargo()) { Fail(TEXT("Mapped Interact did not begin cargo unloading")); return; }
         Stage=EStage::Holding;
     }
@@ -386,8 +391,16 @@ private:
         Last->SetNumberField(TEXT("screenshot_processed_frame"),double(GFrameCounter)); Frames.Add(MakeShared<FJsonValueObject>(Last));
         UE_LOG(LogTemp,Display,TEXT("SORA_CARGO_FRAME %s"),*PendingFile); PendingFile.Reset(); ++Phase;
         UGameplayStatics::SetGamePaused(M.Get(),false);
-        if(Phase==1) StartHold();
-        else if(Phase<4) { Prepare(Phase-1); Stage=EStage::Settle; }
+        if(Phase<4)
+        {
+            // PNG readback/encoding precedes this callback. The next engine
+            // delta can include that paused work; let the world run without
+            // Interact before every press, including the first destination.
+            ResumeFrame=GFrameCounter; ResumeWorld=WorldTime(); ResumeWall=FPlatformTime::Seconds();
+            if(Phase>1) Prepare(Phase-1);
+            else QuietAt=ResumeWall;
+            Stage=EStage::Settle;
+        }
     }
     void Cleanup()
     {
@@ -425,7 +438,7 @@ private:
         const bool Deleted=Slot.IsEmpty()||!UGameplayStatics::DoesSaveGameExist(Slot,0);
         if(!Profiles||!Mappings||!Released||!Deleted) Fail(TEXT("Cargo capture failed profile/mapping/input/temporary-slot cleanup"));
         if(Folder.IsEmpty()) return;
-        auto J=MakeShared<FJsonObject>(); J->SetStringField(TEXT("schema"),TEXT("sora-arena.cargo-capture.v2")); J->SetStringField(TEXT("scope"),Scope);
+        auto J=MakeShared<FJsonObject>(); J->SetStringField(TEXT("schema"),TEXT("sora-arena.cargo-capture.v3")); J->SetStringField(TEXT("scope"),Scope);
         J->SetBoolField(TEXT("passed"),!Failed&&Phase==4); J->SetBoolField(TEXT("prepared_checkpoint"),true); J->SetBoolField(TEXT("frozen_ai"),true);
         J->SetBoolField(TEXT("mapped_start_dismount"),Dismounted); J->SetBoolField(TEXT("ordinary_clock"),true);
         J->SetBoolField(TEXT("profiles_preserved"),Profiles); J->SetBoolField(TEXT("mappings_preserved"),Mappings);

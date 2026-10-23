@@ -145,3 +145,22 @@ replayed records fail; already authenticated fresh partial originals remain
 associated as failure evidence. A note naming a telegraph does not independently
 prove its pixels or qualify other attack states. The campaign continuation now
 omits both the success marker and index row after any rejected or missing frame.
+
+## First hold after screenshot resume
+
+An actual 720p run on the boss-layout correction failed before reaching the boss:
+its first transfer measured 3.000952918 world seconds but only 2.891394790 wall
+seconds, below the unchanged 2.9-second wall gate. The first press had run inside
+the PNG processed callback immediately after unpausing. UE encodes/writes the PNG
+before that callback; the next active frame delta can include earlier screenshot
+work excluded from the measured key-press interval. The sidecar does not contain
+per-frame deltas, so this ordering explains the discrepancy without claiming an
+exact reconstruction of those unrecorded intervals.
+
+Every post-screenshot press now follows the same one-second running-world settle
+step with Interact released. Schema v3 records resume, press and acceptance engine
+frames, plus their unchanged native world/wall timestamps. Verification requires
+the resume to match its original paused frame, a later active press after at least
+one wall second, and acceptance before the following original. The existing
+three-second and whole-cinematic thresholds remain unchanged. Production input,
+timers and gameplay are untouched; the failed original and v2 sidecar are kept.

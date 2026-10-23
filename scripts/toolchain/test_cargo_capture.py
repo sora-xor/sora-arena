@@ -37,8 +37,8 @@ def observations():
                 terminal_before_teardown=stock(3, False), frames=[], holds=[], preparations=[])
     for index, phase in enumerate(CARGO.PHASES):
         row = dict(name=phase, file=phase+".png", request_frame=100+index*100,
-                   screenshot_processed_frame=100+index*100, world_s=[10,14,18,109.02][index],
-                   wall_s=[13,20,27,123.02][index], paused=True, english=True, hud_drawn=True,
+                   screenshot_processed_frame=100+index*100, world_s=[10,15,20,114.12][index],
+                   wall_s=[13,21,29,126.23][index], paused=True, english=True, hud_drawn=True,
                    interact_held=False, dialogue_active=False, queued_lines=0, beat=13 if index<3 else 15, destination=max(0,index-1), camera=[-450,-1150,480])
         if index<3:
             row.update(stock=stock(index), horse_screen_bounds=[[350,300,550,480],[600,300,900,480]],
@@ -47,16 +47,21 @@ def observations():
             row.update(pack_count=0, stand_count=0, notice_ja="登録 | 麦 残り 0束", notice_en="Registered / Barley: 0 sheaves left", notice_remaining_s=6.99, notice_count=1, notice_title_retained=True)
         data["frames"].append(row)
     for index in range(3):
-        start_world, end_world = [(10,13.01),(14.5,17.51),(18,21.01)][index]
-        start_wall, end_wall = [(13,16.02),(20.5,23.52),(27,30.02)][index]
+        resume_world, resume_wall = data["frames"][index]["world_s"], data["frames"][index]["wall_s"] + .1
+        start_world, start_wall = resume_world + 1.1, resume_wall + 1.1
+        end_world, end_wall = start_world + 3.01, start_wall + 3.02
         data["holds"].append(dict(destination=index, before=index, after=index+1, mapped_interact=True, paused_during_hold=False,
+                                  resume_frame=100+index*100, start_frame=110+index*100, end_frame=180+index*100,
+                                  resume_world_s=resume_world, resume_wall_s=resume_wall,
                                   start_world_s=start_world, end_world_s=end_world, world_elapsed_s=end_world-start_world,
                                   start_wall_s=start_wall, end_wall_s=end_wall, wall_elapsed_s=end_wall-start_wall))
         data["preparations"].append(dict(destination=index, dropoff=[index*1000,0,0], hero=[index*1000,-180,98],
                                          steed=[index*1000-80,450,0], pack=[index*1000-380,450,0], camera=[index*1000-450,-1150,480]))
     # b15 starts on the final accepted transfer, before the latent observer releases Interact.
-    data["cinematic_end_world_s"] = 111.02
-    data["frames"][-1]["world_s"] = 111.03
+    data["cinematic_end_world_s"] = data["holds"][-1]["end_world_s"] - .01 + data["cinematic_world_s"]
+    data["cinematic_end_wall_s"] = data["holds"][-1]["end_wall_s"] - .01 + data["cinematic_wall_s"]
+    data["frames"][-1]["world_s"] = data["cinematic_end_world_s"] + .01
+    data["frames"][-1]["wall_s"] = data["cinematic_end_wall_s"] + 3
     data["cinematic_start_world_s"] = data["cinematic_end_world_s"] - data["cinematic_world_s"]
     data["cinematic_start_wall_s"] = data["cinematic_end_wall_s"] - data["cinematic_wall_s"]
     return data
@@ -184,6 +189,29 @@ class CargoCaptureTests(unittest.TestCase):
             output = self.root/f"archive-{self.serial}"
             self.assertEqual((output/frame["path"]).read_bytes(), self.png)
             self.assertEqual((output/frame["observations"]).read_bytes(), self.sidecar.read_bytes())
+
+    def test_hold_resume_and_press_boundaries_cannot_reuse_a_screenshot_frame(self):
+        original = copy.deepcopy(self.data)
+        cases = (("resume_frame", 99), ("start_frame", 100), ("start_frame", 180), ("end_frame", 201),
+                 ("resume_world_s", 9.9), ("resume_world_s", 11.1), ("resume_wall_s", 12.9),
+                 ("resume_wall_s", 13.21), ("start_world_s", 10))
+        for key, bad in cases:
+            with self.subTest(key=key, bad=bad):
+                self.data = copy.deepcopy(original); self.data["holds"][0][key] = bad
+                with self.assertRaises(ValueError): self.verify()
+        for key in ("resume_frame", "resume_world_s", "resume_wall_s", "start_frame", "end_frame"):
+            self.data = copy.deepcopy(original); del self.data["holds"][0][key]
+            with self.subTest(missing=key), self.assertRaises(ValueError): self.verify()
+
+    def test_observed_failed_wall_hold_stays_rejected_after_world_time_passes(self):
+        # Actual 812d70c run: PNG callback press, 3.00095 world seconds but
+        # only 2.89139 wall seconds. New resume metadata must not waive that gate.
+        hold = self.data["holds"][0]
+        hold["world_elapsed_s"] = 3.0009529180824757
+        hold["end_world_s"] = hold["start_world_s"] + hold["world_elapsed_s"]
+        hold["wall_elapsed_s"] = 2.891394790261984
+        hold["end_wall_s"] = hold["start_wall_s"] + hold["wall_elapsed_s"]
+        with self.assertRaisesRegex(ValueError, "three ordinary active seconds"): self.verify()
 
     def test_capture_source_preserves_the_gameplay_admission_boundary(self):
         source = (Path(__file__).resolve().parents[2]/"Source/SoraArena/Private/SoraCargoCapture.cpp").read_text()

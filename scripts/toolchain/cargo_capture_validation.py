@@ -6,7 +6,7 @@ original PNGs; no pixels are transformed or inferred from component getters.
 import math
 
 PHASES = ("remaining-30", "remaining-20", "remaining-10", "remaining-0")
-SCHEMA = "sora-arena.cargo-capture.v2"
+SCHEMA = "sora-arena.cargo-capture.v3"
 SCOPE = ("prepared cargo checkpoint/positions/camera and frozen AI; mapped active-time unloads; "
          "paused original frames; not playthrough or art acceptance")
 
@@ -133,6 +133,15 @@ def verify_sequence(metadata, filenames, width, height):
             raise ValueError("cargo hold does not identify one unique accepted destination")
         if hold.get("mapped_interact") is not True or hold.get("paused_during_hold") is not False:
             raise ValueError("cargo hold must use mapped input and active world time")
+        resume_frame, start_frame, end_frame = (number(hold, key, True)
+                                               for key in ("resume_frame", "start_frame", "end_frame"))
+        if not (resume_frame == number(rows[index], "screenshot_processed_frame", True)
+                < start_frame < end_frame <= number(rows[index + 1], "request_frame", True)):
+            raise ValueError("cargo hold must start after its screenshot resume frame")
+        resume_world, resume_wall = number(hold, "resume_world_s"), number(hold, "resume_wall_s")
+        if (resume_world != number(rows[index], "world_s") or resume_world >= number(hold, "start_world_s")
+                or resume_wall < number(rows[index], "wall_s") or number(hold, "start_wall_s") - resume_wall < 1):
+            raise ValueError("cargo hold must follow one ordinary unpaused settle second")
         for clock, minimum in (("world", 2.999), ("wall", 2.9)):
             start, end = number(hold, f"start_{clock}_s"), number(hold, f"end_{clock}_s")
             elapsed = number(hold, f"{clock}_elapsed_s")
