@@ -26,10 +26,39 @@ bool Walk(FWorld& W,const FVector& Local)
         if(!SoraLiftAutomation::Walk(*W.World,FMath::Lerp(Start,Goal,float(I)/Steps))) return false;
     return true;
 }
+bool BankLayout(FWorld& W)
+{
+    const FVector O(W.BeatData().Space.Flood.Origin,0);
+    FCollisionQueryParams Q(SCENE_QUERY_STAT(FloodBankLayout),false,W.Hero());
+    // Trace the production collision on both sides of each join, rather than
+    // merely asserting the ramp's configured angle or a coordinate volume.
+    for(const FVector2D Point:{FVector2D(-3599,-200),FVector2D(-3601,-199.333),
+        FVector2D(-3900,0),FVector2D(-4199,199.333),FVector2D(-4201,200),FVector2D(-4300,200)})
+    {
+        FHitResult Hit;
+        if(!W.Test.TestTrue(TEXT("The moat, bank ramp and bank have continuous walkable collision"),
+            W.World->GetTestWorld()->LineTraceSingleByChannel(Hit,O+FVector(9200,Point.X,1000),
+                O+FVector(9200,Point.X,-1000),ECC_WorldStatic,Q)&&
+            FMath::Abs(Hit.ImpactPoint.Z-Point.Y)<2.f&&
+            Hit.ImpactNormal.Z>=W.Hero()->GetCharacterMovement()->GetWalkableFloorZ())) return false;
+    }
+    FHitResult Hit;
+    W.Test.TestTrue(TEXT("The embankment closes the former opening beside the gate"),
+        W.World->GetTestWorld()->LineTraceSingleByChannel(Hit,O+FVector(9150,-300,100),O+FVector(9150,-500,100),ECC_WorldStatic,Q));
+    return W.Test.TestFalse(TEXT("The half-open gate retains real swimming clearance"),
+        W.World->GetTestWorld()->LineTraceSingleByChannel(Hit,O+FVector(9500,-300,100),O+FVector(9500,-500,100),ECC_WorldStatic,Q));
+}
+bool OnBank(const ACharacter& Character,const FVector& Origin)
+{
+    const FVector At=Character.GetActorLocation()-Origin;
+    const float Feet=At.Z-Character.GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+    return At.Y<-4200&&FMath::Abs(Feet-SoraFloodRules::BankTop)<5.f&&Character.GetCharacterMovement()->IsMovingOnGround();
+}
 bool Cross(FWorld& W,const FKey& Dive,bool Late)
 {
     auto* Craft=W.Fieldcraft();
     W.Harden();
+    if(!BankLayout(W)) return false;
     auto* Bus=USoraGameEvents::Get(W.Hero());
     float Drowning=0;
     const auto Handle=Bus->OnDamaged.AddLambda([&](const FSoraDamagedEvent& E)
@@ -55,15 +84,39 @@ bool Cross(FWorld& W,const FKey& Dive,bool Late)
     if(!W.Press(EKeys::Escape)||!W.Tick(180)) return false;
     W.Test.TestTrue(TEXT("Pause freezes the water and body"),Craft->FloodElapsedMs()<=Clock+34&&
         FVector::Dist(Position,W.Hero()->GetActorLocation())<2);
-    if(!W.Press(EKeys::Escape)||!W.Press(Dive)||!Walk(W,FVector(9050,0,0))||!W.Press(Dive)||!W.Tick(70)) return false;
+    // Clear the roof by more than the capsule radius plus Walk's tolerance.
+    if(!W.Press(EKeys::Escape)||!W.Press(Dive)||!Walk(W,FVector(9100,0,0))||!W.Press(Dive)||!W.Tick(70)) return false;
     W.Test.TestEqual(TEXT("Normal input crossed the second submerged leg"),Craft->FloodPassageStage(),4);
     W.Test.TestFalse(TEXT("Emerging from the culvert alone does not authorize exit"),Craft->FloodExitReady());
     W.Test.TestTrue(TEXT("Toranosuke physically carries Iota"),Craft->FloodCarriesIota());
     W.Test.TestEqual(TEXT("A careful route incurs no drowning damage"),Drowning,0.f);
+    if(!Walk(W,FVector(9150,0,0))) return false;
+    W.Look(FRotator(0,-90,0));
+    if(!W.Hold(EKeys::W,120)) return false;
+    W.Test.TestTrue(TEXT("Ordinary strokes cannot leave through the former gap beside the gate"),
+        W.Hero()->GetActorLocation().Y-W.BeatData().Space.Flood.Origin.Y>-400&&!Craft->FloodExitReady());
+    if(!Walk(W,FVector(9150,0,0))) return false;
     if(!Walk(W,FVector(9500,0,0))||!Walk(W,FVector(9500,-600,0))) return false;
     W.Test.TestTrue(TEXT("Actual movement crosses the half-open gate"),Craft->FloodExitReady());
-    if(!Walk(W,FVector(9500,-3900,0))) return false;
-    W.Look(FRotator(0,-90,0));
+    // Ascend outside the exit's X bounds first. Completion cannot hide an
+    // unwalkable join, a floating body or guides stranded below the bank.
+    if(!Walk(W,FVector(9200,-3900,0))||!Walk(W,FVector(9200,-4550,0))) return false;
+    const FVector O(W.BeatData().Space.Flood.Origin,0);
+    if(!W.Test.TestTrue(TEXT("Normal movement reaches the supported outer bank before entering the exit"),
+        W.Campaign()->ActiveBeat()==13&&OnBank(*W.Hero(),O))) return false;
+    ASoraCompanion* Carrier=nullptr;ASoraCompanion* Iota=nullptr;
+    for(const auto& Ally:Craft->AlliesInPlay()) if(IsValid(Ally))
+    {
+        if(Ally->CompanionId()==TEXT("npc_toranosuke")) Carrier=Ally;
+        if(Ally->CompanionId()==TEXT("npc_iota")) Iota=Ally;
+    }
+    if(!W.Test.TestNotNull(TEXT("Toranosuke remains in play"),Carrier)||!W.Test.TestNotNull(TEXT("Iota remains in play"),Iota)) return false;
+    for(int32 Frame=0;Frame<600&&!OnBank(*Carrier,O);++Frame) if(!W.Tick(1)) return false;
+    if(!W.Test.TestTrue(TEXT("The carrier walks onto bank support with Iota still attached"),
+        OnBank(*Carrier,O)&&Iota->GetAttachParentActor()==Carrier)) return false;
+    W.Test.TestEqual(TEXT("Both submerged legs, the moat and bank ascent incur no drowning damage"),Drowning,0.f);
+    if(!Walk(W,FVector(9200,-4300,0))) return false;
+    W.Look(FRotator::ZeroRotator);
     for(int32 I=0;I<500&&W.Campaign()->ActiveBeat()==13;++I)
         if(!W.World->InjectKey(EKeys::W,IE_Pressed)||!W.Tick(1)) return false;
     if(!W.World->InjectKey(EKeys::W,IE_Released)||!W.Tick(1)) return false;

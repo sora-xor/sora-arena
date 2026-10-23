@@ -39,9 +39,11 @@ void ASoraWorldBuilder::BuildFlood(const FSoraBeat& Beat)
     Box(TEXT("FloodWinch"),O+FVector(9820,-280,270),FVector(45,45,100),Iron,false);
     Slab(TEXT("FloodMoatFloor"),-100,-2200,-220,22000,3600,40);
     // Only the basin gate opens the north embankment; the exit is the south bank.
-    Slab(TEXT("FloodMoatNorthWest"),-1250,-390,100,19700,40,400);
+    Slab(TEXT("FloodMoatNorthWest"),-900,-390,100,20400,40,400);
     Slab(TEXT("FloodMoatNorthEast"),10300,-390,100,1200,40,400);
     Slab(TEXT("FloodOuterBank"),8900,-4450,175,4000,500,50);
-    Slab(TEXT("FloodBankSlope"),8900,-3900,-10,4000,732.4f,30,FRotator(0,0,-34.992f));
+    const auto Ramp=SoraFloodRules::BankRamp();
+    Slab(TEXT("FloodBankSlope"),8900,Ramp.CenterY,Ramp.CenterZ,4000,Ramp.Length,
+        SoraFloodRules::BankRampThickness,FRotator(0,0,Ramp.RollDegrees));
     // The lamp boat is a moving, collidable fieldcraft component.
 }

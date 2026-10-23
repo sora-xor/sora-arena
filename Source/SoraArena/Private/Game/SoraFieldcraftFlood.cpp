@@ -201,6 +201,25 @@ bool USoraFieldcraft::MoveFloodCompanion(ASoraCompanion& Companion,float Dt)
     if(Companion.GetAttachParentActor()) return true;
     const FVector O(FloodSpace->Origin,0),P=Companion.GetActorLocation()-O,H=Hero()->GetActorLocation()-O;
     auto* Move=Companion.GetCharacterMovement();
+    const auto BankSupport=[&](const FVector& Local,FHitResult& Hit)
+    {
+        if(Local.Y>Flood::BankWaterY) return false;
+        FCollisionQueryParams Query(SCENE_QUERY_STAT(SoraFloodBank),false,&Companion);
+        Query.AddIgnoredActor(Hero());
+        for(const auto& Ally:Allies) if(IsValid(Ally)) Query.AddIgnoredActor(Ally);
+        return GetWorld()->LineTraceSingleByChannel(Hit,O+FVector(Local.X,Local.Y,1000),
+            O+FVector(Local.X,Local.Y,-1000),ECC_WorldStatic,Query)&&Hit.ImpactNormal.Z>=Move->GetWalkableFloorZ();
+    };
+    FHitResult Underfoot;
+    const float Feet=P.Z-Companion.GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+    if(P.Y<Flood::BankEdgeY-Companion.GetCapsuleComponent()->GetScaledCapsuleRadius()&&
+        BankSupport(P,Underfoot)&&FMath::Abs(Underfoot.ImpactPoint.Z-Flood::BankTop)<1.f&&
+        FMath::Abs(Feet-Flood::BankTop)<8.f)
+    {
+        // Back on the bank, ordinary guide walking owns gravity and support.
+        Move->GravityScale=1; Move->SetMovementMode(MOVE_Walking);
+        return false;
+    }
     Move->GetNavAgentPropertiesRef().bCanCrouch=true; Move->SetCrouchedHalfHeight(44);
     const bool Deep=P.X>=7250&&P.X<=9034;
     if(Deep) Companion.Crouch(); else Companion.UnCrouch();
@@ -212,6 +231,8 @@ bool USoraFieldcraft::MoveFloodCompanion(ASoraCompanion& Companion,float Dt)
     const float Water=Flood::Surface(FloodClockMs);
     Goal.Z=Deep?FMath::Max(-200+Half+3,FMath::Min(Water-140.f,20-Half-8)):
         P.X<7300?FMath::Max(Half+3,Water-52.f):Water-52.f;
+    FHitResult Support;
+    if(BankSupport(Goal,Support)) Goal.Z=FMath::Max(Goal.Z,Support.ImpactPoint.Z+Half+3.f);
     FVector Delta=Goal-P;
     if(Delta.Size2D()<90) Delta.X=Delta.Y=0;
     const FVector Step=Delta.GetClampedToMaxSize(240.f*Dt);
