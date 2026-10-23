@@ -65,15 +65,19 @@ inline bool ToGate(FSoraAutomationWorld& W,bool Pad=false)
         Swim(W,O+FVector(13450,200,-150))&&Posture(W,false,Pad)&&Recover(W)&&
         Swim(W,O+FVector(20800,200,0))&&Swim(W,O+FVector(20800,3400,0));
 }
-inline bool Exit(FSoraAutomationWorld& W,bool Pad=false)
+inline bool ThroughGate(FSoraAutomationWorld& W,bool Pad=false)
 {
     auto* D=W.Mode()->Campaign();const int32 B=D->ActiveBeat();
     const FVector O(D->ActiveBeatData()->Space.Moat.Origin,0);
-    Sample(W,TEXT("exit helper entry"));
-    if(!ToGate(W,Pad)||!Recover(W)||!Posture(W,true,Pad)||!Swim(W,O+FVector(20800,3800,-150),true))return false;
+    if(!Recover(W)||!Posture(W,true,Pad)||!Swim(W,O+FVector(20800,3800,-150),true))return false;
     return D->ActiveBeat()==B+1&&(D->Progress().CompletedMask&SoraBeatRules::BeatBit(B))!=0u&&
         W.Player()->GetCapsuleComponent()->GetUnscaledCapsuleRadius()==34&&
         W.Player()->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight()==88;
+}
+inline bool Exit(FSoraAutomationWorld& W,bool Pad=false)
+{
+    Sample(W,TEXT("exit helper entry"));
+    return ToGate(W,Pad)&&ThroughGate(W,Pad);
 }
 }
 #endif
