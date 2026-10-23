@@ -69,7 +69,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraRidgeWindTest,"SoraArena.Campaign.RidgeWin
  EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
 bool FSoraRidgeWindTest::RunTest(const FString& Parameters)
 {
-    (void)Parameters;using namespace SoraWindAutomation;
+    (void)Parameters;
     if(!FSoraCatalog::Get().Load()) return false;
     const auto Actions=GetDefault<UInputSettings>()->GetActionMappings();
     const auto Axes=GetDefault<UInputSettings>()->GetAxisMappings();FString Control;
@@ -77,9 +77,9 @@ bool FSoraRidgeWindTest::RunTest(const FString& Parameters)
         TestTrue(TEXT("Global axes restored"),Axes==GetDefault<UInputSettings>()->GetAxisMappings());
         if(!Control.IsEmpty()) TestFalse(TEXT("Isolated remapping profile removed"),UGameplayStatics::DoesSaveGameExist(Control,0)); };
     SoraFieldcraftAutomation::FBeatWorld W(*this,TEXT("RidgeWind"),6,9);Control=FSoraAutomationWorld::ControlSlot(W.Slot);
-    if(!Ready(W)) return false;
+    if(!SoraWindAutomation::Ready(W)) return false;
     auto* C=W.Campaign();auto* H=W.Hero();const FVector O(W.BeatData().Space.Wind.Origin,0);
-    if(!Stand(W,500,-200)) return false;
+    if(!SoraWindAutomation::Stand(W,500,-200)) return false;
     double Y=H->GetActorLocation().Y;
     if(!W.Tick(60)) return false;
     TestTrue(TEXT("Exposed standing hero moves 120 cm per second"),FMath::Abs(H->GetActorLocation().Y-Y-120)<3);
@@ -96,7 +96,7 @@ bool FSoraRidgeWindTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("Rooted hero is not displaced by external wind"),Effects->IsRooted(H)&&FVector::Dist(H->GetActorLocation(),Netted)<3);
     if(!W.Tick(40)) return false;
     TestFalse(TEXT("Existing net root expires normally"),Effects->IsRooted(H));
-    if(!W.Press(EKeys::C)||!Stand(W,700,-300)) return false;
+    if(!W.Press(EKeys::C)||!SoraWindAutomation::Stand(W,700,-300)) return false;
     W.LookAt(O+FVector(700,-400,SoraRidgeRules::Height(700,400)+90));
     if(!TestTrue(TEXT("Actual cable is grounded and visible"),W.Mode()->Arena()->ReachRidgeCable(*H)!=INDEX_NONE)||
        !W.World->InjectKey(EKeys::E,IE_Pressed)||!W.Tick(3)||!TestTrue(TEXT("Mapped held Interact braces"),C->IsWindBraced())) return false;
@@ -110,22 +110,22 @@ bool FSoraRidgeWindTest::RunTest(const FString& Parameters)
     if(!H->RemapCombatAction(TEXT("Interact"),EKeys::G)) return false;
     W.Mode()->ResumePlay();if(!W.Tick(2)||!W.Press(EKeys::E)) return false;
     TestFalse(TEXT("Old key cannot brace after remapping"),C->IsWindBraced());
-    if(!Stand(W,700,-300)) return false;W.LookAt(O+FVector(700,-400,SoraRidgeRules::Height(700,400)+90));
+    if(!SoraWindAutomation::Stand(W,700,-300)) return false;W.LookAt(O+FVector(700,-400,SoraRidgeRules::Height(700,400)+90));
     if(!W.World->InjectKey(EKeys::G,IE_Pressed)||!W.Tick(2)||!TestTrue(TEXT("New mapped key braces"),C->IsWindBraced())||
         !W.World->InjectKey(EKeys::G,IE_Released)||!W.Tick(1)) return false;
     TestFalse(TEXT("Release clears brace without delayed ticks"),C->IsWindBraced());
     // All three missing downwind cable runs must refuse the real action.
     for(int X:{5000,10000,14000})
     {
-        if(!Stand(W,X,300)||!W.Press(EKeys::G)) return false;
+        if(!SoraWindAutomation::Stand(W,X,300)||!W.Press(EKeys::G)) return false;
         TestFalse(FString::Printf(TEXT("Cable gap %d cannot brace"),X),C->IsWindBraced());
     }
-    if(!W.Press(EKeys::C)||!Stand(W,1225,500)||!TestTrue(TEXT("Crouched rib creates actual downstream lee"),C->InWindLee())) return false;
+    if(!W.Press(EKeys::C)||!SoraWindAutomation::Stand(W,1225,500)||!TestTrue(TEXT("Crouched rib creates actual downstream lee"),C->InWindLee())) return false;
     Y=H->GetActorLocation().Y;if(!W.Tick(60)) return false;
     TestTrue(TEXT("Crouched rib lee stops external wind"),FMath::Abs(H->GetActorLocation().Y-Y)<3);
     if(!W.Press(EKeys::C)||!W.Tick(4)) return false;
     TestFalse(TEXT("Rib lee does not grant standing shelter"),C->InWindLee());
-    if(!Stand(W,3100,0)||!W.Tick(3)||!TestTrue(TEXT("Sensor fin provides actual traced lee"),C->InWindLee())) return false;
+    if(!SoraWindAutomation::Stand(W,3100,0)||!W.Tick(3)||!TestTrue(TEXT("Sensor fin provides actual traced lee"),C->InWindLee())) return false;
     Y=H->GetActorLocation().Y;if(!W.Tick(120)) return false;
     TestTrue(TEXT("Full lee removes standing external push"),FMath::Abs(H->GetActorLocation().Y-Y)<3);
     // Read the production schedule through ordinary ticks, including its
@@ -143,7 +143,7 @@ bool FSoraRidgeWindTest::RunTest(const FString& Parameters)
     if(!W.Tick(150)) return false;
     TestTrue(TEXT("Gust expires after its 2.5-second hold"),C->ProjectileWind(O+FVector(1000,0,200),true,18)==FVector(0,280,0));
     C->SaveProgress();
-    if(!Reload(W)) return false;
+    if(!SoraWindAutomation::Reload(W)) return false;
     TestFalse(TEXT("Fresh-world checkpoint never restores a held brace"),W.Campaign()->IsWindBraced());
     TestTrue(TEXT("Fresh checkpoint starts a new deterministic wind cycle"),W.Campaign()->WindClockMs()<1000);
     TestEqual(TEXT("Checkpoint retry grants its own three fall recoveries"),W.Campaign()->RidgeRecoveries(),0);
@@ -154,10 +154,10 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraRidgeTraversalTest,"SoraArena.Campaign.Rid
  EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
 bool FSoraRidgeTraversalTest::RunTest(const FString& Parameters)
 {
-    (void)Parameters;using namespace SoraWindAutomation;
+    (void)Parameters;
     if(!FSoraCatalog::Get().Load()) return false;
     SoraFieldcraftAutomation::FBeatWorld W(*this,TEXT("RidgeTraversal"),6,9);
-    if(!Ready(W)) return false;
+    if(!SoraWindAutomation::Ready(W)) return false;
     const auto Space=W.BeatData().Space;const FVector O(Space.Wind.Origin,0);
     // World geometry itself, not just the source dimensions, must retain
     // the complete crown and slope and expose real void at each lip.
@@ -180,13 +180,13 @@ bool FSoraRidgeTraversalTest::RunTest(const FString& Parameters)
     for(int X:{5900,11900,17750})
     {
         if(!SoraRidgeAutomation::Walk(*W.World,Space,X,*this,true)) return false;
-        Freeze(W);
+        SoraWindAutomation::Freeze(W);
     }
     TestTrue(TEXT("All three wave triggers require the actual ridge route"),(W.Campaign()->TaskProgress().Released&7u)==7u);
     TestEqual(TEXT("Arrival alone does not bypass the drone encounter"),W.Campaign()->ActiveBeat(),9);
     // A real held brace sets a non-default anchor before the fall cases.
     // This distinguishes last-anchor recovery from always returning to X0.
-    if(!Stand(W,6500,-300)) return false;
+    if(!SoraWindAutomation::Stand(W,6500,-300)) return false;
     W.LookAt(O+FVector(6500,-400,SoraRidgeRules::Height(6500,400)+90));
     if(!W.World->InjectKey(EKeys::E,IE_Pressed)||!W.Tick(2)||
         !TestTrue(TEXT("Mapped brace remembers a non-entry anchor"),W.Campaign()->IsWindBraced()&&W.Campaign()->RidgeLastAnchor()>0)||
@@ -195,7 +195,7 @@ bool FSoraRidgeTraversalTest::RunTest(const FString& Parameters)
     // a supported setup; every fall below follows real held W input.
     for(int N=0;N<4;++N)
     {
-        if(!Stand(W,700,600)) return false;
+        if(!SoraWindAutomation::Stand(W,700,600)) return false;
         const double Before=W.Hero()->Health;
         if(!W.Tick(180)||!TestTrue(TEXT("Wind alone cannot move a capsule off the lip"),W.Hero()->GetCharacterMovement()->IsMovingOnGround())) return false;
         W.Look(FRotator(0,90,0));if(!W.World->InjectKey(EKeys::W,IE_Pressed)) return false;
@@ -209,7 +209,7 @@ bool FSoraRidgeTraversalTest::RunTest(const FString& Parameters)
         }
         else TestTrue(TEXT("Fourth deliberate fall requests checkpoint retry"),W.Mode()->bDefeated);
     }
-    if(!WaitOnDefeatAndRetry(W,9)) return false;
+    if(!SoraWindAutomation::WaitOnDefeatAndRetry(W,9)) return false;
     TestEqual(TEXT("Actual retry restarts b10"),W.Campaign()->ActiveBeat(),9);
     TestEqual(TEXT("Retry resets its bounded recovery allowance"),W.Campaign()->RidgeRecoveries(),0);
     return !HasAnyErrors();
@@ -219,10 +219,10 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraHangarFallsTest,"SoraArena.Campaign.Hangar
  EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
 bool FSoraHangarFallsTest::RunTest(const FString& Parameters)
 {
-    (void)Parameters;using namespace SoraWindAutomation;
+    (void)Parameters;
     if(!FSoraCatalog::Get().Load()) return false;
     SoraFieldcraftAutomation::FBeatWorld W(*this,TEXT("HangarFalls"),6,7);
-    if(!Ready(W)) return false;
+    if(!SoraWindAutomation::Ready(W)) return false;
     const FVector O(W.BeatData().Space.Wind.Origin,0);
     for(bool Jump:{false,true})
     {
@@ -253,7 +253,7 @@ bool FSoraHangarFallsTest::RunTest(const FString& Parameters)
         if(!W.World->InjectKey(EKeys::W,IE_Released)) return false;
         TestTrue(Jump?TEXT("A deliberate jump exits real hangar collision"):TEXT("A deliberate walk exits real hangar collision"),CrossedMouth);
         TestEqual(TEXT("A hangar fall never spends or grants a ridge cable recovery"),W.Campaign()->RidgeRecoveries(),0);
-        if(!WaitOnDefeatAndRetry(W,7)) return false;
+        if(!SoraWindAutomation::WaitOnDefeatAndRetry(W,7)) return false;
         TestTrue(TEXT("Retry returns to the hangar checkpoint entry"),
             FVector::Dist2D(W.Hero()->GetActorLocation(),FVector(W.BeatData().Space.Entry,0))<100);
     }
@@ -264,17 +264,17 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraHangarSpawnClearanceTest,"SoraArena.Campai
  EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
 bool FSoraHangarSpawnClearanceTest::RunTest(const FString& Parameters)
 {
-    (void)Parameters;using namespace SoraWindAutomation;
+    (void)Parameters;
     if(!FSoraCatalog::Get().Load()) return false;
     SoraFieldcraftAutomation::FBeatWorld W(*this,TEXT("HangarSpawnClearance"),6,7);
-    if(!Ready(W)) return false;
+    if(!SoraWindAutomation::Ready(W)) return false;
     const FVector O(W.BeatData().Space.Wind.Origin,0);
     TSet<int32> Checked;int Rifles=0;
     // Isolate layout and the real wave queue: production damage defeats one
     // frozen opponent at a time. This is not an ordinary-combat acceptance.
     for(int Pass=0;Pass<12&&W.Campaign()->ActiveBeat()==7;++Pass)
     {
-        Freeze(W);ASoraEnemy* Next=nullptr;
+        SoraWindAutomation::Freeze(W);ASoraEnemy* Next=nullptr;
         for(TActorIterator<ASoraEnemy> It(W.World->GetTestWorld());It;++It)
         {
             if(!It->IsAlive()) continue;
@@ -303,7 +303,7 @@ bool FSoraHangarSpawnClearanceTest::RunTest(const FString& Parameters)
         }
         if(!TestNotNull(TEXT("The real wave queue supplies its next opponent"),Next)) return false;
         UGameplayStatics::ApplyDamage(Next,100000.f,W.Hero()->GetController(),W.Hero(),UDamageType::StaticClass());
-        Freeze(W);if(!W.Tick(1)) return false;
+        SoraWindAutomation::Freeze(W);if(!W.Tick(1)) return false;
     }
     TestEqual(TEXT("All eleven authored hangar wave members receive collision checks"),Checked.Num(),11);
     TestEqual(TEXT("Both waves contain the same five authored rifles"),Rifles,5);
@@ -314,15 +314,15 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraWindProjectilesTest,"SoraArena.Campaign.Wi
  EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
 bool FSoraWindProjectilesTest::RunTest(const FString& Parameters)
 {
-    (void)Parameters;using namespace SoraWindAutomation;
+    (void)Parameters;
     if(!FSoraCatalog::Get().Load()) return false;
     for(int Beat:{7,9})
     {
         SoraFieldcraftAutomation::FBeatWorld W(*this,Beat==7?TEXT("HangarDrift"):TEXT("RidgeDrift"),6,Beat);
-        if(!Ready(W)) return false;
+        if(!SoraWindAutomation::Ready(W)) return false;
         const bool Ridge=Beat==9;const FVector O(W.BeatData().Space.Wind.Origin,0);
         const double X=Ridge?500:2200,Y=Ridge?-100:4000;
-        if(!Stand(W,X,Y)) return false;
+        if(!SoraWindAutomation::Stand(W,X,Y)) return false;
         if(!Ridge)
         {
             const double Before=W.Hero()->GetActorLocation().Y;
@@ -336,7 +336,7 @@ bool FSoraWindProjectilesTest::RunTest(const FString& Parameters)
         }
         for(int Weapon:{18,7})
         {
-            if(!Stand(W,X,Y)||!W.World->TakeUpArm(Weapon)||!W.Tick(45)) return false;
+            if(!SoraWindAutomation::Stand(W,X,Y)||!W.World->TakeUpArm(Weapon)||!W.Tick(45)) return false;
             W.Look(FRotator(25,0,0));
             if(!W.World->InjectKey(EKeys::LeftMouseButton,IE_Pressed)) return false;
             if(Weapon==18)
@@ -368,7 +368,7 @@ bool FSoraWindProjectilesTest::RunTest(const FString& Parameters)
         }
         // The actual hitscan event retains its camera ray; the wind service
         // is never invoked by the beam implementation.
-        if(!Stand(W,X,Y)||!W.World->TakeUpArm(1)||!W.Tick(45)) return false;
+        if(!SoraWindAutomation::Stand(W,X,Y)||!W.World->TakeUpArm(1)||!W.Tick(45)) return false;
         W.Look(FRotator(25,0,0));
         FSoraWeaponFiredEvent Beam;bool Fired=false;
         auto* Events=USoraGameEvents::Get(W.Hero());
@@ -383,7 +383,7 @@ bool FSoraWindProjectilesTest::RunTest(const FString& Parameters)
         {
             // A live grenadier's ordinary brain/attack spawns the enemy
             // shell; no synthetic velocity or direct detonation fixture.
-            if(!Stand(W,2200,3700)) return false;
+            if(!SoraWindAutomation::Stand(W,2200,3700)) return false;
             auto* Grenadier=ASoraEnemy::SpawnArchetype(*W.World->GetTestWorld(),TEXT("grenadier"),99,O+FVector(4000,4100,120),FRotator(0,180,0));
             if(!TestNotNull(TEXT("Ordinary enemy grenadier spawns"),Grenadier)) return false;
             ASoraProjectile* Shell=nullptr;
@@ -411,10 +411,10 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraRidgeDroneWindTest,"SoraArena.Campaign.Rid
  EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
 bool FSoraRidgeDroneWindTest::RunTest(const FString& Parameters)
 {
-    (void)Parameters;using namespace SoraWindAutomation;
+    (void)Parameters;
     if(!FSoraCatalog::Get().Load()) return false;
     SoraFieldcraftAutomation::FBeatWorld W(*this,TEXT("RidgeDroneWind"),6,9);
-    if(!Ready(W)||!Stand(W,500,-200)) return false;
+    if(!SoraWindAutomation::Ready(W)||!SoraWindAutomation::Stand(W,500,-200)) return false;
     auto* C=W.Campaign();auto* H=W.Hero();auto* Effects=USoraCombatEffects::Get(H);
     const FVector O(W.BeatData().Space.Wind.Origin,0);
     ASoraEnemy* Drone=nullptr;
@@ -441,7 +441,7 @@ bool FSoraRidgeDroneWindTest::RunTest(const FString& Parameters)
     // At the first gust the prior net has fully recovered. Begin another
     // real 800 ms windup shortly before onset and observe its interruption.
     while(C->WindClockMs()<10400) if(!W.Tick(1)) return false;
-    if(!Stand(W,500,-200)) return false;
+    if(!SoraWindAutomation::Stand(W,500,-200)) return false;
     Drone->SetActorRotation(FRotator(0,(H->GetActorLocation()-Drone->GetActorLocation()).Rotation().Yaw,0));
     if(!TestTrue(TEXT("Drone is aiming before gust onset"),Drone->TryAttack(*H,FVector::Dist2D(H->GetActorLocation(),Drone->GetActorLocation()))&&Drone->IsWindingUp())) return false;
     while(C->WindClockMs()<11000) if(!W.Tick(1)) return false;

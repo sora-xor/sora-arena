@@ -14,7 +14,7 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 
-namespace
+namespace SoraFloodTest
 {
 using FWorld=SoraFieldcraftAutomation::FBeatWorld;
 bool Walk(FWorld& W,const FVector& Local)
@@ -137,29 +137,29 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraFloodTraversalTest,"SoraArena.Campaign.Flo
 bool FSoraFloodTraversalTest::RunTest(const FString&)
 {
     if(!TestTrue(TEXT("Catalog loads"),FSoraCatalog::Get().Load())) return false;
-    FWorld W(*this,TEXT("FloodTraversal"),5,13);
+    SoraFloodTest::FWorld W(*this,TEXT("FloodTraversal"),5,13);
     if(!W.Start()||!W.Tick(30)||!W.Press(EKeys::Escape)||!W.Hero()->RemapCombatAction(TEXT("Crouch"),EKeys::G)||!W.Press(EKeys::Escape)) return false;
     if(!W.Press(EKeys::C)) return false;
     TestFalse(TEXT("The old crouch key cannot substitute for the rebound dive"),W.Hero()->GetCharacterMovement()->bWantsToCrouch);
-    return Cross(W,EKeys::G,false)&&!HasAnyErrors();
+    return SoraFloodTest::Cross(W,EKeys::G,false)&&!HasAnyErrors();
 }
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraFloodLateWaterTest,"SoraArena.Campaign.FloodLateWater",
     EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
 bool FSoraFloodLateWaterTest::RunTest(const FString&)
 {
     if(!TestTrue(TEXT("Catalog loads"),FSoraCatalog::Get().Load())) return false;
-    FWorld W(*this,TEXT("FloodLateWater"),5,13);
-    return W.Start()&&W.Tick(30)&&Cross(W,EKeys::Gamepad_RightThumbstick,true)&&!HasAnyErrors();
+    SoraFloodTest::FWorld W(*this,TEXT("FloodLateWater"),5,13);
+    return W.Start()&&W.Tick(30)&&SoraFloodTest::Cross(W,EKeys::Gamepad_RightThumbstick,true)&&!HasAnyErrors();
 }
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraFloodRetryTest,"SoraArena.Campaign.FloodRetryReload",
     EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
 bool FSoraFloodRetryTest::RunTest(const FString&)
 {
     if(!TestTrue(TEXT("Catalog loads"),FSoraCatalog::Get().Load())) return false;
-    FWorld W(*this,TEXT("FloodRetryReload"),5,13);
+    SoraFloodTest::FWorld W(*this,TEXT("FloodRetryReload"),5,13);
     if(!W.Start()||!W.Tick(30)) return false;
     W.Harden();
-    if(!Walk(W,FVector(7400,0,0))||!W.Press(EKeys::C)||!Walk(W,FVector(7800,0,0))) return false;
+    if(!SoraFloodTest::Walk(W,FVector(7400,0,0))||!W.Press(EKeys::C)||!SoraFloodTest::Walk(W,FVector(7800,0,0))) return false;
     const float Before=W.Fieldcraft()->Readout(*W.Hero()).Breath;
     if(!W.Press(EKeys::C)||!W.Tick(12)) return false;
     TestTrue(TEXT("An uncrouch wish under stone cannot create air"),W.Fieldcraft()->IsDiving()&&W.Fieldcraft()->Readout(*W.Hero()).Breath<Before);
@@ -168,7 +168,7 @@ bool FSoraFloodRetryTest::RunTest(const FString&)
     TestTrue(TEXT("Death retry resets water and traversal"),W.Fieldcraft()->FloodElapsedMs()<1000&&W.Fieldcraft()->FloodPassageStage()==0);
     TestFalse(TEXT("Death retry releases Iota and swimming mode"),W.Fieldcraft()->FloodCarriesIota()||W.Fieldcraft()->Readout(*W.Hero()).bSwimming);
     TestTrue(TEXT("Death retry restores normal gravity"),W.Hero()->GetCharacterMovement()->GravityScale>0);
-    if(!W.Tick(300)||!Reload(W)) return false;
+    if(!W.Tick(300)||!SoraFloodTest::Reload(W)) return false;
     TestTrue(TEXT("Fresh save load starts the authored checkpoint, not partial water progress"),
         W.Campaign()->ActiveBeat()==13&&W.Fieldcraft()->FloodElapsedMs()<1000&&W.Fieldcraft()->FloodPassageStage()==0);
     // Negative test only: a teleport directly to the bank cannot manufacture
@@ -184,15 +184,15 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraFloodSensesTest,"SoraArena.Campaign.FloodS
 bool FSoraFloodSensesTest::RunTest(const FString&)
 {
     if(!TestTrue(TEXT("Catalog loads"),FSoraCatalog::Get().Load())) return false;
-    FWorld W(*this,TEXT("FloodSenses"),5,13);
+    SoraFloodTest::FWorld W(*this,TEXT("FloodSenses"),5,13);
     if(!W.Start()||!W.Tick(30)) return false;
     W.Harden();
-    if(!Walk(W,FVector(1700,0,0))) return false;
+    if(!SoraFloodTest::Walk(W,FVector(1700,0,0))) return false;
     bool HeardWithoutSight=false;
     for(TActorIterator<ASoraEnemyController> It(W.World->GetTestWorld());It;++It)
         HeardWithoutSight|=It->IsGuard()&&It->AwarenessPermille()>0&&!It->CanSee(*W.Hero());
     TestTrue(TEXT("Actual wading alerts a guard through sound while the stone roof occludes sight"),HeardWithoutSight);
-    if(!Walk(W,FVector(2000,0,0))||!W.Tick(100)) return false;
+    if(!SoraFloodTest::Walk(W,FVector(2000,0,0))||!W.Tick(100)) return false;
     TestTrue(TEXT("Standing in a grate's lamp raises the production alert event"),W.Raised(TEXT("ai_event:searchlight_alert")));
     if(!W.Tick(9100)||!W.Press(EKeys::Gamepad_RightThumbstick)||!W.Tick(60)) return false;
     TestTrue(TEXT("The real camera dives below the risen water"),W.Fieldcraft()->IsDiving());

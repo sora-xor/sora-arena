@@ -18,10 +18,10 @@ inline FBankRamp BankRamp()
     // UE positive roll maps local +Y toward -Z. Offset the solid down its
     // normal so its TOP, not its centre plane, meets both adjoining floors.
     const double Run=BankWaterY-BankEdgeY,Rise=BankTop-DeepFloor;
-    const double Length=std::sqrt(Run*Run+Rise*Rise);
-    return {(BankWaterY+BankEdgeY)*.5-BankRampThickness*.5*Rise/Length,
-        (DeepFloor+BankTop)*.5-BankRampThickness*.5*Run/Length,
-        Length,std::atan2(Rise,Run)*180.0/std::acos(-1.0)};
+    const double SlopeLength=std::sqrt(Run*Run+Rise*Rise);
+    return {(BankWaterY+BankEdgeY)*.5-BankRampThickness*.5*Rise/SlopeLength,
+        (DeepFloor+BankTop)*.5-BankRampThickness*.5*Run/SlopeLength,
+        SlopeLength,std::atan2(Rise,Run)*180.0/std::acos(-1.0)};
 }
 constexpr int Clamp(int V,int Lo,int Hi) { return V<Lo?Lo:V>Hi?Hi:V; }
 constexpr int Surface(int ClockMs) { return FromCm+(ToCm-FromCm)*static_cast<long long>(Clamp(ClockMs,0,RiseMs))/RiseMs; }
