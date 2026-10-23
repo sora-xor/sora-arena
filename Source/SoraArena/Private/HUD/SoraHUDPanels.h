@@ -72,6 +72,8 @@ TArray<FBox2D> BossLayoutObstacles(const FSoraHUDFrame& Frame);
 void DrawStealth(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
 TArray<FBox2D> StealthPanelBounds(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
 void DrawHero(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
+// The same projected crosshair, maai ring and nearby combat hints DrawHero uses.
+TArray<FBox2D> ReticlePanelBounds(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
 void DrawWeapon(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
 // Capture checks the same measured weapon layout that the live HUD draws.
 bool WeaponLayoutFits(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero, FString& Why);

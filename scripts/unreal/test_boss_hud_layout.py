@@ -112,7 +112,8 @@ class BossHUDLayoutTests(unittest.TestCase):
             # Busy top and bottom HUD, leaving the fight's center for complete
             # active tells. Lower-story/caption pressure has its own exact case.
             blocks=[(20*s,87*s,850*s,150*s),(w-20*s-max(435*s,540),87*s,max(435*s,540),230*s),
-                    (25*s,h-110*s,340*s,80*s),(w-390*s,h-280*s,365*s,250*s)]
+                    (25*s,h-110*s,340*s,80*s),(w-390*s,h-280*s,365*s,250*s),
+                    (w*.5-10.75,h*.5-10.75,21.5,21.5)]
             regions=self.regions(w,h,blocks)
             for boss in BOSSES:
                 for attack,hint in [(None,None)]+[(a,None) for a in boss['attacks']]+[(boss['attacks'][0],hint) for hint in (MUTO,MAROBASHI)]:
@@ -137,9 +138,9 @@ class BossHUDLayoutTests(unittest.TestCase):
         self.assertIn('if(!BossLayoutFits(F,Why)) return false;',story)
         builders=story[:story.index('void DrawUpperStory(')]
         self.assertNotIn('UpperGameplayPanelBounds',builders)
-        self.assertEqual(builders.count('FixedGameplayPanelBounds(F)'),5)
+        self.assertEqual(builders.count('FixedGameplayPanelBounds(F)'),6)
         obstacles=story[story.index('TArray<FBox2D> SoraHUDPanels::BossLayoutObstacles'):story.index('bool SoraHUDPanels::StoryNoticeTitleVisible')]
-        for token in ('FixedGameplayPanelBounds','UpperStoryPanelBounds','BuildLowerStoryLayout','RhythmPanelBounds','AimWindow','WeaponPanelBounds'):
+        for token in ('FixedGameplayPanelBounds','UpperStoryPanelBounds','BuildLowerStoryLayout','RhythmPanelBounds','AimWindow','WeaponPanelBounds','ReticlePanelBounds'):
             self.assertIn(token,obstacles)
         self.assertNotIn('UpperGameplayPanelBounds',obstacles)
         for capture in ('SoraBowAimCapture.cpp','SoraCargoCapture.cpp'):
@@ -151,11 +152,11 @@ class BossHUDLayoutTests(unittest.TestCase):
         self.assertIn('OnReticleDrawn.AddLambda',save)
         self.assertIn('OnScreenshotRequestProcessed().AddLambda',save)
         self.assertIn('!HUD->bShowHUD||!M->GetWorld()->IsPaused()',save)
-        self.assertIn('Current->BossRequestFrame==GFrameCounter',save)
-        self.assertIn('GetTimeSeconds()==Current->BossPausedWorld',save)
-        self.assertIn('double BossPausedWorld',campaign)
-        self.assertNotIn('float BossPausedWorld',campaign)
-        self.assertIn('Queue([Session]() { Session->CloseBossFrameGuard(); });',save)
+        self.assertIn('SoraCaptureFrameRules::Processed(State,Current->GameplayRequestFrame,GFrameCounter',save)
+        self.assertIn('GetTimeSeconds(),Current->GameplayPausedWorld',save)
+        self.assertIn('double GameplayPausedWorld',campaign)
+        self.assertNotIn('float GameplayPausedWorld',campaign)
+        self.assertIn('Queue([Session]() { Session->CloseGameplayFrameGuard(); });',save)
         association=campaign[campaign.index('SaveFrame(Test, Session, Shot.Name);'):campaign.index('// ---- Practice ----')]
         self.assertLess(association.index('if(!Session->bFrameWritten||Session->bFrameLayoutRejected)'),association.index('TEXT("SORA_CAPTURE %s'))
         self.assertIn('SORA_CAPTURE_REJECTED',association)

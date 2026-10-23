@@ -414,6 +414,7 @@ struct FUpperStoryText
     float Scale=0;
     FLinearColor Color;
     bool bInkBounds=false;
+    bool bEnglish=false;
 };
 struct FUpperStoryRow
 {
@@ -423,6 +424,7 @@ struct FUpperStoryRow
     FLinearColor Color;
     int32 Target=INDEX_NONE;
     bool bCompact=false;
+    FString Japanese,English;
 };
 struct FUpperStoryPanel
 {
@@ -446,6 +448,7 @@ FUpperStoryRow MeasureUpperStoryRow(const FSoraHUDFrame& F,const FTrackerRow& So
 {
     FUpperStoryRow Row;
     Row.Fraction=Source.Fraction; Row.Color=Source.Color; Row.Target=Source.Target;
+    Row.Japanese=Source.Japanese; if(F.Mode.bEnglishSubtitles) Row.English=Source.English;
     const auto* Captions=F.bSoundCaptions?USoraCaptions::Get(&F.Mode):nullptr;
     Row.bCompact=ForceCompact||(Captions&&!Captions->Live().IsEmpty());
     const float JapaneseScale=FMath::Max(.44f*F.S,.60f),EnglishScale=FMath::Max(.34f*F.S,.55f),Gap=10*F.S;
@@ -464,10 +467,10 @@ FUpperStoryRow MeasureUpperStoryRow(const FSoraHUDFrame& F,const FTrackerRow& So
         for(const auto& Line:English) EnglishLeading=FMath::Max(EnglishLeading,
             static_cast<float>(SoraHUDPanels::CaptionGlyphBounds(F,Line,EnglishScale).GetSize().Y)+3.f);
     }
-    const auto AddText=[&](const FString& Text,FVector2D At,float Scale,FLinearColor Color)
+    const auto AddText=[&](const FString& Text,FVector2D At,float Scale,FLinearColor Color,bool English=false)
     {
         if(Row.bCompact) At-=SoraHUDPanels::CaptionGlyphBounds(F,Text,Scale).Min;
-        Row.Text.Add({Text,At,Scale,Color,Row.bCompact});
+        Row.Text.Add({Text,At,Scale,Color,Row.bCompact,English});
     };
     const bool Inline=Japanese.Num()==1&&English.Num()==1&&
         F.HUD.LabelWidth(Source.Japanese,JapaneseScale)+Gap+F.HUD.LabelWidth(Source.English,EnglishScale)<=Width;
@@ -476,11 +479,11 @@ FUpperStoryRow MeasureUpperStoryRow(const FSoraHUDFrame& F,const FTrackerRow& So
     { AddText(Line,{X,Next},JapaneseScale,Source.Color); Next+=JapaneseLeading; }
     if(Inline)
     {
-        AddText(Source.English,{X+F.HUD.LabelWidth(Source.Japanese,JapaneseScale)+Gap,Y},EnglishScale,F.Muted);
+        AddText(Source.English,{X+F.HUD.LabelWidth(Source.Japanese,JapaneseScale)+Gap,Y},EnglishScale,F.Muted,true);
         Next=Y+FMath::Max(JapaneseLeading,EnglishLeading);
     }
     else for(const FString& Line:English)
-    { AddText(Line,{X,Next},EnglishScale,F.Muted); Next+=EnglishLeading; }
+    { AddText(Line,{X,Next},EnglishScale,F.Muted,true); Next+=EnglishLeading; }
     // Compact target bars occupy the trailing line gap with one clear pixel
     // above them. Other progress rows retain their separate bar space.
     if(Source.Fraction>=0&&!(Row.bCompact&&Row.Target!=INDEX_NONE)) Next+=Row.bCompact?4.f:9*F.S;
@@ -503,6 +506,7 @@ void ReserveCaptions(const FSoraHUDFrame& F,FUpperStoryLayout& L,float X,float W
         using namespace SoraCaptionLayoutRules;
         auto Occupied=SoraHUDPanels::FixedGameplayPanelBounds(F);
         Occupied.Add(AimWindow(F));
+        Occupied.Append(SoraHUDPanels::ReticlePanelBounds(F,*F.Mode.Hero()));
         Occupied.Append(SoraHUDPanels::WeaponPanelBounds(F,*F.Mode.Hero()));
         Occupied.Add(FBox2D({25*F.S,F.H-110*F.S},{365*F.S,F.H-30*F.S}));
         for(const auto& Panel:L.Panels) Occupied.Add(Panel.Bounds);
@@ -543,6 +547,7 @@ void ReserveCaptions(const FSoraHUDFrame& F,FUpperStoryLayout& L,float X,float W
     float Height=0;
     for(const auto& Panel:Captions) Height+=Panel.Bounds.GetSize().Y+Gap;
     auto Obstacles=SoraHUDPanels::FixedGameplayPanelBounds(F);
+    if(const auto* Hero=F.Mode.Hero()) Obstacles.Append(SoraHUDPanels::ReticlePanelBounds(F,*Hero));
     const auto Rhythm=RhythmPanelBounds(F);
     if(Rhythm.bIsValid) Obstacles.Add(Rhythm);
     bool Clear=true; float ProbeY=Top;
@@ -575,53 +580,27 @@ void ReserveCaptions(const FSoraHUDFrame& F,FUpperStoryLayout& L,float X,float W
         NextY+=Height;
         return;
     }
-    // Dense accessible HUD: preserve the tracker at the top right, then
+    // Dense accessible HUD: reserve the actual tracker wherever it fitted,
+    // including a relocated left or wide panel, then
     // search measured free columns beside/below the actual gameplay panels.
     // The wide lower region permits inline bilingual captions when narrow
     // columns would need extra lines. Panels in overlapping regions still
     // cannot overlap one another.
+    for(const auto& Panel:L.Panels) Obstacles.Add(Panel.Bounds);
     using namespace SoraCaptionLayoutRules;
-    const float Left=20*F.S,LeftRight=X-Gap,Right=F.W-20*F.S;
-    float LeftTop=Top,AllTop=Top,BesideRight=LeftRight,RightTop=NextY,AboveCenter=L.Limit,RightBottom=L.Limit;
-    for(const auto& Box:Obstacles)
-    {
-        AllTop=FMath::Max(AllTop,static_cast<float>(Box.Max.Y)+Gap);
-        if(Box.Min.X<Right&&Box.Max.X>X)
-        {
-            RightTop=FMath::Max(RightTop,static_cast<float>(Box.Max.Y)+Gap);
-            if(Box.Min.Y>NextY) RightBottom=FMath::Min(RightBottom,static_cast<float>(Box.Min.Y)-Gap);
-        }
-        if(Box.Min.X<LeftRight&&Box.Max.X>Left)
-        {
-            if(Box.Min.X<=Left+10*F.S) LeftTop=FMath::Max(LeftTop,static_cast<float>(Box.Max.Y)+Gap);
-            else
-            {
-                BesideRight=FMath::Min(BesideRight,static_cast<float>(Box.Min.X)-Gap);
-                AboveCenter=FMath::Min(AboveCenter,static_cast<float>(Box.Min.Y)-Gap);
-            }
-        }
-    }
-    FRect Regions[MaxRegions]; int32 Count=0;
-    const auto Region=[&](float RX,float RY,float RW,float Bottom)
-    { if(RW>=150.f&&Bottom>RY&&Count<MaxRegions) Regions[Count++]={RX,RY,RW,Bottom-RY}; };
-    Region(Left,LeftTop,BesideRight-Left,L.Limit);
-    if(AboveCenter<L.Limit) Region(Left,LeftTop,LeftRight-Left,AboveCenter);
-    if(AllTop>LeftTop) Region(Left,AllTop,LeftRight-Left,L.Limit);
-    if(RightBottom<L.Limit) Region(X,NextY,Width,RightBottom-NoticeReserve);
-    Region(X,RightTop,Width,L.Limit-NoticeReserve);
-    Region(Left,FMath::Max(AllTop,NextY),Right-Left,L.Limit-NoticeReserve);
-    // Full-width story panels end above the weapon stack. The open area
-    // beside that stack and above health is usable without moving dialogue,
-    // changing speaker alignment or covering any lower HUD information.
+    TArray<FRect> Blocks;
+    for(const auto& Box:Obstacles) Blocks.Add({static_cast<float>(Box.Min.X),static_cast<float>(Box.Min.Y),
+        static_cast<float>(Box.GetSize().X),static_cast<float>(Box.GetSize().Y)});
+    FOrdinaryCaptionRegionsInput Input{F.W,F.H,F.S,X,Width,NextY,L.Limit,NoticeReserve};
     if(const auto* Hero=F.Mode.Hero())
     {
-        float WeaponLeft=Right;
-        for(const auto& Box:SoraHUDPanels::WeaponPanelBounds(F,*Hero)) WeaponLeft=FMath::Min(WeaponLeft,static_cast<float>(Box.Min.X)-Gap);
-        const float BottomTop=BuildLowerStoryLayout(F).Bottom+Gap;
-        Region(Left,BottomTop,WeaponLeft-Left,F.H-110*F.S-Gap);
-        const float HealthRight=365*F.S+Gap;
-        Region(HealthRight,BottomTop,WeaponLeft-HealthRight,F.H-30*F.S);
+        Input.HasHero=true; Input.WeaponLeft=F.W-20*F.S;
+        for(const auto& Box:SoraHUDPanels::WeaponPanelBounds(F,*Hero))
+            Input.WeaponLeft=FMath::Min(Input.WeaponLeft,static_cast<float>(Box.Min.X)-Gap);
+        Input.BottomTop=BuildLowerStoryLayout(F).Bottom+Gap;
     }
+    const auto Available=OrdinaryCaptionRegions(Input,Blocks.GetData(),Blocks.Num());
+    const auto& Regions=Available.Bounds; const int32 Count=Available.Count;
     TArray<FSoraCaptionPanel> Measured[MaxRegions];
     float Heights[MaxCaptions][MaxRegions]={};
     for(int32 R=0;R<Count;++R)
@@ -677,50 +656,80 @@ FUpperStoryLayout BuildUpperStoryLayout(const FSoraHUDFrame& F,bool ForceCompact
     if(!F.Mode.bChapterComplete&&C->ActiveBeatData()&&C->ActiveChapter())
     {
         TArray<FTrackerRow> Rows=TrackerRows(F);
-        const FTrackerRow FullHeading=Rows[0];
         int32 Number=0,Required=0;
         for(int32 I=0;I<C->ActiveChapter()->Rules.Num();++I)
             if(!C->ActiveChapter()->Rules[I].Optional) { ++Required; if(I<=C->ActiveBeat()) ++Number; }
-        Rows[0]={FString::Printf(TEXT("第%d場 / %d"),Number,Required),FString::Printf(TEXT("Beat %d of %d"),Number,Required),-1,F.Ivory};
-        const auto Tracker=[&]()
+        const FTrackerRow CompactHeading={FString::Printf(TEXT("第%d場 / %d"),Number,Required),
+            FString::Printf(TEXT("Beat %d of %d"),Number,Required),-1,F.Ivory};
+        // Preserve the existing compact-heading policy under caption/notice
+        // pressure; ordinary objective paths retain the complete beat title.
+        if(!Notices.IsEmpty()||HasCaptions) Rows[0]=CompactHeading;
+        const auto Tracker=[&](float TX,float TY,float TW)
         {
             FUpperStoryPanel Panel;
-            float At=Y+VerticalPadding;
+            const float TI=TW-2*Padding;
+            float At=TY+VerticalPadding;
             for(int32 I=0;I<Rows.Num();++I)
             {
                 if(Rows[I].Target==INDEX_NONE)
                 {
-                    Panel.Rows.Add(MeasureUpperStoryRow(F,Rows[I],X+Padding,At,Inner,Compact));
+                    Panel.Rows.Add(MeasureUpperStoryRow(F,Rows[I],TX+Padding,At,TI,Compact));
                     At=Panel.Rows.Last().Bounds.Max.Y+RowGap;
                 }
                 else
                 {
                     // Every defended target keeps its own label and health.
                     // Two columns avoid an eight-person list consuming the HUD.
-                    const float Cell=(Inner-Gap)*.5f;
-                    const FUpperStoryRow Left=MeasureUpperStoryRow(F,Rows[I],X+Padding,At,Cell,Compact);
+                    const float Cell=(TI-Gap)*.5f;
+                    const FUpperStoryRow Left=MeasureUpperStoryRow(F,Rows[I],TX+Padding,At,Cell,Compact);
                     Panel.Rows.Add(Left);
                     float End=Left.Bounds.Max.Y;
                     if(I+1<Rows.Num()&&Rows[I+1].Target!=INDEX_NONE)
                     {
-                        Panel.Rows.Add(MeasureUpperStoryRow(F,Rows[++I],X+Padding+Cell+Gap,At,Cell,Compact));
+                        Panel.Rows.Add(MeasureUpperStoryRow(F,Rows[++I],TX+Padding+Cell+Gap,At,Cell,Compact));
                         End=FMath::Max(End,static_cast<float>(Panel.Rows.Last().Bounds.Max.Y));
                     }
                     At=End+RowGap;
                 }
             }
-            Panel.Bounds=FBox2D(FVector2D(X,Y),FVector2D(X+Width,At-RowGap+VerticalPadding));
+            Panel.Bounds=FBox2D(FVector2D(TX,TY),FVector2D(TX+TW,At-RowGap+VerticalPadding));
             return Panel;
         };
-        FUpperStoryPanel Panel=Tracker();
-        // The active operation and warnings take priority over the full beat
-        // title. Its chapter position remains visible even when condensed.
-        if(Notices.IsEmpty()&&!HasCaptions)
+        // Allocate complete tracker rows around the fixed objective/dojo/
+        // stealth panels before notices, captions and finally the boss.
+        auto Obstacles=SoraHUDPanels::FixedGameplayPanelBounds(F);
+        if(const auto* Hero=F.Mode.Hero()) Obstacles.Append(SoraHUDPanels::ReticlePanelBounds(F,*Hero));
+        const auto Rhythm=RhythmPanelBounds(F); if(Rhythm.bIsValid) Obstacles.Add(Rhythm);
+        if(UsesAimLayout(F)) Obstacles.Add(AimWindow(F));
+        for(const auto& Lower:BuildLowerStoryLayout(F).Measured) Obstacles.Add(Lower.Bounds);
+        const auto Clear=[&](const FUpperStoryPanel& Trial)
         {
-            Rows[0]=FullHeading;
-            FUpperStoryPanel Full=Tracker();
-            if(Full.Bounds.Max.Y<=L.Limit) Panel=MoveTemp(Full);
-        }
+            if(Trial.Bounds.Max.Y>L.Limit) return false;
+            for(const auto& Box:Obstacles) if(Trial.Bounds.Intersect(Box)) return false;
+            return true;
+        };
+        const auto PlaceTracker=[&]()
+        {
+            FUpperStoryPanel Preferred=Tracker(X,Y,Width);
+            if(Clear(Preferred)) return Preferred;
+            using namespace SoraCaptionLayoutRules;
+            TArray<FRect> Blocks;
+            for(const auto& Box:Obstacles) Blocks.Add({static_cast<float>(Box.Min.X),static_cast<float>(Box.Min.Y),
+                static_cast<float>(Box.GetSize().X),static_cast<float>(Box.GetSize().Y)});
+            const auto Regions=SoraAimHUDLayout::FreeRegions({20*F.S,87*F.S,F.W-40*F.S,L.Limit-87*F.S},Blocks.GetData(),Blocks.Num(),Gap);
+            for(int32 I=0;I<Regions.Count;++I)
+            {
+                const auto& R=Regions.Bounds[I]; auto Trial=Tracker(R.X,R.Y,R.W);
+                if(Trial.Bounds.Max.Y<=R.Y+R.H&&Clear(Trial)) return Trial;
+            }
+            return Preferred;
+        };
+        FUpperStoryPanel Panel=PlaceTracker();
+        if(!Clear(Panel)&&Rows[0].Japanese!=CompactHeading.Japanese)
+        { Rows[0]=CompactHeading; Panel=PlaceTracker(); }
+        if(!Clear(Panel)&&!Compact) return BuildUpperStoryLayout(F,true);
+        // Unsupported capacity retains all selected rows and fails the gate;
+        // no target, progress or notice text is dropped to achieve a fit.
         for(const FUpperStoryRow& Row:Panel.Rows) if(Row.Target!=INDEX_NONE) ++L.Targets;
         Y=Panel.Bounds.Max.Y+Gap;
         L.Panels.Add(MoveTemp(Panel));
@@ -1067,7 +1076,8 @@ bool SoraHUDPanels::CaptionStoryLayoutFits(const FSoraHUDFrame& F,FString& Why)
     for(const auto& Panel:L.Panels) Occupied.Add(Panel.Bounds);
     const auto Lower=BuildLowerStoryLayout(F);
     for(const auto& Box:{Lower.Dialogue,Lower.Notice.Bounds,Lower.Prompt.Bounds}) if(Box.bIsValid) Occupied.Add(Box);
-    if(const auto* Hero=F.Mode.Hero()) Occupied.Append(WeaponPanelBounds(F,*Hero));
+    if(const auto* Hero=F.Mode.Hero())
+    { Occupied.Append(WeaponPanelBounds(F,*Hero)); Occupied.Append(ReticlePanelBounds(F,*Hero)); }
     Occupied.Add(FBox2D({25*F.S,F.H-110*F.S},{365*F.S,F.H-30*F.S}));
     for(const auto& Panel:L.Captions.Panels)
     {
@@ -1137,7 +1147,11 @@ TArray<FBox2D> SoraHUDPanels::BossLayoutObstacles(const FSoraHUDFrame& F)
     for(const auto& Box:{Lower.Dialogue,Lower.Notice.Bounds,Lower.Prompt.Bounds}) if(Box.bIsValid) Result.Add(Box);
     const auto Rhythm=RhythmPanelBounds(F); if(Rhythm.bIsValid) Result.Add(Rhythm);
     const auto Aim=AimWindow(F); if(Aim.bIsValid) Result.Add(Aim);
-    if(const auto* Hero=F.Mode.Hero()) Result.Append(WeaponPanelBounds(F,*Hero));
+    if(const auto* Hero=F.Mode.Hero())
+    {
+        Result.Append(WeaponPanelBounds(F,*Hero));
+        Result.Append(ReticlePanelBounds(F,*Hero));
+    }
     Result.Add(FBox2D({25*F.S,F.H-110*F.S},{365*F.S,F.H-30*F.S}));
     return Result;
 }
@@ -1154,7 +1168,7 @@ bool SoraHUDPanels::StoryTrackerLayoutFits(const FSoraHUDFrame& F,FString& Why)
     TArray<FBox2D> PanelBounds;
     for(const FUpperStoryPanel& Panel:L.Panels)
     {
-        if(Panel.Bounds.Min.X<(Panel.bNotice?20.f:870.f)*F.S||Panel.Bounds.Min.Y<87*F.S||Panel.Bounds.Max.X>F.W||Panel.Bounds.Max.Y>L.Limit+.5f)
+        if(Panel.Bounds.Min.X<20*F.S||Panel.Bounds.Min.Y<87*F.S||Panel.Bounds.Max.X>F.W||Panel.Bounds.Max.Y>L.Limit+.5f)
         {
             Why=FString::Printf(TEXT("Measured %s panel [%.2f,%.2f]-[%.2f,%.2f] exceeds viewport %.0fx%.0f or lower-story limit %.2f"),
                 Panel.bNotice?TEXT("notice"):TEXT("tracker"),Panel.Bounds.Min.X,Panel.Bounds.Min.Y,Panel.Bounds.Max.X,Panel.Bounds.Max.Y,F.W,F.H,L.Limit);
@@ -1162,20 +1176,17 @@ bool SoraHUDPanels::StoryTrackerLayoutFits(const FSoraHUDFrame& F,FString& Why)
         }
         for(const auto& Previous:PanelBounds)
             if(Panel.Bounds.Intersect(Previous)) { Why=TEXT("Measured tracker/notice panels overlap"); return false; }
-        if(Panel.bNotice)
-        {
-            auto Obstacles=UpperGameplayPanelBounds(F);
-            const auto Rhythm=RhythmPanelBounds(F); if(Rhythm.bIsValid) Obstacles.Add(Rhythm);
-            for(const auto& Caption:L.Captions.Panels) Obstacles.Add(Caption.Bounds);
-            for(const auto& Other:Obstacles)
-                if(Panel.Bounds.Intersect(Other)) { Why=TEXT("Alternate notice column overlaps a gameplay panel or caption"); return false; }
-        }
-        const auto Rhythm=RhythmPanelBounds(F);
-        if(Rhythm.bIsValid&&Panel.Bounds.Intersect(Rhythm))
-        { Why=TEXT("Measured tracker/notice panel overlaps the rhythm interaction group"); return false; }
+        auto Obstacles=UpperGameplayPanelBounds(F);
+        if(const auto* Hero=F.Mode.Hero()) Obstacles.Append(ReticlePanelBounds(F,*Hero));
+        const auto Rhythm=RhythmPanelBounds(F); if(Rhythm.bIsValid) Obstacles.Add(Rhythm);
+        for(const auto& Caption:L.Captions.Panels) Obstacles.Add(Caption.Bounds);
+        for(const auto& Lower:BuildLowerStoryLayout(F).Measured) Obstacles.Add(Lower.Bounds);
+        for(const auto& Other:Obstacles)
+            if(Panel.Bounds.Intersect(Other)) { Why=TEXT("Measured tracker/notice panel overlaps a gameplay panel or caption"); return false; }
         PanelBounds.Add(Panel.Bounds);
         for(const FUpperStoryRow& Row:Panel.Rows)
         {
+            FString Japanese,English;
             if(Row.Target!=INDEX_NONE)
             {
                 const auto& Task=F.Mode.Campaign()->ActiveTask();
@@ -1186,6 +1197,7 @@ bool SoraHUDPanels::StoryTrackerLayoutFits(const FSoraHUDFrame& F,FString& Why)
             }
             for(const FUpperStoryText& Text:Row.Text)
             {
+                (Text.bEnglish?English:Japanese)+=Text.Text;
                 int32 W=0,H=0;
                 UCanvas::ClippedStrLen(F.HUD.JapaneseFontObject(),Text.Scale,Text.Scale,W,H,Text.Text);
                 FBox2D Box(Text.At,Text.At+FVector2D(W,H));
@@ -1200,6 +1212,8 @@ bool SoraHUDPanels::StoryTrackerLayoutFits(const FSoraHUDFrame& F,FString& Why)
                     { Why=TEXT("Measured tracker/notice labels overlap"); return false; }
                 TextBounds.Add(Box);
             }
+            if(Japanese!=Row.Japanese.Replace(TEXT("\n"),TEXT(""))||English!=Row.English.Replace(TEXT("\n"),TEXT("")))
+            { Why=TEXT("Tracker/notice wrapping lost localized content"); return false; }
         }
     }
     if(F.Mode.bCampaign&&!F.Mode.bDeterministicPractice&&!F.Mode.bChapterComplete&&

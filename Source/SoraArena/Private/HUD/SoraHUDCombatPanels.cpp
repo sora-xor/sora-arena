@@ -24,6 +24,52 @@
 
 namespace
 {
+struct FReticleText { FString Text; FVector2D At; float Scale; FLinearColor Color; };
+struct FReticleLayout
+{
+    FVector2D Center;
+    float MoonRadius=0.f;
+    TArray<FReticleText> Text;
+    TArray<FBox2D> Bounds;
+};
+FReticleLayout ReticleLayout(const FSoraHUDFrame& F,const ASoraPlayerCharacter& Hero)
+{
+    FReticleLayout L; L.Center={F.W*.5f,F.H*.5f};
+    const auto* Kit=Hero.GetEquipment(); const auto* Campaign=F.Mode.Campaign();
+    if(!F.Mode.bDeterministicPractice&&Hero.WeaponId==18&&Kit->IsBowDrawing())
+    {
+        // Exactly the ray DrawHero displays, not an arrow-impact prediction.
+        const auto Aim=F.HUD.Project(Hero.GetCamera()->GetComponentLocation()+Kit->BowAimDirection()*10000.f);
+        L.Center={Aim.X,Aim.Y};
+    }
+    const float CX=L.Center.X,CY=L.Center.Y,S=F.S;
+    const auto Text=[&](const FString& Value,float X,float Y,float Scale,FLinearColor Color)
+    {
+        const FVector2D At(X,Y); const auto Ink=SoraHUDPanels::CaptionGlyphBounds(F,Value,Scale);
+        L.Text.Add({Value,At,Scale,Color}); L.Bounds.Add(FBox2D(At+Ink.Min,At+Ink.Max));
+    };
+    if(!F.Mode.bDeterministicPractice)
+    {
+        if(Campaign->IsMaaiLesson()?Campaign->MaaiInBand():Kit->InMaai()) L.MoonRadius=22.f*S;
+        if(Campaign->MaaiReady()&&SoraAccessibility::CampaignDifficulty(&F.Mode)==SoraAccessibility::EDifficulty::Easy)
+            Text(FString::Printf(TEXT("%.0f cm  [%d–%d cm]"),Campaign->MaaiDistance(),
+                Campaign->ActiveTask().Maai.InnerCm,Campaign->ActiveTask().Maai.OuterCm),CX-74*S,CY+38*S,.38*S,F.Ivory);
+        if(!Kit->IsStepping()&&SoraDefense::MarobashiTarget(Hero))
+        {
+            Text(TEXT("転 ― 左右＋［跳躍］"),CX-70*S,CY-72*S,.5*S,F.Gold);
+            if(F.Mode.bEnglishSubtitles) Text(TEXT("MAROBASHI: Left/Right + [Jump]"),CX-82*S,CY-48*S,.32*S,F.Muted);
+        }
+        if(Hero.GetWorld()->GetTimeSeconds()-Kit->LastZanshinAt()<1.2f)
+        {
+            Text(FString::Printf(TEXT("残心 ＋%d"),SoraCombatRules::ZanshinStamina),CX+30*S,CY+14*S,.42*S,F.Teal);
+            if(F.Mode.bEnglishSubtitles) Text(FString::Printf(TEXT("ZANSHIN +%d"),SoraCombatRules::ZanshinStamina),CX+30*S,CY+34*S,.3*S,F.Muted);
+        }
+    }
+    // Half the actual 1.5px crosshair / 1.2px ring stroke is included.
+    const float Radius=FMath::Max(10.75f,L.MoonRadius>0?L.MoonRadius+.6f:0.f);
+    L.Bounds.Add(FBox2D(L.Center-FVector2D(Radius,Radius),L.Center+FVector2D(Radius,Radius)));
+    return L;
+}
 struct FObjectiveText
 {
     FString Text;
@@ -347,6 +393,10 @@ bool SoraHUDPanels::BossLayoutFits(const FSoraHUDFrame& F,FString& Why)
     { Why=TEXT("Boss wrapping lost localized content"); return false; }
     return true;
 }
+TArray<FBox2D> SoraHUDPanels::ReticlePanelBounds(const FSoraHUDFrame& Frame,const ASoraPlayerCharacter& Hero)
+{
+    return ReticleLayout(Frame,Hero).Bounds;
+}
 void SoraHUDPanels::DrawHero(const FSoraHUDFrame& Frame,const ASoraPlayerCharacter& Hero)
 {
     ASoraHUD& HUD=Frame.HUD;
@@ -360,14 +410,8 @@ void SoraHUDPanels::DrawHero(const FSoraHUDFrame& Frame,const ASoraPlayerCharact
         const float Edge=Frame.bReduceFlashing?.25f*FMath::Clamp(P->DamageFlash/.3f,0.f,1.f):.65f;
         HUD.Panel(0,0,12*S,H,FLinearColor(.8,0,0,Edge)); HUD.Panel(W-12*S,0,12*S,H,FLinearColor(.8,0,0,Edge));
     }
-    float CX=W*.5f,CY=H*.5f;
-    if(!G->bDeterministicPractice&&P->WeaponId==18&&Kit->IsBowDrawing())
-    {
-        // Project the same camera-origin ray ReleaseBow uses. This is aim,
-        // not an impact predictor: ordinary arrow drop remains visible.
-        const FVector Aim=HUD.Project(P->GetCamera()->GetComponentLocation()+Kit->BowAimDirection()*10000.f);
-        CX=Aim.X; CY=Aim.Y;
-    }
+    const auto Reticle=ReticleLayout(Frame,Hero);
+    const float CX=Reticle.Center.X,CY=Reticle.Center.Y;
     const FLinearColor Cross=P->HitMarkerTime>0?Gold:Ivory;
     HUD.DrawLine(CX-10,CY,CX-4,CY,Cross,1.5); HUD.DrawLine(CX+4,CY,CX+10,CY,Cross,1.5); HUD.DrawLine(CX,CY-10,CX,CY-4,Cross,1.5); HUD.DrawLine(CX,CY+4,CX,CY+10,Cross,1.5);
 #if WITH_DEV_AUTOMATION_TESTS
@@ -378,11 +422,11 @@ void SoraHUDPanels::DrawHero(const FSoraHUDFrame& Frame,const ASoraPlayerCharact
         // 水月: a faint moon ring round the reticle while the opponent it
         // points at stands in the drawn blade's maai.
         const USoraCampaignDirector* Campaign=G->Campaign();
-        if(Campaign->IsMaaiLesson()?Campaign->MaaiInBand():Kit->InMaai())
+        if(Reticle.MoonRadius>0)
         {
             const FLinearColor Moon(.78f,.86f,.95f,.6f);
             constexpr int32 Segments=24;
-            const float Radius=22.f*S;
+            const float Radius=Reticle.MoonRadius;
             for(int32 I=0;I<Segments;++I)
             {
                 const float A=2.f*PI*I/Segments,B=2.f*PI*(I+1)/Segments;
@@ -391,9 +435,6 @@ void SoraHUDPanels::DrawHero(const FSoraHUDFrame& Frame,const ASoraPlayerCharact
         }
         if(Campaign->MaaiReady())
         {
-            if(SoraAccessibility::CampaignDifficulty(G)==SoraAccessibility::EDifficulty::Easy)
-                HUD.Label(FString::Printf(TEXT("%.0f cm  [%d–%d cm]"),Campaign->MaaiDistance(),
-                    Campaign->ActiveTask().Maai.InnerCm,Campaign->ActiveTask().Maai.OuterCm),CX-74*S,CY+38*S,.38*S,Ivory);
             const ASoraEnemy* Mentor=Campaign->MaaiMentor();
             const APlayerController* Controller=HUD.GetOwningPlayerController();
             if(Campaign->MaaiNeedsHelp()&&Mentor&&Controller)
@@ -413,19 +454,8 @@ void SoraHUDPanels::DrawHero(const FSoraHUDFrame& Frame,const ASoraPlayerCharact
                     }
             }
         }
-        // 転: the step is open (after an awase, or in a blow's last stretch).
-        if(!Kit->IsStepping()&&SoraDefense::MarobashiTarget(Hero))
-        {
-            HUD.Label(TEXT("転 ― 左右＋［跳躍］"),CX-70*S,CY-72*S,.5*S,Gold);
-            if(G->bEnglishSubtitles) HUD.Label(TEXT("MAROBASHI: Left/Right + [Jump]"),CX-82*S,CY-48*S,.32*S,Muted);
-        }
-        // 残心: the lingering guard gave back its share.
-        if(P->GetWorld()->GetTimeSeconds()-Kit->LastZanshinAt()<1.2f)
-        {
-            HUD.Label(FString::Printf(TEXT("残心 ＋%d"),SoraCombatRules::ZanshinStamina),CX+30*S,CY+14*S,.42*S,Teal);
-            if(G->bEnglishSubtitles) HUD.Label(FString::Printf(TEXT("ZANSHIN +%d"),SoraCombatRules::ZanshinStamina),CX+30*S,CY+34*S,.3*S,Muted);
-        }
     }
+    for(const auto& Text:Reticle.Text) HUD.Label(Text.Text,Text.At.X,Text.At.Y,Text.Scale,Text.Color);
     HUD.Panel(25*S,H-110*S,340*S,80*S,FLinearColor(.015,.035,.05,.9));
     HUD.Label(FString::Printf(TEXT("%03d"),FMath::CeilToInt(P->Health)),45*S,H-103*S,1.5*S,Ivory);
     HUD.Label(FSoraCatalog::Get().Class(P->ClassId).Name,140*S,H-82*S,.65*S,Teal);

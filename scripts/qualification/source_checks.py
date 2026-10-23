@@ -121,6 +121,7 @@ def checks(python: str = sys.executable) -> list[Check]:
         ("archery-hud-layout", "scripts/unreal/test_aim_hud_layout.py"),
         ("cargo-hud-layout", "scripts/unreal/test_cargo_hud_layout.py"),
         ("boss-hud-layout", "scripts/unreal/test_boss_hud_layout.py"),
+        ("gameplay-hud-obstacles", "scripts/unreal/test_gameplay_hud_obstacles.py"),
         ("engine-pin-guards", "scripts/toolchain/test_doctor_pin.py"),
         ("rust-pin-guards", "scripts/toolchain/test_doctor_rust.py"),
         ("import-vfx-guards", "scripts/toolchain/test_import_vfx_gate.py"),

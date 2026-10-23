@@ -1,4 +1,5 @@
 #pragma once
+#include <algorithm>
 // Four live captions, measured at each available column width. Search only
 // panel positions; glyph wrapping/metrics come from the caller's real font.
 namespace SoraCaptionLayoutRules
@@ -12,6 +13,57 @@ inline bool Overlaps(const FRect& A,const FRect& B,float Gap=0)
     constexpr float Epsilon=.01f;
     return A.X<B.X+B.W+Gap-Epsilon&&A.X+A.W+Gap>B.X+Epsilon&&
         A.Y<B.Y+B.H+Gap-Epsilon&&A.Y+A.H+Gap>B.Y+Epsilon;
+}
+// The ordinary HUD's dense-caption slots, shared with its host regression.
+// Keep their order: beside/under upper panels, then the actual space below
+// dialogue and beside weapons/health. Font measurement remains the caller's.
+struct FOrdinaryCaptionRegionsInput
+{
+    float W=0,H=0,S=1,X=0,Width=0,NextY=0,Limit=0,NoticeReserve=0;
+    bool HasHero=false;
+    float WeaponLeft=0,BottomTop=0;
+};
+struct FOrdinaryCaptionRegions { FRect Bounds[MaxRegions]; int Count=0; };
+inline FOrdinaryCaptionRegions OrdinaryCaptionRegions(const FOrdinaryCaptionRegionsInput& I,
+    const FRect* Obstacles,int ObstacleCount)
+{
+    const float Gap=6*I.S,Top=87*I.S,Left=20*I.S,LeftRight=I.X-Gap,Right=I.W-20*I.S;
+    float LeftTop=Top,AllTop=Top,BesideRight=LeftRight,RightTop=I.NextY,AboveCenter=I.Limit,RightBottom=I.Limit;
+    for(int N=0;N<ObstacleCount;++N)
+    {
+        const auto& Box=Obstacles[N];
+        AllTop=std::max(AllTop,Box.Y+Box.H+Gap);
+        if(Box.X<Right&&Box.X+Box.W>I.X)
+        {
+            RightTop=std::max(RightTop,Box.Y+Box.H+Gap);
+            if(Box.Y>I.NextY) RightBottom=std::min(RightBottom,Box.Y-Gap);
+        }
+        if(Box.X<LeftRight&&Box.X+Box.W>Left)
+        {
+            if(Box.X<=Left+10*I.S) LeftTop=std::max(LeftTop,Box.Y+Box.H+Gap);
+            else
+            {
+                BesideRight=std::min(BesideRight,Box.X-Gap);
+                AboveCenter=std::min(AboveCenter,Box.Y-Gap);
+            }
+        }
+    }
+    FOrdinaryCaptionRegions Out;
+    const auto Region=[&](float X,float Y,float W,float Bottom)
+    { if(W>=150.f&&Bottom>Y&&Out.Count<MaxRegions) Out.Bounds[Out.Count++]={X,Y,W,Bottom-Y}; };
+    Region(Left,LeftTop,BesideRight-Left,I.Limit);
+    if(AboveCenter<I.Limit) Region(Left,LeftTop,LeftRight-Left,AboveCenter);
+    if(AllTop>LeftTop) Region(Left,AllTop,LeftRight-Left,I.Limit);
+    if(RightBottom<I.Limit) Region(I.X,I.NextY,I.Width,RightBottom-I.NoticeReserve);
+    Region(I.X,RightTop,I.Width,I.Limit-I.NoticeReserve);
+    Region(Left,std::max(AllTop,I.NextY),Right-Left,I.Limit-I.NoticeReserve);
+    if(I.HasHero)
+    {
+        Region(Left,I.BottomTop,I.WeaponLeft-Left,I.H-110*I.S-Gap);
+        const float HealthRight=365*I.S+Gap;
+        Region(HealthRight,I.BottomTop,I.WeaponLeft-HealthRight,I.H-30*I.S);
+    }
+    return Out;
 }
 struct FLabelPlacement { bool Fits=false; FRect Bounds; };
 inline FLabelPlacement PlaceLabel(const FRect& Label,const FRect& View,const FRect* Obstacles,int Count,float Gap)

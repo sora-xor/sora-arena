@@ -1,11 +1,30 @@
 #include "SoraCaptionLayoutRules.h"
 #include "SoraAimHUDLayout.h"
+#include "SoraCaptureFrameRules.h"
 #include <cassert>
 #include <iostream>
 #include <string>
 int main(int Argc,char** Argv)
 {
     using namespace SoraCaptionLayoutRules;
+    if(Argc>1&&std::string(Argv[1])=="capture-frame")
+    {
+        SoraCaptureFrameRules::FDrawState S; std::uint64_t Request,Current; bool Nonempty,Fresh;
+        std::cin>>S.Gameplay>>S.Visible>>S.Paused>>S.World>>S.FrozenWorld>>Request>>Current>>Nonempty>>Fresh;
+        std::cout<<SoraCaptureFrameRules::Drawn(S)<<' '<<SoraCaptureFrameRules::Processed(S,Request,Current,Nonempty,Fresh)<<'\n';
+        return 0;
+    }
+    if(Argc>1&&std::string(Argv[1])=="ordinary-caption-regions")
+    {
+        FOrdinaryCaptionRegionsInput I; FRect Obstacles[32]; int N;
+        std::cin>>I.W>>I.H>>I.S>>I.X>>I.Width>>I.NextY>>I.Limit>>I.NoticeReserve
+            >>I.HasHero>>I.WeaponLeft>>I.BottomTop>>N;
+        if(N<0||N>32) return 2;
+        for(int J=0;J<N;++J) std::cin>>Obstacles[J].X>>Obstacles[J].Y>>Obstacles[J].W>>Obstacles[J].H;
+        const auto R=OrdinaryCaptionRegions(I,Obstacles,N);
+        for(int J=0;J<R.Count;++J) std::cout<<R.Bounds[J].X<<' '<<R.Bounds[J].Y<<' '<<R.Bounds[J].W<<' '<<R.Bounds[J].H<<'\n';
+        return 0;
+    }
     if(Argc>1&&std::string(Argv[1])=="aim-regions")
     {
         float W,H,S,O,B; std::cin>>W>>H>>S>>O>>B;
