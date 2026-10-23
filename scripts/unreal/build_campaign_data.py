@@ -681,7 +681,7 @@ def normalize_task(beat):
         "horse_down_retries": False, "fail_checkpoint": [], "fail_events": {}, "objectives": [],
         "lines_event": None, "closing_event": None, "exit_event": None, "guards": [], "stealth": None, "opponent": None,
         "sparring": False, "phase_events": [], "carry_item": None, "carry_speed_permille": 1000, "carry_weapons": [],
-        "pickup_hold_ms": 0, "objective_hold_ms": [], "equipment_weapons": None, "recovery": None,
+        "pickup_hold_ms": 0, "unload_hold_ms": 0, "objective_hold_ms": [], "equipment_weapons": None, "recovery": None,
     }
     nonlethal = params.get("nonlethal_types", DEFAULT_NONLETHAL)
     # Waves are what a beat throws at the hero. Only a fight to clear them
@@ -893,7 +893,13 @@ def normalize_task(beat):
             task.update(goal="exit", exit_event=volume_event(complete["volume"]))
         elif complete["kind"] == "cargo_delivered":
             task["dropoffs"] = ids_of(params["cargo"]["dropoffs"], f"{where}.cargo.dropoffs")
-            task.update(goal="deliveries", count=len(task["dropoffs"]))
+            seconds = expect(params["cargo"].get("unload_hold_s"), (int, float), f"{where}.cargo.unload_hold_s")
+            if not 0 < seconds <= (1 << 30) / 1000:
+                fail(where, "cargo unload hold must be positive and fit the task clock")
+            duration = whole_ms(seconds, f"{where}.cargo.unload_hold_s")
+            if duration < 1:
+                fail(where, "cargo unload hold must span at least one whole millisecond")
+            task.update(goal="deliveries", count=len(task["dropoffs"]), unload_hold_ms=duration)
         else:
             fail(where, f"ride completion {complete['kind']!r}")
     elif kind == "boss":

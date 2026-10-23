@@ -74,6 +74,7 @@ bool ReadTask(const FJsonObject& O, const FString& TypeName, FSoraBeat& Beat)
         !Strings(Rows(O, TEXT("phase_events")), Beat.PhaseEvents) ||
         !Int(O, TEXT("carry_speed_permille"), T.CarrySpeedPermille) || !Int(O, TEXT("target_loss_limit"), T.TargetLossLimit) ||
         !Int(O, TEXT("pickup_hold_ms"), T.PickupHoldMs) || T.PickupHoldMs < 0 ||
+        !Int(O, TEXT("unload_hold_ms"), T.UnloadHoldMs) ||
         !WeaponMask(Rows(O, TEXT("carry_weapons")), T.CarryWeaponsMask))
         return false;
     const auto PlayerValue = O.TryGetField(TEXT("crank_player"));

@@ -579,7 +579,9 @@ bool WorkAtAnchor(FAutomationTestBase& Test, FState& State)
     // Worked once its point is marked done, or the beat it finished has moved on.
     const int32 BeatBefore = Director->ActiveBeat();
     const unsigned Before = Director->TaskProgress().PointsMask;
-    const auto Worked = [&]() { return Director->ActiveBeat() != BeatBefore || Director->TaskProgress().PointsMask != Before; };
+    const int32 DeliveredBefore=Director->TaskProgress().Done;
+    const auto Worked = [&]() { return Director->ActiveBeat() != BeatBefore || Director->TaskProgress().PointsMask != Before ||
+        Director->TaskProgress().Done != DeliveredBefore; };
     State.World->InjectKey(EKeys::E, IE_Pressed);
     bool bHeld = true;
     for (int32 Quarter = 0; Quarter < 40 && bHeld && !Worked(); ++Quarter)

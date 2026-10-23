@@ -239,6 +239,7 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
+    "unload_hold_ms": 0,
     "objective_hold_ms": [],
     "equipment_weapons": null,
     "recovery": null
@@ -368,6 +369,7 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
+    "unload_hold_ms": 0,
     "objective_hold_ms": [],
     "equipment_weapons": null,
     "recovery": null
@@ -506,6 +508,7 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
+    "unload_hold_ms": 0,
     "objective_hold_ms": [],
     "equipment_weapons": null,
     "recovery": null
@@ -755,6 +758,7 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
+    "unload_hold_ms": 0,
     "objective_hold_ms": [],
     "equipment_weapons": null,
     "recovery": null
@@ -1030,6 +1034,7 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
+    "unload_hold_ms": 0,
     "objective_hold_ms": [],
     "equipment_weapons": null,
     "recovery": null
@@ -1242,6 +1247,7 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
+    "unload_hold_ms": 0,
     "objective_hold_ms": [],
     "equipment_weapons": null,
     "recovery": null
@@ -1478,6 +1484,7 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
+    "unload_hold_ms": 0,
     "objective_hold_ms": [],
     "equipment_weapons": null,
     "recovery": null
@@ -1595,6 +1602,7 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
+    "unload_hold_ms": 0,
     "objective_hold_ms": [],
     "equipment_weapons": null,
     "recovery": null
@@ -1731,6 +1739,7 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
+    "unload_hold_ms": 0,
     "objective_hold_ms": [],
     "equipment_weapons": null,
     "recovery": null
@@ -1929,6 +1938,7 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
+    "unload_hold_ms": 0,
     "objective_hold_ms": [],
     "equipment_weapons": null,
     "recovery": null
@@ -2141,6 +2151,7 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
+    "unload_hold_ms": 0,
     "objective_hold_ms": [],
     "equipment_weapons": null,
     "recovery": null
@@ -2481,6 +2492,7 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
+    "unload_hold_ms": 0,
     "objective_hold_ms": [],
     "equipment_weapons": null,
     "recovery": null
@@ -2605,6 +2617,7 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
+    "unload_hold_ms": 0,
     "objective_hold_ms": [],
     "equipment_weapons": null,
     "recovery": null
@@ -2823,6 +2836,7 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
+    "unload_hold_ms": 3000,
     "objective_hold_ms": [],
     "equipment_weapons": null,
     "recovery": null
@@ -2940,6 +2954,7 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
+    "unload_hold_ms": 0,
     "objective_hold_ms": [],
     "equipment_weapons": null,
     "recovery": null
@@ -3097,6 +3112,7 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
+    "unload_hold_ms": 0,
     "objective_hold_ms": [],
     "equipment_weapons": null,
     "recovery": null
@@ -3284,6 +3300,7 @@
      0
     ],
     "pickup_hold_ms": 0,
+    "unload_hold_ms": 0,
     "objective_hold_ms": [],
     "equipment_weapons": null,
     "recovery": null
@@ -3401,6 +3418,7 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
+    "unload_hold_ms": 0,
     "objective_hold_ms": [],
     "equipment_weapons": null,
     "recovery": null

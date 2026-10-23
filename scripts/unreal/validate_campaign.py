@@ -742,6 +742,20 @@ def check_rhythm_steps(beat):
     require(beat["task"]["steps"] == expected, f"{beat['id']}: exact authored manufacturing rhythm contract")
 
 
+def check_cargo_unload(beat):
+    task, where = beat["task"], beat["id"]
+    value = task.get("unload_hold_ms")
+    require(type(value) is int, f"{where}: missing or noninteger cargo unload duration")
+    cargo = beat["type"] == "horseback_ride" and task["goal"] == "deliveries"
+    if not cargo:
+        require(value == 0, f"{where}: only cargo rides have an unload hold")
+        return
+    seconds = beat["params"].get("cargo", {}).get("unload_hold_s")
+    require(type(seconds) in (int, float) and 0 < seconds <= (1 << 30) / 1000 and
+            0 < value <= 1 << 30 and abs(seconds * 1000 - value) < 1e-6,
+            f"{where}: cargo unload duration must preserve the authored positive whole milliseconds")
+
+
 def check_dropoff_capacity(beat):
     task, where = beat["task"], beat["id"]
     require("dropoff_capacity" in task, f"{where}: missing drop-off capacity field")
@@ -858,6 +872,7 @@ def validate(catalog, campaign, chapters, legacy, roster):
 
         # Rules 3 and 5, mechanics, bosses, enemies and rule 7.
         for beat in beats:
+            check_cargo_unload(beat)
             check_dropoff_capacity(beat)
             check_crank_player(beat)
             check_rhythm_steps(beat)
