@@ -174,6 +174,7 @@ void ASoraHorse::SetRide(const FSoraMount& Mount,const FSoraZone* InRoad)
 }
 void ASoraHorse::Place(const FVector& Location,float Yaw)
 {
+    ClearLeadTug();
     SetActorLocationAndRotation(FVector(Location.X,Location.Y,HorseFrameZ),FRotator(0,Yaw,0),false,nullptr,ETeleportType::TeleportPhysics);
     Ride.Gait=SoraMountRules::EGait::Halt;
     if(Road) Chainage=Road->ChainageOf(FVector2D(Location));
@@ -186,6 +187,7 @@ FVector2D ASoraHorse::LocalOf(const FVector& Location) const
 bool ASoraHorse::Mount(ASoraPlayerCharacter& Rider)
 {
     if(RiderPawn.IsValid()) return false;
+    ClearLeadTug();
     UCharacterMovementComponent* Movement=Rider.GetCharacterMovement();
     Movement->StopMovementImmediately();
     Movement->DisableMovement();
@@ -199,6 +201,7 @@ bool ASoraHorse::Mount(ASoraPlayerCharacter& Rider)
 }
 void ASoraHorse::Dismount()
 {
+    ClearLeadTug();
     ASoraPlayerCharacter* Rider=RiderPawn.Get();
     RiderPawn=nullptr;
     if(!Rider) return;
@@ -217,9 +220,38 @@ void ASoraHorse::FollowRoad(const FSoraZone* InRoad,float StartChainage,int32 In
     Chainage=StartChainage; PaceCmS=InPace; Leader=nullptr;
     if(Road) Place(ASoraWorldBuilder::Floor(Road->PointAlong(Chainage)),Road->HeadingAt(Chainage));
 }
-void ASoraHorse::Lead(ASoraHorse* InLeader,float SpacingCm)
+void ASoraHorse::Lead(ASoraHorse* InLeader,float SpacingCm,int32 FearRecoveryMs)
 {
     Leader=InLeader; LeadSpacing=SpacingCm; Road=nullptr; PaceCmS=0;
+    LeadRecoveryMs=FearRecoveryMs; LeadFear={}; LeadFearClock.Reset(); LeadFearFrame=MAX_uint64;
+}
+void ASoraHorse::ClearLeadTug()
+{
+    LeadTug={}; LeadTugClock.Reset(); LeadTugFrame=MAX_uint64;
+}
+void ASoraHorse::BeginLeadTug()
+{
+    // A rider on foot cannot bank an interruption for a later remount.
+    if(RiderPawn.IsValid()&&SoraMountRules::StartLeadTug(LeadTug))
+    {
+        LeadTugClock.Reset(); LeadTugFrame=GFrameCounter;
+    }
+}
+void ASoraHorse::PullLeader()
+{
+    LeadFearClock.Reset(); LeadFearFrame=GFrameCounter;
+    if(Leader.IsValid()) Leader->BeginLeadTug();
+}
+bool ASoraHorse::ObserveLeadThreat(bool bNear)
+{
+    if(!Leader.IsValid()||!SoraMountRules::ObserveLeadFear(LeadFear,bNear,LeadRecoveryMs)) return false;
+    PullLeader();
+    return true;
+}
+void ASoraHorse::Spook()
+{
+    if(!Leader.IsValid()) { bSpookPending=true; return; }
+    if(SoraMountRules::StartLeadFear(LeadFear,LeadRecoveryMs)) PullLeader();
 }
 void ASoraHorse::Tick(float DeltaSeconds)
 {
@@ -242,6 +274,11 @@ void ASoraHorse::TickRidden(int32 DeltaMs,float DeltaSeconds)
     ASoraPlayerCharacter* Rider=RiderPawn.Get();
     // The rider's hands act only in live play; otherwise she eases down.
     const bool bHands=Rider->CanPlay();
+    // A director can trigger fear before this actor ticks in the same
+    // frame. That frame's elapsed time predates the pull and is excluded.
+    const bool bTugged=LeadTug.RemainingMs>0;
+    if(bTugged&&bHands&&GFrameCounter!=LeadTugFrame)
+        SoraMountRules::StepLeadTug(LeadTug,LeadTugClock.Advance(DeltaSeconds));
     const float Legs=bHands?Rider->GetInputAxisValue(TEXT("MoveForward")):0.f;
     const float Steer=bHands?FMath::Clamp(Rider->GetInputAxisValue(TEXT("MoveRight")),-1.f,1.f):0.f;
     FControl Control;
@@ -259,8 +296,8 @@ void ASoraHorse::TickRidden(int32 DeltaMs,float DeltaSeconds)
     // itself while the player's auto-steer setting is on.
     const ASoraGameMode* Mode=Cast<ASoraGameMode>(GetWorld()->GetAuthGameMode());
     const bool bSteered=bAutoSteer&&Road&&Mode&&Mode->Settings()&&Mode->Settings()->AutoSteer();
-    if(FMath::Abs(Steer)>.2f||!bSteered) Yaw+=Steer*Turn*DeltaSeconds;
-    else if(Ride.Gait!=EGait::Halt)
+    if(!bTugged&&(FMath::Abs(Steer)>.2f||!bSteered)) Yaw+=Steer*Turn*DeltaSeconds;
+    else if(!bTugged&&Ride.Gait!=EGait::Halt)
     {
         // Auto-steer (accessibility): she keeps to the road a little ahead of her.
         const FVector2D Ahead=Road->PointAlong(Chainage+300.f+SpeedCmS()*.8f);
@@ -271,11 +308,16 @@ void ASoraHorse::TickRidden(int32 DeltaMs,float DeltaSeconds)
 }
 void ASoraHorse::TickLed(int32,float DeltaSeconds)
 {
+    const auto* Mode=Cast<ASoraGameMode>(GetWorld()->GetAuthGameMode());
+    if(Mode&&!Mode->IsPlaying()) return;
+    if(LeadFear.RemainingMs>0&&GFrameCounter!=LeadFearFrame)
+        SoraMountRules::StepLeadFear(LeadFear,LeadFearClock.Advance(DeltaSeconds));
     // On a lead rope she trails her leader at the rope's length.
     const ASoraHorse* Front=Leader.Get();
     const FVector Wanted=Front->GetActorLocation()-Front->GetActorForwardVector()*LeadSpacing;
     FVector Offset=Wanted-GetActorLocation(); Offset.Z=0.f;
-    const float Pace=FMath::Min(Offset.Size()/FMath::Max(DeltaSeconds,1e-3f),Front->SpeedCmS()+120.f);
+    const float CatchUp=LeadFear.RemainingMs>0?FMath::Min(Front->SpeedCmS()+120.f,float(Rules.SpeedCmS[1])):Front->SpeedCmS()+120.f;
+    const float Pace=FMath::Min(Offset.Size()/FMath::Max(DeltaSeconds,1e-3f),CatchUp);
     const float Yaw=Offset.Size()>20.f?Offset.Rotation().Yaw:GetActorRotation().Yaw;
     // Led and convoy horses carry no wind; their gait only shows their pace.
     Ride.Gait=HorseGaitForPace(Offset.Size()>20.f?Pace:0.f);

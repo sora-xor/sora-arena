@@ -39,6 +39,16 @@ class CargoUnloadDataTests(unittest.TestCase):
                         check_cargo_unload(forged)
         self.assertEqual(found, ["ch04.b14"])
 
+    def test_bunta_lead_and_fear_contract(self):
+        chapter = json.loads((ROOT / "Content/Data/campaign/chapter_04.json").read_text())
+        mount = chapter["space"]["beats"][13]["mount"]
+        self.assertEqual(self.beat["params"]["cargo"]["carrier"], "pack_horse")
+        self.assertEqual(mount["pack"], [{"id": "pack_horse_cargo", "follow": "lead", "speed_cm_s": 0,
+                                         "spacing_cm": 300, "hp": 0}])
+        self.assertEqual(mount["fear"], {"radius_cm": 900, "recover_ms": 2500})
+        self.assertTrue(mount["dismount"])
+        self.assertFalse(self.beat["task"]["horse_down_retries"])
+
     def test_invalid_authored_hold_is_rejected(self):
         for value in (None, True, False, "3", [], 0, -1, .0004, 1e-10, 3.0004,
                       float("inf"), float("nan"), (1 << 30) / 1000 + .001):

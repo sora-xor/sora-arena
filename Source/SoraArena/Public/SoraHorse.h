@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "SoraMountRules.h"
+#include "SoraMillisecondClock.h"
 #include "SoraHorse.generated.h"
 class ASoraPlayerCharacter;
 class UBoxComponent;
@@ -55,19 +56,23 @@ public:
     void SeatRider(bool bRival);
     // A convoy horse's id (FSoraPackHorse::Id).
     FString PackId;
-    void Lead(ASoraHorse* InLeader, float SpacingCm);
+    void Lead(ASoraHorse* InLeader, float SpacingCm, int32 FearRecoveryMs = 0);
+    bool IsLed() const { return Leader.IsValid(); }
+    bool ObserveLeadThreat(bool bNear);
+    int32 LeadFearMs() const { return LeadFear.RemainingMs; }
+    int32 LeadTugMs() const { return LeadTug.RemainingMs; }
     void SetWaiting(bool bWait) { bWaiting = bWait; }
     // Places her, halted, on the ground at Location facing Yaw.
     void Place(const FVector& Location, float Yaw);
     // A hazard entered her fear radius, or the road spooks her.
-    void Spook() { bSpookPending = true; }
+    void Spook();
     // The fastest gait the road, a forced stretch or a laden pack mare allows.
     SoraMountRules::EGait Cap = SoraMountRules::EGait::Gallop;
     // The ride allows auto-steer; the player's setting (USoraSettings::AutoSteer) turns it on.
     bool bAutoSteer = false;
     SoraMountRules::EGait Gait() const { return Ride.Gait; }
     int32 StaminaPoints() const { return Ride.Stamina / 1000; }
-    bool IsSpooked() const { return SoraMountRules::Spooked(Ride); }
+    bool IsSpooked() const { return SoraMountRules::Spooked(Ride)||LeadFear.RemainingMs>0; }
     bool IsWinded() const { return Ride.GallopLocked; }
     int32 SpeedCmS() const { return SoraMountRules::SpeedCmS(Ride, Rules); }
     float RoadChainage() const { return Chainage; }
@@ -89,6 +94,14 @@ private:
     float Chainage = 0.f;
     int32 PaceCmS = 0;
     float LeadSpacing = 0.f;
+    int32 LeadRecoveryMs = 0;
+    SoraMountRules::FLeadFear LeadFear;
+    SoraMountRules::FLeadTug LeadTug;
+    FSoraMillisecondClock LeadFearClock, LeadTugClock;
+    uint64 LeadFearFrame=MAX_uint64, LeadTugFrame=MAX_uint64;
+    void PullLeader();
+    void BeginLeadTug();
+    void ClearLeadTug();
     float LaneCm = 0.f;
     bool bWaiting = false;
     bool bSpookPending = false;

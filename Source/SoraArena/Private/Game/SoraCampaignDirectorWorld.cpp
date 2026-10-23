@@ -289,7 +289,8 @@ void USoraCampaignDirector::EnterBeatSpace(bool bResumed)
                     if(!Beast) continue;
                     Beast->Build(TEXT("bay"),ASoraHorse::ETack::Pack);
                     Beast->Place(Behind,Yaw);
-                    Beast->Lead(Front,Row.SpacingCm);
+                    Beast->PackId=Row.Id;
+                    Beast->Lead(Front,Row.SpacingCm,Mount.Rules.FearRecoverMs);
                     Front=Beast;
                     Pack.Add(Beast);
                 }
@@ -388,6 +389,23 @@ void USoraCampaignDirector::TickHorses()
             if(const FSoraVolume* Volume=Space->Volumes.FindByPredicate([&](const FSoraVolume& Row) { return Row.Event==TEXT("volume_enter:")+Forced.Volume; }))
                 if(Volume->Contains(Horse->GetActorLocation())) Cap=SoraMountRules::Slower(Cap,Forced.Gait);
         Horse->Cap=Cap;
+        // The laden mare has her own fear geometry. A cyan threat behind
+        // Bunta can pull Kurimaru's reins while outside Kurimaru's radius.
+        const USoraFieldcraft* Craft=USoraFieldcraft::Get(this);
+        for(const auto& Beast:Pack)
+            if(IsValid(Beast)&&Beast->IsLed())
+            {
+                bool bNear=false;
+                if(Mount.FearRadiusCm>0)
+                {
+                    for(const auto& Enemy:Enemies)
+                        bNear|=IsValid(Enemy)&&Enemy->IsAlive()&&FVector::Dist2D(Enemy->GetActorLocation(),Beast->GetActorLocation())<Mount.FearRadiusCm;
+                    if(Craft)
+                        for(int32 Light=0;Light<Craft->LightCount();++Light)
+                            bNear|=Craft->IsLightOn(Light)&&FVector::Dist2D(Craft->SpotOf(Light),Beast->GetActorLocation())<Mount.FearRadiusCm;
+                }
+                if(Beast->ObserveLeadThreat(bNear)) Fire(TEXT("horse_spooked"));
+            }
         // An opponent entering her fear radius spooks her once.
         if(Mount.FearRadiusCm>0)
             for(const auto& Enemy:Enemies)

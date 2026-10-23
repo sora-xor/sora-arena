@@ -25,6 +25,45 @@ constexpr int StaminaFull = 100000;
 constexpr int UrgeStepMs = 700;
 constexpr int ReinStepMs = 400;
 constexpr int EaseStepMs = 1500;
+// Chapter-04 §6.4: a frightened laden mare pulls the riding horse's head
+// for one second. A continuous encounter cannot renew that loss of steering.
+constexpr int LeadTugMs = 1000;
+struct FLeadFear
+{
+    int RemainingMs = 0;
+    bool Near = false;
+};
+struct FLeadTug { int RemainingMs = 0; };
+constexpr bool StartLeadFear(FLeadFear& State, int RecoveryMs)
+{
+    if (RecoveryMs <= 0 || State.RemainingMs > 0) return false;
+    State.RemainingMs = RecoveryMs;
+    return true;
+}
+constexpr bool ObserveLeadFear(FLeadFear& State, bool Near, int RecoveryMs)
+{
+    const bool Entered = Near && !State.Near;
+    State.Near = Near;
+    return Entered && StartLeadFear(State, RecoveryMs);
+}
+constexpr void StepLeadFear(FLeadFear& State, int DeltaMs)
+{
+    if (DeltaMs > 0) State.RemainingMs = DeltaMs >= State.RemainingMs ? 0 : State.RemainingMs - DeltaMs;
+}
+constexpr bool StartLeadTug(FLeadTug& State)
+{
+    if (State.RemainingMs > 0) return false;
+    State.RemainingMs = LeadTugMs;
+    return true;
+}
+// The frame that consumes the last held millisecond still belongs to the
+// tug. Steering resumes next frame, never one frame before the full second.
+constexpr bool StepLeadTug(FLeadTug& State, int DeltaMs)
+{
+    const bool Blocked = State.RemainingMs > 0;
+    if (DeltaMs > 0) State.RemainingMs = DeltaMs >= State.RemainingMs ? 0 : State.RemainingMs - DeltaMs;
+    return Blocked;
+}
 // Degrees per second she turns at each gait, from a halt to the gallop.
 constexpr int TurnDegS[GaitCount] = {120, 90, 75, 60, 45};
 // Mounting: the rider stands by her right flank, beside the saddle.
