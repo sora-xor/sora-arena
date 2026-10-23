@@ -4,7 +4,9 @@
 #include "SoraHelmAutomation.h"
 #include "SoraSettings.h"
 #include "SoraWorldBuilder.h"
+#include "SoraViewmodelComponent.h"
 #include "Components/BoxComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "GameFramework/DamageType.h"
 #include "GameFramework/InputSettings.h"
 #include "Misc/ScopeExit.h"
@@ -34,6 +36,11 @@ bool Start(FBeatWorld& W)
     return W.Campaign()->IsHelmHold();
 }
 bool Walk(FBeatWorld& W,const FVector& P) { Freeze(W);return SoraRecoveryAutomation::WalkTo(*W.World,P); }
+FKey Action(FBeatWorld& W,const TCHAR* Name)
+{
+    for(const FKey& Key:W.Hero()->GetActionKeys(Name)) if(!Key.IsGamepadKey()) return Key;
+    return FKey();
+}
 bool Alarm(FBeatWorld& W)
 {
     for(int F=0;F<1200&&!W.Campaign()->HelmNeedsTrim();++F) if(!Tick(W,1)) return false;
@@ -49,6 +56,88 @@ bool Reload(FBeatWorld& W)
     W.EventsHandle=W.Fieldcraft()->OnEvent.AddLambda([&W](FName Event) { W.Events.Add(Event.ToString()); });
     W.Harden();Freeze(W);return W.Mode()->IsPlaying();
 }
+}
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraHelmHandsTest,"SoraArena.Campaign.HelmHandsAndFloor",
+ EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraHelmHandsTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;using namespace SoraHelmTest;FBeatWorld W(*this,TEXT("HelmHandsAndFloor"),6,13);
+    if(!Start(W)) return false;
+    auto* C=W.Campaign();auto* Kit=W.Hero()->GetEquipment();const auto& H=W.BeatData().Space.Helm;
+    TArray<UStaticMeshComponent*> Pieces;W.Mode()->Arena()->GetComponents(Pieces);
+    UStaticMeshComponent* Floor=nullptr;UStaticMeshComponent* Fill=nullptr;
+    for(auto* Piece:Pieces)
+    {
+        TestFalse(TEXT("Helm never displays the generic circular hold boundary"),Piece->GetName().Contains(TEXT("KitHoldRing"))||Piece->GetName().Contains(TEXT("KitHoldPost")));
+        if(Piece->ComponentHasTag(TEXT("HelmHoldFloor"))) { TestNull(TEXT("One helm floor"),Floor);Floor=Piece; }
+        if(Piece->ComponentHasTag(TEXT("HelmHoldFill"))) { TestNull(TEXT("One helm fill"),Fill);Fill=Piece; }
+    }
+    if(!TestNotNull(TEXT("The authored hold has a rendered floor"),Floor)||!TestNotNull(TEXT("The authored hold has a rendered fill"),Fill)) return false;
+    const FBox Bounds=Floor->CalcBounds(Floor->GetComponentTransform()).GetBox();
+    TestTrue(TEXT("Visible floor bounds match the actual 6 by 16 metre hold"),
+        FMath::IsNearlyEqual(Bounds.GetSize().X,H.Hold.Size.X,1.)&&FMath::IsNearlyEqual(Bounds.GetSize().Y,H.Hold.Size.Y,1.)&&
+        FVector::Dist2D(Bounds.GetCenter(),FVector(H.Hold.Center,0))<1.);
+    if(!Walk(W,FVector(H.Hold.Center+FVector2D(350,0),0))) return false;
+    int32 Progress=C->TaskProgress().Progress;if(!Tick(W,60)) return false;
+    TestEqual(TEXT("Outside the rectangle earns no progress, even inside the old circle"),C->TaskProgress().Progress,Progress);
+    if(!Walk(W,FVector(H.Hold.Center+FVector2D(-200,-650),0))) return false;
+    Progress=C->TaskProgress().Progress;if(!Tick(W,60)) return false;
+    TestTrue(TEXT("The long end of the rectangle earns progress outside the old circle"),C->TaskProgress().Progress-Progress>=999);
+    const FBox Filled=Fill->CalcBounds(Fill->GetComponentTransform()).GetBox();
+    TestTrue(TEXT("The progress fill stays inside the hold and spans its full width"),
+        Filled.Min.X>=Bounds.Min.X-1.&&Filled.Max.X<=Bounds.Max.X+1.&&
+        FMath::IsNearlyEqual(Filled.Min.Y,Bounds.Min.Y,1.)&&FMath::IsNearlyEqual(Filled.Max.Y,Bounds.Max.Y,1.));
+    if(!Alarm(W)||!Walk(W,C->HelmWheelPoint()+FVector(-190,0,0))) return false;
+    // Select through the ordinary arm-group actions, not direct equipment writes.
+    if(!W.Press(Action(W,TEXT("WeaponThree")))||!W.Press(Action(W,TEXT("WeaponOne")))||!Tick(W,30)) return false;
+    if(!TestTrue(TEXT("A drawn blade is selected"),SoraHistoricalArms::IsMelee(W.Hero()->WeaponId)&&!Kit->IsSheathing())) return false;
+    const FKey Use=Action(W,TEXT("Interact")),Sheathe=Action(W,TEXT("Sheathe"));
+    if(!W.Hold(Use,125)) return false;
+    TestTrue(TEXT("A drawn blade cannot work the helm"),C->HelmNeedsTrim()&&!C->HelmOccupiesHands()&&C->HelmState().HeldMs==0);
+    if(!W.Press(Sheathe)||!W.World->InjectKey(Use,IE_Pressed)||!Tick(W,10)) return false;
+    TestTrue(TEXT("Correction cannot bypass the existing sheathing duration"),Kit->IsSheathing()&&!Kit->IsSheathed()&&!C->HelmOccupiesHands());
+    if(!Tick(W,45)||!W.World->InjectKey(Use,IE_Released)||!Tick(W,1)||!W.World->InjectKey(Use,IE_Pressed)||!Tick(W,30)) return false;
+    if(!TestTrue(TEXT("The stowed blade leaves both hands on the wheel"),Kit->IsSheathed()&&C->HelmOccupiesHands()&&W.Hero()->GetViewmodel()->bHiddenInGame)) return false;
+    const int32 Weapon=W.Hero()->WeaponId;
+    for(const TCHAR* Name:{TEXT("Fire"),TEXT("Melee"),TEXT("Block"),TEXT("Reload"),TEXT("Sheathe"),TEXT("WeaponThree")})
+        if(!W.Press(Action(W,Name))) return false;
+    TestTrue(TEXT("Weapon inputs cannot draw, attack, guard, reload or change arms during correction"),
+        C->HelmOccupiesHands()&&Kit->IsSheathed()&&!Kit->IsCommittedStrike()&&!Kit->IsGuardHeld()&&!Kit->bReloading&&W.Hero()->WeaponId==Weapon);
+    UGameplayStatics::ApplyDamage(W.Hero(),1.f,nullptr,nullptr,UDamageType::StaticClass());
+    TestTrue(TEXT("Damage immediately frees the hands and discards partial work"),!C->HelmOccupiesHands()&&C->HelmState().HeldMs==0&&!W.Hero()->GetViewmodel()->bHiddenInGame);
+    if(!Tick(W,125)) return false;
+    TestEqual(TEXT("Held input cannot resume correction after a hit"),C->HelmState().Corrected,0u);
+    if(!W.World->InjectKey(Use,IE_Released)||!Tick(W,1)||!SoraHelmAutomation::Correct(*W.World,Use)) return false;
+    TestTrue(TEXT("Correction restores the selected sheathed blade without consuming inventory"),C->HelmState().Corrected==1u&&Kit->IsSheathed()&&W.Hero()->WeaponId==Weapon&&!W.Hero()->GetViewmodel()->bHiddenInGame);
+    if(!W.Press(Action(W,TEXT("WeaponThree")))||!Tick(W,30)||!Alarm(W)||!Walk(W,C->HelmWheelPoint()+FVector(-190,0,0))) return false;
+    if(!TestEqual(TEXT("The ordinary bow selection succeeds after work"),W.Hero()->WeaponId,18)) return false;
+    const FKey Fire=Action(W,TEXT("Fire"));const int32 Ammo=Kit->Ammo;
+    if(!W.World->InjectKey(Fire,IE_Pressed)||!Tick(W,50)||!TestTrue(TEXT("The bow is actually drawn"),Kit->IsBowDrawing())) return false;
+    if(!W.World->InjectKey(Use,IE_Pressed)||!Tick(W,20)||!W.World->InjectKey(Fire,IE_Released)||!Tick(W,2)) return false;
+    TestTrue(TEXT("Taking the wheel puts the drawn bow aside without firing"),C->HelmOccupiesHands()&&!Kit->IsBowDrawing()&&Kit->Ammo==Ammo&&W.Hero()->GetViewmodel()->bHiddenInGame);
+    for(const TCHAR* Name:{TEXT("Fire"),TEXT("Melee"),TEXT("Reload"),TEXT("Block"),TEXT("WeaponOne")})
+        if(!W.Press(Action(W,Name))) return false;
+    TestTrue(TEXT("The stowed bow cannot fire, reload, guard or switch while hands are occupied"),C->HelmOccupiesHands()&&!Kit->IsBowDrawing()&&!Kit->IsCommittedStrike()&&!Kit->bReloading&&!Kit->IsGuardHeld()&&Kit->Ammo==Ammo&&W.Hero()->WeaponId==18);
+    if(!W.World->InjectKey(Use,IE_Released)) return false;
+    TestTrue(TEXT("Release frees hands immediately, before the next world tick"),!C->HelmOccupiesHands()&&C->HelmState().HeldMs==0&&!W.Hero()->GetViewmodel()->bHiddenInGame);
+    if(!Tick(W,2)||!W.Hold(Fire,50)) return false;
+    TestEqual(TEXT("Normal firing works again after releasing the helm"),Kit->Ammo,Ammo-1);
+    if(!SoraHelmAutomation::Correct(*W.World,Use)) return false;
+    TestEqual(TEXT("The ranged loadout can complete the same real correction"),C->HelmState().Corrected,3u);
+    if(!W.Press(Action(W,TEXT("WeaponFour")))||!Tick(W,45)||!W.Press(Fire)) return false;
+    const int32 GunAmmo=Kit->Ammo,Gun=W.Hero()->WeaponId;
+    if(!TestTrue(TEXT("A normal firearm shot leaves room in the magazine"),Gun!=18&&!SoraHistoricalArms::IsMelee(Gun)&&GunAmmo<FSoraCatalog::Get().Weapon(Gun).Magazine)) return false;
+    if(!Alarm(W)||!Walk(W,C->HelmWheelPoint()+FVector(-190,0,0))||!W.World->InjectKey(Use,IE_Pressed)||!Tick(W,20)) return false;
+    if(!W.Press(Action(W,TEXT("Reload")))||!W.Press(Fire)) return false;
+    TestTrue(TEXT("A partially empty firearm cannot reload or fire with both hands on the wheel"),C->HelmOccupiesHands()&&!Kit->bReloading&&Kit->Ammo==GunAmmo);
+    if(!W.World->InjectKey(Use,IE_Released)||!Tick(W,2)||!W.Press(Action(W,TEXT("Reload")))) return false;
+    if(!TestTrue(TEXT("Normal reload begins after releasing the wheel"),Kit->bReloading)||!W.Press(Use)) return false;
+    TestTrue(TEXT("Reloading refuses helm admission without cancelling or crediting either action"),Kit->bReloading&&!C->HelmOccupiesHands()&&C->HelmState().HeldMs==0);
+    for(int Frame=0;Frame<600&&Kit->bReloading;++Frame) if(!Tick(W,1)) return false;
+    if(!TestFalse(TEXT("The ordinary reload completes"),Kit->bReloading)||!SoraHelmAutomation::Correct(*W.World,Use)) return false;
+    TestEqual(TEXT("All three corrections preserve the currently selected ranged arm"),W.Hero()->WeaponId,Gun);
+    TestTrue(TEXT("All three heading corrections are earned"),(C->ActiveBeat()==13&&C->HelmState().Corrected==7u)||(C->ActiveBeat()==14&&!W.Mode()->bDefeated));
+    return !HasAnyErrors();
 }
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraHelmTrimTest,"SoraArena.Campaign.HelmTrim",
  EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
@@ -77,7 +166,7 @@ bool FSoraHelmTrimTest::RunTest(const FString& Parameters)
     if(!W.Press(EKeys::SpaceBar)||!Tick(W,5)) return false;
     TestFalse(TEXT("An airborne hand cannot correct the wheel"),C->AtHelmWheel());
     if(!Tick(W,100)) return false;
-    if(!W.Hold(EKeys::E,60)||!Tick(W,2)) return false;
+    if(!SoraHelmAutomation::Stow(*W.World)||!W.Hold(EKeys::E,60)||!Tick(W,2)) return false;
     TestTrue(TEXT("Releasing early resets correction without clearing the alarm"),C->HelmNeedsTrim()&&!C->HelmState().Working&&C->HelmState().HeldMs==0);
     const int32 Clock=C->TaskProgress().ElapsedMs;
     if(!W.Press(EKeys::Escape)||!W.Hero()->RemapCombatAction(TEXT("Interact"),EKeys::G)||!Tick(W,20,.5f)) return false;

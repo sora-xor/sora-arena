@@ -580,7 +580,7 @@ float USoraCampaignDirector::CarryPace() const
 bool USoraCampaignDirector::CanHold(int32 WeaponId,bool bNotify)
 {
     if(!Mode().bCampaign||WeaponId<0||WeaponId>=SoraBeatRules::WeaponCount) return true;
-    if(CrankOccupiesHands())
+    if(HelmOccupiesHands()||CrankOccupiesHands())
     {
         if(bNotify) Notify(SoraText::Line(NSLOCTEXT("SoraArena.Campaign","CrankHands","両手で輪を回している。手を離せば武器を使える。")),3.f);
         return false;

@@ -263,6 +263,7 @@ private:
     FName KitWork;
     FVector KitAnchor = FVector::ZeroVector;
     float KitHoldRadius = 0.f;
+    FVector2D KitHoldSize = FVector2D::ZeroVector;
     // Carry: the item's kind, each drop-off, and the loads shown delivered there.
     FName KitItemKind;
     TArray<FVector> KitDropoffs;

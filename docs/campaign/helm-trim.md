@@ -20,6 +20,22 @@ The heading needle moves back to centre during the hold. Existing authored
 `trim_event` dialogue fires at each alarm; bilingual notices identify the
 current input binding, and the objective tracks remaining time and grace.
 
+The visible hold boundary and its progress fill now use that same rectangular
+volume; the generic circular hold ring and posts are omitted for this beat.
+Its fill grows across the rectangle, with its edges kept inside the hold.
+
+Helm correction reserves both hands through the campaign's ordinary weapon
+permission path. With a melee arm selected, the player first uses the mapped
+Sheathe action and waits for its existing 700 ms stow to finish. Interact gives
+the current binding when the blade is still out. A ranged weapon is put aside
+on taking the wheel: an existing held trigger or bow draw stops without a shot
+or an ammunition change. An active strike, reload, step or stagger must finish
+before work can begin. During correction, firing, melee, guarding, reloading,
+drawing and changing weapons are refused. Release, damage, leaving reach,
+completion and failure restore the selected weapon's visibility and permission;
+a sheathed blade remains sheathed. The final authored helm grip animation is
+still outstanding; hiding the stowed weapon does not claim that animation.
+
 The following choices resolve details the script does not specify:
 
 - Ordinary holding continues during the grace period. Once grace expires,
@@ -39,16 +55,25 @@ The following choices resolve details the script does not specify:
 The dedicated CPU gate covers exact frame-partition invariance, grace,
 decay, interruption, contest, all three corrections and difficulty deadlines;
 it also validates authored data and clear wheel/beacon placement. It is part
-of the gameplay source group. Two engine fixtures are supplied as
-`SoraArena.Campaign.HelmTrim` and `SoraArena.Campaign.HelmDeadline`, with
+of the gameplay source group. Three engine fixtures are supplied as
+`SoraArena.Campaign.HelmTrim`, `SoraArena.Campaign.HelmDeadline` and
+`SoraArena.Campaign.HelmHandsAndFloor`, with
 ordinary walking/held keyboard and gamepad input, obstruction and airborne
 refusals, remapping, pause, checkpoint bytes, fresh-world reload and retry.
+The hands/floor fixture checks the production component bounds, both sides of
+the previous circle/rectangle mismatch, actual mapped sheathing, weapon-action
+refusals with a blade/bow/partially spent firearm, damage and release restoration,
+and an ordinary reload that must finish before wheel admission.
 Their opponents are deliberately isolated to test the mechanism. Aggregate
 campaign traversal now works the actual wheel rather than crediting the hold
 without corrections.
 
 At this source checkpoint no Unreal compilation, engine fixture run, render,
 package, platform performance or human pacing result is claimed. Root owns
-those execution gates. The first CPU/source run preserved 50 passes and two
-font-dependent failures caused by an unmaterialized tracked LFS font; the
-font is then checked out before final source qualification.
+those execution gates. The original implementation's first CPU/source run
+preserved 50 passes and two font-dependent failures caused by an
+unmaterialized tracked LFS font; after materializing it, all 52 source gates
+passed. The hands/floor correction's first source run preserved 51 passes
+and one localization refusal; its hands notice now reuses the existing
+localized wheel notice. Source reports and their hashes accompany the
+handoff; none establishes an Unreal compilation or runtime result.
