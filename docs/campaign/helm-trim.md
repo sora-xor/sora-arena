@@ -15,7 +15,8 @@ vista, final wheel art or ordinary-control encounter balance.
 `SoraHelmRules` and `SoraCampaignHelm` replace the generic hold progression for
 this beat. The player must walk to the colliding wheel, stand on its floor,
 have an unobstructed reach trace, and hold the current mapped Interact key.
-Releasing, leaving reach, jumping or taking a hit resets partial correction.
+Releasing, leaving reach, jumping, opening a menu or taking a hit resets partial
+correction.
 The heading needle moves back to centre during the hold. Existing authored
 `trim_event` dialogue fires at each alarm; bilingual notices identify the
 current input binding, and the objective tracks remaining time and grace.
@@ -31,8 +32,8 @@ the current binding when the blade is still out. A ranged weapon is put aside
 on taking the wheel: an existing held trigger or bow draw stops without a shot
 or an ammunition change. An active strike, reload, step or stagger must finish
 before work can begin. During correction, firing, melee, guarding, reloading,
-drawing and changing weapons are refused. Release, damage, leaving reach,
-completion and failure restore the selected weapon's visibility and permission;
+drawing and changing weapons are refused. Release, menu opening, damage,
+leaving reach, completion and failure restore the selected weapon's visibility and permission;
 a sheathed blade remains sheathed. The final authored helm grip animation is
 still outstanding; hiding the stowed weapon does not claim that animation.
 
@@ -47,23 +48,32 @@ The following choices resolve details the script does not specify:
 - A correction must finish within the grace period to avoid any decay.
   Reaching the wheel alone does not suspend the clock. Deadline expiry wins
   if it coincides with completion.
-- The timer and partial correction stop with the paused game. Beat state is
-  temporary: deadline failure, death retry and fresh checkpoint load restart
+- The deadline clock, grace and ordinary hold progress freeze with the paused
+  game. Opening a menu cancels partial wheel correction immediately, frees both
+  hands and restores weapon visibility. Resuming requires a fresh Interact
+  press and a full uninterrupted correction; keeping the key down across the
+  menu does not restart work. This follows the existing held-action focus policy.
+  Beat state is temporary: deadline failure, death retry and fresh checkpoint load restart
   the hold, all trim thresholds and the difficulty deadline. Partial work
   does not create an additional save or alter the save schema.
 
 The dedicated CPU gate covers exact frame-partition invariance, grace,
 decay, interruption, contest, all three corrections and difficulty deadlines;
 it also validates authored data and clear wheel/beacon placement. It is part
-of the gameplay source group. Three engine fixtures are supplied as
+of the gameplay source group. Four engine fixtures are supplied as
 `SoraArena.Campaign.HelmTrim`, `SoraArena.Campaign.HelmDeadline` and
-`SoraArena.Campaign.HelmHandsAndFloor`, with
+`SoraArena.Campaign.HelmHandsAndFloor`, plus
+`SoraArena.Campaign.HelmActiveHoldPause`, with
 ordinary walking/held keyboard and gamepad input, obstruction and airborne
 refusals, remapping, pause, checkpoint bytes, fresh-world reload and retry.
 The hands/floor fixture checks the production component bounds, both sides of
 the previous circle/rectangle mismatch, actual mapped sheathing, weapon-action
 refusals with a blade/bow/partially spent firearm, damage and release restoration,
 and an ordinary reload that must finish before wheel admission.
+The active-hold pause fixture opens the menu before releasing a real partial
+correction, checks immediate hand/visibility restoration and exact frozen
+elapsed/grace/progress values, then exercises release during pause and a held
+key across resume. A fresh press must earn the full correction after both.
 Their opponents are deliberately isolated to test the mechanism. Aggregate
 campaign traversal now works the actual wheel rather than crediting the hold
 without corrections.

@@ -121,6 +121,7 @@ void ASoraGameMode::SetMenuOpen(bool bOpen)
         if(CampaignDirector)
         {
             CampaignDirector->StopPlayerCrank();
+            CampaignDirector->CancelHelm();
             CampaignDirector->CancelSpineCut();
             CampaignDirector->CancelConstructCut();
             CampaignDirector->ReleaseWindBrace();

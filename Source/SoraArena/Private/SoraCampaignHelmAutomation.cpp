@@ -170,7 +170,7 @@ bool FSoraHelmTrimTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("Releasing early resets correction without clearing the alarm"),C->HelmNeedsTrim()&&!C->HelmState().Working&&C->HelmState().HeldMs==0);
     const int32 Clock=C->TaskProgress().ElapsedMs;
     if(!W.Press(EKeys::Escape)||!W.Hero()->RemapCombatAction(TEXT("Interact"),EKeys::G)||!SoraHelmTest::Tick(W,20,.5f)) return false;
-    TestEqual(TEXT("Pause freezes the deadline and grace"),C->TaskProgress().ElapsedMs,Clock);
+    TestEqual(TEXT("Pause freezes the elapsed deadline clock"),C->TaskProgress().ElapsedMs,Clock);
     W.Mode()->ResumePlay();if(!SoraHelmTest::Tick(W,2)||!W.Hold(EKeys::E,130)) return false;
     TestTrue(TEXT("Old binding does not correct the wheel"),C->HelmNeedsTrim());
     if(!SoraHelmAutomation::Correct(*W.World,EKeys::G)) return false;
@@ -190,6 +190,67 @@ bool FSoraHelmTrimTest::RunTest(const FString& Parameters)
     }
     for(int F=0;F<1200&&C->ActiveBeat()==13;++F) if(!SoraHelmTest::Tick(W,1)) return false;
     TestTrue(TEXT("Ordinary hold and three mapped corrections complete the production site"),C->ActiveBeat()!=13&&!W.Mode()->bDefeated);
+    return !HasAnyErrors();
+}
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraHelmPauseTest,"SoraArena.Campaign.HelmActiveHoldPause",
+ EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraHelmPauseTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;SoraHelmTest::FBeatWorld W(*this,TEXT("HelmActiveHoldPause"),6,13);
+    if(!SoraHelmTest::Start(W)) return false;
+    auto* C=W.Campaign();auto* Kit=W.Hero()->GetEquipment();
+    if(!SoraHelmTest::Walk(W,C->HelmWheelPoint()+FVector(-190,0,0))||
+        !SoraHelmAutomation::Stow(*W.World)||!SoraHelmTest::Alarm(W)) return false;
+    const FKey Use=SoraHelmTest::Action(W,TEXT("Interact"));
+    const int32 Weapon=W.Hero()->WeaponId,Ammo=Kit->Ammo;
+    const bool Sheathed=Kit->IsSheathed();
+    // Exercise both physical release while paused and a key kept down across
+    // resume. Neither may revive partial work without a fresh gameplay press.
+    for(bool ReleaseWhilePaused:{true,false})
+    {
+        const int32 WorkClock=C->TaskProgress().ElapsedMs;
+        if(!W.World->InjectKey(Use,IE_Pressed)||!SoraHelmTest::Tick(W,60)) return false;
+        const auto Before=C->HelmState();
+        const int32 Clock=C->TaskProgress().ElapsedMs,Progress=C->TaskProgress().Progress;
+        if(!TestTrue(TEXT("Pause starts during real partial wheel work, with grace remaining"),
+            C->HelmOccupiesHands()&&Before.HeldMs>0&&Before.HeldMs<W.BeatData().Space.Helm.Contract.WorkMs&&
+            Before.GraceMs>0&&W.Hero()->GetViewmodel()->bHiddenInGame)) return false;
+        TestEqual(TEXT("Partial correction accounts for exactly the active held time"),Before.HeldMs,Clock-WorkClock);
+        // Observe menu cleanup before a world tick or an Interact release can
+        // hide a missing cancellation behind normal TickHelm processing.
+        if(!W.World->InjectKey(EKeys::Escape,IE_Pressed)) return false;
+        if(!TestTrue(TEXT("Opening pause immediately frees helm hands and discards partial work"),
+            W.Mode()->bMenu&&W.World->GetTestWorld()->IsPaused()&&!C->HelmOccupiesHands()&&
+            !C->HelmState().Working&&C->HelmState().HeldMs==0&&!W.Hero()->GetViewmodel()->bHiddenInGame)) return false;
+        TestEqual(TEXT("Opening pause does not advance the deadline"),C->TaskProgress().ElapsedMs,Clock);
+        TestEqual(TEXT("Opening pause does not spend grace"),C->HelmState().GraceMs,Before.GraceMs);
+        if(!W.World->InjectKey(EKeys::Escape,IE_Released)||
+            (ReleaseWhilePaused&&!W.World->InjectKey(Use,IE_Released))||!SoraHelmTest::Tick(W,20,.5f)) return false;
+        TestEqual(TEXT("Ten paused seconds leave the elapsed deadline exact"),C->TaskProgress().ElapsedMs,Clock);
+        TestEqual(TEXT("Ten paused seconds leave grace exact"),C->HelmState().GraceMs,Before.GraceMs);
+        TestEqual(TEXT("Pause preserves the authored deadline"),C->HelmState().DeadlineMs,Before.DeadlineMs);
+        TestEqual(TEXT("Pause grants no hold progress"),C->TaskProgress().Progress,Progress);
+        TestEqual(TEXT("Pause preserves the pending heading alarm"),C->HelmState().Pending,Before.Pending);
+        TestEqual(TEXT("Pause does not raise another heading alarm"),C->HelmState().Raised,Before.Raised);
+        TestEqual(TEXT("Pause credits no correction"),C->HelmState().Corrected,Before.Corrected);
+        TestTrue(TEXT("Partial work remains cancelled throughout pause"),!C->HelmState().Working&&C->HelmState().HeldMs==0);
+        if(!W.Press(EKeys::Escape)||!SoraHelmTest::Tick(W,30)) return false;
+        const int32 ResumedMs=C->TaskProgress().ElapsedMs-Clock;
+        TestTrue(TEXT("Mapped resume restarts the ordinary campaign clock"),!W.Mode()->bMenu&&!W.World->GetTestWorld()->IsPaused()&&ResumedMs>0);
+        TestEqual(TEXT("Grace spends only actual resumed time"),C->HelmState().GraceMs,FMath::Max(0,Before.GraceMs-ResumedMs));
+        TestTrue(TEXT("Resume without a fresh Interact press cannot restart or complete work"),
+            !C->HelmOccupiesHands()&&!C->HelmState().Working&&C->HelmState().HeldMs==0&&C->HelmState().Corrected==Before.Corrected);
+        TestTrue(TEXT("Menu cancellation restores the selected weapon without changing its state"),
+            !W.Hero()->GetViewmodel()->bHiddenInGame&&W.Hero()->WeaponId==Weapon&&Kit->Ammo==Ammo&&Kit->IsSheathed()==Sheathed);
+        if(!ReleaseWhilePaused&&!W.World->InjectKey(Use,IE_Released)) return false;
+    }
+    if(!W.World->InjectKey(Use,IE_Pressed)||!SoraHelmTest::Tick(W,60)) return false;
+    TestTrue(TEXT("A fresh press must earn a new full correction rather than resume either discarded half"),
+        C->HelmOccupiesHands()&&C->HelmState().HeldMs>0&&C->HelmState().HeldMs<W.BeatData().Space.Helm.Contract.WorkMs&&C->HelmState().Corrected==0u);
+    if(!SoraHelmTest::Tick(W,65)||!W.World->InjectKey(Use,IE_Released)) return false;
+    TestTrue(TEXT("Fresh uninterrupted held input completes the pending correction and restores visibility"),
+        C->HelmState().Corrected==1u&&!C->HelmNeedsTrim()&&!C->HelmOccupiesHands()&&C->HelmState().HeldMs==0&&
+        !W.Hero()->GetViewmodel()->bHiddenInGame&&W.Hero()->WeaponId==Weapon&&Kit->Ammo==Ammo&&Kit->IsSheathed()==Sheathed);
     return !HasAnyErrors();
 }
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraHelmDeadlineTest,"SoraArena.Campaign.HelmDeadline",
