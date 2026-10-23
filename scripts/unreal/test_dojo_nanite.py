@@ -1,8 +1,11 @@
 """CPU contract tests with explicit fake editor objects; no engine execution."""
 import copy
+import hashlib
 import importlib.util
 import json
+import os
 from pathlib import Path
+import tempfile
 from types import SimpleNamespace as NS
 import unittest
 
@@ -83,6 +86,7 @@ class Mesh:
         self.simple = 0; self.complexity = "Default"; self.collision = False; self.shadow = True
         self.nanite_triangles = 704; self.nanite_vertices = 1000
         self.cpu_access = False
+        self.hi_res_source = ""
     def get_editor_property(self, name):
         if name == "allow_cpu_access": return self.cpu_access
         assert name == "static_materials"
@@ -100,6 +104,8 @@ class Mesh:
 class Editor:
     def __init__(self, changed=None):
         self.changed = changed; self.applied = 0; self.restore_screens = True; self.bad_restored_screens = False
+        self.imports = 0; self.removals = 0; self.import_result = True; self.remove_result = True
+        self.after_import = None; self.leave_old_source = False
     def get_lod_count(self, mesh): return len(mesh.lods)
     def get_lod_screen_sizes(self, mesh): return mesh.screens
     def get_lod_material_slot(self, mesh, lod, section): return mesh.lods[lod][3][section]
@@ -108,15 +114,31 @@ class Editor:
     def get_simple_collision_count(self, mesh): return mesh.simple
     def get_collision_complexity(self, mesh): return mesh.complexity
     def get_nanite_settings(self, mesh): return copy.deepcopy(mesh.settings)
+    def get_nanite_source_filename(self, mesh): return mesh.hi_res_source
+    def update_nanite_source_filename(self, mesh, filename):
+        assert filename == ""
+        self.removals += 1
+        if self.remove_result and not self.leave_old_source: mesh.hi_res_source = ""
+        return self.remove_result
+    def import_nanite_hi_res_mesh(self, mesh, filename, show_dialog):
+        assert show_dialog is False
+        assert Path(filename).is_file()
+        self.imports += 1
+        if self.import_result:
+            mesh.hi_res_source = filename
+            mesh.settings.values["enabled"] = True
+        if self.after_import: self.after_import(mesh)
+        return self.import_result
     def set_lod_screen_sizes(self, mesh, values):
         if not self.restore_screens: return False
         mesh.screens = list(values[:len(mesh.lods)])
         if self.bad_restored_screens: mesh.screens[-1] += .1
         return True
     def set_nanite_settings(self, mesh, settings, apply):
-        assert apply is True
-        mesh.settings = copy.deepcopy(settings); self.applied += 1
-        if self.changed: self.changed(mesh)
+        mesh.settings = copy.deepcopy(settings)
+        if apply:
+            self.applied += 1
+            if self.changed: self.changed(mesh)
 
 
 class Assets:
@@ -131,10 +153,17 @@ class Assets:
 class DojoNaniteTests(unittest.TestCase):
     def setUp(self):
         self.mesh = Mesh(); self.editor = Editor()
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        self.source_root = Path(directory.name)
+        self.source = self.source_root / "LOD0.fbx"
+        # This test supplies only identity bytes; no FBX parser or engine runs.
+        self.source.write_bytes(b"host fixture source identity")
         self.module = dict(asset="SM_Dojo", lods=[{"triangles": n} for n in (4, 2, 2)], material_slots=self.mesh.names[:])
+        self.module["lods"][0].update(file=self.source.name, sha256=hashlib.sha256(self.source.read_bytes()).hexdigest())
         self.library = NS(has_material_usage=lambda material, usage: usage in material.usages)
         self.assets = Assets()
-    def enable(self): return D.enable_full_fallback(self.mesh, self.module, self.editor, U, self.library, self.assets)
+    def enable(self): return D.enable_full_fallback(self.mesh, self.module, self.editor, U, self.library, self.assets, self.source_root)
 
     def test_explicit_full_fallback_retains_three_authored_lods_slots_and_foliage(self):
         before, _ = D.conventional(self.mesh, self.editor, Procedural)
@@ -149,6 +178,8 @@ class DojoNaniteTests(unittest.TestCase):
         self.assertFalse(result["conventional_after"]["allow_cpu_access"])
         self.assertIn("UV1+ values", result["geometry_readback"]["not_compared"])
         self.assertEqual(self.assets.saves, 2)
+        self.assertEqual(result["nanite_source"]["sha256"], self.module["lods"][0]["sha256"])
+        self.assertEqual(result["nanite_source"]["resolved_file"], str(self.source.resolve()))
         json.dumps(result)
 
     def test_repeat_import_explicitly_resets_old_nanite_before_baseline_and_reenables(self):
@@ -158,6 +189,67 @@ class DojoNaniteTests(unittest.TestCase):
         second = self.enable()
         self.assertEqual(first, second)
         self.assertEqual(self.editor.applied, 3)
+        self.assertEqual(self.editor.imports, 2)
+        self.assertEqual(self.editor.removals, 1)
+
+    def test_old_nanite_source_must_be_removed_before_repeat_conventional_import(self):
+        for field in ("remove_result", "leave_old_source"):
+            with self.subTest(field=field):
+                self.setUp(); self.mesh.hi_res_source = "/missing/previous-source.fbx"
+                setattr(self.editor, field, field == "leave_old_source")
+                with self.assertRaisesRegex(RuntimeError, "previous Nanite source"):
+                    D.prepare_conventional(self.mesh, self.editor)
+        self.setUp(); self.mesh.hi_res_source = "/missing/previous-source.fbx"
+        D.prepare_conventional(self.mesh, self.editor)
+        self.assertEqual(self.mesh.hi_res_source, "")
+        self.assertFalse(self.mesh.settings.values["enabled"])
+
+    def test_baseline_cannot_be_already_nanite_or_have_a_prior_source(self):
+        for field in ("enabled", "source"):
+            self.setUp()
+            if field == "enabled": self.mesh.settings.values["enabled"] = True
+            else: self.mesh.hi_res_source = str(self.source)
+            with self.assertRaisesRegex(RuntimeError, "ordinary baseline must precede"): self.enable()
+            self.assertEqual(self.assets.saves, 0)
+            self.assertEqual(self.editor.imports, 0)
+
+    def test_missing_or_corrupt_original_source_is_never_imported(self):
+        for missing in (False, True):
+            self.setUp()
+            if missing: self.source.unlink()
+            else: self.source.write_bytes(b"unreviewed replacement")
+            with self.assertRaisesRegex(RuntimeError, "original LOD0 source"): self.enable()
+            self.assertEqual(self.assets.saves, 0)
+            self.assertEqual(self.editor.imports, 0)
+
+    def test_hires_api_success_requires_exact_source_readback_and_final_source_identity(self):
+        self.editor.import_result = False
+        with self.assertRaisesRegex(RuntimeError, "source import failed"): self.enable()
+        for filename in ("", "/different/LOD0.fbx"):
+            self.setUp(); self.editor.after_import = lambda m: setattr(m, "hi_res_source", filename)
+            with self.assertRaisesRegex(RuntimeError, "source filename differs"): self.enable()
+        self.setUp(); self.editor.changed = lambda m: setattr(m, "hi_res_source", "/changed-during-final-build.fbx")
+        with self.assertRaisesRegex(RuntimeError, "source filename differs"): self.enable()
+        self.setUp(); self.editor.after_import = lambda m: self.source.write_bytes(b"changed during import")
+        with self.assertRaisesRegex(RuntimeError, "original LOD0 source hash changed"): self.enable()
+        self.setUp(); self.assets.on_save = lambda m, n: self.source.write_bytes(b"changed before import") if n == 1 else None
+        with self.assertRaisesRegex(RuntimeError, "original LOD0 source hash changed"): self.enable()
+        self.assertEqual(self.editor.imports, 0)
+        self.setUp()
+        relative = os.path.relpath(self.source)
+        self.editor.after_import = lambda m: setattr(m, "hi_res_source", relative)
+        result = self.enable()
+        self.assertEqual(result["nanite_source"]["readback_file"], relative)
+        self.assertEqual(result["nanite_source"]["resolved_file"], str(self.source.resolve()))
+
+    def test_hires_import_side_effects_are_compared_to_the_preimport_baseline(self):
+        def position(m): m.geometry[0][0][0][0].z += .0000152587890625
+        def material(m): m.materials.reverse()
+        def cpu_access(m): m.cpu_access = True
+        for change in (position, material, cpu_access):
+            with self.subTest(change=change.__name__):
+                self.setUp(); self.editor.after_import = change
+                with self.assertRaisesRegex(RuntimeError, "full fallback changed"): self.enable()
 
     def test_preserved_enable_flag_refusal_stops_reimport(self):
         self.mesh.settings.values["enabled"] = True
@@ -296,7 +388,8 @@ class DojoNaniteTests(unittest.TestCase):
             self.assertEqual(self.editor.applied, 0)
 
     def test_authored_missing_or_duplicate_slots_and_triangle_changes_stop_before_enabling(self):
-        for key, value in (("lods", [{"triangles": 700}]), ("material_slots", ["M_Timber", "M_Timber"])):
+        wrong_lod = dict(self.module["lods"][0], triangles=700)
+        for key, value in (("lods", [wrong_lod]), ("material_slots", ["M_Timber", "M_Timber"])):
             self.setUp(); self.module[key] = value
             with self.assertRaises(RuntimeError): self.enable()
             self.assertEqual(self.editor.applied, 0)

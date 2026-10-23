@@ -18,8 +18,8 @@ module and texture hash, and imports:
   binding slots M_Arch_<Role> to their instances. The coffer panels use
   M_SoraCraft with the kit's own design atlas.
 
-Nanite is enabled after the conventional import is audited, with a full
-explicit fallback retaining the same authored LODs on SM5. This is renderer
+Nanite uses the same verified LOD0 FBX as a separate source after capturing
+the conventional baseline, retaining the same authored LODs on SM5. This is renderer
 enablement of existing modules, not unique-beam art or runtime acceptance.
 """
 
@@ -397,7 +397,7 @@ def import_module(module, instances):
     mesh.set_editor_property("distance_field_self_shadow_bias", 0.5)
     # The helper saves both baselines, restores source LOD thresholds after
     # the Nanite build, then audits final saved geometry before success.
-    audit = enable_full_fallback(mesh, module, meshes, unreal, lib, assets)
+    audit = enable_full_fallback(mesh, module, meshes, unreal, lib, assets, ROOT)
     unreal.log("SORA_DOJO_NANITE_IMPORT " + json.dumps(audit, sort_keys=True))
     return name, slots
 
