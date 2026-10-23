@@ -39,15 +39,19 @@ void Sample(FWorld& W,const TCHAR* Label)
     for(const auto& Ally:Craft->AlliesInPlay()) if(IsValid(Ally))
     {
         const FVector Position=Ally->GetActorLocation();const auto* Movement=Ally->GetCharacterMovement();
-        const auto* Body=Ally->GetCapsuleComponent();FHitResult Support,Ceiling;
+        const auto* Body=Ally->GetCapsuleComponent();FHitResult Support,Ceiling,Bank;
         const bool HasSupport=W.World->GetTestWorld()->LineTraceSingleByChannel(Support,Position,Position-FVector(0,0,1000),ECC_WorldStatic,Query);
         const bool HasCeiling=W.World->GetTestWorld()->LineTraceSingleByChannel(Ceiling,Position,Position+FVector(0,0,1000),ECC_WorldStatic,Query);
-        W.Test.AddInfo(FString::Printf(TEXT("Flood companion %s id=%s local=%s velocity=%s mode=%d crouched=%d wants_crouch=%d half=%.2f gravity=%.2f move_tick=%d actor_tick=%d parent=%s support=%d/%s/%s ceiling=%d/%s/%s"),
+        const bool HasBank=Position.Y-Origin.Y<=SoraFloodRules::BankWaterY&&
+            W.World->GetTestWorld()->LineTraceSingleByChannel(Bank,FVector(Position.X,Position.Y,1000),FVector(Position.X,Position.Y,-1000),ECC_WorldStatic,Query);
+        W.Test.AddInfo(FString::Printf(TEXT("Flood companion %s id=%s local=%s velocity=%s mode=%d crouched=%d wants_crouch=%d half=%.2f gravity=%.2f move_tick=%d actor_tick=%d parent=%s support=%d/%s/%s ceiling=%d/%s/%s current_floor=%d/%.2f bank=%d/%s/%s/%.4f"),
             Label,*Ally->CompanionId(),*(Position-Origin).ToString(),*Movement->Velocity.ToString(),
             int32(Movement->MovementMode),Ally->IsCrouched(),Movement->bWantsToCrouch,Body->GetScaledCapsuleHalfHeight(),
             Movement->GravityScale,Movement->IsComponentTickEnabled(),Ally->IsActorTickEnabled(),*GetNameSafe(Ally->GetAttachParentActor()),
             HasSupport,*GetNameSafe(Support.GetComponent()),*(Support.ImpactPoint-Origin).ToString(),
-            HasCeiling,*GetNameSafe(Ceiling.GetComponent()),*(Ceiling.ImpactPoint-Origin).ToString()));
+            HasCeiling,*GetNameSafe(Ceiling.GetComponent()),*(Ceiling.ImpactPoint-Origin).ToString(),
+            Movement->CurrentFloor.IsWalkableFloor(),Movement->CurrentFloor.GetDistanceToFloor(),
+            HasBank,*GetNameSafe(Bank.GetComponent()),*(Bank.ImpactPoint-Origin).ToString(),Bank.ImpactNormal.Z));
     }
 }
 bool Walk(FWorld& W,const FVector& Local)
@@ -169,7 +173,11 @@ bool Cross(FWorld& W,const FKey& Dive,bool Late)
     }
     if(!W.Test.TestNotNull(TEXT("Toranosuke remains in play"),Carrier)||!W.Test.TestNotNull(TEXT("Iota remains in play"),Iota)) return false;
     Sample(W,TEXT("carrier wait begin"));
-    for(int32 Frame=0;Frame<600&&!OnBank(*Carrier,O);++Frame) if(!W.Tick(1)) return false;
+    for(int32 Frame=0;Frame<600&&!OnBank(*Carrier,O);++Frame)
+    {
+        if(Frame>0&&Frame%120==0) Sample(W,*FString::Printf(TEXT("carrier wait frame %d"),Frame));
+        if(!W.Tick(1)) return false;
+    }
     Sample(W,TEXT("carrier wait end"));
     if(!W.Test.TestTrue(TEXT("The carrier walks onto bank support with Iota still attached"),
         OnBank(*Carrier,O)&&Iota->GetAttachParentActor()==Carrier)) return false;
