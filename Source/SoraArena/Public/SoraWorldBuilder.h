@@ -113,6 +113,7 @@ public:
     float PlayerStartYaw() const { return bCampaignSpace ? CampaignStartYaw : 0.f; }
     // The active beat's task kit (SoraWorldBuilderLayoutTasks.cpp): built as
     // the beat starts, shown as its task goes on, cleared with the beat.
+    void BuildFlood(const FSoraBeat& Beat);
     void StageKit(const FSoraChapter& Chapter, int32 Beat);
     void ShowKit(const FSoraKitView& View);
     void ClearKit();

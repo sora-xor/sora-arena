@@ -47,6 +47,8 @@ bool USoraCampaignDirector::ObjectivePoint(FVector& Location,bool& bInteract) co
     if(IsToriiEpilogue()) return EpilogueObjective(Location,bInteract);
     if(IsArcheryLesson()) { Location=ArcheryLine(); bInteract=false; return !AtArcheryLine(); }
     if(bLiftGallery) { bInteract=false; return LiftExitPoint(Location); }
+    if(Beat->Space.Flood.bEnabled)
+        if(const auto* Craft=USoraFieldcraft::Get(this);Craft&&Craft->FloodObjective(Location)) { bInteract=false; return true; }
     const FSoraBeatSpace& Space=Beat->Space;
     const auto At=[&](const FVector2D& Point,bool bWorks) { Location=ASoraWorldBuilder::Floor(Point,Space.HeightCm); bInteract=bWorks; return true; };
     const auto VolumeOf=[&](const FString& Event) { return Space.Volumes.FindByPredicate([&](const FSoraVolume& Volume) { return Volume.Event==Event; }); };
@@ -167,6 +169,11 @@ FVector USoraCampaignDirector::SpawnLocation(int32 Slot) const
     const FSoraBeatSpace* Space=ActiveSpace();
     const ASoraPlayerCharacter* Hero=Mode().Hero();
     if(!Space||Space->Spawns.IsEmpty()) return Mode().Arena()?Mode().Arena()->SpawnPoint(Slot):FVector::ZeroVector;
+    if(Space->Flood.bEnabled)
+    {
+        const int32 Pick=FMath::Abs(Slot)%Space->Spawns.Num();
+        return FVector(Space->Spawns[Pick],Pick<3?320.f:Pick==3?380.f:216.f);
+    }
     if(Space->Spire.Enabled()) return Space->Spire.Spawns[FMath::Abs(Slot)%Space->Spire.Spawns.Num()]+FVector(0,0,120);
     if(Space->bRoute&&Chapter&&Hero)
     {

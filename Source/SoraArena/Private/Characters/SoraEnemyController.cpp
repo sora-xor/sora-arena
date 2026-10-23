@@ -329,7 +329,10 @@ void ASoraEnemyController::Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, 
     // The hero's footsteps are heard for as long as they last: softer when he
     // crouch-walks, louder or silent on the zone's floors.
     const UCharacterMovementComponent* Walk = Target.GetCharacterMovement();
-    if (Target.GetVelocity().Size2D() > 150.f && Walk && Walk->IsMovingOnGround())
+    const auto* WaterCraft=USoraFieldcraft::Get(&Target);
+    const FVector StepFeet=There-FVector(0.f,0.f,Target.GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+    const bool bFloodStroke=WaterCraft&&WaterCraft->FloodFootstepPermille(StepFeet)>=0;
+    if (Target.GetVelocity().Size2D() > 150.f && Walk && (Walk->IsMovingOnGround()||bFloodStroke))
     {
         const auto* Hero = Cast<ASoraPlayerCharacter>(&Target);
         const Stealth::ENoise Steps = Stealth::Steps(Hero && Hero->IsSprinting(),

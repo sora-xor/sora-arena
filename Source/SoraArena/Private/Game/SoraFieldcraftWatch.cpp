@@ -62,7 +62,7 @@ void USoraFieldcraft::StageWatch()
         FLightState& State = LightStates.AddDefaulted_GetRef();
         State.bOn = Row.ActiveOn.IsEmpty();
         const FVector Mount = Row.IsRoad() ? FVector::ZeroVector : FVector(Row.At, Row.HeightCm);
-        if (!Row.IsRoad())
+        if (!Row.IsRoad() && !FloodSpace)
         {
             Piece(TEXT("SearchlightPost_") + Row.Id, Layout::Cylinder, FVector(Row.At, Row.HeightCm * .5f), FVector(.25f, .25f, Row.HeightCm / 100.f),
                 FLinearColor(.38f, .38f, .4f), true, Layout::Metal);
@@ -216,7 +216,7 @@ void USoraFieldcraft::TickSearchlights(int32 DtMs)
             State.LockedMs = FMath::Max(0, State.LockedMs - DtMs);
             const float Bearing = Row.Yaw + Craft::BeamMilliDeg(Row.Rules, LightClockMs, Index * (Row.Rules.PeriodMs / 2)) / 1000.f;
             At = State.LockedMs > 0 ? State.LockedAt : FVector(Row.At, 0.f) + FRotator(0.f, Bearing, 0.f).Vector() * Row.ReachCm;
-            At.Z = (Staged->bWater && Staged->Water.Area.Contains(At) ? Layout::WaterLevel : 0.f) + 2.f;
+            At.Z = FloodSpace ? FloodSurfaceAt(At)+2.f : (Staged->bWater && Staged->Water.Area.Contains(At) ? Layout::WaterLevel : 0.f) + 2.f;
             From = FVector(Row.At, Row.HeightCm);
         }
         Spot->SetWorldLocation(At);
@@ -264,7 +264,7 @@ void USoraFieldcraft::TickSearchlights(int32 DtMs)
                 for (const auto& Companion : *List)
                     if (IsValid(Companion)) Query.AddIgnoredActor(Companion);
             FHitResult Hit;
-            bInSpot = !GetWorld()->LineTraceSingleByChannel(Hit, From + (Head - From).GetSafeNormal() * 100.f, Head, ECC_Visibility, Query);
+            bInSpot = !GetWorld()->LineTraceSingleByChannel(Hit, From + (Head - From).GetSafeNormal() * (FloodSpace?2.f:100.f), Head, ECC_Visibility, Query);
         }
         State.bSeesHero = bInSpot;
         const Craft::ESpotted Seen = Craft::Spotted(State.InSpotMs, bInSpot, DtMs, Row.Rules);

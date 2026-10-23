@@ -857,6 +857,18 @@ msgctxt "SoraArena.Fieldcraft,FireOut"
 msgid "竈の火が消えた　{Key} 長押しで点け直すまで炊き出しは止まる"
 msgstr "A cook-fire went out. The kitchen stops until you hold {Key} to relight it"
 
+#. Key:	FloodAirShaft
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,FloodAirShaft"
+msgid "頭上に空気　{Key} で浮かび、息を整えろ"
+msgstr "Air above. {Key} to rise and recover your breath"
+
+#. Key:	FloodDeepPassage
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,FloodDeepPassage"
+msgid "{Key} で潜れ　途中の明るい縦穴で息継ぎ"
+msgstr "{Key} to dive. Take a breath in the lit shaft midway"
+
 #. Key:	Free
 #: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
 msgctxt "SoraArena.Fieldcraft,Free"
