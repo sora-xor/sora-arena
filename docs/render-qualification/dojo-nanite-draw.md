@@ -49,6 +49,9 @@ records actual RHI, adapter, shader platform, all relevant cvar readbacks,
 actual request/processed frame numbers, engine visualization readbacks, and
 registered production DojoKit component/mesh/material identities, instance
 counts, bounds, Nanite resource availability and component disable flags.
+Bounds are queried through the component's `CalcBounds` at its current transform;
+the separate raw cached bounds are also retained because freshly populated
+instanced components can still have a zero cache before the first frame.
 Authoring enablement is recorded when editor data exists. These are context,
 **not draw counters**. Loose mesh `.uasset`/`.uexp`/`.ubulk` bytes are hashed
 by the running fixture; the archiver checks that they have not changed and

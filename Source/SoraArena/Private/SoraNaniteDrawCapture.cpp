@@ -66,11 +66,11 @@ struct FCVar
         Name=InName; Var=IConsoleManager::Get().FindConsoleVariable(InName);
         if (!Var) return false; Value=Var->GetString(); Flags=Var->GetFlags(); return true;
     }
-    void Set(const TCHAR* V) const { Var->SetWithCurrentPriority(V); }
+    void Set(const TCHAR* V) const { Var->Set(V,static_cast<EConsoleVariableFlags>(Flags&ECVF_SetByMask)); }
     bool Restore() const
     {
         if (!Var) return true;
-        Var->SetWithCurrentPriority(*Value); Var->SetFlags(Flags);
+        Set(*Value); Var->SetFlags(Flags);
         return Var->GetString()==Value&&Var->GetFlags()==Flags;
     }
 };
@@ -211,7 +211,13 @@ private:
 #if WITH_EDITORONLY_DATA
             O->SetBoolField(TEXT("authoring_nanite_enabled"),Mesh->IsNaniteEnabled());
 #endif
-            O->SetArrayField(TEXT("bounds_origin"),Vec(C->Bounds.Origin)); O->SetArrayField(TEXT("bounds_extent"),Vec(C->Bounds.BoxExtent));
+            // Instances were just populated; the public cached Bounds can
+            // still be zero before the first frame. Query their actual mesh
+            // and instance transforms without changing the production scene.
+            const FBoxSphereBounds Bounds=C->CalcBounds(C->GetComponentTransform());
+            O->SetStringField(TEXT("bounds_source"),TEXT("component CalcBounds at current transform; not render coverage"));
+            O->SetArrayField(TEXT("bounds_origin"),Vec(Bounds.Origin)); O->SetArrayField(TEXT("bounds_extent"),Vec(Bounds.BoxExtent));
+            O->SetArrayField(TEXT("cached_bounds_origin"),Vec(C->Bounds.Origin)); O->SetArrayField(TEXT("cached_bounds_extent"),Vec(C->Bounds.BoxExtent));
             const auto* Instances=Cast<UInstancedStaticMeshComponent>(C);
             O->SetNumberField(TEXT("instances"),Instances?Instances->GetInstanceCount():1);
             TArray<TSharedPtr<FJsonValue>> Materials;
