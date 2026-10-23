@@ -100,15 +100,32 @@ earlier `c99ee46e` preparation proof and current game bridge retain their own
 source scope; this new relation is not registered or used for settlement.
 
 Chapter-six b03's two climb routes, resting shelves, timed downward sentry and
-physical crawl exit are integrated at `ba35d36` from reviewed `855972c`.
-All 57 gameplay/tooling source checks pass at the clean candidate, and all
-30 changed source files match the integrated copies. Seven new directed
-engine fixtures and the existing climb, space and complete-playthrough
-regressions still require actual Unreal execution; the host checks do not
-establish physical traversal or visibility. Kohagi's climb-first/roof-wait
-behavior remains the next source substep. Chapter-six b02's physical depth/gate
-mechanism and chapter-five b07's finite repairs, rescue and bellows pressure
-are also under implementation after an authored-mechanic audit.
+physical crawl exit are integrated from reviewed `855972c`. Kohagi's physical
+climb-first/roof-wait path and a shelf-approach clearance correction are now
+integrated at `c5f5799`. Each frozen source candidate passed all 57
+gameplay/tooling checks; those checks did not establish Unreal traversal.
+
+The first actual build at `5c8b775` failed on a local variable shadowing a
+Director member; `f8f42ab` corrects that name only. At `c5f5799`, the actual
+source-bound editor build passes, but only four of thirteen selected tests
+pass. All eight climb fixtures except Loader, legacy Climb and the aggregate
+Playthrough fail; Loader, Spaces, input gating and pause pass. Original
+failures, build receipts and terminal logs are preserved.
+
+Diagnostic-only `623b683` builds and reproduces four focused failures. Actual
+sweeps show the player and Kohagi catching at the lower rest shelf's lip, and
+the extrusion route catching at the parapet lip. Their paths coincide with
+the support surface height. Sentry timing reaches the first look-down at
+20,000 ms for 240 frames, but that test subsequently fails while climbing to
+its observation position. This is evidence for a swept-path correction,
+not traversal acceptance. Collision remains enabled; no failed test is waived.
+
+CI `39967468401` separately passes all 77 source gates in five jobs at
+`5c8b775`, with an identical source/tested-merge tree. Root authenticated
+98 referenced evidence files. This run predates the compiler correction,
+guide and diagnostic commits and cannot qualify their runtime behavior.
+Chapter-six b02's physical depth/gate mechanism and chapter-five b07's finite
+repairs, rescue and bellows pressure remain under implementation.
 Photoreal art, ordinary-control campaign acceptance,
 new packages, actual M1/Windows performance and the remaining native/network/
 settlement criteria remain open. Claude's art ownership and queued requests
@@ -126,6 +143,9 @@ The helm archive is `campaign-helm-75708f3/runtime-targeted/`, CI is
 in [the renderer diagnostic](render-qualification/dojo-nanite-draw.md#bounded-floor-gi-source-controls-at-75708f3).
 The ceiling archive is `dojo-ceiling-replacement/` and the native source/test
 review and retained resource stop are under `native-carbine-a984a5c/`.
+Climb failures and source-bound build receipts are under
+`campaign-climb-c5f5799/runtime-targeted/` and
+`campaign-climb-623b683/runtime-targeted/`; CI is under `ci-5c8b775/`.
 
 ## October 23 package, Codex and Nanite qualification
 

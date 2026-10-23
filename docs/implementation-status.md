@@ -42,14 +42,16 @@ The ceiling-only control at `50ef7d6` likewise leaves the broad room dark;
 its six phases completed, all six originals were inspected and all candidate
 files restored. Only the ceiling's measured SDF/card representation changed.
 
-CI `39962705267` passes 76 gates in five jobs at `50ef7d6`; its tested merge has
-the same source tree, including both helm pause commits. Root authenticated
-all 99 referenced local evidence files. The chapter-six player climb, sentry
-and crawl source is integrated at `ba35d36`, matching reviewed `855972c` with
-57 passing gameplay/tooling source checks. Seven new engine fixtures and
-existing campaign regressions remain unexecuted. Kohagi's climb-first and
-roof-wait behavior is still being implemented. Earlier
-package, native, art and platform results retain their separate source scope.
+CI `39967468401` passes 77 gates in five jobs at `5c8b775`, with an identical
+source/tested-merge tree and 98 root-authenticated evidence files. It predates
+the subsequent compiler correction, Kohagi guide and diagnostic changes.
+Chapter-six climb candidate `c5f5799` builds in the actual editor, but nine of
+thirteen selected tests fail; Loader, Spaces, input gating and pause pass.
+Diagnostic-only `623b683` reproduces four focused failures and records the
+player/guide stopping at supporting ledge lips. Sentry timing passes its
+initial checks but its fixture later fails during player traversal. The
+physical route correction is pending, and all original failures are retained.
+Earlier package, native, art and platform results retain their source scope.
 Native `a984a5c` passes standalone composition/provenance checks and the
 independent canonical replay, but its actual privacy-crate compile stopped
 at the 30 GiB disk reserve before tests. No compiler error or completed proof
