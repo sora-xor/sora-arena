@@ -69,7 +69,7 @@ PARAMS = {
     "production_task": (("task",), ("stealth", "detection", "takedowns") + WAVE_COMPANIONS),
     "horseback_ride": (("horse", "mode", "route"),
                        ("complete", "gaits", "weapons", "convoy", "fear", "horse_stamina", "auto_steer",
-                        "dismount_allowed", "on_horse_down", "cargo", "objectives") + WAVE_COMPANIONS),
+                        "dismount_allowed", "on_horse_down", "on_spook", "cargo", "objectives") + WAVE_COMPANIONS),
     "boss": (("boss", "arena", "phases", "defeat"),
              ("intro_cinematic", "outro_cinematic", "checkpoint_per_phase", "telegraph", "barks",
               "trigger", "finisher")),

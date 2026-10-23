@@ -370,9 +370,28 @@ def _stamina(stamina, fail, where):
     return {"max": 100, "per_s": per_s, "lockout": STAMINA_LOCKOUT[0], "recover": STAMINA_LOCKOUT[1]}
 
 
+def spook_dismount(beat, fail):
+    """An explicit cargo policy, independent of the ordinary horse-down rule."""
+    params = beat["params"]
+    response = params.get("on_spook", "shy")
+    if type(response) is not str or response not in ("shy", "dismount_continue"):
+        fail(beat["id"], "on_spook must be shy or dismount_continue")
+    if response == "shy":
+        return False
+    fear = params.get("fear")
+    if (beat["type"] != "horseback_ride" or params.get("mode") != "cargo" or
+            params.get("dismount_allowed") is not True or params.get("on_horse_down") != "dismount_continue" or
+            not isinstance(params.get("cargo"), dict) or params["cargo"].get("carrier") != "pack_horse" or
+            not isinstance(fear, dict) or any(type(fear.get(key)) not in (int, float) or
+                not math.isfinite(fear[key]) or fear[key] <= 0 for key in ("spook_radius_cm", "recover_s"))):
+        fail(beat["id"], "spook dismount requires a fearful cargo mount, a led pack horse and foot continuation")
+    return True
+
+
 def _mount(beat, ride, fail):
     """The horse a ride or a mounted boss phase puts under the hero."""
     where = beat["id"]
+    dismount_on_spook = spook_dismount(beat, fail)
     if beat["type"] == "boss":
         mounted = [(index, phase["mount"]) for index, phase in enumerate(beat["params"]["phases"]) if "mount" in phase]
         if not mounted:
@@ -425,6 +444,7 @@ def _mount(beat, ride, fail):
         "spooks": [spook] if spook else [], "gait_caps": caps, "forced": forced,
         "weapons": weapons, "arcs": {str(weapon): arc for weapon, arc in sorted(arcs.items())},
         "dismount": bool(params.get("dismount_allowed", until_phase > 0)), "auto_steer": ride,
+        "spook_dismount": dismount_on_spook,
         "until_phase": until_phase, "pack": pack,
     }
 

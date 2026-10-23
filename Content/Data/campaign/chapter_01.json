@@ -8246,6 +8246,7 @@
      "arcs": {},
      "dismount": true,
      "auto_steer": true,
+     "spook_dismount": false,
      "until_phase": 0,
      "pack": [],
      "at": [

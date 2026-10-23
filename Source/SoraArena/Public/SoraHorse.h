@@ -66,6 +66,9 @@ public:
     void Place(const FVector& Location, float Yaw);
     // A hazard entered her fear radius, or the road spooks her.
     void Spook();
+    // Consumed once by the director after a real mounted own-spook onset.
+    // A led mare's fear is separate and never creates this notice.
+    bool ConsumeSpookOnset();
     // The fastest gait the road, a forced stretch or a laden pack mare allows.
     SoraMountRules::EGait Cap = SoraMountRules::EGait::Gallop;
     // The ride allows auto-steer; the player's setting (USoraSettings::AutoSteer) turns it on.
@@ -105,6 +108,8 @@ private:
     float LaneCm = 0.f;
     bool bWaiting = false;
     bool bSpookPending = false;
+    bool bSpookOnset = false;
+    void ClearSpookRequest() { bSpookPending=false; bSpookOnset=false; }
     float ClockCarryMs = 0.f;
     float LegPhase = 0.f;
     UStaticMeshComponent* Part(USceneComponent* Parent, const FString& Name, const TCHAR* Shape, FVector Location,

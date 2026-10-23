@@ -44,7 +44,8 @@ records an actual result. Host checks do not establish runtime acceptance.
 
 The b14 prose also requires **Kurimaru's own spook to dismount the rider** with
 foot continuation and the existing three-second whistle. That is separate
-from Bunta's lead-rope tug and remains an unimplemented follow-up in this
-candidate. Existing net-induced dismount behavior is unchanged. No cargo loss,
+from Bunta's lead-rope tug; its subsequent source implementation and pending
+runtime qualification are described in [kurimaru-spook-dismount.md](kurimaru-spook-dismount.md).
+Existing net-induced dismount behavior is unchanged. No cargo loss,
 pack proximity gate for unloading, extra spook damage, or training-ride
 dismount rule is introduced.

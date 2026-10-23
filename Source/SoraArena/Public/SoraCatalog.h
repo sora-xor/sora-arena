@@ -231,6 +231,8 @@ struct FSoraMount
     TArray<FSoraGaitCap> Caps;
     TArray<FSoraForcedGait> Forced;
     bool bDismount = true;
+    // Explicit cargo-ride policy; other rides merely shy when spooked.
+    bool bDismountOnSpook = false;
     // The horse follows the road unless the rider steers.
     bool bAutoSteer = false;
     // A mounted fight: the rider dismounts as this phase begins (0: never).

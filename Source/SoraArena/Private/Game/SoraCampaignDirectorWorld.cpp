@@ -423,7 +423,9 @@ void USoraCampaignDirector::TickHorses()
     }
     // A net's lock on the rider throws him: the horse stumbles (horse_down)
     // and he goes on foot, or back to the checkpoint where the ride says so.
+    const bool bSpookOnset=IsValid(Horse)&&Horse->ConsumeSpookOnset();
     if(IsMounted())
+    {
         if(const USoraCombatEffects* Effects=USoraCombatEffects::Get(this); Effects&&Effects->IsRooted(Hero))
         {
             ASoraPlayerCharacter* Rider=Mode().Hero();
@@ -433,6 +435,16 @@ void USoraCampaignDirector::TickHorses()
             RaiseBeatEvent(TEXT("horse_down"));
             if(!ActiveBeatData()||Mode().bDefeated) return;
         }
+        else if(Space->bMount&&Space->Mount.bDismountOnSpook&&bSpookOnset)
+        {
+            // Pure fright dismounts without the net's thrown damage. The
+            // rooted case above keeps priority when both happen together.
+            Dismount();
+            Fire(TEXT("dismount"));
+            RaiseBeatEvent(TEXT("horse_down"));
+            if(!ActiveBeatData()||Mode().bDefeated) return;
+        }
+    }
     // She answers his whistle.
     if(WhistleAt>=0.0&&GetWorld()&&GetWorld()->GetTimeSeconds()>=WhistleAt&&IsValid(Horse)&&!IsMounted())
     {

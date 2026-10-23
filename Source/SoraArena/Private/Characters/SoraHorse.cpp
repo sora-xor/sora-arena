@@ -171,10 +171,12 @@ void ASoraHorse::SetRide(const FSoraMount& Mount,const FSoraZone* InRoad)
     bAutoSteer=Mount.bAutoSteer&&Road!=nullptr;
     Chainage=Road?Road->ChainageOf(FVector2D(GetActorLocation())):0.f;
     Ride=SoraMountRules::FRide();
+    ClearSpookRequest();
 }
 void ASoraHorse::Place(const FVector& Location,float Yaw)
 {
     ClearLeadTug();
+    ClearSpookRequest();
     SetActorLocationAndRotation(FVector(Location.X,Location.Y,HorseFrameZ),FRotator(0,Yaw,0),false,nullptr,ETeleportType::TeleportPhysics);
     Ride.Gait=SoraMountRules::EGait::Halt;
     if(Road) Chainage=Road->ChainageOf(FVector2D(Location));
@@ -188,6 +190,7 @@ bool ASoraHorse::Mount(ASoraPlayerCharacter& Rider)
 {
     if(RiderPawn.IsValid()) return false;
     ClearLeadTug();
+    ClearSpookRequest();
     UCharacterMovementComponent* Movement=Rider.GetCharacterMovement();
     Movement->StopMovementImmediately();
     Movement->DisableMovement();
@@ -202,6 +205,7 @@ bool ASoraHorse::Mount(ASoraPlayerCharacter& Rider)
 void ASoraHorse::Dismount()
 {
     ClearLeadTug();
+    ClearSpookRequest();
     ASoraPlayerCharacter* Rider=RiderPawn.Get();
     RiderPawn=nullptr;
     if(!Rider) return;
@@ -253,6 +257,12 @@ void ASoraHorse::Spook()
     if(!Leader.IsValid()) { bSpookPending=true; return; }
     if(SoraMountRules::StartLeadFear(LeadFear,LeadRecoveryMs)) PullLeader();
 }
+bool ASoraHorse::ConsumeSpookOnset()
+{
+    const bool bStarted=RiderPawn.IsValid()&&bSpookOnset;
+    bSpookOnset=false;
+    return bStarted;
+}
 void ASoraHorse::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
@@ -288,8 +298,12 @@ void ASoraHorse::TickRidden(int32 DeltaMs,float DeltaSeconds)
     Control.Rein=Legs<-.5f;
     Control.Cap=Cap;
     Control.Spook=bSpookPending;
-    bSpookPending=false;
+    const bool bWasSpooked=Spooked(Ride);
     Step(Ride,Rules,Control);
+    // Retain requests through sub-millisecond ticks. The notice survives
+    // until the director ticks, regardless of the two actors' tick order.
+    if(DeltaMs>0) bSpookPending=false;
+    bSpookOnset|=!bWasSpooked&&Spooked(Ride);
     float Yaw=GetActorRotation().Yaw;
     const float Turn=TurnDegS[Index(Ride.Gait)];
     // A ride that allows it (every chapter ride's auto_steer: setting) steers

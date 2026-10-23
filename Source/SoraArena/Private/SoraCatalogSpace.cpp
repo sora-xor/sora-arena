@@ -114,6 +114,7 @@ bool SpaceReadMount(const FJsonObject& O, const SoraBeatRules::FTask& Task, FSor
         !Int(*Stamina, TEXT("lockout"), M.Rules.LockoutBelow) || !Int(*Stamina, TEXT("recover"), M.Rules.RecoverAt) ||
         !Arcs || !WeaponMask(Rows(O, TEXT("weapons")), M.Rules.WeaponsMask) ||
         !Strings(Rows(O, TEXT("spooks")), M.Spooks) || !O.TryGetBoolField(TEXT("dismount"), M.bDismount) ||
+        !O.TryGetBoolField(TEXT("spook_dismount"), M.bDismountOnSpook) ||
         !O.TryGetBoolField(TEXT("auto_steer"), M.bAutoSteer) || !Int(O, TEXT("until_phase"), M.UntilPhase) ||
         M.UntilPhase < 0 || M.UntilPhase >= FMath::Max(1, Task.PhaseCount) || !SpaceVector(O.TryGetField(TEXT("at")), 3, Place))
         return false;
@@ -198,6 +199,10 @@ bool SpaceReadMount(const FJsonObject& O, const SoraBeatRules::FTask& Task, FSor
         Pack.Hp = Hp;
         M.Pack.Add(MoveTemp(Pack));
     }
+    if(M.bDismountOnSpook && (Task.Type!=SoraBeatRules::EType::HorsebackRide ||
+        Task.Goal!=SoraBeatRules::EGoal::Deliveries || Task.UnloadHoldMs<=0 || Task.HorseDownRetries ||
+        !M.bDismount || M.FearRadiusCm<=0 || M.Rules.FearRecoverMs<=0 ||
+        !M.Pack.ContainsByPredicate([](const FSoraPackHorse& P) { return P.Follow==TEXT("lead"); }))) return false;
     return true;
 }
 // An area on the floor: {center, size}.
