@@ -9,6 +9,9 @@
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/DamageType.h"
 #include "GameFramework/InputSettings.h"
+#include "GameFramework/PlayerController.h"
+#include "GameFramework/PlayerInput.h"
+#include "HAL/IConsoleManager.h"
 #include "Misc/ScopeExit.h"
 namespace SoraHelmTest
 {
@@ -199,15 +202,21 @@ bool FSoraHelmPauseTest::RunTest(const FString& Parameters)
     (void)Parameters;SoraHelmTest::FBeatWorld W(*this,TEXT("HelmActiveHoldPause"),6,13);
     if(!SoraHelmTest::Start(W)) return false;
     auto* C=W.Campaign();auto* Kit=W.Hero()->GetEquipment();
-    if(!SoraHelmTest::Walk(W,C->HelmWheelPoint()+FVector(-190,0,0))||
-        !SoraHelmAutomation::Stow(*W.World)||!SoraHelmTest::Alarm(W)) return false;
+    if(!SoraHelmTest::Walk(W,C->HelmWheelPoint()+FVector(-190,0,0))||!SoraHelmAutomation::Stow(*W.World)) return false;
+    auto* Controller=Cast<APlayerController>(W.Hero()->GetController());
+    const auto* Reconcile=IConsoleManager::Get().FindConsoleVariable(TEXT("Input.AutoReconcilePressedEventsOnFirstRepeat"));
+    if(!TestTrue(TEXT("The real input stack and repeat policy are available"),Controller&&Controller->PlayerInput&&Reconcile)) return false;
+    const bool ReconcilesRepeat=Reconcile->GetBool();
+    AddInfo(FString::Printf(TEXT("Helm pause input repeat reconciliation enabled=%d"),ReconcilesRepeat));
     const FKey Use=SoraHelmTest::Action(W,TEXT("Interact"));
     const int32 Weapon=W.Hero()->WeaponId,Ammo=Kit->Ammo;
     const bool Sheathed=Kit->IsSheathed();
     // Exercise both physical release while paused and a key kept down across
-    // resume. Neither may revive partial work without a fresh gameplay press.
+    // resume. UE may reconcile its repeat into a new press after the HUD flush;
+    // any accepted event must start an entirely new correction.
     for(bool ReleaseWhilePaused:{true,false})
     {
+        if(!SoraHelmTest::Alarm(W)) return false;
         const int32 WorkClock=C->TaskProgress().ElapsedMs;
         if(!W.World->InjectKey(Use,IE_Pressed)||!SoraHelmTest::Tick(W,60)) return false;
         const auto Before=C->HelmState();
@@ -224,6 +233,9 @@ bool FSoraHelmPauseTest::RunTest(const FString& Parameters)
             !C->HelmState().Working&&C->HelmState().HeldMs==0&&!W.Hero()->GetViewmodel()->bHiddenInGame)) return false;
         TestEqual(TEXT("Opening pause does not advance the deadline"),C->TaskProgress().ElapsedMs,Clock);
         TestEqual(TEXT("Opening pause does not spend grace"),C->HelmState().GraceMs,Before.GraceMs);
+        // This headless world lacks the Slate HUD's focus callback. Use its
+        // actual engine flush here, after observing explicit menu cleanup.
+        Controller->PlayerInput->FlushPressedKeys();
         if(!W.World->InjectKey(EKeys::Escape,IE_Released)||
             (ReleaseWhilePaused&&!W.World->InjectKey(Use,IE_Released))||!SoraHelmTest::Tick(W,20,.5f)) return false;
         TestEqual(TEXT("Ten paused seconds leave the elapsed deadline exact"),C->TaskProgress().ElapsedMs,Clock);
@@ -234,23 +246,48 @@ bool FSoraHelmPauseTest::RunTest(const FString& Parameters)
         TestEqual(TEXT("Pause does not raise another heading alarm"),C->HelmState().Raised,Before.Raised);
         TestEqual(TEXT("Pause credits no correction"),C->HelmState().Corrected,Before.Corrected);
         TestTrue(TEXT("Partial work remains cancelled throughout pause"),!C->HelmState().Working&&C->HelmState().HeldMs==0);
-        if(!W.Press(EKeys::Escape)||!SoraHelmTest::Tick(W,30)) return false;
+        if(!W.Press(EKeys::Escape)) return false;
+        Controller->PlayerInput->FlushPressedKeys(); // HUD also flushes on close.
+        if(!SoraHelmTest::Tick(W,30)) return false;
         const int32 ResumedMs=C->TaskProgress().ElapsedMs-Clock;
         TestTrue(TEXT("Mapped resume restarts the ordinary campaign clock"),!W.Mode()->bMenu&&!W.World->GetTestWorld()->IsPaused()&&ResumedMs>0);
         TestEqual(TEXT("Grace spends only actual resumed time"),C->HelmState().GraceMs,FMath::Max(0,Before.GraceMs-ResumedMs));
-        TestTrue(TEXT("Resume without a fresh Interact press cannot restart or complete work"),
+        TestTrue(TEXT("Resume alone without an accepted Interact event cannot restart or complete work"),
             !C->HelmOccupiesHands()&&!C->HelmState().Working&&C->HelmState().HeldMs==0&&C->HelmState().Corrected==Before.Corrected);
         TestTrue(TEXT("Menu cancellation restores the selected weapon without changing its state"),
             !W.Hero()->GetViewmodel()->bHiddenInGame&&W.Hero()->WeaponId==Weapon&&Kit->Ammo==Ammo&&Kit->IsSheathed()==Sheathed);
-        if(!ReleaseWhilePaused&&!W.World->InjectKey(Use,IE_Released)) return false;
+        if(ReleaseWhilePaused)
+        {
+            if(!W.World->InjectKey(Use,IE_Pressed)) return false;
+        }
+        else
+        {
+            const auto* KeyState=Controller->PlayerInput->GetKeyState(Use);
+            if(!TestTrue(TEXT("The held-repeat case reaches the actual post-flush engine path"),KeyState&&KeyState->bWasJustFlushed)) return false;
+            // Send a held OS-style repeat at full depression through the same
+            // controller/input stack as FSoraAutomationWorld's key helper.
+            Controller->InputKey(FInputKeyEventArgs::CreateSimulated(Use,IE_Repeat,1.f,1));
+            const TArray<UInputComponent*> Stack={W.Hero()->InputComponent};
+            Controller->PlayerInput->ProcessInputStack(Stack,1.f/60.f,false);
+            if(!TestEqual(TEXT("Repeat admission follows the engine's current reconciliation policy"),C->HelmOccupiesHands(),ReconcilesRepeat)) return false;
+            if(!ReconcilesRepeat)
+            {
+                // Respect a configured policy that refuses repeat admission;
+                // a real release/press then begins the same new correction.
+                if(!W.World->InjectKey(Use,IE_Released)||!W.World->InjectKey(Use,IE_Pressed)) return false;
+            }
+        }
+        if(!TestTrue(TEXT("An accepted post-resume event starts with zero old work credit"),C->HelmOccupiesHands()&&C->HelmState().HeldMs==0)) return false;
+        const int32 RestartClock=C->TaskProgress().ElapsedMs;
+        if(!SoraHelmTest::Tick(W,60)) return false;
+        TestEqual(TEXT("Restarted work counts only newly elapsed held time"),C->HelmState().HeldMs,C->TaskProgress().ElapsedMs-RestartClock);
+        TestTrue(TEXT("A new half correction cannot reuse the discarded pre-pause half"),
+            C->HelmOccupiesHands()&&C->HelmState().HeldMs>0&&C->HelmState().HeldMs<W.BeatData().Space.Helm.Contract.WorkMs&&C->HelmState().Corrected==Before.Corrected);
+        if(!SoraHelmTest::Tick(W,65)||!W.World->InjectKey(Use,IE_Released)) return false;
+        TestTrue(TEXT("A full new correction restores the selected weapon and credits only its pending alarm"),
+            C->HelmState().Corrected==(Before.Corrected|(1u<<Before.Pending))&&!C->HelmNeedsTrim()&&!C->HelmOccupiesHands()&&C->HelmState().HeldMs==0&&
+            !W.Hero()->GetViewmodel()->bHiddenInGame&&W.Hero()->WeaponId==Weapon&&Kit->Ammo==Ammo&&Kit->IsSheathed()==Sheathed);
     }
-    if(!W.World->InjectKey(Use,IE_Pressed)||!SoraHelmTest::Tick(W,60)) return false;
-    TestTrue(TEXT("A fresh press must earn a new full correction rather than resume either discarded half"),
-        C->HelmOccupiesHands()&&C->HelmState().HeldMs>0&&C->HelmState().HeldMs<W.BeatData().Space.Helm.Contract.WorkMs&&C->HelmState().Corrected==0u);
-    if(!SoraHelmTest::Tick(W,65)||!W.World->InjectKey(Use,IE_Released)) return false;
-    TestTrue(TEXT("Fresh uninterrupted held input completes the pending correction and restores visibility"),
-        C->HelmState().Corrected==1u&&!C->HelmNeedsTrim()&&!C->HelmOccupiesHands()&&C->HelmState().HeldMs==0&&
-        !W.Hero()->GetViewmodel()->bHiddenInGame&&W.Hero()->WeaponId==Weapon&&Kit->Ammo==Ammo&&Kit->IsSheathed()==Sheathed);
     return !HasAnyErrors();
 }
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraHelmDeadlineTest,"SoraArena.Campaign.HelmDeadline",
