@@ -3,12 +3,12 @@
 
   python3 scripts/assets/write_own_ledger.py Content/SourceArt/<...>/<Asset> \
       --asset-id ID --name NAME --generator scripts/art/<builder>.py [--generator ...] \
-      [--derived-from PATH ...] [--used-by /Game/... ...] [--extends <folder>/manifest.json] \
+      [--derived-from PATH ...] [--used-by /Game/... ...] [--extends <folder>/manifest.json ...] \
       [--purpose TEXT] [--acquired-at ISO8601]
 
 Writes <folder>/manifest.ledger.json with one OWN record (license project-owned)
 that lists every git-tracked binary in the folder (asset_ledger.BINARY_EXTENSIONS)
-with its size and SHA-256. ``--extends`` pins an existing schema-1 manifest's
+with its size and SHA-256. Each ``--extends`` pins an existing schema-1 manifest's
 bytes, which must then stay unchanged. ``derived_from`` names the project inputs
 the art was built from (for example the pinned SORA SVG). Third-party inputs
 belong in their own PUB records, not here.
@@ -49,7 +49,7 @@ def main(argv=None) -> int:
     ap.add_argument("--generator", action="append", required=True)
     ap.add_argument("--derived-from", action="append", default=[])
     ap.add_argument("--used-by", action="append", default=[])
-    ap.add_argument("--extends")
+    ap.add_argument("--extends", action="append", default=[])
     ap.add_argument("--purpose", default=None)
     ap.add_argument("--acquired-at", default=None, help="when the files were generated (ISO 8601 UTC)")
     a = ap.parse_args(argv)
@@ -84,8 +84,7 @@ def main(argv=None) -> int:
         "generator": "scripts/assets/write_own_ledger.py",
     }
     if a.extends:
-        base = ROOT / a.extends
-        doc["extends"] = [{"manifest": a.extends, "sha256": L.sha256_file(base), "schema_version": 1}]
+        doc["extends"] = [{"manifest": m, "sha256": L.sha256_file(ROOT / m), "schema_version": 1} for m in a.extends]
         doc["policy"] = "The extended schema-1 manifest stays byte-identical; regenerate this record after a rebuild."
     doc["records"] = [{
         "asset_id": a.asset_id,
