@@ -349,7 +349,7 @@ def main():
                              mesh_smooth_type="FACE", use_tspace=True, use_triangles=True, add_leaf_bones=False,
                              bake_anim=False, path_mode="STRIP", embed_textures=False, use_custom_props=False)
     renders = review(o, maku) if o["render"] else []
-    rec = {"asset": "SM_SoraMaku", "generator": GEN, "generator_sha256": L.sha256(L.ROOT / GEN),
+    rec = {"asset": "SM_SoraMaku", "kind": "cloth", "generator": GEN, "generator_sha256": L.sha256(L.ROOT / GEN),
            "svg": L.rel(sora_mark.SVG_PATH), "svg_sha256": sora_mark.PINNED_SVG_SHA256, "size_m": [W, H],
            "widths": WIDTHS, "loop_pitch_m": LOOP_PITCH, "mon_diameter_m": MON_DIAMETER,
            "frame": "kamiza back wall: X along it centred, -Y the room, Z up from the dais floor; loops at z 3.05",
