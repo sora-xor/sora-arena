@@ -1,6 +1,14 @@
 # Offline campaign progression acceptance
 
-The latest prepared cargo checkpoint is `eeaf2ed`: five selected SM6 720p
+The latest combined capture at `c139192` has eleven successful test states and
+one failed Tarifa layout, with eight BowDraw Canvas warnings. All 33 accepted
+originals were independently inspected; the three earlier stealth/tracker
+collisions are resolved in those frames. Source corrections `df3d5d5` and
+`2ea1d4a` retain the complete readouts and validate fixture geometry during the
+actual HUD draw. Fresh runtime acceptance is pending. See the
+[current checkpoint](../complete-release-plan.md#october-25-hud-corrections-and-resumed-art-work).
+
+The earlier prepared cargo checkpoint is `eeaf2ed`: five selected SM6 720p
 captures pass, including all three unchanged-duration holds, the complete
 cinematic and the final zero notice with an unobscured idle boss readout.
 All twelve originals were inspected. Separate `812d70c` campaign captures pass

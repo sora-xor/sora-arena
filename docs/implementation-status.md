@@ -8,6 +8,18 @@ remains a historical recovery record. This is a progress record, not a claim
 that the release is complete. Backward compatibility,
 legacy formats, aliases, and fallback decoders are prohibited.
 
+## 2026-10-25 current HUD and art checkpoint
+
+The combined `c139192` SM6 capture fails Tarifa's layout and records eight
+BowDraw Canvas warnings; all 33 accepted originals were reviewed. Three prior
+stealth/tracker collisions are corrected in those frames. Compact boss spacing
+and fixture validation during the actual HUD draw are integrated at `df3d5d5`
+and `2ea1d4a`, with host checks passing; fresh runtime validation awaits the
+unchanged disk reserve. CI passes 83 gates at earlier `b71f4e8`. Claude has
+resumed art production; timber assets remain unadmitted. The
+[current checkpoint](complete-release-plan.md#october-25-hud-corrections-and-resumed-art-work)
+records precise evidence and limits. The full release remains incomplete.
+
 ## 2026-10-24 cargo timing and campaign HUD
 
 At `eeaf2ed`, all five selected SM6 720p cargo/HUD captures pass and all twelve
