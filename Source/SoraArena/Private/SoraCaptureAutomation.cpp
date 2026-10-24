@@ -587,9 +587,10 @@ bool CampaignGameplayFrame(const ASoraGameMode* Mode)
 
 // Requests the viewport with its HUD and Slate, then waits for the file to
 // be written (or rewritten, when an earlier run left one there).
-void SaveFrame(FAutomationTestBase* Test, FSessionRef Session, const FString& Name, bool bRequireLive = false)
+void SaveFrame(FAutomationTestBase* Test, FSessionRef Session, const FString& Name, bool bRequireLive = false,
+    TFunction<bool(const FSoraHUDFrame&,FString&)> ValidateDraw = nullptr)
 {
-    Queue([Test, Session, Name, bRequireLive]()
+    Queue([Test, Session, Name, bRequireLive, ValidateDraw]()
     {
         Session->CloseGameplayFrameGuard();
         Session->bFrameWritten = false;
@@ -617,7 +618,7 @@ void SaveFrame(FAutomationTestBase* Test, FSessionRef Session, const FString& Na
             Session->GameplayFrameHUD=HUD;
             Session->GameplayPausedWorld=M->GetWorld()->GetTimeSeconds();
             const TWeakPtr<FSession> Weak=Session;
-            Session->GameplayDrawHandle=HUD->OnReticleDrawn.AddLambda([Test,Weak,Name](const FVector2D&)
+            Session->GameplayDrawHandle=HUD->OnReticleDrawn.AddLambda([Test,Weak,Name,ValidateDraw](const FVector2D&)
             {
                 const auto Current=Weak.Pin();
                 if(!Current||Current->bFrameLayoutRejected||Current->GameplayRequestFrame!=0) return;
@@ -633,6 +634,9 @@ void SaveFrame(FAutomationTestBase* Test, FSessionRef Session, const FString& Na
                     const FSoraHUDFrame Layout(*DrawHUD,*Mode,Size.X,Size.Y);
                     Fits=SoraCaptureFrameRules::Drawn(State)&&SoraHUDPanels::StoryTrackerLayoutFits(Layout,Why)&&
                         SoraHUDPanels::CaptionStoryLayoutFits(Layout,Why);
+                    // Projection-dependent fixture checks need this actual
+                    // draw's Canvas, not the latent tick before DrawHUD.
+                    if(Fits&&ValidateDraw) Fits=ValidateDraw(Layout,Why);
                 }
                 if(!Fits)
                 {
@@ -660,6 +664,12 @@ void SaveFrame(FAutomationTestBase* Test, FSessionRef Session, const FString& Na
                     Current->bFrameLayoutRejected=true;
                 }
             });
+            return;
+        }
+        if(ValidateDraw)
+        {
+            Test->AddError(Name+TEXT(": fixture layout validation requires the ordinary gameplay HUD draw"));
+            Session->bFrameLayoutRejected=true;
             return;
         }
         FScreenshotRequest::RequestScreenshot(Session->File, true, false);
@@ -1637,31 +1647,17 @@ void QueueWeaponHUDFixture(FAutomationTestBase* Test,FSessionRef Session,int32 C
         UGameViewportClient* Viewport=M->GetWorld()->GetGameViewport();
         if(!Test->TestNotNull(TEXT("The gameplay fixture uses the actual HUD"),HUD)||!Viewport)
         { Session->bShotLive=false; return; }
-        FVector2D Size; Viewport->GetViewportSize(Size);
         // This latent check deliberately executes outside DrawHUD. The same
         // label width used for inline placement must remain available here.
         const FString Probe=TEXT("SORA HUD 123");
         int32 ProbeWidth=0,ProbeHeight=0;
         UCanvas::ClippedStrLen(HUD->JapaneseFontObject(),.6f,.6f,ProbeWidth,ProbeHeight,Probe);
-        FString Why;
         Session->bShotLive=Test->TestTrue(TEXT("Text metrics are available between DrawHUD frames"),
             ProbeWidth>0&&HUD->LabelWidth(Probe,.6f)==ProbeWidth)&&
             InBeat(Test,*Session,Chapter,Beat,TEXT("Weapon HUD capture"))&&
             Test->TestEqual(TEXT("The requested language remains active"),M->bEnglishSubtitles,English)&&
             Test->TestEqual(TEXT("The fixture retains its weapon identity"),Session->Hero()->WeaponId,
-                Case==2?FSoraCatalog::Get().Hero().YumiId:FSoraCatalog::Get().Hero().KatanaId)&&
-            Test->TestTrue(TEXT("Complete weapon text and windup fit their measured panel bounds"),
-                SoraHUDPanels::WeaponLayoutFits(FSoraHUDFrame(*HUD,*M,Size.X,Size.Y),*Session->Hero(),Why))&&
-            Test->TestTrue(TEXT("Weapon, windup, arm notice, vitals and actual narrative strips do not overlap"),
-                SoraHUDPanels::BottomHUDLayoutFits(FSoraHUDFrame(*HUD,*M,Size.X,Size.Y),*Session->Hero(),Why))&&
-            Test->TestTrue(TEXT("Readable tracker and newest notices fit above the lower stack, retaining every target"),
-                SoraHUDPanels::StoryTrackerLayoutFits(FSoraHUDFrame(*HUD,*M,Size.X,Size.Y),Why))&&
-            Test->TestTrue(TEXT("The entire rhythm ring clears the measured Interact prompt and lower story panels"),
-                SoraHUDPanels::RhythmCueLayoutFits(FSoraHUDFrame(*HUD,*M,Size.X,Size.Y),Why))&&
-            Test->TestTrue(TEXT("Visible interaction prompts clear coaching, dialogue, captions and other measured HUD panels"),
-                SoraHUDPanels::InteractionPromptLayoutFits(FSoraHUDFrame(*HUD,*M,Size.X,Size.Y),Why))&&
-            Test->TestTrue(TEXT("Every visible caption clears the measured gameplay, tracker and lower story panels"),
-                SoraHUDPanels::CaptionStoryLayoutFits(FSoraHUDFrame(*HUD,*M,Size.X,Size.Y),Why));
+                Case==2?FSoraCatalog::Get().Hero().YumiId:FSoraCatalog::Get().Hero().KatanaId);
         if(Case==2) Session->bShotLive&=Test->TestTrue(TEXT("Bow draw survives capture preparation"),Session->Hero()->GetEquipment()->IsBowDrawing());
         if(Case==2) Session->bShotLive&=Test->TestTrue(TEXT("The actual arm-change notice remains active"),
             M->GetWorld()->GetTimeSeconds()-Session->Hero()->ArmsTakenAt()<1.6f);
@@ -1683,9 +1679,24 @@ void QueueWeaponHUDFixture(FAutomationTestBase* Test,FSessionRef Session,int32 C
                 Captions&&Captions->Live().Num()==USoraCaptions::MaxLive&&M->Settings()->SubtitleSize()==SoraAccessibility::ESubtitleSize::ExtraLarge);
         }
         if(Case==6||Case==7) Session->bShotLive&=Test->TestTrue(TEXT("Bellows input and next-foot tracker survive capture preparation"),Session->Campaign()->IsWorkingCrank()&&Session->Campaign()->BellowsRightNext());
-        if(!Why.IsEmpty()) Test->AddError(Why);
     });
-    SaveFrame(Test,Session,Name,true);
+    SaveFrame(Test,Session,Name,true,[Test](const FSoraHUDFrame& Frame,FString& Why)
+    {
+        const ASoraPlayerCharacter* Hero=Frame.Mode.Hero();
+        if(!Hero) { Why=TEXT("Weapon HUD fixture lost its actual hero before the draw"); return false; }
+        return Test->TestTrue(TEXT("Complete weapon text and windup fit their measured panel bounds"),
+                SoraHUDPanels::WeaponLayoutFits(Frame,*Hero,Why))&&
+            Test->TestTrue(TEXT("Weapon, windup, arm notice, vitals and actual narrative strips do not overlap"),
+                SoraHUDPanels::BottomHUDLayoutFits(Frame,*Hero,Why))&&
+            Test->TestTrue(TEXT("Readable tracker and newest notices fit above the lower stack, retaining every target"),
+                SoraHUDPanels::StoryTrackerLayoutFits(Frame,Why))&&
+            Test->TestTrue(TEXT("The entire rhythm ring clears the measured Interact prompt and lower story panels"),
+                SoraHUDPanels::RhythmCueLayoutFits(Frame,Why))&&
+            Test->TestTrue(TEXT("Visible interaction prompts clear coaching, dialogue, captions and other measured HUD panels"),
+                SoraHUDPanels::InteractionPromptLayoutFits(Frame,Why))&&
+            Test->TestTrue(TEXT("Every visible caption clears the measured gameplay, tracker and lower story panels"),
+                SoraHUDPanels::CaptionStoryLayoutFits(Frame,Why));
+    });
     Queue([Session,Chapter,Beat,English,Name]()
     {
         if(!Session->bShotLive||!Session->bFrameWritten) return;
