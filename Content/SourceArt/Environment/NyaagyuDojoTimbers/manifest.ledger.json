@@ -1,0 +1,531 @@
+{
+  "schema_version": 2,
+  "kind": "asset-ledger",
+  "ledger_id": "own-nyaagyu-dojo-timbers",
+  "source": "project",
+  "purpose": "OWN record for the dojo timbers: the SM5/M1 MAC pool columns and rails (coarse meshes with baked NormalDX/Masks), the shared ring/fibre textures and the Blender look-dev renders. The per-placement Nanite logs are not stored: they rebuild from their seeds into Local/ArtCache, and the canonical digests in both manifests pin them. Placements replay the estate halls of the chapter files below, as of this build. Procedural, with no third-party inputs.",
+  "generator": "scripts/assets/write_own_ledger.py",
+  "extends": [
+    {
+      "manifest": "Content/SourceArt/Environment/NyaagyuDojoTimbers/manifest.json",
+      "sha256": "216db7a78cbcfb77cb371e31e9686a06cf82fec04c1af20e624ec6d2798b583e",
+      "schema_version": 1
+    },
+    {
+      "manifest": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/manifest.json",
+      "sha256": "a7cce7ca1b1a1ed00839c83acf0113826bf40a0a9267ca3ea1fd27475b4f3717",
+      "schema_version": 1
+    }
+  ],
+  "policy": "The extended schema-1 manifest stays byte-identical; regenerate this record after a rebuild.",
+  "records": [
+    {
+      "asset_id": "nyaagyu-dojo-timbers",
+      "name": "Tsumagizaka dojo timbers: chapter-1 column and rail logs, SM5 pools",
+      "kind": "generated-art",
+      "tier": "OWN",
+      "license": "project-owned",
+      "license_url": null,
+      "origin_url": "scripts/art/create_nyaagyu_dojo_timbers.py, scripts/art/create_nyaagyu_dojo_rails.py, scripts/art/render_dojo_timbers_lookdev.py, scripts/art/sora_timber_lib.py, scripts/art/sora_timber_bake.py, scripts/art/sora_timber_lookdev.py, scripts/art/dojo_hall_placements.py, scripts/art/sora_prop_lib.py, scripts/art/create_runtime_weapon_lib.py",
+      "mirror_url": null,
+      "commercial_use": true,
+      "redistribution": "unrestricted",
+      "derivatives": true,
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "attribution_text": null,
+      "changes": null,
+      "access": "generated",
+      "acquired_at_utc": "2026-10-18T14:52:55Z",
+      "acquired_by": "agent",
+      "storage": "repo-lfs",
+      "used_by": [
+        "/Game/Generated/Environment/DojoTimbers"
+      ],
+      "fallback": null,
+      "generator": [
+        "scripts/art/create_nyaagyu_dojo_timbers.py",
+        "scripts/art/create_nyaagyu_dojo_rails.py",
+        "scripts/art/render_dojo_timbers_lookdev.py",
+        "scripts/art/sora_timber_lib.py",
+        "scripts/art/sora_timber_bake.py",
+        "scripts/art/sora_timber_lookdev.py",
+        "scripts/art/dojo_hall_placements.py",
+        "scripts/art/sora_prop_lib.py",
+        "scripts/art/create_runtime_weapon_lib.py"
+      ],
+      "derived_from": [
+        {
+          "path": "Content/Data/campaign/chapter_01.json",
+          "sha256": "df14f05d6ec8925f847da5c27cfd210951129bfa8c647fb8c4893adf92b32870"
+        },
+        {
+          "path": "Content/Data/campaign/chapter_02.json",
+          "sha256": "f07544462ab1e0293e1e822a2476fc35b1a347899ae74def22d203d8291518b2"
+        },
+        {
+          "path": "Content/Data/campaign/chapter_03.json",
+          "sha256": "0f63b3e700f5fdfff941fc60e0afc2cd8658b03583f0e19c2a55a7446090afe3"
+        },
+        {
+          "path": "Content/Data/campaign/chapter_04.json",
+          "sha256": "c11cacff48d9bc46ef01b44618574e9870d6257f2075ec22dfecd31a4f61e40e"
+        },
+        {
+          "path": "Content/Data/campaign/chapter_05.json",
+          "sha256": "cbb8dd6374394d8c4e92c4460c5cea3475d2d653050357642d5dc162a3274baa"
+        },
+        {
+          "path": "Content/Data/campaign/chapter_06.json",
+          "sha256": "a05def8e1440360b9a4524d72e2653a1f1a527011fd2c0eb6f7db9d29ec10b3a"
+        },
+        {
+          "path": "Content/Data/campaign/chapter_07.json",
+          "sha256": "687a858df467792694980564132f570664700579d5e10b3bf83bb324d023f244"
+        },
+        {
+          "path": "Content/Data/campaign/chapter_08.json",
+          "sha256": "3048c41ed408cfc8d4ba573d6a6772adcda378cda6fb1ba4d80f1b1756774278"
+        }
+      ],
+      "files": [
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/FBX/SM_DojoTimberColumn_MAC_Open_00.fbx",
+          "bytes": 5861324,
+          "sha256": "40165ab36f82ae02ca42719a0deb80ff0472dee8dc3a378bd59679cd2e4f11f1"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/FBX/SM_DojoTimberColumn_MAC_Open_01.fbx",
+          "bytes": 6278140,
+          "sha256": "a2d5960363b9103750a5e8b700ec4876ae98d37d4d282714e0ebf2dced6a330b"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/FBX/SM_DojoTimberColumn_MAC_Open_02.fbx",
+          "bytes": 6597052,
+          "sha256": "bd245e354df8875ce811b8f76078475629f47797ec86be2102c0d7b70d88a40c"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/FBX/SM_DojoTimberColumn_MAC_Wall_00.fbx",
+          "bytes": 4808748,
+          "sha256": "a81815cb68c20dbaf9f0bdde6e9ccd1f0c82935edd2aa849a5cfab42d130a1c2"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/FBX/SM_DojoTimberColumn_MAC_Wall_01.fbx",
+          "bytes": 4819436,
+          "sha256": "5bb56ceb5f81e0b2da796067513b70970bae22a580db7c12c2499e181dee33b1"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/FBX/SM_DojoTimberColumn_MAC_Wall_02.fbx",
+          "bytes": 4984140,
+          "sha256": "1377642b89378fc7d3613a2b6e8a9540f1e6249705f57ef5a11f4281b4abf0e2"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/FBX/SM_DojoTimberColumn_MAC_Wall_03.fbx",
+          "bytes": 4819884,
+          "sha256": "7462fc179badc4a92dca72ade43f009dfca47357ed564e61417a8f7724fd7675"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/FBX/SM_DojoTimberColumn_MAC_Wall_04.fbx",
+          "bytes": 4990732,
+          "sha256": "4f6be81f5f345ec648ec0cd00a2c7bb744c103ac7f2d55e05d1087f9f4de7f26"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/FBX/SM_DojoTimberColumn_MAC_Wall_05.fbx",
+          "bytes": 5177676,
+          "sha256": "0be903ce368ed78a0cb1760c35a785ceb90c67b927c4b7a0c0dd58a648ae10a2"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/FBX/SM_DojoTimberColumn_MAC_Wall_06.fbx",
+          "bytes": 5123484,
+          "sha256": "b7eeef5fc6b36f9f984d47eb2521deaafa4726f2826c37e6a8ed24c848202319"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/FBX/SM_DojoTimberColumn_MAC_Wall_07.fbx",
+          "bytes": 4538140,
+          "sha256": "36b78fbe09926f75ee0b887bce803694a486a279025242db1cb301e804e61f70"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/FBX/SM_DojoTimberColumn_MAC_Wall_08.fbx",
+          "bytes": 5011820,
+          "sha256": "d127b1517b50562764a3ba4db32df99d158ab489e40a3f60c05e46ea8d97db16"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/FBX/SM_DojoTimberColumn_MAC_Wall_09.fbx",
+          "bytes": 5218028,
+          "sha256": "f2d1fa07daf1162a74e11b9cdc605b0c95facb3eabf64cc6195ecab4962e0e10"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Open_00_Masks.png",
+          "bytes": 1707592,
+          "sha256": "7b2aaee7b1b7fd5ea67e0698375e74b8eb289e53586b74a77215c5bf965293b3"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Open_00_NormalDX.png",
+          "bytes": 449791,
+          "sha256": "9eab64ef14606184a1b8f050c17e3ab846c39c9559ead69076daead6a4c7a6e5"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Open_01_Masks.png",
+          "bytes": 1819080,
+          "sha256": "6d09622a22d6867e7f99865f79fc69c98596850d3732b8bf204a733aeb883944"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Open_01_NormalDX.png",
+          "bytes": 476462,
+          "sha256": "cf8cb8821d5f9e07b6fbe45277213efe7310f38b20ec1e491f2400f001ce2623"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Open_02_Masks.png",
+          "bytes": 1788848,
+          "sha256": "dcb105e59852ed47c592116ec27a234ba51c5390718f0f4c27ccf1eb6b62832f"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Open_02_NormalDX.png",
+          "bytes": 433138,
+          "sha256": "ef82464ad8e856a45469776b351a8c359729887973c5a9a1783a476866e916e1"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_00_Masks.png",
+          "bytes": 1616483,
+          "sha256": "6894f3d051d39b3f0eee93b53dd7f965a7b59f769b100a2a4ff1d413d5c0672a"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_00_NormalDX.png",
+          "bytes": 426936,
+          "sha256": "1b3893b1dea973fd41b751adc389e7bb2ec473fec4935aebcd78467539eaafa4"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_01_Masks.png",
+          "bytes": 1508053,
+          "sha256": "f80cd97ac7b4b4bf5a8ffc2190a43e0824e8025745a304b1c92965145e7142dd"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_01_NormalDX.png",
+          "bytes": 425060,
+          "sha256": "07e90c2a82031ea328b9d42b9a4c58ee4a4ae4f2ae1e04e325cee703321a6062"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_02_Masks.png",
+          "bytes": 1644478,
+          "sha256": "37b6e582da8e0898fb31c9d09548bc1c373e09b5681334738c16ba9564b76a83"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_02_NormalDX.png",
+          "bytes": 417645,
+          "sha256": "e375b947761e190f30ad2eb92f5f2fd81161d5a3f0ab6fdc7aa2de1181ded165"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_03_Masks.png",
+          "bytes": 1541489,
+          "sha256": "f5a78c8d8ac671074414dcdc7772d5e92b8c1804c646c71a4d73a0fc5b2bd744"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_03_NormalDX.png",
+          "bytes": 434082,
+          "sha256": "6b9790d03e6baefb2d955df7bd32ebd07149525a9ba91add27d4079a70a13dfe"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_04_Masks.png",
+          "bytes": 1439947,
+          "sha256": "1468a66fd0a20d36653b35bc04813040d0a6856b803594d73ac742d38404f143"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_04_NormalDX.png",
+          "bytes": 422250,
+          "sha256": "b023f750f1d23a6852cc688899477ba9c8ecd6f4146599c24404e82c507ccdf8"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_05_Masks.png",
+          "bytes": 1484973,
+          "sha256": "db3c4da1fd70b0644161cf399b758e33ffe598b2d684702d70d5b03258b29fbf"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_05_NormalDX.png",
+          "bytes": 420800,
+          "sha256": "1671a61b272819bbcecebc8003ab6de8fdb806c79a9ff4394af9eefdd282756e"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_06_Masks.png",
+          "bytes": 1377585,
+          "sha256": "a7746c0335ef4f03d1cd1d4b04d21d80f4ae3d8a86b1021c9a68b351cd30e76a"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_06_NormalDX.png",
+          "bytes": 422709,
+          "sha256": "aa921e9e2955d69fce252a9baa76a5962bc59c12b4f7c89d35b6d20f0d92af66"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_07_Masks.png",
+          "bytes": 1279478,
+          "sha256": "7702eeaa5aa7b70b9825bf0dff6b5734831291b4f9c5b23c4a8e1de96de02aa0"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_07_NormalDX.png",
+          "bytes": 413445,
+          "sha256": "eb4e313bc256bc2264527081f7ef1ecc80c8098d9fe271b3e51429e04f03d369"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_08_Masks.png",
+          "bytes": 1638946,
+          "sha256": "6ad5b00584387bb09c095224d8e83c5698445e2011c525ad518fe2ffc8d83c74"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_08_NormalDX.png",
+          "bytes": 411754,
+          "sha256": "b4c9cfaa0640cb4ef226d73fef156860f9d3fd70e9c8e0bd53fcfd12ec21885c"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_09_Masks.png",
+          "bytes": 1644924,
+          "sha256": "f4f376a28355da6754c92ac891f770ed69e81826dc4fa2ba2fbd7dccba1294b8"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_09_NormalDX.png",
+          "bytes": 426727,
+          "sha256": "a2715161545aae9bfa1c776b128bfedb7394e8cacae73cf3908f331da75b0efa"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/FBX/SM_DojoTimberRail_MAC_Cornice_00.fbx",
+          "bytes": 1085916,
+          "sha256": "d96fdf6a28c54edca670e0ce322f5de2cb2374a23f9dfcea2bbf9fee81a354ce"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/FBX/SM_DojoTimberRail_MAC_Cornice_01.fbx",
+          "bytes": 1047020,
+          "sha256": "a96ee35bd23d1da941988ea83f4d3fe4f266e2370f7cf3f4a2f1bebcffa3bde1"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/FBX/SM_DojoTimberRail_MAC_Cornice_02.fbx",
+          "bytes": 1067772,
+          "sha256": "7d2a6d8c09c390590afeb038f3471212b46887f0ce0f97b567289dab3cf63067"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/FBX/SM_DojoTimberRail_MAC_Koshi_00.fbx",
+          "bytes": 698812,
+          "sha256": "617b55c7c474427e57f1926a0a9d6ae5f7570fe8d9f7423a273fbc1cb35e0498"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/FBX/SM_DojoTimberRail_MAC_Koshi_01.fbx",
+          "bytes": 751452,
+          "sha256": "210075898ed0bd49ce315a08fc971b80b24deceb06af96362e5b2952246f2b48"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/FBX/SM_DojoTimberRail_MAC_Koshi_02.fbx",
+          "bytes": 689868,
+          "sha256": "ad4f6b08848988276ce75c3769c29d4a9d5358eac672b5d4f066d36b68f657e4"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/FBX/SM_DojoTimberRail_MAC_Nageshi_00.fbx",
+          "bytes": 1013900,
+          "sha256": "0d9a011b1f617ef2dc12a52bde867c4f081732185c02333924f13f360593d31b"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/FBX/SM_DojoTimberRail_MAC_Nageshi_01.fbx",
+          "bytes": 1071052,
+          "sha256": "a09b8c41e64b8310b0abcedfb1072be6c8c7166a4e07aedbc4b878e5d23c02f9"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/FBX/SM_DojoTimberRail_MAC_Nageshi_02.fbx",
+          "bytes": 1028204,
+          "sha256": "bb71566189904f6d55bf58f7ddc8f7f7051d6e666042f78119098e7a9724f511"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/FBX/SM_DojoTimberRail_MAC_Nuki_00.fbx",
+          "bytes": 698204,
+          "sha256": "a255a253ee4eb206110c7f4bf19b7d73cd06b988331e65d99d72159d89209e02"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/FBX/SM_DojoTimberRail_MAC_Nuki_01.fbx",
+          "bytes": 773244,
+          "sha256": "73b6e5857b401353b695193c3b31ac6010f4e07d12e92826f76fb58d1ef6c6ff"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/FBX/SM_DojoTimberRail_MAC_Nuki_02.fbx",
+          "bytes": 760444,
+          "sha256": "f0d13e72162f76db5bae22e18757a023c907d936c892c5859dbb28eb05ba0162"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Cornice_00_Masks.png",
+          "bytes": 300476,
+          "sha256": "718e6ca1478acbe8c87e2cc61a4074e4bf6dad5b1c790e6ce82c902926d57082"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Cornice_00_NormalDX.png",
+          "bytes": 99212,
+          "sha256": "3aafa2b07ce315b962081d66bb5d075923f9efe4e4d55f2e05e766445957ec4d"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Cornice_01_Masks.png",
+          "bytes": 334593,
+          "sha256": "bb91d58680dd4e179d210e5359de3bc025ce478136da35d7e4dc1c0682086f30"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Cornice_01_NormalDX.png",
+          "bytes": 96459,
+          "sha256": "0dd793ca5e69ef8a5a7c3ca77e1ef7b3878fe8ef56652baebccb74d911bf0000"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Cornice_02_Masks.png",
+          "bytes": 338563,
+          "sha256": "f98b169913e47355bd945bf2ca5d8f13c34a138484d18be25554ac50ad9fc3ff"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Cornice_02_NormalDX.png",
+          "bytes": 100458,
+          "sha256": "1b5ebb47523f9a0d8813478601b35af33a9af0f75a804728129973648c55d5bd"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Koshi_00_Masks.png",
+          "bytes": 471602,
+          "sha256": "0ec24639804afc5c6286d6629335e914c0cced653202ba6ee033baa894e5d83a"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Koshi_00_NormalDX.png",
+          "bytes": 135667,
+          "sha256": "2ac9ba0c4b2287a7f4676edd7bdda63c601bf5d06026d568d70be105bebed4fa"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Koshi_01_Masks.png",
+          "bytes": 470309,
+          "sha256": "17436248c2c85db2752a0cef069bdd3c2aa53fcc28468225f81ee0fa794db6c9"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Koshi_01_NormalDX.png",
+          "bytes": 142549,
+          "sha256": "16921c7884ff4d354fe91cbfe4a9f66712cfa9c41611c1b643aaaaf9d60bd722"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Koshi_02_Masks.png",
+          "bytes": 470485,
+          "sha256": "985da520a7451cac3d539ecbbdd07e24a5ada97433a12f17498325036210a2d7"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Koshi_02_NormalDX.png",
+          "bytes": 124282,
+          "sha256": "3668ba12c2a5bf4bb559a7158b619f40c852c9cc9f97888a2155ee1887b40dcb"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Nageshi_00_Masks.png",
+          "bytes": 348775,
+          "sha256": "491bcfbb79954d8de30bc96d6800cbaed70f351f980b715189e57700a1d4e8f2"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Nageshi_00_NormalDX.png",
+          "bytes": 93720,
+          "sha256": "2a9be849780a2f625cee434ca65f959206e8e35bc3eff9b9af8a885957b74ccb"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Nageshi_01_Masks.png",
+          "bytes": 344200,
+          "sha256": "8fdee0c32b67cea9a432b81c042cc8a6250221cc990d3ee5157503344d5c6b9f"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Nageshi_01_NormalDX.png",
+          "bytes": 94282,
+          "sha256": "c5aa1a4e17af378dcf39d6ff728f8d25137fa8d5fa670288674e2fcd54158160"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Nageshi_02_Masks.png",
+          "bytes": 354988,
+          "sha256": "b182e1b7f0b009201ea9dfe145dd17611f2f0f2985e24101475bcda908f3289e"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Nageshi_02_NormalDX.png",
+          "bytes": 91460,
+          "sha256": "c5fd880013efb3d04ecd11aa698cde61c9e432e0b21e68f292b82c4e64daffbc"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Nuki_00_Masks.png",
+          "bytes": 467191,
+          "sha256": "bb342f5b9d2a50fabf65f8c820613a04a6a65be9df6ad174b6ea3bb29f5628aa"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Nuki_00_NormalDX.png",
+          "bytes": 135088,
+          "sha256": "af0d0d6ef0f2ec881bb85a8c60edee9c9d1e8c6209c33bf0ded4b8d6eb0234b5"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Nuki_01_Masks.png",
+          "bytes": 457198,
+          "sha256": "6d3cd987ffd11de0e3e6676c21e03faec6f1936e891024fd187179bd4150fe72"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Nuki_01_NormalDX.png",
+          "bytes": 146487,
+          "sha256": "b5b546d8c38dd7d62cfca62c25f01cb0c0b034c544d353238a868447c7674af3"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Nuki_02_Masks.png",
+          "bytes": 431356,
+          "sha256": "51943c649e42acde1d47baf8b17e1ca881183b49bd6ec76005189cb6dece2fff"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Nuki_02_NormalDX.png",
+          "bytes": 139946,
+          "sha256": "e1a19e6be64bb62b122e139a65390ebd478a62086765bc2f816231322da4c4d6"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Renders/SM_DojoTimberColumn_MAC_Wall_00_Clay_Raking_Close.png",
+          "bytes": 1530480,
+          "sha256": "e88fbd7a8c07568a9c3fb33013c44d6c76e9042efb1c6a73637cbaaa87c8166a"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Renders/SM_DojoTimberColumn_MAC_Wall_00_Fallback_GoldenHour_Mid.png",
+          "bytes": 1591116,
+          "sha256": "52ea2da0ccdea64bc9dba27c9fe8e72b456e35f96c19475742df684efc6d73f4"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Renders/SM_DojoTimberColumn_MAC_Wall_00_Fallback_Raking_Close.png",
+          "bytes": 1605741,
+          "sha256": "7422548e3d9fce19a0aa7ec97404d67f4136e64d43d5d21b0518687d092169b3"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Renders/SM_DojoTimberColumn_MAC_Wall_00_Nanite_GoldenHour_Full.png",
+          "bytes": 1475897,
+          "sha256": "721fe8620ecbc9a4b0f4d4f7a8f1d84c9eea5168fd0aa5bd507cc7e7c5bd8859"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Renders/SM_DojoTimberColumn_MAC_Wall_00_Nanite_GoldenHour_Mid.png",
+          "bytes": 1582855,
+          "sha256": "1a317bceec8306107675e4f95ad2d97d034e213325fc1005409e8d1d2f0886b2"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Renders/SM_DojoTimberColumn_MAC_Wall_00_Nanite_Lantern_Mid.png",
+          "bytes": 1587836,
+          "sha256": "d811550ad0b67e9e2f799b4c010049f5c2aebd04faf0a03fddd90d7eb6d0a6fd"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Renders/SM_DojoTimberColumn_MAC_Wall_00_Nanite_Raking_Close.png",
+          "bytes": 1606290,
+          "sha256": "285a47e156bebfa2f016b14c222400c232fba972778565d84d0aeb5dca019763"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Renders/SM_DojoTimberColumn_MAC_Wall_00_Nanite_Raking_Mid.png",
+          "bytes": 1557942,
+          "sha256": "44606fc23660ff1e7b3f93036e1a37009cbbeb750f593505cf1c1ef262787308"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Renders/SM_DojoTimberColumn_MAC_Wall_00_Nanite_Studio_Mid.png",
+          "bytes": 1606426,
+          "sha256": "1b060246c899873c9d1a1152784e4c50a9f263f1f4b960ca16cde6070b2e154d"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Shared/T_TimberFibre.png",
+          "bytes": 2723912,
+          "sha256": "fa480dd6ab128159bb5e322e2bd0eb7c5180e00f813be810e78ec1efd192e080"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Shared/T_TimberRingNoise.png",
+          "bytes": 131229,
+          "sha256": "a2c12211434d34553bf9b5a9d950a62ab6e344bce3d298e4db55404f414269df"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Shared/T_TimberRingRandom.png",
+          "bytes": 65880,
+          "sha256": "061d124c8e0faa73f0905220bcdad05aecf4ae4a83fcc5bb34ef5410d3bd016d"
+        }
+      ]
+    }
+  ]
+}

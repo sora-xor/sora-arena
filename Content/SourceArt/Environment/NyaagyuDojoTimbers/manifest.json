@@ -1,0 +1,3155 @@
+{
+ "schema_version": 1,
+ "kit": "NyaagyuDojoTimbers",
+ "generator": "scripts/art/create_nyaagyu_dojo_timbers.py",
+ "generator_sha256": "0e085b35cb97311ecfaa1afaf693e0fe91c92a99754e305b21b5b681a83a338b",
+ "inputs": {
+  "scripts/art/sora_timber_lib.py": "c7a13b4b524d7f00a474863f0a6800f701e45a6885e02bc4c68037dfc49be394",
+  "scripts/art/sora_timber_lookdev.py": "4001b18403fef0551b11e454507a02f50bf9bc7efa4ace7449638a830e5d5858",
+  "scripts/art/sora_timber_bake.py": "c9fe92f20c31f7711e762fbd56adc45e67646c2b348b5b2b1abd5ae16860eacb",
+  "scripts/art/dojo_hall_placements.py": "63b345dec4a31e9549a094fffbd5df6207ba5920c68c54192e412aaccf905773",
+  "scripts/art/sora_prop_lib.py": "46019863bad4a321300dd717e96d10487345a0aa6e320157114caad34d48b482",
+  "scripts/art/create_runtime_weapon_lib.py": "1068e8c096a6860de657f722add2c45ed5cc7f20757d07ab4d2d058af111fc86"
+ },
+ "versions": {
+  "blender": "5.2.2 LTS",
+  "numpy": "2.3.4",
+  "python": "3.13.13"
+ },
+ "digest": "sora-timber-geometry-v1",
+ "shared_textures": {
+  "RingNoise": {
+   "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Shared/T_TimberRingNoise.png",
+   "sha256": "a2c12211434d34553bf9b5a9d950a62ab6e344bce3d298e4db55404f414269df",
+   "kind": "Data"
+  },
+  "RingRandom": {
+   "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Shared/T_TimberRingRandom.png",
+   "sha256": "061d124c8e0faa73f0905220bcdad05aecf4ae4a83fcc5bb34ef5410d3bd016d",
+   "kind": "Random"
+  },
+  "Fibre": {
+   "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Shared/T_TimberFibre.png",
+   "sha256": "fa480dd6ab128159bb5e322e2bd0eb7c5180e00f813be810e78ec1efd192e080",
+   "kind": "Masks"
+  }
+ },
+ "coverage": {
+  "estate_placements": 260,
+  "with_own_log": 65,
+  "halls": [
+   [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   [
+    35000,
+    -1300,
+    38600,
+    1300
+   ],
+   [
+    45200,
+    -1300,
+    48800,
+    1300
+   ],
+   [
+    51800,
+    -1300,
+    55400,
+    1300
+   ]
+  ],
+  "halls_without_logs": [
+   [
+    35000,
+    -1300,
+    38600,
+    1300
+   ],
+   [
+    45200,
+    -1300,
+    48800,
+    1300
+   ],
+   [
+    51800,
+    -1300,
+    55400,
+    1300
+   ]
+  ]
+ },
+ "placements": [
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B00",
+   "kind": "open",
+   "seed": 270457030,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "planed",
+    "planed",
+    "planed"
+   ],
+   "vertices": 418036,
+   "triangles": 836068,
+   "knots": 7,
+   "checks": 2,
+   "ring_width_m": 0.001551,
+   "digest": "b6269e9fbe35f13428039083ef14bad8b25fbea0902765917d62c93475f4737d",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 0,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B00.fbx",
+   "seconds": 14.9
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B01",
+   "kind": "wall",
+   "seed": 3210951678,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 235314,
+   "triangles": 470624,
+   "knots": 4,
+   "checks": 3,
+   "ring_width_m": 0.002112,
+   "digest": "f579a6391f64d0193adc1ab2bdd9cdff18ed7db4d3c1ea8187fdb1edd0009e88",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 1,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B01.fbx",
+   "seconds": 7.1
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B02",
+   "kind": "open",
+   "seed": 1995692390,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "planed",
+    "planed",
+    "planed"
+   ],
+   "vertices": 430177,
+   "triangles": 860350,
+   "knots": 5,
+   "checks": 3,
+   "ring_width_m": 0.001783,
+   "digest": "4401d02e4d6959ca3365cd5b5709edb2f0ec27ecd3e3b76d9b81cfe706a4e1b4",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 2,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B02.fbx",
+   "seconds": 30.7
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B03",
+   "kind": "open",
+   "seed": 245317955,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "planed",
+    "planed",
+    "planed"
+   ],
+   "vertices": 428783,
+   "triangles": 857562,
+   "knots": 4,
+   "checks": 4,
+   "ring_width_m": 0.001701,
+   "digest": "8b261e9df7c13106a080bf0cbd84e8fab77d0f1b0fb539fe8f14aa238e57b5d5",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 3,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B03.fbx",
+   "seconds": 15.5
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B04",
+   "kind": "wall",
+   "seed": 363638382,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 232476,
+   "triangles": 464948,
+   "knots": 4,
+   "checks": 3,
+   "ring_width_m": 0.002161,
+   "digest": "6fe3dc68bcf88dd5f87ed6037c904cec55ef60c7353a17c899bd591d15b6933d",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 4,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B04.fbx",
+   "seconds": 8.7
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B05",
+   "kind": "wall",
+   "seed": 2087716996,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 246359,
+   "triangles": 492714,
+   "knots": 7,
+   "checks": 3,
+   "ring_width_m": 0.001832,
+   "digest": "87116fcc66ac350f0f0409758fa8c7c15545ed54de294e5a8d5a83bb0090a5d4",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 5,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B05.fbx",
+   "seconds": 16.3
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B06",
+   "kind": "open",
+   "seed": 2913116586,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "planed",
+    "planed",
+    "planed"
+   ],
+   "vertices": 429756,
+   "triangles": 859508,
+   "knots": 5,
+   "checks": 3,
+   "ring_width_m": 0.001781,
+   "digest": "86c6cb5b345e1ce94cec80c5f77f010783d64b50a4f64cbd1c46af2e12f80db4",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 6,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B06.fbx",
+   "seconds": 38.5
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B07",
+   "kind": "open",
+   "seed": 1154503080,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "planed",
+    "planed",
+    "planed"
+   ],
+   "vertices": 389875,
+   "triangles": 779746,
+   "knots": 3,
+   "checks": 4,
+   "ring_width_m": 0.001503,
+   "digest": "a4f30cdf4a515a828306d9d5653ecf059e4ff41d8f726c69d608e91fbf90d247",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 7,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B07.fbx",
+   "seconds": 33.4
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B08",
+   "kind": "wall",
+   "seed": 2913664934,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 245832,
+   "triangles": 491660,
+   "knots": 4,
+   "checks": 4,
+   "ring_width_m": 0.002193,
+   "digest": "3759cb113505bed50e034e2d6de627b890b28c2083794174d1e7eccada3da54f",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 8,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B08.fbx",
+   "seconds": 15.7
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B09",
+   "kind": "wall",
+   "seed": 2753992951,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 257901,
+   "triangles": 515798,
+   "knots": 5,
+   "checks": 4,
+   "ring_width_m": 0.002282,
+   "digest": "ad16d64fbb98af6fa7edc5da3df6ae2ae6b0c4e9eed4362ea46d8678e070a2cf",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 9,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B09.fbx",
+   "seconds": 21.3
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B10",
+   "kind": "open",
+   "seed": 1372546810,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "planed",
+    "planed",
+    "planed"
+   ],
+   "vertices": 389696,
+   "triangles": 779388,
+   "knots": 3,
+   "checks": 2,
+   "ring_width_m": 0.001736,
+   "digest": "e88c732860615c1a1af98c2e6764220696fd0b20b5674f8402dd1fc4c25b4243",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 10,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B10.fbx",
+   "seconds": 36.8
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B11",
+   "kind": "open",
+   "seed": 714690727,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "planed",
+    "planed",
+    "planed"
+   ],
+   "vertices": 390319,
+   "triangles": 780634,
+   "knots": 3,
+   "checks": 2,
+   "ring_width_m": 0.001896,
+   "digest": "81498899ab1f3910fa9e444472f537a0cf9c4c40861a68f24b5f09a5f4b2d951",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 11,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B11.fbx",
+   "seconds": 30.4
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B12",
+   "kind": "wall",
+   "seed": 3411370209,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 249503,
+   "triangles": 499002,
+   "knots": 7,
+   "checks": 4,
+   "ring_width_m": 0.001582,
+   "digest": "48a550e97d8fe6caa33dba9974688592e8b7a30e03a4f1883394320d80a5706b",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 12,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B12.fbx",
+   "seconds": 16.7
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B13",
+   "kind": "wall",
+   "seed": 1255614253,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 269508,
+   "triangles": 539012,
+   "knots": 7,
+   "checks": 3,
+   "ring_width_m": 0.001689,
+   "digest": "fd55e2d1bf8e96946e420a091540c1ed071dd7bd6a3124806990795380d92c44",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 13,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B13.fbx",
+   "seconds": 14.7
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B14",
+   "kind": "open",
+   "seed": 1593654370,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "planed",
+    "planed",
+    "planed"
+   ],
+   "vertices": 399043,
+   "triangles": 798082,
+   "knots": 5,
+   "checks": 2,
+   "ring_width_m": 0.002053,
+   "digest": "3f16c5ab603ce2891310ec366b92c4711db57df05fa43b1d696c895d551a2d3b",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 14,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B14.fbx",
+   "seconds": 33.3
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B15",
+   "kind": "open",
+   "seed": 3564976726,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "planed",
+    "planed",
+    "planed"
+   ],
+   "vertices": 424164,
+   "triangles": 848324,
+   "knots": 7,
+   "checks": 3,
+   "ring_width_m": 0.002068,
+   "digest": "0cbe810f9d0bdbdf82ec3040a35ed428716647b90b4f67c88827246b4f03536b",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 15,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B15.fbx",
+   "seconds": 36.6
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B16",
+   "kind": "wall",
+   "seed": 3368755890,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 244119,
+   "triangles": 488234,
+   "knots": 4,
+   "checks": 2,
+   "ring_width_m": 0.00212,
+   "digest": "716878aadd1ee730c2a1077dc2ef8c9e8b57258abd9f8ae93a01f79cd5c11e5c",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 16,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B16.fbx",
+   "seconds": 22.4
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B17",
+   "kind": "wall",
+   "seed": 3548486378,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 239421,
+   "triangles": 478838,
+   "knots": 7,
+   "checks": 3,
+   "ring_width_m": 0.002357,
+   "digest": "b710c54f92ba13c8f655293dd344bc659061605c5aad7f4f67c1e5d7bba4990f",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 17,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B17.fbx",
+   "seconds": 19.2
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B18",
+   "kind": "open",
+   "seed": 4068031048,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "planed",
+    "planed",
+    "planed"
+   ],
+   "vertices": 434966,
+   "triangles": 869928,
+   "knots": 6,
+   "checks": 3,
+   "ring_width_m": 0.00182,
+   "digest": "de37c0ead960b0116a2ab64a28d22f7f48a72d27d69b26d9f93c7bcaa7d8c3b2",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 18,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B18.fbx",
+   "seconds": 32.4
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B19",
+   "kind": "open",
+   "seed": 2379954459,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "planed",
+    "planed",
+    "planed"
+   ],
+   "vertices": 410054,
+   "triangles": 820104,
+   "knots": 6,
+   "checks": 3,
+   "ring_width_m": 0.001717,
+   "digest": "e127d40e53d31d157c81fa9ae3c9330cca1037478d62e317486fb04b05c3c480",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 19,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B19.fbx",
+   "seconds": 21.8
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S1_B00",
+   "kind": "wall",
+   "seed": 3856802074,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 235823,
+   "triangles": 471642,
+   "knots": 3,
+   "checks": 3,
+   "ring_width_m": 0.001976,
+   "digest": "1c323eab006272036d97483693d8515c48a58c54844d828d367ca1b2b1295dc3",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 0,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S1_B00.fbx",
+   "seconds": 8.4
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S1_B01",
+   "kind": "wall",
+   "seed": 3777448139,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 233434,
+   "triangles": 466864,
+   "knots": 4,
+   "checks": 3,
+   "ring_width_m": 0.001599,
+   "digest": "41e8b94b9548fe709f00dd4ac9b373c38925f6e86a30893b051b287422b90121",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 1,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S1_B01.fbx",
+   "seconds": 8.1
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S1_B02",
+   "kind": "wall",
+   "seed": 3865584077,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 244473,
+   "triangles": 488942,
+   "knots": 5,
+   "checks": 3,
+   "ring_width_m": 0.001563,
+   "digest": "7bb128bc9f1fc2c5b9492b4f3f2747e4b777e2416bc3b867ca5123780be42bd8",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 2,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S1_B02.fbx",
+   "seconds": 8.8
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S1_B03",
+   "kind": "wall",
+   "seed": 441656393,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 248256,
+   "triangles": 496508,
+   "knots": 3,
+   "checks": 3,
+   "ring_width_m": 0.002082,
+   "digest": "337b899afa97a467992ff96709009f3f29c39ab1ff7e4c2d6aea9ff205a9a0ea",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 3,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S1_B03.fbx",
+   "seconds": 7.8
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S1_B04",
+   "kind": "wall",
+   "seed": 2128699978,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 244692,
+   "triangles": 489380,
+   "knots": 7,
+   "checks": 4,
+   "ring_width_m": 0.002297,
+   "digest": "3ecfbb364f3c8c4812723fa8c439580451c626ba155a13e6242967ddbedf74ab",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 4,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S1_B04.fbx",
+   "seconds": 26.3
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S1_B05",
+   "kind": "wall",
+   "seed": 1113975338,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 234340,
+   "triangles": 468676,
+   "knots": 4,
+   "checks": 3,
+   "ring_width_m": 0.002111,
+   "digest": "192c73d84dd8d5717b4c47f80adef5c844379cd3c9780c58131eef56f2bbcec1",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 5,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S1_B05.fbx",
+   "seconds": 23.7
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S1_B09",
+   "kind": "wall",
+   "seed": 3979219953,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 243205,
+   "triangles": 486406,
+   "knots": 6,
+   "checks": 3,
+   "ring_width_m": 0.001822,
+   "digest": "b0f59e169f5f3e7e627076bf39b94df1c100981fc40508c913ba47de4a3acb19",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 9,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S1_B09.fbx",
+   "seconds": 23.7
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S1_B10",
+   "kind": "wall",
+   "seed": 1423921130,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 251799,
+   "triangles": 503594,
+   "knots": 6,
+   "checks": 2,
+   "ring_width_m": 0.00206,
+   "digest": "46631b5011df9c72d5cbc9ea584acb06f9c34b9406973a4faac828061ab91519",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 10,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S1_B10.fbx",
+   "seconds": 35.3
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S1_B11",
+   "kind": "wall",
+   "seed": 1967313499,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 254549,
+   "triangles": 509094,
+   "knots": 7,
+   "checks": 3,
+   "ring_width_m": 0.00226,
+   "digest": "ac115079a6f160768e1af28f78ed22215bcbfd7e9e4ab85ea66ed308e959ebcf",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 11,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S1_B11.fbx",
+   "seconds": 27.4
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S1_B12",
+   "kind": "wall",
+   "seed": 1538361017,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 243114,
+   "triangles": 486224,
+   "knots": 7,
+   "checks": 2,
+   "ring_width_m": 0.001722,
+   "digest": "27348c450a8c5f06e28b7269776d39d02b5601c5678d80188e420f7b8012ad8b",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 12,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S1_B12.fbx",
+   "seconds": 14.8
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S1_B13",
+   "kind": "wall",
+   "seed": 1191202567,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 231482,
+   "triangles": 462960,
+   "knots": 4,
+   "checks": 3,
+   "ring_width_m": 0.002349,
+   "digest": "2312fd7325dd7b7334301af39738f717296301f4affdb353f3b46f568c37b93e",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 13,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S1_B13.fbx",
+   "seconds": 9.4
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B00",
+   "kind": "wall",
+   "seed": 579126811,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 234644,
+   "triangles": 469284,
+   "knots": 5,
+   "checks": 2,
+   "ring_width_m": 0.002356,
+   "digest": "eda143bef0f994e793265615f7a6b7b20204d82f9c171a8e54c5b5fd56496c70",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 0,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B00.fbx",
+   "seconds": 10.2
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B01",
+   "kind": "wall",
+   "seed": 3795348979,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 247163,
+   "triangles": 494322,
+   "knots": 5,
+   "checks": 4,
+   "ring_width_m": 0.001512,
+   "digest": "007046d46ea2104dc2494309c95963ab5926989433f859c8b34d5eddb20ddf0d",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 1,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B01.fbx",
+   "seconds": 8.9
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B02",
+   "kind": "wall",
+   "seed": 326270677,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 256460,
+   "triangles": 512916,
+   "knots": 4,
+   "checks": 2,
+   "ring_width_m": 0.001689,
+   "digest": "a0fe1be7bcc5298ac6bc3b64e4d860612ef91f07f2c728d027f6551f60d218b7",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 2,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B02.fbx",
+   "seconds": 9.6
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B03",
+   "kind": "wall",
+   "seed": 2304093109,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 242728,
+   "triangles": 485452,
+   "knots": 5,
+   "checks": 2,
+   "ring_width_m": 0.001757,
+   "digest": "c8bba8dffb158a91a3d0b40dd2e0f44c3bbbc06725c2931aacbc2c0f25c15ff8",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 3,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B03.fbx",
+   "seconds": 14.7
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B04",
+   "kind": "wall",
+   "seed": 1079434677,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 273632,
+   "triangles": 547260,
+   "knots": 7,
+   "checks": 4,
+   "ring_width_m": 0.001783,
+   "digest": "7dcbf0d9f47bb1c11cc76f548f9cb56e208f564db86a5f6b17f36e4c75347851",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 4,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B04.fbx",
+   "seconds": 17.6
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B05",
+   "kind": "wall",
+   "seed": 3134543830,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 234583,
+   "triangles": 469162,
+   "knots": 3,
+   "checks": 2,
+   "ring_width_m": 0.002208,
+   "digest": "d66b4469200dfb2d5d8dd576ba255876b477c0dea55d0224a8348472071f5ce6",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 5,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B05.fbx",
+   "seconds": 17.1
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B06",
+   "kind": "wall",
+   "seed": 1124553315,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 230093,
+   "triangles": 460182,
+   "knots": 7,
+   "checks": 2,
+   "ring_width_m": 0.002237,
+   "digest": "47c3cca6b0639835f864c68737dd6eb37a475d7775f6a84a32dafa84a08fb16a",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 6,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B06.fbx",
+   "seconds": 11.0
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B07",
+   "kind": "wall",
+   "seed": 3562532981,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 237940,
+   "triangles": 475876,
+   "knots": 7,
+   "checks": 3,
+   "ring_width_m": 0.002254,
+   "digest": "b3a2d43e778731cab729bdf929fc3575ec567ceee782b2b76f553be25fac4668",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 7,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B07.fbx",
+   "seconds": 9.8
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B08",
+   "kind": "wall",
+   "seed": 3491476820,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 242290,
+   "triangles": 484576,
+   "knots": 4,
+   "checks": 2,
+   "ring_width_m": 0.00176,
+   "digest": "fe5b9b3c5744067688b36bfe31c257b120d26d6ea8814422e3d33be67b574296",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 8,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B08.fbx",
+   "seconds": 9.7
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B09",
+   "kind": "wall",
+   "seed": 866366364,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 240353,
+   "triangles": 480702,
+   "knots": 5,
+   "checks": 3,
+   "ring_width_m": 0.001926,
+   "digest": "0baff94f9f90a0d2a713deb41190c942e324a4618431e61e3f0397bdca4b60d4",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 9,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B09.fbx",
+   "seconds": 8.8
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B10",
+   "kind": "wall",
+   "seed": 1094895271,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 246409,
+   "triangles": 492814,
+   "knots": 6,
+   "checks": 2,
+   "ring_width_m": 0.002192,
+   "digest": "57ce46068f022729df54ea8967bc2c5884f90ac140f80ec247605a186433a658",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 10,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B10.fbx",
+   "seconds": 12.5
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B11",
+   "kind": "wall",
+   "seed": 2570728019,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 242035,
+   "triangles": 484066,
+   "knots": 5,
+   "checks": 4,
+   "ring_width_m": 0.001794,
+   "digest": "fad8c42f7887933486eb2a2096036d682d808b8ae67f7f08520f9950c2df538d",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 11,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B11.fbx",
+   "seconds": 11.6
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B12",
+   "kind": "wall",
+   "seed": 4074329889,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 227890,
+   "triangles": 455776,
+   "knots": 5,
+   "checks": 2,
+   "ring_width_m": 0.001794,
+   "digest": "d3d743d66fdf1e5fea1389bc0fa0c9ed1973e8b48ccb37a883a152c45ec6b6a4",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 12,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B12.fbx",
+   "seconds": 8.4
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B13",
+   "kind": "wall",
+   "seed": 2333610378,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 270127,
+   "triangles": 540250,
+   "knots": 5,
+   "checks": 4,
+   "ring_width_m": 0.00233,
+   "digest": "c3be2e47e090830f41083d1f3bfdaa349ca1b358afef26e49dce96ab6c1130d2",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 13,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B13.fbx",
+   "seconds": 12.6
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B14",
+   "kind": "wall",
+   "seed": 1887302411,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 241647,
+   "triangles": 483290,
+   "knots": 4,
+   "checks": 4,
+   "ring_width_m": 0.002157,
+   "digest": "f11ee097cc64617a137fe5e93aa71a4ef1d2b943ac722394f2ccb0bfe0bf868d",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 14,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B14.fbx",
+   "seconds": 11.7
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B15",
+   "kind": "wall",
+   "seed": 3846100135,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 236851,
+   "triangles": 473698,
+   "knots": 3,
+   "checks": 3,
+   "ring_width_m": 0.001707,
+   "digest": "7e7f87aef702367ee78a07cb0e7b41cd981869101a47eff399c0923aa329c916",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 15,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B15.fbx",
+   "seconds": 7.6
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B16",
+   "kind": "wall",
+   "seed": 3567394324,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 237518,
+   "triangles": 475032,
+   "knots": 6,
+   "checks": 3,
+   "ring_width_m": 0.002158,
+   "digest": "dca16e4371fb46aa5a837bc1a33c7792994389d4e15c5c9b7ca151e625bd596b",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 16,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B16.fbx",
+   "seconds": 10.0
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B17",
+   "kind": "wall",
+   "seed": 878205273,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 251088,
+   "triangles": 502172,
+   "knots": 6,
+   "checks": 2,
+   "ring_width_m": 0.001718,
+   "digest": "bc8357b53148c0e50e9097b41001132a53df17ca017870f15185cecee1f98b3d",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 17,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B17.fbx",
+   "seconds": 12.8
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B18",
+   "kind": "wall",
+   "seed": 123641177,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 246796,
+   "triangles": 493588,
+   "knots": 4,
+   "checks": 4,
+   "ring_width_m": 0.002095,
+   "digest": "6ca5d55ebcf52db65a23bbe975d984c0937fb08ef7b6a1bbd96eb70c3310c336",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 18,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B18.fbx",
+   "seconds": 26.1
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B19",
+   "kind": "wall",
+   "seed": 4152785854,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 255252,
+   "triangles": 510500,
+   "knots": 6,
+   "checks": 4,
+   "ring_width_m": 0.001818,
+   "digest": "ab3ef2bec4c502f9e010c5ec6085b8529354352b413b3c5d4b03b5ae557ddbad",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 19,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S2_B19.fbx",
+   "seconds": 24.8
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S3_B00",
+   "kind": "wall",
+   "seed": 2374122945,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 238722,
+   "triangles": 477440,
+   "knots": 3,
+   "checks": 3,
+   "ring_width_m": 0.001618,
+   "digest": "361c0fa467123869f13364a990400d3a84e1af80aa2e6e1e397e6b2ace8fb233",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 0,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S3_B00.fbx",
+   "seconds": 16.6
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S3_B01",
+   "kind": "wall",
+   "seed": 1533749032,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 251914,
+   "triangles": 503824,
+   "knots": 6,
+   "checks": 3,
+   "ring_width_m": 0.001524,
+   "digest": "b00399b47098c04fc3ea91fdf2c7a87c39041e9bd0fbfb099e555a380fff3ece",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 1,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S3_B01.fbx",
+   "seconds": 9.2
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S3_B02",
+   "kind": "wall",
+   "seed": 4283658248,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 252241,
+   "triangles": 504478,
+   "knots": 3,
+   "checks": 4,
+   "ring_width_m": 0.002071,
+   "digest": "e6f77bf4c2160936e6c421d567a9bed140b4ed3c00a4bb4d3d5c5c34d96cac87",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 2,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S3_B02.fbx",
+   "seconds": 12.3
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S3_B03",
+   "kind": "wall",
+   "seed": 995053524,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 255821,
+   "triangles": 511638,
+   "knots": 7,
+   "checks": 4,
+   "ring_width_m": 0.001856,
+   "digest": "b329d38df1fdd832346cca1931a1d7e0ca858ab3c69f4219785e0ca7dfeb598a",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 3,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S3_B03.fbx",
+   "seconds": 19.6
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S3_B04",
+   "kind": "wall",
+   "seed": 1052618120,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 231699,
+   "triangles": 463394,
+   "knots": 4,
+   "checks": 3,
+   "ring_width_m": 0.002331,
+   "digest": "d9a1f035882c1bd5a23d04705a4d89ad9ce27daf5640bc59cd007b15ed887d33",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 4,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S3_B04.fbx",
+   "seconds": 22.0
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S3_B05",
+   "kind": "wall",
+   "seed": 1748127381,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 238151,
+   "triangles": 476298,
+   "knots": 5,
+   "checks": 2,
+   "ring_width_m": 0.001726,
+   "digest": "8954bb786d01a236d502f3a38705f2bd4cd59f82966b673ea3a51ef8c6223491",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 5,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S3_B05.fbx",
+   "seconds": 17.2
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S3_B06",
+   "kind": "wall",
+   "seed": 3727945315,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 254366,
+   "triangles": 508728,
+   "knots": 6,
+   "checks": 4,
+   "ring_width_m": 0.002123,
+   "digest": "f01f20f9785d2c2c403e85bb18da2d1e29f6fe648bdd385455555f62a2bf5d8a",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 6,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S3_B06.fbx",
+   "seconds": 25.6
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S3_B07",
+   "kind": "wall",
+   "seed": 3807194732,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 267882,
+   "triangles": 535760,
+   "knots": 6,
+   "checks": 2,
+   "ring_width_m": 0.001758,
+   "digest": "20eedc6494f3d762be90da1b826ca17524cc9ee621c2874695d4cf7a3ba11645",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 7,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S3_B07.fbx",
+   "seconds": 16.8
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S3_B08",
+   "kind": "wall",
+   "seed": 2650477159,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 234932,
+   "triangles": 469860,
+   "knots": 4,
+   "checks": 2,
+   "ring_width_m": 0.002154,
+   "digest": "2abce0f8565ad88c42d0e634020ab997f5262bbf70793d645b2f4e958c9d8623",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 8,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S3_B08.fbx",
+   "seconds": 8.3
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S3_B09",
+   "kind": "wall",
+   "seed": 2649978248,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 258856,
+   "triangles": 517708,
+   "knots": 6,
+   "checks": 2,
+   "ring_width_m": 0.002199,
+   "digest": "23279895a8a4719ab4232c8871387f237f4c73fab98b07cf7e3f836275ccf799",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 9,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S3_B09.fbx",
+   "seconds": 11.7
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S3_B10",
+   "kind": "wall",
+   "seed": 2043783012,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 233494,
+   "triangles": 466984,
+   "knots": 4,
+   "checks": 2,
+   "ring_width_m": 0.001735,
+   "digest": "f1d85c882a079c524071bcfce91b848c12e1f81daa57d39287b1acd3d8d0f82a",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 10,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S3_B10.fbx",
+   "seconds": 15.8
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S3_B11",
+   "kind": "wall",
+   "seed": 3964984026,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 239005,
+   "triangles": 478006,
+   "knots": 4,
+   "checks": 2,
+   "ring_width_m": 0.00173,
+   "digest": "f7136a231be666fe0d8fb76fc2362248722885a8480e5c448731cd839bff2809",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 11,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S3_B11.fbx",
+   "seconds": 11.7
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S3_B12",
+   "kind": "wall",
+   "seed": 584166279,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 244988,
+   "triangles": 489972,
+   "knots": 6,
+   "checks": 3,
+   "ring_width_m": 0.002232,
+   "digest": "c69d7321daa5b73f6b11e92eee5a65d00bb11e5df9710cff1a2a98879443d36a",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 12,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S3_B12.fbx",
+   "seconds": 9.0
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S3_B13",
+   "kind": "open",
+   "seed": 1115108106,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "planed",
+    "planed",
+    "planed"
+   ],
+   "vertices": 421291,
+   "triangles": 842578,
+   "knots": 7,
+   "checks": 3,
+   "ring_width_m": 0.001741,
+   "digest": "2825fd29fedac4c963d8edbd6d6eb642f70c4b78aed193a4d96cb94398525cd3",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 13,
+   "used_by": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Unique/SM_DojoTimberColumn_8000_m1300_11600_1300_S3_B13.fbx",
+   "seconds": 14.7
+  }
+ ],
+ "pool": [
+  {
+   "asset": "SM_DojoTimberColumn_MAC_Wall_00",
+   "kind": "wall",
+   "seed": 2101,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 239088,
+   "triangles": 478172,
+   "knots": 3,
+   "checks": 2,
+   "ring_width_m": 0.002374,
+   "digest": "e16dce70596a297422e7205308276c464d15a63019ace5bd1e0c30ad5519f0b6",
+   "dense_digest": "ce174745735c86bf37ae7013a60e87ec00ff52f027472de1ddc8f3f53d67c2f3",
+   "fallback_vertices": 21738,
+   "fallback_triangles": 43472,
+   "fallback_fbx": "Content/SourceArt/Environment/NyaagyuDojoTimbers/FBX/SM_DojoTimberColumn_MAC_Wall_00.fbx",
+   "fallback_fbx_bytes": 4808748,
+   "fallback_fbx_sha256": "a81815cb68c20dbaf9f0bdde6e9ccd1f0c82935edd2aa849a5cfab42d130a1c2",
+   "fallback_maps": {
+    "Masks": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_00_Masks.png",
+     "sha256": "6894f3d051d39b3f0eee93b53dd7f965a7b59f769b100a2a4ff1d413d5c0672a",
+     "bytes": 1616483,
+     "res": 2048
+    },
+    "NormalDX": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_00_NormalDX.png",
+     "sha256": "1b3893b1dea973fd41b751adc389e7bb2ec473fec4935aebcd78467539eaafa4",
+     "bytes": 426936,
+     "res": 2048
+    }
+   },
+   "dense_cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/PoolDense/SM_DojoTimberColumn_MAC_Wall_00_Dense.fbx",
+   "seconds": 40.8
+  },
+  {
+   "asset": "SM_DojoTimberColumn_MAC_Wall_01",
+   "kind": "wall",
+   "seed": 2102,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 246888,
+   "triangles": 493772,
+   "knots": 7,
+   "checks": 3,
+   "ring_width_m": 0.002258,
+   "digest": "3752048d40ef592f3a171df1f293d34cabb2f50bd144ac5463d8ae9e5e3c024a",
+   "dense_digest": "3a6e259bdec5a3178836b356b99edc854c573174caedc9c0286caeade16a6e64",
+   "fallback_vertices": 21821,
+   "fallback_triangles": 43638,
+   "fallback_fbx": "Content/SourceArt/Environment/NyaagyuDojoTimbers/FBX/SM_DojoTimberColumn_MAC_Wall_01.fbx",
+   "fallback_fbx_bytes": 4819436,
+   "fallback_fbx_sha256": "5bb56ceb5f81e0b2da796067513b70970bae22a580db7c12c2499e181dee33b1",
+   "fallback_maps": {
+    "Masks": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_01_Masks.png",
+     "sha256": "f80cd97ac7b4b4bf5a8ffc2190a43e0824e8025745a304b1c92965145e7142dd",
+     "bytes": 1508053,
+     "res": 2048
+    },
+    "NormalDX": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_01_NormalDX.png",
+     "sha256": "07e90c2a82031ea328b9d42b9a4c58ee4a4ae4f2ae1e04e325cee703321a6062",
+     "bytes": 425060,
+     "res": 2048
+    }
+   },
+   "dense_cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/PoolDense/SM_DojoTimberColumn_MAC_Wall_01_Dense.fbx",
+   "seconds": 39.1
+  },
+  {
+   "asset": "SM_DojoTimberColumn_MAC_Wall_02",
+   "kind": "wall",
+   "seed": 2103,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 235718,
+   "triangles": 471432,
+   "knots": 3,
+   "checks": 3,
+   "ring_width_m": 0.001515,
+   "digest": "2abb77116fc566a3d396e7fccf11a7f129aeb0bc50af81cd1a0e6c05aa749a86",
+   "dense_digest": "397d0b481b62270c7f5b6add1c4751f24f6019d55b6ce514925ce49856729bea",
+   "fallback_vertices": 22786,
+   "fallback_triangles": 45568,
+   "fallback_fbx": "Content/SourceArt/Environment/NyaagyuDojoTimbers/FBX/SM_DojoTimberColumn_MAC_Wall_02.fbx",
+   "fallback_fbx_bytes": 4984140,
+   "fallback_fbx_sha256": "1377642b89378fc7d3613a2b6e8a9540f1e6249705f57ef5a11f4281b4abf0e2",
+   "fallback_maps": {
+    "Masks": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_02_Masks.png",
+     "sha256": "37b6e582da8e0898fb31c9d09548bc1c373e09b5681334738c16ba9564b76a83",
+     "bytes": 1644478,
+     "res": 2048
+    },
+    "NormalDX": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_02_NormalDX.png",
+     "sha256": "e375b947761e190f30ad2eb92f5f2fd81161d5a3f0ab6fdc7aa2de1181ded165",
+     "bytes": 417645,
+     "res": 2048
+    }
+   },
+   "dense_cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/PoolDense/SM_DojoTimberColumn_MAC_Wall_02_Dense.fbx",
+   "seconds": 28.8
+  },
+  {
+   "asset": "SM_DojoTimberColumn_MAC_Wall_03",
+   "kind": "wall",
+   "seed": 2104,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 256312,
+   "triangles": 512620,
+   "knots": 7,
+   "checks": 2,
+   "ring_width_m": 0.002372,
+   "digest": "b27d5524dda7d51de9d80eb37112f16c92e60a82940f25aa5fd2ff6583ea8b35",
+   "dense_digest": "5a7bfd5a5b20e98fba2064466d6604da53f21a9872e5a4628ccd48359a528aa5",
+   "fallback_vertices": 22333,
+   "fallback_triangles": 44662,
+   "fallback_fbx": "Content/SourceArt/Environment/NyaagyuDojoTimbers/FBX/SM_DojoTimberColumn_MAC_Wall_03.fbx",
+   "fallback_fbx_bytes": 4819884,
+   "fallback_fbx_sha256": "7462fc179badc4a92dca72ade43f009dfca47357ed564e61417a8f7724fd7675",
+   "fallback_maps": {
+    "Masks": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_03_Masks.png",
+     "sha256": "f5a78c8d8ac671074414dcdc7772d5e92b8c1804c646c71a4d73a0fc5b2bd744",
+     "bytes": 1541489,
+     "res": 2048
+    },
+    "NormalDX": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_03_NormalDX.png",
+     "sha256": "6b9790d03e6baefb2d955df7bd32ebd07149525a9ba91add27d4079a70a13dfe",
+     "bytes": 434082,
+     "res": 2048
+    }
+   },
+   "dense_cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/PoolDense/SM_DojoTimberColumn_MAC_Wall_03_Dense.fbx",
+   "seconds": 32.2
+  },
+  {
+   "asset": "SM_DojoTimberColumn_MAC_Wall_04",
+   "kind": "wall",
+   "seed": 2105,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 246015,
+   "triangles": 492026,
+   "knots": 4,
+   "checks": 3,
+   "ring_width_m": 0.001649,
+   "digest": "1b605d6d4f62f5c75deb0c0b717e5cc2e4d2de66186bb663330b986cea136675",
+   "dense_digest": "9e20874cb1f982397624fa127a5c78b0fc6cc23dd9774d18b473313f0f27334a",
+   "fallback_vertices": 22592,
+   "fallback_triangles": 45180,
+   "fallback_fbx": "Content/SourceArt/Environment/NyaagyuDojoTimbers/FBX/SM_DojoTimberColumn_MAC_Wall_04.fbx",
+   "fallback_fbx_bytes": 4990732,
+   "fallback_fbx_sha256": "4f6be81f5f345ec648ec0cd00a2c7bb744c103ac7f2d55e05d1087f9f4de7f26",
+   "fallback_maps": {
+    "Masks": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_04_Masks.png",
+     "sha256": "1468a66fd0a20d36653b35bc04813040d0a6856b803594d73ac742d38404f143",
+     "bytes": 1439947,
+     "res": 2048
+    },
+    "NormalDX": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_04_NormalDX.png",
+     "sha256": "b023f750f1d23a6852cc688899477ba9c8ecd6f4146599c24404e82c507ccdf8",
+     "bytes": 422250,
+     "res": 2048
+    }
+   },
+   "dense_cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/PoolDense/SM_DojoTimberColumn_MAC_Wall_04_Dense.fbx",
+   "seconds": 33.2
+  },
+  {
+   "asset": "SM_DojoTimberColumn_MAC_Wall_05",
+   "kind": "wall",
+   "seed": 2106,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 246301,
+   "triangles": 492598,
+   "knots": 5,
+   "checks": 4,
+   "ring_width_m": 0.002005,
+   "digest": "5cb3ad8b5eaf397f401c33d39a84661fd0a40e54815ee3aff70c274baf9ddfd3",
+   "dense_digest": "ec502be501ba4ba51596bd0dc589117f028e0acd4d3226c1fd53e25771330ccc",
+   "fallback_vertices": 23403,
+   "fallback_triangles": 46802,
+   "fallback_fbx": "Content/SourceArt/Environment/NyaagyuDojoTimbers/FBX/SM_DojoTimberColumn_MAC_Wall_05.fbx",
+   "fallback_fbx_bytes": 5177676,
+   "fallback_fbx_sha256": "0be903ce368ed78a0cb1760c35a785ceb90c67b927c4b7a0c0dd58a648ae10a2",
+   "fallback_maps": {
+    "Masks": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_05_Masks.png",
+     "sha256": "db3c4da1fd70b0644161cf399b758e33ffe598b2d684702d70d5b03258b29fbf",
+     "bytes": 1484973,
+     "res": 2048
+    },
+    "NormalDX": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_05_NormalDX.png",
+     "sha256": "1671a61b272819bbcecebc8003ab6de8fdb806c79a9ff4394af9eefdd282756e",
+     "bytes": 420800,
+     "res": 2048
+    }
+   },
+   "dense_cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/PoolDense/SM_DojoTimberColumn_MAC_Wall_05_Dense.fbx",
+   "seconds": 37.9
+  },
+  {
+   "asset": "SM_DojoTimberColumn_MAC_Wall_06",
+   "kind": "wall",
+   "seed": 2107,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 244983,
+   "triangles": 489962,
+   "knots": 4,
+   "checks": 3,
+   "ring_width_m": 0.001944,
+   "digest": "756496953ff3346ef731ee21f36975822f384dac31e446758b58f9047ad32186",
+   "dense_digest": "6d6748b03be5879677e90e4eafee58c9c98157b12f3c52bf6f0e0b3b51aa31fd",
+   "fallback_vertices": 23239,
+   "fallback_triangles": 46474,
+   "fallback_fbx": "Content/SourceArt/Environment/NyaagyuDojoTimbers/FBX/SM_DojoTimberColumn_MAC_Wall_06.fbx",
+   "fallback_fbx_bytes": 5123484,
+   "fallback_fbx_sha256": "b7eeef5fc6b36f9f984d47eb2521deaafa4726f2826c37e6a8ed24c848202319",
+   "fallback_maps": {
+    "Masks": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_06_Masks.png",
+     "sha256": "a7746c0335ef4f03d1cd1d4b04d21d80f4ae3d8a86b1021c9a68b351cd30e76a",
+     "bytes": 1377585,
+     "res": 2048
+    },
+    "NormalDX": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_06_NormalDX.png",
+     "sha256": "aa921e9e2955d69fce252a9baa76a5962bc59c12b4f7c89d35b6d20f0d92af66",
+     "bytes": 422709,
+     "res": 2048
+    }
+   },
+   "dense_cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/PoolDense/SM_DojoTimberColumn_MAC_Wall_06_Dense.fbx",
+   "seconds": 31.3
+  },
+  {
+   "asset": "SM_DojoTimberColumn_MAC_Wall_07",
+   "kind": "wall",
+   "seed": 2108,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 238914,
+   "triangles": 477824,
+   "knots": 4,
+   "checks": 2,
+   "ring_width_m": 0.001973,
+   "digest": "a9045c964e647f8dcc69ab60668c96bfa63eed2836344cfa14973d492d451d29",
+   "dense_digest": "46ad7a8ad2557b130a4a573689d6411f65d436bdb4824d6fed4c1229618eacb4",
+   "fallback_vertices": 20653,
+   "fallback_triangles": 41302,
+   "fallback_fbx": "Content/SourceArt/Environment/NyaagyuDojoTimbers/FBX/SM_DojoTimberColumn_MAC_Wall_07.fbx",
+   "fallback_fbx_bytes": 4538140,
+   "fallback_fbx_sha256": "36b78fbe09926f75ee0b887bce803694a486a279025242db1cb301e804e61f70",
+   "fallback_maps": {
+    "Masks": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_07_Masks.png",
+     "sha256": "7702eeaa5aa7b70b9825bf0dff6b5734831291b4f9c5b23c4a8e1de96de02aa0",
+     "bytes": 1279478,
+     "res": 2048
+    },
+    "NormalDX": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_07_NormalDX.png",
+     "sha256": "eb4e313bc256bc2264527081f7ef1ecc80c8098d9fe271b3e51429e04f03d369",
+     "bytes": 413445,
+     "res": 2048
+    }
+   },
+   "dense_cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/PoolDense/SM_DojoTimberColumn_MAC_Wall_07_Dense.fbx",
+   "seconds": 35.8
+  },
+  {
+   "asset": "SM_DojoTimberColumn_MAC_Wall_08",
+   "kind": "wall",
+   "seed": 2109,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 244242,
+   "triangles": 488480,
+   "knots": 3,
+   "checks": 3,
+   "ring_width_m": 0.002343,
+   "digest": "e6d829e6be163b825eb843cb7db4e06331d75baff615100b592c1b767077f4a6",
+   "dense_digest": "3f34bf096b5c1c29cbca6fc0e9ce8d22fe3602a613e2bc6cb0648a55591ded00",
+   "fallback_vertices": 22606,
+   "fallback_triangles": 45208,
+   "fallback_fbx": "Content/SourceArt/Environment/NyaagyuDojoTimbers/FBX/SM_DojoTimberColumn_MAC_Wall_08.fbx",
+   "fallback_fbx_bytes": 5011820,
+   "fallback_fbx_sha256": "d127b1517b50562764a3ba4db32df99d158ab489e40a3f60c05e46ea8d97db16",
+   "fallback_maps": {
+    "Masks": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_08_Masks.png",
+     "sha256": "6ad5b00584387bb09c095224d8e83c5698445e2011c525ad518fe2ffc8d83c74",
+     "bytes": 1638946,
+     "res": 2048
+    },
+    "NormalDX": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_08_NormalDX.png",
+     "sha256": "b4c9cfaa0640cb4ef226d73fef156860f9d3fd70e9c8e0bd53fcfd12ec21885c",
+     "bytes": 411754,
+     "res": 2048
+    }
+   },
+   "dense_cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/PoolDense/SM_DojoTimberColumn_MAC_Wall_08_Dense.fbx",
+   "seconds": 34.1
+  },
+  {
+   "asset": "SM_DojoTimberColumn_MAC_Wall_09",
+   "kind": "wall",
+   "seed": 2110,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "hidden",
+    "planed",
+    "planed"
+   ],
+   "vertices": 246309,
+   "triangles": 492614,
+   "knots": 4,
+   "checks": 3,
+   "ring_width_m": 0.002296,
+   "digest": "c611c301a0bc76bc9b0d991fe2190e8d1b4c5de4de14ad9a7852388cd6d19116",
+   "dense_digest": "ae350dcdb81d3d8c0304c5ecf13de9209ee90666a5678b4752879b11d5116be6",
+   "fallback_vertices": 23833,
+   "fallback_triangles": 47662,
+   "fallback_fbx": "Content/SourceArt/Environment/NyaagyuDojoTimbers/FBX/SM_DojoTimberColumn_MAC_Wall_09.fbx",
+   "fallback_fbx_bytes": 5218028,
+   "fallback_fbx_sha256": "f2d1fa07daf1162a74e11b9cdc605b0c95facb3eabf64cc6195ecab4962e0e10",
+   "fallback_maps": {
+    "Masks": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_09_Masks.png",
+     "sha256": "f4f376a28355da6754c92ac891f770ed69e81826dc4fa2ba2fbd7dccba1294b8",
+     "bytes": 1644924,
+     "res": 2048
+    },
+    "NormalDX": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Wall_09_NormalDX.png",
+     "sha256": "a2715161545aae9bfa1c776b128bfedb7394e8cacae73cf3908f331da75b0efa",
+     "bytes": 426727,
+     "res": 2048
+    }
+   },
+   "dense_cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/PoolDense/SM_DojoTimberColumn_MAC_Wall_09_Dense.fbx",
+   "seconds": 49.9
+  },
+  {
+   "asset": "SM_DojoTimberColumn_MAC_Open_00",
+   "kind": "open",
+   "seed": 2111,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "planed",
+    "planed",
+    "planed"
+   ],
+   "vertices": 399159,
+   "triangles": 798314,
+   "knots": 5,
+   "checks": 3,
+   "ring_width_m": 0.001911,
+   "digest": "a31182887672d662a1d3d7e5966fdead24a1537337cdf0016c65d5323f3502d6",
+   "dense_digest": "8a19ed6fe621861271e6b8993917f3da36f366dd120f75009af7744db36f3a4f",
+   "fallback_vertices": 28071,
+   "fallback_triangles": 56138,
+   "fallback_fbx": "Content/SourceArt/Environment/NyaagyuDojoTimbers/FBX/SM_DojoTimberColumn_MAC_Open_00.fbx",
+   "fallback_fbx_bytes": 5861324,
+   "fallback_fbx_sha256": "40165ab36f82ae02ca42719a0deb80ff0472dee8dc3a378bd59679cd2e4f11f1",
+   "fallback_maps": {
+    "Masks": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Open_00_Masks.png",
+     "sha256": "7b2aaee7b1b7fd5ea67e0698375e74b8eb289e53586b74a77215c5bf965293b3",
+     "bytes": 1707592,
+     "res": 2048
+    },
+    "NormalDX": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Open_00_NormalDX.png",
+     "sha256": "9eab64ef14606184a1b8f050c17e3ab846c39c9559ead69076daead6a4c7a6e5",
+     "bytes": 449791,
+     "res": 2048
+    }
+   },
+   "dense_cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/PoolDense/SM_DojoTimberColumn_MAC_Open_00_Dense.fbx",
+   "seconds": 46.1
+  },
+  {
+   "asset": "SM_DojoTimberColumn_MAC_Open_01",
+   "kind": "open",
+   "seed": 2112,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "planed",
+    "planed",
+    "planed"
+   ],
+   "vertices": 427384,
+   "triangles": 854764,
+   "knots": 7,
+   "checks": 4,
+   "ring_width_m": 0.001575,
+   "digest": "b2bacddb4560540c48fec0b8fbdbd5c0f7acaa8363fc684b53aef6fc9e37082b",
+   "dense_digest": "13e77dd16da05a8e957c735869f9bc8287f409e65b441f105ea79b5823927dca",
+   "fallback_vertices": 29044,
+   "fallback_triangles": 58084,
+   "fallback_fbx": "Content/SourceArt/Environment/NyaagyuDojoTimbers/FBX/SM_DojoTimberColumn_MAC_Open_01.fbx",
+   "fallback_fbx_bytes": 6278140,
+   "fallback_fbx_sha256": "a2d5960363b9103750a5e8b700ec4876ae98d37d4d282714e0ebf2dced6a330b",
+   "fallback_maps": {
+    "Masks": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Open_01_Masks.png",
+     "sha256": "6d09622a22d6867e7f99865f79fc69c98596850d3732b8bf204a733aeb883944",
+     "bytes": 1819080,
+     "res": 2048
+    },
+    "NormalDX": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Open_01_NormalDX.png",
+     "sha256": "cf8cb8821d5f9e07b6fbe45277213efe7310f38b20ec1e491f2400f001ce2623",
+     "bytes": 476462,
+     "res": 2048
+    }
+   },
+   "dense_cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/PoolDense/SM_DojoTimberColumn_MAC_Open_01_Dense.fbx",
+   "seconds": 33.4
+  },
+  {
+   "asset": "SM_DojoTimberColumn_MAC_Open_02",
+   "kind": "open",
+   "seed": 2113,
+   "length_m": 7.0,
+   "section_m": [
+    0.24,
+    0.24
+   ],
+   "spacing_m": 0.005,
+   "finish": [
+    "planed",
+    "planed",
+    "planed",
+    "planed"
+   ],
+   "vertices": 418126,
+   "triangles": 836248,
+   "knots": 4,
+   "checks": 4,
+   "ring_width_m": 0.002231,
+   "digest": "d9308e1679f72df2dd923e2057ba38fb50c49cc62ae07071490660aaeeee7b71",
+   "dense_digest": "7ccfff79feeadc20dfb336ffab0aa9d5804785a63c08139f89ede98da6c971b8",
+   "fallback_vertices": 30680,
+   "fallback_triangles": 61356,
+   "fallback_fbx": "Content/SourceArt/Environment/NyaagyuDojoTimbers/FBX/SM_DojoTimberColumn_MAC_Open_02.fbx",
+   "fallback_fbx_bytes": 6597052,
+   "fallback_fbx_sha256": "bd245e354df8875ce811b8f76078475629f47797ec86be2102c0d7b70d88a40c",
+   "fallback_maps": {
+    "Masks": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Open_02_Masks.png",
+     "sha256": "dcb105e59852ed47c592116ec27a234ba51c5390718f0f4c27ccf1eb6b62832f",
+     "bytes": 1788848,
+     "res": 2048
+    },
+    "NormalDX": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Maps/T_DojoTimberColumn_MAC_Open_02_NormalDX.png",
+     "sha256": "ef82464ad8e856a45469776b351a8c359729887973c5a9a1783a476866e916e1",
+     "bytes": 433138,
+     "res": 2048
+    }
+   },
+   "dense_cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/PoolDense/SM_DojoTimberColumn_MAC_Open_02_Dense.fbx",
+   "seconds": 47.4
+  }
+ ],
+ "lookdev_renders": [],
+ "notes": {
+  "pivot": "floor level; room-facing -Y face at y -0.04, like SM_DojoColumn; Z along the column",
+  "uv": "UV0 metric (1 = 1 m, along the perimeter and the length); UV1 unique atlas for the SM5 bake; UVLogQ/UVLogZ the log frame (offset from the pith in metres; height and per-log seed)",
+  "colors": "Masks (linear): R cavity, G wear, B soot, A knot",
+  "placements": "SM6: one log per column placement, named by hall rect, wall and bay; dense FBX rebuilt from the seeds into Local/ArtCache (not committed). coverage lists halls still without their own logs",
+  "pool": "SM5 (MAC tier): conventional fallbacks with checks in geometry and maps baked from their own logs",
+  "renders": "Blender Cycles source renders, not Unreal captures"
+ }
+}
