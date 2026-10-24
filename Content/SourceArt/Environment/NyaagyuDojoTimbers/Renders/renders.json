@@ -1,0 +1,82 @@
+{
+ "subject": "SM_DojoTimberColumn_MAC_Wall_00",
+ "seed": 2101,
+ "dense_digest": "ce174745735c86bf37ae7013a60e87ec00ff52f027472de1ddc8f3f53d67c2f3",
+ "digest": "e16dce70596a297422e7205308276c464d15a63019ace5bd1e0c30ad5519f0b6",
+ "manifest_generator_sha256": "0e085b35cb97311ecfaa1afaf693e0fe91c92a99754e305b21b5b681a83a338b",
+ "renderer": "Blender Cycles (CPU)",
+ "renders": [
+  {
+   "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Renders/SM_DojoTimberColumn_MAC_Wall_00_Nanite_Studio_Mid.png",
+   "rig": "Studio",
+   "shot": "Mid",
+   "material": "Nanite",
+   "kind": "Blender Cycles source render (CPU)",
+   "seconds": 39.5
+  },
+  {
+   "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Renders/SM_DojoTimberColumn_MAC_Wall_00_Nanite_GoldenHour_Full.png",
+   "rig": "GoldenHour",
+   "shot": "Full",
+   "material": "Nanite",
+   "kind": "Blender Cycles source render (CPU)",
+   "seconds": 12.1
+  },
+  {
+   "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Renders/SM_DojoTimberColumn_MAC_Wall_00_Nanite_GoldenHour_Mid.png",
+   "rig": "GoldenHour",
+   "shot": "Mid",
+   "material": "Nanite",
+   "kind": "Blender Cycles source render (CPU)",
+   "seconds": 42.9
+  },
+  {
+   "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Renders/SM_DojoTimberColumn_MAC_Wall_00_Nanite_Raking_Mid.png",
+   "rig": "Raking",
+   "shot": "Mid",
+   "material": "Nanite",
+   "kind": "Blender Cycles source render (CPU)",
+   "seconds": 33.1
+  },
+  {
+   "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Renders/SM_DojoTimberColumn_MAC_Wall_00_Nanite_Raking_Close.png",
+   "rig": "Raking",
+   "shot": "Close",
+   "material": "Nanite",
+   "kind": "Blender Cycles source render (CPU)",
+   "seconds": 47.5
+  },
+  {
+   "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Renders/SM_DojoTimberColumn_MAC_Wall_00_Nanite_Lantern_Mid.png",
+   "rig": "Lantern",
+   "shot": "Mid",
+   "material": "Nanite",
+   "kind": "Blender Cycles source render (CPU)",
+   "seconds": 22.3
+  },
+  {
+   "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Renders/SM_DojoTimberColumn_MAC_Wall_00_Clay_Raking_Close.png",
+   "rig": "Raking",
+   "shot": "Close",
+   "material": "Clay",
+   "kind": "Blender Cycles source render (CPU)",
+   "seconds": 23.3
+  },
+  {
+   "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Renders/SM_DojoTimberColumn_MAC_Wall_00_Fallback_Raking_Close.png",
+   "rig": "Raking",
+   "shot": "Close",
+   "material": "Fallback",
+   "kind": "Blender Cycles source render (CPU)",
+   "seconds": 38.6
+  },
+  {
+   "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Renders/SM_DojoTimberColumn_MAC_Wall_00_Fallback_GoldenHour_Mid.png",
+   "rig": "GoldenHour",
+   "shot": "Mid",
+   "material": "Fallback",
+   "kind": "Blender Cycles source render (CPU)",
+   "seconds": 30.0
+  }
+ ]
+}

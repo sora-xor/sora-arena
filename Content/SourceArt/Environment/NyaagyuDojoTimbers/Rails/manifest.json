@@ -1,0 +1,5111 @@
+{
+ "schema_version": 1,
+ "kit": "NyaagyuDojoRails",
+ "generator": "scripts/art/create_nyaagyu_dojo_rails.py",
+ "generator_sha256": "d1246e47bf9c74961a18b26d7687b86425173a120f117e3068eef88ecbe63192",
+ "inputs": {
+  "scripts/art/sora_timber_lib.py": "c7a13b4b524d7f00a474863f0a6800f701e45a6885e02bc4c68037dfc49be394",
+  "scripts/art/sora_timber_bake.py": "c9fe92f20c31f7711e762fbd56adc45e67646c2b348b5b2b1abd5ae16860eacb",
+  "scripts/art/dojo_hall_placements.py": "63b345dec4a31e9549a094fffbd5df6207ba5920c68c54192e412aaccf905773",
+  "scripts/art/create_runtime_weapon_lib.py": "1068e8c096a6860de657f722add2c45ed5cc7f20757d07ab4d2d058af111fc86"
+ },
+ "versions": {
+  "blender": "5.2.2 LTS",
+  "numpy": "2.3.4",
+  "python": "3.13.13"
+ },
+ "digest": "sora-timber-geometry-v1",
+ "coverage": {
+  "estate_rail_placements": 940,
+  "with_own_log": 235,
+  "halls_without_logs": [
+   [
+    35000,
+    -1300,
+    38600,
+    1300
+   ],
+   [
+    45200,
+    -1300,
+    48800,
+    1300
+   ],
+   [
+    51800,
+    -1300,
+    55400,
+    1300
+   ]
+  ]
+ },
+ "placements": [
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B00",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 0,
+   "length_m": 1.8,
+   "seed": 3819177482,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B00",
+   "triangles": 106320,
+   "digest": "5eadf85db0c83ff1a42a010dd9a6b37547db66cfc6ced8c607d4befc1be10ded",
+   "ring_width_m": 0.001769,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B00.fbx",
+   "seconds": 4.3
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B00",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 0,
+   "length_m": 1.8,
+   "seed": 2952736586,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B00",
+   "triangles": 114012,
+   "digest": "7c610522ebd3258347d9c09989ded0aacf33d4870272d4ea44829ec674fdf272",
+   "ring_width_m": 0.001641,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B00.fbx",
+   "seconds": 5.9
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B00",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 0,
+   "length_m": 1.56,
+   "seed": 25760393,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B00",
+   "triangles": 63976,
+   "digest": "2e7374135fc4b8cb4d01e5137e6657e1867f2bbcf4e0eb4ad6b3b5b25f814f25",
+   "ring_width_m": 0.00151,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B00.fbx",
+   "seconds": 2.4
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B01",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 1,
+   "length_m": 1.8,
+   "seed": 2280364572,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B01",
+   "triangles": 107572,
+   "digest": "38b39a46ec50100819792a828f9174bdea907507142dbd6082cec9148299dce1",
+   "ring_width_m": 0.002172,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B01.fbx",
+   "seconds": 3.7
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B01",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 1,
+   "length_m": 1.8,
+   "seed": 869786057,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B01",
+   "triangles": 112580,
+   "digest": "b0ba29061daf0411c81c2d94f945b6144e52c0d9813aad5a16319c29e31c100f",
+   "ring_width_m": 0.00142,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B01.fbx",
+   "seconds": 2.4
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B01",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 1,
+   "length_m": 1.56,
+   "seed": 209036229,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B01",
+   "triangles": 65546,
+   "digest": "4c5d7ae7ee741e74f8ca329868d79c9cb06fee61fb4b34695658cbbb163ac958",
+   "ring_width_m": 0.001412,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B01.fbx",
+   "seconds": 1.9
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B02",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 2,
+   "length_m": 1.8,
+   "seed": 770177609,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B02",
+   "triangles": 105902,
+   "digest": "70985dcb2c0e723eac2ae2c20d5f2eb3d2d1385790a3c8e354a2d0bf67b38493",
+   "ring_width_m": 0.001818,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B02.fbx",
+   "seconds": 2.3
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B02",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 2,
+   "length_m": 1.8,
+   "seed": 466181463,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B02",
+   "triangles": 112632,
+   "digest": "ce5a31e47f8d4afe0984b313d9e4f34b7e903b6564df534a1a7ce067d0f8e710",
+   "ring_width_m": 0.001846,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B02.fbx",
+   "seconds": 2.7
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B02",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 2,
+   "length_m": 1.56,
+   "seed": 1725374050,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B02",
+   "triangles": 64908,
+   "digest": "523856a829830ae4e819f460136f6c8f4a169ce465eb9d416b548515085e48af",
+   "ring_width_m": 0.002148,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B02.fbx",
+   "seconds": 1.8
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B03",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 3,
+   "length_m": 1.8,
+   "seed": 1019473455,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B03",
+   "triangles": 105412,
+   "digest": "f8d5963f8b5196965edcea83ea8e39042a0c9f37e06d721af5d823e30c96d87e",
+   "ring_width_m": 0.002188,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B03.fbx",
+   "seconds": 2.1
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B03",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 3,
+   "length_m": 1.8,
+   "seed": 2623787936,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B03",
+   "triangles": 112632,
+   "digest": "27b628dbc7d5a2538ec4e3a022b3498e31c3156f9b5d98093a6bd2e88b7660f0",
+   "ring_width_m": 0.002152,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B03.fbx",
+   "seconds": 5.9
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B03",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 3,
+   "length_m": 1.56,
+   "seed": 741759820,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B03",
+   "triangles": 63232,
+   "digest": "bf98331c584c4e1a49874dc398d6c9733d1ebebf1f77d39331ee9a1ced6671c0",
+   "ring_width_m": 0.002144,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B03.fbx",
+   "seconds": 1.4
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B04",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 4,
+   "length_m": 1.8,
+   "seed": 2823350584,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B04",
+   "triangles": 106416,
+   "digest": "0546973ff369b0c4cd7b6dad33ea739a435b20ecee2a4ea76ea02ba1609fadec",
+   "ring_width_m": 0.00218,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B04.fbx",
+   "seconds": 2.1
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B04",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 4,
+   "length_m": 1.8,
+   "seed": 2862937525,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B04",
+   "triangles": 112586,
+   "digest": "e5df1898bd6dc1ef2e51175b374275ca0166b50ee9a20142075ba5256d966325",
+   "ring_width_m": 0.00202,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B04.fbx",
+   "seconds": 2.3
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B04",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 4,
+   "length_m": 1.56,
+   "seed": 1852258467,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B04",
+   "triangles": 67484,
+   "digest": "aadcce3b7452e61ba3508f5e83b5226eafd049777ec37bccc4416b11d5fd3fd7",
+   "ring_width_m": 0.001602,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B04.fbx",
+   "seconds": 3.2
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B05",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 5,
+   "length_m": 1.8,
+   "seed": 3907449516,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B05",
+   "triangles": 108508,
+   "digest": "5cff89cbef0db9c8dc32da9c93679febe2da3787681a202d9e2d1984185e55ef",
+   "ring_width_m": 0.00203,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B05.fbx",
+   "seconds": 3.3
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B05",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 5,
+   "length_m": 1.8,
+   "seed": 2608081890,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B05",
+   "triangles": 114306,
+   "digest": "8dd280806cf7c81fd04bec4f28e3882e8d0a4f51408ee4ea2c49ef564746d2f6",
+   "ring_width_m": 0.001901,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B05.fbx",
+   "seconds": 4.7
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B05",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 5,
+   "length_m": 1.56,
+   "seed": 2847803809,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B05",
+   "triangles": 62560,
+   "digest": "d3d531d630f27f8ed1cb6cac2632d1f8973d381b93fc39e2030d53372155f577",
+   "ring_width_m": 0.001526,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B05.fbx",
+   "seconds": 2.6
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B06",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 6,
+   "length_m": 1.8,
+   "seed": 1717550585,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B06",
+   "triangles": 105314,
+   "digest": "090eef0844658c95b6ba02da20c3285bb0f1b7200b4e1992c324d4daef48a997",
+   "ring_width_m": 0.001738,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B06.fbx",
+   "seconds": 6.2
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B06",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 6,
+   "length_m": 1.8,
+   "seed": 353975418,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B06",
+   "triangles": 112632,
+   "digest": "a681f7ccb6a67bb5555b23e1f083b691e3da15d21cc522363b0ace2d056ecd29",
+   "ring_width_m": 0.001663,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B06.fbx",
+   "seconds": 7.0
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B06",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 6,
+   "length_m": 1.56,
+   "seed": 1751818932,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B06",
+   "triangles": 62600,
+   "digest": "76df81f13048b5c0aba60e6abafaecf401d1e01d108273af0604f5834553981e",
+   "ring_width_m": 0.001478,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B06.fbx",
+   "seconds": 4.1
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B07",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 7,
+   "length_m": 1.8,
+   "seed": 4017682217,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B07",
+   "triangles": 105340,
+   "digest": "55787b18f9f0945f45b5bc3b19c56a82e1b7e8ba49b1a7836a789b18e7ab0f72",
+   "ring_width_m": 0.001641,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B07.fbx",
+   "seconds": 5.4
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B07",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 7,
+   "length_m": 1.8,
+   "seed": 729235897,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B07",
+   "triangles": 113646,
+   "digest": "f744a1669f6185b431d6f0f57cd49b2890d623f8b051697ccebf09b7d7e1d185",
+   "ring_width_m": 0.002142,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B07.fbx",
+   "seconds": 9.7
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B07",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 7,
+   "length_m": 1.56,
+   "seed": 1680686001,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B07",
+   "triangles": 62600,
+   "digest": "fa0d53ca718dd902a3e18072cccd94de0825ce0e2b12779780fa631c51af2814",
+   "ring_width_m": 0.002141,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B07.fbx",
+   "seconds": 6.4
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B08",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 8,
+   "length_m": 1.8,
+   "seed": 3743125019,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B08",
+   "triangles": 108298,
+   "digest": "588635bb6bc3d962ca98136ea2dbb9d9160098b055528fee840077a1be98222f",
+   "ring_width_m": 0.001885,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B08.fbx",
+   "seconds": 9.1
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B08",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 8,
+   "length_m": 1.8,
+   "seed": 886338785,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B08",
+   "triangles": 113572,
+   "digest": "5bb9996acc4f8ee236d89498a9da1f939541da9772f1485d1e7c1fc4018e46c6",
+   "ring_width_m": 0.002165,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B08.fbx",
+   "seconds": 10.7
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B08",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 8,
+   "length_m": 1.56,
+   "seed": 1005178842,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B08",
+   "triangles": 62600,
+   "digest": "c1f4190eaa08147e909c922cc3c4900a02f256d480d36a101152fab93c104c66",
+   "ring_width_m": 0.001632,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B08.fbx",
+   "seconds": 3.9
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B09",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 9,
+   "length_m": 1.8,
+   "seed": 1829707130,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B09",
+   "triangles": 105412,
+   "digest": "e076921cd246db39c6d36bc85533e9fb5505b4c5e5907f4dc723e493b26c3695",
+   "ring_width_m": 0.001406,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B09.fbx",
+   "seconds": 4.2
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B09",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 9,
+   "length_m": 1.8,
+   "seed": 962016823,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B09",
+   "triangles": 114974,
+   "digest": "5a2870ddc79d37da4e2af6bd287d68e583e229b340bba4e89694920d54ce674e",
+   "ring_width_m": 0.002133,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B09.fbx",
+   "seconds": 3.6
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B09",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 9,
+   "length_m": 1.56,
+   "seed": 1733400856,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B09",
+   "triangles": 62600,
+   "digest": "36c0436209ddd7dd8358e7f54b02dfa9f0029d218816229dae19faa16ee68504",
+   "ring_width_m": 0.001912,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B09.fbx",
+   "seconds": 3.3
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B10",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 10,
+   "length_m": 1.8,
+   "seed": 3538565885,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B10",
+   "triangles": 107406,
+   "digest": "0e1c73f294898d5212f90b138385c6209785f34211c7cdf4bb5f9a81b2c09215",
+   "ring_width_m": 0.002105,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B10.fbx",
+   "seconds": 9.3
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B10",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 10,
+   "length_m": 1.8,
+   "seed": 2818369425,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B10",
+   "triangles": 112516,
+   "digest": "08352cf0794ebf62acb0646eb035534b947aac5764bc0d3ba25d7f89d22f49e7",
+   "ring_width_m": 0.001871,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B10.fbx",
+   "seconds": 8.3
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B10",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 10,
+   "length_m": 1.56,
+   "seed": 1407898434,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B10",
+   "triangles": 62600,
+   "digest": "6e7192d534bbe869b04e5b625c3cbb5de969e26948e68376487499ed2be4ced0",
+   "ring_width_m": 0.00189,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B10.fbx",
+   "seconds": 4.8
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B11",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 11,
+   "length_m": 1.8,
+   "seed": 1823203818,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B11",
+   "triangles": 105412,
+   "digest": "33dee982a04bbf34482c96fcf7f5f07a72d04120682b400926cfbaf0df9f1b62",
+   "ring_width_m": 0.001775,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B11.fbx",
+   "seconds": 7.4
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B11",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 11,
+   "length_m": 1.8,
+   "seed": 3791592057,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B11",
+   "triangles": 112476,
+   "digest": "5a07e5c3b94b60b6ff522d3b8020faee7e9668be3f72fe139fad627c07a5cf73",
+   "ring_width_m": 0.001432,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B11.fbx",
+   "seconds": 8.4
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B11",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 11,
+   "length_m": 1.56,
+   "seed": 208532274,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B11",
+   "triangles": 62576,
+   "digest": "11f8b0d874e5a5e05c2b3098eda57a2b227220c6180fec78ddb83313abc0378d",
+   "ring_width_m": 0.001988,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B11.fbx",
+   "seconds": 4.4
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B12",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 12,
+   "length_m": 1.8,
+   "seed": 3006770961,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B12",
+   "triangles": 105914,
+   "digest": "47a224b5f521a57b71b14e2111bbceaadf886a9d08128927bccefb64dada4471",
+   "ring_width_m": 0.002166,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B12.fbx",
+   "seconds": 7.9
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B12",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 12,
+   "length_m": 1.8,
+   "seed": 3936745332,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B12",
+   "triangles": 113902,
+   "digest": "237a2f55aa572c60accf4765a5ec6f2647de9883413e73c8c0b076c93891a649",
+   "ring_width_m": 0.002092,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B12.fbx",
+   "seconds": 8.1
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B12",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 12,
+   "length_m": 1.56,
+   "seed": 2888174959,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B12",
+   "triangles": 62578,
+   "digest": "fe44b6c8ba8ba250f3fe040fe33c4223fc577b9293ba90c4c7379da437d300f6",
+   "ring_width_m": 0.001695,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B12.fbx",
+   "seconds": 6.7
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B13",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 13,
+   "length_m": 1.8,
+   "seed": 702527695,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B13",
+   "triangles": 105144,
+   "digest": "7f5c5c17fe204918aa9c1a27f11f17292218649a67355179e1355ed7b30cfdba",
+   "ring_width_m": 0.002166,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B13.fbx",
+   "seconds": 5.4
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B13",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 13,
+   "length_m": 1.8,
+   "seed": 2913662550,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B13",
+   "triangles": 114220,
+   "digest": "7e548688c8fe21d2ab735bfb6be726489baaee9d9a4a9a1b0be9a9ff95212f46",
+   "ring_width_m": 0.002017,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B13.fbx",
+   "seconds": 9.4
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B13",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 13,
+   "length_m": 1.56,
+   "seed": 2865703898,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B13",
+   "triangles": 62600,
+   "digest": "4b59dcb2b1bbc3291074b75cc98cb3a3489861cd408f740e8960d410aed5355a",
+   "ring_width_m": 0.00214,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B13.fbx",
+   "seconds": 4.4
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B14",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 14,
+   "length_m": 1.8,
+   "seed": 3236833557,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B14",
+   "triangles": 108008,
+   "digest": "b03c60066c2f9dd6d2e3ea8c0f53e61b127099372f2cc73331f14661766faea8",
+   "ring_width_m": 0.001639,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B14.fbx",
+   "seconds": 8.8
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B14",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 14,
+   "length_m": 1.8,
+   "seed": 683363309,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B14",
+   "triangles": 115508,
+   "digest": "6d113fb4c6b3de2c300c520f123265420ccd0ca7eb42717c9ec6f5528336f114",
+   "ring_width_m": 0.001441,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B14.fbx",
+   "seconds": 8.6
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B14",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 14,
+   "length_m": 1.56,
+   "seed": 3116239998,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B14",
+   "triangles": 62442,
+   "digest": "716adeabc3cba0b6b460413339d0a2a191df0a4d3b3a5a0ee034aea49f884b5c",
+   "ring_width_m": 0.001845,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B14.fbx",
+   "seconds": 3.6
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B15",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 15,
+   "length_m": 1.8,
+   "seed": 1724393548,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B15",
+   "triangles": 106046,
+   "digest": "2af1b5b328d524f859737b1acd6b54853e6a0b800b4e89a915e654a7ac414ed6",
+   "ring_width_m": 0.001572,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B15.fbx",
+   "seconds": 8.3
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B15",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 15,
+   "length_m": 1.8,
+   "seed": 283519163,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B15",
+   "triangles": 113870,
+   "digest": "e4b7df8c949af6423239af902a906dd1d6db482e4d88fd6a7018951d8c19038c",
+   "ring_width_m": 0.00204,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B15.fbx",
+   "seconds": 6.2
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B15",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 15,
+   "length_m": 1.56,
+   "seed": 2319116467,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B15",
+   "triangles": 65088,
+   "digest": "49c44ae17cba7aa6cfefab1e710207f6c8f68154706aec51c41076a3ab5e2fbd",
+   "ring_width_m": 0.001403,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B15.fbx",
+   "seconds": 4.6
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B16",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 16,
+   "length_m": 1.8,
+   "seed": 185541515,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B16",
+   "triangles": 107104,
+   "digest": "2ef5a28468636ce83cbac6e2213edafc2b7eb2b0ce639dbf62bb5e32485ddcde",
+   "ring_width_m": 0.001718,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B16.fbx",
+   "seconds": 5.7
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B16",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 16,
+   "length_m": 1.8,
+   "seed": 2217593054,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B16",
+   "triangles": 113606,
+   "digest": "64e10af7bd82f31c28583195515f5e9981b531dc4acb39f6a6dba7137774be5f",
+   "ring_width_m": 0.001934,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B16.fbx",
+   "seconds": 5.0
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B16",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 16,
+   "length_m": 1.56,
+   "seed": 3164422762,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B16",
+   "triangles": 62494,
+   "digest": "3fdd9fe44f5b0417fb201d7e6587936a8fe19a817b517eb55d414564e2911380",
+   "ring_width_m": 0.00182,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B16.fbx",
+   "seconds": 2.7
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B17",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 17,
+   "length_m": 1.8,
+   "seed": 3865852406,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B17",
+   "triangles": 108074,
+   "digest": "3ad04dd878a6dc81628e398cb7b44b9b33133e3dfd106c5bdee1c0403e6136fd",
+   "ring_width_m": 0.001606,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B17.fbx",
+   "seconds": 8.3
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B17",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 17,
+   "length_m": 1.8,
+   "seed": 326007468,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B17",
+   "triangles": 114092,
+   "digest": "9db0d8e4ef42adeebb0c6ed69cee1a0dbf133a0693f21b2a62e3a6a8f5ddd664",
+   "ring_width_m": 0.001995,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B17.fbx",
+   "seconds": 9.4
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B17",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 17,
+   "length_m": 1.56,
+   "seed": 560482840,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B17",
+   "triangles": 62566,
+   "digest": "e663138426976d9a0cd81da43952fae750ad99cf7466794e0e09a099d7c5c6ae",
+   "ring_width_m": 0.001993,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B17.fbx",
+   "seconds": 5.6
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B18",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 18,
+   "length_m": 1.8,
+   "seed": 4062047377,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B18",
+   "triangles": 105360,
+   "digest": "38787553e1ff333eaeb79630aa77063c2eadf408561061df062067c0431699c2",
+   "ring_width_m": 0.001976,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B18.fbx",
+   "seconds": 6.1
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B18",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 18,
+   "length_m": 1.8,
+   "seed": 1990929386,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B18",
+   "triangles": 112478,
+   "digest": "f19886712aef388713a87fe143c7545adeafd637dfc645776389457887afc631",
+   "ring_width_m": 0.001431,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B18.fbx",
+   "seconds": 7.4
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B18",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 18,
+   "length_m": 1.56,
+   "seed": 1911264485,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B18",
+   "triangles": 64566,
+   "digest": "6156a0c1f4a226500fea5418212396452a4e9da6c13195d3595c40273a8e1069",
+   "ring_width_m": 0.001537,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B18.fbx",
+   "seconds": 6.3
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B19",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 19,
+   "length_m": 1.8,
+   "seed": 2216060217,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B19",
+   "triangles": 105274,
+   "digest": "a75e657c84be7fb52b3f33dcdcf8f3bb9f4c38f37f7aaf52e5401e6343e8aba2",
+   "ring_width_m": 0.001969,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B19.fbx",
+   "seconds": 12.5
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B19",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 19,
+   "length_m": 1.8,
+   "seed": 2118887622,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B19",
+   "triangles": 112632,
+   "digest": "23d72e52f20c1a1e99ee95201caa4c1ac570dd9f4aabb42a59206bfc5be741a8",
+   "ring_width_m": 0.001495,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B19.fbx",
+   "seconds": 8.4
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B19",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 0,
+   "bay": 19,
+   "length_m": 1.56,
+   "seed": 3595373001,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B19",
+   "triangles": 63880,
+   "digest": "0f99880934b0671ff1899e5713d0d12ba416b733b8ffbd2d40f0c0d09426f3b1",
+   "ring_width_m": 0.001526,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B19.fbx",
+   "seconds": 8.4
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S1_B00",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 0,
+   "length_m": 1.85714,
+   "seed": 3703797931,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S1_B00",
+   "triangles": 111822,
+   "digest": "e673ec6f88b0c6fc6810cc1174b781398a63d40dec2ef253041a034f23e1c2e8",
+   "ring_width_m": 0.00174,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S1_B00.fbx",
+   "seconds": 8.1
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S1_B00",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 0,
+   "length_m": 1.85714,
+   "seed": 3053221116,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S1_B00",
+   "triangles": 116322,
+   "digest": "66aa5ca2b6cee6d26ef8ebda327d2ffc7bc775efea6ce3542d17f1fef1bd4491",
+   "ring_width_m": 0.001574,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S1_B00.fbx",
+   "seconds": 7.0
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B00",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 0,
+   "length_m": 1.61714,
+   "seed": 1110508483,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B00",
+   "triangles": 68280,
+   "digest": "c8132f63bb544656a2850e85cf1d58b2eef45dbfc21f1929d9e5128313d786e6",
+   "ring_width_m": 0.001766,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B00.fbx",
+   "seconds": 5.8
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S1_B00",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 0,
+   "length_m": 1.61714,
+   "seed": 2881818172,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S1_B00",
+   "triangles": 65614,
+   "digest": "47e69d4b1f0dd45c65245d02da5cd3d6f2d2231234a88b088bc60ebb274f4c6f",
+   "ring_width_m": 0.002082,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S1_B00.fbx",
+   "seconds": 4.9
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S1_B01",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 1,
+   "length_m": 1.85714,
+   "seed": 1862018584,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S1_B01",
+   "triangles": 111056,
+   "digest": "149af2f5264670252e65c31bf038d917d282fdbfcabae7903a346ec6b2411ed1",
+   "ring_width_m": 0.001709,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S1_B01.fbx",
+   "seconds": 6.2
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S1_B01",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 1,
+   "length_m": 1.85714,
+   "seed": 2716948499,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S1_B01",
+   "triangles": 119396,
+   "digest": "a0645fdb7c439803b18f2d92a27a10187134831217a891f59ec8c5768c1a0372",
+   "ring_width_m": 0.00187,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S1_B01.fbx",
+   "seconds": 5.0
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B01",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 1,
+   "length_m": 1.61714,
+   "seed": 293006188,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B01",
+   "triangles": 68522,
+   "digest": "29749656a87b314c58b8eabf21a6759321e8c047b5c92fba302ca657b6a0f132",
+   "ring_width_m": 0.001952,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B01.fbx",
+   "seconds": 6.7
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S1_B01",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 1,
+   "length_m": 1.61714,
+   "seed": 3539626540,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S1_B01",
+   "triangles": 65000,
+   "digest": "546525e0ef61a5df991931476049b257eb74a6a0e069852df560719907fc21e8",
+   "ring_width_m": 0.00204,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S1_B01.fbx",
+   "seconds": 3.5
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S1_B02",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 2,
+   "length_m": 1.85714,
+   "seed": 4292172541,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S1_B02",
+   "triangles": 108916,
+   "digest": "9db94310f2d053d23464c39eb0efe17f7f690145d15edb9e5f53729f859d018d",
+   "ring_width_m": 0.001909,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S1_B02.fbx",
+   "seconds": 4.7
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S1_B02",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 2,
+   "length_m": 1.85714,
+   "seed": 331931932,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S1_B02",
+   "triangles": 118548,
+   "digest": "473d1c3168d8d29284388a6002ac5e17a14358f14e748f84cd076260ff17792e",
+   "ring_width_m": 0.00189,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S1_B02.fbx",
+   "seconds": 5.4
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B02",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 2,
+   "length_m": 1.61714,
+   "seed": 1519764153,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B02",
+   "triangles": 68774,
+   "digest": "fcb313232583f995581403ee4bb6bc6193693c269e9bcb145014a00290fa977e",
+   "ring_width_m": 0.001986,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B02.fbx",
+   "seconds": 3.3
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S1_B02",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 2,
+   "length_m": 1.61714,
+   "seed": 1596029271,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S1_B02",
+   "triangles": 65422,
+   "digest": "53b7b3176cadee4479a60760d0b0d3cad1f022e14e9468d80f7bb9a7499eafea",
+   "ring_width_m": 0.001795,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S1_B02.fbx",
+   "seconds": 2.5
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S1_B03",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 3,
+   "length_m": 1.85714,
+   "seed": 132963501,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S1_B03",
+   "triangles": 108916,
+   "digest": "88ca3696b0de1f28a5a7a99c66820bb8b780c91107ba02139f6adcc22c047d2d",
+   "ring_width_m": 0.001841,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S1_B03.fbx",
+   "seconds": 1.7
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S1_B03",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 3,
+   "length_m": 1.85714,
+   "seed": 3635507576,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S1_B03",
+   "triangles": 119266,
+   "digest": "df88681cb28ecf3ac4d27a3266fdfe262677a9939910dd005c562cf432da0eb0",
+   "ring_width_m": 0.001414,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S1_B03.fbx",
+   "seconds": 2.6
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B03",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 3,
+   "length_m": 1.61714,
+   "seed": 2083423428,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B03",
+   "triangles": 67738,
+   "digest": "dab4804840d76eaaac21a96949eb151693ae236427aeebd271b43cf7859b7d59",
+   "ring_width_m": 0.001702,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B03.fbx",
+   "seconds": 1.9
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S1_B03",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 3,
+   "length_m": 1.61714,
+   "seed": 1432840124,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S1_B03",
+   "triangles": 64910,
+   "digest": "fe80b400fbaadaaee544f9794dc65d3f5fc1b968f3fa399b92a87ada11ee84e7",
+   "ring_width_m": 0.001407,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S1_B03.fbx",
+   "seconds": 3.4
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S1_B04",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 4,
+   "length_m": 1.85714,
+   "seed": 1477625953,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S1_B04",
+   "triangles": 108864,
+   "digest": "408622199885d30009f976496c2c954d66b566e4b06ff969e357f538c93037b8",
+   "ring_width_m": 0.001794,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S1_B04.fbx",
+   "seconds": 5.8
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S1_B04",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 4,
+   "length_m": 1.85714,
+   "seed": 2183854965,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S1_B04",
+   "triangles": 117738,
+   "digest": "aa9e3d7f405ead83f5c0c5b113f73c4650ed910dc528e317a931f5a65c7f90c5",
+   "ring_width_m": 0.002039,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S1_B04.fbx",
+   "seconds": 2.5
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B04",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 4,
+   "length_m": 1.61714,
+   "seed": 3315721038,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B04",
+   "triangles": 66578,
+   "digest": "2613afec42c600e6bbe88b051e589fae50c247dd03763da72944857192632a77",
+   "ring_width_m": 0.00157,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B04.fbx",
+   "seconds": 1.4
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S1_B04",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 4,
+   "length_m": 1.61714,
+   "seed": 3994531679,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S1_B04",
+   "triangles": 65000,
+   "digest": "d91a906c8cab1a02e2f1cd48dc37a496f96f8e422e0a972b3ef1a6f3e0df02fd",
+   "ring_width_m": 0.001814,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S1_B04.fbx",
+   "seconds": 1.1
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S1_B09",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 9,
+   "length_m": 1.85714,
+   "seed": 4161491297,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S1_B09",
+   "triangles": 108890,
+   "digest": "71620c84f41ec9c1225617508d79592054cf558a447273ca0262b2b118b24d8e",
+   "ring_width_m": 0.00149,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S1_B09.fbx",
+   "seconds": 1.6
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S1_B09",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 9,
+   "length_m": 1.85714,
+   "seed": 4206870934,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S1_B09",
+   "triangles": 118366,
+   "digest": "aad77d1893c9dafe82f883c12276c362f5123558979e3187d9b8d28c1d382903",
+   "ring_width_m": 0.002139,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S1_B09.fbx",
+   "seconds": 4.1
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B09",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 9,
+   "length_m": 1.61714,
+   "seed": 4127040659,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B09",
+   "triangles": 66512,
+   "digest": "dfa85fec9df942de20068345e71ba3007504caac2fd3a4d1a269c30e43346346",
+   "ring_width_m": 0.001581,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B09.fbx",
+   "seconds": 3.0
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S1_B09",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 9,
+   "length_m": 1.61714,
+   "seed": 2108227544,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S1_B09",
+   "triangles": 65000,
+   "digest": "9c7cef78b18eb0f1b3dcd82df090fc2c4393c1828a1ee513a464d1b81cfac59b",
+   "ring_width_m": 0.00159,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S1_B09.fbx",
+   "seconds": 2.9
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S1_B10",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 10,
+   "length_m": 1.85714,
+   "seed": 1921936977,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S1_B10",
+   "triangles": 108916,
+   "digest": "1f050ad2e63f2cbb6dbaa7e72ce0f69c5990bbb7c1bb24988669502416e2d23c",
+   "ring_width_m": 0.001556,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S1_B10.fbx",
+   "seconds": 3.4
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S1_B10",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 10,
+   "length_m": 1.85714,
+   "seed": 2546349742,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S1_B10",
+   "triangles": 116376,
+   "digest": "3025f9f2175363504ea230e953b42cb28cdf54bbc57f664b68861d4ada852c78",
+   "ring_width_m": 0.001475,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S1_B10.fbx",
+   "seconds": 4.6
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B10",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 10,
+   "length_m": 1.61714,
+   "seed": 1678093095,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B10",
+   "triangles": 66858,
+   "digest": "ce3739a7a0500fc32abc01f5ac10398c97c72d5ecd06f9734907a5e970ab123a",
+   "ring_width_m": 0.001611,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B10.fbx",
+   "seconds": 1.3
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S1_B10",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 10,
+   "length_m": 1.61714,
+   "seed": 1465107158,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S1_B10",
+   "triangles": 64964,
+   "digest": "997eff2b64723ab83f0b37f0742b4393feaf140bc5b4cc4bd18d382edb5739f4",
+   "ring_width_m": 0.001946,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S1_B10.fbx",
+   "seconds": 1.3
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S1_B11",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 11,
+   "length_m": 1.85714,
+   "seed": 1269150251,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S1_B11",
+   "triangles": 110556,
+   "digest": "5e0743ffe13b09e691191d49931e2dab9fa983c73ae9c354d9bc3d2fe0b3b074",
+   "ring_width_m": 0.001609,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S1_B11.fbx",
+   "seconds": 2.1
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S1_B11",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 11,
+   "length_m": 1.85714,
+   "seed": 1300277994,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S1_B11",
+   "triangles": 116280,
+   "digest": "a30e70dbd5e1e48173e21aebfa881b93d99b601fb7d4fb88be44785e661b0bdb",
+   "ring_width_m": 0.001571,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S1_B11.fbx",
+   "seconds": 2.6
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B11",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 11,
+   "length_m": 1.61714,
+   "seed": 1682169417,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B11",
+   "triangles": 66146,
+   "digest": "1040166116e1343f81a533d97c3c9b2db9c9a9d7f1564be6ff04d4efbcfb6441",
+   "ring_width_m": 0.001805,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B11.fbx",
+   "seconds": 1.5
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S1_B11",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 11,
+   "length_m": 1.61714,
+   "seed": 1852893584,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S1_B11",
+   "triangles": 64968,
+   "digest": "357f3e7fa2efa166db371bb78cb55b5637ea1acdc948d94ba007f25d7b56125e",
+   "ring_width_m": 0.001548,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S1_B11.fbx",
+   "seconds": 1.4
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S1_B12",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 12,
+   "length_m": 1.85714,
+   "seed": 4100263556,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S1_B12",
+   "triangles": 108884,
+   "digest": "3c1dc501708b7a97f8083a4a16158be96c4d5e62fbb2b36928411360f6d48928",
+   "ring_width_m": 0.002109,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S1_B12.fbx",
+   "seconds": 2.2
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S1_B12",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 12,
+   "length_m": 1.85714,
+   "seed": 1135742887,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S1_B12",
+   "triangles": 117470,
+   "digest": "daad9dec90072a04ed0bbc4b29e6de3034a723fcc62de4df0088c5bf1943c96c",
+   "ring_width_m": 0.001491,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S1_B12.fbx",
+   "seconds": 2.6
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B12",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 12,
+   "length_m": 1.61714,
+   "seed": 1101294663,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B12",
+   "triangles": 69234,
+   "digest": "e528100a742f1b2662f29fa0dd5eaf09fec35f34b7ecb136e0f1d282a75d8f72",
+   "ring_width_m": 0.001965,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B12.fbx",
+   "seconds": 1.8
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S1_B12",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 12,
+   "length_m": 1.61714,
+   "seed": 3492867490,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S1_B12",
+   "triangles": 67774,
+   "digest": "617799dbeebdf0a5df0d6ee4f71e47c0084283b14148b4c66a87ab972ae49398",
+   "ring_width_m": 0.001482,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S1_B12.fbx",
+   "seconds": 1.5
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S1_B13",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 13,
+   "length_m": 1.85714,
+   "seed": 2655008860,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S1_B13",
+   "triangles": 110074,
+   "digest": "135adb8bd50879bbebf5ab1b1132a7e7bd5d4f22775763ce6b30b26016e119d2",
+   "ring_width_m": 0.001728,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S1_B13.fbx",
+   "seconds": 2.8
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S1_B13",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 13,
+   "length_m": 1.85714,
+   "seed": 3494103109,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S1_B13",
+   "triangles": 118700,
+   "digest": "cd8c4ffd0dc731b8830a7e9a818f21e85adb2581dd8c06eb4103a1daab2931e6",
+   "ring_width_m": 0.001694,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S1_B13.fbx",
+   "seconds": 1.9
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B13",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 13,
+   "length_m": 1.61714,
+   "seed": 2659590944,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B13",
+   "triangles": 68686,
+   "digest": "982bdab6fad796d452f5e079369161421e31ed630262b94c9a4acdbc163ad757",
+   "ring_width_m": 0.001944,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B13.fbx",
+   "seconds": 3.9
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S1_B13",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 1,
+   "bay": 13,
+   "length_m": 1.61714,
+   "seed": 2160319891,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S1_B13",
+   "triangles": 65000,
+   "digest": "1062e10d049d3481f1a42289c61bf1b826a53860f6739ea42060d92af1d476db",
+   "ring_width_m": 0.002199,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S1_B13.fbx",
+   "seconds": 3.1
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B00",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 0,
+   "length_m": 1.8,
+   "seed": 1105120475,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B00",
+   "triangles": 106452,
+   "digest": "8014cd8b40c7f8900c0545b1b9bbb5f33f0d82059d66c72fedb75847508fae45",
+   "ring_width_m": 0.00216,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B00.fbx",
+   "seconds": 3.7
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B00",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 0,
+   "length_m": 1.8,
+   "seed": 1927577776,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B00",
+   "triangles": 112176,
+   "digest": "aa5f1e014d00322ee0ae1aa3ce5ad61c55a0ee1dbba84d3e8bc5e886b47afa0e",
+   "ring_width_m": 0.001613,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B00.fbx",
+   "seconds": 2.5
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B00",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 0,
+   "length_m": 1.56,
+   "seed": 1871078688,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B00",
+   "triangles": 64894,
+   "digest": "e5ac7f63be2675e90c9a5bf0f078d9583a0d8723ac3402daaee3470666c640a3",
+   "ring_width_m": 0.001706,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B00.fbx",
+   "seconds": 1.4
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B00",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 0,
+   "length_m": 1.56,
+   "seed": 684115205,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B00",
+   "triangles": 62600,
+   "digest": "b65c080e054b725070b49411dc650f48cc61121195747c04bf08d316b9cc6baa",
+   "ring_width_m": 0.001504,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B00.fbx",
+   "seconds": 1.5
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B01",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 1,
+   "length_m": 1.8,
+   "seed": 2099183707,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B01",
+   "triangles": 108302,
+   "digest": "ee2bcaf2435b87e8575d0f31b9b70b08e7c5ac6a7ec04a5f013b9aae02ada478",
+   "ring_width_m": 0.001489,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B01.fbx",
+   "seconds": 2.8
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B01",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 1,
+   "length_m": 1.8,
+   "seed": 1513089614,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B01",
+   "triangles": 112606,
+   "digest": "128927c26f2cab3cf11028bba85857f35609896f3623da6c6a24ba78d6de851a",
+   "ring_width_m": 0.001988,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B01.fbx",
+   "seconds": 2.5
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B01",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 1,
+   "length_m": 1.56,
+   "seed": 742333357,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B01",
+   "triangles": 63748,
+   "digest": "89284f31a9ba53c7a65d65b916e61ce4cf89a3fd954c359a9b19a43e51b09c8c",
+   "ring_width_m": 0.001943,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B01.fbx",
+   "seconds": 1.8
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B01",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 1,
+   "length_m": 1.56,
+   "seed": 650962845,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B01",
+   "triangles": 62600,
+   "digest": "d29172e9499be8d8f054c9e21f0cd0b3f68f13a3c7cff0e743cf51cf460dcf54",
+   "ring_width_m": 0.002144,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B01.fbx",
+   "seconds": 1.9
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B02",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 2,
+   "length_m": 1.8,
+   "seed": 404236719,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B02",
+   "triangles": 105922,
+   "digest": "1e7af2074c576a2d578015e70d7e7bd1f73ae4252d0b57697c8c6b22d68a1656",
+   "ring_width_m": 0.001876,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B02.fbx",
+   "seconds": 2.4
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B02",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 2,
+   "length_m": 1.8,
+   "seed": 1182836587,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B02",
+   "triangles": 112536,
+   "digest": "661f711bda091029f60b517368ee3b4a75147235e814b52df76a2dc2951c7925",
+   "ring_width_m": 0.001843,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B02.fbx",
+   "seconds": 2.0
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B02",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 2,
+   "length_m": 1.56,
+   "seed": 3345196809,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B02",
+   "triangles": 63570,
+   "digest": "7d86928b3eb2d26de0018ea6e49706f2c949dba9f3d85f035df646661b6e84b0",
+   "ring_width_m": 0.002014,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B02.fbx",
+   "seconds": 4.5
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B02",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 2,
+   "length_m": 1.56,
+   "seed": 2993798001,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B02",
+   "triangles": 64108,
+   "digest": "d04cf2d4bc32520a9efd6f38eebb65516234de0e306f8eb00e67a1015b6563ec",
+   "ring_width_m": 0.002037,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B02.fbx",
+   "seconds": 1.5
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B03",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 3,
+   "length_m": 1.8,
+   "seed": 3096436048,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B03",
+   "triangles": 106440,
+   "digest": "45f940186dcd7e5c2dc88801f077d15be3b4f5440c36b09b0d091a29af151cb6",
+   "ring_width_m": 0.00194,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B03.fbx",
+   "seconds": 2.1
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B03",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 3,
+   "length_m": 1.8,
+   "seed": 941012476,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B03",
+   "triangles": 113822,
+   "digest": "5307955af6ab9027d010d2d8d70db4024eb6898c936cfd4c90391f2e032c0388",
+   "ring_width_m": 0.001433,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B03.fbx",
+   "seconds": 2.1
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B03",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 3,
+   "length_m": 1.56,
+   "seed": 1844936286,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B03",
+   "triangles": 64084,
+   "digest": "b1821d1f3204bb6008b58d8d20abc013a49a8f3951512ed4c2e7ba8b0a7d962c",
+   "ring_width_m": 0.001466,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B03.fbx",
+   "seconds": 1.0
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B03",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 3,
+   "length_m": 1.56,
+   "seed": 49381075,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B03",
+   "triangles": 64858,
+   "digest": "73c3ef3e8b04ac0da1d186c1143b8e1af131831e6e6229a0674d2a4c78a8f579",
+   "ring_width_m": 0.001666,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B03.fbx",
+   "seconds": 1.2
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B04",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 4,
+   "length_m": 1.8,
+   "seed": 3401436983,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B04",
+   "triangles": 105412,
+   "digest": "53be20f85b66dd23f3aefaabae4d1611051f794682c80537d237664b7353b8e7",
+   "ring_width_m": 0.001854,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B04.fbx",
+   "seconds": 1.7
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B04",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 4,
+   "length_m": 1.8,
+   "seed": 1757156239,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B04",
+   "triangles": 112482,
+   "digest": "2578278caf495ee1c0448ef38e49a2706cc0a5fb151f99837b48190e4d05dca5",
+   "ring_width_m": 0.002118,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B04.fbx",
+   "seconds": 1.6
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B04",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 4,
+   "length_m": 1.56,
+   "seed": 3586035652,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B04",
+   "triangles": 63956,
+   "digest": "b6ce38438ef63c403b0955f612dcf909b6b81a7a923601cccea92b8fefeccdf0",
+   "ring_width_m": 0.001931,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B04.fbx",
+   "seconds": 1.7
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B04",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 4,
+   "length_m": 1.56,
+   "seed": 3251513501,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B04",
+   "triangles": 62600,
+   "digest": "f996aff6580cb3d7281cf25cebc98b44e736cc5bdc72b960d89cec493e934411",
+   "ring_width_m": 0.001831,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B04.fbx",
+   "seconds": 1.9
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B05",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 5,
+   "length_m": 1.8,
+   "seed": 1688090174,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B05",
+   "triangles": 105412,
+   "digest": "7dbff13e2e4327c7dc7a2d07b88a475d29d1ff65740f946bed6c9d26c740b6de",
+   "ring_width_m": 0.001682,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B05.fbx",
+   "seconds": 2.4
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B05",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 5,
+   "length_m": 1.8,
+   "seed": 3266590855,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B05",
+   "triangles": 112582,
+   "digest": "0a034fb5a27502ca6afcd05fc7ee164dfa246c0e0cc2e0b00ae1732dcf410838",
+   "ring_width_m": 0.001748,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B05.fbx",
+   "seconds": 2.0
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B05",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 5,
+   "length_m": 1.56,
+   "seed": 87839146,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B05",
+   "triangles": 64962,
+   "digest": "1f43e0ee3b355ac1ff4b947a4c89a72562ea50fc45711f84fc4d69711b55ec00",
+   "ring_width_m": 0.001804,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B05.fbx",
+   "seconds": 1.3
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B05",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 5,
+   "length_m": 1.56,
+   "seed": 4291619513,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B05",
+   "triangles": 62600,
+   "digest": "12385d23352611fd6b3cea1e052255ff0e26070cbb9996d782cde88a5640c981",
+   "ring_width_m": 0.001594,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B05.fbx",
+   "seconds": 1.4
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B06",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 6,
+   "length_m": 1.8,
+   "seed": 2077628169,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B06",
+   "triangles": 105412,
+   "digest": "0b5b068cb76a03409ae311712003e1a6997c815df6363bce991cf6394259a0f9",
+   "ring_width_m": 0.001988,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B06.fbx",
+   "seconds": 4.8
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B06",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 6,
+   "length_m": 1.8,
+   "seed": 1485409156,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B06",
+   "triangles": 112596,
+   "digest": "c301aee05bdd38ee5a1175cdd85c1db6f3d91e044809ea4568ef95b2114f6677",
+   "ring_width_m": 0.0018,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B06.fbx",
+   "seconds": 3.0
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B06",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 6,
+   "length_m": 1.56,
+   "seed": 2149044051,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B06",
+   "triangles": 73766,
+   "digest": "fbb07ccdd1f96ffb05420d4eeac06af0c7cdc495c1cd924597210abec33dcc3a",
+   "ring_width_m": 0.001815,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B06.fbx",
+   "seconds": 2.7
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B06",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 6,
+   "length_m": 1.56,
+   "seed": 493663471,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B06",
+   "triangles": 62438,
+   "digest": "cfdcd9512d572fa93bf7fb3231bcb7c32e80df6fdb12041c85bac4e2e3be8ebd",
+   "ring_width_m": 0.00186,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B06.fbx",
+   "seconds": 1.3
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B07",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 7,
+   "length_m": 1.8,
+   "seed": 2690367828,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B07",
+   "triangles": 105406,
+   "digest": "27ce24c026987af3de6ccc9cd3db6f376996bc0cd932213cc28ec60f79b7189d",
+   "ring_width_m": 0.001817,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B07.fbx",
+   "seconds": 2.7
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B07",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 7,
+   "length_m": 1.8,
+   "seed": 1511016444,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B07",
+   "triangles": 113104,
+   "digest": "cff9add800dda38a00ec316d12cd19b169318f29fe00bb73ed8aa59f706feb24",
+   "ring_width_m": 0.001925,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B07.fbx",
+   "seconds": 2.4
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B07",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 7,
+   "length_m": 1.56,
+   "seed": 439665969,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B07",
+   "triangles": 63842,
+   "digest": "736dc2ec5c4400fd58efdd6ced18017d80f6c832a77547916c5a273192645482",
+   "ring_width_m": 0.001538,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B07.fbx",
+   "seconds": 1.5
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B07",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 7,
+   "length_m": 1.56,
+   "seed": 1926662890,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B07",
+   "triangles": 64240,
+   "digest": "70b52fb721d4ec615ffd168c47e5dbc1ad89c3d268f3880c8a73dcae4f91c06f",
+   "ring_width_m": 0.00171,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B07.fbx",
+   "seconds": 2.3
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B08",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 8,
+   "length_m": 1.8,
+   "seed": 591400117,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B08",
+   "triangles": 108428,
+   "digest": "7e4d68f08dea6d85d1fdfa221128fc8ac872e08115e0f23a821e93dc6372a0b1",
+   "ring_width_m": 0.001659,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B08.fbx",
+   "seconds": 2.4
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B08",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 8,
+   "length_m": 1.8,
+   "seed": 2082557286,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B08",
+   "triangles": 112632,
+   "digest": "50dc62d8c0dddda4231e2455d1abf3d4243dbb78909045de41f722b2722e2829",
+   "ring_width_m": 0.001509,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B08.fbx",
+   "seconds": 2.2
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B08",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 8,
+   "length_m": 1.56,
+   "seed": 187626156,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B08",
+   "triangles": 63966,
+   "digest": "c3171fea11e0dd8805a7a79eca88237e7bfd21f1b12aae66184cbad5e4171f00",
+   "ring_width_m": 0.002051,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B08.fbx",
+   "seconds": 1.3
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B08",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 8,
+   "length_m": 1.56,
+   "seed": 2312312886,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B08",
+   "triangles": 64660,
+   "digest": "57db51a05564262172dfdf95b4aceebb3cc71befc1322288f9317b0559b61aad",
+   "ring_width_m": 0.001655,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B08.fbx",
+   "seconds": 1.3
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B09",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 9,
+   "length_m": 1.8,
+   "seed": 3843122787,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B09",
+   "triangles": 105412,
+   "digest": "123ab0fb52c393c35e9655f345d4a9ffa28a4d36bec988217221d066bc53e33f",
+   "ring_width_m": 0.001408,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B09.fbx",
+   "seconds": 1.7
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B09",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 9,
+   "length_m": 1.8,
+   "seed": 2162958309,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B09",
+   "triangles": 112608,
+   "digest": "d13f7290e4e8dac7750c98cc79d73acca698be5a0fa91dfb1cf73cc4857b39ee",
+   "ring_width_m": 0.001584,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B09.fbx",
+   "seconds": 2.3
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B09",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 9,
+   "length_m": 1.56,
+   "seed": 3624424610,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B09",
+   "triangles": 64986,
+   "digest": "5d0ee273ba195d275e6089af47aa4c04b2467cf3e2d8d865d6c71594b6707e07",
+   "ring_width_m": 0.001463,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B09.fbx",
+   "seconds": 4.6
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B09",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 9,
+   "length_m": 1.56,
+   "seed": 4173262305,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B09",
+   "triangles": 62600,
+   "digest": "fcccee6a856bb8b386350390397c0b80543d14176f9c382c1e7abae33a9debc7",
+   "ring_width_m": 0.001503,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B09.fbx",
+   "seconds": 1.2
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B10",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 10,
+   "length_m": 1.8,
+   "seed": 2729859608,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B10",
+   "triangles": 105308,
+   "digest": "5d4832048fddc8f15c934bfd6ecf5859f687c61ecf336ba00888476be57bed41",
+   "ring_width_m": 0.002168,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B10.fbx",
+   "seconds": 2.5
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B10",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 10,
+   "length_m": 1.8,
+   "seed": 886509625,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B10",
+   "triangles": 112632,
+   "digest": "e4efea822efdcd992f1f4be40d5551ee715c0aac01899516a441a3569d0eb959",
+   "ring_width_m": 0.001529,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B10.fbx",
+   "seconds": 3.2
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B10",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 10,
+   "length_m": 1.56,
+   "seed": 3393276943,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B10",
+   "triangles": 64606,
+   "digest": "aca3634ab3357db8c6bc8b969407a924d423779f3724dae83711ab36d00267bc",
+   "ring_width_m": 0.001651,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B10.fbx",
+   "seconds": 1.1
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B10",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 10,
+   "length_m": 1.56,
+   "seed": 3802937398,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B10",
+   "triangles": 63838,
+   "digest": "5f277fb1832e7b2b31caf32e889090e5a9819748e227e45a8788afda33996255",
+   "ring_width_m": 0.001878,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B10.fbx",
+   "seconds": 1.4
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B11",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 11,
+   "length_m": 1.8,
+   "seed": 2466391897,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B11",
+   "triangles": 106426,
+   "digest": "4ebfcc4182a7cff0123b0e78dfaab2bfcac7b2fe5ca70d98d8de1cfe421141fa",
+   "ring_width_m": 0.001481,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B11.fbx",
+   "seconds": 1.8
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B11",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 11,
+   "length_m": 1.8,
+   "seed": 1251190953,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B11",
+   "triangles": 114360,
+   "digest": "e28cd45d8d74a080e4020ed22fe0f03d1f14f76d7bf2a76c1c82a37ef8dbefe6",
+   "ring_width_m": 0.00178,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B11.fbx",
+   "seconds": 2.4
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B11",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 11,
+   "length_m": 1.56,
+   "seed": 726306238,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B11",
+   "triangles": 64032,
+   "digest": "72ae2165ba34ac307b6456614a0610a73c17cb20e2f24e243cae77893e23ddbe",
+   "ring_width_m": 0.001596,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B11.fbx",
+   "seconds": 1.3
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B11",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 11,
+   "length_m": 1.56,
+   "seed": 3352787457,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B11",
+   "triangles": 62534,
+   "digest": "12bf70712070fe836a45c2cd9eacf6eb7b5ac72efce42a3c258077a502cea7a9",
+   "ring_width_m": 0.001983,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B11.fbx",
+   "seconds": 1.9
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B12",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 12,
+   "length_m": 1.8,
+   "seed": 4104144605,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B12",
+   "triangles": 106884,
+   "digest": "ad57231e8f8ab9f0bc4193221bb98b0406569be4289a9457b9ce41a03ceeedc8",
+   "ring_width_m": 0.001863,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B12.fbx",
+   "seconds": 1.5
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B12",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 12,
+   "length_m": 1.8,
+   "seed": 2315296342,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B12",
+   "triangles": 114622,
+   "digest": "bf023367cd53657ddb8c17c9afe8371429d22cc716f3a9afdd093fb822dc8100",
+   "ring_width_m": 0.001941,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B12.fbx",
+   "seconds": 2.0
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B12",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 12,
+   "length_m": 1.56,
+   "seed": 2817483305,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B12",
+   "triangles": 66222,
+   "digest": "3f9853328bcc124fc1b68ab354effbb2b83177eacd760769eac64953d53949a3",
+   "ring_width_m": 0.001569,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B12.fbx",
+   "seconds": 1.2
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B12",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 12,
+   "length_m": 1.56,
+   "seed": 2485765317,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B12",
+   "triangles": 64558,
+   "digest": "fcd48c1ea3aa9902c13a6f3a0d2e063bfcb7ac513293ae2ca3fdafbb32c67dda",
+   "ring_width_m": 0.001862,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B12.fbx",
+   "seconds": 1.1
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B13",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 13,
+   "length_m": 1.8,
+   "seed": 3682427756,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B13",
+   "triangles": 107154,
+   "digest": "78a31e1aa763e81b54d4c5fff1ee1fec48af5c1b41a308189c90c0b297cd5155",
+   "ring_width_m": 0.001881,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B13.fbx",
+   "seconds": 1.3
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B13",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 13,
+   "length_m": 1.8,
+   "seed": 416265470,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B13",
+   "triangles": 114154,
+   "digest": "8b3cc60f02061dba811635f68450957694825a550e83ac6ced6fb435123f6302",
+   "ring_width_m": 0.001951,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B13.fbx",
+   "seconds": 1.5
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B13",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 13,
+   "length_m": 1.56,
+   "seed": 3456123178,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B13",
+   "triangles": 65956,
+   "digest": "510b6a1953a86933f4013490275d70df583a32efb3abcb59b70814c364d9f9c5",
+   "ring_width_m": 0.001622,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B13.fbx",
+   "seconds": 1.1
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B13",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 13,
+   "length_m": 1.56,
+   "seed": 603532815,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B13",
+   "triangles": 63950,
+   "digest": "bd7bec4c28019491ebf393573bb8105e5e19af90f3c160eff12caaa86fc6de82",
+   "ring_width_m": 0.002065,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B13.fbx",
+   "seconds": 4.8
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B14",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 14,
+   "length_m": 1.8,
+   "seed": 3136422467,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B14",
+   "triangles": 106314,
+   "digest": "1362b47016edc21cac66a574bd3c05889969668230d1fc5bdca5e8bab37c6d21",
+   "ring_width_m": 0.002155,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B14.fbx",
+   "seconds": 1.6
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B14",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 14,
+   "length_m": 1.8,
+   "seed": 1037538843,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B14",
+   "triangles": 112428,
+   "digest": "c8bfba76174cc5c36ae35dff1b2834f7c07a07c6a21508d1011ec2d6b77dce24",
+   "ring_width_m": 0.001945,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B14.fbx",
+   "seconds": 2.3
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B14",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 14,
+   "length_m": 1.56,
+   "seed": 2520795372,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B14",
+   "triangles": 64104,
+   "digest": "5979ba2b6b59491b79f2e319da79a48de8f197a71050841907bed56e928e2ff5",
+   "ring_width_m": 0.002115,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B14.fbx",
+   "seconds": 1.4
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B14",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 14,
+   "length_m": 1.56,
+   "seed": 1902527177,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B14",
+   "triangles": 62600,
+   "digest": "d18b54ffc8916f9933668034d3e3a72c4e99ea333d3f7996dcf598f819fdab56",
+   "ring_width_m": 0.001841,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B14.fbx",
+   "seconds": 1.4
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B15",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 15,
+   "length_m": 1.8,
+   "seed": 3256296379,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B15",
+   "triangles": 106592,
+   "digest": "51caa8baa299a1b0105088612b6d8a1b9078f78540109bc07286c1807201396b",
+   "ring_width_m": 0.001988,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B15.fbx",
+   "seconds": 1.9
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B15",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 15,
+   "length_m": 1.8,
+   "seed": 3207747395,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B15",
+   "triangles": 115046,
+   "digest": "b83a5f721762497b39d39beb724614b1d194265c5f8acb824b031f442ee440b2",
+   "ring_width_m": 0.001996,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B15.fbx",
+   "seconds": 2.0
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B15",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 15,
+   "length_m": 1.56,
+   "seed": 1267367624,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B15",
+   "triangles": 76156,
+   "digest": "5b1c34a4285a5fba3fc2f7b795181b49d183431815a0f1e5fcd8d3f9593eff78",
+   "ring_width_m": 0.002013,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B15.fbx",
+   "seconds": 1.3
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B15",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 15,
+   "length_m": 1.56,
+   "seed": 88159761,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B15",
+   "triangles": 62600,
+   "digest": "6ad46461947b1c2eae2fc228ba6d7484b5beeeae9795cd7d9893c70ad6dd0b25",
+   "ring_width_m": 0.002048,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B15.fbx",
+   "seconds": 1.1
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B16",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 16,
+   "length_m": 1.8,
+   "seed": 3472488336,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B16",
+   "triangles": 105412,
+   "digest": "4da73d377dba59ba22101cdb07b51af87cffad5d10a30b38a365f5c8efa51fcd",
+   "ring_width_m": 0.00219,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B16.fbx",
+   "seconds": 1.3
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B16",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 16,
+   "length_m": 1.8,
+   "seed": 1237968338,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B16",
+   "triangles": 112540,
+   "digest": "892d5905b3c5b1df84b474e85628734fce99d1b673950f2b543073843a94cdae",
+   "ring_width_m": 0.001814,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B16.fbx",
+   "seconds": 2.0
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B16",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 16,
+   "length_m": 1.56,
+   "seed": 2295900624,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B16",
+   "triangles": 66750,
+   "digest": "2ac82b472cc2b256d4bff521404ddb84428daf82dc86ab1d2dfb3a09fb7118cb",
+   "ring_width_m": 0.001657,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B16.fbx",
+   "seconds": 1.0
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B16",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 16,
+   "length_m": 1.56,
+   "seed": 3510413618,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B16",
+   "triangles": 65244,
+   "digest": "851b96c2ac38508a9c579f1c83ca1ca68ecca2de0e72aacbd03a4f0e30657763",
+   "ring_width_m": 0.001903,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B16.fbx",
+   "seconds": 1.1
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B17",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 17,
+   "length_m": 1.8,
+   "seed": 1293299381,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B17",
+   "triangles": 105412,
+   "digest": "2e439f4bad3527ad4eb5e0607aefd0ae0fa06e42a554a888289209981ebc69ba",
+   "ring_width_m": 0.002102,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B17.fbx",
+   "seconds": 2.2
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B17",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 17,
+   "length_m": 1.8,
+   "seed": 2611647735,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B17",
+   "triangles": 112508,
+   "digest": "9b1354990ad793edce0ae0215e3434f58884dd384ce616869537edc2dd96f3e1",
+   "ring_width_m": 0.001435,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B17.fbx",
+   "seconds": 2.5
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B17",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 17,
+   "length_m": 1.56,
+   "seed": 838527110,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B17",
+   "triangles": 63754,
+   "digest": "6c60db2cf6eb5b3a71ca27b6feabc0d8ff06327fd93122033d960529a0244df8",
+   "ring_width_m": 0.002163,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B17.fbx",
+   "seconds": 1.3
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B17",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 17,
+   "length_m": 1.56,
+   "seed": 1725066022,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B17",
+   "triangles": 64006,
+   "digest": "ad963b574b3f90f113a974e545f56efe451afc3d599ee81d1fdafa1383d467d3",
+   "ring_width_m": 0.001478,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B17.fbx",
+   "seconds": 2.4
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B18",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 18,
+   "length_m": 1.8,
+   "seed": 2524256950,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B18",
+   "triangles": 105340,
+   "digest": "15358bcd26384044e656c7ac3cff89e66a5fbbaf9842ce7bb32e873ce12590d7",
+   "ring_width_m": 0.002015,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B18.fbx",
+   "seconds": 4.8
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B18",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 18,
+   "length_m": 1.8,
+   "seed": 2488366153,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B18",
+   "triangles": 112632,
+   "digest": "5a1f2661821cd185e73b5bab5f881517068b9f71eeb1282fb66a5e8b74f0b41d",
+   "ring_width_m": 0.001594,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B18.fbx",
+   "seconds": 4.1
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B18",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 18,
+   "length_m": 1.56,
+   "seed": 2582533185,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B18",
+   "triangles": 66806,
+   "digest": "51cea953e320235c94d02a84f8a0e8add4f4cf313b1cb8dd5f5ef711af1193cd",
+   "ring_width_m": 0.001785,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B18.fbx",
+   "seconds": 3.0
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B18",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 18,
+   "length_m": 1.56,
+   "seed": 684681537,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B18",
+   "triangles": 64886,
+   "digest": "1089c615368a4925129955b0a547b0dffe370ef930144a42d6ac87079b97296f",
+   "ring_width_m": 0.001993,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B18.fbx",
+   "seconds": 3.6
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B19",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 19,
+   "length_m": 1.8,
+   "seed": 643612734,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B19",
+   "triangles": 105270,
+   "digest": "4da33707f20efe16414b1b64def34a38de6f41c9f23aa7f93366baa914ff324c",
+   "ring_width_m": 0.002192,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S2_B19.fbx",
+   "seconds": 5.0
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B19",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 19,
+   "length_m": 1.8,
+   "seed": 3940295297,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B19",
+   "triangles": 112618,
+   "digest": "4a65b0d40e1490dee90509e2978084dca83aadd7728213a634281d74fb051947",
+   "ring_width_m": 0.001553,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S2_B19.fbx",
+   "seconds": 2.9
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B19",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 19,
+   "length_m": 1.56,
+   "seed": 457358680,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B19",
+   "triangles": 63756,
+   "digest": "338ba474b179f38d6f29caaac2bba9e947e41d5394a1347d74b0530828acf097",
+   "ring_width_m": 0.001556,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B19.fbx",
+   "seconds": 1.5
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B19",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 2,
+   "bay": 19,
+   "length_m": 1.56,
+   "seed": 4065825286,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B19",
+   "triangles": 62564,
+   "digest": "6fd9d1be6107098a99af2fc978240ce0d707c3fa34bb13a14b5c09183b7080db",
+   "ring_width_m": 0.001871,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B19.fbx",
+   "seconds": 2.2
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B00",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 0,
+   "length_m": 1.85714,
+   "seed": 1395202367,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B00",
+   "triangles": 110854,
+   "digest": "7d2a8fa30dd21cc84a5be71df5d412ec5b3f64e5ca45f4288c0fc25754fe31b6",
+   "ring_width_m": 0.002054,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B00.fbx",
+   "seconds": 2.3
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B00",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 0,
+   "length_m": 1.85714,
+   "seed": 3721918900,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B00",
+   "triangles": 116280,
+   "digest": "7848e353218d57830c1e23e323b5ba79488cbad86be43e646ce7e0ab3436a6da",
+   "ring_width_m": 0.001806,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B00.fbx",
+   "seconds": 4.7
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B00",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 0,
+   "length_m": 1.61714,
+   "seed": 3285460974,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B00",
+   "triangles": 68350,
+   "digest": "e5823e618792bb90d9e53108b28e45e9d1a2242d1500e946bb1afbd69e0560bd",
+   "ring_width_m": 0.002186,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B00.fbx",
+   "seconds": 2.7
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B00",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 0,
+   "length_m": 1.61714,
+   "seed": 1763697957,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B00",
+   "triangles": 65000,
+   "digest": "055a9b18601d9d1b7eac902a818a410a1c7e4823b21b2066913c290e7f55ad17",
+   "ring_width_m": 0.00146,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B00.fbx",
+   "seconds": 2.2
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B01",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 1,
+   "length_m": 1.85714,
+   "seed": 2770346561,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B01",
+   "triangles": 109620,
+   "digest": "1fb4504b0fdc67f793c8c69bfcc78832e320646b171bf663f95cd30396508bbd",
+   "ring_width_m": 0.001585,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B01.fbx",
+   "seconds": 2.3
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B01",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 1,
+   "length_m": 1.85714,
+   "seed": 1902404074,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B01",
+   "triangles": 118044,
+   "digest": "fd8d5873b01dee58c2c8e221f71e0eafdaf6f4d154939ae6e28c36907a994f1f",
+   "ring_width_m": 0.002035,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B01.fbx",
+   "seconds": 3.0
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B01",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 1,
+   "length_m": 1.61714,
+   "seed": 3295514974,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B01",
+   "triangles": 67534,
+   "digest": "483f10a205127a9358799a0d61915a2c6f7303921016a9fd4ddc1650a5958597",
+   "ring_width_m": 0.001647,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B01.fbx",
+   "seconds": 1.9
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B01",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 1,
+   "length_m": 1.61714,
+   "seed": 4091941430,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B01",
+   "triangles": 65000,
+   "digest": "2a187f20fea1f447c3b2f43d8ca080d87eadd09713b79d7ccf2afa21656de1c4",
+   "ring_width_m": 0.001691,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B01.fbx",
+   "seconds": 1.7
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B02",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 2,
+   "length_m": 1.85714,
+   "seed": 3516888201,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B02",
+   "triangles": 110382,
+   "digest": "c80eebc4dea3258eca23d51151057bec3e37c4f56fa3610b8ce36e5d20093e34",
+   "ring_width_m": 0.002127,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B02.fbx",
+   "seconds": 3.2
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B02",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 2,
+   "length_m": 1.85714,
+   "seed": 2516204824,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B02",
+   "triangles": 116376,
+   "digest": "729794f1975b3e4278bb6c339d58121ef31bc38191830a128c8a9ddf344a4429",
+   "ring_width_m": 0.001505,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B02.fbx",
+   "seconds": 3.8
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B02",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 2,
+   "length_m": 1.61714,
+   "seed": 3909227611,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B02",
+   "triangles": 67240,
+   "digest": "7b94802677b3be81ffb217f8aaf43aab443ac55d63ec435cac471110324ae9bd",
+   "ring_width_m": 0.002081,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B02.fbx",
+   "seconds": 2.2
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B02",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 2,
+   "length_m": 1.61714,
+   "seed": 3904890847,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B02",
+   "triangles": 67250,
+   "digest": "97ff06b457e135fb392820726417bc6daf35a53da1c5dd2a213fcbeca9eed24e",
+   "ring_width_m": 0.00157,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B02.fbx",
+   "seconds": 2.2
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B03",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 3,
+   "length_m": 1.85714,
+   "seed": 4144839880,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B03",
+   "triangles": 111114,
+   "digest": "c8111e8ded5010dc91a988bd6a3f4b4f1cdd731c3f0889613a2accf23b0a5f8c",
+   "ring_width_m": 0.001409,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B03.fbx",
+   "seconds": 5.0
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B03",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 3,
+   "length_m": 1.85714,
+   "seed": 2789498070,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B03",
+   "triangles": 117600,
+   "digest": "06457c06bca5fc9ad1dcaaa816ecd0ce0453954c7870837efcfaefa1e316091c",
+   "ring_width_m": 0.001989,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B03.fbx",
+   "seconds": 4.9
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B03",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 3,
+   "length_m": 1.61714,
+   "seed": 3974379395,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B03",
+   "triangles": 67638,
+   "digest": "844748ae1c42fcf961098c2895ba67a99bec568679be53cce5047a9a8209b0b9",
+   "ring_width_m": 0.002196,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B03.fbx",
+   "seconds": 2.9
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B03",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 3,
+   "length_m": 1.61714,
+   "seed": 3876778530,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B03",
+   "triangles": 64912,
+   "digest": "72fa13ec96325d6cc075351612625ac40d638c7d372ef5c25dbf3ea340c58bd3",
+   "ring_width_m": 0.001529,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B03.fbx",
+   "seconds": 2.3
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B04",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 4,
+   "length_m": 1.85714,
+   "seed": 501216409,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B04",
+   "triangles": 108894,
+   "digest": "9cdb5c2f980854b6a7a1c8195adac40471b909475c0588806662e8d70715b18c",
+   "ring_width_m": 0.001761,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B04.fbx",
+   "seconds": 2.8
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B04",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 4,
+   "length_m": 1.85714,
+   "seed": 69331256,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B04",
+   "triangles": 119068,
+   "digest": "dd3683400201d055b80f46da47252908b1689da21d1e3524a399ea9a72119251",
+   "ring_width_m": 0.002157,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B04.fbx",
+   "seconds": 3.2
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B04",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 4,
+   "length_m": 1.61714,
+   "seed": 4252138187,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B04",
+   "triangles": 66454,
+   "digest": "335d571ad30c6532c5f024e3dda8507f911e77a86c5d4d58def45e471cac6069",
+   "ring_width_m": 0.001896,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B04.fbx",
+   "seconds": 1.7
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B04",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 4,
+   "length_m": 1.61714,
+   "seed": 3809456606,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B04",
+   "triangles": 67666,
+   "digest": "da24c5500c89c2903382fd8d0c72e3dfb313675d90e625329a75a29818e8b543",
+   "ring_width_m": 0.001743,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B04.fbx",
+   "seconds": 1.5
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B05",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 5,
+   "length_m": 1.85714,
+   "seed": 1967939688,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B05",
+   "triangles": 108916,
+   "digest": "631d8c3940b6642a90bdd53bb975ab84f2200b5103404a6fc2ac893a6e34f01a",
+   "ring_width_m": 0.001455,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B05.fbx",
+   "seconds": 4.4
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B05",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 5,
+   "length_m": 1.85714,
+   "seed": 1058670216,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B05",
+   "triangles": 117620,
+   "digest": "dd972283bba5614f35592959e85f923572ebad1df4d12e88c1d9134711c523f0",
+   "ring_width_m": 0.00173,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B05.fbx",
+   "seconds": 4.3
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B05",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 5,
+   "length_m": 1.61714,
+   "seed": 3209958277,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B05",
+   "triangles": 66660,
+   "digest": "d410de62390be7c23604e3e67802a4b344e42783391a570051a5a6e0e7ee2bcb",
+   "ring_width_m": 0.001678,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B05.fbx",
+   "seconds": 2.2
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B05",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 5,
+   "length_m": 1.61714,
+   "seed": 242690511,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B05",
+   "triangles": 64894,
+   "digest": "f2552707ddd066caefd73dcac180dedd1e35fcabd0fe034cb3969e7656865bc6",
+   "ring_width_m": 0.001564,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B05.fbx",
+   "seconds": 1.7
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B06",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 6,
+   "length_m": 1.85714,
+   "seed": 2259119305,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B06",
+   "triangles": 110406,
+   "digest": "282733bf7c51363fe3e03da67d963b82d20c6b81fce1a4d00b2764ca04682797",
+   "ring_width_m": 0.001432,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B06.fbx",
+   "seconds": 4.5
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B06",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 6,
+   "length_m": 1.85714,
+   "seed": 2979231297,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B06",
+   "triangles": 116974,
+   "digest": "8b664b009e364bc35673f37defd81170d7f29d1b4a49c6899b7154ae1c48cbcc",
+   "ring_width_m": 0.002081,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B06.fbx",
+   "seconds": 5.7
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B06",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 6,
+   "length_m": 1.61714,
+   "seed": 1823050030,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B06",
+   "triangles": 67846,
+   "digest": "48cdecc3615ca6e3556c5f0d632116f4a48eb79b4e7071645ab8270ecf9f5f80",
+   "ring_width_m": 0.001865,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B06.fbx",
+   "seconds": 1.8
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B06",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 6,
+   "length_m": 1.61714,
+   "seed": 3958524559,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B06",
+   "triangles": 65000,
+   "digest": "bb7b69a0717ceb6f20ead0a95836b4d39d8db36fccbbb4454645d817d7b1b6f1",
+   "ring_width_m": 0.002177,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B06.fbx",
+   "seconds": 1.2
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B07",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 7,
+   "length_m": 1.85714,
+   "seed": 1138682553,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B07",
+   "triangles": 110524,
+   "digest": "363b287dbd662a6e7bbb9bf46c3c18044ec827d25c15c4f4da72ee6d95df5a7a",
+   "ring_width_m": 0.002006,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B07.fbx",
+   "seconds": 3.2
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B07",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 7,
+   "length_m": 1.85714,
+   "seed": 748798513,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B07",
+   "triangles": 116376,
+   "digest": "f241cf4262cc13ffe8240e8c1bcce6205bc023fdff1cbaba34b1f381453bcbaa",
+   "ring_width_m": 0.00147,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B07.fbx",
+   "seconds": 2.6
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B07",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 7,
+   "length_m": 1.61714,
+   "seed": 2023723979,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B07",
+   "triangles": 68864,
+   "digest": "7b33b27ad58c04f8ed5472f2bef0a987620c1a33c56626e524a20dd0fd5ad610",
+   "ring_width_m": 0.001725,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B07.fbx",
+   "seconds": 4.1
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B07",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 7,
+   "length_m": 1.61714,
+   "seed": 384627834,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B07",
+   "triangles": 65000,
+   "digest": "aa6e15f6a1803fc3e5e2e0c14c1d5203410f1a3294f5eca319e05df171f67a5f",
+   "ring_width_m": 0.002185,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B07.fbx",
+   "seconds": 3.8
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B08",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 8,
+   "length_m": 1.85714,
+   "seed": 1977747387,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B08",
+   "triangles": 108848,
+   "digest": "b9636d797cb1e87ff840e8168c2cd35b11c9f3f4b075976cb0ae30b9ea506546",
+   "ring_width_m": 0.001752,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B08.fbx",
+   "seconds": 2.3
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B08",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 8,
+   "length_m": 1.85714,
+   "seed": 2898082610,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B08",
+   "triangles": 116376,
+   "digest": "df6b0c1a73ebc5fb744f21e221f149ad686c84f37625184eb5316c233c59f334",
+   "ring_width_m": 0.001532,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B08.fbx",
+   "seconds": 3.9
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B08",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 8,
+   "length_m": 1.61714,
+   "seed": 1456934182,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B08",
+   "triangles": 67374,
+   "digest": "16f02db0e88ce113d28eed051531a9dec48f1aa0a5e3dc79e284de6ad98deb2a",
+   "ring_width_m": 0.001468,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B08.fbx",
+   "seconds": 5.1
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B08",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 8,
+   "length_m": 1.61714,
+   "seed": 2760836421,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B08",
+   "triangles": 65000,
+   "digest": "c84504c3f0eb232c288c157d419abccbad2725196896f307319b4f9ed34c2d0f",
+   "ring_width_m": 0.001406,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B08.fbx",
+   "seconds": 5.1
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B09",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 9,
+   "length_m": 1.85714,
+   "seed": 737873714,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B09",
+   "triangles": 108916,
+   "digest": "f847411f292c58f2e3156252df20fcaf31b61e8f7873bed239f08e39cf650123",
+   "ring_width_m": 0.001566,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B09.fbx",
+   "seconds": 4.5
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B09",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 9,
+   "length_m": 1.85714,
+   "seed": 1509005492,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B09",
+   "triangles": 116080,
+   "digest": "dfdd0dc5a76d72670e199b7b0ba3d448192b33dbc124ee9603007df45dc8a389",
+   "ring_width_m": 0.001519,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B09.fbx",
+   "seconds": 3.5
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B09",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 9,
+   "length_m": 1.61714,
+   "seed": 3277921872,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B09",
+   "triangles": 66570,
+   "digest": "b3d156d3fa9d3015be3574fd50f6a8d5ed1ff50e0773b7a323e26efef32a284e",
+   "ring_width_m": 0.001654,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B09.fbx",
+   "seconds": 1.6
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B09",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 9,
+   "length_m": 1.61714,
+   "seed": 3215413623,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B09",
+   "triangles": 64792,
+   "digest": "25efd52fb83783cdcbf68895bc95186f66458b3963e2354834e8595321bf9f7e",
+   "ring_width_m": 0.001889,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B09.fbx",
+   "seconds": 2.6
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B10",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 10,
+   "length_m": 1.85714,
+   "seed": 3433535070,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B10",
+   "triangles": 111408,
+   "digest": "564aa8e4dadecf95c1c9cc67efdeb4243475680bbca4a11194654012733c74b2",
+   "ring_width_m": 0.001841,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B10.fbx",
+   "seconds": 3.5
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B10",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 10,
+   "length_m": 1.85714,
+   "seed": 4092557558,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B10",
+   "triangles": 116376,
+   "digest": "376ee4569fa446f197f43d03f370242dd0dc16dbd054dabd6b547e7efc72f780",
+   "ring_width_m": 0.001595,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B10.fbx",
+   "seconds": 1.7
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B10",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 10,
+   "length_m": 1.61714,
+   "seed": 1384849179,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B10",
+   "triangles": 66684,
+   "digest": "2f7b1955f3042ef54fbe0dc4123fcbf997219b40d93327fb89ade88f12a24982",
+   "ring_width_m": 0.001841,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B10.fbx",
+   "seconds": 1.0
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B10",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 10,
+   "length_m": 1.61714,
+   "seed": 3318099754,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B10",
+   "triangles": 67104,
+   "digest": "a9cbc2f6ec7959858c090ef6b1d902865586bbd18ec713dc848d3d544c5425b8",
+   "ring_width_m": 0.001496,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B10.fbx",
+   "seconds": 1.1
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B11",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 11,
+   "length_m": 1.85714,
+   "seed": 2348404502,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B11",
+   "triangles": 108746,
+   "digest": "0b4f871fa0f70b0a967f0f2d48e6308311947438013d253ebeaecd127ffc2e47",
+   "ring_width_m": 0.001851,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B11.fbx",
+   "seconds": 1.5
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B11",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 11,
+   "length_m": 1.85714,
+   "seed": 1989478915,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B11",
+   "triangles": 118214,
+   "digest": "c2375b5277f8fe1800fadd82442c56fa32f863c464c750c71edbf21dd6793571",
+   "ring_width_m": 0.002106,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B11.fbx",
+   "seconds": 2.2
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B11",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 11,
+   "length_m": 1.61714,
+   "seed": 4008684812,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B11",
+   "triangles": 66352,
+   "digest": "79f35bdbc538e1984d531af430a6fd34a97054a3390d83aef70fc304277dbd03",
+   "ring_width_m": 0.001499,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B11.fbx",
+   "seconds": 2.3
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B11",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 11,
+   "length_m": 1.61714,
+   "seed": 360126921,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B11",
+   "triangles": 66178,
+   "digest": "7825e74f470741599d4560d07e503afc6fe805283c090bcd512a82b8ab3d67e6",
+   "ring_width_m": 0.002052,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B11.fbx",
+   "seconds": 5.3
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B12",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 12,
+   "length_m": 1.85714,
+   "seed": 3419090367,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B12",
+   "triangles": 109388,
+   "digest": "769cd12ffb5a71519fc85f626c5d71d5df431316f14eb1e94b311c86be5bcf79",
+   "ring_width_m": 0.001725,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B12.fbx",
+   "seconds": 7.1
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B12",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 12,
+   "length_m": 1.85714,
+   "seed": 3034886810,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B12",
+   "triangles": 117138,
+   "digest": "937dba21f89a95c0dd2b9d1e4213e9136821969275720da5f0da1ebb9c057467",
+   "ring_width_m": 0.001437,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B12.fbx",
+   "seconds": 2.3
+  },
+  {
+   "name": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B12",
+   "kind": "Koshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 12,
+   "length_m": 1.61714,
+   "seed": 250483298,
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B12",
+   "triangles": 66866,
+   "digest": "3ced20b60106d123a164caaf2c5515687fc525ec5418e3582e774ff7eecd0977",
+   "ring_width_m": 0.001436,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S3_B12.fbx",
+   "seconds": 2.2
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B12",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 12,
+   "length_m": 1.61714,
+   "seed": 1036320001,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B12",
+   "triangles": 65794,
+   "digest": "fa4da765ee1a56cb840904d290a2b7983b1fa34999bdc3778d0aa1688397556b",
+   "ring_width_m": 0.001741,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B12.fbx",
+   "seconds": 1.7
+  },
+  {
+   "name": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B13",
+   "kind": "Nageshi",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 13,
+   "length_m": 1.85714,
+   "seed": 2742476502,
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B13",
+   "triangles": 108834,
+   "digest": "69ae8fd80239e12894b1471c4c94bdb72f34706dded348a7f8a3f38ef923ae2c",
+   "ring_width_m": 0.001506,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S3_B13.fbx",
+   "seconds": 3.8
+  },
+  {
+   "name": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B13",
+   "kind": "Cornice",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 13,
+   "length_m": 1.85714,
+   "seed": 86733806,
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B13",
+   "triangles": 116248,
+   "digest": "013ae589d4ea0701ac9a19325f9184ccf5ca5ab26cbda4a4657b11a6ecc1cfb9",
+   "ring_width_m": 0.001774,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S3_B13.fbx",
+   "seconds": 5.9
+  },
+  {
+   "name": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B13",
+   "kind": "Nuki",
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "side": 3,
+   "bay": 13,
+   "length_m": 1.61714,
+   "seed": 2782770307,
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B13",
+   "triangles": 67934,
+   "digest": "f17ce27e26ae5af70f5e015b1f057b890294b842001b75f5a68e9505a0cc32c2",
+   "ring_width_m": 0.001711,
+   "cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/Placements/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B13.fbx",
+   "seconds": 2.5
+  }
+ ],
+ "pool": [
+  {
+   "asset": "SM_DojoTimberRail_MAC_Nageshi_00",
+   "kind": "Nageshi",
+   "seed": 588118472,
+   "length_m": 1.8,
+   "triangles": 105206,
+   "fallback_triangles": 9100,
+   "dense_digest": "ae946570bc82ac5dc796b0b29001a88ff894bff4b8cdfb338054cab5144dc7cb",
+   "digest": "b6b2ede5fb3cbbb61d7cb55664da0b61de3311d8754aff114eb50c127b120636",
+   "ring_width_m": 0.00181,
+   "fallback_fbx": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/FBX/SM_DojoTimberRail_MAC_Nageshi_00.fbx",
+   "fallback_fbx_bytes": 1013900,
+   "fallback_fbx_sha256": "0d9a011b1f617ef2dc12a52bde867c4f081732185c02333924f13f360593d31b",
+   "dense_cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/PoolDense/SM_DojoTimberRail_MAC_Nageshi_00_Dense.fbx",
+   "fallback_maps": {
+    "Masks": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Nageshi_00_Masks.png",
+     "sha256": "491bcfbb79954d8de30bc96d6800cbaed70f351f980b715189e57700a1d4e8f2",
+     "bytes": 348775,
+     "res": 1024
+    },
+    "NormalDX": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Nageshi_00_NormalDX.png",
+     "sha256": "2a9be849780a2f625cee434ca65f959206e8e35bc3eff9b9af8a885957b74ccb",
+     "bytes": 93720,
+     "res": 1024
+    }
+   },
+   "seconds": 6.7
+  },
+  {
+   "asset": "SM_DojoTimberRail_MAC_Nageshi_01",
+   "kind": "Nageshi",
+   "seed": 3477408723,
+   "length_m": 1.8,
+   "triangles": 107544,
+   "fallback_triangles": 9646,
+   "dense_digest": "e18d40e4dbdeaf6d958b516d9cb23abfd6f2bd084275d4f45c707b0febf32273",
+   "digest": "c48f10076563dcbf8e8d581e4276d15effe7e2641b474a44d5cd2af59e287d37",
+   "ring_width_m": 0.00198,
+   "fallback_fbx": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/FBX/SM_DojoTimberRail_MAC_Nageshi_01.fbx",
+   "fallback_fbx_bytes": 1071052,
+   "fallback_fbx_sha256": "a09b8c41e64b8310b0abcedfb1072be6c8c7166a4e07aedbc4b878e5d23c02f9",
+   "dense_cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/PoolDense/SM_DojoTimberRail_MAC_Nageshi_01_Dense.fbx",
+   "fallback_maps": {
+    "Masks": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Nageshi_01_Masks.png",
+     "sha256": "8fdee0c32b67cea9a432b81c042cc8a6250221cc990d3ee5157503344d5c6b9f",
+     "bytes": 344200,
+     "res": 1024
+    },
+    "NormalDX": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Nageshi_01_NormalDX.png",
+     "sha256": "c5aa1a4e17af378dcf39d6ff728f8d25137fa8d5fa670288674e2fcd54158160",
+     "bytes": 94282,
+     "res": 1024
+    }
+   },
+   "seconds": 4.4
+  },
+  {
+   "asset": "SM_DojoTimberRail_MAC_Nageshi_02",
+   "kind": "Nageshi",
+   "seed": 4067774951,
+   "length_m": 1.8,
+   "triangles": 106062,
+   "fallback_triangles": 9258,
+   "dense_digest": "ccb217fead31ed8461bbf16daafd220a35f22e5a8c633d04d9330f4550ffdcb3",
+   "digest": "a9a55002453cc0492a8d52c0c5e3fbe4ab950c1778494e37ba2379bd6c3b4d1b",
+   "ring_width_m": 0.002143,
+   "fallback_fbx": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/FBX/SM_DojoTimberRail_MAC_Nageshi_02.fbx",
+   "fallback_fbx_bytes": 1028204,
+   "fallback_fbx_sha256": "bb71566189904f6d55bf58f7ddc8f7f7051d6e666042f78119098e7a9724f511",
+   "dense_cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/PoolDense/SM_DojoTimberRail_MAC_Nageshi_02_Dense.fbx",
+   "fallback_maps": {
+    "Masks": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Nageshi_02_Masks.png",
+     "sha256": "b182e1b7f0b009201ea9dfe145dd17611f2f0f2985e24101475bcda908f3289e",
+     "bytes": 354988,
+     "res": 1024
+    },
+    "NormalDX": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Nageshi_02_NormalDX.png",
+     "sha256": "c5fd880013efb3d04ecd11aa698cde61c9e432e0b21e68f292b82c4e64daffbc",
+     "bytes": 91460,
+     "res": 1024
+    }
+   },
+   "seconds": 3.9
+  },
+  {
+   "asset": "SM_DojoTimberRail_MAC_Cornice_00",
+   "kind": "Cornice",
+   "seed": 97158954,
+   "length_m": 1.8,
+   "triangles": 113122,
+   "fallback_triangles": 9572,
+   "dense_digest": "0bcad918d34dffe2a02b4b72fd3cb3e0806068a09add3bd4b8320470722a4eb4",
+   "digest": "1b411ab9662928dd86e43d8396c6b8d583e7b3a81b7ca6c5182f9ec99b24e319",
+   "ring_width_m": 0.001635,
+   "fallback_fbx": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/FBX/SM_DojoTimberRail_MAC_Cornice_00.fbx",
+   "fallback_fbx_bytes": 1085916,
+   "fallback_fbx_sha256": "d96fdf6a28c54edca670e0ce322f5de2cb2374a23f9dfcea2bbf9fee81a354ce",
+   "dense_cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/PoolDense/SM_DojoTimberRail_MAC_Cornice_00_Dense.fbx",
+   "fallback_maps": {
+    "Masks": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Cornice_00_Masks.png",
+     "sha256": "718e6ca1478acbe8c87e2cc61a4074e4bf6dad5b1c790e6ce82c902926d57082",
+     "bytes": 300476,
+     "res": 1024
+    },
+    "NormalDX": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Cornice_00_NormalDX.png",
+     "sha256": "3aafa2b07ce315b962081d66bb5d075923f9efe4e4d55f2e05e766445957ec4d",
+     "bytes": 99212,
+     "res": 1024
+    }
+   },
+   "seconds": 3.7
+  },
+  {
+   "asset": "SM_DojoTimberRail_MAC_Cornice_01",
+   "kind": "Cornice",
+   "seed": 555059927,
+   "length_m": 1.8,
+   "triangles": 112548,
+   "fallback_triangles": 9464,
+   "dense_digest": "1a7b5e46dc8628e5f9296e78257bc2b015bb748121931a731f0468dc250d0e9f",
+   "digest": "87c1f63b8453584a6ad6c2e81450859416df2e171e790e289eeb38569045b2f4",
+   "ring_width_m": 0.002081,
+   "fallback_fbx": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/FBX/SM_DojoTimberRail_MAC_Cornice_01.fbx",
+   "fallback_fbx_bytes": 1047020,
+   "fallback_fbx_sha256": "a96ee35bd23d1da941988ea83f4d3fe4f266e2370f7cf3f4a2f1bebcffa3bde1",
+   "dense_cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/PoolDense/SM_DojoTimberRail_MAC_Cornice_01_Dense.fbx",
+   "fallback_maps": {
+    "Masks": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Cornice_01_Masks.png",
+     "sha256": "bb91d58680dd4e179d210e5359de3bc025ce478136da35d7e4dc1c0682086f30",
+     "bytes": 334593,
+     "res": 1024
+    },
+    "NormalDX": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Cornice_01_NormalDX.png",
+     "sha256": "0dd793ca5e69ef8a5a7c3ca77e1ef7b3878fe8ef56652baebccb74d911bf0000",
+     "bytes": 96459,
+     "res": 1024
+    }
+   },
+   "seconds": 3.7
+  },
+  {
+   "asset": "SM_DojoTimberRail_MAC_Cornice_02",
+   "kind": "Cornice",
+   "seed": 4090072928,
+   "length_m": 1.8,
+   "triangles": 113164,
+   "fallback_triangles": 9610,
+   "dense_digest": "f0205d193f2463e9920aa56ce8c9a10f9b3663c01611b06635b1363962353fb6",
+   "digest": "6bde7d5d294115fd7e557c82e29a480a66f44fdda28afd4cfde37f3256a9be70",
+   "ring_width_m": 0.001639,
+   "fallback_fbx": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/FBX/SM_DojoTimberRail_MAC_Cornice_02.fbx",
+   "fallback_fbx_bytes": 1067772,
+   "fallback_fbx_sha256": "7d2a6d8c09c390590afeb038f3471212b46887f0ce0f97b567289dab3cf63067",
+   "dense_cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/PoolDense/SM_DojoTimberRail_MAC_Cornice_02_Dense.fbx",
+   "fallback_maps": {
+    "Masks": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Cornice_02_Masks.png",
+     "sha256": "f98b169913e47355bd945bf2ca5d8f13c34a138484d18be25554ac50ad9fc3ff",
+     "bytes": 338563,
+     "res": 1024
+    },
+    "NormalDX": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Cornice_02_NormalDX.png",
+     "sha256": "1b5ebb47523f9a0d8813478601b35af33a9af0f75a804728129973648c55d5bd",
+     "bytes": 100458,
+     "res": 1024
+    }
+   },
+   "seconds": 4.0
+  },
+  {
+   "asset": "SM_DojoTimberRail_MAC_Koshi_00",
+   "kind": "Koshi",
+   "seed": 2245737923,
+   "length_m": 1.56,
+   "triangles": 64064,
+   "fallback_triangles": 5688,
+   "dense_digest": "270aad2c848e570aeb995004c198e371f67ac0bb5d8a9418cbc9ce68ed1af4f8",
+   "digest": "7a89f2e10950da47343b536ad0d054e5b1fd890b78388551f1352db957374b83",
+   "ring_width_m": 0.00144,
+   "fallback_fbx": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/FBX/SM_DojoTimberRail_MAC_Koshi_00.fbx",
+   "fallback_fbx_bytes": 698812,
+   "fallback_fbx_sha256": "617b55c7c474427e57f1926a0a9d6ae5f7570fe8d9f7423a273fbc1cb35e0498",
+   "dense_cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/PoolDense/SM_DojoTimberRail_MAC_Koshi_00_Dense.fbx",
+   "fallback_maps": {
+    "Masks": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Koshi_00_Masks.png",
+     "sha256": "0ec24639804afc5c6286d6629335e914c0cced653202ba6ee033baa894e5d83a",
+     "bytes": 471602,
+     "res": 1024
+    },
+    "NormalDX": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Koshi_00_NormalDX.png",
+     "sha256": "2ac9ba0c4b2287a7f4676edd7bdda63c601bf5d06026d568d70be105bebed4fa",
+     "bytes": 135667,
+     "res": 1024
+    }
+   },
+   "seconds": 3.2
+  },
+  {
+   "asset": "SM_DojoTimberRail_MAC_Koshi_01",
+   "kind": "Koshi",
+   "seed": 1770042635,
+   "length_m": 1.56,
+   "triangles": 65410,
+   "fallback_triangles": 6118,
+   "dense_digest": "34d9691212cab871236e58ba306010c641f58493660eeb4b2de01bd5982b1736",
+   "digest": "a9b47c33388ebf289c02881f91bef17af6eafedf073be8d2af882fcb1b12249c",
+   "ring_width_m": 0.002126,
+   "fallback_fbx": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/FBX/SM_DojoTimberRail_MAC_Koshi_01.fbx",
+   "fallback_fbx_bytes": 751452,
+   "fallback_fbx_sha256": "210075898ed0bd49ce315a08fc971b80b24deceb06af96362e5b2952246f2b48",
+   "dense_cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/PoolDense/SM_DojoTimberRail_MAC_Koshi_01_Dense.fbx",
+   "fallback_maps": {
+    "Masks": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Koshi_01_Masks.png",
+     "sha256": "17436248c2c85db2752a0cef069bdd3c2aa53fcc28468225f81ee0fa794db6c9",
+     "bytes": 470309,
+     "res": 1024
+    },
+    "NormalDX": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Koshi_01_NormalDX.png",
+     "sha256": "16921c7884ff4d354fe91cbfe4a9f66712cfa9c41611c1b643aaaaf9d60bd722",
+     "bytes": 142549,
+     "res": 1024
+    }
+   },
+   "seconds": 3.2
+  },
+  {
+   "asset": "SM_DojoTimberRail_MAC_Koshi_02",
+   "kind": "Koshi",
+   "seed": 3342708453,
+   "length_m": 1.56,
+   "triangles": 64120,
+   "fallback_triangles": 5688,
+   "dense_digest": "93177b85d2c561122f8696bfad007e9f33ab1df1705a76ba4f585bc4a4ef97c4",
+   "digest": "d378b47e49a47ff075c34ce1464d99053e58dc7f01e18d8723e27eac75865da8",
+   "ring_width_m": 0.002101,
+   "fallback_fbx": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/FBX/SM_DojoTimberRail_MAC_Koshi_02.fbx",
+   "fallback_fbx_bytes": 689868,
+   "fallback_fbx_sha256": "ad4f6b08848988276ce75c3769c29d4a9d5358eac672b5d4f066d36b68f657e4",
+   "dense_cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/PoolDense/SM_DojoTimberRail_MAC_Koshi_02_Dense.fbx",
+   "fallback_maps": {
+    "Masks": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Koshi_02_Masks.png",
+     "sha256": "985da520a7451cac3d539ecbbdd07e24a5ada97433a12f17498325036210a2d7",
+     "bytes": 470485,
+     "res": 1024
+    },
+    "NormalDX": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Koshi_02_NormalDX.png",
+     "sha256": "3668ba12c2a5bf4bb559a7158b619f40c852c9cc9f97888a2155ee1887b40dcb",
+     "bytes": 124282,
+     "res": 1024
+    }
+   },
+   "seconds": 3.9
+  },
+  {
+   "asset": "SM_DojoTimberRail_MAC_Nuki_00",
+   "kind": "Nuki",
+   "seed": 3604646800,
+   "length_m": 1.56,
+   "triangles": 62320,
+   "fallback_triangles": 5688,
+   "dense_digest": "508c200f4893e4d0947264959794fd32b560ed2dd98ac83f58823db3a215d7df",
+   "digest": "4d18de01b16cca34c8af1cd6cb0d161974fb0b1543724d2e3be937470c64b333",
+   "ring_width_m": 0.001671,
+   "fallback_fbx": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/FBX/SM_DojoTimberRail_MAC_Nuki_00.fbx",
+   "fallback_fbx_bytes": 698204,
+   "fallback_fbx_sha256": "a255a253ee4eb206110c7f4bf19b7d73cd06b988331e65d99d72159d89209e02",
+   "dense_cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/PoolDense/SM_DojoTimberRail_MAC_Nuki_00_Dense.fbx",
+   "fallback_maps": {
+    "Masks": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Nuki_00_Masks.png",
+     "sha256": "bb342f5b9d2a50fabf65f8c820613a04a6a65be9df6ad174b6ea3bb29f5628aa",
+     "bytes": 467191,
+     "res": 1024
+    },
+    "NormalDX": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Nuki_00_NormalDX.png",
+     "sha256": "af0d0d6ef0f2ec881bb85a8c60edee9c9d1e8c6209c33bf0ded4b8d6eb0234b5",
+     "bytes": 135088,
+     "res": 1024
+    }
+   },
+   "seconds": 4.9
+  },
+  {
+   "asset": "SM_DojoTimberRail_MAC_Nuki_01",
+   "kind": "Nuki",
+   "seed": 1690817511,
+   "length_m": 1.56,
+   "triangles": 64570,
+   "fallback_triangles": 6204,
+   "dense_digest": "022dce86b55268ff0c35595bbd9f599122b67593bc4189787fb393d8b1a140d3",
+   "digest": "42411659a3c92b35375a295122ca30e40b11a14bf19a8351bd300687ef69520b",
+   "ring_width_m": 0.002163,
+   "fallback_fbx": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/FBX/SM_DojoTimberRail_MAC_Nuki_01.fbx",
+   "fallback_fbx_bytes": 773244,
+   "fallback_fbx_sha256": "73b6e5857b401353b695193c3b31ac6010f4e07d12e92826f76fb58d1ef6c6ff",
+   "dense_cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/PoolDense/SM_DojoTimberRail_MAC_Nuki_01_Dense.fbx",
+   "fallback_maps": {
+    "Masks": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Nuki_01_Masks.png",
+     "sha256": "6d3cd987ffd11de0e3e6676c21e03faec6f1936e891024fd187179bd4150fe72",
+     "bytes": 457198,
+     "res": 1024
+    },
+    "NormalDX": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Nuki_01_NormalDX.png",
+     "sha256": "b5b546d8c38dd7d62cfca62c25f01cb0c0b034c544d353238a868447c7674af3",
+     "bytes": 146487,
+     "res": 1024
+    }
+   },
+   "seconds": 4.1
+  },
+  {
+   "asset": "SM_DojoTimberRail_MAC_Nuki_02",
+   "kind": "Nuki",
+   "seed": 2533635016,
+   "length_m": 1.56,
+   "triangles": 64528,
+   "fallback_triangles": 6194,
+   "dense_digest": "217fbc3b93f9c926e3d5d77e785788bf3187f6b00f42b6b9def7e07be87abe24",
+   "digest": "8a2838440589133a01f54eef6fd6c11ad5f1b3d566e262388ddb1121c4a1033b",
+   "ring_width_m": 0.002071,
+   "fallback_fbx": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/FBX/SM_DojoTimberRail_MAC_Nuki_02.fbx",
+   "fallback_fbx_bytes": 760444,
+   "fallback_fbx_sha256": "f0d13e72162f76db5bae22e18757a023c907d936c892c5859dbb28eb05ba0162",
+   "dense_cache_fbx": "Local/ArtCache/NyaagyuDojoTimbers/Rails/PoolDense/SM_DojoTimberRail_MAC_Nuki_02_Dense.fbx",
+   "fallback_maps": {
+    "Masks": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Nuki_02_Masks.png",
+     "sha256": "51943c649e42acde1d47baf8b17e1ca881183b49bd6ec76005189cb6dece2fff",
+     "bytes": 431356,
+     "res": 1024
+    },
+    "NormalDX": {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/Maps/T_DojoTimberRail_MAC_Nuki_02_NormalDX.png",
+     "sha256": "e1a19e6be64bb62b122e139a65390ebd478a62086765bc2f816231322da4c4d6",
+     "bytes": 139946,
+     "res": 1024
+    }
+   },
+   "seconds": 8.1
+  }
+ ],
+ "notes": {
+  "frame": "bay frame of the kit: X along the wall centred on the bay, -Y the room, Z up from the floor",
+  "placements": "SM6 logs cut at their bay's exact length; drawn unscaled",
+  "pool": "SM5 MAC rails at the nominal 1.8 m bay; HallInterior stretches them to fit"
+ }
+}
