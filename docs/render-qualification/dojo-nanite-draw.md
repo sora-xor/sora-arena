@@ -58,6 +58,33 @@ by the running fixture; the archiver checks that they have not changed and
 records SHA256 identities as well. A packaged/IoStore asset run needs separate
 package-byte binding and is not supported by this uncooked fixture.
 
+The v2 inventory includes both `/Game/Generated/Environment/DojoKit/` and
+`/Game/Generated/Environment/DojoTimbers/`, with an explicit family on every
+component. Each package and optional sidecar must belong to an observed mesh
+in that exact family. Unique column/rail asset names may appear once with one
+instance; MAC pools and floor tiles remain classified as reusable assets.
+Observed component, instance and asset counts do not prove expected coverage.
+
+Timber placement admission is deliberately **incomplete** until Claude freezes
+the manifest contract and it can be checked against the current chapter-derived
+placement set. The capture records all eight chapter JSON identities, the
+column/rail/floor manifest identities, and four placement/generator source
+identities, including absent files. The archiver verifies their current bytes
+or continued absence and adds SHA256 identities; these appear in `asset_files`
+with role `unqualified_placement_coverage_input`. This binds the observed inputs
+but does not invent or validate an expected placement list. The only accepted
+`timber_placement_coverage` state is `unqualified_manifest_contract_pending`
+with `qualified: false`; a claimed completed list is rejected as unsupported.
+
+If any timber component or timber input exists, the originals and observations
+are retained but the archive reports a failed coverage gate, including on SM5.
+One visible timber, or old-kit pixels while timbers failed to load, cannot pass
+this admission check. An old-kit-only run retains its existing draw diagnostic
+without claiming timber coverage. The eventual manifest extension must reject
+missing, duplicate, unexpected and stale expected placements and establish the
+actual Nanite-versus-MAC selection. No v2 runtime result is established by the
+synthetic transport tests.
+
 The archive collector requires the exact original `LogTemp: Display:
 SORA_NANITE_DRAW_FRAME` acknowledgements, complete ordered sequence, matching
 SM6/SM5 test/device metadata, fresh matching source JSON, original PNG

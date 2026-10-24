@@ -11,7 +11,7 @@ import hashlib
 from pathlib import Path
 import re
 
-SCHEMA = "sora-arena.nanite-draw.v1"
+SCHEMA = "sora-arena.nanite-draw.v2"
 SCOPE = "production dojo renderer diagnostic; unadmitted art; not gameplay or platform release acceptance"
 CAMERAS = ("entry", "ceiling")
 MODES = ("Lit", "Mask", "Triangles")
@@ -20,6 +20,59 @@ ROTATIONS = ([4, 0, 0], [52, 20, 0])
 # Central interior geometry, excluding engine labels and most exterior windows.
 # These are fixed normalized rectangles, not edited or cropped output images.
 REGION = (.2, .2, .8, .8)
+COVERAGE_PENDING = {"status": "unqualified_manifest_contract_pending", "qualified": False}
+COVERAGE_INPUTS = tuple(f"Content/Data/campaign/chapter_{i:02}.json" for i in range(1, 9)) + (
+    "Content/SourceArt/Environment/NyaagyuDojoTimbers/manifest.json",
+    "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/manifest.json",
+    "Content/SourceArt/Environment/NyaagyuDojoTimbers/Floor/manifest.json",
+    "scripts/art/dojo_hall_placements.py", "scripts/art/create_nyaagyu_dojo_timbers.py",
+    "scripts/art/create_nyaagyu_dojo_rails.py", "scripts/art/create_nyaagyu_dojo_floor.py")
+
+
+def mesh_identity(mesh):
+    match = re.fullmatch(r"/Game/Generated/Environment/(DojoKit|DojoTimbers)/([A-Za-z0-9_]+)\.\2", str(mesh.get("mesh", "")))
+    if not match or mesh.get("asset_family") != match[1]:
+        raise ValueError("invalid production dojo mesh family/object identity")
+    return match[1], match[2]
+
+
+def timber_kind(name):
+    rect = r"(?:m?\d+_){3}m?\d+_S[0-3]_B\d{2,}"
+    patterns = {"column_placement": rf"SM_DojoTimberColumn_{rect}",
+                "rail_placement": rf"SM_DojoTimberRail_(?:Nageshi|Cornice|Koshi|Nuki)_{rect}",
+                "floor_tile": r"SM_DojoTimberFloor_\d{2,}",
+                "column_pool": r"SM_DojoTimberColumn_MAC_(?:Wall|Open)_\d{2,}",
+                "rail_pool": r"SM_DojoTimberRail_MAC_(?:Nageshi|Cornice|Koshi|Nuki)_\d{2,}",
+                "floor_pool": r"SM_DojoTimberFloor_MAC_\d{2,}"}
+    for kind, pattern in patterns.items():
+        if re.fullmatch(pattern, name):
+            return kind
+    raise ValueError("unexpected timber asset naming contract; placement admission is unavailable")
+
+
+def coverage_inputs(meta):
+    # There is deliberately no provisional expected-placement list. Until the
+    # art manifest is immutable and bound to the current chapter-derived layout,
+    # even one fully drawn timber cannot qualify placement completeness.
+    coverage = meta.get("timber_placement_coverage")
+    if coverage != COVERAGE_PENDING or coverage.get("qualified") is not False:
+        raise ValueError("unsupported or missing timber placement coverage contract")
+    records = meta.get("coverage_inputs")
+    if not isinstance(records, list) or len(records) != len(COVERAGE_INPUTS):
+        raise ValueError("missing timber coverage input observations")
+    seen = set()
+    for record in records:
+        if not isinstance(record, dict) or record.get("path") not in COVERAGE_INPUTS or record["path"] in seen:
+            raise ValueError("duplicate or unexpected timber coverage input")
+        seen.add(record["path"])
+        if type(record.get("exists")) is not bool:
+            raise ValueError("invalid timber coverage input existence")
+        if record["exists"]:
+            if integer(record, "bytes") < 1 or not re.fullmatch(r"[0-9a-fA-F]{32}", str(record.get("md5", ""))):
+                raise ValueError("invalid timber coverage input hash/size")
+        elif set(record) != {"path", "exists"} or record["path"] in COVERAGE_INPUTS[:8]:
+            raise ValueError("missing chapter data or invalid absent timber coverage input")
+    return records
 
 
 def number(obj, key):
@@ -46,6 +99,7 @@ def integer(obj, key):
 def validate_metadata(meta, filenames, width, height):
     if not isinstance(meta, dict) or meta.get("schema") != SCHEMA or meta.get("scope") != SCOPE:
         raise ValueError("Nanite metadata schema/scope mismatch")
+    coverage_inputs(meta)
     if meta.get("passed") is not True or meta.get("restored") is not True or meta.get("null_rhi") is not False:
         raise ValueError("Nanite capture failed or did not restore its original session")
     sm6 = meta.get("sm6_requested")
@@ -98,14 +152,21 @@ def validate_metadata(meta, filenames, width, height):
     meshes = meta.get("meshes")
     if not isinstance(meshes, list) or not meshes:
         raise ValueError("Nanite diagnostic has no actual production dojo mesh identities")
-    seen = set()
+    seen, unique_timbers = set(), set()
     for mesh in meshes:
         if (not isinstance(mesh, dict) or not isinstance(mesh.get("component"), str) or not mesh["component"]
-                or mesh["component"] in seen or not str(mesh.get("mesh", "")).startswith("/Game/Generated/Environment/DojoKit/")
+                or mesh["component"] in seen
                 or any(type(mesh.get(k)) is not bool for k in ("has_nanite_data", "disallow_nanite", "force_disable_nanite")) or integer(mesh, "instances") < 1
                 or not isinstance(mesh.get("materials"), list) or not mesh["materials"]):
             raise ValueError("invalid/duplicate production dojo component identity")
         seen.add(mesh["component"])
+        family, name = mesh_identity(mesh)
+        if family == "DojoTimbers":
+            kind = timber_kind(name)
+            if kind.endswith("_placement"):
+                if name in unique_timbers or mesh["instances"] != 1:
+                    raise ValueError("duplicate unique timber placement; a pool is not placement coverage")
+                unique_timbers.add(name)
         vector(mesh, "bounds_origin", 3)
         if any(v <= 0 for v in vector(mesh, "bounds_extent", 3)):
             raise ValueError("invalid production dojo bounds")
@@ -148,6 +209,23 @@ def inspect(meta, images, width, height, decode):
     result = {"schema": "sora-arena.nanite-pixel-review.v1", "actual_shader_platform": meta["shader_platform"],
               "adapter": meta["adapter"], "scope": SCOPE, "human_geometry_review_required": True,
               "hardware_m1_qualified": False, "release_qualified": False, "errors": [], "cameras": {}}
+    families = {family: {"components": 0, "instances": 0, "assets": set()} for family in ("DojoKit", "DojoTimbers")}
+    kinds = {}
+    for mesh in meta["meshes"]:
+        family, name = mesh_identity(mesh)
+        families[family]["components"] += 1
+        families[family]["instances"] += mesh["instances"]
+        families[family]["assets"].add(name)
+        if family == "DojoTimbers":
+            kind = timber_kind(name)
+            kinds[kind] = kinds.get(kind, 0) + mesh["instances"]
+    for family in families.values():
+        family["assets"] = sorted(family["assets"])
+    result["observed_families"] = families
+    result["timber_placement_coverage"] = {**COVERAGE_PENDING, "observed_kinds": kinds,
+        "reason": "No frozen current-chapter-bound expected placement manifest; observed counts are inventory only"}
+    if kinds or any(record["exists"] for record in meta["coverage_inputs"] if record["path"] in COVERAGE_INPUTS[8:]):
+        result["errors"].append("timber placement coverage is incomplete: frozen current-chapter-bound manifest contract required")
     if not sm6:
         result.update(evidence="SM5 conventional fallback originals only; not M1 hardware proof", nanite_draw_evidence=False)
         return result
@@ -175,14 +253,18 @@ def asset_identities(meta, project):
     files = meta.get("asset_files")
     if not isinstance(files, list) or not files:
         raise ValueError("Nanite metadata has no runtime-observed dojo package bytes")
-    root = (project / "Content/Generated/Environment/DojoKit").resolve()
+    project = project.resolve()
+    roots = {family: (project / "Content/Generated/Environment" / family).resolve() for family in ("DojoKit", "DojoTimbers")}
+    expected = set()
+    for mesh in meta.get("meshes", []):
+        family, name = mesh_identity(mesh)
+        expected.add(roots[family] / (name + ".uasset"))
     out, seen = [], set()
     for record in files:
         if not isinstance(record, dict) or not isinstance(record.get("path"), str):
             raise ValueError("invalid Nanite asset file identity")
         path = Path(record["path"]).resolve()
-        path.relative_to(root)
-        if path in seen or path.suffix not in (".uasset", ".uexp", ".ubulk"):
+        if path in seen or path.suffix not in (".uasset", ".uexp", ".ubulk") or path.with_suffix(".uasset") not in expected:
             raise ValueError("duplicate or unexpected Nanite asset file")
         seen.add(path)
         data = path.read_bytes()
@@ -192,7 +274,18 @@ def asset_identities(meta, project):
         out.append({"path": str(path), "bytes": len(data), "sha256": hashlib.sha256(data).hexdigest(), "runtime_md5": record["md5"]})
     for mesh in meta.get("meshes", []):
         path = Path(mesh.get("package_file", "")).resolve()
-        expected = root / (str(mesh.get("mesh", "")).split("/")[-1].split(".")[0] + ".uasset")
-        if path != expected or path not in seen:
+        family, name = mesh_identity(mesh)
+        if path != roots[family] / (name + ".uasset") or path not in seen:
             raise ValueError("dojo component identity lacks its exact original package bytes")
+    for record in coverage_inputs(meta):
+        path = (project / record["path"]).resolve()
+        if path != project / record["path"] or path.is_file() is not record["exists"]:
+            raise ValueError("timber coverage input path/existence changed since runtime")
+        identity = {"path": str(path), "exists": record["exists"], "role": "unqualified_placement_coverage_input"}
+        if record["exists"]:
+            data = path.read_bytes()
+            if len(data) != record["bytes"] or hashlib.md5(data).hexdigest() != record["md5"].lower():
+                raise ValueError("timber coverage input bytes changed since runtime")
+            identity.update(bytes=len(data), sha256=hashlib.sha256(data).hexdigest(), runtime_md5=record["md5"])
+        out.append(identity)
     return out

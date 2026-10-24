@@ -15,6 +15,7 @@ VERIFY = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(VERIFY)
 N = VERIFY.nanite_capture_validation
 WIDTH, HEIGHT = 64, 48
+SOURCE_BYTES = b"synthetic current chapter data; never authored placement evidence"
 
 
 def png(kind):
@@ -53,7 +54,11 @@ def metadata(sm6=True):
     return {"schema": N.SCHEMA, "scope": N.SCOPE, "passed": True, "restored": True, "null_rhi": False,
         "sm6_requested": sm6, "nanite_eligible": sm6, "shader_platform": "METAL_SM6" if sm6 else "METAL_SM5", "rhi": "Metal",
         "adapter": "Synthetic M2 fixture (not hardware evidence)", "viewport": [WIDTH, HEIGHT], "frames": frames, "frame_count": len(frames),
+        "timber_placement_coverage": dict(N.COVERAGE_PENDING),
+        "coverage_inputs": [{"path": path, "exists": True, "bytes": len(SOURCE_BYTES), "md5": hashlib.md5(SOURCE_BYTES).hexdigest()}
+                            if index < 8 else {"path": path, "exists": False} for index, path in enumerate(N.COVERAGE_INPUTS)],
         "meshes": [{"component": "/Engine/Entry.WorldBuilder.Hall", "mesh": "/Game/Generated/Environment/DojoKit/SM_DojoCeiling.SM_DojoCeiling",
+            "asset_family": "DojoKit",
             "has_nanite_data": True, "disallow_nanite": False, "force_disable_nanite": False,
             "bounds_origin": [9500, 0, 700], "bounds_extent": [1000, 800, 30], "instances": 30, "materials": ["M_Arch"]}]}
 
@@ -61,6 +66,15 @@ def metadata(sm6=True):
 def originals(meta):
     modes = {"Lit": "lit", "Mask": "mask", "Triangles": "triangle"}
     return {frame["file"]: png(modes[frame["mode"]]) for frame in meta["frames"]}
+
+
+def add_timber(meta, name="SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B00"):
+    mesh = copy.deepcopy(meta["meshes"][0])
+    mesh.update(component=f"/Engine/Entry.WorldBuilder.{name}", asset_family="DojoTimbers",
+                mesh=f"/Game/Generated/Environment/DojoTimbers/{name}.{name}", instances=1)
+    mesh.pop("package_file", None)
+    meta["meshes"].append(mesh)
+    return mesh
 
 
 class NanitePixels(unittest.TestCase):
@@ -118,6 +132,59 @@ class NanitePixels(unittest.TestCase):
         self.assertFalse(result["hardware_m1_qualified"])
         self.assertIn("not M1 hardware proof", result["evidence"])
 
+    def test_one_drawn_timber_cannot_stand_in_for_expected_placement_coverage(self):
+        for sm6 in (True, False):
+            meta = metadata(sm6); add_timber(meta)
+            result = self.inspect(meta)
+            self.assertFalse(result["nanite_draw_evidence"])
+            self.assertFalse(result["timber_placement_coverage"]["qualified"])
+            self.assertEqual(result["observed_families"]["DojoTimbers"]["instances"], 1)
+            self.assertEqual(result["timber_placement_coverage"]["observed_kinds"], {"column_placement": 1})
+            self.assertIn("manifest contract required", result["errors"][0])
+
+    def test_all_known_timber_classes_remain_observations_not_admission(self):
+        meta = metadata()
+        for name in ("SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S2_B13", "SM_DojoTimberFloor_01",
+                     "SM_DojoTimberColumn_MAC_Wall_02", "SM_DojoTimberRail_MAC_Cornice_03", "SM_DojoTimberFloor_MAC_00"):
+            add_timber(meta, name)
+        result = self.inspect(meta)
+        self.assertEqual(len(result["timber_placement_coverage"]["observed_kinds"]), 5)
+        self.assertFalse(result["nanite_draw_evidence"])
+        self.assertEqual(result["observed_families"]["DojoKit"]["components"], 1)
+
+    def test_duplicate_unique_placements_unknown_classes_and_wrong_family_fail(self):
+        for mutation in ("instances", "duplicate", "unknown", "family", "object"):
+            with self.subTest(mutation=mutation):
+                meta = metadata(); mesh = add_timber(meta)
+                if mutation == "instances": mesh["instances"] = 2
+                elif mutation == "duplicate":
+                    duplicate = copy.deepcopy(mesh); duplicate["component"] += "Duplicate"; meta["meshes"].append(duplicate)
+                elif mutation == "unknown": mesh["mesh"] = "/Game/Generated/Environment/DojoTimbers/Random.Random"
+                elif mutation == "family": mesh["asset_family"] = "DojoKit"
+                else: mesh["mesh"] += "DifferentObject"
+                with self.assertRaises(ValueError): self.inspect(meta)
+
+    def test_missing_duplicated_unexpected_or_forged_coverage_contract_fails(self):
+        for mutation in ("missing", "duplicate", "unexpected", "chapter", "forged", "empty_expected", "numeric_false"):
+            with self.subTest(mutation=mutation):
+                meta = metadata()
+                if mutation == "missing": meta["coverage_inputs"].pop()
+                elif mutation == "duplicate": meta["coverage_inputs"][-1] = meta["coverage_inputs"][0]
+                elif mutation == "unexpected": meta["coverage_inputs"][0]["path"] = "Content/Data/campaign/old.json"
+                elif mutation == "chapter": meta["coverage_inputs"][0] = {"path": N.COVERAGE_INPUTS[0], "exists": False}
+                elif mutation == "forged": meta["timber_placement_coverage"]["qualified"] = True
+                elif mutation == "numeric_false": meta["timber_placement_coverage"]["qualified"] = 0
+                else: meta["timber_placement_coverage"]["expected_placements"] = []
+                with self.assertRaises(ValueError): self.inspect(meta)
+
+    def test_timber_sources_with_only_old_kit_loaded_do_not_pass_as_complete(self):
+        meta = metadata()
+        meta["coverage_inputs"][8].update(exists=True, bytes=len(SOURCE_BYTES), md5=hashlib.md5(SOURCE_BYTES).hexdigest())
+        result = self.inspect(meta)
+        self.assertFalse(result["nanite_draw_evidence"])
+        self.assertEqual(result["observed_families"]["DojoTimbers"]["instances"], 0)
+        self.assertIn("coverage is incomplete", result["errors"][0])
+
     def test_changed_camera_cvars_wrong_modes_and_partial_sequences_fail(self):
         changes = (("camera", [8421, 0, 154]), ("rotation", [4, 1, 0]), ("fov", 90), ("settle_seconds", 2.9),
                    ("paused", False), ("hud_hidden", False), ("active_visualization", "Lit"),
@@ -157,6 +224,9 @@ class NaniteArchive(unittest.TestCase):
         self.asset = asset
         self.meta["meshes"][0]["package_file"] = str(asset)
         self.meta["asset_files"] = [{"path": str(asset), "bytes": asset.stat().st_size, "md5": hashlib.md5(asset.read_bytes()).hexdigest()}]
+        for record in self.meta["coverage_inputs"]:
+            if record["exists"]:
+                path = self.project / record["path"]; path.parent.mkdir(parents=True, exist_ok=True); path.write_bytes(SOURCE_BYTES)
         self.report = {"tests": [{"fullTestPath": "SoraCapture.NaniteDraw.DojoSM6"}], "devices": [{"renderMode": "SM6"}]}
         self.write()
 
@@ -177,6 +247,50 @@ class NaniteArchive(unittest.TestCase):
             self.assertEqual((self.output / f["observations"]).read_bytes(), self.raw)
         review = json.loads((self.output / frames[0]["pixel_review"]).read_text())
         self.assertEqual(review["asset_files"][0]["sha256"], hashlib.sha256(self.asset.read_bytes()).hexdigest())
+        source = next(item for item in review["asset_files"] if item.get("role") == "unqualified_placement_coverage_input" and item["exists"])
+        self.assertEqual(source["sha256"], hashlib.sha256(SOURCE_BYTES).hexdigest())
+
+    def test_timber_package_and_failed_coverage_keep_every_original(self):
+        mesh = add_timber(self.meta)
+        name = mesh["mesh"].split("/")[-1].split(".")[0]
+        asset = self.project / "Content/Generated/Environment/DojoTimbers" / (name + ".uasset")
+        asset.parent.mkdir(parents=True); asset.write_bytes(b"synthetic timber package")
+        mesh["package_file"] = str(asset)
+        self.meta["asset_files"].append({"path": str(asset), "bytes": asset.stat().st_size, "md5": hashlib.md5(asset.read_bytes()).hexdigest()})
+        self.write()
+        with self.assertRaisesRegex(VERIFY.NaniteDrawEvidenceError, "timber placement coverage") as failure: self.archive()
+        self.assertEqual(len(failure.exception.frames), 6)
+        saved = self.output / "frames/SoraNaniteDraw/run"
+        self.assertEqual((saved / "capture.json").read_bytes(), self.raw)
+        review = json.loads((saved / "pixel-review.json").read_text())
+        self.assertTrue(any(item["sha256"] == hashlib.sha256(asset.read_bytes()).hexdigest()
+                            for item in review["asset_files"] if "sha256" in item))
+        self.assertFalse(review["timber_placement_coverage"]["qualified"])
+
+    def test_stale_missing_or_newly_present_coverage_inputs_fail(self):
+        for mutation in ("changed", "missing", "appeared"):
+            with self.subTest(mutation=mutation):
+                if mutation == "appeared":
+                    path = self.project / N.COVERAGE_INPUTS[8]; path.parent.mkdir(parents=True, exist_ok=True); path.write_bytes(SOURCE_BYTES)
+                else:
+                    path = self.project / N.COVERAGE_INPUTS[0]
+                    if mutation == "changed": path.write_bytes(b"different chapter layout")
+                    else: path.unlink()
+                with self.assertRaisesRegex(ValueError, "coverage input.*changed since runtime"):
+                    N.asset_identities(self.meta, self.project)
+                if mutation == "appeared": path.unlink()
+                else: path.write_bytes(SOURCE_BYTES)
+
+    def test_cross_family_and_orphan_package_records_fail(self):
+        for mutation in ("cross-family", "orphan"):
+            meta = copy.deepcopy(self.meta)
+            path = self.project / "Content/Generated/Environment/DojoTimbers/SM_DojoCeiling.uasset"
+            path.parent.mkdir(parents=True, exist_ok=True); path.write_bytes(self.asset.read_bytes())
+            record = {"path": str(path), "bytes": path.stat().st_size, "md5": hashlib.md5(path.read_bytes()).hexdigest()}
+            if mutation == "cross-family":
+                meta["meshes"][0]["package_file"] = str(path); meta["asset_files"] = [record]
+            else: meta["asset_files"].append(record)
+            with self.assertRaises(ValueError): N.asset_identities(meta, self.project)
 
     def test_zero_coverage_failure_keeps_originals_metadata_and_analysis(self):
         self.meta["meshes"][0]["has_nanite_data"] = False

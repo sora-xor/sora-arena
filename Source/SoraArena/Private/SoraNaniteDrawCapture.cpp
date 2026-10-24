@@ -267,7 +267,7 @@ private:
     FCVar Visualize,Composite,Edges,Shading;
     FDelegateHandle Screenshot;
     FVector2D ViewportSize=FVector2D::ZeroVector;
-    TArray<TSharedPtr<FJsonValue>> Frames,Meshes,AssetFiles,DerivedAssets;
+    TArray<TSharedPtr<FJsonValue>> Frames,Meshes,AssetFiles,DerivedAssets,CoverageInputs;
     TSet<FString> HashedFiles;
     int32 Count() const { return SM6?6:2; }
     APlayerController* PC() const { return M.IsValid()?UGameplayStatics::GetPlayerController(M.Get(),0):nullptr; }
@@ -354,9 +354,11 @@ private:
         for (TObjectIterator<UStaticMeshComponent> It;It;++It)
         {
             auto* C=*It; auto* Mesh=C->GetStaticMesh().Get();
-            if (C->GetWorld()!=M->GetWorld()||!C->IsRegistered()||!C->IsVisible()||!Mesh||
-                !Mesh->GetPathName().StartsWith(TEXT("/Game/Generated/Environment/DojoKit/"))) continue;
+            if (C->GetWorld()!=M->GetWorld()||!C->IsRegistered()||!C->IsVisible()||!Mesh) continue;
+            const bool Timber=Mesh->GetPathName().StartsWith(TEXT("/Game/Generated/Environment/DojoTimbers/"));
+            if (!Timber&&!Mesh->GetPathName().StartsWith(TEXT("/Game/Generated/Environment/DojoKit/"))) continue;
             auto O=MakeShared<FJsonObject>(); O->SetStringField(TEXT("component"),C->GetPathName());
+            O->SetStringField(TEXT("asset_family"),Timber?TEXT("DojoTimbers"):TEXT("DojoKit"));
             O->SetStringField(TEXT("mesh"),Mesh->GetPathName()); O->SetStringField(TEXT("class"),C->GetClass()->GetName());
             O->SetBoolField(TEXT("has_nanite_data"),Mesh->HasValidNaniteData());
             if (Mesh->HasValidNaniteData()) O->SetBoolField(TEXT("has_platform_fallback"),Mesh->HasNaniteFallbackMesh(M->GetWorld()->Scene->GetShaderPlatform()));
@@ -401,7 +403,31 @@ private:
                 Materials.Add(MakeShared<FJsonValueString>(GetPathNameSafe(C->GetMaterial(I))));
             O->SetArrayField(TEXT("materials"),Materials); Meshes.Add(MakeShared<FJsonValueObject>(O));
         }
-        if (Meshes.IsEmpty()) Fail(TEXT("Production dojo kit is absent; primitive replacements are not evidence"));
+        if (Meshes.IsEmpty()) Fail(TEXT("Production dojo geometry is absent; primitive replacements are not evidence"));
+        // Preserve exact current inputs, including absence. The unfrozen timber
+        // manifest contract cannot yet establish expected placement coverage.
+        // Do not manufacture an expected set from the meshes that happened to load.
+        TArray<FString> Inputs;
+        for (int32 Chapter=1;Chapter<=8;++Chapter)
+            Inputs.Add(FString::Printf(TEXT("Content/Data/campaign/chapter_%02d.json"),Chapter));
+        for (const TCHAR* Input:{TEXT("Content/SourceArt/Environment/NyaagyuDojoTimbers/manifest.json"),
+            TEXT("Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/manifest.json"),
+            TEXT("Content/SourceArt/Environment/NyaagyuDojoTimbers/Floor/manifest.json"),
+            TEXT("scripts/art/dojo_hall_placements.py"),TEXT("scripts/art/create_nyaagyu_dojo_timbers.py"),
+            TEXT("scripts/art/create_nyaagyu_dojo_rails.py"),TEXT("scripts/art/create_nyaagyu_dojo_floor.py")}) Inputs.Add(Input);
+        for (const FString& Relative:Inputs)
+        {
+            const FString File=FPaths::ConvertRelativePathToFull(FPaths::ProjectDir()/Relative);
+            const int64 Size=IFileManager::Get().FileSize(*File);
+            auto Input=MakeShared<FJsonObject>(); Input->SetStringField(TEXT("path"),Relative);
+            Input->SetBoolField(TEXT("exists"),Size>=0);
+            if (Size>=0)
+            {
+                Input->SetNumberField(TEXT("bytes"),double(Size));
+                Input->SetStringField(TEXT("md5"),LexToString(FMD5Hash::HashFile(*File)));
+            }
+            CoverageInputs.Add(MakeShared<FJsonValueObject>(Input));
+        }
     }
     void Switch()
     {
@@ -502,7 +528,7 @@ private:
         Test.TestTrue(TEXT("Nanite diagnostic restores original menu checkpoint, HUD, profile bytes/existence and temporary cvars"),Restored);
         if (!Folder.IsEmpty())
         {
-            auto O=MakeShared<FJsonObject>(); O->SetStringField(TEXT("schema"),TEXT("sora-arena.nanite-draw.v1"));
+            auto O=MakeShared<FJsonObject>(); O->SetStringField(TEXT("schema"),TEXT("sora-arena.nanite-draw.v2"));
             O->SetStringField(TEXT("scope"),Scope); O->SetBoolField(TEXT("sm6_requested"),SM6);
             O->SetBoolField(TEXT("nanite_eligible"),NaniteEligible);
             O->SetStringField(TEXT("shader_platform"),ShaderPlatform); O->SetStringField(TEXT("rhi"),GDynamicRHI?GDynamicRHI->GetName():TEXT("none"));
@@ -510,6 +536,11 @@ private:
             O->SetArrayField(TEXT("viewport"),{MakeShared<FJsonValueNumber>(ViewportSize.X),MakeShared<FJsonValueNumber>(ViewportSize.Y)});
             O->SetArrayField(TEXT("asset_files"),AssetFiles); O->SetArrayField(TEXT("meshes"),Meshes); O->SetArrayField(TEXT("frames"),Frames); O->SetNumberField(TEXT("frame_count"),Frames.Num());
             O->SetArrayField(TEXT("derived_assets"),DerivedAssets);
+            O->SetArrayField(TEXT("coverage_inputs"),CoverageInputs);
+            auto Coverage=MakeShared<FJsonObject>();
+            Coverage->SetStringField(TEXT("status"),TEXT("unqualified_manifest_contract_pending"));
+            Coverage->SetBoolField(TEXT("qualified"),false);
+            O->SetObjectField(TEXT("timber_placement_coverage"),Coverage);
             O->SetBoolField(TEXT("restored"),Restored); O->SetBoolField(TEXT("passed"),!Failed&&!Test.HasAnyErrors()&&Step==Count());
             O->SetStringField(TEXT("acceptance"),TEXT("original pixel validation and human geometry attribution required; no GPU counters inferred"));
             FString Json; FJsonSerializer::Serialize(O,TJsonWriterFactory<>::Create(&Json));
