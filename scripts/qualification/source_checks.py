@@ -126,6 +126,7 @@ def checks(python: str = sys.executable) -> list[Check]:
         ("rust-pin-guards", "scripts/toolchain/test_doctor_rust.py"),
         ("import-vfx-guards", "scripts/toolchain/test_import_vfx_gate.py"),
         ("capture-report-guards", "scripts/toolchain/test_capture_report.py"),
+        ("capture-frame-contract", "scripts/toolchain/test_capture_frame_contract.py"),
         ("cargo-capture-evidence", "scripts/toolchain/test_cargo_capture.py"),
         ("nanite-draw-evidence", "scripts/toolchain/test_nanite_capture.py"),
         ("dojo-nanite-import", "scripts/unreal/test_dojo_nanite.py"),
