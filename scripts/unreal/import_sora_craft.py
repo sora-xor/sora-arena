@@ -13,6 +13,11 @@ thickness (260-720 nm), so the colour shifts with the view angle the way
 nacre does. Gold coverage (Mask G) is already metallic in ORM.
 Nanite stays off: the Mac preset renders these conventional LODs, and the
 same LOD chain is used on Windows until a Nanite comparison is measured.
+
+A record with "kind": "cloth" (create_sora_maku.py) takes the cloth path
+instead: its BaseColor, Transmission and WeaveNormalDX maps on a two-sided
+foliage master, M_SoraCloth, and flat instances of M_SoraCraftFlat for its
+pole, gilt caps and cords.
 """
 
 from __future__ import annotations
@@ -201,8 +206,137 @@ def fbx_options():
 _MASTER = {}
 
 
+def cloth_master(defaults):
+    """M_SoraCloth: two-sided hemp. Base colour on UV1, the weave's normal on
+    UV0 (5 cm tile), and dawn light let through by the Transmission map as the
+    foliage model's subsurface colour, so a backlit mon reads in silhouette."""
+    path = f"{DEST}/M_SoraCloth"
+    m = assets.load_asset(path) if assets.does_asset_exist(path) else tools.create_asset(
+        "M_SoraCloth", DEST, unreal.Material, unreal.MaterialFactoryNew())
+    for old in list(lib.get_material_expressions(m)):
+        lib.delete_material_expression(m, old)
+    m.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_TWO_SIDED_FOLIAGE)
+    m.set_editor_property("two_sided", True)
+    m.set_editor_property("used_with_instanced_static_meshes", True)
+    uv1 = node(m, unreal.MaterialExpressionTextureCoordinate, -1100, -200, coordinate_index=1)
+    uv0 = node(m, unreal.MaterialExpressionTextureCoordinate, -1300, 300, coordinate_index=0, u_tiling=20.0,
+               v_tiling=20.0)
+    base = node(m, unreal.MaterialExpressionTextureSampleParameter2D, -800, -300, parameter_name="BaseColorMap",
+                texture=defaults["BaseColor"])
+    link(uv1, "", base, "UVs")
+    trans = node(m, unreal.MaterialExpressionTextureSampleParameter2D, -800, 0, parameter_name="TransmissionMap",
+                 texture=defaults["Transmission"], sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_MASKS)
+    link(uv1, "", trans, "UVs")
+    weave = node(m, unreal.MaterialExpressionTextureSampleParameter2D, -800, 300, parameter_name="WeaveNormalMap",
+                 texture=defaults["WeaveNormal"], sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL)
+    link(uv0, "", weave, "UVs")
+    out(base, "RGB", unreal.MaterialProperty.MP_BASE_COLOR)
+    out(weave, "RGB", unreal.MaterialProperty.MP_NORMAL)
+    rough = node(m, unreal.MaterialExpressionConstant, -400, 150, r=0.88)
+    out(rough, "", unreal.MaterialProperty.MP_ROUGHNESS)
+    lit = node(m, unreal.MaterialExpressionMultiply, -400, -50)
+    link(base, "RGB", lit, "A")
+    link(trans, "R", lit, "B")
+    warm = node(m, unreal.MaterialExpressionMultiply, -250, -50, const_b=2.2)
+    link(lit, "", warm, "A")
+    out(warm, "", unreal.MaterialProperty.MP_SUBSURFACE_COLOR)
+    lib.layout_material_expressions(m)
+    lib.recompile_material(m)
+    assets.save_loaded_asset(m)
+    return m
+
+
+def flat_master():
+    path = f"{DEST}/M_SoraCraftFlat"
+    m = assets.load_asset(path) if assets.does_asset_exist(path) else tools.create_asset(
+        "M_SoraCraftFlat", DEST, unreal.Material, unreal.MaterialFactoryNew())
+    for old in list(lib.get_material_expressions(m)):
+        lib.delete_material_expression(m, old)
+    m.set_editor_property("used_with_instanced_static_meshes", True)
+    col = node(m, unreal.MaterialExpressionVectorParameter, -500, -100, parameter_name="BaseColor",
+               default_value=unreal.LinearColor(0.5, 0.5, 0.5, 1))
+    rough = node(m, unreal.MaterialExpressionScalarParameter, -500, 100, parameter_name="Roughness", default_value=0.5)
+    metal = node(m, unreal.MaterialExpressionScalarParameter, -500, 200, parameter_name="Metallic", default_value=0.0)
+    out(col, "", unreal.MaterialProperty.MP_BASE_COLOR)
+    out(rough, "", unreal.MaterialProperty.MP_ROUGHNESS)
+    out(metal, "", unreal.MaterialProperty.MP_METALLIC)
+    lib.recompile_material(m)
+    assets.save_loaded_asset(m)
+    return m
+
+
+# The cloth props' hardware slots (Blender review stand-ins) -> flat instances.
+CLOTH_FLAT = {
+    "M_Maku_Pole": ((0.012, 0.010, 0.009), 0.10, 0.0),     # roiro lacquer
+    "M_Maku_Gilt": ((1.0, 0.77, 0.34), 0.26, 1.0),         # fire-gilt copper
+    "M_Maku_Cord": ((0.42, 0.018, 0.016), 0.45, 0.0),      # red silk
+}
+
+
+def import_cloth(folder: Path, record: dict):
+    """A cloth prop (create_sora_maku.py): two-sided hemp plus flat hardware."""
+    name = record["asset"]
+    require(record.get("svg_sha256") == SORA_SVG_SHA256, f"{name}: SORA mark pin")
+    fbx = ROOT / record["fbx"]
+    require(fbx.is_file() and sha(fbx) == record["fbx_sha256"], f"{name}: FBX changed")
+    tex_folder = f"{DEST}/{folder.name}/Textures"
+    assets.make_directory(tex_folder)
+    kinds = {"BaseColor": "BaseColor", "Transmission": "Mask", "WeaveNormalDX": "Normal"}
+    textures = {}
+    for key, kind in kinds.items():
+        entry = record["textures"][key]
+        path = ROOT / entry["file"]
+        require(path.is_file() and sha(path) == entry["sha256"], f"{name}: {entry['file']} changed")
+        textures[key] = import_texture(path, tex_folder, kind)
+    cloth = cloth_master({"BaseColor": textures["BaseColor"], "Transmission": textures["Transmission"],
+                          "WeaveNormal": textures["WeaveNormalDX"]})
+    flat = flat_master()
+    task = unreal.AssetImportTask()
+    task.filename = str(fbx)
+    task.destination_path = PROPS
+    task.destination_name = name
+    task.automated = True
+    task.replace_existing = True
+    task.save = True
+    task.options = fbx_options()
+    tools.import_asset_tasks([task])
+    mesh = assets.load_asset(f"{PROPS}/{name}")
+    require(isinstance(mesh, unreal.StaticMesh), f"{name}: static mesh import failed")
+    instances = {}
+    hemp_name = f"MI_{name.removeprefix('SM_')}_Hemp"
+    hemp_path = f"{DEST}/{folder.name}/{hemp_name}"
+    hemp = assets.load_asset(hemp_path) if assets.does_asset_exist(hemp_path) else tools.create_asset(
+        hemp_name, f"{DEST}/{folder.name}", unreal.MaterialInstanceConstant, unreal.MaterialInstanceConstantFactoryNew())
+    lib.set_material_instance_parent(hemp, cloth)
+    lib.set_material_instance_texture_parameter_value(hemp, "BaseColorMap", textures["BaseColor"])
+    lib.set_material_instance_texture_parameter_value(hemp, "TransmissionMap", textures["Transmission"])
+    lib.set_material_instance_texture_parameter_value(hemp, "WeaveNormalMap", textures["WeaveNormalDX"])
+    assets.save_loaded_asset(hemp)
+    instances["M_Maku_Hemp"] = hemp
+    for slot, (col, rough, metal) in CLOTH_FLAT.items():
+        path = f"{DEST}/{folder.name}/MI_{slot.removeprefix('M_')}"
+        mi = assets.load_asset(path) if assets.does_asset_exist(path) else tools.create_asset(
+            f"MI_{slot.removeprefix('M_')}", f"{DEST}/{folder.name}", unreal.MaterialInstanceConstant,
+            unreal.MaterialInstanceConstantFactoryNew())
+        lib.set_material_instance_parent(mi, flat)
+        lib.set_material_instance_vector_parameter_value(mi, "BaseColor", unreal.LinearColor(*col, 1))
+        lib.set_material_instance_scalar_parameter_value(mi, "Roughness", rough)
+        lib.set_material_instance_scalar_parameter_value(mi, "Metallic", metal)
+        assets.save_loaded_asset(mi)
+        instances[slot] = mi
+    for index, slot in enumerate(mesh.get_editor_property("static_materials")):
+        slot_name = str(slot.get_editor_property("material_slot_name"))
+        require(slot_name in instances, f"{name}: unexpected slot {slot_name}")
+        mesh.set_material(index, instances[slot_name])
+    assets.save_loaded_asset(mesh)
+    unreal.log(f"SORA_CRAFT_PROP_READY: {name} cloth, {len(instances)} slots")
+    return name
+
+
 def import_prop(folder: Path):
     record = json.loads((folder / "build_record.json").read_text(encoding="utf-8"))
+    if record.get("kind") == "cloth":
+        return import_cloth(folder, record)
     require(record.get("sora_mark", {}).get("sha256") == SORA_SVG_SHA256, f"{folder.name}: SORA mark pin")
     (asset_name, info), = record["assets"].items()
     lods = info["lods"]
