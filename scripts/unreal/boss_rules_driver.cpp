@@ -171,6 +171,35 @@ static void Zones()
     assert(ZoneAt(1500, 1500, 0, 0) == EZone::Armed && ZoneAt(1501, 1500, 0, 0) == EZone::Spent);
     assert(ZoneTick(0, -1, 1000) && !ZoneTick(999, 0, 1000) && ZoneTick(1000, 999, 1000) && !ZoneTick(1500, 1200, 0));
     assert(!ZoneTick(-1, -1, 1000));
+    // Actual actor sampling: the deadline can fall between any two ticks.
+    // One-shot releases catch up exactly once; lasting zones keep their
+    // existing tick/root lifetime and do not resurrect after expiry.
+    for(int Windup:{0,700,800,1500}) for(int Arm:{0,250,800})
+    {
+        const int Due=Windup+Arm;
+        assert(ObservedZoneAt(Due-1,Windup,Arm,0,-1)==EZone::Marked);
+        assert(ObservedZoneAt(Due,Windup,Arm,0,-1)==EZone::Armed);
+        assert(ObservedZoneAt(Due+17,Windup,Arm,0,-1)==EZone::Armed);
+        assert(ObservedZoneAt(Due+60000,Windup,Arm,0,-1)==EZone::Armed);
+        assert(ObservedZoneAt(Due,Windup,Arm,0,0)==EZone::Spent);
+        assert(ObservedZoneAt(Due+17,Windup,Arm,0,17)==EZone::Spent);
+        for(int Hz:{15,24,30,60,120,144}) for(int Offset:{0,3,7})
+        {
+            int Previous=-1,Strikes=0;
+            for(int Frame=0;Frame<Hz*4+1;++Frame)
+            {
+                const int Elapsed=Frame*1000/Hz+Offset;
+                if(ObservedZoneAt(Elapsed,Windup,Arm,0,Previous)!=EZone::Armed) continue;
+                assert(Elapsed>=Due);
+                if(ZoneTick(Elapsed-Due,Previous,0)) ++Strikes;
+                Previous=Elapsed-Due;
+            }
+            assert(Strikes==1);
+        }
+        for(int Life:{1,1000,12000}) for(int Elapsed:{Due-1,Due,Due+1,Due+Life-1,Due+Life,Due+60000})
+            for(int Previous:{-1,0,16})
+                assert(ObservedZoneAt(Elapsed,Windup,Arm,Life,Previous)==ZoneAt(Elapsed,Windup,Arm,Life));
+    }
     // A drone re-indexes every 8 s for 1.2 s, and right after it blocks.
     assert(!WardOpen(7999, 8000, 1200, 99999, true) && WardOpen(8000, 8000, 1200, 99999, true));
     assert(WardOpen(9199, 8000, 1200, 99999, true) && !WardOpen(9200, 8000, 1200, 99999, true));

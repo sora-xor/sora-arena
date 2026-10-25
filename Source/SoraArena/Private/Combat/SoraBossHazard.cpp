@@ -118,7 +118,7 @@ bool ASoraBossHazard::IsArmed() const
     if (IsWard() || !Boss || !GetWorld())
         return false;
     const FSoraBossAttack& Spec = Boss->Data()->Attacks[AttackIndex];
-    return SoraBossRules::ZoneAt(NowMs() - StartedMs, WindupMs, Spec.ArmMs, Spec.LifeMs) == SoraBossRules::EZone::Armed;
+    return SoraBossRules::ObservedZoneAt(NowMs() - StartedMs, WindupMs, Spec.ArmMs, Spec.LifeMs, PreviousArmedMs) == SoraBossRules::EZone::Armed;
 }
 
 bool ASoraBossHazard::IsOpen() const
@@ -169,7 +169,7 @@ void ASoraBossHazard::Tick(float DeltaSeconds)
     }
     const FSoraBossAttack& Spec = Boss->Data()->Attacks[AttackIndex];
     const int32 Elapsed = Now - StartedMs;
-    switch (SoraBossRules::ZoneAt(Elapsed, WindupMs, Spec.ArmMs, Spec.LifeMs))
+    switch (SoraBossRules::ObservedZoneAt(Elapsed, WindupMs, Spec.ArmMs, Spec.LifeMs, PreviousArmedMs))
     {
     case SoraBossRules::EZone::Marked:
         Paint(static_cast<float>(Elapsed) / FMath::Max(1, WindupMs + Spec.ArmMs));
