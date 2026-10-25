@@ -40,20 +40,47 @@ All 24 host tests pass; a corrected Metal draw is still required. SM5 was not
 run against the same faulty precondition. The saved material origin remains
 `97c08a0`; a newer capture source must not be described as a reimport.
 
-New encounter source is integrated for engine qualification: `1bf648c` adds
-Collatera's real ten-degree moving deck, directional pace and ten separate swept
-props with persistent blocked positions; `d38bd4a` adds nine mapped-input cane
-thrust cases; `87e54f6` resets the Collector diagnostic between cases. Independent
-source review and host checks pass, but these additions have no Unreal build
-or runtime result yet. The bridge's authored amphitheatre, final prop art,
-scrape audio and margin-call cover behavior remain open. The timber campaign
-binding changes only chapter seven's hash.
+At `0994b44`, all eight directed encounter tests pass with zero selected errors
+or warnings and actual editor EOF: BridgeDeck, BridgeProps, CollectorCaneThrust,
+CollectorSheathing, Collatera, HelmHandsAndFloor, HelmTrim and Playthrough.
+The real ten-degree moving deck, directional pace, swept props and nine cane
+cases are now exercised in Unreal. Source, native inputs, Config and Generated
+remain unchanged. BridgeProps' initial single-tick wait is clamped by Unreal,
+so its pre-warning assertion is weaker than its label; a correction will check
+the actual deadline. The later contacts and assertions passed. These assisted
+NullRHI tests do not establish ordinary encounter difficulty or final art.
+
+The same capture source produces all 36 SM6 and 18 SM5 timber images at full
+resolution, using the saved `97c08a0` assets. Both editors exit zero, but both
+wrappers correctly reject two first-use material readbacks. The other 34 SM6
+and 16 SM5 observations resolve the proper masters. Eight selected originals
+were individually viewed: the two flagged SM6 views visibly show wood, while
+SM5's first dense-asset view has pale fallback bands. The pre-request material
+observation can precede the actual screenshot draw; readiness and capture-time
+checks need correction. The SM6 column mask and triangle views visibly show
+active Nanite diagnostics. Neither run establishes material or art acceptance.
+Both retain one repeated absent-CVar lookup warning. All packages remain
+unchanged. The earlier zero-frame and compile failures are preserved.
+
+New source `042fa45` implements the casting floor's four timed channels,
+grounded contact, residual player burn and ordinary enemy defeat credit.
+`e15c71a` makes zero-life boss hazards release once when a frame crosses their
+deadline; `aaeeaef` corrects its fixture to observe game and real clocks in
+bounded steps. Seven focused host checks pass at `e15c71a`, including generated
+campaign data and the binding with both chapter-five and chapter-seven hashes.
+The casting and zero-life changes still require an Unreal build and runtime
+tests. The bridge's authored amphitheatre, final prop art, scrape audio and
+margin-call cover behavior remain open.
 
 Evidence is under `Saved/Qualification/2026-10-25/`: `combined-97c08a0-runtime-attempt1`,
 `defense-97c08a0-runtime-attempt1`, `ci-97c08a0`, `bow-sm6-97c08a0`,
 `timber-corrected-import-attempt1`, `timber-corrected-reopen-attempt1`,
 `timber-corrected-metal-sm6-attempt1` and
-`timber-corrected-sm6-resolution-failure-review`. The native bridge and latest
+`timber-corrected-sm6-resolution-failure-review`, `encounters-0994b44-runtime-attempt1`,
+`timber-corrected-metal-sm6-0994b44-attempt1`,
+`timber-corrected-metal-sm5-0994b44-attempt1`, `timber-corrected-099-root-review`
+and `casting-hazard-e15c71a-host`. Claude now owns the engine/generation lane
+for the corrected timber pilot and authored bow/hand assets. The native bridge and latest
 package remain `10ad7dad` and `c655b6b`. The full release remains incomplete.
 
 ## October 25 campaign, first-person and Metal corrections
@@ -1040,7 +1067,7 @@ history below. The release remains incomplete.
 | ID | Deliverable | Owner | Current state / completion evidence |
 | --- | --- | --- | --- |
 | T1 | Reproducible Mac development toolchain | Codex toolchain lane | UE 5.8.3 / CL 58210709 installed and identity checked on M2 Ultra. Xcode 26.1.1 / 17B100, SDK 26.1 and Metal 17B54 installed; doctor and editor build pass. Full imports/validators pass for 280 original-art, 345 CC0 and 267 audio packages, 27 VFX systems, the craft prop and 12 dojo-kit modules. Actual SM5 and SM6 captures pass on this M2 Ultra. Xcode 27 and global selection are preserved; that compiler has not been qualified for this project. |
-| G1 | Complete authored offline campaign mechanics | Codex gameplay lane | Exact `97c08a0` passes15 combined campaign/presentation tests and six defense regressions, including the directed133-beat route. New Collatera deck/prop source and nine cane-thrust cases are integrated for engine qualification. Ordinary control/pacing, remaining authored mechanics and current packages remain open. |
+| G1 | Complete authored offline campaign mechanics | Codex gameplay lane | Exact `97c08a0` passes 15 combined tests and six defense regressions. At `0994b44`, eight encounter tests pass, including moving deck/props, cane thrust, helm and the directed 133-beat route. Casting channels and zero-life hazards are integrated with host checks; their engine validation remains pending. Ordinary controls, pacing, remaining mechanics and current packages remain open. |
 | G2 | Complete playable campaign spaces and encounters | Codex + Claude | Use authored layouts, patrols and encounters; verify traversal, collision, navigation, interaction reach, stealth and boss behavior. Verify all eight chapters and 133 beats with normal controls; headless shortcuts do not establish pacing or difficulty. |
 | U1 | Readable bilingual gameplay and accessible controls | Codex HUD lane | At clean `5f7958f`, the complete Metal SM6 HUD matrix passes all nine prepared scenes at both 1280×720 and 1920×1080, with zero selected-test errors/warnings. All 36 actual images were viewed and their hashes retained. Measured dark backing resolves the gold Examine text over bright bellows and objective labels over bright dojo surfaces, while ordinary Work remains above coaching. No blocking overlap or clipping appears in the matrix. Earlier `febb516` hidden-prompt and `495170d` low-contrast visual failures remain preserved. Both original logs received trace-server shutdown output after their capture manifests were written; reviews retain and bind the exact original prefix, appended suffix and final full log separately. The owned-stream runner at `977c12d` then passes one actual Metal SM6 BellowsGamepad capture at 1280×720: one selected test, zero errors/warnings, two original frames viewed, editor/runner exit zero and inherited-stream EOF true. Its manifest and completion receipt match the entire final raw log, including trace-server shutdown. The earlier wrong-filter invocation remains preserved as a failed launch with correctly retained exit 3. The runner also passes 47 CPU process/report/source tests. U1 remains open for normal-control play, dense bilingual screen coverage, small projected labels, accessibility, motion and packaged/platform qualification. Prepared stress scenes do not establish those gates. |
 | A1 | Unique timber kit and golden-hour Estate/dojo slice | Claude | Nanite policy integrated. Explicit material permutations and reimport resolve prior coarse sampling in same-source `2bb3e36` SM5/SM6 dojo frames; all twelve viewed. Repetitive box geometry, clipped light and placeholder props still fail photoreal acceptance. Claude’s chapter-one sun/sky presets are integrated at `e3b8aa5`, retaining existing intensities and default-off Mac volumetric fog; preset checks pass 20 tests with one skip. All three directed stealth tests pass at `aedfba0`. Paired 1920×1080 SM5/SM6 dojo capture tests pass at `184a7b6`, with zero selected errors/warnings; all twelve images were viewed. Warm direct sunlight and resolved texture are visible, while clipped white exterior/windows and lamp highlights, repeated motifs, box beams, crates and red cylinders still fail photoreal acceptance. Later `a8ecee6` establishes actual M2 Ultra SM6 Nanite draws for all twelve modules and 24 components, with 21,984 input triangles; its SM5 dark-room regression remains open. Unique per-placement timber binaries, dressing, provenance/fallbacks and photoreal acceptance remain open. Claude resumed on October 25 and reports completed timber verification and nine look-development renders; image review, ledger and a signed binary delivery are in progress. Uncommitted timber outputs total 128,480,373 bytes across 91 files and have not been admitted or runtime-qualified. M2 SM5 does not qualify M1. |

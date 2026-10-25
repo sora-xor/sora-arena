@@ -13,11 +13,15 @@ legacy formats, aliases, and fallback decoders are prohibited.
 Exact `97c08a0` passes15 combined editor tests, six defense regressions and all98
 CI source gates. Both BowAim viewports pass targeted proxy framing after review
 of all eight originals; final artwork and broad HUD coverage remain unaccepted.
-Corrected timber import and fresh reopen pass for nine meshes/31 packages, but
-the first SM6 draw stops with zero screenshots because a missing test CVar is
-misclassified. The schema2 capture correction has24 host-test passes and needs
-a new draw. New Collatera moving-deck/prop source and nine cane-thrust cases are
-integrated but not yet compiled or run. See the [current evidence and limits](complete-release-plan.md#october-25-verified-campaign-and-pending-encounter-changes).
+At `0994b44`, all eight encounter tests pass, including moving-deck/prop behavior,
+nine cane-thrust cases and directed Playthrough, with zero selected errors or
+warnings. The BridgeProps pre-warning clock assertion needs strengthening.
+Corrected timber import and fresh reopen pass for nine meshes/31 packages;
+new full-resolution SM6/SM5 captures produce 36/18 originals but fail their
+material-readiness checks. Selected pixels expose a first-use fallback and
+pre-request readback timing discrepancy. Casting-channel and zero-life hazard
+source is now integrated with passing focused host checks; its engine runs
+remain pending. See the [current evidence and limits](complete-release-plan.md#october-25-verified-campaign-and-pending-encounter-changes).
 
 ## 2026-10-25 campaign and Metal corrections
 

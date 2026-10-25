@@ -5,7 +5,11 @@ regressions pass with zero selected errors/warnings and actual editor EOF.
 This includes the corrected chapter-six fixtures, twenty cache cases, nine
 Collector sheathing/input cases and directed133-beat traversal. Both BowAim
 viewports pass targeted proxy framing; overall artwork and ordinary play remain
-open. New moving-deck/prop behavior and the nine cane-thrust cases await engine
+open. At `0994b44`, all eight encounter tests pass with zero selected errors or
+warnings: moving-deck/prop behavior, nine cane-thrust cases, sheathing, Collatera,
+both helm tests and directed Playthrough. BridgeProps' pre-warning assertion
+needs an actual-clock correction; its later contact assertions passed. Newly
+integrated casting channels and zero-life boss-hazard fixes await engine
 qualification. See the [current checkpoint](../complete-release-plan.md#october-25-verified-campaign-and-pending-encounter-changes).
 
 The `f6b7a5f` chapter-six integration builds and passes six of eight directed
