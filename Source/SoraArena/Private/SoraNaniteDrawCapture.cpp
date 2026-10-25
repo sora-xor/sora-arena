@@ -435,8 +435,8 @@ private:
         // binds them to committed chapters and the reviewed immutable binder.
         // Never manufacture expectations from meshes that happened to load.
         TArray<FString> Inputs;
-        for (int32 Chapter=1;Chapter<=8;++Chapter)
-            Inputs.Add(FString::Printf(TEXT("Content/Data/campaign/chapter_%02d.json"),Chapter));
+        for (int32 ChapterIndex=1;ChapterIndex<=8;++ChapterIndex)
+            Inputs.Add(FString::Printf(TEXT("Content/Data/campaign/chapter_%02d.json"),ChapterIndex));
         for (const TCHAR* Input:{TEXT("Content/SourceArt/Environment/NyaagyuDojoTimbers/manifest.json"),
             TEXT("Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/manifest.json"),
             TEXT("Content/SourceArt/Environment/NyaagyuDojoTimbers/Floor/manifest.json"),
