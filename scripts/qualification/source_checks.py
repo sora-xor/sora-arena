@@ -131,6 +131,7 @@ def checks(python: str = sys.executable) -> list[Check]:
         ("nanite-draw-evidence", "scripts/toolchain/test_nanite_capture.py"),
         ("dojo-nanite-import", "scripts/unreal/test_dojo_nanite.py"),
         ("dojo-timber-admission", "scripts/unreal/test_dojo_timber_admission.py"),
+        ("dojo-timber-uv-roundtrip", "scripts/unreal/test_timber_uv_roundtrip.py"),
         ("sora-cloth-admission", "scripts/unreal/test_sora_cloth_admission.py"),
         ("mac-candidate-guards", "scripts/toolchain/test_mac_candidate.py"),
         ("automation-report-guards", "scripts/toolchain/test_packaged_report.py"),
