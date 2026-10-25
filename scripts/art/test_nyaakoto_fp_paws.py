@@ -298,6 +298,38 @@ class Shells(unittest.TestCase):
         ratio = along[free] / np.maximum(up[free], 1e-9)
         self.assertAlmostEqual(float(np.median(ratio)), math.tan(math.radians(P.SHELLS["lean_deg"])), delta=0.05)
 
+    def test_every_shell_is_the_white_mitt(self):
+        # v7: capture v7's grey contours were the tabby's stripes fading into the white. Under MITT every furred
+        # point is white; under v5's mitt (the cards') a large share of the same points sat in the fade.
+        white = np.array(P.TABBY["white"])
+        mitt = P.tabby_colour(self.V[0], self.skel, P.MITT)
+        self.assertLess(float(np.abs(mitt - white).max()), 1e-9)
+        v5 = P.tabby_colour(self.V[0], self.skel)
+        self.assertGreater(float((np.abs(v5 - white).max(1) > 0.01).mean()), 0.3)
+
+    def test_the_coats_height_changes_smoothly(self):
+        # v7: the regions' heights (ruff 3.0, dorsal 1.8, digits 1.2 mm) diffused over the shells' skin. Between
+        # neighbouring vertices that the bow clamp leaves alone, the height moves by little; unsmoothed, it steps.
+        T = self.sh["tris"][: len(self.sh["tris"]) // self.L]
+        e = np.unique(np.sort(np.concatenate([T[:, [0, 1]], T[:, [1, 2]], T[:, [2, 0]]]), 1), axis=0)
+
+        def worst(sh):
+            free = np.isclose(sh["height_m"], sh["height_unclamped_m"])
+            both = free[e[:, 0]] & free[e[:, 1]]
+            return float(np.abs(sh["height_m"][e[both, 0]] - sh["height_m"][e[both, 1]]).max())
+        self.assertLess(worst(self.sh), 0.0004)                 # 0.338 mm where the ruff meets the dewclaw
+        raw = P.fur_shells(self.skel, self.field, cfg=dict(P.SHELLS, height_smooth=None), base=self.sh["base"])
+        self.assertGreater(worst(raw), 0.001)
+
+    def test_the_coats_far_field_is_the_heros_white(self):
+        # v7: the shells' colour is scaled so that ten layers over the skin composite to white_target of TABBY white,
+        # from the committed strand textures' coverage and tint.
+        _rec, means, tint = P.shell_texture_record()
+        gain = P.shell_white_gain(means, tint)
+        self.assertAlmostEqual(self.sh["white_gain"], gain, places=12)
+        self.assertAlmostEqual(P.shell_far_field(means, tint, gain=gain), P.SHELLS["white_target"], places=9)
+        self.assertLessEqual(float(self.sh["colour"][:, :3].max()), 1.0)
+
 
 class Kote(unittest.TestCase):
     @classmethod

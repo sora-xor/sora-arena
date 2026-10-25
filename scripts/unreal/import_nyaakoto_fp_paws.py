@@ -91,7 +91,7 @@ def import_task(filename, destination, name, options=None):
 
 
 def texture(path, kind):
-    """Import one map: kind is 'colour', 'normal' or 'linear'."""
+    """Import one map: kind is 'colour', 'normal', 'vector', 'grey' or 'linear'."""
     import_task(path, DEST + "/Textures", Path(path).stem)
     t = assets.load_asset(DEST + "/Textures/" + Path(path).stem)
     if not isinstance(t, unreal.Texture2D):
@@ -103,6 +103,9 @@ def texture(path, kind):
     elif kind == "vector":
         # Data in all four channels (the shells' strand coverage by height): uncompressed, linear.
         t.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_VECTOR_DISPLACEMENTMAP)
+    elif kind == "grey":
+        # One channel of data (v7: the shells' strand tint): uncompressed G8, linear.
+        t.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_GRAYSCALE)
     elif kind == "linear":
         t.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_MASKS)
     assets.save_loaded_asset(t)
@@ -121,8 +124,9 @@ if list(record["material_slots"]) != list(SLOTS):
 if not record["checks"]["ok"]:
     fail(f"the build's own checks failed: {record['checks']}")
 shell_rec = json.loads((SHELLS / "manifest.json").read_text(encoding="utf-8"))
-if sha256(SHELLS / shell_rec["texture"]["file"]) != shell_rec["texture"]["sha256"]:
-    fail(f"the shells' strand texture differs from its manifest")
+for key in ("texture", "tint"):
+    if sha256(SHELLS / shell_rec[key]["file"]) != shell_rec[key]["sha256"]:
+        fail(f"the shells' {key} map differs from its manifest")
 fur_rec = json.loads((FUR / "manifest.json").read_text(encoding="utf-8"))
 for key, m in fur_rec["maps"].items():
     if sha256(FUR / m["file"]) != m["sha256"]:
@@ -150,6 +154,7 @@ tex = {
     "fur_normal": texture(FUR / "T_NyaakotoFP_FurCards_NormalDX.png", "normal"),
     "fur_masks": texture(FUR / "T_NyaakotoFP_FurCards_Masks.png", "linear"),
     "shell_strands": texture(SHELLS / "T_NyaakotoFP_FurShells_Strands.png", "vector"),
+    "shell_tint": texture(SHELLS / "T_NyaakotoFP_FurShells_Tint.png", "grey"),
     "skin_albedo": texture(HERO / "T_Nyaakoto_fur_white_Albedo.png", "colour"),
     "skin_normal": texture(HERO / "T_Nyaakoto_fur_white_NormalDX.png", "normal"),
     "pad_albedo": texture(PADS / "T_Nyaakoto_PawPad_Albedo.png", "colour"),
@@ -258,7 +263,8 @@ def mat_fur_shells():
     """v6: the coat's shells (nyaakoto_fp_paws.fur_shells). Translucent, lit per pixel (Surface ForwardShading),
     so there is no dither and no card outline. Its colour is the vertex colour; its opacity is the strand texture's
     coverage at the shell's height (vertex alpha, clamped to the texture's heights 0.15-0.90), blended between the
-    texture's four channels by tents a quarter wide (create_nyaakoto_fp_shell_texture.HEIGHTS), x 0.95."""
+    texture's four channels by tents a quarter wide (create_nyaakoto_fp_shell_texture.HEIGHTS), x 0.95. v7: the
+    colour times each strand's tint (the tint map, linear)."""
     m = fresh("M_NyaakotoFP_FurShells")
     m.set_editor_property("blend_mode", unreal.BlendMode.BLEND_TRANSLUCENT)
     m.set_editor_property("translucency_lighting_mode",
@@ -291,7 +297,8 @@ def mat_fur_shells():
     opacity = node(m, unreal.MaterialExpressionMultiply, -100, -200, const_b=0.95)
     link(total, "", opacity, "A")
     out(opacity, "", MP.MP_OPACITY)
-    out(vc, "", MP.MP_BASE_COLOR)
+    tint = sampler(m, tex["shell_tint"], -1500, 400)
+    out(mul(m, vc, "", tint, "R", -250, 300), "", MP.MP_BASE_COLOR)
     out(node(m, unreal.MaterialExpressionConstant, -400, 400, r=0.65), "", MP.MP_ROUGHNESS)
     out(node(m, unreal.MaterialExpressionConstant, -400, 500, r=0.35), "", MP.MP_SPECULAR)
     return finish(m)
@@ -422,11 +429,30 @@ assets.save_directory(DEST, only_if_is_dirty=False, recursive=True)
 
 # --- Readback -----------------------------------------------------------------------
 
+# v7 (root: the shells' material "needs measured performance before acceptance"): every statistic the engine
+# reports, not only the pixel instructions and samplers. A name this engine lacks is recorded as missing.
+STAT_NAMES = ("num_vertex_shader_instructions", "num_pixel_shader_instructions", "num_samplers",
+              "num_vertex_texture_samples", "num_pixel_texture_samples", "num_virtual_texture_samples",
+              "num_uv_scalars", "num_interpolator_scalars")
+
+
+def material_statistics(m):
+    s = lib.get_statistics(m)
+    out, missing = {}, []
+    for key in STAT_NAMES:
+        try:
+            out[key] = s.get_editor_property(key)
+        except Exception:
+            missing.append(key)
+    out["missing"] = missing
+    out["pixel_instructions"] = out.get("num_pixel_shader_instructions", -1)
+    out["samplers"] = out.get("num_samplers", -1)
+    return out
+
+
 stats = {}
 for name, m in materials.items():
-    s = lib.get_statistics(m)
-    stats[name] = {"pixel_instructions": s.get_editor_property("num_pixel_shader_instructions"),
-                   "samplers": s.get_editor_property("num_samplers")}
+    stats[name] = material_statistics(m)
     if stats[name]["pixel_instructions"] <= 0:
         fail(f"{name} did not compile")
 b = mesh.get_bounds()

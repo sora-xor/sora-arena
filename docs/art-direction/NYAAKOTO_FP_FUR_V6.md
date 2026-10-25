@@ -14,8 +14,14 @@ whole construction changed):
   real volume. But it is too smooth: plush or felt, with almost no strand
   definition.
 - **The eye view** reads as a smooth grey-white glove, crossed by grey
-  contour lines where the shells end.
+  contour lines.
 - Details below.
+
+**Correction (fur v7, `NYAAKOTO_FP_FUR_V7.md`):** the contour lines are
+mostly the tabby's dark stripes where they fade into the white mitt, with a
+smaller share from the coat's height stepping between regions. A CPU
+projection and v6/v7 correlations show this (`Saved/W18Rebuild/s39_v7_bands`).
+They are not where the shells end, as guessed below.
 
 ## Why a different construction
 
@@ -181,9 +187,10 @@ selections):
   - but too smooth: plush or felt, with almost no strand definition.
 - **The eye view:**
   - a smooth grey-white glove, with no fur texture at this scale;
-  - crossed by grey contour lines, likely where the ten shells end, each at
-    a slightly different place, at the furred region's borders (the pads,
-    the grip's contact, the sleeve).
+  - crossed by grey contour lines. The guess here was that they lay where
+    the ten shells end at the furred region's borders. Fur v7's diagnosis
+    found the tabby's stripes and the height's steps instead (see the
+    correction above).
 
 ## What is left, for a later lane
 

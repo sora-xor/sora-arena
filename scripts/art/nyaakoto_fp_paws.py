@@ -30,6 +30,7 @@ Construction:
 from __future__ import annotations
 
 import math
+from pathlib import Path
 
 import numpy as np
 
@@ -569,6 +570,13 @@ FUR = {
 # own 0.82 multiplies it again (about 0.59 in all).
 TABBY = {"white": (0.742, 0.693, 0.617), "grey": (0.50, 0.50, 0.50), "stripe": (0.20, 0.20, 0.21),
          "period_m": 0.015, "white_from_knuckles_m": -0.010, "undercoat": 0.72}
+# The white mitt (fur v7, the shells). Capture v7's grey contours were the tabby's dark stripes where they fade into
+# the white: TABBY's mitt begins 10 mm behind the knuckles and fades over 12 mm with a 7 mm wobble, so 43 % of the
+# shells' furred skin sat in the fade (Saved/W18Rebuild/s39_*). The hero's bow hand is white-grey; the tabby is on
+# the head, body and tail (docs/art-direction/Nyaakoto_Photoreal_Target.png). The mitt instead runs under_cuff_m
+# under the kote's cuff (FUR sleeve_from_m) and fades over ramp_m there, so every furred point that can show is
+# white. tabby_colour(mitt=None) keeps v5's mitt for the fur cards.
+MITT = {"under_cuff_m": 0.012, "ramp_m": 0.006}
 # ---------------------------------------------------------------------------
 # Shell fur (v6): the coat as translucent offset layers of the skin, not cards.
 # Root's reviews of captures v5 and v6: the masked cards read as "bright
@@ -591,18 +599,98 @@ TABBY = {"white": (0.742, 0.693, 0.617), "grey": (0.50, 0.50, 0.50), "stripe": (
 #   triangle takes its face's axis; vertices where axes meet are split.
 # Fins for silhouettes are not built: shells' layered edges are the known
 # limit of the method, to judge in the capture.
+# v7 (capture v7 and root's review: "a white glove with broad grey wrist
+# contours", felt-like). Capture v7's contours were mostly the tabby's stripes
+# fading into the white (MITT), with a smaller share from the coat's height
+# stepping between regions (Saved/W18Rebuild/s39_*).
+# - **The height** is smoothed over the shells' skin (height_smooth: sigma
+#   about 4.4 mm), so it no longer steps where regions meet (ruff 3.0, dorsal
+#   1.8, digits 1.2, dewclaw 1.0 mm).
+# - **Clumps:** the strand texture's v2 gathers v1's strands into 1.2 mm
+#   clumps on an 8 mm tile (uv_tile_m), with a tint per strand that the
+#   material multiplies in.
+# - **The white:** the coat's far-field composite is matched to the hero's
+#   white, as the cards' was in v5. The shells' colour is scaled by
+#   shell_white_gain, so the mean of ten layers over a little skin is
+#   white_target of TABBY white. v6's composite was 0.76 of it: the grey glove.
+#   The deep shade is a little weaker (0.55 -> 0.62), since the clumps' partings
+#   now show the deeper layers.
 FUR_MODE = "shells"                      # v6: the coat as shells; "cards" builds v5's fur cards instead
 SHELLS = {
     "layers": 10,
     "step_m": 0.0016,                    # the shells' own skin (surface nets), coarser than the skin's 0.9 mm
     "height_m": {"ruff": 0.0030, "dorsal": 0.0018, "digit": 0.0012, "dewclaw": 0.0010},
+    # v7: the heights diffused over the shells' skin's edges: sigma about step x sqrt(iterations x lam / 2) = 4.4 mm.
+    # At 12 iterations (2.8 mm) the ruff still met the dewclaw (3.0 to 1.0 mm) by 0.52 mm over one edge; at 30, by
+    # 0.34 mm at most, with the regions' plateaus kept.
+    "height_smooth": {"iterations": 30, "lam": 0.5},
     "first_m": 0.00015,                  # the lowest shell's least height above the skin
     "spacing_power": 1.15,               # shells closer together near the skin
     "lean_deg": 50.0,                    # the comb along the coat's flow
     "clear_m": 0.0004,                   # shells stop this far off the bow
-    "uv_tile_m": 0.004,                  # create_nyaakoto_fp_shell_texture.TILE_MM
-    "deep_shade": 0.55,                  # the lowest shell's colour, as a share of the top's
+    "uv_tile_m": 0.008,                  # create_nyaakoto_fp_shell_texture.TILE_MM (v6: 0.004)
+    "deep_shade": 0.62,                  # the lowest shell's colour, as a share of the top's (v6: 0.55)
+    # v7: the coat's far-field mean, as a share of TABBY white: the hero fur texture's mean, which TABBY white was
+    # set to over 0.933 (fur v5). The skin under the shells, as a share of TABBY white: its vertex colour (TABBY
+    # undercoat 0.72) times the fur skin material's hero albedo (0.692) and (0.82, 0.80, 0.78).
+    "white_target": 0.933,
+    "skin_share": 0.40,
 }
+SHELL_MANIFEST = Path(__file__).resolve().parents[2] / "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/FurShells/manifest.json"
+
+
+def shell_alphas(means, cfg=SHELLS):
+    """Each shell's far-field opacity, bottom to top: the material's tents over the strand texture's mean coverage
+    per channel (create_nyaakoto_fp_shell_texture.HEIGHTS), x 0.95."""
+    heights = (0.15, 0.40, 0.65, 0.90)
+    out = []
+    for i in range(cfg["layers"]):
+        h = min(max(((i + 0.5) / cfg["layers"]) ** cfg["spacing_power"], heights[0]), heights[-1])
+        out.append(0.95 * sum(max(1.0 - 4.0 * abs(h - c), 0.0) * m for c, m in zip(heights, means)))
+    return out
+
+
+def shell_far_field(means, tint_mean, cfg=SHELLS, gain=1.0):
+    """The shells' far-field composite over the skin, as a share of TABBY white: each layer's colour (the deep
+    shade ramp x tint x gain) over the ones below, bottom to top."""
+    out = cfg["skin_share"]
+    L = cfg["layers"]
+    for i, a in enumerate(shell_alphas(means, cfg)):
+        shade = cfg["deep_shade"] + (1.0 - cfg["deep_shade"]) * (i + 0.5) / L
+        out = gain * shade * tint_mean * a + out * (1.0 - a)
+    return out
+
+
+def shell_white_gain(means, tint_mean, cfg=SHELLS):
+    """The factor on the shells' colour that makes their far-field composite white_target (shell_far_field is
+    linear in it: gain x what the layers add, plus what the skin shows through)."""
+    shown = shell_far_field(means, tint_mean, cfg, gain=0.0)
+    added = shell_far_field(means, tint_mean, cfg, gain=1.0) - shown
+    return (cfg["white_target"] - shown) / added
+
+
+def shell_texture_record(path=SHELL_MANIFEST):
+    """The committed strand textures' manifest: mean coverage per channel and the tint's mean."""
+    import json
+
+    rec = json.loads(Path(path).read_text(encoding="utf-8"))
+    means = [rec["mean_coverage"][k] for k in sorted(rec["mean_coverage"], key=lambda k: "RGBA".index(k[0]))]
+    return rec, means, float(rec["tint"]["mean"])
+
+
+def smooth_on_mesh(values, tris, iterations, lam):
+    """values (n,) diffused over the mesh's edges: each step moves every value lam of the way to its neighbours'
+    mean (numpy only, so Blender's Python can run it)."""
+    e = np.concatenate([tris[:, [0, 1]], tris[:, [1, 2]], tris[:, [2, 0]]])
+    e = np.unique(np.sort(e, 1), axis=0)
+    a, b = e[:, 0], e[:, 1]
+    deg = np.bincount(a, minlength=len(values)) + np.bincount(b, minlength=len(values))
+    v = np.asarray(values, np.float64).copy()
+    for _ in range(iterations):
+        s = np.bincount(a, weights=v[b], minlength=len(v)) + np.bincount(b, weights=v[a], minlength=len(v))
+        mean = np.where(deg > 0, s / np.maximum(deg, 1), v)
+        v = (1.0 - lam) * v + lam * mean
+    return v
 
 
 def vertex_normals(V, T):
@@ -652,8 +740,9 @@ def fur_region(region):
     return np.array(out, dtype=object)
 
 
-def tabby_colour(p, skel):
-    """Grey tabby proximally with dark stripes round the arm; white toes."""
+def tabby_colour(p, skel, mitt=None):
+    """Grey tabby proximally with dark stripes round the arm; white toes. With ``mitt`` (MITT), the white reaches
+    under the kote's cuff instead of starting behind the knuckles."""
     wrist = skel["wrist"]
     axis = -FOREARM_DIR                                      # toward the paw
     s = (p - wrist) @ axis                                   # metres distal of the carpus
@@ -665,7 +754,11 @@ def tabby_colour(p, skel):
     stripe = 0.5 + 0.5 * np.cos(2 * math.pi * (s + wobble) / TABBY["period_m"])
     stripe = np.clip((stripe - 0.62) / 0.25, 0.0, 1.0)
     grey = np.array(TABBY["grey"])[None] * (1 - stripe[:, None]) + np.array(TABBY["stripe"])[None] * stripe[:, None]
-    w = np.clip((s - (s_k + TABBY["white_from_knuckles_m"])) / 0.012 + 0.5 + wobble / 0.012, 0.0, 1.0)
+    if mitt is None:
+        w = np.clip((s - (s_k + TABBY["white_from_knuckles_m"])) / 0.012 + 0.5 + wobble / 0.012, 0.0, 1.0)
+    else:
+        edge = FUR["sleeve_from_m"] - mitt["under_cuff_m"]
+        w = np.clip((s - edge) / mitt["ramp_m"] + 0.5 + wobble / mitt["ramp_m"], 0.0, 1.0)
     w = w * w * (3 - 2 * w)
     return grey * (1 - w[:, None]) + np.array(TABBY["white"])[None] * w[:, None]
 
@@ -691,19 +784,21 @@ def occlusion_shade(ao, cfg=FUR["occlusion"]):
     return cfg["floor"] + (1.0 - cfg["floor"]) * ao
 
 
-def skin_colour(mesh, occluder, cfg=FUR):
-    """The skin's vertex colour, the coat's bottom: the tabby colour at TABBY undercoat, darkened by the form's
-    occlusion (the pads' material does not read it)."""
+def skin_colour(mesh, occluder, cfg=FUR, mitt=None):
+    """The skin's vertex colour, the coat's bottom: the tabby colour (with ``mitt``, MITT's) at TABBY undercoat,
+    darkened by the form's occlusion (the pads' material does not read it)."""
     V, T = mesh["verts"], mesh["tris"]
     ao = form_occlusion(V, vertex_normals(V, T), occluder, cfg["occlusion"])
-    return tabby_colour(V, mesh["skeleton"]) * (TABBY["undercoat"] * occlusion_shade(ao, cfg["occlusion"]))[:, None]
+    shade = TABBY["undercoat"] * occlusion_shade(ao, cfg["occlusion"])
+    return tabby_colour(V, mesh["skeleton"], mitt) * shade[:, None]
 
 
-def fur_shells(skel, field, keep_out=grip_sdf, cfg=SHELLS, fur=FUR, base=None):
+def fur_shells(skel, field, keep_out=grip_sdf, cfg=SHELLS, fur=FUR, base=None, mitt=MITT, texture=None):
     """The coat as shells: verts, tris (outward), uv, colour (RGBA; A the shell's height share), normals, and counts.
 
     ``base`` is the shells' own skin mesh (mesh_bow_paw at step_m unless given). Only furred skin grows shells: not
-    the pads, not where the skin rests on the leather, not under the kote's sleeve, by the cards' rules."""
+    the pads, not where the skin rests on the leather, not under the kote's sleeve, by the cards' rules. ``texture``
+    is (mean coverage per channel, tint mean) for the white gain, the committed strand textures' unless given."""
     if base is None:
         base = mesh_bow_paw(step=cfg["step_m"], smooth=6)
     V, T = base["verts"], base["tris"]
@@ -722,10 +817,15 @@ def fur_shells(skel, field, keep_out=grip_sdf, cfg=SHELLS, fur=FUR, base=None):
     keys, Tb = np.unique((Tk * 3 + tri_axis[:, None]).ravel(), return_inverse=True)
     Tb = Tb.reshape(-1, 3)
     used, axis = keys // 3, keys % 3
-    Vb, Nb, kind, sb = V[used], N[used], cls[used], s[used]
-    ruff = (sb > -fur["ruff_m"][1]) & (sb < fur["ruff_m"][0] + 0.012) & (kind == "dorsal")
-    H = np.array([cfg["height_m"]["ruff" if r else str(k)] for r, k in zip(ruff, kind)])
-    H = np.minimum(H, np.maximum(keep_out(Vb) - cfg["clear_m"], 0.0))
+    # v7: the coat's height on every vertex of the shells' skin (bare skin takes the digits'), smoothed over its
+    # edges (height_smooth), then read at the shells' vertices and clamped clear of the bow.
+    kind_all = np.array(["digit" if c is None else c for c in cls], dtype=object)
+    ruff = (s > -fur["ruff_m"][1]) & (s < fur["ruff_m"][0] + 0.012) & (kind_all == "dorsal")
+    H_all = np.array([cfg["height_m"]["ruff" if r else str(k)] for r, k in zip(ruff, kind_all)])
+    if cfg.get("height_smooth"):
+        H_all = smooth_on_mesh(H_all, T, cfg["height_smooth"]["iterations"], cfg["height_smooth"]["lam"])
+    Vb, Nb = V[used], N[used]
+    H = np.minimum(H_all[used], np.maximum(keep_out(Vb) - cfg["clear_m"], 0.0))
     # The coat's flow, as the cards': the nearest bone's distal direction in the skin's plane, turned by coat_flow.
     _k, distal, _t = _nearest_segment(Vb, _segments(skel))
     tang = distal - Nb * np.einsum("ij,ij->i", distal, Nb)[:, None]
@@ -736,7 +836,12 @@ def fur_shells(skel, field, keep_out=grip_sdf, cfg=SHELLS, fur=FUR, base=None):
     lean = math.tan(math.radians(cfg["lean_deg"]))
     uv = np.stack([np.where(axis == 0, Vb[:, 1], Vb[:, 0]), np.where(axis == 2, Vb[:, 1], Vb[:, 2])], 1) / cfg["uv_tile_m"]
     both = lambda p: np.minimum(field(p), keep_out(p))
-    colour = tabby_colour(Vb, skel) * occlusion_shade(form_occlusion(Vb, Nb, both, fur["occlusion"]), fur["occlusion"])[:, None]
+    means, tint_mean = texture if texture is not None else shell_texture_record()[1:]
+    gain = shell_white_gain(means, tint_mean, cfg)
+    colour = (tabby_colour(Vb, skel, mitt) * gain
+              * occlusion_shade(form_occlusion(Vb, Nb, both, fur["occlusion"]), fur["occlusion"])[:, None])
+    if colour.max() > 1.0:
+        raise ValueError(f"fur_shells: the white gain {gain:.3f} takes the shells' colour past 1 ({colour.max():.3f})")
     L = cfg["layers"]
     verts, cols, tris, share = [], [], [], []
     for i in range(L):
@@ -755,7 +860,7 @@ def fur_shells(skel, field, keep_out=grip_sdf, cfg=SHELLS, fur=FUR, base=None):
         share.append(frac)
     return {"verts": np.concatenate(verts), "tris": np.concatenate(tris), "uv": np.tile(uv, (L, 1)),
             "colour": np.concatenate(cols), "normals": np.tile(Nb, (L, 1)), "layers": L, "base_vertices": len(Vb),
-            "height_m": H, "shares": share, "base": base}
+            "height_m": H, "height_unclamped_m": H_all[used], "shares": share, "base": base, "white_gain": gain}
 
 
 def coat_flow(points, cfg=FUR):

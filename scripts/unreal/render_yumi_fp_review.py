@@ -740,4 +740,9 @@ def main():
     unreal.EditorPythonScripting.set_keep_python_script_alive(True)
 
 
-main()
+
+# -ExecutePythonScript runs this file in __main__'s namespace (PythonScriptPlugin.cpp RunFile: the console or
+# default globals, both __main__'s), so the capture runs as before. measure_fp_fur_cost.py imports the module for
+# its scene and holds without starting a capture.
+if __name__ == "__main__":
+    main()

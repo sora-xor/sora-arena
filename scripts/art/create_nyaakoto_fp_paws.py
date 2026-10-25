@@ -179,9 +179,10 @@ def mat_fur_cards():
 def mat_fur_shells():
     """v6: the coat's shells (nyaakoto_fp_paws.fur_shells), as the Unreal material: the vertex colour, and the strand
     texture's coverage at the shell's height (vertex alpha, clamped to the texture's heights 0.15-0.90) as alpha,
-    blended between its four channels by tents a quarter wide."""
+    blended between its four channels by tents a quarter wide. v7: the colour times each strand's tint."""
     nb = L.NB("M_NyaakotoFP_FurShells")
     tex = nb.img(SHELL_TEX / "T_NyaakotoFP_FurShells_Strands.png", nb.uv("UV0"), "Non-Color")
+    tint = nb.img(SHELL_TEX / "T_NyaakotoFP_FurShells_Tint.png", nb.uv("UV0"), "Non-Color")
     tex.image.alpha_mode = "CHANNEL_PACKED"                  # A is data (the top height's coverage), not opacity
     r, g, b = nb.sep(tex.outputs["Color"])
     vc = nb.node("ShaderNodeVertexColor", layer_name="Col")
@@ -191,7 +192,7 @@ def mat_fur_shells():
         w = nb.m("MAXIMUM", nb.one_minus(nb.mul(nb.absf(nb.sub(h, centre)), 4.0)), 0.0)
         term = nb.mul(chan, w)
         total = term if total is None else nb.add(total, term)
-    nb.feed(nb.bsdf.inputs["Base Color"], vc.outputs["Color"])
+    nb.feed(nb.bsdf.inputs["Base Color"], nb.mulc(vc.outputs["Color"], tint.outputs["Color"]))
     nb.feed(nb.bsdf.inputs["Alpha"], nb.mul(total, 0.95))
     nb.feed(nb.bsdf.inputs["Roughness"], 0.65)
     nb.feed(nb.bsdf.inputs["Sheen Weight"], 0.3)
@@ -290,8 +291,9 @@ def build(step):
     mats["fur"] = mat_fur_shells() if shells is not None else mat_fur_cards()
     is_pad = np.array([str(r).startswith("pad") for r in m["region"]])
     tri_pad = is_pad[m["tris"]].sum(1) >= 2
-    # v5: the skin is the coat's bottom, darkened by the form's occlusion over the paw and the grip.
-    skin_col = P.skin_colour(m, lambda p: np.minimum(field(p), P.grip_sdf(p)))
+    # v5: the skin is the coat's bottom, darkened by the form's occlusion over the paw and the grip. v7: under the
+    # shells it takes their white mitt (P.MITT); the cards keep v5's.
+    skin_col = P.skin_colour(m, lambda p: np.minimum(field(p), P.grip_sdf(p)), mitt=P.MITT if shells is not None else None)
     skin = make_mesh("PawL_Skin", m["verts"], m["tris"], colour=skin_col, mat_index=tri_pad.astype(np.int32))
     skin.data.materials.append(mats["skin"])
     skin.data.materials.append(mats["pad"])
@@ -325,6 +327,9 @@ def build(step):
         H = shells["height_m"] * 1e3
         info.update(fur_shell_layers=shells["layers"], fur_shell_triangles=int(len(shells["tris"])),
                     fur_shell_base_vertices=int(shells["base_vertices"]),
+                    fur_shell_white_gain=round(float(shells["white_gain"]), 4), fur_shell_deep_shade=P.SHELLS["deep_shade"],
+                    fur_shell_height_smooth=P.SHELLS["height_smooth"], fur_shell_uv_tile_m=P.SHELLS["uv_tile_m"],
+                    mitt=P.MITT,
                     fur_shell_height_mm={"p5": round(float(np.percentile(H, 5)), 3),
                                          "median": round(float(np.median(H)), 3),
                                          "p95": round(float(np.percentile(H, 95)), 3)})
@@ -627,7 +632,8 @@ def main():
     blend = OUT / "Nyaakoto_FP_PawL_Yumi.blend"
     bpy.ops.wm.save_as_mainfile(filepath=str(blend), compress=True)
     inputs = [HERE / "nyaakoto_fp_paws.py", HERE / "nyaakoto_fp_kote.py", FUR_TEX / "manifest.json",
-              SHELL_TEX / "manifest.json", SHELL_TEX / "T_NyaakotoFP_FurShells_Strands.png", KAMON, RIG_FBX,
+              SHELL_TEX / "manifest.json", SHELL_TEX / "T_NyaakotoFP_FurShells_Strands.png",
+              SHELL_TEX / "T_NyaakotoFP_FurShells_Tint.png", HERE / "create_nyaakoto_fp_shell_texture.py", KAMON, RIG_FBX,
               RIG_RECORD, ARROW_FBX] + sorted(FUR_TEX.glob("T_*.png")) + sorted(PAD_TEX.glob("T_*.png")) + \
         [HERO_PBR / f"T_Nyaakoto_{s}_{c}.png" for s in ("fur_white", "silk_indigo") for c in ("Albedo", "NormalDX")] + \
         [HERO_PBR / "T_Nyaakoto_silk_indigo_ORM.png"]

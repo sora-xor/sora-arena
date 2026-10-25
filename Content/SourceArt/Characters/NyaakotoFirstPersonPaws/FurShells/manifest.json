@@ -1,26 +1,30 @@
 {
- "schema_version": 1,
+ "schema_version": 2,
+ "version": 2,
  "generator": "scripts/art/create_nyaakoto_fp_shell_texture.py",
  "seed": 20261025,
  "texture": {
   "file": "T_NyaakotoFP_FurShells_Strands.png",
   "size": [
-   512,
-   512
+   1024,
+   1024
   ],
   "mode": "RGBA",
   "colour_space": "linear",
-  "sha256": "1a78f60bc58f8522a9f3aa1b4c5c881ab1403ff4a93e2aeb5f9dc7d388714b05"
+  "sha256": "1f8798566ee1897aea9efcd2fa8ac712968093ff2b89699d5d32db4d7cd1de2f"
  },
- "tile_mm": 4.0,
- "spacing_mm": 0.18,
- "strands": 494,
- "r0": 0.58,
- "taper": 0.6,
- "length": [
-  0.45,
-  1.0
- ],
+ "tint": {
+  "file": "T_NyaakotoFP_FurShells_Tint.png",
+  "size": [
+   512,
+   512
+  ],
+  "mode": "L",
+  "colour_space": "linear",
+  "sha256": "71eb5553d02569d4bf55b4493913282242b41fdc0d7084774f1db99d08efd2bf",
+  "mean": 0.913
+ },
+ "tile_mm": 8.0,
  "heights": [
   0.15,
   0.4,
@@ -28,12 +32,83 @@
   0.9
  ],
  "aa": 0.06,
- "mean_coverage": {
-  "R (h 0.15)": 0.742,
-  "G (h 0.4)": 0.3834,
-  "B (h 0.65)": 0.1069,
-  "A (h 0.9)": 0.0067
+ "strand": {
+  "spacing_mm": 0.18,
+  "count": 1975,
+  "r0": 0.58,
+  "taper": 0.6,
+  "length_of_clump": [
+   0.8,
+   1.0
+  ]
  },
- "tileable": "wrapped: strand distances and the discs wrap at the tile's edges",
- "provenance": "original and procedural: every strand placed by this script from its seed; no external image, scan or third-party texture"
+ "clump": {
+  "spacing_mm": 1.2,
+  "count": 44,
+  "length": [
+   0.75,
+   1.25
+  ],
+  "tuft_length": 0.6,
+  "converge": [
+   0.7,
+   0.9
+  ],
+  "tuft_waves": [
+   [
+    2,
+    1
+   ],
+   [
+    1,
+    2
+   ],
+   [
+    3,
+    1
+   ],
+   [
+    2,
+    -3
+   ],
+   [
+    1,
+    -2
+   ],
+   [
+    3,
+    2
+   ]
+  ]
+ },
+ "tint_spread": {
+  "tuft": 0.1,
+  "clump": 0.05,
+  "strand": 0.03
+ },
+ "mean_coverage": {
+  "R (h 0.15)": 0.7178,
+  "G (h 0.4)": 0.4333,
+  "B (h 0.65)": 0.1951,
+  "A (h 0.9)": 0.0253
+ },
+ "far_field": {
+  "composite": 0.7526,
+  "white_gain": 1.2403,
+  "target": 0.933
+ },
+ "composite_measure": {
+  "eye_view": {
+   "footprint_texels": 76,
+   "mean": 0.926,
+   "cv": 0.0503
+  },
+  "paw_close_up": {
+   "footprint_texels": 13,
+   "mean": 0.914,
+   "cv": 0.0937
+  }
+ },
+ "tileable": "wrapped: strand and clump distances and the discs wrap at the tile's edges",
+ "provenance": "original and procedural: every clump and strand placed by this script from its seed; no external image, scan or third-party texture"
 }
