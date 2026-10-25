@@ -1,7 +1,7 @@
 {
  "schema": "sora-dojo-timber-campaign-binding-v1",
  "binder": "scripts/art/bind_dojo_timbers.py",
- "binder_sha256": "e7d46d8dc356c1e428ae8d175e50bd162d9f42a19c058a4b7fd193c89535efd3",
+ "binder_sha256": "f114fea4e4e40e73d0b11f452e57255b5e3800d34b11e7fdea7f04489f5513c5",
  "manifests": {
   "Content/SourceArt/Environment/NyaagyuDojoTimbers/manifest.json": "216db7a78cbcfb77cb371e31e9686a06cf82fec04c1af20e624ec6d2798b583e",
   "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/manifest.json": "a7cce7ca1b1a1ed00839c83acf0113826bf40a0a9267ca3ea1fd27475b4f3717"
