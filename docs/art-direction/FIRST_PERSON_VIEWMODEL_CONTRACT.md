@@ -225,17 +225,70 @@ rest/drawn mesh swap.
   - **Sockets:** five bow sockets on their bones, and the arrow's two from its
     FBX's `SOCKET_` nodes.
   - **The take:** 1.0 s, 11 keys at 10 fps, linear.
-  - **Raw playback:** it agrees with `_deform_at` within 6.1e-5 cm and
-    1.1e-6 rad, given one engine rule. A bone whose evaluated local transform
-    `Equals` its reference pose within 1e-4 per component comes back as the
-    reference pose (`AnimSequencerDataModel.cpp:1389`; LimbU_01 near brace,
-    LimbL_01 at 0.025 s). The test models that rule, and asserts it snaps
-    exactly the samples the model predicts.
-  - **Compressed playback:** ACL at its defaults (0.01 cm error, 3 cm virtual
-    vertices) stays within its bound: 8.7e-3 cm and 3.3e-3 rad, against 0.021 cm
-    and 7.1e-3 rad.
+  - **Raw playback, two separate results:**
+    - **Canonical:** against `_deform_at` at the fixed bound (1e-3 cm,
+      1e-5 rad), it FAILS on 8 of 1,148 samples: LimbU_01 from 0.075 to
+      0.225 s and LimbL_01 at 0.025 s, at most 5.92e-5 rad and 8.9e-5 cm.
+      Every one of them came back as its bone's reference pose exactly.
+    - **Snap-aware:** an observed engine rule, modelled. A bone whose
+      evaluated local transform `Equals` its reference pose within 1e-4 per
+      component comes back as the reference pose. The rule predicts exactly
+      the 10 snapped samples. With it, playback agrees within 6.1e-5 cm and
+      1.1e-6 rad. The rule's maximum deviation is √3·1e-4 cm and
+      4·asin(1e-4) rad.
+    - **Source not located:** the take uses `AnimationSequencerDataModel`
+      with an FKControlRig in Direct mode (its asset). The one site found
+      with the rule, `AnimSequencerDataModel.cpp:1389`, runs only when the
+      pose's reference skeleton differs from the model skeleton's. That
+      branch does not apply to this AnimPose path, whose skeleton-built
+      container shares the skeleton (`BoneContainer.cpp:156-158`).
+  - **Compressed playback:** 8.7e-3 cm and 3.3e-3 rad, within the bound of
+    0.021 cm and 7.1e-3 rad. The bound is ACL's own at its class defaults
+    (0.01 cm error, 3 cm virtual vertices, no stripping) plus the snap's
+    maximum.
+    - **Those settings are inferred, not read:** every runtime property read
+      fails (Python sees only the codec's base class; the errors are kept in
+      the readback), and the settings asset serializes no tag for them.
   - **Not yet established:** this is asset readback only, not a capture or a
     gameplay admission.
+  - **The bow drew Unreal's default material.** The saved `SK_Weapon_18`
+    package binds its slot to `/Engine/EngineMaterials/WorldGridMaterial` and
+    never references `MI_W18_Weapon`. That is why the first lit capture shows
+    a grey bow. The importer wrote the transient `Materials` array with
+    `set_editor_property` while the mesh's async build ran (SkeletalMesh.h
+    declares it `transient`; `SetMaterials` waits for the build,
+    SkeletalMesh.cpp:733-740).
+    - **The fix, not yet run:** finish compilation, bind through
+      `set_materials`, and check the binding before and after the save. The
+      saved package must name the instance and not the default; the readback
+      records both. The arrow was bound correctly all along: its static slot
+      uses `set_material`.
+- **The first lit first-person originals** (`scripts/unreal/render_yumi_fp_review.py`,
+  `Saved/YumiFP/`, editor review originals only):
+  - **Attempt 0:** failed. `update_animation_in_editor` can't be set as a
+    property; the script now uses its setter.
+  - **Attempt 1:** exit 0, but unusable.
+    - It was nearly black: a 9-lux key at EV100 8.5, about six stops under.
+    - The paw was missing: a Static component can't attach to the movable
+      bow.
+    - The arrow sat at full draw on a braced bow: set_position alone never
+      re-evaluated the bones.
+  - **Attempt 2:** all four holds written and their hashes recorded. Then the
+    editor crashed in static teardown at exit (a Slate notification's ICU
+    free). Its crash handler hung on the WindowServer, and I terminated it with
+    root's authorization (SIGTERM, then SIGKILL; editor 137, wrapper 1). So it
+    is a **manually terminated, failed run**.
+    - Its gates passed: Grip_R within 6.8e-5 cm of the review's full draw
+      (bound 0.0212 cm), and the paw on Grip_L.
+    - **What the originals show:** correct exposure and attachment, and a
+      clear rest and full-draw distinction. They also show the grey
+      default-material bow, stiff spiky fur, a large bald pad strip, glossy
+      cloth and splints, and a plastic-looking arrow (root's review agrees).
+      None of it is accepted.
+  - **Gates the capture now applies:** the take is evaluated on the game
+    thread, and the posed Grip_R and Muzzle must match the review. Each part
+    must draw its own materials. Exposure is metered from the sun (the
+    incident-meter equation).
 - **Check geometry:** only `sora-yumi-rig-check-v3` (bind and per-key pose
   matrices of the 28-bone rig) is accepted. Earlier rigs are archived
   evidence, never admitted:

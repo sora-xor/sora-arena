@@ -286,15 +286,25 @@ class EmittedGeometry(unittest.TestCase):
     # way (each bone's local translation lerped and rotation nlerped, under the
     # fixed Grip), so Blender's bound holds, in centimetres.
     UNREAL_RAW_TOL = (100.0 * PLAYBACK_TOL_M, PLAYBACK_TOL_RAD)
-    # One engine rule on top of that, which the test models rather than
-    # tolerates. A bone whose evaluated local transform Equals its reference
-    # pose within UE_KINDA_SMALL_NUMBER (FTransform::Equals: every translation,
-    # quaternion and scale component within 1e-4) comes back as the reference
-    # pose exactly; AnimSequencerDataModel.cpp:1389 holds that rule. Import
-    # attempt 8 of 2026-10-25 showed it on 10 samples: LimbU_01 to 0.225 s,
-    # LimbL_01 at 0.025 s (5.9e-5 rad). Each snapped sample sat within
-    # 8.9e-5 cm of its reference, and every other sample 1.06e-4 cm or more
-    # away.
+    # Two results, kept apart (Codex's scope review of bfaded4):
+    # - **Canonical:** Unreal's raw playback against _deform_at at the fixed
+    #   bound FAILS on 8 of 1,148 samples: LimbU_01 from 0.075 to 0.225 s and
+    #   LimbL_01 at 0.025 s, at most 5.92e-5 rad and 8.9e-5 cm. Every other
+    #   sample passes.
+    # - **Snap-aware:** a model of one observed engine behaviour. A bone whose
+    #   evaluated local transform Equals its reference pose within
+    #   UE_KINDA_SMALL_NUMBER (FTransform::Equals: every translation,
+    #   quaternion and scale component within 1e-4) comes back as the
+    #   reference pose exactly. The rule fits the 10 snapped samples with
+    #   margin: each sat within 8.9e-5 cm of its reference, and every other
+    #   sample 1.06e-4 cm or more away. The 8 canonical failures are 8 of them;
+    #   the other two, LimbU_01 at 0.025 and 0.05 s, snap within the fixed bound.
+    # Its source is not located. The take uses AnimationSequencerDataModel
+    # with an FKControlRig in Direct mode (its asset). The one site found with
+    # this rule, AnimSequencerDataModel.cpp:1389, runs only when the pose's
+    # reference skeleton differs from the model skeleton's, and AnimPose's
+    # skeleton-built container shares it (BoneContainer.cpp:156-158), so that
+    # branch does not apply here.
     REFERENCE_SNAP_TOL = 1e-4
     # COMPRESSED adds the codec's own bound. ACL keeps three virtual vertices,
     # at DefaultVirtualVertexDistance d along each bone's axes, within
@@ -304,9 +314,13 @@ class EmittedGeometry(unittest.TestCase):
     # within 1.63e/d; 2e and 2e/d are used. The source pose may itself carry the
     # snap above: at most sqrt(3) x 1e-4 cm, and a turn of 4 asin(1e-4) rad
     # (every quaternion component within 1e-4).
-    # The codec must be this one, with these settings, either read back or left
-    # at the class defaults by its asset (AnimBoneCompressionCodec_ACLBase.cpp:71-74,
-    # AnimBoneCompressionCodec_ACL.cpp:27-28): no keyframe stripping.
+    # The codec must be this one. Its settings are INFERRED, not read: Python
+    # wraps the codec as its base class, so every runtime property read fails
+    # and the readback keeps each error. A setting counts only when it is
+    # read back at the value below, or when the settings asset serializes no
+    # tag for it, leaving the class default (AnimBoneCompressionCodec_ACLBase.cpp:71-74,
+    # AnimBoneCompressionCodec_ACL.cpp:27-28): 0.01 cm, 3 cm, no keyframe
+    # stripping. Static evidence, not runtime readback.
     ACL_SETTINGS = "/ACLPlugin/ACLAnimBoneCompressionSettings.ACLAnimBoneCompressionSettings"
     ACL_CODEC = "AnimBoneCompressionCodec_ACL"
     ACL_DEFAULTS = {"error_threshold": ("ErrorThreshold", 0.01),
@@ -498,7 +512,9 @@ class EmittedGeometry(unittest.TestCase):
             self.assertLess(worst_head, tol_cm, f"{label} bone heads {worst_head:.2e} cm")
             self.assertLess(worst_turn, tol_rad, f"{label} bone turns {worst_turn:.2e} rad")
         # The modelled snap is the one observed: exactly the raw samples equal to
-        # the reference pose are the ones within its tolerance.
+        # the reference pose are the ones within its tolerance. This is the
+        # snap-aware result; test_unreal_raw_canonical_comparison keeps the
+        # canonical one.
         raw = samples["RAW"]
 
         def at_reference(k, i):
@@ -511,18 +527,93 @@ class EmittedGeometry(unittest.TestCase):
 
     def assert_the_compressed_bound_applies(self, compression):
         """UNREAL_COMPRESSED_TOL is derived for ACL at its defaults: the readback
-        must report that codec, and each setting either read back at that value
-        or left unserialized by the settings asset (so the class default holds)."""
+        must report that codec. Each setting must be either read back at that
+        value (runtime) or left unserialized by the settings asset (inferred:
+        the class default holds). Returns {setting: "runtime" | "inferred"}."""
         self.assertEqual(compression["settings"], self.ACL_SETTINGS)
         self.assertEqual([c["class"] for c in compression["codecs"]], [self.ACL_CODEC])
         codec = compression["codecs"][0]
         serialized = compression["package"]["settings_serialized"]
+        how = {}
         for key, (prop, want) in self.ACL_DEFAULTS.items():
             got = codec[key]
             if isinstance(got, str) and got.startswith("unreadable"):
                 self.assertNotIn(prop, serialized, f"{key} is overridden in the settings asset but unreadable")
+                how[key] = "inferred"
             else:
                 self.assertAlmostEqual(float(got), want, delta=1e-6 * max(1.0, want), msg=key)
+                how[key] = "runtime"
+        return how
+
+    def test_unreal_raw_canonical_comparison(self):
+        # The canonical result, kept apart from the snap-aware model above: the
+        # raw readback against _deform_at at the fixed RAW bound, with no engine
+        # rule. It fails on 8 samples, all of them returned as their bone's
+        # reference pose. There the deviation stays within the observed rule's
+        # own maximum (sqrt(3) x 1e-4 cm and 4 asin(1e-4) rad).
+        import json
+        import numpy as np
+        r = json.loads(self.PLAYBACK_UNREAL.read_text())
+        names, times = list(self.rig["bones"]), list(self.PLAYBACK_TIMES)
+        M = np.diag([1.0, -1.0, 1.0])
+
+        def qmat(q):
+            x, y, z, w = q
+            return np.array([[1 - 2 * (y * y + z * z), 2 * (x * y - w * z), 2 * (x * z + w * y)],
+                             [2 * (x * y + w * z), 1 - 2 * (x * x + z * z), 2 * (y * z - w * x)],
+                             [2 * (x * z - w * y), 2 * (y * z + w * x), 1 - 2 * (x * x + y * y)]])
+        ref = np.array([r["reference_cm"][n] for n in names], np.float64)
+        raw = np.array([[row["bones"][n] for n in names] for row in r["samples"]["RAW"]], np.float64)
+        P0 = self.rig["pose"][0][:, :3, :3]
+        over, worst = [], (0.0, 0.0)
+        for k, t in enumerate(times):
+            P = Y._deform_at(self.rig, t) @ self.rig["bind"]
+            for i, n in enumerate(names):
+                T = 100.0 * (M @ P[i, :3, 3])
+                R = M @ (P[i, :3, :3] @ P0[i].T) @ M @ qmat(ref[i, 3:7])
+                D = qmat(raw[k, i, 3:7]).T @ R
+                ax = np.array((D[2, 1] - D[1, 2], D[0, 2] - D[2, 0], D[1, 0] - D[0, 1])) / 2.0
+                turn = math.atan2(float(np.linalg.norm(ax)), (float(np.trace(D)) - 1.0) / 2.0)
+                head = float(np.linalg.norm(raw[k, i, :3] - T))
+                if head >= self.UNREAL_RAW_TOL[0] or turn >= self.UNREAL_RAW_TOL[1]:
+                    over.append((n, t))
+                    worst = (max(worst[0], head), max(worst[1], turn))
+        # It fails: these are the samples past the fixed bound, and every one of
+        # them came back as its bone's reference pose exactly.
+        at_reference = set()
+        for k, t in enumerate(times):
+            for i, n in enumerate(names):
+                q, qr = raw[k, i, 3:7], ref[i, 3:7]
+                if (t > 0.0 and float(np.abs(raw[k, i, :3] - ref[i, :3]).max()) < 1e-6
+                        and min(float(np.abs(q - qr).max()), float(np.abs(q + qr).max())) < 1e-6):
+                    at_reference.add((n, t))
+        self.assertEqual(len(over), 8)
+        self.assertEqual(sorted({n for n, _t in over}), ["LimbL_01", "LimbU_01"])
+        self.assertTrue(set(over) <= at_reference, sorted(set(over) - at_reference))
+        # Only within the observed rule's maximum.
+        self.assertLess(worst[0], math.sqrt(3.0) * self.REFERENCE_SNAP_TOL)
+        self.assertLess(worst[1], 4.0 * math.asin(self.REFERENCE_SNAP_TOL))
+
+    def test_the_review_nocks_the_arrow_where_the_checker_does(self):
+        # render_yumi_rig_review.py nocks the committed arrow at the posed
+        # Grip_R and lays it through the Muzzle in every state (Codex's review
+        # of 6f3875b: the arrow was absent from the grey originals).
+        import json
+        import numpy as np
+        r = json.loads((self.PLAYBACK_BLENDER.parent / "W18_rig_review_arrow.json").read_text())
+        states = r["states"]
+        self.assertEqual(sorted(states), sorted(("Braced", "Quarter", "Half", "ThreeQuarter", "Full")))
+        braced = Y.braced()["sockets"]
+        i = list(self.rig["bones"]).index("String_Nock")
+        for label, s in states.items():
+            d = float(s["frame"]) / 10.0
+            M = Y._deform_at(self.rig, d)[i]
+            nock = M[:3, :3] @ np.array(braced["Grip_R"]) + M[:3, 3]
+            self.assertLess(float(np.linalg.norm(np.array(s["nock_m"]) - nock)), self.PLAYBACK_TOL_M, label)
+            self.assertLess(float(np.linalg.norm(np.array(s["muzzle_m"]) - np.array(braced["Muzzle"]))),
+                            self.PLAYBACK_TOL_M, label)
+            want = (np.array(braced["Muzzle"]) - nock) / np.linalg.norm(np.array(braced["Muzzle"]) - nock)
+            self.assertLess(float(np.linalg.norm(np.array(s["direction"]) - want)), 1e-5, label)
 
     def test_the_rig_reproduces_the_static_bow_and_the_drawn_nock(self):
         import numpy as np

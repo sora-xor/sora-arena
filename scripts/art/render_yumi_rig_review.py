@@ -10,6 +10,11 @@ The FBX is in centimetres (the rig record's "fbx") and this scene is in
 metres, so Blender's importer puts the unit, 0.01, on the armature object and
 nothing else. The review requires exactly that and records it; world
 positions are then metres, as the checker's are.
+The committed arrow (SM_Weapon_18_Ya) is nocked in every state as the
+runtime's arrow pass does it: its nock at the posed Grip_R, laid through the
+Muzzle. Each socket is posed by its bone's skinning matrix, from the rig
+record's mesh-frame point. Its positions per state go to
+W18_rig_review_arrow.json.
 Then it renders five states, Workbench (studio light, flat grey, outlines),
 1600 x 1000. The states are braced, quarter, half, three-quarter and full
 draw; the quarters lie between keys, so they show the exported take's own
@@ -37,13 +42,14 @@ import sys
 from pathlib import Path
 
 import bpy
-from mathutils import Vector
+from mathutils import Matrix, Vector
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 sys.path.insert(0, str(HERE))
 import yumi_draw as Y  # noqa: E402
 FBX = ROOT / "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/SK_Weapon_18.fbx"
+ARROW_FBX = ROOT / "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_Ya.fbx"
 
 
 PLAYBACK_QUARTERS = (0.0, 0.25, 0.5, 0.75)
@@ -79,6 +85,52 @@ def views_at(d):
 def out_dir():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     return Path(argv[argv.index("--out") + 1]) if "--out" in argv else ROOT / "Saved/YumiRig/Renders"
+
+
+def import_arrow():
+    """The committed arrow in its own frame (Nock at the origin, Tip on +X), metres, identity transform."""
+    before = set(bpy.data.objects)
+    fps = (bpy.context.scene.render.fps, bpy.context.scene.render.fps_base)
+    bpy.ops.import_scene.fbx(filepath=str(ARROW_FBX), axis_forward="-Y", axis_up="Z", global_scale=1.0,
+                             use_custom_normals=True, use_image_search=False)
+    bpy.context.scene.render.fps, bpy.context.scene.render.fps_base = fps     # the import sets the file's 24 fps
+    new = [o for o in bpy.data.objects if o not in before]
+    meshes = [o for o in new if o.type == "MESH"]
+    if len(meshes) != 1:
+        raise SystemExit(f"review: expected one arrow mesh, got {[o.name for o in meshes]}")
+    arrow = meshes[0]
+    for o in new:
+        if o is not arrow:
+            bpy.data.objects.remove(o, do_unlink=True)
+    bpy.ops.object.select_all(action="DESELECT")
+    arrow.select_set(True)
+    bpy.context.view_layer.objects.active = arrow
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    xs = [v.co.x for v in arrow.data.vertices]
+    if abs(min(xs)) > 0.02 or not 0.9 < max(xs) < 1.1:
+        raise SystemExit(f"review: the arrow is not on +X from its nock: x {min(xs):.4f}..{max(xs):.4f} m")
+    return arrow
+
+
+def socket_world(arm, rig, name):
+    """A rig socket's world point at the current frame: its mesh-frame point (metres) through its bone's
+    skinning matrix in the armature's centimetres."""
+    s = rig["sockets"][name]
+    ea = arm.evaluated_get(bpy.context.evaluated_depsgraph_get())
+    pb, b = ea.pose.bones[s["bone"]], arm.data.bones[s["bone"]]
+    p = Vector(s["mesh_frame_m"]) / FBX_UNIT_IN_SCENE
+    return ea.matrix_world @ (pb.matrix @ b.matrix_local.inverted() @ p)
+
+
+def nock_arrow(arrow, arm, rig):
+    """Nock at the posed Grip_R, laid through the Muzzle, the vanes' frame kept upright."""
+    nock, muzzle = socket_world(arm, rig, "Grip_R"), socket_world(arm, rig, "Muzzle")
+    x = (muzzle - nock).normalized()
+    y = Vector((0.0, 0.0, 1.0)).cross(x).normalized()
+    z = x.cross(y)
+    arrow.matrix_world = Matrix.Translation(nock) @ Matrix((x, y, z)).transposed().to_4x4()
+    return {"nock_m": [round(c, 7) for c in nock], "muzzle_m": [round(c, 7) for c in muzzle],
+            "direction": [round(c, 7) for c in x]}
 
 
 def _fcurves(act):
@@ -165,6 +217,8 @@ def main():
                          f"{FBX_UNIT_IN_SCENE} alone")
     scene = bpy.context.scene
     playback(scene, arm, mesh, act, out)
+    arrow = import_arrow()
+    arrows = {}
     scene.render.engine = "BLENDER_WORKBENCH"
     scene.display.shading.light = "STUDIO"
     scene.display.shading.color_type = "SINGLE"
@@ -180,6 +234,8 @@ def main():
     files = []
     for frame, label in STATES:
         scene.frame_set(int(frame), subframe=frame - int(frame))
+        arrows[label] = dict(nock_arrow(arrow, arm, rig), frame=frame)
+        print("YUMI_RIG_REVIEW_ARROW", label, json.dumps(arrows[label]), flush=True)
         for vname, v in views_at(frame / 10.0).items():
             cam.location = Vector(v["loc"])
             d = Vector(v["target"]) - cam.location
@@ -190,6 +246,9 @@ def main():
             bpy.ops.render.render(write_still=True)
             files.append(str(path))
             print("YUMI_RIG_REVIEW_RENDER", path.name, flush=True)
+    (out / "W18_rig_review_arrow.json").write_text(json.dumps(
+        {"arrow": "SM_Weapon_18_Ya, nocked at the posed Grip_R and laid through the Muzzle",
+         "states": arrows}, indent=1) + "\n")
     print("YUMI_RIG_REVIEW_READY", len(files), "renders", flush=True)
 
 

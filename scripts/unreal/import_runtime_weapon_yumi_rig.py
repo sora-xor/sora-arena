@@ -136,6 +136,33 @@ def require_api(owner, *names):
         fail(f"{getattr(owner, '__name__', owner)} lacks {missing}")
 
 
+def finish_compilation():
+    """Wait for every async asset build (skeletal meshes build asynchronously in UE 5.8)."""
+    unreal.SystemLibrary.execute_console_command(
+        unreal.get_editor_subsystem(unreal.UnrealEditorSubsystem).get_editor_world(),
+        "Editor.AsyncAssetCompilationFinishAll")
+
+
+def bound_materials(skeletal_mesh):
+    """Each bow slot's bound material, by path (None if unbound)."""
+    out = {}
+    for slot in skeletal_mesh.get_editor_property("materials"):
+        mi = slot.get_editor_property("material_interface")
+        out[str(slot.get_editor_property("material_slot_name"))] = mi.get_path_name() if mi else None
+    return out
+
+
+def package_file(path_name):
+    """The .uasset holding a content object, from its package path ("/Plugin/..." or "/Game/...")."""
+    root, _, rest = path_name.split(".")[0].lstrip("/").partition("/")
+    if root == "Game":
+        return ROOT / "Content" / (rest + ".uasset")
+    for base in (unreal.Paths.project_plugins_dir(), unreal.Paths.engine_plugins_dir()):
+        for plugin in Path(unreal.Paths.convert_relative_path_to_full(base)).rglob(root + ".uplugin"):
+            return plugin.parent / "Content" / (rest + ".uasset")
+    return None
+
+
 def import_task(filename, destination, name, options=None):
     task = unreal.AssetImportTask()
     task.filename = str(filename)
@@ -320,6 +347,16 @@ if imported_anims[0].split(".")[0] != anim_target:
         fail("cannot name the take A_Weapon_18_Draw")
 anim = assets.load_asset(anim_target)
 
+# The bow's slots go through SetMaterials (SkeletalMesh.h:951-952), once the
+# mesh's async build has finished. The Materials array is transient and
+# serialized by hand (SkeletalMesh.cpp:2058), and its setter first waits for
+# the async build to release it (SkeletalMesh.cpp:733-740). The first imports
+# wrote it with set_editor_property while the build ran, and the saved package
+# bound the slot to /Engine/EngineMaterials/WorldGridMaterial and never
+# referenced MI_W18_Weapon. First-person capture attempt 2 (Saved/YumiFP/v2)
+# drew the bow in that grey grid.
+require_api(unreal.SkeletalMesh, "set_materials")
+finish_compilation()
 slots = mesh.get_editor_property("materials")
 slot_names = []
 for slot in slots:
@@ -328,9 +365,12 @@ for slot in slots:
         fail(f"unexpected bow material slot {name}")
     slot.set_editor_property("material_interface", instance_for(name))
     slot_names.append(name)
-mesh.set_editor_property("materials", slots)
+mesh.set_materials(slots)
 if set(slot_names) != BOW_SLOTS:
     fail(f"bow slots {sorted(slot_names)} differ from {sorted(BOW_SLOTS)}")
+WANT_BOW_MATERIALS = {name: instance_for(name).get_path_name() for name in BOW_SLOTS}
+if bound_materials(mesh) != WANT_BOW_MATERIALS:
+    fail(f"bow slots bound {bound_materials(mesh)} after SetMaterials, not {WANT_BOW_MATERIALS}")
 
 # --- Sockets, from the reference pose ---------------------------------------
 
@@ -394,7 +434,18 @@ for name, s in record["sockets"].items():
                      "relative_location_cm": vec(got.get_editor_property("relative_location")),
                      "relative_rotation": str(got.get_editor_property("relative_rotation")),
                      "component_cm": vec(p), "mesh_frame_m": s["mesh_frame_m"]}
+finish_compilation()
+if bound_materials(mesh) != WANT_BOW_MATERIALS:
+    fail(f"bow slots bound {bound_materials(mesh)} after the sockets, not {WANT_BOW_MATERIALS}")
 assets.save_loaded_asset(mesh)
+# The package on disk must name the instance and no longer the engine's default.
+_package = package_file(mesh.get_path_name())
+_bytes = _package.read_bytes()
+bow_package_binds = {"package": rel(_package), "names_instance": all(
+    v.split(".")[0].encode() in _bytes for v in WANT_BOW_MATERIALS.values()),
+    "names_world_grid": b"/Engine/EngineMaterials/WorldGridMaterial" in _bytes}
+if not bow_package_binds["names_instance"] or bow_package_binds["names_world_grid"]:
+    fail(f"the saved SK_Weapon_18 package does not bind MI_W18_Weapon: {bow_package_binds}")
 
 # --- The arrow ---------------------------------------------------------------
 
@@ -439,9 +490,7 @@ assets.save_directory(DEST, only_if_is_dirty=False, recursive=True)
 times = [k / TAKE_FPS + q / TAKE_FPS for k in range(TAKE_FPS) for q in QUARTERS] + [1.0]
 # Compressed data first: UAnimSequence::ShouldUseRawDataForPoseExtraction
 # evaluates the raw data, silently, while the compressed data is missing.
-unreal.SystemLibrary.execute_console_command(
-    unreal.get_editor_subsystem(unreal.UnrealEditorSubsystem).get_editor_world(),
-    "Editor.AsyncAssetCompilationFinishAll")
+finish_compilation()
 samples = {}
 for label in ("RAW", "COMPRESSED"):
     if not hasattr(unreal.AnimDataEvalType, label):
@@ -465,17 +514,6 @@ def setting(value):
         return value.get_editor_property("default")
     except Exception:
         return str(value)
-
-
-def package_file(path_name):
-    """The .uasset holding a content object, from its package path ("/Plugin/..." or "/Game/...")."""
-    root, _, rest = path_name.split(".")[0].lstrip("/").partition("/")
-    if root == "Game":
-        return ROOT / "Content" / (rest + ".uasset")
-    for base in (unreal.Paths.project_plugins_dir(), unreal.Paths.engine_plugins_dir()):
-        for plugin in Path(unreal.Paths.convert_relative_path_to_full(base)).rglob(root + ".uplugin"):
-            return plugin.parent / "Content" / (rest + ".uasset")
-    return None
 
 
 def compression_info():
@@ -534,7 +572,8 @@ readback = {
     "bones": want_names, "skeleton_bones": names,
     "rows": "[x, y, z, qx, qy, qz, qw, sx, sy, sz], component space (cm)",
     "reference_cm": {n: row(ref_bones[n]) for n in names},
-    "bow_slots": slot_names, "arrow_slots": arrow_slots, "sockets": sockets, "arrow_sockets_cm": arrow_sockets,
+    "bow_slots": slot_names, "bow_materials": bound_materials(mesh), "bow_package_binds": bow_package_binds,
+    "arrow_slots": arrow_slots, "sockets": sockets, "arrow_sockets_cm": arrow_sockets,
     "take": anim_info(), "times_s": times, "samples": samples,
     "scope": "asset readback in the editor (-nullrhi): not a render, a capture or a gameplay admission",
 }

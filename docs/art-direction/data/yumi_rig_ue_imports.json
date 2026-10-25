@@ -111,7 +111,7 @@
    "end": "2026-10-25T08:12:52Z",
    "wrapper_exit": 0,
    "input": "v3c centimetre FBX",
-   "result": "YUMI_RIG_UE_READY; raw turns 5.9e-5 rad against the fixed 1e-5 rad: traced to the engine's reference-pose snap (FTransform::Equals within 1e-4), now modelled by the test; codec settings unread",
+   "result": "YUMI_RIG_UE_READY; canonical raw turns 5.9e-5 rad against the fixed 1e-5 rad (FAIL on 8 samples, all returned as the reference pose). Explained by an observed engine snap to the reference pose within FTransform::Equals' 1e-4, now modelled by a separate snap-aware test; its source is not located (AnimSequencerDataModel.cpp:1389 does not apply to this path). Codec settings unread",
    "wrapper_pid": 96916,
    "pid_recorded": 96914,
    "log": "Saved/YumiRig/Unreal/attempt8_ready_import_v3.log",
@@ -126,7 +126,7 @@
    "end": "2026-10-25T08:37:40Z",
    "wrapper_exit": 0,
    "input": "v3c centimetre FBX",
-   "result": "YUMI_RIG_UE_READY: the delivered readback; codec settings recorded as unreadable (Python wraps the codec as its base class) and its settings asset serializes none of them",
+   "result": "YUMI_RIG_UE_READY: the delivered readback, identical to attempt 8's. Codec settings unreadable at runtime (Python wraps the codec as its base class; errors kept); their values are inferred from the settings asset serializing none of them, so the class defaults hold. Static evidence, not runtime readback",
    "editor_pid": 28517,
    "wrapper_pid": 28400,
    "log": "Saved/YumiRig/Unreal/import_v3.log",
@@ -185,5 +185,6 @@
    "outputs": "Saved/YumiRig/Review_v3c (SHA256SUMS), copied byte-identical to Rig/Review",
    "result": "armature at the 0.01 unit alone; vertices 0.71 um, heads 0.69 um, turns 8.2e-7 rad; 30 originals inspected, at most 9 pixels per image more than 8/255 from the v3 originals"
   }
- ]
+ ],
+ "scope_note": "Codex's scope review of bfaded4: the canonical raw comparison (FAIL on 8 samples), the snap-aware comparison (a model of observed engine behaviour, source not located) and the inferred codec defaults are different results, named apart here and in test_yumi_draw."
 }
