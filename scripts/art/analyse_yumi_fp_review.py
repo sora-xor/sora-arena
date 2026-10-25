@@ -26,7 +26,13 @@ have changed since:
 
 **It fails** (exit 1, naming each problem), and never prints an empty
 analysis, when:
-- the manifest is missing, or predates this contract;
+- the manifest is missing, unreadable, or predates this contract;
+- a recorded value has the wrong type, checked before anything divides by
+  it or compares it. The resolution must be two positive integers; the
+  reticle radius and each camera aspect positive finite numbers, never a
+  boolean, NaN or infinity; ids_enabled a boolean; the holds lists of names;
+  the file maps names to names (Codex's review of 841d246: a NaN radius
+  reported the reticle clear);
 - the ID pass was off, or the run has no eye-view hold;
 - a requested eye-view hold has no ID file, or there is one for a hold that
   was not requested;
@@ -47,6 +53,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -63,6 +70,51 @@ class AnalysisError(Exception):
     """The run cannot be analysed as recorded; the message names every problem."""
 
 
+def _number(x):
+    return isinstance(x, (int, float)) and not isinstance(x, bool)
+
+
+def positive_finite(x):
+    """A real, finite number above zero: not a boolean, NaN or infinity."""
+    return _number(x) and math.isfinite(x) and x > 0
+
+
+def positive_int(x):
+    return isinstance(x, int) and not isinstance(x, bool) and x > 0
+
+
+def _names(x):
+    return isinstance(x, list) and all(isinstance(h, str) for h in x)
+
+
+def _name_map(x):
+    return isinstance(x, dict) and all(isinstance(k, str) and isinstance(v, str) for k, v in x.items())
+
+
+def validate(manifest):
+    """Problems with the recorded values' types, before any of them is divided or compared."""
+    problems = []
+    if not isinstance(manifest["ids_enabled"], bool):
+        problems.append(f"ids_enabled {manifest['ids_enabled']!r} is not a boolean")
+    for key in ("requested_holds", "eye_view_holds"):
+        if not _names(manifest[key]):
+            problems.append(f"{key} {manifest[key]!r} is not a list of hold names")
+    res = manifest["resolution"]
+    if not (isinstance(res, list) and len(res) == 2 and all(positive_int(c) for c in res)):
+        problems.append(f"resolution {res!r} is not two positive integers")
+    for key in ("files", "id_files"):
+        if not _name_map(manifest[key]):
+            problems.append(f"{key} is not a map of names to names")
+    for key in ("cameras", "assessment_camera", "study"):
+        if not isinstance(manifest[key], dict):
+            problems.append(f"{key} {manifest[key]!r} is not a record")
+    cam = manifest["assessment_camera"]
+    if isinstance(cam, dict) and not positive_finite(cam.get("reticle_clear_radius")):
+        problems.append(f"the recorded reticle_clear_radius {cam.get('reticle_clear_radius')!r} is not a positive "
+                        "finite number")
+    return problems
+
+
 def classify(rgb):
     """(H, W) int: 0 background, 1 bow (red), 2 arrow (green), 3 paw (blue), from display values in [0, 1]."""
     rgb = np.asarray(rgb, dtype=np.float64)
@@ -75,6 +127,8 @@ def classify(rgb):
 
 def analyse(rgb, reticle_clear_radius):
     """Per-part pixel statistics for one ID image (H, W, 3) in [0, 1]."""
+    if not positive_finite(reticle_clear_radius):
+        raise ValueError(f"reticle_clear_radius {reticle_clear_radius!r} is not a positive finite number")
     cls = classify(rgb)
     h, w = cls.shape
     yy, xx = np.mgrid[0:h, 0:w]
@@ -112,10 +166,18 @@ def analyse_run(run: Path) -> dict:
     if not manifest_path.is_file():
         raise AnalysisError(f"{run}: no manifest.json")
     manifest_bytes = manifest_path.read_bytes()
-    manifest = json.loads(manifest_bytes.decode("utf-8"))
+    try:
+        manifest = json.loads(manifest_bytes.decode("utf-8"))
+    except (UnicodeDecodeError, ValueError) as exc:
+        raise AnalysisError(f"{manifest_path}: unreadable ({type(exc).__name__}: {exc})") from None
+    if not isinstance(manifest, dict):
+        raise AnalysisError(f"{manifest_path}: not a record")
     missing = [k for k in REQUIRED if k not in manifest]
     if missing:
         raise AnalysisError(f"{manifest_path}: no {missing}; it predates the ID analysis contract (capture it again)")
+    bad = validate(manifest)
+    if bad:
+        raise AnalysisError(f"{manifest_path}: " + "; ".join(bad))
     if not manifest["ids_enabled"]:
         raise AnalysisError(f"{manifest_path}: the ID pass was off (ids=0); there is nothing to analyse")
     eye = list(manifest["eye_view_holds"])
@@ -128,10 +190,8 @@ def analyse_run(run: Path) -> dict:
     extra = sorted(set(manifest["id_files"]) - set(eye))
     if extra:
         problems.append(f"ID files for holds that were not eye-view holds: {extra}")
-    width, height = manifest["resolution"]
-    radius = manifest["assessment_camera"].get("reticle_clear_radius")
-    if not isinstance(radius, (int, float)) or radius <= 0:
-        problems.append(f"the recorded reticle_clear_radius is {radius!r}")
+    width, height = manifest["resolution"]                  # validated: two positive integers
+    radius = manifest["assessment_camera"]["reticle_clear_radius"]      # validated: positive and finite
     images = {}
     for hold in eye:
         name = manifest["id_files"].get(hold)
@@ -156,9 +216,11 @@ def analyse_run(run: Path) -> dict:
         elif got != want:
             problems.append(f"{hold}: {name} is {got[:12]}..., the manifest records {want[:12]}...")
         cam = manifest["cameras"].get(hold)
-        if cam is None:
+        if not isinstance(cam, dict):
             problems.append(f"{hold}: no camera recorded")
-        elif abs(float(cam["aspect_ratio"]) - width / height) > 1e-6:
+        elif not positive_finite(cam.get("aspect_ratio")):
+            problems.append(f"{hold}: camera aspect_ratio {cam.get('aspect_ratio')!r} is not a positive finite number")
+        elif abs(cam["aspect_ratio"] - width / height) > 1e-6:
             problems.append(f"{hold}: camera aspect {cam['aspect_ratio']} is not the resolution's {width / height:.6f}")
         try:
             rgb = _load_rgb(path)

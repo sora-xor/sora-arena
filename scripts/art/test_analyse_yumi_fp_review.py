@@ -110,7 +110,9 @@ def snapshot(root: Path):
     return {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(root.iterdir())}
 
 
-class Run(unittest.TestCase):
+class RunFixture(unittest.TestCase):
+    """A throwaway capture directory per test, and the failure check every malformed run must meet. No tests here."""
+
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
@@ -137,6 +139,8 @@ class Run(unittest.TestCase):
         self.assertFalse((self.root / "analysis.json").exists())             # never an empty analysis
         self.assertEqual(snapshot(self.root), before)                        # the originals are untouched
 
+
+class Run(RunFixture):
     def test_a_complete_run_analyses_exactly_its_eye_view_holds(self):
         write_run(self.root)
         rec = A.analyse_run(self.root)
@@ -220,10 +224,85 @@ class Run(unittest.TestCase):
     def test_a_bad_reticle_radius_fails(self):
         write_run(self.root)
         self.edit(assessment_camera={"reticle_clear_radius": None})
-        self.fails("reticle_clear_radius is None")
+        self.fails("reticle_clear_radius None is not a positive finite number")
 
     def test_no_manifest_fails(self):
         self.fails("no manifest.json")
+
+
+NAN, INF = float("nan"), float("inf")
+
+
+class Malformed(RunFixture):
+    """Narrow malformed numbers and types (Codex's review of 841d246, radius-probe.json: a NaN radius
+    reported the reticle clear over a covered centre; infinity and true were taken as radii). Each must
+    be an AnalysisError naming it: no raw exception, no false success, nothing written, originals intact."""
+
+    def test_nonfinite_boolean_and_nonpositive_radii_fail(self):
+        for r in (NAN, INF, -INF, True, False, 0, -0.12, "0.12", None):
+            with self.subTest(radius=r):
+                write_run(self.root)
+                self.edit(assessment_camera={"first_person_fov_deg": 70.0, "aspect": [16, 9], "near_plane_cm": 10.0,
+                                             "reticle_clear_radius": r})
+                self.fails("reticle_clear_radius", "is not a positive finite number")
+
+    def test_the_probes_nan_no_longer_reports_a_clear_reticle(self):
+        # radius-probe.json's case: the arrow covers the centre, and NaN made it "clear".
+        write_run(self.root)
+        self.edit(assessment_camera={"reticle_clear_radius": NAN})
+        with self.assertRaises(A.AnalysisError):
+            A.analyse_run(self.root)
+        with self.assertRaises(ValueError):
+            A.analyse(image(), NAN)
+
+    def test_nonfinite_boolean_and_nonpositive_aspects_fail(self):
+        for a in (NAN, INF, 0, -16 / 9, True, "1.78", None):
+            with self.subTest(aspect=a):
+                m = write_run(self.root)
+                m["cameras"]["root"]["aspect_ratio"] = a
+                self.edit(cameras=m["cameras"])
+                self.fails("root: camera aspect_ratio", "is not a positive finite number")
+
+    def test_a_resolution_must_be_two_positive_integers(self):
+        for res in ([0, 90], [-160, 90], [160.0, 90], [True, 90], ["160", "90"], [160], [160, 90, 3], "160x90",
+                    None):
+            with self.subTest(resolution=res):
+                write_run(self.root)
+                self.edit(resolution=res)
+                self.fails("is not two positive integers")
+
+    def test_ids_enabled_must_be_a_boolean(self):
+        for v in ("yes", 1, None):
+            with self.subTest(ids_enabled=v):
+                write_run(self.root)
+                self.edit(ids_enabled=v)
+                self.fails("ids_enabled", "is not a boolean")
+
+    def test_holds_must_be_lists_of_names(self):
+        write_run(self.root)
+        self.edit(requested_holds="rest,root")
+        self.fails("requested_holds 'rest,root' is not a list of hold names")
+        write_run(self.root)
+        self.edit(eye_view_holds=[1, 2])
+        self.fails("eye_view_holds [1, 2] is not a list of hold names")
+
+    def test_file_maps_and_records_must_have_their_types(self):
+        write_run(self.root)
+        self.edit(files=["rest.png"])
+        self.fails("files is not a map of names to names")
+        write_run(self.root)
+        self.edit(id_files={"root": 7})
+        self.fails("id_files is not a map of names to names")
+        write_run(self.root)
+        self.edit(cameras=[])
+        self.fails("cameras [] is not a record")
+
+    def test_an_unreadable_or_non_record_manifest_fails(self):
+        write_run(self.root)
+        (self.root / "manifest.json").write_text("{")
+        self.fails("unreadable")
+        (self.root / "manifest.json").write_text("[1, 2]")
+        self.fails("not a record")
 
 
 if __name__ == "__main__":
