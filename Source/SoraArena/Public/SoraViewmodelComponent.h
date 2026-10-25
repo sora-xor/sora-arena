@@ -28,6 +28,8 @@ public:
     const FString& PresentationPose() const { return ActivePose; }
     // Full imported socket rotation/scale is retained for future authored paws.
     bool PresentationSocketWorld(FName Socket,FTransform& Transform) const;
+    // Read-only actual mesh OBB corners; includes the separate narrow arrow.
+    bool FallbackBowBounds(TArray<SoraViewmodelPresentation::FPartBounds>& Bounds) const;
 private:
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> Parts;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> PrimaryMesh;

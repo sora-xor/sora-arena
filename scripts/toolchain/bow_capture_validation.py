@@ -91,6 +91,39 @@ def vector(meta, name, length):
     return value
 
 
+def verify_fallback_bounds(meta, width, height):
+    """Conservative actual projected OBBs; independent from socket/direction tests."""
+    expected = {"YumiLower", "YumiUpper", "YumiGrip", "YumiString", "FurPaw", "NockedArrow", "Arrowhead"}
+    rows = meta.get("fallback_component_bounds")
+    near, margin = meta.get("fallback_near_clip_cm"), meta.get("fallback_aim_clearance_pixels")
+    if (not isinstance(rows, list) or len(rows) != 7 or any(not isinstance(row, dict) for row in rows)
+            or any(not isinstance(row.get("part"), str) for row in rows)
+            or {row.get("part") for row in rows} != expected
+            or type(near) not in (int, float) or not math.isfinite(near) or near <= 0
+            or type(margin) not in (int, float) or not math.isfinite(margin) or abs(margin - width * .07) > .01):
+        raise ValueError("missing, duplicate or invalid actual fallback component bounds")
+    center = vector(meta, "reticle", 2)
+    stave = False
+    for row in rows:
+        x0, y0, x1, y1 = vector(row, "projected_rect", 4)
+        arrow = row["part"] in ("NockedArrow", "Arrowhead")
+        depth = row.get("min_fp_depth_cm")
+        if (x1 <= x0 or y1 <= y0 or row.get("corner_count") != 8 or row.get("narrow_arrow") is not arrow
+                or type(depth) not in (int, float) or not math.isfinite(depth) or depth < near + 2 - .01):
+            raise ValueError("fallback geometry is incomplete or clips the actual near plane")
+        if not arrow and x1 > center[0] - margin + .25:
+            raise ValueError("fallback grip/stave/paw volume obstructs the live aim region")
+        if arrow and y1 - y0 > height * .04:
+            raise ValueError("fallback arrow is no longer narrow geometry")
+        if row["part"] == "YumiGrip" and not (x0 >= width * .05 and x1 <= width * .95 and
+                y0 >= height * .05 and y1 <= height * .95 and x1 - x0 >= width * .035 and y1 - y0 >= height * .15):
+            raise ValueError("fallback framing hides or shrinks the readable grip")
+        if row["part"] in ("YumiLower", "YumiUpper"):
+            stave |= min(y1, height) - max(y0, 0) >= height * .25 and min(x1, width) - max(x0, 0) >= 2
+    if not stave:
+        raise ValueError("fallback framing hides the readable stave")
+
+
 def verify_frame(meta, data, width, height):
     phase = meta.get("phase")
     if phase not in PHASES or vector(meta, "viewport", 2) != [width, height]:
@@ -108,9 +141,10 @@ def verify_frame(meta, data, width, height):
         raise ValueError("invalid/compressed live bow clock observation")
     pitch, yaw = vector(meta, "offset_degrees", 2)
     drawing = phase != "released"
-    if (meta.get("presentation_schema_version") != 1 or meta.get("fallback_bow") is not True
-            or meta.get("presentation_pose") != ("bow.drawn" if drawing else "bow")):
+    if (meta.get("presentation_schema_version") != 2 or meta.get("fallback_bow") is not True
+            or meta.get("presentation_pose") != ("fallback.bow.drawn" if drawing else "fallback.bow")):
         raise ValueError("bow presentation observation is absent or has the wrong admission/state")
+    verify_fallback_bounds(meta, width, height)
     presentation = vector(meta, "presentation_projected_direction", 3)
     if abs(math.hypot(*presentation) - 1) > 1e-5 or (drawing and math.dist(presentation, meta["ray"]) > 1e-5):
         raise ValueError("native first-person presentation direction differs from the current gameplay ray")

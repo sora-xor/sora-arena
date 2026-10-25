@@ -166,5 +166,17 @@ FVector CorrectedWorldDirection(const FMinimalViewInfo& View,const FVector& Game
     return (View.TransformFirstPersonToWorld(View.Location+Direction*10000.f,true)-View.Location).GetSafeNormal();
 }
 FQuat Compose(const FQuat& Aim,const FQuat& Action,const FQuat& Rest) { return (Aim*Action*Rest).GetNormalized(); }
+FPose FallbackBowPose(bool bDrawn)
+{
+    // Fixed framing chosen from all corners of the actual seven cube
+    // components, including the 22 cm grip and 13x15x13 cm paw. Do not use
+    // the authored bow's socket-point framing for these different volumes.
+    // No automatic offscreen translation can conceal a failed bounds check.
+    FPose Pose; Pose.Name=bDrawn?TEXT("fallback.bow.drawn"):TEXT("fallback.bow");
+    Pose.Anchor=TEXT("YumiGrip"); Pose.ReloadPitch=-10.f;
+    Pose.Location=bDrawn?FVector(120,-36,-12):FVector(120,-48,-15);
+    Pose.Rotation=bDrawn?FQuat::Identity:FRotator(0,6,-8).Quaternion();
+    return Pose;
+}
 float BlendAlpha(float DeltaSeconds,float PerSecond) { return 1.f-FMath::Exp(-FMath::Max(0.f,DeltaSeconds)*PerSecond); }
 }

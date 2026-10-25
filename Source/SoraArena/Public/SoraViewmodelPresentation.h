@@ -21,6 +21,14 @@ struct FWeapon
     FString Key,Name,Mesh,Pose;
     bool bApproximateSockets=false;
 };
+// Existing cube proxy only: its real grip/paw volumes differ from authored art.
+FPose FallbackBowPose(bool bDrawn);
+struct FPartBounds
+{
+    FString Name;
+    TArray<FVector> WorldCorners;
+    bool bArrow=false;
+};
 struct FContract
 {
     TMap<FString,FPose> Poses;
