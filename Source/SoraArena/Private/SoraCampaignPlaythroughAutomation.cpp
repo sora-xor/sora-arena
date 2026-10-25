@@ -1730,19 +1730,22 @@ bool ExpectRelayAftermath(FAutomationTestBase& Test, FState& State)
     if (!Test.TestTrue(TEXT("The later moat checkpoint restores the completed relay"),
         Campaign(State)->RelayOffline() && (Campaign(State)->Progress().CompletedMask & (1u << 3)) != 0) ||
         !Test.TestNotNull(TEXT("The exfiltration fieldcraft is staged"), Craft) ||
-        !Test.TestEqual(TEXT("Both moat searchlights remain staged after sabotage"), Craft->LightCount(), 2))
+        !Test.TestEqual(TEXT("Three hand lamps and both moat towers remain staged after sabotage"), Craft->LightCount(), 5))
         return false;
-    const FVector Spots[] = {Craft->SpotOf(0), Craft->SpotOf(1)};
+    if (!Test.TestTrue(TEXT("The two restored wall towers retain their identities"),
+        Craft->Active()->Searchlights[3].Id == TEXT("s_searchlight_1") && Craft->Active()->Searchlights[4].Id == TEXT("s_searchlight_2")))
+        return false;
+    const FVector Spots[] = {Craft->SpotOf(3), Craft->SpotOf(4)};
     const float Started = Mode(State)->RoundTime;
     if (!Advance(Test, State, 180)) return false;
     bool Good = Test.TestTrue(TEXT("The frozen-light observation spans active gameplay"), Mode(State)->RoundTime > Started + 2.f);
     for (int32 I = 0; I < 2; ++I)
         Good &= Test.TestTrue(TEXT("Relay sabotage leaves the moat light on but stops its sweep"),
-            Craft->IsLightOn(I) && Craft->SpotOf(I).Equals(Spots[I], .01f));
+            Craft->IsLightOn(I + 3) && FVector::Dist2D(Craft->SpotOf(I + 3), Spots[I]) < .01f);
     Craft->LockSearchlights(Spots[0] + FVector(500.f, 700.f, 0.f));
     if (!Advance(Test, State, 60)) return false;
     for (int32 I = 0; I < 2; ++I)
-        Good &= Test.TestTrue(TEXT("A later detection cannot retarget the offline searchlights"), Craft->SpotOf(I).Equals(Spots[I], .01f));
+        Good &= Test.TestTrue(TEXT("A later detection cannot retarget the offline searchlights"), FVector::Dist2D(Craft->SpotOf(I + 3), Spots[I]) < .01f);
     return Good;
 }
 

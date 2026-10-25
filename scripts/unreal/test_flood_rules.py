@@ -46,6 +46,22 @@ class FloodTests(unittest.TestCase):
             c=copy.deepcopy(self.chapter);mutate(c['space']['beats'][13]);self.assertFalse(flood_valid(c))
         c=copy.deepcopy(self.chapter);c['space']['beats'][2]['flood']=c['space']['beats'][13]['flood'];self.assertFalse(flood_valid(c))
 
+    def test_escape_retains_the_same_moat_towers_separate_from_hand_lamps(self):
+        entry=self.chapter['space']['beats'][1]
+        escape=self.chapter['space']['beats'][13]
+        lights=escape['fieldcraft']['searchlights']
+        self.assertEqual([l['id'] for l in lights[:3]],['grate_lamp_1','grate_lamp_2','grate_lamp_3'])
+        self.assertEqual(len(lights),5)
+        offset=[escape['flood']['origin'][0]-entry['moat']['origin'][0]-11300,-4000]
+        for a,b in zip(entry['fieldcraft']['searchlights'],lights[3:],strict=True):
+            translated=copy.deepcopy(a);translated['at']=[v+d for v,d in zip(a['at'],offset)]
+            self.assertEqual(translated,b)
+        for field in ('id','at','height_cm','reach_cm','period_ms','lock_ms'):
+            c=copy.deepcopy(self.chapter);c['space']['beats'][13]['fieldcraft']['searchlights'][3][field]=None
+            with self.subTest(field=field):self.assertFalse(flood_valid(c))
+        c=copy.deepcopy(self.chapter);c['space']['beats'][13]['fieldcraft']['searchlights'].pop()
+        self.assertFalse(flood_valid(c))
+
     def test_actual_cpp_water_breath_and_route_rules(self):
         source=r'''
 #include "SoraFloodRules.h"

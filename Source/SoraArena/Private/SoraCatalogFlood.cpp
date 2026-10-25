@@ -35,7 +35,7 @@ bool Read(const FJsonObject& O,FSoraBeat& Beat,const FSoraSpace& Space)
     const FVector2D Origin=B.Flood.Origin;
     if(Origin.Y!=0||B.Exit.Size!=FVector2D(400,300)||!B.Fieldcraft.Floors.IsEmpty()||
         W.Area.Center!=Origin+FVector2D(-100,-2000)||W.Area.Size!=FVector2D(22000,4800)||
-        W.SurfaceStepPermille!=2000||B.Fieldcraft.Searchlights.Num()!=3||B.Fieldcraft.Allies.Num()!=3||
+        W.SurfaceStepPermille!=2000||B.Fieldcraft.Searchlights.Num()!=5||B.Fieldcraft.Allies.Num()!=3||
         B.Volumes.Num()!=4) return false;
     const FVector2D Posts[]={{2000,0},{4500,0},{7000,0},{9500,-700},{4000,-2100},{4150,-2100}};
     for(int32 I=0;I<6;++I) if(B.Spawns[I]!=Origin+Posts[I]) return false;
@@ -48,9 +48,17 @@ bool Read(const FJsonObject& O,FSoraBeat& Beat,const FSoraSpace& Space)
     for(int32 I=0;I<3;++I)
     {
         const auto& Light=B.Fieldcraft.Searchlights[I];
-        if(Light.At!=Origin+Posts[I]||Light.HeightCm!=210||Light.Rules.SpotCm!=180) return false;
+        if(Light.Id!=FString::Printf(TEXT("grate_lamp_%d"),I+1)||Light.At!=Origin+Posts[I]||Light.HeightCm!=210||Light.Rules.SpotCm!=180) return false;
         const auto& Ally=B.Fieldcraft.Allies[I];
         if(Ally.bDetectable||Ally.Rules.Downable) return false;
+    }
+    for(int32 I=0;I<2;++I)
+    {
+        const auto& Light=B.Fieldcraft.Searchlights[I+3];const auto& R=Light.Rules;
+        if(Light.Id!=FString::Printf(TEXT("s_searchlight_%d"),I+1)||
+            Light.At!=Origin+FVector2D(I==0?-5300:3700,800)||Light.HeightCm!=1750||Light.Yaw!=-90||Light.ReachCm!=3000||
+            Light.RoadFromCm!=0||Light.RoadToCm!=0||R.SweepDeg!=70||R.PeriodMs!=10000||R.SpotCm!=800||
+            R.SuspiciousMs!=500||R.AlertMs!=1500||R.LockMs!=6000||!Light.ActiveOn.IsEmpty()||Light.bSpooks) return false;
     }
     B.Flood.bEnabled=true; return true;
 }

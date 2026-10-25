@@ -389,6 +389,7 @@ struct FSoraSearchlight
     FString ActiveOn;
     bool bSpooks = false;
     bool IsRoad() const { return RoadToCm > 0; }
+    bool IsMoatTower() const { return Id == TEXT("s_searchlight_1") || Id == TEXT("s_searchlight_2"); }
 };
 // A one-shot lure object hanging HeightCm up (ch07.b04's temple bell).
 struct FSoraBell

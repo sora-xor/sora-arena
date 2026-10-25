@@ -43,6 +43,8 @@ void ASoraWorldBuilder::BuildFlood(const FSoraBeat& Beat)
     // Only the basin gate opens the north embankment; the exit is the south bank.
     Slab(TEXT("FloodMoatNorthWest"),-900,-390,100,20400,40,400);
     Slab(TEXT("FloodMoatNorthEast"),10300,-390,100,1200,40,400);
+    for(const float X:{-5300.f,3700.f})
+        Slab(TEXT("FloodSearchlightFoundation"),X,800,-125,200,200,250);
     Slab(TEXT("FloodOuterBank"),8900,-4450,175,4000,500,50);
     const auto Ramp=SoraFloodRules::BankRamp();
     Slab(TEXT("FloodBankSlope"),8900,Ramp.CenterY,Ramp.CenterZ,4000,Ramp.Length,

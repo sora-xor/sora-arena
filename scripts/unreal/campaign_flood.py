@@ -4,6 +4,23 @@ The authored final 15 m at 140 cm/s takes 10.71 s, exceeding eight seconds
 of breath. A visible 2 m air shaft divides it into 6.5 m submerged legs;
 actual surfacing, with the existing three-second recovery, remains necessary.
 """
+import json
+
+
+def searchlights(x, y=0):
+    # The three hand lamps remain independent of the disabled relay.
+    lamps = [{'id':f'grate_lamp_{i+1}','at':[x+a,y],'height_cm':210,'yaw':0,'reach_cm':1,
+        'road_from_cm':0,'road_to_cm':0,'sweep_deg':1,'period_ms':6000,'spot_cm':180,
+        'suspicious_ms':400,'alert_ms':1100,'lock_ms':0,'active_on':None,'spooks':False}
+        for i,a in enumerate((2000,4500,7000))]
+    # Translate the b02 moat frame: its gate at (20800,3600) is this
+    # escape frame's (9500,-400). Both wall towers keep their authored mounts.
+    lamps += [{'id':f's_searchlight_{i+1}','at':[x+a,y+800],'height_cm':1750,'yaw':-90,'reach_cm':3000,
+        'road_from_cm':0,'road_to_cm':0,'sweep_deg':70,'period_ms':10000,'spot_cm':800,
+        'suspicious_ms':500,'alert_ms':1500,'lock_ms':6000,'active_on':None,'spooks':False}
+        for i,a in enumerate((-5300,3700))]
+    return lamps
+
 
 def place_flood(beats, records, zones, fail):
     if not any(b['id']=='ch06.b14' for b in beats): return
@@ -15,7 +32,7 @@ def place_flood(beats, records, zones, fail):
     r=next(r for r in records if r['beat']==beat['id'])
     # Own campaign-only zone; never edit the practice/multiplayer citadel.
     x=max(z.rect[2] for z in zones)+15000
-    rect=(x-11200,-4600,x+11000,600)
+    rect=(x-11200,-4600,x+11000,1100)
     z=Zone('ch06_flood_exfil',beat['place'],'citadel','hall',rect,300)
     z.entry=(x+200,0,0)
     r['zone']=len(zones);zones.append(z)
@@ -37,10 +54,7 @@ def place_flood(beats, records, zones, fail):
                 'cover':[{'center':[x+9500,-3900],'size':[1600,300]}],'lines':[]}
     # Hand lamps shine through the three ceiling grates. Their 1.1 s alarm
     # dwell follows the authored 0.9/s suspicion rate; they are not wall towers.
-    f['searchlights']=[{'id':f'grate_lamp_{i+1}','at':[x+a,0],'height_cm':210,'yaw':0,'reach_cm':1,
-        'road_from_cm':0,'road_to_cm':0,'sweep_deg':1,'period_ms':6000,'spot_cm':180,
-        'suspicious_ms':400,'alert_ms':1100,'lock_ms':0,'active_on':None,'spooks':False}
-        for i,a in enumerate((2000,4500,7000))]
+    f['searchlights']=searchlights(x)
     for a in f['allies']:
         a['at']=[x+100,0] if a['id']!='npc_kohagi' else [x+9850,-230]
 
@@ -74,9 +88,7 @@ def flood_valid(chapter):
             for k,v in {'surface_cm_s':180,'dive_cm_s':140,'breath_ms':8000,'recover_ms':3000,'drown_hp_s':10,'surface_step_permille':2000}.items():
                 if type(w[k])!=int or w[k]!=v: return False
             if w['center']!=[x-100,y-2000] or w['size']!=[22000,4800]: return False
-            if r['fieldcraft']['surfaces'] or len(r['fieldcraft']['searchlights'])!=3: return False
-            for i,l in enumerate(r['fieldcraft']['searchlights']):
-                if l['at']!=[x+(2000,4500,7000)[i],y] or l['height_cm']!=210 or l['spot_cm']!=180: return False
+            if r['fieldcraft']['surfaces'] or json.dumps(r['fieldcraft']['searchlights'],sort_keys=True)!=json.dumps(searchlights(x,y),sort_keys=True): return False
             if {a['id'] for a in r['fieldcraft']['allies']}!={'npc_toranosuke','npc_iota','npc_kohagi'}: return False
             if any(a['detectable'] or a['downable'] for a in r['fieldcraft']['allies']): return False
         return True

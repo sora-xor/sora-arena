@@ -9565,7 +9565,7 @@
      65200,
      -4600,
      87400,
-     600
+     1100
     ],
     "wall_cm": 300,
     "entry": [
@@ -9576,16 +9576,16 @@
     "walls": [
      [
       65170,
-      -2000,
+      -1750,
       60,
-      5320,
+      5820,
       300
      ],
      [
       87430,
-      -2000,
+      -1750,
       60,
-      5320,
+      5820,
       300
      ],
      [
@@ -9597,7 +9597,7 @@
      ],
      [
       76300,
-      630,
+      1130,
       22200,
       60,
       300
@@ -12917,6 +12917,46 @@
        "suspicious_ms": 400,
        "alert_ms": 1100,
        "lock_ms": 0,
+       "active_on": null,
+       "spooks": false
+      },
+      {
+       "id": "s_searchlight_1",
+       "at": [
+        71100,
+        800
+       ],
+       "height_cm": 1750,
+       "yaw": -90,
+       "reach_cm": 3000,
+       "road_from_cm": 0,
+       "road_to_cm": 0,
+       "sweep_deg": 70,
+       "period_ms": 10000,
+       "spot_cm": 800,
+       "suspicious_ms": 500,
+       "alert_ms": 1500,
+       "lock_ms": 6000,
+       "active_on": null,
+       "spooks": false
+      },
+      {
+       "id": "s_searchlight_2",
+       "at": [
+        80100,
+        800
+       ],
+       "height_cm": 1750,
+       "yaw": -90,
+       "reach_cm": 3000,
+       "road_from_cm": 0,
+       "road_to_cm": 0,
+       "sweep_deg": 70,
+       "period_ms": 10000,
+       "spot_cm": 800,
+       "suspicious_ms": 500,
+       "alert_ms": 1500,
+       "lock_ms": 6000,
        "active_on": null,
        "spooks": false
       }

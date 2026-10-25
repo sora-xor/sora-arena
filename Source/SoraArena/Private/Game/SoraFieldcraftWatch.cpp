@@ -62,7 +62,7 @@ void USoraFieldcraft::StageWatch()
         FLightState& State = LightStates.AddDefaulted_GetRef();
         State.bOn = Row.ActiveOn.IsEmpty();
         const FVector Mount = Row.IsRoad() ? FVector::ZeroVector : FVector(Row.At, Row.HeightCm);
-        if (!Row.IsRoad() && !FloodSpace)
+        if (!Row.IsRoad() && (!FloodSpace || Row.IsMoatTower()))
         {
             // The physical moat owns an offset support behind its patrol
             // aisle. A second post at the optical mount would block guards.
@@ -216,8 +216,9 @@ void USoraFieldcraft::TickSearchlights(int32 DtMs)
         else
         {
             State.LockedMs = FMath::Max(0, State.LockedMs - DtMs);
-            const bool bRelayOffline=MoatSpace&&Campaign&&Campaign->RelayOffline();
-            const float Bearing = Row.Yaw + Craft::BeamMilliDeg(Row.Rules, bRelayOffline?0:LightClockMs, Index * (Row.Rules.PeriodMs / 2)) / 1000.f;
+            const bool bRelayOffline=(MoatSpace||FloodSpace)&&Row.IsMoatTower()&&Campaign&&Campaign->RelayOffline();
+            const int32 Phase = Row.IsMoatTower() ? (Row.Id == TEXT("s_searchlight_2") ? 1 : 0) : Index;
+            const float Bearing = Row.Yaw + Craft::BeamMilliDeg(Row.Rules, bRelayOffline?0:LightClockMs, Phase * (Row.Rules.PeriodMs / 2)) / 1000.f;
             At = !bRelayOffline&&State.LockedMs > 0 ? State.LockedAt : FVector(Row.At, 0.f) + FRotator(0.f, Bearing, 0.f).Vector() * Row.ReachCm;
             At.Z = MoatSpace ? 2.f : FloodSpace ? FloodSurfaceAt(At)+2.f : (Staged->bWater && Staged->Water.Area.Contains(At) ? Layout::WaterLevel : 0.f) + 2.f;
             From = FVector(Row.At, Row.HeightCm);

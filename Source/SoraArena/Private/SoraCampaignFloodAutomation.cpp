@@ -248,6 +248,7 @@ bool FSoraFloodSensesTest::RunTest(const FString&)
     SoraFloodTest::FWorld W(*this,TEXT("FloodSenses"),5,13);
     if(!W.Start()||!W.Tick(30)) return false;
     W.Harden();
+    TestTrue(TEXT("Hand lamps still search after the relay has been sabotaged"),W.Campaign()->RelayOffline());
     if(!SoraFloodTest::Walk(W,FVector(1700,0,0))) return false;
     bool HeardWithoutSight=false;
     for(TActorIterator<ASoraEnemyController> It(W.World->GetTestWorld());It;++It)
@@ -281,6 +282,20 @@ bool FSoraFloodLoaderTest::RunTest(const FString&)
     Check(nullptr,false);
     for(const TCHAR* Key:{TEXT("origin"),TEXT("length_cm"),TEXT("air_shaft_cm"),TEXT("deep_roof_cm"),TEXT("rise_ms")})
         { Check(Key,true); Check(Key,false); }
+    TSharedPtr<FJsonObject> Data;
+    if(!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),Data)) return false;
+    const auto O=Data->GetObjectField(TEXT("space"))->GetArrayField(TEXT("beats"))[13]->AsObject();
+    for(int32 Case=0;Case<5;++Case)
+    {
+        FSoraChapter Copy=FSoraCatalog::Get().Chapter(5);
+        auto& Lights=Copy.Beats[13].Space.Fieldcraft.Searchlights;
+        if(Case==0) Lights.Pop();
+        if(Case==1) Lights[3].Id=TEXT("grate_lamp_4");
+        if(Case==2) Lights[3].At.X+=100;
+        if(Case==3) Lights[3].Rules.LockMs=0;
+        if(Case==4) Lights[3].HeightCm=210;
+        TestFalse(TEXT("The production loader rejects a missing or altered moat tower"),SoraCatalogFlood::Read(*O,Copy.Beats[13],Copy.Space));
+    }
     return !HasAnyErrors();
 }
 #endif

@@ -87,7 +87,7 @@ bool CheckDroneMarks(FBeatWorld& W,bool Offline)
     FSoraPatrolRoute Route;FSoraEnemyTuning Tune;Tune.SightCm=1;Tune.DarkSightCm=0;Tune.HearingCm=0;
     // Receivers are separated by more than ordinary shout range, so one
     // receiver's response cannot relay this mark to a second receiver.
-    const FVector Offsets[]={FVector::ZeroVector,FVector(-1999,0,0),FVector(0,2000,0),FVector(2001,0,0)};
+    const FVector Offsets[]={FVector::ZeroVector,FVector(-1999,0,0),FVector(0,2000,0),FVector(2000.25,0,0)};
     ASoraEnemy* Bodies[4]={};ASoraEnemyController* Brains[4]={};
     for(int I=0;I<4;++I)
     {

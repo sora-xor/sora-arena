@@ -49,8 +49,10 @@ class MoatTests(unittest.TestCase):
 
     def test_existing_climb_and_flood_records_unchanged(self):
         # Exact integration baseline: appending the moat must not move either
-        # previously accepted physical space or any of its markers.
-        expected={2: 'e8470d0989642190ba6e6622dbc63bb3fae447b833215cd15a6fbd84a14011de', 13: 'cb454b17736c53657a2fd790a0eb373886fbf4039baa73b1bb2690164c26633b'}
+        # previously accepted physical space or any of its markers. The flood
+        # baseline includes the two restored moat towers and their north bounds;
+        # its traversal, hand lamps and markers retain their prior coordinates.
+        expected={2: 'e8470d0989642190ba6e6622dbc63bb3fae447b833215cd15a6fbd84a14011de', 13: '4c5a97f80cfaea3f7d379857e956d1781060ea7f0f5ee277343481e7564fb0ce'}
         for index,digest in expected.items():
             record=self.chapter['space']['beats'][index]
             value=[record,self.chapter['space']['zones'][record['zone']]]

@@ -78,7 +78,16 @@ limited to twenty metres, inclusive, independent of hearing or walls. It carries
 the last observed location. New fixtures exercise the online path and the
 offline path after an actual completion save is loaded. The assisted full
 campaign also checks frozen, non-retargeting moat lights at its later exfiltration
-checkpoint. These new tests are not compiled or run yet.
+checkpoint. Source review found that b14 staged only three hand lamps and
+omitted both moat towers. The candidate restores the same two towers in the
+escape coordinate frame, expands its north bound to include their mounts,
+and adds proxy foundations/housings. Tower identities select the relay freeze
+and their original opposing phases; hand lamps remain independent. Frozen
+spots keep their horizontal positions while the water surface rises. The
+loader rejects missing or altered towers. Four flood host tests, the campaign
+schema and 65 malformed-schema probes pass. These new Unreal tests are not
+compiled or run yet; the b4ac007 checkpoint's initial two-light expectation was
+incorrect and was corrected before execution.
 
 The previous room credited three generic held points. This candidate binds
 the portable relay reducer to mapped Interact input, grounded floor height,
