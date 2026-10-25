@@ -78,7 +78,9 @@ def is_w18(path: str) -> bool:
     return "/W18_Yumi/" in path or "/Renders/SM_Weapon_18" in path
 
 
-class Record(unittest.TestCase):
+class RecordFixture(unittest.TestCase):
+    """A throwaway runtime tree per test (tree()), and the record call. No tests here."""
+
     ASSETS = ["SM_Weapon_18", "SM_Weapon_18_Ya"]
 
     def setUp(self):
@@ -97,6 +99,8 @@ class Record(unittest.TestCase):
     def after(self):
         return json.loads((self.root / RT / "manifest.json").read_text())
 
+
+class Record(RecordFixture):
     def test_every_unrelated_entry_is_kept_exactly_and_in_place(self):
         self.run_record()
         old = [e for e in self.before["files"] if not is_w18(e["file"])]
@@ -185,6 +189,94 @@ class Record(unittest.TestCase):
     def test_a_shorter_asset_name_never_captures_another_weapons_renders(self):
         self.assertFalse(R.in_scope(f"{RT}/Renders/SM_Weapon_18_Profile.png", "W01_Arc", ["SM_Weapon_1"], []))
         self.assertTrue(R.in_scope(f"{RT}/Renders/SM_Weapon_18_Ya_Profile.png", "W18_Yumi", ["SM_Weapon_18"], []))
+
+
+class Provenance(RecordFixture):
+    """Root's adversarial probes of a5a966c (art-a5a966c-host-review/adversarial-probes.json): a missing
+    input still recorded, and a changed input or generator still "matched". Provenance is now validated
+    first, in both modes, and a check matches only the latest scoped record's exact hashes."""
+
+    def text(self):
+        return (self.root / RT / "manifest.json").read_text()
+
+    def unrelated_kept(self):
+        old = [e for e in self.before["files"] if not is_w18(e["file"])]
+        self.assertEqual([e for e in self.after()["files"] if not is_w18(e["file"])], old)
+
+    def relist(self, data: bytes):
+        path = self.root / RT / "sources_manifest.json"
+        src = json.loads(path.read_text())
+        src["inputs"][0]["sha256"] = sha(data)
+        path.write_text(json.dumps(src, ensure_ascii=False, indent=1) + "\n")
+
+    def test_a_missing_input_fails_before_any_record_and_writes_nothing(self):
+        (self.root / SRC).unlink()
+        for check in (False, True):
+            with self.assertRaises(R.RecordError) as ctx:
+                self.run_record(check=check)
+            self.assertIn(f"{SRC}: missing", str(ctx.exception))
+        self.assertEqual(self.text(), self.before_text)
+
+    def test_a_changed_input_after_recording_never_matches(self):
+        self.run_record()
+        recorded = self.text()
+        (self.root / SRC).write_bytes(b"leather scan, changed")
+        for check in (True, False):
+            with self.assertRaises(R.RecordError) as ctx:
+                self.run_record(check=check)
+            self.assertIn("differs from its sources_manifest.json hash", str(ctx.exception))
+        self.assertEqual(self.text(), recorded)
+
+    def test_a_relisted_input_is_new_provenance_not_a_match(self):
+        self.run_record()
+        newer = b"a newer leather scan"
+        (self.root / SRC).write_bytes(newer)
+        self.relist(newer)
+        changed, _ = self.run_record(check=True)
+        self.assertTrue(changed)
+        self.run_record()
+        ups = self.after()["scoped_updates"]
+        self.assertEqual(len(ups), 2)
+        self.assertEqual(ups[-1]["derived_from"], [{"path": SRC, "sha256": sha(newer)}])
+        self.unrelated_kept()
+        self.assertFalse(self.run_record(check=True)[0])
+
+    def test_a_changed_generator_after_recording_is_reported_then_recorded(self):
+        self.run_record()
+        first = self.after()
+        put(self.root, GENS[0], b"# the builder, changed")
+        changed, _ = self.run_record(check=True)
+        self.assertTrue(changed)
+        self.run_record()
+        a = self.after()
+        self.assertEqual(len(a["scoped_updates"]), 2)
+        self.assertEqual(a["scoped_updates"][-1]["generators"][0],
+                         {"path": GENS[0], "sha256": sha(b"# the builder, changed")})
+        self.assertEqual(a["files"], first["files"])                 # the outputs did not change
+        self.unrelated_kept()
+        self.assertFalse(self.run_record(check=True)[0])
+
+    def test_a_missing_generator_fails_in_both_modes(self):
+        (self.root / GENS[2]).unlink()
+        for check in (True, False):
+            with self.assertRaises(R.RecordError) as ctx:
+                self.run_record(check=check)
+            self.assertIn(f"generator {GENS[2]}: missing", str(ctx.exception))
+        self.assertEqual(self.text(), self.before_text)
+
+    def test_absent_provenance_never_matches(self):
+        self.run_record()
+        doc = self.after()
+        del doc["scoped_updates"]                                    # files and generators all current
+        (self.root / RT / "manifest.json").write_text(json.dumps(doc, ensure_ascii=False, indent=1) + "\n")
+        self.assertTrue(self.run_record(check=True)[0])
+
+    def test_another_weapons_provenance_is_not_w18s(self):
+        self.run_record()
+        doc = self.after()
+        doc["scoped_updates"][0]["weapon"] = 1
+        (self.root / RT / "manifest.json").write_text(json.dumps(doc, ensure_ascii=False, indent=1) + "\n")
+        self.assertTrue(self.run_record(check=True)[0])
 
 
 if __name__ == "__main__":

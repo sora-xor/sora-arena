@@ -27,9 +27,14 @@ stale or not. So also the document's other fields, except two:
   names, SHA-256), the files recorded, and that this is OWN provenance
   (authorship and exact bytes), not geometric or visual admission.
 
-**sources_manifest.json** must already list every derived input at its
-current SHA-256, or the run fails. This adds none: build_all's ledger lookup
-owns that list.
+**Provenance is checked first, every run.** Before anything is recorded or
+reported as matching (root's adversarial probes of a5a966c):
+- every derived input must exist and match its sources_manifest.json SHA-256
+  (this adds none: build_all's ledger lookup owns that list);
+- every generator must exist.
+Otherwise it fails. And a record "matches" only when the latest scoped
+update for the weapon names the same generators, derived inputs (both by
+SHA-256) and files. A stale or absent provenance record never matches.
 
 **Options:**
 - --preflight, before a rebuild: every derived input of the weapon's current
@@ -113,6 +118,38 @@ def derived_inputs(root: Path, key: str):
     return rec, sorted(rec.get("sources", []))
 
 
+def current_provenance(root: Path, sources, listed: dict, generators):
+    """(generators, derived inputs) as they are now, each by SHA-256; RecordError if any is missing,
+    unlisted or off its sources_manifest.json hash."""
+    problems, derived, gens = [], [], []
+    for src in sources:
+        p = root / src
+        if src not in listed:
+            problems.append(f"{src}: not in sources_manifest.json")
+        elif not p.is_file():
+            problems.append(f"{src}: missing")
+        else:
+            digest = sha256(p)
+            if digest != listed[src]:
+                problems.append(f"{src}: differs from its sources_manifest.json hash")
+            else:
+                derived.append({"path": src, "sha256": digest})
+    for g in generators:
+        p = root / g
+        if not p.is_file():
+            problems.append(f"generator {g}: missing")
+        else:
+            gens.append({"path": g, "sha256": sha256(p)})
+    if problems:
+        raise RecordError("provenance: " + "; ".join(problems))
+    return gens, derived
+
+
+def latest_scoped(doc: dict, wid: int):
+    entries = [u for u in doc.get("scoped_updates", []) if u.get("weapon") == wid]
+    return entries[-1] if entries else None
+
+
 def preflight(root: Path, key: str, ledger_table: dict):
     """Problems with the weapon's derived inputs: each must exist and match the ledger."""
     _rec, sources = derived_inputs(root, key)
@@ -146,33 +183,28 @@ def replace_scope(files, new_entries, key, assets, dirs):
 
 
 def record(root: Path, wid: int, key: str, assets, generators, check=False, now=None):
-    """Rewrite (or, with check, compare) the weapon's scope. Returns (changed, document)."""
+    """Rewrite (or, with check, compare) the weapon's scope. Returns (changed, document).
+
+    Provenance is validated first, in both modes: no success, and no "matches", on a missing or changed
+    input or generator."""
     runtime = root / RUNTIME_REL
     manifest_path = runtime / "manifest.json"
     sources_path = runtime / "sources_manifest.json"
     doc = json.loads(manifest_path.read_text(encoding="utf-8"))
     _rec, sources = derived_inputs(root, key)
+    listed = {e["file"]: e["sha256"] for e in json.loads(sources_path.read_text(encoding="utf-8"))["inputs"]}
+    gens, derived = current_provenance(root, sources, listed, generators)
     new_entries, dirs = outputs(root, key, assets)
     if not new_entries:
         raise RecordError(f"{key}: no outputs on disk")
     files = replace_scope(doc["files"], new_entries, key, assets, dirs)
-    changed = files != doc["files"] or any(g not in doc["generator_scripts"] for g in generators)
+    latest = latest_scoped(doc, wid)
+    now_record = {"generators": gens, "derived_from": derived, "files": [e["file"] for e in new_entries]}
+    provenance_matches = latest is not None and all(latest.get(k) == v for k, v in now_record.items())
+    changed = (files != doc["files"] or any(g not in doc["generator_scripts"] for g in generators)
+               or not provenance_matches)
     if check or not changed:
         return changed, doc                              # nothing to record: no duplicate scoped_updates entry
-    listed = {e["file"]: e["sha256"] for e in json.loads(sources_path.read_text(encoding="utf-8"))["inputs"]}
-    problems = [s for s in sources if s not in listed]
-    for s in sources:
-        p = root / s
-        if s in listed and p.is_file() and sha256(p) != listed[s]:
-            problems.append(f"{s} (changed)")
-    if problems:
-        raise RecordError(f"{key}: derived inputs not in sources_manifest.json at their current SHA-256: {problems}")
-    gens = []
-    for g in generators:
-        p = root / g
-        if not p.is_file():
-            raise RecordError(f"generator {g} not found")
-        gens.append({"path": g, "sha256": sha256(p)})
     doc["files"] = files
     for g in generators:
         if g not in doc["generator_scripts"]:
@@ -182,10 +214,8 @@ def record(root: Path, wid: int, key: str, assets, generators, check=False, now=
             w["assets"] = sorted(assets)
     stamp = now or dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat()
     doc.setdefault("scoped_updates", []).append({
-        "weapon": wid, "key": key, "recorded_at_utc": stamp, "generators": gens,
-        "derived_from": [{"path": s, "sha256": listed[s]} for s in sources],
-        "files": [e["file"] for e in new_entries], "own_ledgers_kept_apart": dirs,
-        "scope": PROVENANCE})
+        "weapon": wid, "key": key, "recorded_at_utc": stamp, **now_record,
+        "own_ledgers_kept_apart": dirs, "scope": PROVENANCE})
     manifest_path.write_text(json.dumps(doc, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     return True, doc
 
@@ -227,7 +257,8 @@ def main(argv=None) -> int:
         print(f"RECORD_FAILED: {exc}", file=sys.stderr)
         return 1
     if a.check:
-        print(f"RECORD_CHECK {spec['key']}: the record {'would change (files or generators)' if changed else 'matches'}")
+        print(f"RECORD_CHECK {spec['key']}: the record "
+              f"{'would change (files, generators or provenance)' if changed else 'matches, provenance included'}")
         return 1 if changed else 0
     print(f"RECORDED {spec['key']}: its scope only; every other entry kept")
     return 0

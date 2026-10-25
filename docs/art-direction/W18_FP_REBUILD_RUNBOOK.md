@@ -31,7 +31,12 @@ failures and skipped. Never a run total called "passed".
   `EDITOR_EXIT=<n>` line and `<log>.editor-exit`, beside the wrapper's own
   exit. A full editor that quits itself exits 1, and the wrapper accepts it;
   it is reported as **editor exit 1, wrapper exit 0**, never as 0/0.
-- **A Blender step:** Blender's own exit. EOF is the last line its log wrote.
+- **A Blender step:** Blender's own exit status.
+- **EOF** means the process has exited and its output streams have reached
+  end of file: the launching command returned, with that process's status.
+  A last log line alone is not EOF, as attempt 2's editor showed: it logged
+  `Exiting.` and then hung. A process that never exits is preserved and
+  recorded as a failed or incomplete run, never as EOF.
 
 **Provenance is not admission.** An OWN ledger or record states authorship
 and the exact bytes of files. Whether the geometry or the look is accepted is
@@ -44,9 +49,11 @@ root's review of the originals, never a ledger's.
    - Marker `PATCH_STUDY_READY`. It writes `Local/ArtCache/NyaagyuDojoTimbersV23Patch/attempt<N>/`, created exclusively, so no archive is needed.
    - **Check:** view both contact sheets and every panel. `study.json` must hold both variants' measurements beside the scans'. The EXR normal-map read must pass its unit-normal check, or the study stops (that is a result, not a retry).
 2. **W18 static rebuild** (Blender).
-   - **The raw CC0 inputs.** The weapon library reads them only at `Local/ThirdPartyRaw/cc0` (`create_runtime_weapon_lib.cc0`), which this worktree lacks. Link root's cache read-only for this step only: `ln -s /Users/mtakemiya/.codex/worktrees/complete-game/sora-arena/Local/ThirdPartyRaw Local/ThirdPartyRaw`.
-   - Then `PY scripts/art/record_runtime_weapon.py --weapon 18 --preflight` must print `RECORD_PREFLIGHT_OK`: all 16 derived inputs present and as the ledger records them. They were all as recorded, read-only, on 2026-10-25.
-   - Remove the link after this step's two jobs.
+   - **The raw CC0 inputs.** The weapon library reads them only at `Local/ThirdPartyRaw/cc0` (`create_runtime_weapon_lib.cc0`).
+     - Nine of W18's sixteen were missing from this worktree. They are **copied** into its ignored `Local/ThirdPartyRaw`, relative paths kept (Codex authorized this, 2026-10-25; a symlink would not make root's cache read-only).
+     - All sixteen were verified against the ledger before and after the copy. The receipt is `Saved/W18Rebuild/raw_inputs_copy.json`.
+     - The copies stay through step 5's final ledger and check.
+   - Before the build, `PY scripts/art/record_runtime_weapon.py --weapon 18 --preflight` must print `RECORD_PREFLIGHT_OK`. It did on 2026-10-25, after the copy.
    - **Archive** `Content/SourceArt/Weapons/Runtime/W18_Yumi/{*.fbx,*.blend,T_Weapon_18_*.png,build_record.json}` and `Runtime/Renders/SM_Weapon_18*.png`.
    - `B scripts/art/create_runtime_weapon_yumi.py -- --only 18`, then `B scripts/art/create_runtime_weapon_validation.py -- --only 18`. These are the two Blender jobs `create_runtime_weapon_build_all.py --only 18` runs, without its manifest rewrite, which would re-record every weapon (root's decision B, below).
    - **Check:**
@@ -67,7 +74,9 @@ root's review of the originals, never a ledger's.
    - Run `PY -m unittest` on `test_yumi_draw`, `test_yumi_nigiri_ya`, `test_nyaakoto_fp_paws`, `test_yumi_fp_holds`, `test_fp_material_bindings` and `test_analyse_yumi_fp_review`. Every count must show 0 expected failures.
    - **If the envelope test fails,** the rebuilt wrap is not the design envelope within the carve gap. Investigate before the paw; never widen the gap.
    - **Ledgers** (decision B: W18 only):
-     - **The W18 static:** `PY scripts/art/record_runtime_weapon.py --weapon 18 --generator scripts/art/yumi_nigiri.py --generator scripts/art/yumi_ya.py`, then the same with `--check`, which must exit 0.
+     - **The W18 static:** `PY scripts/art/record_runtime_weapon.py --weapon 18 --generator scripts/art/yumi_nigiri.py --generator scripts/art/yumi_ya.py`, then the same with `--check`. It must exit 0, "matches, provenance included".
+       - Both runs first validate provenance: every derived input present at its sources_manifest.json hash, and every generator present. They fail otherwise.
+       - A check matches only when the latest scoped record names the same generator and input hashes and files.
        - It replaces only W18's scope in the runtime-weapons manifest: its static outputs (not `Rig/`, which keeps its own ledger, nor `*.blend1`) and its renders.
        - Every other weapon's entry is kept exactly, stale or not (`test_record_runtime_weapon`).
        - It records W18's generators and derived inputs by SHA-256, as OWN provenance, not admission.
