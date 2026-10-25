@@ -12,6 +12,7 @@
 #include "SoraGameMode.h"
 #include "SoraHorse.h"
 #include "SoraPlayerCharacter.h"
+#include "SoraProjectile.h"
 #include "SoraSettings.h"
 #include "SoraText.h"
 #include "SoraWorldBuilder.h"
@@ -110,10 +111,14 @@ void ASoraLamp::Build(const FSoraLamp& Data, int32 InIndex)
     const bool bBrazier = Data.Kind == TEXT("brazier");
     const bool bKamado = Data.Kind == TEXT("kamado");
     const bool bStrip = Data.Kind == TEXT("strip") || Data.Kind == TEXT("arch");
-    GlowHeight = bFlood ? 520.f : bBrazier ? 95.f : bKamado ? 40.f : bStrip ? 230.f : 160.f;
-    Intensity = bFlood ? 9000.f : bBrazier || bKamado ? 5200.f : bStrip ? 1800.f : 3200.f;
+    const bool bDie = Data.Kind == TEXT("die");
+    bArrowOnly=bDie;
+    GlowHeight = bDie ? 420.f : bFlood ? 520.f : bBrazier ? 95.f : bKamado ? 40.f : bStrip ? 230.f : 160.f;
+    Intensity = bFlood ? 9000.f : bDie ? 4500.f : bBrazier || bKamado ? 5200.f : bStrip ? 1800.f : 3200.f;
     // Warm 行灯 and fires at about 1900 K; the Credit House's lamps cold.
-    const FLinearColor LightColor = bFlood ? FLinearColor(.78f, .9f, 1.f) : bStrip ? FLinearColor(.2f, .9f, 1.f) : FLinearColor(1.f, .62f, .3f);
+    const FLinearColor LightColor = bDie ? FLinearColor::MakeFromColorTemperature(5500.f) :
+        bFlood ? FLinearColor(.78f, .9f, 1.f) : bStrip ? FLinearColor(.2f, .9f, 1.f) : FLinearColor(1.f, .62f, .3f);
+    LitColor=bDie?LightColor:FLinearColor(1.f,.62f,.25f);
     FActorSpawnParameters Params;
     Params.Owner = this;
     Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -125,7 +130,7 @@ void ASoraLamp::Build(const FSoraLamp& Data, int32 InIndex)
         Lamp->SetAttenuationRadius(Data.RadiusCm);
         Lamp->SetIntensity(Intensity);
         Lamp->SetLightColor(LightColor);
-        Lamp->SetCastShadows(bFlood);
+        Lamp->SetCastShadows(bFlood||bDie);
     }
     USceneComponent* Root = GetRootComponent();
     // A part in a flat colour, or dressed in a palette surface tinted by it.
@@ -139,7 +144,18 @@ void ASoraLamp::Build(const FSoraLamp& Data, int32 InIndex)
     };
     // The lamp's body stands on the floor under its light.
     const FVector Base = FVector::ZeroVector;
-    if (bBrazier)
+    if (bDie)
+    {
+        // A hanging, shootable die lamp clears the 3.5 m press crown.
+        Add(TEXT("DieHanger"),Layout::Cylinder,FVector(0,0,660),FVector(.05f,.05f,4.8f),FLinearColor(.14f,.16f,.18f),Layout::Metal);
+        Add(TEXT("DieShade"),Layout::Cylinder,FVector(0,0,442),FVector(.85f,.85f,.12f),FLinearColor(.14f,.16f,.18f),Layout::Metal);
+        Flame=Add(TEXT("DieLens"),Layout::Sphere,FVector(0,0,420),FVector(.6f,.6f,.3f),LitColor);
+        Flame->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+        Flame->SetCollisionResponseToAllChannels(ECR_Block);
+        Flame->SetCollisionResponseToChannel(ECC_Pawn,ECR_Ignore);
+        Flame->SetCanEverAffectNavigation(false);
+    }
+    else if (bBrazier)
     {
         Add(TEXT("BrazierLegs"), Layout::Cylinder, Base + FVector(0, 0, 35), FVector(.5f, .5f, .7f), FLinearColor(.3f, .28f, .27f), Layout::Metal);
         Add(TEXT("BrazierBowl"), Layout::Cylinder, Base + FVector(0, 0, 78), FVector(.8f, .8f, .18f), FLinearColor(.34f, .32f, .3f), Layout::Metal);
@@ -178,7 +194,15 @@ void ASoraLamp::Build(const FSoraLamp& Data, int32 InIndex)
 
 float ASoraLamp::TakeDamage(float Damage, const FDamageEvent& Event, AController* Instigator, AActor* Causer)
 {
-    // Only the cable junction takes a shot; the rest of the lamp shrugs it off.
+    // A die lamp needs a real arrow impact; melee, bullets and blast do not
+    // substitute for the authored interaction. Other lamps retain their rules.
+    const auto* Arrow=bArrowOnly?Cast<ASoraProjectile>(Causer):nullptr;
+    if(bArrowOnly)
+    {
+        if(!Arrow||!Arrow->bArrow||Damage<=0||!Event.IsOfType(FSoraDamageEvent::ClassID)) return 0.f;
+        const auto& Hit=static_cast<const FSoraDamageEvent&>(Event).Hit;
+        if(Hit.Kind!=SoraCombatRules::EHit::Ranged||Hit.bHitscan) return 0.f;
+    }
     if (bShootable && IsLit())
         if (USoraFieldcraft* Fieldcraft = USoraFieldcraft::Get(this)) Fieldcraft->LampShot(Index);
     return 0.f;
@@ -187,7 +211,7 @@ float ASoraLamp::TakeDamage(float Damage, const FDamageEvent& Event, AController
 void ASoraLamp::SetLit(bool bLit)
 {
     if (IsValid(Light)) Light->PointLightComponent->SetVisibility(bLit);
-    if (Flame) ASoraWorldBuilder::Tint(Flame, bLit ? FLinearColor(1.f, .62f, .25f) : FLinearColor(.06f, .05f, .05f));
+    if (Flame) ASoraWorldBuilder::Tint(Flame, bLit ? LitColor : FLinearColor(.06f, .05f, .05f));
 }
 
 bool ASoraLamp::IsLit() const
@@ -787,6 +811,7 @@ bool USoraFieldcraft::SnuffLamp(int32 Index)
         !Craft::Snuff(LampStates[Index], Staged->Lamps[Index].Snuff != FSoraLamp::ESnuff::None))
         return false;
     if (IsValid(LampActors[Index])) LampActors[Index]->SetLit(false);
+    PressLampExtinguished(Index);
     Raise(TEXT("lamp_out:") + Staged->Lamps[Index].Id);
     return true;
 }

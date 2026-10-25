@@ -16,11 +16,14 @@ The local coordination mailboxes record current ownership, commits and lane use.
 A separate source candidate adds the eight authored press positions, separate
 master jams, stamp-clock masking at player-noise emission, interval integration
 for footsteps, and living auditors' actual inspection movement with a visible
-missed-deadline state. The six new host contract tests and existing campaign
-schema checks pass. C++ and Unreal execution remain pending while the frozen
-native cohort runs. The [press-hall record](qualification/press-hall.md)
-separates this blockout from the unfinished catwalk, patrol cadence, lamp
-response, sound, art and ordinary encounter checks.
+missed-deadline state. Remote CI passes at `43e8d89`, including the C++ press
+rules and unchanged climb/flood layout baselines. A subsequent source addition
+gives the three hanging die lamps arrow-only impacts and a five-second delay
+before the nearest guard becomes suspicious. Seven host contract tests and
+the campaign schema checks pass; the added lamp rules and all Unreal execution
+remain pending. The [press-hall record](qualification/press-hall.md) separates
+this blockout from the unfinished catwalk, patrol cadence, sound, art and
+ordinary encounter checks.
 
 ## October 25 separate desk copies and actual crate CPU evidence
 

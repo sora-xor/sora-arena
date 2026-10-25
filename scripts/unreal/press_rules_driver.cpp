@@ -1,4 +1,5 @@
 #include "SoraPressRules.h"
+#include "SoraStealthRules.h"
 #include <cassert>
 #include <cstdint>
 #include <iostream>
@@ -46,5 +47,20 @@ int main()
     assert(P::MaskedBetween(Long,Long+1600)==500);
     assert(P::Scale(1500,200)==300&&P::Scale(1000,200)==200&&P::Scale(0,200)==0);
     assert(P::Scale(std::numeric_limits<int>::max(),1000)==std::numeric_limits<int>::max());
-    std::cout<<"Press rules: exact stamp boundaries, long intervals, 30/60/144 Hz partitions and independent master jams passed\n";
+    assert(!P::LampNoticeDue(5000,-1)&&!P::LampNoticeDue(4999,0)&&P::LampNoticeDue(5000,0));
+    assert(!P::LampNoticeDue(Long+4999,Long)&&P::LampNoticeDue(Long+5000,Long));
+    namespace S=SoraStealthRules;
+    const auto Vigil=S::Detection(1000,350,25000);
+    auto Mind=S::Disturbed(S::Calm(),Vigil);
+    assert(Mind.State==S::EState::Suspicious&&Mind.Awareness==350*S::AwarenessScale);
+    S::FSenses None{}; None.HealthPermille=1000; None.Alarmist=true;
+    Mind=S::Step(Mind,None,16,Vigil);
+    assert(Mind.State==S::EState::Suspicious); // Auditors do not raise the alarm for a broken lamp.
+    for(auto State:{S::EState::Search,S::EState::Alert,S::EState::Combat,S::EState::Retreat})
+    {
+        auto Prior=S::Enter(S::Calm(),State,700*S::AwarenessScale); Prior.StateMs=1234;
+        const auto After=S::Disturbed(Prior,Vigil);
+        assert(After.State==Prior.State&&After.Awareness==Prior.Awareness&&After.StateMs==Prior.StateMs);
+    }
+    std::cout<<"Press rules: exact stamp boundaries, long intervals, 30/60/144 Hz partitions, independent master jams and delayed lamp suspicion passed\n";
 }

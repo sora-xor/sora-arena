@@ -70,6 +70,9 @@ public:
     void HearAlarm(const FVector& Where);
     // A body found in the zone: the finder searches around it, the others where they stand.
     void LearnOfBody(const FVector& Where, bool bFinder);
+    // A changed object makes a calm guard investigate its position, without
+    // exposing the player's position or turning an auditor's alarm on.
+    void NoticeTampering(const FVector& Where);
     // A guard's start in a zone that has just opened (SoraStealthRules::Posted).
     void EnterZone(bool bCarriedOver);
     // On a patrol or post rather than in a hunting wave: the stealth zone's guard.

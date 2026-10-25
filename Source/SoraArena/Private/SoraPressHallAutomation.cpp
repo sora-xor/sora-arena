@@ -4,6 +4,7 @@
 #include "SoraPressRules.h"
 #include "SoraEnemy.h"
 #include "SoraEnemyController.h"
+#include "SoraProjectile.h"
 #include "Combat/SoraEnemyCatalog.h"
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -173,6 +174,78 @@ bool FSoraPressNoiseTest::RunTest(const FString& Parameters)
     Brain->BeginPatrol(Route); Brain->HearAlarm(Origin);
     TestTrue(TEXT("An alarm remains an alarm inside a stamp window"),Brain->AwarenessPermille()>0);
     AddInfo(TEXT("Directed real perception test with sight disabled; source loudness is fixed at emission, separate from listener scheduling."));
+    return true;
+}
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraPressLampTest,"SoraArena.Campaign.PressDieLamps",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraPressLampTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;
+    using namespace SoraPressAutomation;
+    if(!FSoraCatalog::Get().Load()) return false;
+    FBeatWorld W(*this,TEXT("PressDieLamps"),5,10);
+    if(!W.Start()) return false;
+    W.Harden(); FreezeGuards(W);
+    auto* Craft=W.Fieldcraft();
+    if(!TestEqual(TEXT("Each master has its own die lamp"),Craft->Lamps().Num(),3)) return false;
+    auto* Lamp=Craft->Lamps()[0].Get();
+    if(!TestNotNull(TEXT("The first die lamp exists"),Lamp)) return false;
+    TestTrue(TEXT("The die lens hangs above the press crown"),FMath::IsNearlyEqual(Lamp->Glow().Z,420.f));
+    FSoraEnemyTuning Tune; Tune.SightCm=1; Tune.DarkSightCm=0; Tune.HearingCm=0;
+    FSoraPatrolRoute Route;
+    auto* Near=ASoraEnemy::SpawnArchetype(*W.World->GetTestWorld(),TEXT("auditor"),0,
+        Lamp->GetActorLocation()+FVector(0,-700,100),FRotator::ZeroRotator,&Route,&Tune);
+    auto* Far=ASoraEnemy::SpawnArchetype(*W.World->GetTestWorld(),TEXT("auditor"),1,
+        Lamp->GetActorLocation()+FVector(0,1000,100),FRotator::ZeroRotator,&Route,&Tune);
+    if(!TestNotNull(TEXT("The nearest auditor spawns"),Near)||!TestNotNull(TEXT("The second auditor spawns"),Far)) return false;
+    auto* NearBrain=Cast<ASoraEnemyController>(Near->GetController());
+    auto* FarBrain=Cast<ASoraEnemyController>(Far->GetController());
+    if(!TestNotNull(TEXT("Nearest auditor brain"),NearBrain)||!TestNotNull(TEXT("Second auditor brain"),FarBrain)) return false;
+    Near->GetCharacterMovement()->SetComponentTickEnabled(false);
+    Far->GetCharacterMovement()->SetComponentTickEnabled(false);
+    // Contact restrictions are checked separately from actual arrow travel.
+    FHitResult Contact; Contact.ImpactPoint=Lamp->Glow();
+    auto Bullet=FSoraHit::Ranged(W.Hero()->GetActorLocation(),1); Bullet.bHitscan=true;
+    for(auto Hit:{FSoraHit::Melee(W.Hero()->GetActorLocation(),0),Bullet,
+                 FSoraHit::Blast(Lamp->Glow(),1)})
+        SoraDamage::Strike(Lamp,100,Hit,FVector::ForwardVector,Contact,W.Hero()->GetController(),W.Hero());
+    TestTrue(TEXT("Melee, a bullet and a blast leave the die lamp lit"),Lamp->IsLit());
+    const FTransform Launch(FRotator(0,90,0),Lamp->Glow()+FVector(0,-100,0));
+    auto* Arrow=W.World->GetTestWorld()->SpawnActorDeferred<ASoraProjectile>(ASoraProjectile::StaticClass(),Launch,
+        W.Hero(),W.Hero(),ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+    if(!TestNotNull(TEXT("A real arrow is released toward the lens"),Arrow)) return false;
+    Arrow->bArrow=true; Arrow->WeaponId=18; Arrow->Velocity=FVector(0,1000,49);
+    Arrow->FinishSpawning(Launch);
+    for(int I=0;I<20&&Lamp->IsLit();++I) if(!W.Tick(1)) return false;
+    if(!TestFalse(TEXT("The swept arrow impact extinguishes the lens"),Lamp->IsLit())) return false;
+    const int64 OutAt=Craft->PressClock();
+    if(!W.Tick(120)) return false;
+    TestTrue(TEXT("Neither guard becomes suspicious before five seconds"),
+        NearBrain->State()==SoraStealthRules::EState::Unaware&&FarBrain->State()==SoraStealthRules::EState::Unaware);
+    if(!W.Press(EKeys::Escape)) return false;
+    const int64 Paused=Craft->PressClock();
+    if(!W.Tick(360)) return false;
+    TestEqual(TEXT("Pause freezes the pending lamp notice"),Craft->PressClock(),Paused);
+    TestTrue(TEXT("A paused wait cannot deliver the notice"),NearBrain->State()==SoraStealthRules::EState::Unaware);
+    if(!W.Press(EKeys::Escape)) return false;
+    while(Craft->PressClock()-OutAt<4950) if(!W.Tick(1)) return false;
+    TestTrue(TEXT("The nearest guard is still unaware just before the deadline"),NearBrain->State()==SoraStealthRules::EState::Unaware);
+    if(!W.Tick(5)) return false;
+    TestTrue(TEXT("The nearest auditor becomes suspicious, without alarming"),NearBrain->State()==SoraStealthRules::EState::Suspicious);
+    TestTrue(TEXT("The farther guard is not informed"),FarBrain->State()==SoraStealthRules::EState::Unaware);
+    TestTrue(TEXT("The evidence is the lamp, not the hero's hidden position"),NearBrain->LastKnownLocation().Equals(Lamp->Glow(),.01f));
+    NearBrain->Rouse(Lamp->Glow()); NearBrain->NoticeTampering(Lamp->Glow());
+    TestTrue(TEXT("A broken light never downgrades an alert"),NearBrain->State()==SoraStealthRules::EState::Alert);
+    FBeatWorld::Hurt(*W.Hero(),W.Hero()->Health+1000.f);
+    if(!W.Tick(2)||!W.Press(EKeys::Enter)) return false;
+    W.Harden(); FreezeGuards(W);
+    TestTrue(TEXT("Retry restores all three lamps"),Craft->Lamps().Num()==3&&
+        Craft->Lamps()[0]->IsLit()&&Craft->Lamps()[1]->IsLit()&&Craft->Lamps()[2]->IsLit());
+    if(!W.Tick(360)) return false;
+    for(TActorIterator<ASoraEnemy> It(W.World->GetTestWorld());It;++It)
+        if(auto* Brain=Cast<ASoraEnemyController>(It->GetController()))
+            TestTrue(TEXT("Retry discards the previous lamp notice"),Brain->State()==SoraStealthRules::EState::Unaware);
+    AddInfo(TEXT("Directed collision and delay fixture with sight/hearing isolated. It does not qualify ordinary bow aiming, art or encounter difficulty."));
     return true;
 }
 #endif

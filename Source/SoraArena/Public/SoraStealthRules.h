@@ -362,6 +362,15 @@ constexpr FMind Posted(bool CarriedOver)
     return Mind;
 }
 
+// A tampered light is evidence to investigate, even for an alarmist. It
+// reveals no hero and never lowers an existing search, alert or combat.
+constexpr FMind Disturbed(FMind Mind,FVigilance Vigilance)
+{
+    if(Mind.State!=EState::Unaware&&Mind.State!=EState::Suspicious) return Mind;
+    return Enter(Mind,EState::Suspicious,
+        Mind.Awareness>Vigilance.SuspicionThreshold?Mind.Awareness:Vigilance.SuspicionThreshold);
+}
+
 constexpr int RatePermille(const FMind& Mind, FVigilance Vigilance)
 {
     return Vigilance.RatePermille * (Mind.Wary ? Vigilance.WaryRatePermille : 1000) / 1000;

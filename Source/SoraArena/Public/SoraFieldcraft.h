@@ -49,6 +49,8 @@ private:
     float GlowHeight = 150.f;
     float Intensity = 0.f;
     bool bShootable = false;
+    bool bArrowOnly = false;
+    FLinearColor LitColor=FLinearColor(1.f,.62f,.25f);
 };
 
 // A tsubute stone in flight on its arc. Where it lands the guards hear it
@@ -378,12 +380,16 @@ private:
         TWeakObjectPtr<ASoraEnemy> Guard;
     };
     FPressInspection PressInspections[3];
+    int64 PressLampOutMs[3]={-1,-1,-1};
+    bool PressLampNoticed[3]={false,false,false};
     TArray<TWeakObjectPtr<UStaticMeshComponent>> PressPlatens;
     void StagePressHall(const FSoraBeat& Beat);
     void ClearPressHall();
     void TickPressHall(int32 DeltaMs);
     FVector PressCenter(int32 Index) const;
     bool NearRunningPress(const FVector& Origin) const;
+    void PressLampExtinguished(int32 Index);
+    void TickPressLamps();
     enum class EHoldKind : uint8 { None, Snuff, Companion, Release, NetCut, Relight };
     struct FHold
     {

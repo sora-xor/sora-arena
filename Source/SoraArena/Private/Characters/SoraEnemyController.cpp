@@ -214,6 +214,16 @@ void ASoraEnemyController::EnterZone(bool bCarriedOver)
         Enter(*Enemy, Previous, WorldMs());
 }
 
+void ASoraEnemyController::NoticeTampering(const FVector& Where)
+{
+    auto* Enemy=GetPawn<ASoraEnemy>();
+    if(!Enemy||!Enemy->IsAlive()||bHunting||
+        (Mind.State!=Stealth::EState::Unaware&&Mind.State!=Stealth::EState::Suspicious)) return;
+    const auto Previous=Mind.State;
+    Mind=Stealth::Disturbed(Mind,Vigilance()); LastKnown=Where; ClearErrand();
+    Enter(*Enemy,Previous,WorldMs());
+}
+
 Stealth::FVigilance ASoraEnemyController::Vigilance() const
 {
     // A hunting wave never obeys a zone.

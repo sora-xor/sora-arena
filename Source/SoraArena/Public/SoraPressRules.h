@@ -7,6 +7,9 @@ namespace SoraPressRules
 {
 constexpr int Count=8, PeriodMs=1600, WindowMs=500, RadiusCm=800;
 constexpr int NoisePermille=200, InspectionMs=20000, JamMs=4000;
+constexpr int LampSuspicionMs=5000;
+constexpr bool LampNoticeDue(long long Now,long long Extinguished)
+{ return Extinguished>=0&&Now>=Extinguished&&Now-Extinguished>=LampSuspicionMs; }
 struct FPoint { int X,Y; };
 constexpr FPoint Centers[Count]={{800,500},{1800,500},{2800,500},
     {800,1200},{1800,1200},{2800,1200},{1200,1900},{2400,1900}};

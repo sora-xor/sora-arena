@@ -34,10 +34,11 @@ bool SoraCatalogPress::Read(const FJsonObject& O,FSoraBeat& Beat,const FSoraSpac
         !Beat.Is(SoraBeatRules::EType::StealthZone)||Beat.Place!=TEXT("pl_press_hall")||
         B.Objectives.Num()!=4||Beat.Objectives.Num()!=4||Beat.ObjectiveHoldMs.Num()!=4||Beat.ObjectiveHoldMs[3]!=0) return false;
     const auto H=V->AsObject(); const auto& Zone=Space.Zones[B.Zone]; const FVector2D Origin=Zone.Rect.Min;
-    if(H->Values.Num()!=7||Zone.Rect.GetSize()!=FVector2D(4200,2400)||!Zone.Cover.IsEmpty()||
+    if(H->Values.Num()!=8||Zone.Rect.GetSize()!=FVector2D(4200,2400)||!Zone.Cover.IsEmpty()||
         !Point(*H,TEXT("origin_cm"),Origin)||!Number(*H,TEXT("period_ms"),Press::PeriodMs)||
         !Number(*H,TEXT("window_ms"),Press::WindowMs)||!Number(*H,TEXT("radius_cm"),Press::RadiusCm)||
-        !Number(*H,TEXT("noise_permille"),Press::NoisePermille)||!Number(*H,TEXT("inspection_ms"),Press::InspectionMs)) return false;
+        !Number(*H,TEXT("noise_permille"),Press::NoisePermille)||!Number(*H,TEXT("inspection_ms"),Press::InspectionMs)||
+        !Number(*H,TEXT("lamp_suspicion_ms"),Press::LampSuspicionMs)) return false;
     const auto Items=Rows(*H,TEXT("presses")); if(!Items||Items->Num()!=Press::Count) return false;
     static const TCHAR* Names[]={TEXT("press_a1"),TEXT("press_a2"),TEXT("press_a3"),TEXT("press_b1"),
         TEXT("press_b2"),TEXT("press_b3"),TEXT("press_c1"),TEXT("press_c2")};
@@ -54,6 +55,14 @@ bool SoraCatalogPress::Read(const FJsonObject& O,FSoraBeat& Beat,const FSoraSpac
             Beat.Objectives[Objective]!=Id||B.Objectives[Objective]!=Center-FVector2D(0,240))) return false;
     }
     if(Beat.Objectives[3]!=TEXT("exit")||B.Objectives[3]!=Origin+FVector2D(4000,200)) return false;
+    if(B.Fieldcraft.Lamps.Num()!=3) return false;
+    for(int I=0;I<3;++I)
+    {
+        const auto& Lamp=B.Fieldcraft.Lamps[I]; const auto Center=Press::Centers[Press::Master[I]];
+        const FString Name=FString(TEXT("l_die_lamp_"))+FString(Names[Press::Master[I]]).RightChop(6);
+        if(Lamp.Id!=Name||Lamp.Kind!=TEXT("die")||Lamp.At!=Origin+FVector2D(Center.X,Center.Y)||
+            Lamp.RadiusCm!=700||Lamp.Snuff!=FSoraLamp::ESnuff::Shot||Lamp.HoldMs!=0||Lamp.RelightMs!=0) return false;
+    }
     B.PressHall.bEnabled=true; B.PressHall.Origin=Origin;
     return true;
 }

@@ -26,7 +26,7 @@ class PressContract(unittest.TestCase):
         self.assertEqual(self.beat['task']['objective_hold_ms'],[4000,4000,4000,0])
 
     def test_numeric_drift_missing_keys_and_extra_keys_are_rejected(self):
-        for field in ('period_ms','window_ms','radius_cm','noise_permille','inspection_ms'):
+        for field in ('period_ms','window_ms','radius_cm','noise_permille','inspection_ms','lamp_suspicion_ms'):
             for value in (None,True,0,-1,'1600',self.hall[field]+1):
                 with self.subTest(field=field,value=value):
                     saved=self.hall[field]; self.hall[field]=value
@@ -71,6 +71,18 @@ class PressContract(unittest.TestCase):
             for press in self.hall['presses']:
                 x,y=press['center_cm']
                 self.assertTrue(abs(point[0]-x)>=242 or abs(point[1]-y)>=192,(point,press['id']))
+
+    def test_die_lamps_retain_arrow_only_five_second_notice_and_master_positions(self):
+        for edit in (lambda c:c['params']['light_sources'][0].update(suspicion_delay_s=4),
+                     lambda c:c['params']['light_sources'][1].update(extinguishable=False),
+                     lambda c:c['params']['light_sources'].pop()):
+            b=copy.deepcopy(self.beat);edit(b)
+            with self.assertRaises(ValueError):contract(b,self.hall['origin_cm'])
+        for field,value in [('kind','lamp'),('at',[0,0]),('snuff','hold'),('relight_ms',1000),('radius_cm',701)]:
+            c=copy.deepcopy(self.chapter)
+            r=next(r for r in c['space']['beats'] if r['beat']=='ch06.b11')
+            r['fieldcraft']['lamps'][0][field]=value
+            self.assertFalse(press_hall_valid(c),(field,value))
 
 
 if __name__=='__main__':unittest.main()

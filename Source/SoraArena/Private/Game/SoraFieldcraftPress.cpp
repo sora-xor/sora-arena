@@ -74,6 +74,7 @@ void USoraFieldcraft::ClearPressHall()
         Inspection=FPressInspection{};
     }
     PressHall=nullptr; PressClockMs=0; JammedPresses=0; PressPlatens.Reset();
+    for(int I=0;I<3;++I) { PressLampOutMs[I]=-1; PressLampNoticed[I]=false; }
 }
 void USoraFieldcraft::StagePressHall(const FSoraBeat& Beat)
 {
@@ -120,9 +121,36 @@ bool USoraFieldcraft::PressInspectionOverdue(int32 Objective) const
 ASoraEnemy* USoraFieldcraft::PressInspector(int32 Objective) const
 { return PressHall&&Objective>=0&&Objective<3?PressInspections[Objective].Guard.Get():nullptr; }
 
+void USoraFieldcraft::PressLampExtinguished(int32 Index)
+{
+    if(PressHall&&Index>=0&&Index<3&&PressLampOutMs[Index]<0)
+        PressLampOutMs[Index]=PressClockMs;
+}
+void USoraFieldcraft::TickPressLamps()
+{
+    for(int I=0;I<3;++I)
+    {
+        if(PressLampNoticed[I]||!Press::LampNoticeDue(PressClockMs,PressLampOutMs[I])) continue;
+        PressLampNoticed[I]=true;
+        const FVector At=PressCenter(Press::Master[I])+FVector(0,0,420);
+        ASoraEnemyController* Nearest=nullptr; float Distance=MAX_flt;
+        for(TActorIterator<ASoraEnemy> It(GetWorld());It;++It)
+        {
+            auto* Brain=Cast<ASoraEnemyController>(It->GetController());
+            if(!It->IsAlive()||!Brain||!Brain->IsGuard()) continue;
+            const float D=FVector::DistSquared(It->GetActorLocation(),At);
+            if(D<Distance) { Distance=D; Nearest=Brain; }
+        }
+        // Existing alert/search/combat is stronger evidence and is preserved.
+        if(Nearest) Nearest->NoticeTampering(At);
+        if(!PressHall) return;
+    }
+}
+
 void USoraFieldcraft::TickPressHall(int32 DeltaMs)
 {
     if(!PressHall||DeltaMs<=0) return;
+    TickPressLamps(); if(!PressHall) return;
     const int32 Phase=Press::Phase(PressClockMs);
     // Stamp/dwell, return, then drop. The same clock gates noise and motion.
     const float Z=Phase<150?80.f:Phase<500?FMath::Lerp(80.f,250.f,(Phase-150)/350.f):
@@ -137,8 +165,9 @@ void USoraFieldcraft::TickPressHall(int32 DeltaMs)
         const FVector Feet=Center+FVector(0,-240,0);
         ASoraEnemy* Guard=Work.Guard.Get();
         auto* Brain=Guard?Cast<ASoraEnemyController>(Guard->GetController()):nullptr;
-        if(Guard&&(!Guard->IsAlive()||!Brain||!Brain->HasErrand()))
+        if(Guard&&(!Guard->IsAlive()||!Brain||!Brain->HasErrand()||Brain->State()!=SoraStealthRules::EState::Unaware))
         {
+            if(Brain) Brain->ClearErrand();
             Work.Guard.Reset(); Guard=nullptr; Brain=nullptr;
             if(Work.ArrivedMs>=0) { Work.bFinished=true; continue; }
         }
@@ -161,7 +190,7 @@ void USoraFieldcraft::TickPressHall(int32 DeltaMs)
         {
             auto* Candidate=Cast<ASoraEnemyController>(It->GetController());
             if(!It->IsAlive()||It->ArchetypeId()!=TEXT("auditor")||!Candidate||!Candidate->IsGuard()||
-                Candidate->HasErrand()||!SoraStealthRules::IsCalm(Candidate->State())) continue;
+                Candidate->HasErrand()||Candidate->State()!=SoraStealthRules::EState::Unaware) continue;
             const float D=FVector::DistSquared(It->GetActorLocation(),Feet);
             if(D<Distance) { Distance=D; Guard=*It; Brain=Candidate; }
         }

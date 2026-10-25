@@ -29,11 +29,20 @@ calm auditor receives a real navigation errand to the jammed master. An
 unreachable path cannot count as arrival. The twenty-second deadline and
 actual arrival are recorded separately, so a blocked or delayed inspection
 cannot silently become a passing timed event. An unavailable auditor remains
-pending; detection takes precedence over the calm inspection. The first jam
+pending; suspicion, search and detection take precedence over inspection. The first jam
 and dispatch raise their authored dialogue events.
 
+The source also places a hanging 5,500 K die lamp above each master. Its lens
+requires a swept arrow impact; bullets, melee and blast do not extinguish it.
+Five seconds of encounter time after it goes dark, the nearest living guard
+becomes suspicious of the lamp's location. An auditor does not raise an alarm
+from this alone, and an existing search or alert is not downgraded. Pause
+freezes the delay; retry clears it and restores the lamps. This behavior has
+an additional prepared `PressDieLamps` collision/delay fixture and remains
+uncompiled and unrun in Unreal.
+
 The source includes integer rule tests for exact window boundaries, long
-intervals, 30/60/144 Hz partitions and independent master state. Six Python
+intervals, 30/60/144 Hz partitions and independent master state. Seven Python
 contract tests pass, including malformed numbers, reordered or missing
 machines, altered authored rules and footprint clearance at work/patrol
 points. Campaign generation and the existing schema validator pass all 133
@@ -49,7 +58,7 @@ data. The three new engine fixtures (`PressHall`, `PressInspection`,
 
 This is still a functional blockout. The north-west catwalk/ladder entry,
 elevated enforcer, authored 45/30-second patrol loops, die-lamp suspicion after
-five seconds, synchronized stamp audio/music, final machines and dressing,
+five seconds in actual play, synchronized stamp audio/music, final machines and dressing,
 ordinary stealth difficulty, fresh-world save reload, full campaign regression
 and current packages remain open. The entry is explicitly provisional floor
 access; neither these host checks nor the prepared engine fixtures establish

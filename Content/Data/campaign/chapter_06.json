@@ -12015,39 +12015,39 @@
      "lamps": [
       {
        "id": "l_die_lamp_a2",
-       "kind": "lamp",
-       "radius_cm": 700,
-       "snuff": "shot",
-       "hold_ms": 0,
-       "relight_ms": 0,
+       "kind": "die",
        "at": [
         43600,
         -700
-       ]
+       ],
+       "radius_cm": 700,
+       "snuff": "shot",
+       "hold_ms": 0,
+       "relight_ms": 0
       },
       {
        "id": "l_die_lamp_b2",
-       "kind": "lamp",
-       "radius_cm": 700,
-       "snuff": "shot",
-       "hold_ms": 0,
-       "relight_ms": 0,
+       "kind": "die",
        "at": [
         43600,
         0
-       ]
-      },
-      {
-       "id": "l_die_lamp_c1",
-       "kind": "lamp",
+       ],
        "radius_cm": 700,
        "snuff": "shot",
        "hold_ms": 0,
-       "relight_ms": 0,
+       "relight_ms": 0
+      },
+      {
+       "id": "l_die_lamp_c1",
+       "kind": "die",
        "at": [
         43000,
         700
-       ]
+       ],
+       "radius_cm": 700,
+       "snuff": "shot",
+       "hold_ms": 0,
+       "relight_ms": 0
       }
      ],
      "surfaces": [
@@ -12111,6 +12111,7 @@
      "radius_cm": 800,
      "noise_permille": 200,
      "inspection_ms": 20000,
+     "lamp_suspicion_ms": 5000,
      "presses": [
       {
        "id": "press_a1",
