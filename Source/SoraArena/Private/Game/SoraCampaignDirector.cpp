@@ -462,7 +462,7 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     CancelCopying();
     SpineCut={}; SpineReadyMs=0; bSpinePromptShown=false; bSpineMutoRaised=false;
     BulkheadHold={}; BulkheadClock.Reset();
-    PendingSummitPhaseSave=INDEX_NONE;
+    PendingSummitPhaseSave=INDEX_NONE; PendingArchivePhaseSave=INDEX_NONE;
     ResetCarryWork();
     StopPlayerCrank(false);
     RhythmClock={}; RhythmInput={}; RhythmCueShown=-1; RhythmStrikeMs=-1;
@@ -720,6 +720,14 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
     CheckPhase();
     if(ActiveBeatData()!=&Beat) return;
     SaveArrivedSummitPhase();
+    // The archive's family-page checkpoint belongs after its blocking reveal.
+    // Quitting or dying during the exchange must still restore phase one.
+    if(PendingArchivePhaseSave!=INDEX_NONE&&!IsDialogueBlocking())
+    {
+        const bool Ready=Beat.Id==TEXT("ch06.b09")&&BeatPhase==PendingArchivePhaseSave;
+        PendingArchivePhaseSave=INDEX_NONE;
+        if(Ready) SaveCheckpoint();
+    }
     TickSupplyHint();
     const int32 Before=SoraBeatRules::ProgressPermille(TaskState,Task);
     SoraBeatRules::FTick Step;
@@ -1021,6 +1029,7 @@ void USoraCampaignDirector::EnterPhases(int32 Before,bool bSave)
     if(bSave&&BeatPhase<=ActiveChapter()->Rules[BeatIndex].PhaseCheckpoints)
     {
         if(Beat.Space.Summit.Enabled()) PendingSummitPhaseSave=BeatPhase;
+        else if(Beat.Id==TEXT("ch06.b09")) PendingArchivePhaseSave=BeatPhase;
         else SaveCheckpoint();
     }
     BroadcastBeat(true,false);

@@ -56,3 +56,10 @@ uses directed story damage, checks the real light and blocking dialogue,
 reloads the actual mid-duel save, and checks the pledge. It has not compiled
 or run. This does not implement the authored rack impact, character animation,
 readable slate artwork or the final cinematic camera.
+
+Source review also found that the family-page phase was saved immediately,
+allowing a quit during its blocking exchange to restore after the reveal.
+The candidate now leaves the earlier checkpoint in place while dialogue holds
+combat and saves the second phase once control returns. The prepared fixture
+checks disk state before and after that boundary, then reloads the resulting
+save. This timing correction still awaits engine execution.

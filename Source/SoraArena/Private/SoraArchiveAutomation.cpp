@@ -103,8 +103,13 @@ bool FSoraArchiveFamilyPageTest::RunTest(const FString&)
         if(!W.Tick(2)||!TestEqual(TEXT("Actual opponent health enters the family-page phase"),W.Campaign()->ActivePhase(),1)||
             !PageIsLit(W,true)) return false;
         TestTrue(TEXT("The family-page dialogue holds combat"),W.Campaign()->IsDialogueBlocking()&&!W.Hero()->CanPlay());
+        const auto* BeforeReveal=Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(W.Slot,0));
+        if(!TestTrue(TEXT("Quitting during the reveal still resumes before the exchange"),
+            BeforeReveal&&BeforeReveal->CheckpointChapter==5&&BeforeReveal->CheckpointBeat==8&&BeforeReveal->CheckpointPhase==0)) return false;
+        for(int I=0;I<1800&&W.Campaign()->IsDialogueBlocking();++I) if(!W.Tick(1)) return false;
+        if(!TestFalse(TEXT("The authored reveal releases control"),W.Campaign()->IsDialogueBlocking())||!W.Tick(2)) return false;
         const auto* Saved=Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(W.Slot,0));
-        if(!TestTrue(TEXT("The actual mid-duel checkpoint was saved"),Saved&&Saved->CheckpointChapter==5&&Saved->CheckpointBeat==8&&Saved->CheckpointPhase==1)) return false;
+        if(!TestTrue(TEXT("Only the completed reveal saves the actual mid-duel checkpoint"),Saved&&Saved->CheckpointChapter==5&&Saved->CheckpointBeat==8&&Saved->CheckpointPhase==1)) return false;
         W.Fieldcraft()->OnEvent.Remove(W.EventsHandle);
         W.World->DestroyTestWorld(true);W.World->ForwardErrorMessages(this);W.World.Reset();
         W.World=MakeUnique<FSoraAutomationWorld>();

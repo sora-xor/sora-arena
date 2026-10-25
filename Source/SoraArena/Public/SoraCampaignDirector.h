@@ -414,6 +414,7 @@ private:
     void TickBulkhead(float DeltaSeconds);
     int32 SpineReadyMs=0;
     int32 PendingSummitPhaseSave=INDEX_NONE;
+    int32 PendingArchivePhaseSave=INDEX_NONE;
     void SaveArrivedSummitPhase();
     bool bSpinePromptShown=false,bSpineMutoRaised=false;
     bool IsSpineCapture() const;
