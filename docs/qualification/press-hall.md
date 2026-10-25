@@ -1,16 +1,39 @@
 # Press stamp masking and silent-machine inspection
 
-This is a source candidate for chapter 6, beat 11, integrated at signed
-`2b911eab06cc9253be81a37202e8e387d32c5040`. It has not been compiled or
-exercised in Unreal. Its exact-source CI run
-[40217693425](https://github.com/sora-xor/sora-arena/actions/runs/40217693425)
-passes all 108 checks in five jobs. Artifact hashes, raw logs, the signed source
-and unchanged tested tree were independently verified; review digest
-`3840c1a61a85c6d518a75bddfc505af4c8ceced1714423a45382903e357f876f`.
-No local compiler, Unreal or Blender job ran for this source during the native
-cohort. The prior `56bdcfe` copying/candle/assisted-campaign regression has since
-passed. Claude now owns the engine/Blender slot; press runtime checks follow
-its return. Source CI does not establish the pending Unreal behavior.
+The first Unreal run on signed `c3fcf8ef42bd7f34cfff61cd8f5235be971684f6`
+built successfully in 25.72 seconds on the pinned Mac toolchain. It ran all
+13 selected NullRHI tests and exited naturally with editor status 3 and
+wrapper status 1: eight passed and five failed. The failed report is retained
+at `Saved/Qualification/2026-10-25/press-c3fcf8e-runtime-attempt1`.
+Its 20 evidence files, source/native inputs, generated content and configuration
+were independently checked; review SHA-256:
+`0cc4a03c645beffca69cb2bdb2f9160b3cd90fc45ce355495ccba7536e70b624`.
+
+Passing fixtures were PressHall, PressInspection, PressNoiseEmission,
+PressDieLamps, PressPatrolCadence, PressPatrolBlocked, CopyDesks and Candle.
+The first six establish only their directed conditions with isolated senses
+or frozen guards, not ordinary stealth difficulty or visual quality.
+
+Failures remain explicit:
+
+- PressCheckpointReload and PressExit tried to rebind Interact while playing;
+  the controls API correctly refused. Their setups now open the controls menu.
+- PressCatwalk exceeded its 150 cm/s movement bound at the landing. The next
+  candidate ends at the character movement component's normal floor clearance
+  instead of six centimetres above the deck, avoiding an extra floor snap.
+- PressCatwalkPatrol did not reach all corners. The fixture now uses the same
+  capsule-adjusted, three-dimensional route setup as the authored enforcer
+  and records its final position and reached corners. No navigation fix or
+  successful circuit is claimed yet.
+- Assisted Playthrough stopped at the held objective in chapter 6 beat 11.
+  The next candidate records held-input and physical-state diagnostics; the
+  cause and full campaign result remain open.
+
+These corrections and diagnostics have not yet been compiled or run. The
+implementation description below records intended behavior; where it says
+execution is pending, the first-run results above take precedence. Prior
+exact-source Linux CI at `2b911ea` passed all 108 source checks; source CI does
+not establish Unreal behavior.
 
 The previous encounter credited three four-second held objectives, but had
 no running presses, stamp masking or silent-machine inspection. The candidate

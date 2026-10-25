@@ -42,7 +42,7 @@ ASoraEnemy* SpawnPatrolFixture(FBeatWorld& W,int GuardIndex)
     Route.PeriodMs=Press::PatrolPeriod(GuardIndex); Route.PauseMs=Press::PatrolDwell(GuardIndex);
     Route.bThreeDimensional=true; if(GuardIndex<2) Route.PauseFacing=FVector(0,1,0);
     FSoraEnemyTuning Tune; Tune.SightCm=1; Tune.DarkSightCm=0; Tune.HearingCm=0;
-    auto* Guard=ASoraEnemy::SpawnArchetype(*W.World->GetTestWorld(),GuardIndex<2?TEXT("auditor"):TEXT("drone"),GuardIndex,
+    auto* Guard=ASoraEnemy::SpawnArchetype(*W.World->GetTestWorld(),GuardIndex<2?TEXT("auditor"):GuardIndex==5?TEXT("drone"):TEXT("enforcer_rifle"),GuardIndex,
         Route.Points[0],FRotator::ZeroRotator,&Route,&Tune);
     if(!Guard) return nullptr;
     for(auto& Point:Route.Points)
@@ -317,7 +317,8 @@ bool FSoraPressReloadTest::RunTest(const FString& Parameters)
     FBeatWorld W(*this,TEXT("PressCheckpointReload"),5,10);
     if(!W.Start()) return false;
     W.Harden(); FreezeGuards(W);
-    if(!TestTrue(TEXT("Mapped Interact is available"),W.Hero()->RemapCombatAction(TEXT("Interact"),EKeys::G))) return false;
+    if(!W.Press(EKeys::Escape)||!TestTrue(TEXT("The menu rebinds Interact"),W.Hero()->RemapCombatAction(TEXT("Interact"),EKeys::G))||
+        !W.Press(EKeys::Escape)) return false;
     FloorFixture(W,FVector(W.BeatData().Space.Objectives[0],0),90);
     if(!W.Tick(2)||!WaitForPressDialogue(W)||!W.Hold(EKeys::G,270)||!WaitForPressDialogue(W)) return false;
     if(!TestTrue(TEXT("The original world has one jam and an unfinished inspection"),
@@ -406,6 +407,7 @@ bool FSoraPressCatwalkTest::RunTest(const FString& Parameters)
         LargestStep=FMath::Max(LargestStep,float(FVector::Dist(Before,Player->GetActorLocation())));
     }
     if(!W.Tick(5)) return false;
+    AddInfo(FString::Printf(TEXT("Largest ascent step: %.6f cm"),LargestStep));
     TestTrue(TEXT("The full ascent and step onto the deck remain bounded by 150 cm/s"),LargestStep<=2.6f);
     TestTrue(TEXT("Ascent ends on the supported catwalk with ordinary movement restored"),
         !Craft->IsOnLadder()&&Player->GetCharacterMovement()->IsMovingOnGround()&&FVector::Dist(Feet(*Player),Top)<5.f&&W.Raised(TEXT("roof_reached:press_nw")));
@@ -446,9 +448,7 @@ bool FSoraPressCatwalkPatrolTest::RunTest(const FString& Parameters)
     FSoraPatrolRoute Route;
     for(const auto& Point:Press::CatwalkRoute)
         Route.Points.Add(Origin+FVector(Point.X,Point.Y,490));
-    FSoraEnemyTuning Tune; Tune.SightCm=1; Tune.DarkSightCm=0; Tune.HearingCm=0;
-    auto* Guard=ASoraEnemy::SpawnArchetype(*W.World->GetTestWorld(),TEXT("enforcer_rifle"),0,
-        Route.Points[0]+FVector(0,0,30),FRotator(0,-90,0),&Route,&Tune);
+    auto* Guard=SpawnPatrolFixture(W,Press::CatwalkGuard);
     if(!TestNotNull(TEXT("The route fixture has a living rifle enforcer"),Guard)||!W.Tick(60)) return false;
     bool Reached[4]={}; bool Supported=true;
     for(int Frame=0;Frame<9000;++Frame)
@@ -460,6 +460,8 @@ bool FSoraPressCatwalkPatrolTest::RunTest(const FString& Parameters)
             Reached[I]|=FVector::Dist2D(At,Route.Points[I])<=110.f;
         if(Reached[0]&&Reached[1]&&Reached[2]&&Reached[3]) break;
     }
+    AddInfo(FString::Printf(TEXT("Catwalk patrol local feet %s; reached corners %d/%d/%d/%d; velocity %s"),
+        *(Feet(*Guard)-Origin).ToString(),Reached[0],Reached[1],Reached[2],Reached[3],*Guard->GetVelocity().ToString()));
     TestTrue(TEXT("The real patrol reaches all four sides instead of skipping blocked goals"),Reached[0]&&Reached[1]&&Reached[2]&&Reached[3]);
     TestTrue(TEXT("The walker remains supported at catwalk height throughout the circuit"),Supported);
     AddInfo(TEXT("Directed real navigation with this enforcer's sight/hearing disabled. This does not qualify authored auditor/drone cadence or ordinary combat."));
@@ -478,7 +480,8 @@ bool FSoraPressExitTest::RunTest(const FString& Parameters)
     const auto& Space=W.BeatData().Space;
     auto* Craft=W.Fieldcraft(); auto* C=W.Campaign();
     const FVector Exit(Space.Objectives[3],0);
-    if(!TestTrue(TEXT("Mapped Interact is available"),W.Hero()->RemapCombatAction(TEXT("Interact"),EKeys::G))) return false;
+    if(!W.Press(EKeys::Escape)||!TestTrue(TEXT("The menu rebinds Interact"),W.Hero()->RemapCombatAction(TEXT("Interact"),EKeys::G))||
+        !W.Press(EKeys::Escape)) return false;
     FloorFixture(W,Exit);
     if(!W.Tick(5)||!WaitForPressDialogue(W)||!W.Press(EKeys::G)) return false;
     TestEqual(TEXT("Visiting the lift early cannot pre-credit the exit"),C->TaskProgress().Done,0);

@@ -588,6 +588,11 @@ bool WorkAtAnchor(FAutomationTestBase& Test, FState& State)
     bool bHeld = true;
     for (int32 Quarter = 0; Quarter < 40 && bHeld && !Worked(); ++Quarter)
         bHeld = Advance(Test, State, 1, .25f);
+    if(!Worked())
+        Test.AddInfo(FString::Printf(TEXT("Held objective diagnostic: anchor=%s hero=%s velocity=%s grounded=%d key=%d held=%.3f dialogue=%d done=%d mask=%u"),
+            *Anchor.ToString(),*Player(State)->GetActorLocation().ToString(),*Player(State)->GetVelocity().ToString(),
+            Player(State)->GetCharacterMovement()->IsMovingOnGround(),Player(State)->IsActionHeld(TEXT("Interact")),
+            Director->HeldWorkProgress(),Director->IsDialogueBlocking(),Director->TaskProgress().Done,Director->TaskProgress().PointsMask));
     State.World->InjectKey(EKeys::E, IE_Released);
     if (!bHeld || !Advance(Test, State, 1))
         return false;

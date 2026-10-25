@@ -70,8 +70,12 @@ bool USoraFieldcraft::PressLadderJump(ASoraPlayerCharacter& Player)
     if(!AtPressLadder(Player,bUp)) return false;
     const FVector Origin(PressHall->Origin,0);
     const FVector Foot=Origin+FVector(Press::LadderFoot.X,Press::LadderFoot.Y,2);
-    const FVector Above=Origin+FVector(Press::LadderFoot.X,Press::LadderFoot.Y,Press::CatwalkHeightCm+6);
-    const FVector Top=Origin+FVector(Press::LadderTop.X,Press::LadderTop.Y,Press::CatwalkHeightCm+6);
+    // End at the walking capsule's normal floor clearance. Starting walking
+    // six centimetres above the deck caused its floor adjustment to snap
+    // downward outside the ladder's per-frame movement budget.
+    const float Clearance=(UCharacterMovementComponent::MIN_FLOOR_DIST+UCharacterMovementComponent::MAX_FLOOR_DIST)*.5f;
+    const FVector Above=Origin+FVector(Press::LadderFoot.X,Press::LadderFoot.Y,Press::CatwalkHeightCm+Clearance);
+    const FVector Top=Origin+FVector(Press::LadderTop.X,Press::LadderTop.Y,Press::CatwalkHeightCm+Clearance);
     PressLadderFeet=bUp?TArray<FVector>{Foot,Above,Top}:TArray<FVector>{Top,Above,Foot};
     PressLadderStep=0; bPressLadderUp=bUp; bPressFalling=false;
     Player.StopSprint(); Player.ConsumeMovementInputVector();
