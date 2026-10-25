@@ -33,14 +33,50 @@ import math
 
 import numpy as np
 
+import yumi_draw as YD
+import yumi_nigiri as NG
+
 # ---------------------------------------------------------------------------
-# The grip, as measured from the W18 rig's rest vertices (2026-10-25): the
-# deerskin nigiri wraps the stave from z -0.052 to +0.048 as a rounded
-# rectangle of half-depth 16.6 mm (X) and half-width 18.2 mm (Y); the lacquered
-# stave runs on above and below it, 11.8 x 13.9 mm.
+# The grip, from the W18 generator's own section, so the paw follows the bow
+# it holds. v1-v3 hardcoded two prisms measured from the first rig (nigiri
+# 16.6 x 18.2 mm, stave 11.8 x 13.9 mm). Codex (2026-10-25): the rebuilt,
+# thinner wrap would leave the paw floating, and the stave tapers about 1 mm
+# over the dewclaw's height, which a prism cannot follow.
+# - The stave: yumi_draw.thickness(z), the generator's rounded rectangle
+#   (POWER 4.6), straight along Z this near the grip (its centre sits at
+#   x = 0.000 mm on the rig).
+# - The nigiri over it: yumi_nigiri. The underlay at its shoulder height, plus
+#   the strip's full height (THICK_M + LAP_M, the crest, as an envelope)
+#   wherever the strip reaches.
+# - Not modelled: the rattan bands, from +-0.12 m, which the paw never reaches.
+# test_nyaakoto_fp_paws.Skin checks this envelope against the rig's emitted
+# vertices.
 # ---------------------------------------------------------------------------
-GRIP_WRAP = {"a": 0.0166, "b": 0.0182, "power": 4.6, "z": (-0.052, 0.048)}
-GRIP_STAVE = {"a": 0.0118, "b": 0.0139, "power": 4.6, "z": (-0.14, 0.14)}
+GRIP_POWER = YD._C["POWER"]
+GRIP_Z = (-0.14, 0.14)
+
+
+def _grip_ab_scalar(z):
+    w, d = YD.thickness(z)
+    lo, hi = NG.reach(YD.GRIP_HALF)
+    e = NG.UNDERLAY_M * NG.shoulder(z, YD.GRIP_HALF) if abs(z) <= YD.GRIP_HALF else 0.0
+    if lo <= z <= hi:
+        e += NG.THICK_M + NG.LAP_M
+    return d / 2 + e, w / 2 + e
+
+
+_GRIP_TABLE_Z = np.linspace(GRIP_Z[0] - 0.01, GRIP_Z[1] + 0.01, 1281)       # every 0.25 mm
+_GRIP_TABLE_AB = np.array([_grip_ab_scalar(float(z)) for z in _GRIP_TABLE_Z])
+
+
+def grip_ab(z):
+    """(half-depth X, half-width Y) of the grip's outer envelope at height z, in metres."""
+    return np.interp(z, _GRIP_TABLE_Z, _GRIP_TABLE_AB[:, 0]), np.interp(z, _GRIP_TABLE_Z, _GRIP_TABLE_AB[:, 1])
+
+
+# The nigiri at the grip's centre, for the digits that wrap it (outline).
+GRIP_WRAP = {"a": float(grip_ab(0.0)[0]), "b": float(grip_ab(0.0)[1]), "power": GRIP_POWER,
+             "z": NG.reach(YD.GRIP_HALF)}
 ARROW_PASS = (0.01475, -0.01975, 0.07)          # Muzzle: the arrow rests on the dewclaw under it
 ARROW_SHAFT_R = 0.0026                          # 5.05 mm at the silk, halved, plus margin
 
@@ -123,7 +159,9 @@ def superellipse_prism(p, a, b, power, z):
 
 
 def grip_sdf(p):
-    return np.minimum(superellipse_prism(p, **GRIP_WRAP), superellipse_prism(p, **GRIP_STAVE))
+    """SDF of the grip (stave and nigiri), its section following z."""
+    a, b = grip_ab(p[..., 2])
+    return superellipse_prism(p, a, b, GRIP_POWER, GRIP_Z)
 
 
 def outline(theta, offset, grip=GRIP_WRAP):
