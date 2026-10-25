@@ -565,7 +565,8 @@ def run_probe(spec_path):
         load_binding(list(manifests))
         wanted = admission.check_probe(ROOT, spec, manifests)
         # Both registry and disk are checked: no overwrite of an earlier probe.
-        present = assets.list_assets(admission.PROBE_DEST, recursive=True, include_folder=False)
+        present = (assets.list_assets(admission.PROBE_DEST, recursive=True, include_folder=False)
+                   if assets.does_directory_exist(admission.PROBE_DEST) else [])
         disk = ROOT / "Content/Generated/Qualification/DojoTimberProbe"
         require(not present and not any(p.is_file() for p in disk.rglob("*")), "probe destination is occupied")
         selected = []
