@@ -37,6 +37,8 @@
 #include "RenderingThread.h"
 #include "RHIGlobals.h"
 #include "SceneInterface.h"
+#include "SceneView.h"
+#include "SceneViewExtension.h"
 #include "Serialization/JsonSerializer.h"
 #include "ShaderCompiler.h"
 #include "StaticMeshAttributes.h"
@@ -64,6 +66,50 @@ TArray<TSharedPtr<FJsonValue>> Vec(const FVector& V)
 { return {MakeShared<FJsonValueNumber>(V.X),MakeShared<FJsonValueNumber>(V.Y),MakeShared<FJsonValueNumber>(V.Z)}; }
 TArray<TSharedPtr<FJsonValue>> UV(const FVector2f& V)
 { return {MakeShared<FJsonValueNumber>(V.X),MakeShared<FJsonValueNumber>(V.Y)}; }
+TArray<TSharedPtr<FJsonValue>> Color(const FVector4& V)
+{ return {MakeShared<FJsonValueNumber>(V.X),MakeShared<FJsonValueNumber>(V.Y),MakeShared<FJsonValueNumber>(V.Z),MakeShared<FJsonValueNumber>(V.W)}; }
+// This callback runs on the game thread after the actual viewport view has
+// blended its unbound volumes and owned camera. It only observes the one view
+// whose screenshot request matches the original file; no synthetic CalcSceneView.
+class FViewObservation final:public FSceneViewExtensionBase
+{
+    FViewport* Viewport; FSceneInterface* Scene;
+    TSharedPtr<FJsonObject> Frame; FString File; int32 Observations=0;
+protected:
+    bool IsActiveThisFrame_Internal(const FSceneViewExtensionContext& Context) const override
+    { return Frame.IsValid()&&Context.Viewport==Viewport; }
+public:
+    FViewObservation(const FAutoRegister& Register,FViewport* V,FSceneInterface* S):FSceneViewExtensionBase(Register),Viewport(V),Scene(S) {}
+    void Arm(const TSharedRef<FJsonObject>& F,const FString& Path) { Frame=F; File=Path; Observations=0; Frame->SetNumberField(TEXT("final_view_observations"),0); }
+    void Disarm() { Frame.Reset(); File.Reset(); }
+    void BeginRenderViewFamily(FSceneViewFamily& Family) override
+    {
+        if (!Frame.IsValid()||Family.Scene!=Scene||Family.RenderTarget!=Viewport||!FScreenshotRequest::IsScreenshotRequested()||
+            FPaths::ConvertRelativePathToFull(FScreenshotRequest::GetFilename())!=File) return;
+        for (const FSceneView* View:Family.Views)
+        {
+            if (!View||!View->bIsGameView||View->bIsSceneCapture||View->bIsReflectionCapture||!View->IsPrimarySceneView()) continue;
+            Frame->SetNumberField(TEXT("final_view_observations"),++Observations);
+            Frame->SetNumberField(TEXT("final_view_frame"),double(Family.FrameCounter));
+            auto O=MakeShared<FJsonObject>(); const auto& P=View->FinalPostProcessSettings;
+#define PROBE_SETTING(Name) O->SetNumberField(TEXT(#Name),P.Name)
+            PROBE_SETTING(AutoExposureMethod); PROBE_SETTING(AutoExposureApplyPhysicalCameraExposure); PROBE_SETTING(AutoExposureBias);
+            PROBE_SETTING(CameraISO); PROBE_SETTING(CameraShutterSpeed); PROBE_SETTING(DepthOfFieldFstop);
+            PROBE_SETTING(DynamicGlobalIlluminationMethod); PROBE_SETTING(ReflectionMethod); PROBE_SETTING(ScreenSpaceReflectionIntensity);
+            PROBE_SETTING(BloomIntensity); PROBE_SETTING(LensFlareIntensity); PROBE_SETTING(VignetteIntensity); PROBE_SETTING(AmbientOcclusionIntensity);
+            PROBE_SETTING(WhiteTemp); PROBE_SETTING(WhiteTint);
+#undef PROBE_SETTING
+            O->SetArrayField(TEXT("ColorSaturation"),Color(P.ColorSaturation)); O->SetArrayField(TEXT("ColorContrast"),Color(P.ColorContrast));
+            O->SetArrayField(TEXT("ColorGamma"),Color(P.ColorGamma)); O->SetArrayField(TEXT("ColorGain"),Color(P.ColorGain)); O->SetArrayField(TEXT("ColorOffset"),Color(P.ColorOffset));
+            Frame->SetObjectField(TEXT("final_post_process"),O); auto Flags=MakeShared<FJsonObject>();
+#define PROBE_FLAG(Name) Flags->SetBoolField(TEXT(#Name),Family.EngineShowFlags.Name)
+            PROBE_FLAG(DirectionalLights); PROBE_FLAG(Fog); PROBE_FLAG(Atmosphere); PROBE_FLAG(SkyLighting); PROBE_FLAG(GlobalIllumination);
+            PROBE_FLAG(LumenGlobalIllumination); PROBE_FLAG(ReflectionEnvironment); PROBE_FLAG(ScreenSpaceReflections); PROBE_FLAG(LumenReflections);
+#undef PROBE_FLAG
+            Frame->SetObjectField(TEXT("final_show_flags"),Flags);
+        }
+    }
+};
 struct FCVar
 {
     IConsoleVariable* Var=nullptr; FString Value; EConsoleVariableFlags Flags=ECVF_Default;
@@ -95,6 +141,7 @@ private:
     FEngineShowFlags OldFlags{ESFIM_Game}; FName OldNaniteMode;
     FString Folder,Pending,Platform,Slots[3]; TArray<uint8> Profiles[3]; bool Existed[3]={};
     FCVar Visualize,Composite,Edges,Shading; FDelegateHandle Screenshot;
+    TSharedPtr<FViewObservation,ESPMode::ThreadSafe> ViewObservation;
     FVector2D Size=FVector2D::ZeroVector; FVector CameraAt; FRotator CameraRotation;
     TArray<TSharedPtr<FJsonValue>> Meshes,Frames,Packages,Inputs;
     TMap<FString,FString> PackageHashes;
@@ -157,7 +204,25 @@ private:
         PP.bOverride_DepthOfFieldFstop=true; PP.DepthOfFieldFstop=2.8f;
         PP.bOverride_AutoExposureBias=true; PP.AutoExposureBias=0;
         PP.bOverride_DepthOfFieldScale=true; PP.DepthOfFieldScale=0;
+        // A remote location alone does not exclude the production directional
+        // sun, unbound grade, GI or reflection environment. Override the owned
+        // camera and viewport, then verify their final screenshot-view values.
+        PP.bOverride_DynamicGlobalIlluminationMethod=true; PP.DynamicGlobalIlluminationMethod=EDynamicGlobalIlluminationMethod::None;
+        PP.bOverride_ReflectionMethod=true; PP.ReflectionMethod=EReflectionMethod::None;
+        PP.bOverride_ScreenSpaceReflectionIntensity=true; PP.ScreenSpaceReflectionIntensity=0;
+        PP.bOverride_BloomIntensity=true; PP.BloomIntensity=0;
+        PP.bOverride_LensFlareIntensity=true; PP.LensFlareIntensity=0;
+        PP.bOverride_VignetteIntensity=true; PP.VignetteIntensity=0;
+        PP.bOverride_AmbientOcclusionIntensity=true; PP.AmbientOcclusionIntensity=0;
+        PP.bOverride_ColorSaturation=true; PP.ColorSaturation=FVector4(1,1,1,1);
+        PP.bOverride_ColorContrast=true; PP.ColorContrast=FVector4(1,1,1,1);
+        PP.bOverride_ColorGamma=true; PP.ColorGamma=FVector4(1,1,1,1);
+        PP.bOverride_ColorGain=true; PP.ColorGain=FVector4(1,1,1,1);
+        PP.bOverride_ColorOffset=true; PP.ColorOffset=FVector4(0,0,0,0);
+        PP.bOverride_WhiteTemp=true; PP.WhiteTemp=6500;
+        PP.bOverride_WhiteTint=true; PP.WhiteTint=0;
         PC()->SetViewTarget(Camera.Get());
+        ViewObservation=FSceneViewExtensions::NewExtension<FViewObservation>(Viewport()->Viewport,M->GetWorld()->Scene);
         for (int I=0;I<2;++I)
         {
             auto* L=M->GetWorld()->SpawnActor<APointLight>(); if (!L) { Fail(TEXT("Could not spawn fixture light")); return; } Owned.Add(L);
@@ -273,6 +338,9 @@ private:
         Viewport()->SetViewMode(VMI_Lit); Viewport()->SetCurrentNaniteVisualizationMode(NAME_None);
         // Fixture-only viewport state; production components/lights remain untouched.
         Viewport()->EngineShowFlags.SetFog(false); Viewport()->EngineShowFlags.SetAtmosphere(false); Viewport()->EngineShowFlags.SetSkyLighting(false);
+        Viewport()->EngineShowFlags.SetDirectionalLights(false); Viewport()->EngineShowFlags.SetGlobalIllumination(false);
+        Viewport()->EngineShowFlags.SetLumenGlobalIllumination(false); Viewport()->EngineShowFlags.SetReflectionEnvironment(false);
+        Viewport()->EngineShowFlags.SetScreenSpaceReflections(false); Viewport()->EngineShowFlags.SetLumenReflections(false);
         const bool Diagnostic=SM6&&(Mode()==1||Mode()==2);
         Visualize.Set(Diagnostic?Modes[Mode()]:TEXT("off")); Composite.Set(TEXT("1")); Edges.Set(TEXT("0")); Shading.Set(TEXT("0"));
         Viewport()->EngineShowFlags.SetVisualizeNanite(Diagnostic); Changed=FPlatformTime::Seconds();
@@ -302,7 +370,9 @@ private:
         ENQUEUE_RENDER_COMMAND(SoraProbeMaterialObservation)([Proxy,Feature,&Shader](FRHICommandListImmediate&)
         {
             Shader.Proxy=Proxy!=nullptr; if (!Proxy) return;
-            const FMaterialRenderProxy* ResolvedProxy=nullptr; const FMaterial& Resolved=Proxy->GetMaterialWithFallback(Feature,ResolvedProxy);
+            // UE5.8 assigns the out pointer only on fallback; successful
+            // resolution leaves it unchanged (MaterialRenderProxy.cpp).
+            const FMaterialRenderProxy* ResolvedProxy=Proxy; const FMaterial& Resolved=Proxy->GetMaterialWithFallback(Feature,ResolvedProxy);
             Shader.Fallback=ResolvedProxy!=Proxy; Shader.Default=Resolved.IsDefaultMaterial(); Shader.Asset=Resolved.GetAssetName();
             const auto* Map=Resolved.GetRenderingThreadShaderMap(); Shader.Valid=Map&&Map->IsValidForRendering(); Shader.Complete=Resolved.IsRenderingThreadShaderMapComplete();
         });
@@ -312,18 +382,21 @@ private:
         ShaderJson->SetBoolField(TEXT("shader_map_complete"),Shader.Complete); ShaderJson->SetStringField(TEXT("resource_asset"),Shader.Asset);
         ShaderJson->SetStringField(TEXT("scope"),TEXT("render-thread base material proxy resolution; not a draw count or visualization override identity"));
         F->SetObjectField(TEXT("material_render_readback"),ShaderJson);
-        Frames.Add(MakeShared<FJsonValueObject>(F)); Pending=Folder/(Name+TEXT(".png")); Waiting=true; FScreenshotRequest::RequestScreenshot(Pending,false,false);
+        Frames.Add(MakeShared<FJsonValueObject>(F)); Pending=Folder/(Name+TEXT(".png")); Waiting=true;
+        ViewObservation->Arm(F,Pending); FScreenshotRequest::RequestScreenshot(Pending,false,false);
     }
     void Captured()
     {
         if (!Waiting) return;
         if (IFileManager::Get().FileSize(*Pending)<=0) { Fail(TEXT("Original probe screenshot missing")); return; }
         Frames.Last()->AsObject()->SetStringField(TEXT("file"),FPaths::GetCleanFilename(Pending)); Frames.Last()->AsObject()->SetNumberField(TEXT("screenshot_processed_frame"),double(GFrameCounter));
+        if (ViewObservation.IsValid()) ViewObservation->Disarm();
         UE_LOG(LogTemp,Display,TEXT("SORA_TIMBER_PROBE_FRAME %s"),*Pending); Waiting=false; Pending.Reset(); ++Step; if (Step<Count()) Switch();
     }
     void Cleanup()
     {
         if (Cleaned) return; Cleaned=true; if (Waiting) FScreenshotRequest::Reset(); FScreenshotRequest::OnScreenshotRequestProcessed().Remove(Screenshot);
+        if (ViewObservation.IsValid()) { ViewObservation->Disarm(); ViewObservation.Reset(); }
         bool Restored=true; for (const FCVar* C:{&Visualize,&Composite,&Edges,&Shading}) Restored=C->Restore()&&Restored;
         if (BackedUp&&!M.IsValid()) Restored=false;
         if (BackedUp&&M.IsValid())
@@ -331,7 +404,15 @@ private:
             if (PC()&&OldTarget.IsValid()) PC()->SetViewTarget(OldTarget.Get()); else Restored=false;
             if (HUD.IsValid()) HUD->bShowHUD=ShowHUD;
             if (OldScreen==SoraUI::EScreen::Title) M->FrontEnd()->ShowTitle(); else M->FrontEnd()->ShowMain();
-            if (Viewport()) { Viewport()->SetViewMode(static_cast<EViewModeIndex>(OldViewMode)); Viewport()->EngineShowFlags=OldFlags; Viewport()->SetCurrentNaniteVisualizationMode(OldNaniteMode); } else Restored=false;
+            if (Viewport())
+            {
+                Viewport()->SetViewMode(static_cast<EViewModeIndex>(OldViewMode)); Viewport()->EngineShowFlags=OldFlags; Viewport()->SetCurrentNaniteVisualizationMode(OldNaniteMode);
+#define PROBE_RESTORED(Name) Restored=(Viewport()->EngineShowFlags.Name==OldFlags.Name)&&Restored
+                PROBE_RESTORED(DirectionalLights); PROBE_RESTORED(Fog); PROBE_RESTORED(Atmosphere); PROBE_RESTORED(SkyLighting); PROBE_RESTORED(GlobalIllumination);
+                PROBE_RESTORED(LumenGlobalIllumination); PROBE_RESTORED(ReflectionEnvironment); PROBE_RESTORED(ScreenSpaceReflections); PROBE_RESTORED(LumenReflections);
+#undef PROBE_RESTORED
+            }
+            else Restored=false;
             UGameplayStatics::SetGamePaused(M.Get(),WasPaused);
             Restored=Restored&&M->bMenu&&M->FrontEnd()->Screen()==OldScreen&&M->GetWorld()->IsPaused()==WasPaused&&PC()&&PC()->GetViewTarget()==OldTarget.Get()&&
                 (!HUD.IsValid()||HUD->bShowHUD==ShowHUD)&&Viewport()&&Viewport()->ViewModeIndex==OldViewMode&&Viewport()->GetCurrentNaniteVisualizationMode()==OldNaniteMode&&
@@ -356,7 +437,7 @@ private:
         O->SetStringField(TEXT("rhi"),GDynamicRHI?GDynamicRHI->GetName():TEXT("none")); O->SetBoolField(TEXT("null_rhi"),GUsingNullRHI); O->SetStringField(TEXT("adapter"),GRHIAdapterName);
         O->SetArrayField(TEXT("viewport"),{MakeShared<FJsonValueNumber>(Size.X),MakeShared<FJsonValueNumber>(Size.Y)}); O->SetArrayField(TEXT("fixture_origin"),Vec(Origin));
         O->SetArrayField(TEXT("meshes"),Meshes); O->SetArrayField(TEXT("frames"),Frames); O->SetNumberField(TEXT("frame_count"),Frames.Num()); O->SetArrayField(TEXT("asset_files"),Packages); O->SetArrayField(TEXT("source_inputs"),Inputs);
-        O->SetStringField(TEXT("lighting"),TEXT("two temporary point lights, key 20M lm warm/fill 5M lm cool; manual ISO100 1/60 f2.8, exposure bias0; fog/atmosphere/skylight viewport disabled"));
+        O->SetStringField(TEXT("lighting"),TEXT("two temporary point lights, key 20M lm warm/fill 5M lm cool; manual ISO100 1/60 f2.8, bias0; directional/fog/atmosphere/sky/GI/reflection excluded; neutral global grade and no bloom/AO; final screenshot-view settings recorded, no photometric calibration"));
         O->SetBoolField(TEXT("restored"),Restored); O->SetBoolField(TEXT("packages_unchanged"),Unchanged); O->SetBoolField(TEXT("passed"),!Failed&&!Test.HasAnyErrors()&&Step==Count());
         O->SetStringField(TEXT("acceptance"),TEXT("original paired pixels and human geometry/material review required; no GPU counters inferred; SM5 generated fallback differs from authored pool"));
         FString Json; FJsonSerializer::Serialize(O,TJsonWriterFactory<>::Create(&Json)); Test.TestTrue(TEXT("Writes original probe observation report"),FFileHelper::SaveStringToFile(Json,*(Folder/TEXT("capture.json"))));

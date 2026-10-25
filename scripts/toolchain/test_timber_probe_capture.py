@@ -41,6 +41,8 @@ def metadata(sm6=True):
                 "paused": True, "hud_hidden": True, "visible_fixture_meshes": 1, "settle_seconds": 3.1,
                 "camera": [1001000, 999000, 1000500], "rotation": [0, 0, 0], "fov": 35,
                 "request_frame": len(meta["frames"])*100+10, "screenshot_processed_frame": len(meta["frames"])*100+11,
+                "final_view_observations": 1, "final_view_frame": len(meta["frames"])*100+11,
+                "final_post_process": copy.deepcopy(P.FINAL_POST_PROCESS), "final_show_flags": dict.fromkeys(P.EXCLUDED_SHOW_FLAGS, False),
                 "active_visualization": mode if mode != 'Lit' else 'None', "active_mode_id": 1 if mode != 'Lit' else -1,
                 "material_render_readback": {"proxy_present": True, "shader_map_valid": True, "shader_map_complete": True,
                                              "used_fallback_proxy": False, "default_material": False, "resource_asset": "M_SoraTimber"},
@@ -139,6 +141,44 @@ class ProbeEvidence(unittest.TestCase):
     def test_fallback_shader_or_incomplete_material_cannot_pass_green_pixels(self):
         for key, value in (("used_fallback_proxy", True), ("default_material", True), ("shader_map_valid", False), ("shader_map_complete", False)):
             meta = metadata(); meta['frames'][0]['material_render_readback'][key] = value
+            with self.assertRaises(ValueError): self.inspect(meta)
+
+    def test_engine_success_leaves_proxy_output_unchanged_and_real_fallback_is_rejected(self):
+        # Pinned UE5.8 MaterialRenderProxy.cpp:870-892 writes its output only
+        # inside the fallback branch. Exercise that contract against the actual
+        # capture initializer without compiling/launching any Unreal code.
+        import re
+        source = (HERE.parents[1] / 'Source/SoraArena/Private/SoraTimberProbeCapture.cpp').read_text()
+        match = re.search(r'const FMaterialRenderProxy\* ResolvedProxy=(Proxy|nullptr);\s*const FMaterial& Resolved=Proxy->GetMaterialWithFallback\(Feature,ResolvedProxy\);\s*Shader.Fallback=ResolvedProxy!=Proxy;', source)
+        self.assertIsNotNone(match, 'review the engine-output contract if the capture call changes')
+        proxy, fallback = object(), object()
+
+        def observed_fallback(initializer, shader_complete):
+            out_proxy = proxy if initializer == 'Proxy' else None
+            if not shader_complete:
+                out_proxy = fallback  # engine writes this only on fallback
+            return out_proxy is not proxy
+
+        self.assertTrue(observed_fallback('nullptr', True), 'reproduces the old false fallback')
+        healthy = observed_fallback(match[1], True)
+        self.assertFalse(healthy, 'a complete base shader must not be classified as fallback')
+        meta = metadata(); meta['frames'][0]['material_render_readback']['used_fallback_proxy'] = healthy
+        self.assertTrue(self.inspect(meta)['nanite_draw_evidence'])
+        meta['frames'][0]['material_render_readback']['used_fallback_proxy'] = observed_fallback(match[1], False)
+        with self.assertRaises(ValueError): self.inspect(meta)
+
+    def test_actual_production_sun_grade_gi_or_reflections_prevent_fixture_acceptance(self):
+        for flag in P.EXCLUDED_SHOW_FLAGS:
+            meta = metadata(); meta['frames'][0]['final_show_flags'][flag] = True
+            with self.assertRaises(ValueError): self.inspect(meta)
+        for key, value in (('ColorSaturation', [.96, .96, .96, 1]), ('BloomIntensity', .2),
+                           ('DynamicGlobalIlluminationMethod', 1), ('ReflectionMethod', 1)):
+            meta = metadata(); meta['frames'][0]['final_post_process'][key] = value
+            with self.assertRaises(ValueError): self.inspect(meta)
+
+    def test_requested_camera_settings_without_unique_current_final_view_are_rejected(self):
+        for field, value in (('final_view_observations', 0), ('final_view_observations', 2), ('final_view_frame', 0), ('final_post_process', {})):
+            meta = metadata(); meta['frames'][0][field] = value
             with self.assertRaises(ValueError): self.inspect(meta)
 
     def test_cpp_fixed_asset_order_schema_and_scope_match_transport(self):
