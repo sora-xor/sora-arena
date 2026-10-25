@@ -152,6 +152,9 @@ bool CheckChapter(FAutomationTestBase& Test, int32 Chapter)
             const FSoraZone& Zone=Data.Space.Zones[ZoneIndex];
             Probe.SupportSpace=SupportForZone(Data,ZoneIndex);
             Probe.HeightCm=Zone.bHeightBounds&&Zone.MinZ>0?16000:0;
+            if(Zone.Id==TEXT("pl_archive"))
+                if(const FSoraBeat* Archive=Data.Beats.FindByPredicate([](const FSoraBeat& B){return B.Id==TEXT("ch06.b09");}))
+                    Probe.HeightCm=Archive->Space.HeightCm;
             Probe.Stand(Zone.Entry, Name + TEXT(" ") + Zone.Id + TEXT(" entry"));
             for (const FVector2D& Node : Zone.Route)
                 Probe.Floor(Node, Name + TEXT(" ") + Zone.Id + TEXT(" road"));

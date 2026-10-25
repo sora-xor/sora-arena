@@ -1087,7 +1087,17 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
                 if (Director->LinesQueued()>0) continue;
                 if (Director->ObjectiveAnchor(Anchor))
                 {
-                    MoveTo(State,Anchor);
+                    const FSoraVolume* Closing=Director->TaskProgress().LinesDone?
+                        Beat.Space.Volumes.FindByPredicate([&](const FSoraVolume& V){return V.Event==Beat.ClosingEvent;}):nullptr;
+                    if(Closing&&Closing->bHeight)
+                    {
+                        // Assisted campaign positioning must honor an elevated
+                        // closing volume. ArchiveExit separately walks its route.
+                        auto* Hero=Player(State);Hero->GetCharacterMovement()->StopMovementImmediately();
+                        Hero->SetActorLocation(FVector(Anchor.X,Anchor.Y,Closing->FloorCm+
+                            Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2.f),false,nullptr,ETeleportType::TeleportPhysics);
+                    }
+                    else MoveTo(State,Anchor);
                     if(!Advance(Test,State,1)) return false;
                     if(Director->AnchorTakesInteract()&&!State.World->PressKey(EKeys::E)) return false;
                     bStarted|=Director->LinesStarted();
