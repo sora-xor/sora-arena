@@ -1,0 +1,18 @@
+FBX version: 7400
+YUMI_RIG_REVIEW_IMPORT {"bones": 24, "mesh": "SK_Weapon_18", "vertices": 30874, "action": "Armature|A_Weapon_18_Draw", "frame_range": [0, 10], "skinned": true}
+00:04.936  render           | Saved: '/Users/mtakemiya/dev/sora-arena-wt/art/Saved/YumiRig/Renders/SK_Weapon_18_Braced_Profile.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_Braced_Profile.png
+00:06.915  render           | Saved: '/Users/mtakemiya/dev/sora-arena-wt/art/Saved/YumiRig/Renders/SK_Weapon_18_Braced_GripClose.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_Braced_GripClose.png
+00:08.454  render           | Saved: '/Users/mtakemiya/dev/sora-arena-wt/art/Saved/YumiRig/Renders/SK_Weapon_18_Half_Profile.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_Half_Profile.png
+00:10.387  render           | Saved: '/Users/mtakemiya/dev/sora-arena-wt/art/Saved/YumiRig/Renders/SK_Weapon_18_Half_GripClose.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_Half_GripClose.png
+00:11.927  render           | Saved: '/Users/mtakemiya/dev/sora-arena-wt/art/Saved/YumiRig/Renders/SK_Weapon_18_Full_Profile.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_Full_Profile.png
+00:13.612  render           | Saved: '/Users/mtakemiya/dev/sora-arena-wt/art/Saved/YumiRig/Renders/SK_Weapon_18_Full_GripClose.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_Full_GripClose.png
+YUMI_RIG_REVIEW_READY 6 renders
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:49:19)
+
+Blender quit

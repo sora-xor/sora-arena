@@ -1,0 +1,22 @@
+FBX version: 7400
+YUMI_RIG_WEIGHTS {"string": 1568, "stave": 29306}
+YUMI_RIG_KEY {"frame": 0, "draw": 0.0, "stave_max_error_m": 0.0, "string_off_segment_m": 0.0, "string_length_m": 2.134557, "braced_max_diff_m": 2.4620758953479386e-07}
+YUMI_RIG_KEY {"frame": 1, "draw": 0.1, "stave_max_error_m": 5e-05, "string_off_segment_m": 0.0, "string_length_m": 2.1345569, "braced_max_diff_m": null}
+YUMI_RIG_KEY {"frame": 2, "draw": 0.2, "stave_max_error_m": 0.000165, "string_off_segment_m": 0.0, "string_length_m": 2.1345569, "braced_max_diff_m": null}
+YUMI_RIG_KEY {"frame": 3, "draw": 0.3, "stave_max_error_m": 0.000315, "string_off_segment_m": 0.0, "string_length_m": 2.1345569, "braced_max_diff_m": null}
+YUMI_RIG_KEY {"frame": 4, "draw": 0.4, "stave_max_error_m": 0.000487, "string_off_segment_m": 0.0, "string_length_m": 2.1345569, "braced_max_diff_m": null}
+YUMI_RIG_KEY {"frame": 5, "draw": 0.5, "stave_max_error_m": 0.000675, "string_off_segment_m": 0.0, "string_length_m": 2.1345569, "braced_max_diff_m": null}
+YUMI_RIG_KEY {"frame": 6, "draw": 0.6, "stave_max_error_m": 0.000877, "string_off_segment_m": 0.0, "string_length_m": 2.1345568, "braced_max_diff_m": null}
+YUMI_RIG_KEY {"frame": 7, "draw": 0.7, "stave_max_error_m": 0.001091, "string_off_segment_m": 0.0, "string_length_m": 2.1345569, "braced_max_diff_m": null}
+YUMI_RIG_KEY {"frame": 8, "draw": 0.8, "stave_max_error_m": 0.001317, "string_off_segment_m": 0.0, "string_length_m": 2.1345568, "braced_max_diff_m": null}
+YUMI_RIG_KEY {"frame": 9, "draw": 0.9, "stave_max_error_m": 0.001556, "string_off_segment_m": 0.0, "string_length_m": 2.134557, "braced_max_diff_m": null}
+YUMI_RIG_KEY {"frame": 10, "draw": 1.0, "stave_max_error_m": 0.00181, "string_off_segment_m": 0.0, "string_length_m": 2.1345569, "braced_max_diff_m": null}
+
+FBX export starting... '/Users/mtakemiya/dev/sora-arena-wt/art/Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/SK_Weapon_18.fbx'
+export finished in 1.0275 sec.
+FBX version: 7400
+YUMI_RIG_GEOMETRY {"bow_vertices": 30874, "bow_triangles": 61556, "arrow_vertices": 2209, "arrow_triangles": 4382, "arrow_bounds_m": [0.982, 0.037913, 0.032833]}
+YUMI_RIG_READY Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/SK_Weapon_18.fbx 7505100 bytes 9.9s
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:49:19)
+
+Blender quit
