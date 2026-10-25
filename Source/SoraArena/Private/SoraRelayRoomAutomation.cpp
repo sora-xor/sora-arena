@@ -341,6 +341,68 @@ bool FSoraRelayLampNoticeTest::RunTest(const FString& Parameters)
     return !HasAnyErrors();
 }
 
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraRelayPatrolCadenceTest,"SoraArena.Campaign.RelayPatrolCadence",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraRelayPatrolCadenceTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;using namespace SoraRelayAutomation;
+    if(!FSoraCatalog::Get().Load()) return false;
+    FBeatWorld W(*this,TEXT("RelayPatrolCadence"),5,3);if(!W.Start()) return false;
+    W.Harden();const FVector O(W.BeatData().Space.RelayRoom.Origin,0);
+    // Keep the actual staged guards, routes, senses and collision. Isolate
+    // movement from detection by holding the hero well outside their range.
+    Place(W,O+FVector(20000,0,100));W.Hero()->GetCharacterMovement()->DisableMovement();
+    ASoraEnemy* Guards[3]={};ASoraEnemyController* Brains[3]={};
+    const int Slots[]={0,1,3};const int Periods[]={50000,40000,30000};
+    for(TActorIterator<ASoraEnemy> It(W.World->GetTestWorld());It;++It)
+        for(int I=0;I<3;++I) if(It->EnemySlot()==Slots[I])
+        { Guards[I]=*It;Brains[I]=Cast<ASoraEnemyController>(It->GetController()); }
+    for(int I=0;I<3;++I)
+        if(!TestNotNull(TEXT("The authored patrol guard exists"),Guards[I])||
+            !TestNotNull(TEXT("The authored patrol brain exists"),Brains[I])) return false;
+    if(!Dialogue(W)||!W.Tick(600)||!W.Press(EKeys::Escape)) return false;
+    SoraPatrolRules::FLoop Paused[3];
+    for(int I=0;I<3;++I) Paused[I]=Brains[I]->PatrolTiming();
+    if(!W.Tick(180)) return false;
+    for(int I=0;I<3;++I)
+        TestTrue(TEXT("Menu pause preserves the actual relay patrol clock and visits"),
+            Brains[I]->PatrolTiming().ElapsedMs==Paused[I].ElapsedMs&&Brains[I]->PatrolTiming().Visited==Paused[I].Visited);
+    if(!W.Press(EKeys::Escape)) return false;
+    int Observed[3]={};bool OnTime[3]={true,true,true},Heights=true,Calm=true;
+    float UpperMin[2]={MAX_flt,MAX_flt},UpperMax[2]={-MAX_flt,-MAX_flt};
+    for(int Frame=0;Frame<6600;++Frame)
+    {
+        const int UpperLap=Brains[1]->PatrolTiming().Cycles;
+        if(UpperLap<2)
+        { UpperMin[UpperLap]=FMath::Min(UpperMin[UpperLap],float(Feet(*Guards[1]).Z));UpperMax[UpperLap]=FMath::Max(UpperMax[UpperLap],float(Feet(*Guards[1]).Z)); }
+        if(!W.Tick(1)) return false;
+        Heights&=FMath::Abs(Feet(*Guards[0]).Z)<15.f&&FMath::Abs(Guards[2]->GetActorLocation().Z-500.f)<15.f;
+        for(int I=0;I<3;++I)
+        {
+            const auto& Loop=Brains[I]->PatrolTiming();
+            Calm&=Brains[I]->State()==SoraStealthRules::EState::Unaware;
+            if(Loop.Cycles>Observed[I])
+            { Observed[I]=Loop.Cycles;OnTime[I]&=Loop.LastCycleMs>=Periods[I]&&Loop.LastCycleMs<=Periods[I]+34&&!Loop.Overdue; }
+        }
+    }
+    for(int I=0;I<3;++I)
+    {
+        const auto& Loop=Brains[I]->PatrolTiming();
+        AddInfo(FString::Printf(TEXT("Relay patrol slot=%d cycles=%d legs=%d elapsed=%lld last=%lld visited=%u overdue=%d feet=%s state=%d"),
+            Slots[I],Loop.Cycles,Loop.Legs,Loop.ElapsedMs,Loop.LastCycleMs,Loop.Visited,Loop.Overdue,
+            *(Feet(*Guards[I])-O).ToString(),int(Brains[I]->State())));
+        TestTrue(TEXT("Each authored patrol completes at least two circuits at its own period"),Observed[I]>=2&&OnTime[I]);
+        TestFalse(TEXT("No relay patrol silently misses a station deadline"),Loop.Overdue);
+    }
+    TestTrue(TEXT("The floor guard and airborne drone retain their authored heights"),Heights);
+    TestTrue(TEXT("The patrol fixture remains free of a detection distraction"),Calm);
+    AddInfo(FString::Printf(TEXT("Gallery height ranges: first %.3f..%.3f, alternate %.3f..%.3f"),UpperMin[0],UpperMax[0],UpperMin[1],UpperMax[1]));
+    TestTrue(TEXT("The first gallery circuit stays upstairs"),UpperMin[0]>395.f&&UpperMax[0]<405.f);
+    TestTrue(TEXT("The alternate circuit physically descends the stair and returns upstairs"),UpperMin[1]<50.f&&UpperMax[1]>395.f);
+    AddInfo(TEXT("Actual staged patrols and collision with the hero held outside detection range. This checks active-time cadence and alternating stair traversal, not ordinary stealth difficulty."));
+    return !HasAnyErrors();
+}
+
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraRelayLookoutTest,"SoraArena.Campaign.RelayLookout",
     EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
 bool FSoraRelayLookoutTest::RunTest(const FString& Parameters)
