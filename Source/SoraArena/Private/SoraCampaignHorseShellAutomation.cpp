@@ -13,7 +13,7 @@
 namespace SoraHorseShellTest
 {
 using SoraFieldcraftAutomation::FBeatWorld;
-void Freeze(ASoraCharacterBase& Body)
+void FreezeBody(ASoraCharacterBase& Body)
 {
     Body.SetActorTickEnabled(false); Body.GetCharacterMovement()->StopMovementImmediately();
     Body.GetCharacterMovement()->SetComponentTickEnabled(false);
@@ -24,7 +24,7 @@ bool Tick(FBeatWorld& W,ASoraEnemy* Active=nullptr,int Frames=1)
     for(int I=0;I<Frames;++I)
     {
         for(TActorIterator<ASoraCharacterBase> It(W.World->GetTestWorld());It;++It)
-            if(*It!=W.Hero()&&*It!=Active) Freeze(**It);
+            if(*It!=W.Hero()&&*It!=Active) FreezeBody(**It);
         if(!W.Tick(1,.02f)) return false;
     }
     return true;
@@ -38,7 +38,7 @@ ASoraEnemy* Ready(FBeatWorld& W)
         for(TActorIterator<ASoraEnemy> It(W.World->GetTestWorld());It;++It)
             if(It->HasHorseShellAssignment())
             {
-                auto* E=*It; E->CancelHorseShell(); Freeze(*E);
+                auto* E=*It; E->CancelHorseShell(); FreezeBody(*E);
                 // Directed combat fixture: the real pod-B opponent and real
                 // horses remain; only poses and unrelated combat are isolated.
                 E->SetActorLocation(FVector(-1200,-1050,E->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2.5f),false,nullptr,ETeleportType::TeleportPhysics);
@@ -123,7 +123,7 @@ bool FSoraHorseShellClockTest::RunTest(const FString& Parameters)
         Releases.Num()==2&&Releases[1]-Releases[0]>=6000&&Releases[1]-Releases[0]<=6020);
     auto* Ally=ASoraEnemy::SpawnArchetype(*W.World->GetTestWorld(),TEXT("enforcer_rifle"),30,FVector(800,-850,100),FRotator::ZeroRotator);
     if(!TestNotNull(TEXT("Live enemy beside the landing point"),Ally)) return false;
-    Freeze(*Ally); const float AllyHp=Ally->Health;
+    FreezeBody(*Ally); const float AllyHp=Ally->Health;
     // Destroying the shooter clears the engine instigator pointer; launch
     // faction must still prevent this released shell hurting fellow enemies.
     E->Destroy();

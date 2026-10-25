@@ -11,7 +11,7 @@
 namespace SoraPodTest
 {
 using SoraFieldcraftAutomation::FBeatWorld;
-void Freeze(ASoraCharacterBase& Body)
+void FreezeBody(ASoraCharacterBase& Body)
 {
     Body.SetActorTickEnabled(false);
     Body.GetCharacterMovement()->StopMovementImmediately();
@@ -20,7 +20,7 @@ void Freeze(ASoraCharacterBase& Body)
 }
 void Isolate(FBeatWorld& W)
 {
-    for(TActorIterator<ASoraEnemy> It(W.World->GetTestWorld());It;++It) Freeze(*It);
+    for(TActorIterator<ASoraEnemy> It(W.World->GetTestWorld());It;++It) FreezeBody(**It);
 }
 bool Tick(FBeatWorld& W,float Delta=.02f)
 { Isolate(W); return W.Tick(1,Delta); }
@@ -67,7 +67,7 @@ ASoraEnemy* Target(FBeatWorld& W,const FVector& At,bool Invulnerable=false)
     FSoraEnemyTuning Tuning; Tuning.bInvulnerable=Invulnerable;
     auto* Enemy=ASoraEnemy::SpawnArchetype(*W.World->GetTestWorld(),TEXT("enforcer_rifle"),20,At,
         (W.BeatData().Space.PodArrivals[0].Floor-At).Rotation(),nullptr,&Tuning);
-    if(Enemy) { Enemy->MaxHealth=Enemy->Health=1000; Freeze(*Enemy); }
+    if(Enemy) { Enemy->MaxHealth=Enemy->Health=1000; FreezeBody(*Enemy); }
     return Enemy;
 }
 }
@@ -136,7 +136,7 @@ bool FSoraPodContactsTest::RunTest(const FString& Parameters)
     auto* Ally=W.World->GetTestWorld()->SpawnActor<ASoraCompanion>(At+FVector(0,-150,100),FRotator::ZeroRotator,Params);
     if(!Inside||!Outside||!Above||!Immune||!Ally) return TestTrue(TEXT("Real contact actors spawn"),false);
     FSoraCompanionSpec Spec; Spec.Id=TEXT("pod_contact_fixture"); Spec.Role=TEXT("bystander"); Spec.Rules.Health=1000; Spec.Rules.Downable=true;
-    Ally->Init(Spec,0); Freeze(*Ally);
+    Ally->Init(Spec,0); FreezeBody(*Ally);
     if(!PodTime(W,0,2498)||!Tick(W,.019f)) return false;
     TestEqual(TEXT("Ordinary Hazard reaches the hero"),HeroBefore-W.Hero()->Health,60.f);
     TestEqual(TEXT("Environmental impact reaches an actual damageable ally"),Ally->Health,940.f);
