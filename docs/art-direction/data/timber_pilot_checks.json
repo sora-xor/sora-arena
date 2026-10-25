@@ -1,0 +1,601 @@
+{
+ "pilot": [
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B01_V2",
+   "kind": "wall",
+   "v1_triangles": 470624,
+   "triangles": 454612,
+   "fallback_triangles": 44918,
+   "ok": true,
+   "dense_checks": {
+    "edges": 681918,
+    "edges_not_shared_by_two": 0,
+    "repeated_directed_edges": 0,
+    "volume_m3": 0.4030553278370053,
+    "degenerate_triangles": 0,
+    "min_dot_outside_checks": 0.4090900186447042,
+    "min_dot_in_checks": 0.01818738674106966,
+    "folded_triangles": 0,
+    "steep_triangles_outside_checks": 0,
+    "aspect_p99_outside_checks": 66.7,
+    "aspect_max_outside_checks": 933.9,
+    "max_angle_outside_checks_deg": 176.887,
+    "needles_over_175deg_outside_checks": 31,
+    "row_order_crossings": 0,
+    "checks": [
+     {
+      "check": 0,
+      "count_min": 17,
+      "count_max": 17,
+      "row_to_row_changes": 0,
+      "depth_error_max_m": 0.0
+     },
+     {
+      "check": 1,
+      "count_min": 17,
+      "count_max": 17,
+      "row_to_row_changes": 0,
+      "depth_error_max_m": 0.0
+     },
+     {
+      "check": 2,
+      "count_min": 17,
+      "count_max": 27,
+      "row_to_row_changes": 1,
+      "depth_error_max_m": 0.0
+     }
+    ],
+    "dent_depth_reached": [
+     0.981,
+     0.974,
+     0.999,
+     0.999,
+     0.996,
+     0.998,
+     0.977,
+     1.0,
+     0.812,
+     0.994,
+     0.994,
+     0.929,
+     0.99,
+     0.997,
+     0.993,
+     0.99,
+     0.965,
+     0.935,
+     0.941,
+     0.876,
+     0.961,
+     0.983
+    ],
+    "grain_vertices": 144387,
+    "grain_recess_p50_m": 3.6e-05,
+    "grain_recess_p95_m": 4.2e-05,
+    "grain_phase_from_stored_uvs_max_error": 0.0,
+    "triangles": 454612,
+    "vertices": 227308
+   },
+   "fallback_checks": {
+    "edges": 67377,
+    "edges_not_shared_by_two": 0,
+    "repeated_directed_edges": 0,
+    "volume_m3": 0.4031044518166486,
+    "degenerate_triangles": 0,
+    "min_dot_outside_checks": 0.4092660356464622,
+    "min_dot_in_checks": 0.011589240944955266,
+    "folded_triangles": 0,
+    "steep_triangles_outside_checks": 0,
+    "aspect_p99_outside_checks": 68.7,
+    "aspect_max_outside_checks": 519.7,
+    "max_angle_outside_checks_deg": 145.258,
+    "needles_over_175deg_outside_checks": 0,
+    "row_order_crossings": 0,
+    "triangles": 44918,
+    "vertices": 22461
+   },
+   "visibility": {
+    "plain": {
+     "triangles": 18444,
+     "tilt_p50_deg": 0.273,
+     "tilt_p95_deg": 0.416,
+     "shading_p95_at_30deg_pct": 1.3
+    },
+    "grain": {
+     "triangles": 145844,
+     "tilt_p50_deg": 0.372,
+     "tilt_p95_deg": 2.724,
+     "shading_p95_at_30deg_pct": 8.2
+    },
+    "dent": {
+     "triangles": 17434,
+     "tilt_p50_deg": 1.577,
+     "tilt_p95_deg": 7.248,
+     "shading_p95_at_30deg_pct": 21.9
+    },
+    "knot": {
+     "triangles": 505,
+     "tilt_p50_deg": 2.624,
+     "tilt_p95_deg": 4.988,
+     "shading_p95_at_30deg_pct": 15.1
+    },
+    "check": {
+     "triangles": 35113,
+     "tilt_p50_deg": 1.041,
+     "tilt_p95_deg": 88.175,
+     "shading_p95_at_30deg_pct": 266.6
+    }
+   }
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B00_V2",
+   "kind": "open",
+   "v1_triangles": 836068,
+   "triangles": 1088942,
+   "fallback_triangles": 54970,
+   "ok": true,
+   "dense_checks": {
+    "edges": 1633413,
+    "edges_not_shared_by_two": 0,
+    "repeated_directed_edges": 0,
+    "volume_m3": 0.40298510036174945,
+    "degenerate_triangles": 0,
+    "min_dot_outside_checks": 0.45429917988022267,
+    "min_dot_in_checks": 0.03270282472671877,
+    "folded_triangles": 0,
+    "steep_triangles_outside_checks": 0,
+    "aspect_p99_outside_checks": 50.0,
+    "aspect_max_outside_checks": 1792.1,
+    "max_angle_outside_checks_deg": 178.535,
+    "needles_over_175deg_outside_checks": 47,
+    "row_order_crossings": 0,
+    "checks": [
+     {
+      "check": 0,
+      "count_min": 17,
+      "count_max": 26,
+      "row_to_row_changes": 1,
+      "depth_error_max_m": 0.0
+     },
+     {
+      "check": 2,
+      "count_min": 17,
+      "count_max": 27,
+      "row_to_row_changes": 1,
+      "depth_error_max_m": 0.0
+     }
+    ],
+    "dent_depth_reached": [
+     0.998,
+     0.992,
+     0.988,
+     0.998,
+     0.986,
+     0.922,
+     0.996,
+     1.0,
+     0.942,
+     0.973,
+     0.992,
+     0.97,
+     0.999,
+     0.899,
+     0.993,
+     1.0,
+     0.984,
+     0.97,
+     0.999,
+     1.0,
+     0.961,
+     0.996,
+     0.993,
+     0.946,
+     0.881,
+     0.882,
+     0.996
+    ],
+    "grain_vertices": 466808,
+    "grain_recess_p50_m": 2.3e-05,
+    "grain_recess_p95_m": 4.33e-05,
+    "grain_phase_from_stored_uvs_max_error": 0.0,
+    "triangles": 1088942,
+    "vertices": 544473
+   },
+   "fallback_checks": {
+    "edges": 82455,
+    "edges_not_shared_by_two": 0,
+    "repeated_directed_edges": 0,
+    "volume_m3": 0.40309301008092085,
+    "degenerate_triangles": 0,
+    "min_dot_outside_checks": 0.4732691976493337,
+    "min_dot_in_checks": 0.03291438849675439,
+    "folded_triangles": 0,
+    "steep_triangles_outside_checks": 0,
+    "aspect_p99_outside_checks": 66.7,
+    "aspect_max_outside_checks": 371.9,
+    "max_angle_outside_checks_deg": 145.135,
+    "needles_over_175deg_outside_checks": 0,
+    "row_order_crossings": 0,
+    "triangles": 54970,
+    "vertices": 27487
+   },
+   "visibility": {
+    "plain": {
+     "triangles": 22449,
+     "tilt_p50_deg": 0.081,
+     "tilt_p95_deg": 0.21,
+     "shading_p95_at_30deg_pct": 0.6
+    },
+    "grain": {
+     "triangles": 205277,
+     "tilt_p50_deg": 0.746,
+     "tilt_p95_deg": 2.804,
+     "shading_p95_at_30deg_pct": 8.5
+    },
+    "dent": {
+     "triangles": 6825,
+     "tilt_p50_deg": 1.757,
+     "tilt_p95_deg": 10.194,
+     "shading_p95_at_30deg_pct": 30.8
+    },
+    "knot": {
+     "triangles": 1246,
+     "tilt_p50_deg": 1.237,
+     "tilt_p95_deg": 10.183,
+     "shading_p95_at_30deg_pct": 30.8
+    },
+    "check": {
+     "triangles": 33013,
+     "tilt_p50_deg": 1.225,
+     "tilt_p95_deg": 87.829,
+     "shading_p95_at_30deg_pct": 265.5
+    }
+   }
+  },
+  {
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B00_V2",
+   "kind": "Nageshi",
+   "v1_triangles": 106320,
+   "triangles": 338460,
+   "fallback_triangles": 9746,
+   "ok": true,
+   "dense_checks": {
+    "edges": 507690,
+    "edges_not_shared_by_two": 0,
+    "repeated_directed_edges": 0,
+    "volume_m3": 0.035977121470410656,
+    "degenerate_triangles": 0,
+    "min_dot_outside_checks": 0.5204699769896621,
+    "min_dot_in_checks": 0.02590947522153928,
+    "folded_triangles": 0,
+    "steep_triangles_outside_checks": 0,
+    "aspect_p99_outside_checks": 48.1,
+    "aspect_max_outside_checks": 199.0,
+    "max_angle_outside_checks_deg": 151.334,
+    "needles_over_175deg_outside_checks": 0,
+    "row_order_crossings": 0,
+    "checks": [
+     {
+      "check": 0,
+      "count_min": 17,
+      "count_max": 26,
+      "row_to_row_changes": 2,
+      "depth_error_max_m": 0.0
+     }
+    ],
+    "dent_depth_reached": [
+     0.853,
+     0.985,
+     0.968,
+     0.996,
+     0.999,
+     1.0,
+     0.925
+    ],
+    "grain_vertices": 148621,
+    "grain_recess_p50_m": 2.41e-05,
+    "grain_recess_p95_m": 3.22e-05,
+    "grain_phase_from_stored_uvs_max_error": 0.0,
+    "triangles": 338460,
+    "vertices": 169232
+   },
+   "fallback_checks": {
+    "edges": 14619,
+    "edges_not_shared_by_two": 0,
+    "repeated_directed_edges": 0,
+    "volume_m3": 0.035990236208148556,
+    "degenerate_triangles": 0,
+    "min_dot_outside_checks": 0.572799687181112,
+    "min_dot_in_checks": 0.02591917029700196,
+    "folded_triangles": 0,
+    "steep_triangles_outside_checks": 0,
+    "aspect_p99_outside_checks": 81.0,
+    "aspect_max_outside_checks": 494.3,
+    "max_angle_outside_checks_deg": 144.89,
+    "needles_over_175deg_outside_checks": 0,
+    "row_order_crossings": 0,
+    "triangles": 9746,
+    "vertices": 4875
+   },
+   "visibility": {
+    "grain": {
+     "triangles": 273757,
+     "tilt_p50_deg": 1.968,
+     "tilt_p95_deg": 4.86,
+     "shading_p95_at_30deg_pct": 14.7
+    },
+    "dent": {
+     "triangles": 17220,
+     "tilt_p50_deg": 2.545,
+     "tilt_p95_deg": 7.339,
+     "shading_p95_at_30deg_pct": 22.2
+    },
+    "check": {
+     "triangles": 6743,
+     "tilt_p50_deg": 3.494,
+     "tilt_p95_deg": 87.152,
+     "shading_p95_at_30deg_pct": 263.5
+    }
+   }
+  },
+  {
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B00_V2",
+   "kind": "Cornice",
+   "v1_triangles": 114012,
+   "triangles": 40178,
+   "fallback_triangles": 10012,
+   "ok": true,
+   "dense_checks": {
+    "edges": 60267,
+    "edges_not_shared_by_two": 0,
+    "repeated_directed_edges": 0,
+    "volume_m3": 0.043544008218365314,
+    "degenerate_triangles": 0,
+    "min_dot_outside_checks": 0.3933657621089706,
+    "min_dot_in_checks": 0.04095260142594082,
+    "folded_triangles": 0,
+    "steep_triangles_outside_checks": 0,
+    "aspect_p99_outside_checks": 169.1,
+    "aspect_max_outside_checks": 641.5,
+    "max_angle_outside_checks_deg": 174.523,
+    "needles_over_175deg_outside_checks": 0,
+    "row_order_crossings": 0,
+    "checks": [
+     {
+      "check": 0,
+      "count_min": 17,
+      "count_max": 17,
+      "row_to_row_changes": 0,
+      "depth_error_max_m": 0.0
+     }
+    ],
+    "dent_depth_reached": [
+     0.997,
+     0.999,
+     0.9,
+     0.993,
+     0.924,
+     0.993
+    ],
+    "triangles": 40178,
+    "vertices": 20091
+   },
+   "fallback_checks": {
+    "edges": 15018,
+    "edges_not_shared_by_two": 0,
+    "repeated_directed_edges": 0,
+    "volume_m3": 0.043551816577653446,
+    "degenerate_triangles": 0,
+    "min_dot_outside_checks": 0.578655060929502,
+    "min_dot_in_checks": 0.043810871719408624,
+    "folded_triangles": 0,
+    "steep_triangles_outside_checks": 0,
+    "aspect_p99_outside_checks": 71.0,
+    "aspect_max_outside_checks": 198.2,
+    "max_angle_outside_checks_deg": 136.208,
+    "needles_over_175deg_outside_checks": 0,
+    "row_order_crossings": 0,
+    "triangles": 10012,
+    "vertices": 5008
+   },
+   "visibility": {
+    "plain": {
+     "triangles": 7292,
+     "tilt_p50_deg": 0.048,
+     "tilt_p95_deg": 0.111,
+     "shading_p95_at_30deg_pct": 0.3
+    },
+    "dent": {
+     "triangles": 3605,
+     "tilt_p50_deg": 0.834,
+     "tilt_p95_deg": 6.413,
+     "shading_p95_at_30deg_pct": 19.4
+    },
+    "check": {
+     "triangles": 4603,
+     "tilt_p50_deg": 0.035,
+     "tilt_p95_deg": 86.735,
+     "shading_p95_at_30deg_pct": 262.2
+    }
+   }
+  },
+  {
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B00_V2",
+   "kind": "Koshi",
+   "v1_triangles": 68280,
+   "triangles": 125590,
+   "fallback_triangles": 6836,
+   "ok": true,
+   "dense_checks": {
+    "edges": 188385,
+    "edges_not_shared_by_two": 0,
+    "repeated_directed_edges": 0,
+    "volume_m3": 0.006762855833742039,
+    "degenerate_triangles": 0,
+    "min_dot_outside_checks": 0.1297556342626372,
+    "min_dot_in_checks": 0.056851596714574196,
+    "folded_triangles": 0,
+    "steep_triangles_outside_checks": 3,
+    "aspect_p99_outside_checks": 50.0,
+    "aspect_max_outside_checks": 614.6,
+    "max_angle_outside_checks_deg": 174.255,
+    "needles_over_175deg_outside_checks": 0,
+    "row_order_crossings": 0,
+    "checks": [
+     {
+      "check": 0,
+      "count_min": 17,
+      "count_max": 17,
+      "row_to_row_changes": 0,
+      "depth_error_max_m": 0.0
+     }
+    ],
+    "dent_depth_reached": [
+     0.875,
+     0.99,
+     0.989,
+     0.993,
+     0.976,
+     0.994,
+     0.986
+    ],
+    "grain_vertices": 47251,
+    "grain_recess_p50_m": 4.67e-05,
+    "grain_recess_p95_m": 0.0001243,
+    "grain_phase_from_stored_uvs_max_error": 0.0,
+    "triangles": 125590,
+    "vertices": 62797
+   },
+   "fallback_checks": {
+    "edges": 10254,
+    "edges_not_shared_by_two": 0,
+    "repeated_directed_edges": 0,
+    "volume_m3": 0.006774796189881965,
+    "degenerate_triangles": 0,
+    "min_dot_outside_checks": 0.6060552073453562,
+    "min_dot_in_checks": 0.05685399313288636,
+    "folded_triangles": 0,
+    "steep_triangles_outside_checks": 0,
+    "aspect_p99_outside_checks": 169.1,
+    "aspect_max_outside_checks": 344.1,
+    "max_angle_outside_checks_deg": 135.0,
+    "needles_over_175deg_outside_checks": 0,
+    "row_order_crossings": 0,
+    "triangles": 6836,
+    "vertices": 3420
+   },
+   "visibility": {
+    "grain": {
+     "triangles": 32127,
+     "tilt_p50_deg": 4.361,
+     "tilt_p95_deg": 18.022,
+     "shading_p95_at_30deg_pct": 54.5
+    },
+    "dent": {
+     "triangles": 1902,
+     "tilt_p50_deg": 3.342,
+     "tilt_p95_deg": 12.907,
+     "shading_p95_at_30deg_pct": 39.0
+    }
+   }
+  },
+  {
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B00_V2",
+   "kind": "Nuki",
+   "v1_triangles": 63976,
+   "triangles": 98208,
+   "fallback_triangles": 6428,
+   "ok": true,
+   "dense_checks": {
+    "edges": 147312,
+    "edges_not_shared_by_two": 0,
+    "repeated_directed_edges": 0,
+    "volume_m3": 0.005109137878678274,
+    "degenerate_triangles": 0,
+    "min_dot_outside_checks": 0.20013419216825712,
+    "min_dot_in_checks": 0.02317221235465045,
+    "folded_triangles": 0,
+    "steep_triangles_outside_checks": 0,
+    "aspect_p99_outside_checks": 23.8,
+    "aspect_max_outside_checks": 6136.5,
+    "max_angle_outside_checks_deg": 152.134,
+    "needles_over_175deg_outside_checks": 0,
+    "row_order_crossings": 0,
+    "checks": [
+     {
+      "check": 0,
+      "count_min": 17,
+      "count_max": 25,
+      "row_to_row_changes": 1,
+      "depth_error_max_m": 0.0
+     }
+    ],
+    "dent_depth_reached": [
+     0.848,
+     0.968,
+     0.997,
+     0.97
+    ],
+    "adze_depth_p50_m": 0.002207,
+    "adze_depth_p95_m": 0.003363,
+    "triangles": 98208,
+    "vertices": 49106
+   },
+   "fallback_checks": {
+    "edges": 9642,
+    "edges_not_shared_by_two": 0,
+    "repeated_directed_edges": 0,
+    "volume_m3": 0.005295158664373138,
+    "degenerate_triangles": 0,
+    "min_dot_outside_checks": 0.56897310070306,
+    "min_dot_in_checks": 0.02648058982662113,
+    "folded_triangles": 0,
+    "steep_triangles_outside_checks": 0,
+    "aspect_p99_outside_checks": 126.3,
+    "aspect_max_outside_checks": 477.8,
+    "max_angle_outside_checks_deg": 144.873,
+    "needles_over_175deg_outside_checks": 0,
+    "row_order_crossings": 0,
+    "triangles": 6428,
+    "vertices": 3216
+   },
+   "visibility": {
+    "plain": {
+     "triangles": 380,
+     "tilt_p50_deg": 0.005,
+     "tilt_p95_deg": 0.015,
+     "shading_p95_at_30deg_pct": 0.0
+    },
+    "adze": {
+     "triangles": 38232,
+     "tilt_p50_deg": 3.709,
+     "tilt_p95_deg": 24.614,
+     "shading_p95_at_30deg_pct": 74.4
+    },
+    "dent": {
+     "triangles": 2242,
+     "tilt_p50_deg": 5.194,
+     "tilt_p95_deg": 23.734,
+     "shading_p95_at_30deg_pct": 71.7
+    },
+    "knot": {
+     "triangles": 28,
+     "tilt_p50_deg": 6.3,
+     "tilt_p95_deg": 12.155,
+     "shading_p95_at_30deg_pct": 36.7
+    },
+    "check": {
+     "triangles": 6625,
+     "tilt_p50_deg": 5.509,
+     "tilt_p95_deg": 88.01,
+     "shading_p95_at_30deg_pct": 266.1
+    }
+   }
+  }
+ ],
+ "digest": "sora-timber-geometry-v2",
+ "wander": [
+  300.0,
+  2.6
+ ]
+}
