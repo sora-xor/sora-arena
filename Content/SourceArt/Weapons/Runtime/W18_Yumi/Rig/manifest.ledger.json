@@ -3,7 +3,7 @@
   "kind": "asset-ledger",
   "ledger_id": "own-W18_Yumi_Rig",
   "source": "project",
-  "purpose": "the yumi's continuous skeletal draw rig (28 bones; check geometry sora-yumi-rig-check-v3) in centimetres for Unreal (signed bfaded4), its Blender playback samples, and its grey review originals with the arrow nocked at the posed Grip_R (re-rendered 2026-10-25T14:28Z, signed 15d67ad); built from the committed static bow, not admitted",
+  "purpose": "the yumi's continuous skeletal draw rig (28 bones; check geometry sora-yumi-rig-check-v3) in centimetres for Unreal, rebuilt 2026-10-25T18:31Z from the W18 static rebuild (the skived nigiri strip and the ya corrections, signed 5b65cda), its Blender playback samples, and its grey review originals with the arrow nocked at the posed Grip_R (re-rendered 2026-10-25T18:33Z, signed 5b65cda); built from the committed static bow, not admitted",
   "generator": "scripts/assets/write_own_ledger.py",
   "records": [
     {
@@ -24,7 +24,7 @@
       "attribution_text": null,
       "changes": null,
       "access": "generated",
-      "acquired_at_utc": "2026-10-25T14:28:38Z",
+      "acquired_at_utc": "2026-10-25T18:33:41Z",
       "acquired_by": "agent",
       "storage": "repo-lfs",
       "used_by": [],
@@ -36,172 +36,172 @@
       "derived_from": [
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18.fbx",
-          "sha256": "96ffd4ac042e9dd4a39290c34c4fd855dc47f57b4c09428fe005f3cecd55df39"
+          "sha256": "d3d67dac213822ebf5428b9135e2be49cba286bb9ceaae574dd97127bd046571"
         },
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_Ya.fbx",
-          "sha256": "3fbec542158e1aa6a7fd20b36a4cb12ed749a2a4296a96c59637476560604b40"
+          "sha256": "78d0334bf0d460a5de3b2be5e2b7d7cedc33e6f2d25273eddb58b9a501ef5de7"
         },
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/build_record.json",
-          "sha256": "e598a0df54d4ec06ab9bdff59f8ed0b812b8576729ea17aa87cf85ec20b83fe8"
+          "sha256": "82ab8c54ab675a23dd9b37ceb986f9eca99e70af4e4a55785613ad29e59896ec"
         }
       ],
       "files": [
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_Braced_FullProfile.png",
-          "bytes": 830227,
-          "sha256": "ea0ba4aa6169592569e7f820c8b9aed213ff05e13b58dabab8a88e16c2d79722"
+          "bytes": 829982,
+          "sha256": "72a5a315038fe5109e60a2e5797fc819c211cbda36690558a8fe779655995186"
         },
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_Braced_GripClose.png",
-          "bytes": 989103,
-          "sha256": "7939a849a8eb01267dd49b4f5768b178d1e9c2c38de66466973395aac52589dd"
+          "bytes": 984361,
+          "sha256": "3a4f36b86901d4720d096540106f9f1093e2c2a3a3b1eeab62918010fe2f352a"
         },
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_Braced_NockClose.png",
-          "bytes": 979872,
-          "sha256": "b52eeb5cbcd53ea19a1ffc52e03611d728a509dfde37d32b35db4e4843858acd"
+          "bytes": 979742,
+          "sha256": "3d3903f465be86816c9fd5e4f22baaa6d06147130fa2638526e27af449427d78"
         },
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_Braced_Profile.png",
-          "bytes": 855662,
-          "sha256": "e8754ab9bacecb4d1d13c580e005179db6c286a6f460f41418e60fef8aac4cb3"
+          "bytes": 855245,
+          "sha256": "f42dc3a058069461491be49b12b74da9e43bfa0389ec20466696f23a529f5e11"
         },
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_Braced_TipLClose.png",
           "bytes": 957704,
-          "sha256": "996bc93ffd2ba88b0b181788b77eef50fcb7c044c28e8ec47c03f2f7575dd9d6"
+          "sha256": "faa8e14b7cb16cef557349244ec03fba050709082dd551ae01a00fb6a38af56b"
         },
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_Braced_TipUClose.png",
           "bytes": 907348,
-          "sha256": "9c6ee6fb1999525a8f2176d9a628c68c5d7a20eb7ce296656109e2526f6b36bf"
+          "sha256": "a3306eca51906185d56ee065eb65980e333de7c2564abc0f4fedbd69bbe9fba5"
         },
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_Full_FullProfile.png",
-          "bytes": 835313,
-          "sha256": "9af4b41fc769edbd24cc003fe051eec5d36274d82384dbfe59ef3ca05e4530e6"
+          "bytes": 835303,
+          "sha256": "16556b484b3973506c21c92884347f4852fce64ba1b6e92df871fd3fdd950178"
         },
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_Full_GripClose.png",
-          "bytes": 927093,
-          "sha256": "4d0c49231ded7da4f3fb1caf78b449695f9b10f60ecc7ba28e61674fa47e012a"
+          "bytes": 932090,
+          "sha256": "8a879929416f319b01e83068a6eff3a64b209034949532c216792de0c93255dd"
         },
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_Full_NockClose.png",
-          "bytes": 1005197,
-          "sha256": "191d8123501758d8684a3fa23a28ee2247deaa251e18b4c7c6674bdfc32c71fe"
+          "bytes": 1005198,
+          "sha256": "b7f82692aaf9581b59b1f9e4bdc48d62b907b1a4ff04e7718a93dca9139f9c79"
         },
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_Full_Profile.png",
-          "bytes": 882207,
-          "sha256": "9bc780ba2ec692c64f202c25ab7fbf96bf7e6a104bdcba91853d1c082eeb83bf"
+          "bytes": 882916,
+          "sha256": "8f9fd610ffd8629a107f0042689e47c2e770e8eb044fc7d59e2dee6bd5d496c9"
         },
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_Full_TipLClose.png",
           "bytes": 982370,
-          "sha256": "758eefee4d8c8b2e3b82d29642400f1d101f472ca9fbdc6b2fca1d464d7b5e70"
+          "sha256": "84080f3a4e2fd932b5ff4d9f522733aeef6a47ddd6fb1de67e72a5db6e6ef0c4"
         },
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_Full_TipUClose.png",
           "bytes": 964119,
-          "sha256": "1876f1d8888014e5b4ad312a1a344628ebb722d90c5d147780f156b828cd6740"
+          "sha256": "f0e8b44e27ed1bb2c1d0bd07c220ef9a683eddfa59162e68948a71f86ec782f1"
         },
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_Half_FullProfile.png",
-          "bytes": 837566,
-          "sha256": "11988c65c7fc0e6d3f258ded580033f541e6c4c99880b205f4acebe50945ff04"
+          "bytes": 837394,
+          "sha256": "7823a49dd14b287d0d85fb8aec6371310d92f9cdd594ae94f6708e6e504988c0"
         },
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_Half_GripClose.png",
-          "bytes": 931710,
-          "sha256": "e92490f0134ddbdf4f95204d57d6ce967f1a577f0692271b64b68c636848825a"
+          "bytes": 938531,
+          "sha256": "bcf9dd9ea64ea3298ffc03e2f68b5d7a980b748f01652f86e709e275ff282d46"
         },
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_Half_NockClose.png",
-          "bytes": 998052,
-          "sha256": "ef38176efb71c00881c333130a6858dcaf4f799ae094228fd4cb9b46433e8e80"
+          "bytes": 997841,
+          "sha256": "3f7bf57e9ec3188f507cd54e673e964adba549fc6a2f44c884b65239c690b692"
         },
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_Half_Profile.png",
-          "bytes": 872802,
-          "sha256": "34c6c1afb1e93e6e6d3f209140a633bc3cd569732a4112c5dd6a86c79df8b35a"
+          "bytes": 872447,
+          "sha256": "3f1a1d0d3d125475087069c6c064f2dd5c1e4601eb544f280af3dedfdf957266"
         },
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_Half_TipLClose.png",
           "bytes": 1023272,
-          "sha256": "9344e6fc4273e4b4a1c394b808c6e7b4aaf175bc4be7fa59348199bd4a1eb0c3"
+          "sha256": "1cf3d3cea663c3b7335b5bba6a7b60cb23f830dc5e28fe0cedbcb7312c61f0f1"
         },
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_Half_TipUClose.png",
           "bytes": 922719,
-          "sha256": "2f5d648620718a3e563fe2d6fc58a70da202c9cb89281a4b833fc45ccf705a6d"
+          "sha256": "635267b1f2799fc9336174da67171e820c3cdcba8a6a62c9850412da4da55a77"
         },
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_Quarter_FullProfile.png",
-          "bytes": 835026,
-          "sha256": "5f1edd74ab03f02a6d10988d4c012be3d7fae7a957e65a153491c7ab18684f47"
+          "bytes": 834763,
+          "sha256": "3a3962c47f52341f3d4f2299d2f9b3b3c5de608f17e296c71d863783a23abe02"
         },
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_Quarter_GripClose.png",
-          "bytes": 952769,
-          "sha256": "3442c748ed06cec9431c27f85ab9a9d609a1d340a47bd026909b2f381e5b9066"
+          "bytes": 959050,
+          "sha256": "40c92e088c99c59dd158caa5158d076fa4a7580d17fd895adc1cf46ad52ab319"
         },
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_Quarter_NockClose.png",
-          "bytes": 990525,
-          "sha256": "05b6b81e6a93f8582ac6533f6e7be6d079b3268127276d82606eaa08960bb680"
+          "bytes": 990302,
+          "sha256": "a31a91b366573f1aa11f781f4b01e0d72ef16415565b98b67133e89f71fc407a"
         },
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_Quarter_Profile.png",
-          "bytes": 865882,
-          "sha256": "df2f63342811131e8809ea05b695999f441afe2fce5261c4b5443217e793bbe7"
+          "bytes": 865391,
+          "sha256": "e2c26beb1437772732ffdbd8de2dc58b670139c1c480103c3a11da6273aaf0ec"
         },
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_Quarter_TipLClose.png",
           "bytes": 987107,
-          "sha256": "ae4554ca948a7d44045b2dc90b30e26c25bfdd6d75b4e1647efeb4e64370c347"
+          "sha256": "1a9e06efc0ebbc57e556a80644a93c58946cdf6cf7898466ebe9cd97f7250b3e"
         },
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_Quarter_TipUClose.png",
           "bytes": 897491,
-          "sha256": "68bb675cde406ec02f81c8c1481fdd7c7b7b41eb929cf108e5183cea46e45e63"
+          "sha256": "d0ceafa67ceb4fba6ad7213c99fa5b3957dcac383566ddadc1579f5d55ae7aa1"
         },
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_ThreeQuarter_FullProfile.png",
-          "bytes": 837880,
-          "sha256": "56653cc6acbdc116526f5fcc935b98ff3785f39502ce57dfe63863f375510548"
+          "bytes": 837816,
+          "sha256": "df15933b4562454d2fcb394b85c93cecaedbf071b4793e4f23c2b29cf6359469"
         },
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_ThreeQuarter_GripClose.png",
-          "bytes": 934224,
-          "sha256": "007f738a8a7db7dc60c8d1f7f58a1d7e1c28f5c71fae79f72add607dccd3f924"
+          "bytes": 939586,
+          "sha256": "40b835581c1980f269963a4a78a1955da1d7079b3725abcd7ee8dd6bc6b65631"
         },
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_ThreeQuarter_NockClose.png",
-          "bytes": 999179,
-          "sha256": "b27d2d13399fc1c6637327dd9d910842fe2400011a75dc1a8a8edb8cd862bb07"
+          "bytes": 999818,
+          "sha256": "06a536a6d5437e1214e8e5614128ac8e3bd0fe263ad06a464f279ab357f1869a"
         },
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_ThreeQuarter_Profile.png",
-          "bytes": 876748,
-          "sha256": "22e03dfb404aa424451155cbdfdf9dce8d20279eab8543384adc187505b1ff46"
+          "bytes": 876541,
+          "sha256": "0fb97bb1ddac71e6dc22f143510c1ec00f62b4bdc884c32cb797e8fc50734e78"
         },
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_ThreeQuarter_TipLClose.png",
           "bytes": 1026707,
-          "sha256": "7e2f96c4b6772101851b7009022fb9593573e17d6938e858e81499edbb7d470e"
+          "sha256": "3d5ad70f2c32aed5226f82219dc996bb0b1e47c30472cb9d1b7f9ff4cc03fde1"
         },
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_ThreeQuarter_TipUClose.png",
           "bytes": 943148,
-          "sha256": "5e193b802a4c0be734b9cfafcf1ac1ff8809d6926b7e6f7e1ae02c0f215f7e01"
+          "sha256": "a51d4bd557eb06c3e4fc542234dd2a2f27db2cbd88c6e00e1d1cc894de217409"
         },
         {
           "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/SK_Weapon_18.fbx",
-          "bytes": 7539180,
-          "sha256": "23f73efce9a2115ae7546a5941796645cd7a53a40300da59a29ba569a360e1ab"
+          "bytes": 8476396,
+          "sha256": "dd19ee99651d25f5fe4faa8ab296cf330ed0e2bcdfefc4292dbf9c824d84f181"
         }
       ]
     }

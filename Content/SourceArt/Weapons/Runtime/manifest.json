@@ -15,7 +15,9 @@
   "scripts/art/create_runtime_weapon_polearms.py",
   "scripts/art/create_runtime_weapon_specs.py",
   "scripts/art/create_runtime_weapon_validation.py",
-  "scripts/art/create_runtime_weapon_yumi.py"
+  "scripts/art/create_runtime_weapon_yumi.py",
+  "scripts/art/yumi_nigiri.py",
+  "scripts/art/yumi_ya.py"
  ],
  "regenerate": "python3 scripts/art/create_runtime_weapon_build_all.py",
  "tool": "Blender 5.2.2 LTS (Cycles bake and renders)",
@@ -406,18 +408,18 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_18_Estate_1m.png",
-   "bytes": 3199709,
-   "sha256": "25af060c2f466de6c2c7a8f15a09140e1a0830ff998c26b7bb6fb9c8975f13cb"
+   "bytes": 3193324,
+   "sha256": "bfa7d0fdecca4d9c99d687d1150bcfec6d174212e393cb8f31f731369739468f"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_18_Neutral_1m.png",
-   "bytes": 1345344,
-   "sha256": "bee3ab63edca5c5c7ed9e6ce58f72e748db24932e77dcda24f68fbe331fcf81b"
+   "bytes": 1363776,
+   "sha256": "78ae65c1744ced4003820b257d90a00a361734ead103cf78c6d50f14a601c205"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_18_Profile.png",
-   "bytes": 728206,
-   "sha256": "7a544848349f3390618677299a40fea7d87564b512f590fb00a9c6cbb760f165"
+   "bytes": 817676,
+   "sha256": "7a29d9fd4988f2c449e28a7627b7f161ca88ae5519da70e3529f9a7aa2a206a6"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_19_Estate_1m.png",
@@ -1126,63 +1128,63 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18.blend",
-   "bytes": 2894685,
-   "sha256": "a0945b3447db9a705220253e10fe9f6c269fd4e811fa25c1e993f0f62a5b37ca"
+   "bytes": 6644560,
+   "sha256": "b093c0373764c87773f8250ef1381a674128070450366b2ad8f2d08aa797d3fe"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18.fbx",
-   "bytes": 3649532,
-   "sha256": "e10ebcc150c548d0ce4f3524b169502bb6ab54919ca5c6be9231ce91a5b2740c"
+   "bytes": 7954220,
+   "sha256": "d3d67dac213822ebf5428b9135e2be49cba286bb9ceaae574dd97127bd046571"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_LOD1.fbx",
-   "bytes": 1655484,
-   "sha256": "316e0169d94aa100d0de5d783b3453b200ca561aa5df0b5f3a382e5c3a9cb070"
+   "bytes": 4269148,
+   "sha256": "3c668f4e20cc0d519ab99c65c6e8f47c74f91fb292fee8983be402fe3ca0eb8c"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_LOD2.fbx",
-   "bytes": 606460,
-   "sha256": "ff359193a6d14bf7f3dadf3a93bc2eed7bffda1ed57621d8e046435944f77169"
+   "bytes": 1449452,
+   "sha256": "876b9cbed18252730b94d10848c6528af8a55d87a63d1044bfebb517b5ff2d13"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_Ya.fbx",
-   "bytes": 479452,
-   "sha256": "58dbe62db179f86bc32f19aa17ccb74fc90c47594a20a701ad58987cccd598f5"
+   "bytes": 669452,
+   "sha256": "78d0334bf0d460a5de3b2be5e2b7d7cedc33e6f2d25273eddb58b9a501ef5de7"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_Ya_LOD1.fbx",
-   "bytes": 240908,
-   "sha256": "6c18487ade1a697b01c7330af0057b1aff067da31e0a4bc76695d7dc91979104"
+   "bytes": 322956,
+   "sha256": "11d1aa15aaa5ca0037493a6c2c2265ad21454939ef964d3ef3465a1c0a0323f0"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_Ya_LOD2.fbx",
-   "bytes": 103052,
-   "sha256": "73b414bad7aca1272ea4ce359cc28cc65d002e7368bb9443a0e4f6a953de34a1"
+   "bytes": 135516,
+   "sha256": "4857855fbd1bd1deff7395957cd3954535be05d12d39118cb01eb5bb2b4e63a0"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W18_Yumi/T_Weapon_18_BaseColor.png",
-   "bytes": 2084134,
-   "sha256": "84bdc9ae65e1a72ce2a6c4f6fdfa8fa210507dd12d73d5f1da12085b99061bdb"
+   "bytes": 3231104,
+   "sha256": "da923a099fa50b4e6b6b4549735de9c3fa2c2ecaa9d4328bda4115cc1575db09"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W18_Yumi/T_Weapon_18_Mask.png",
-   "bytes": 927048,
-   "sha256": "7ab45259cec93ce1416ffc1f8847f2c47161cc3036610103b8fcf4057f582604"
+   "bytes": 1176035,
+   "sha256": "601878a782e282b4c682490df45629f0c05a18bebf0348a959fb8f926befbf29"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W18_Yumi/T_Weapon_18_NormalDX.png",
-   "bytes": 2633597,
-   "sha256": "153ed62d978906dbf43252ba23b3a592a828b95226cc5e0b1c0c47a988391928"
+   "bytes": 4236903,
+   "sha256": "6c5b108b1b4e67e28714590bae7c709d24d319cba42b4e5fa26c2ee6f00051e0"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W18_Yumi/T_Weapon_18_ORM.png",
-   "bytes": 2569257,
-   "sha256": "6befa7c14f191966015449e3552e0b6ceccf656f235b75f03d30602efbf7401f"
+   "bytes": 3556509,
+   "sha256": "e719cb96e983e88366f9d4520549a013ec69c5e04978fa1e077c802af58b2919"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W18_Yumi/build_record.json",
-   "bytes": 5264,
-   "sha256": "4fc577ddd952f906a44bffda2b8a74d20ba1d3ab6de9e908da975732b5ec50e8"
+   "bytes": 6334,
+   "sha256": "82ab8c54ab675a23dd9b37ceb986f9eca99e70af4e4a55785613ad29e59896ec"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W19_Yari/SM_Weapon_19.blend",
@@ -1276,8 +1278,160 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/metric_report.json",
-   "bytes": 27332,
-   "sha256": "4a0c5264f4a7293b98987514d5b9444333a8928c8e2e2f0482e79c226c860a99"
+   "bytes": 27501,
+   "sha256": "b74bbe1e741d4ed5cd3b4c80a2be11320c48c20ffb42eda38d2e096472f793be"
+  }
+ ],
+ "scoped_updates": [
+  {
+   "weapon": 18,
+   "key": "W18_Yumi",
+   "recorded_at_utc": "2026-10-25T18:53:54+00:00",
+   "generators": [
+    {
+     "path": "scripts/art/create_runtime_weapon_lib.py",
+     "sha256": "7312e9f2c21532b99f38b332505ec085f9860c0b310026de573903cd51262338"
+    },
+    {
+     "path": "scripts/art/create_runtime_weapon_specs.py",
+     "sha256": "4ce55e9cae49f1dc5dcb029d512cad616c759a1356631e81c0981e45b44a108c"
+    },
+    {
+     "path": "scripts/art/create_runtime_weapon_validation.py",
+     "sha256": "fa90b6b09174b2294cd43dc6e8b1c1239ba2faef4c2e638a7ddb6238ef17e00a"
+    },
+    {
+     "path": "scripts/art/create_runtime_weapon_yumi.py",
+     "sha256": "4f56e1669c9c58867d76ae23cf7addcb9728c03fd9f9f7534d9468f3f67edde9"
+    },
+    {
+     "path": "scripts/art/yumi_nigiri.py",
+     "sha256": "083bbb9ee8738a69837bd7873bca8b835a3de93f13870852f454eadf29c6fe7d"
+    },
+    {
+     "path": "scripts/art/yumi_ya.py",
+     "sha256": "fd800c38f9c75bff87b489d64bd650ce498315b1c57a1c6298264605a379a008"
+    }
+   ],
+   "derived_from": [
+    {
+     "path": "Content/SourceArt/Environment/PolyHaven/kloofendal_overcast_puresky/kloofendal_overcast_puresky_4k.hdr",
+     "sha256": "77ade807bd208195073a51b970dea574fa70cd80cf666aeedf5cd416ab5c8abd"
+    },
+    {
+     "path": "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_arm_2k.png",
+     "sha256": "4d36db2e58b4f044f70b3547f5917ce84f783f5d5543a83ed72884f8542930a3"
+    },
+    {
+     "path": "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_diff_2k.jpg",
+     "sha256": "4c887dd400ed8a5964377c65e20654262307d6888443eae85feb80cc6e72287a"
+    },
+    {
+     "path": "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_nor_dx_2k.png",
+     "sha256": "c1d4c83f14a6ba123f017f1022fca8b92899b577da443c68b3741b6ee9b5b999"
+    },
+    {
+     "path": "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_arm_4k.png",
+     "sha256": "556835168ffb105f31666add0237f7fb7a11a5d6d05d4cfa5979a4e957b9da63"
+    },
+    {
+     "path": "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_diff_4k.jpg",
+     "sha256": "5c8640bbd63e56dbca947dbd2d0be380c661feb556c2949ec95d842ce7f31a59"
+    },
+    {
+     "path": "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_nor_dx_4k.png",
+     "sha256": "958c93dbd644dc7ea925bff951cbe6275c4066f60000417e1abef2c1b9a3e6fc"
+    },
+    {
+     "path": "Local/ThirdPartyRaw/cc0/ambientcg/Leather014/Leather014_2K-JPG_Color.jpg",
+     "sha256": "2fa4bc209d1ebd32ab3274a07bb41b73708717ab40096b077d4d76717a1407d8"
+    },
+    {
+     "path": "Local/ThirdPartyRaw/cc0/ambientcg/Leather014/Leather014_2K-JPG_NormalDX.jpg",
+     "sha256": "7f7fdbe7e8b28b3c25f2b4b21dc0a469bb8ef4962a7bcb8eb65f77398f089565"
+    },
+    {
+     "path": "Local/ThirdPartyRaw/cc0/ambientcg/Leather014/Leather014_2K-JPG_Roughness.jpg",
+     "sha256": "d2c6e22c8bc9873cdc5e3ee7a8c1ab5139058b3969fd9538141f979f43fdca67"
+    },
+    {
+     "path": "Local/ThirdPartyRaw/cc0/ambientcg/Rope001/Rope001_2K-JPG_Color.jpg",
+     "sha256": "b3c6341dd0dbda13747fa4c652eb53a3774900368899b89bb1286475a13a4808"
+    },
+    {
+     "path": "Local/ThirdPartyRaw/cc0/ambientcg/Rope001/Rope001_2K-JPG_NormalDX.jpg",
+     "sha256": "a9c4ceef4ef13321ab2033f6716637cff7cc3e47b111a95cd6d792ba6af4fc3b"
+    },
+    {
+     "path": "Local/ThirdPartyRaw/cc0/ambientcg/Rope001/Rope001_2K-JPG_Roughness.jpg",
+     "sha256": "73bfe960cf7210623b9c11fd8da1a090115dfa075d946d4bb3177de2cfb52cfb"
+    },
+    {
+     "path": "Local/ThirdPartyRaw/cc0/polyhaven/japanese_cedar_planks/japanese_cedar_planks_arm_4k.exr",
+     "sha256": "2bd19c705c5fd6ce9d96e30f4a6eca3c65ae9e765e49e0ece68232d4068837cc"
+    },
+    {
+     "path": "Local/ThirdPartyRaw/cc0/polyhaven/japanese_cedar_planks/japanese_cedar_planks_diff_4k.jpg",
+     "sha256": "37d5acc6cfeee1908701a2d2d8ee08addae4446e91cfb917f332e9e15f787ea4"
+    },
+    {
+     "path": "Local/ThirdPartyRaw/cc0/polyhaven/japanese_cedar_planks/japanese_cedar_planks_nor_dx_4k.exr",
+     "sha256": "456afcc32240945c4acfc08e5b8f6a35f02a385233085ead093a542a399be0bd"
+    }
+   ],
+   "files": [
+    "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_18_Estate_1m.png",
+    "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_18_Neutral_1m.png",
+    "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_18_Profile.png",
+    "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18.blend",
+    "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18.fbx",
+    "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_LOD1.fbx",
+    "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_LOD2.fbx",
+    "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_Ya.fbx",
+    "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_Ya_LOD1.fbx",
+    "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_Ya_LOD2.fbx",
+    "Content/SourceArt/Weapons/Runtime/W18_Yumi/T_Weapon_18_BaseColor.png",
+    "Content/SourceArt/Weapons/Runtime/W18_Yumi/T_Weapon_18_Mask.png",
+    "Content/SourceArt/Weapons/Runtime/W18_Yumi/T_Weapon_18_NormalDX.png",
+    "Content/SourceArt/Weapons/Runtime/W18_Yumi/T_Weapon_18_ORM.png",
+    "Content/SourceArt/Weapons/Runtime/W18_Yumi/build_record.json"
+   ],
+   "metadata_exception": {
+    "file": "Content/SourceArt/Weapons/Runtime/metric_report.json",
+    "before": {
+     "bytes": 27332,
+     "sha256": "4a0c5264f4a7293b98987514d5b9444333a8928c8e2e2f0482e79c226c860a99"
+    },
+    "after": {
+     "bytes": 27501,
+     "sha256": "b74bbe1e741d4ed5cd3b4c80a2be11320c48c20ffb42eda38d2e096472f793be"
+    },
+    "validator_exit": 1,
+    "failing_rows": [
+     3,
+     11,
+     13,
+     16
+    ],
+    "row_before": {
+     "bytes": 2054,
+     "sha256": "86a9071f9b558c8159c7bde1f633a574951ca52d912aca9d44b063c9877c0076"
+    },
+    "row_after": {
+     "bytes": 2210,
+     "sha256": "a24d5cbbe1eda2d78f13b207de14a980eec77c2a4d87393ae8b27dd1e2fc862b"
+    },
+    "checks_new_since_the_reviewed_row": [
+     "normal_tilt_mean"
+    ],
+    "build_record_sha256": "82ab8c54ab675a23dd9b37ceb986f9eca99e70af4e4a55785613ad29e59896ec",
+    "validator_sha256": "fa90b6b09174b2294cd43dc6e8b1c1239ba2faef4c2e638a7ddb6238ef17e00a",
+    "rule": "root's W18-scoped metadata exception (Codex, 2026-10-25): the targeted validation changed metric_report.json only in this weapon's row and the summary, as check_scoped_validation found again here; this one entry is updated, and no other weapon's entry or output is refreshed"
+   },
+   "own_ledgers_kept_apart": [
+    "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig"
+   ],
+   "scope": "OWN provenance: authorship and the exact bytes of these files. Not geometric or visual admission, which only root's review of the rebuilt originals can give."
   }
  ]
 }
