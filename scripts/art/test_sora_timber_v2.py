@@ -180,10 +180,11 @@ class Baseline(unittest.TestCase):
 
     def test_pilot_writes_only_in_its_namespace(self):
         self.assertEqual(PILOT.guard(PILOT.OUT / "Dense" / "x.fbx"), PILOT.OUT / "Dense" / "x.fbx")
-        self.assertEqual(PILOT.NAMESPACE, "NyaagyuDojoTimbersV22Pilot")
+        self.assertEqual(PILOT.NAMESPACE, "NyaagyuDojoTimbersV23Pilot")
         for bad in (PILOT.KIT / "FBX" / "x.fbx", PILOT.ROOT / "Local/ArtCache/NyaagyuDojoTimbers/Unique/x.fbx",
                     PILOT.ROOT / "Content/x.fbx", PILOT.RUN1 / "Dense" / "x.fbx", PILOT.RUN1 / "manifest.json",
-                    PILOT.RUN_V21 / "Renders" / "x.png", PILOT.RUN_V21 / "manifest.json"):
+                    PILOT.RUN_V21 / "Renders" / "x.png", PILOT.RUN_V21 / "manifest.json",
+                    PILOT.RUN_V22 / "Renders" / "x.png", PILOT.RUN_V22 / "manifest.json"):
             with self.subTest(path=str(bad)), self.assertRaises(ValueError):
                 PILOT.guard(bad)
 
@@ -380,8 +381,8 @@ class V21(unittest.TestCase):
         self.assertIn('for layer, arr in (("UV0", uv0), ("UV1", uv1), ("UVLogQ", uv2), ("UVLogZ", uv3)):', src)
         v2 = Path(V.__file__).read_text()
         self.assertIn('uv_layers.new(name="UVKnot")', v2[v2.index("def to_blender("):v2.index("def canonical_digest(")])
-        self.assertEqual(V.UV_CONTRACT["geometry"], "sora-timber-geometry-v2.2")
-        self.assertTrue(V.UV_CONTRACT["unreal_content_path"].endswith("DojoTimberPilotV22"))
+        self.assertEqual(V.UV_CONTRACT["geometry"], "sora-timber-geometry-v2.3")
+        self.assertTrue(V.UV_CONTRACT["unreal_content_path"].endswith("DojoTimberPilotV23"))
         self.assertEqual(V.UV_CONTRACT["ring"]["year_waves"], [list(w) for w in V.YEAR_WAVES])
         self.assertIn("finish", V.UV_CONTRACT)
 
@@ -421,6 +422,34 @@ class WoodCharacter(unittest.TestCase):
         # Directional cuts: the field holds together along the grain far longer than across it.
         self.assertGreater(corr_len(0), 1.5 * corr_len(1))               # v2.2: 18 mm along, 8 mm across
         self.assertTrue(0.0012 <= V.NAGURI["depth_m"][0] < V.NAGURI["depth_m"][1] <= 0.003)
+
+    def test_naguri_has_no_brick_lattice(self):
+        # v2.3: "a staggered brick pattern, most prominent in clay" (root's review
+        # of the v2.2 originals). A lattice repeats at one lane across by half a
+        # stroke along; hand-laid strokes do not. The strongest off-centre peak
+        # of the field's autocorrelation, high passed at 12 mm: v2.2 measured
+        # 0.69 and 0.66 on these faces, v2.3 0.36 and 0.30.
+        m, step = self.nuki, 0.0005
+        for f in (1, 3):
+            half = (m.depth if f % 2 == 0 else m.width) / 2.0
+            u = np.arange(-half + 0.01, half - 0.01, step)
+            z = np.arange(0.8, 1.8, step)
+            Ug, Zg = np.meshgrid(u, z)
+            H = (V.adze(m, Ug.ravel(), Zg.ravel(), f)
+                 - (T._adze_undulation(m, f, Ug.ravel(), Zg.ravel()) - 0.001)).reshape(Ug.shape)
+            H = H - H.mean()
+            nz, nu = H.shape
+            fz, fu = np.fft.fftfreq(nz, step)[:, None], np.fft.fftfreq(nu, step)[None, :]
+            H = np.real(np.fft.ifft2(np.fft.fft2(H) * (1 - np.exp(-2 * (np.pi * 0.012) ** 2 * (fz ** 2 + fu ** 2)))))
+            P = np.zeros((2 * nz, 2 * nu))
+            P[:nz, :nu] = H
+            F = np.fft.fft2(P)
+            A = np.fft.fftshift(np.real(np.fft.ifft2(F * np.conj(F))))
+            oz, ou = np.abs(np.arange(2 * nz) - nz), np.abs(np.arange(2 * nu) - nu)
+            A = A / A.max() * (nz * nu) / (np.clip(nz - oz, 1, None)[:, None] * np.clip(nu - ou, 1, None)[None, :])
+            dz, du = oz[:, None] * step, ou[None, :] * step
+            off = ((dz > 0.020) | (du > 0.010)) & (dz < 0.25) & (du < 0.5 * nu * step)
+            self.assertLess(float(A[off].max()), 0.45, f"face {f}")
 
     def test_dents_are_crushed_grooves_without_a_rim(self):
         # "Column_DentClose still reads as a soft blister"

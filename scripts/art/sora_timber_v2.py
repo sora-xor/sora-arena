@@ -1,4 +1,4 @@
-"""Version 2.1 of the dojo timber logs (sora-timber-geometry-v2.1), for the six-member pilot.
+"""Version 2.3 of the dojo timber logs (sora-timber-geometry-v2.3), for the pilot members.
 
 Numpy only; mesh creation and export reuse sora_timber_lib.to_blender in Blender.
 Version 1 (sora_timber_lib.py) and the frozen 6b0e93e kit are untouched: this
@@ -38,6 +38,16 @@ What v2 adds, all as real geometry on the Nanite logs:
 * **Forks:** each names its own parent check; Y-junctions are explicit
   (junctions).
 
+**v2.2** gave the wood its character (year-to-year rings, crushed dents, a
+satin finish); the materials' ring formula is still v2.2's.
+
+**v2.3** redoes the naguri, which root's review of the v2.2 originals found
+was a staggered brick grid, most visible in clay. The chona's strokes are now
+hand-laid (_naguri_layout), and each facet is a leaf-shaped scoop (adze). On
+the Nuki's adzed faces, the field's strongest off-centre autocorrelation, high
+passed at 12 mm, fell from 0.69 and 0.66 (v2.2, half a stroke along by one lane
+across) to 0.36 and 0.30, at one stroke's length within its own lane.
+
 UV_CONTRACT is the importer and material mapping. material_phase is its
 reference.
 
@@ -53,6 +63,7 @@ from __future__ import annotations
 
 import dataclasses
 import hashlib
+import functools
 import math
 from dataclasses import dataclass, field
 
@@ -60,7 +71,7 @@ import numpy as np
 
 import sora_timber_lib as T
 
-DIGEST_VERSION = "sora-timber-geometry-v2.2"
+DIGEST_VERSION = "sora-timber-geometry-v2.3"
 LATEWOOD = 0.24                        # the masters' Latewood parameter
 # v2.1: between vertices the materials interpolate the log frame (UVLogQ)
 # linearly, so rows and samples go wherever that would move a ring. The
@@ -238,14 +249,14 @@ def ring_year(ring, seed01, arrays):
 # The v2.1 UV contract: what each channel carries and how Unreal decodes it
 # ---------------------------------------------------------------------------
 
-UNREAL_NAMESPACE = "/Game/Generated/Qualification/DojoTimberPilotV22"
+UNREAL_NAMESPACE = "/Game/Generated/Qualification/DojoTimberPilotV23"
 UV_CONTRACT = {
     "geometry": DIGEST_VERSION,
     "unreal_content_path": UNREAL_NAMESPACE,
-    "master": "a dedicated PilotV22 timber master (and fallback master) in the PilotV22 content path that decodes UV4 "
+    "master": "a dedicated PilotV23 timber master (and fallback master) in the PilotV23 content path that decodes UV4 "
               "and applies the v2.2 ring formula below (the wander and the year waves); never the baseline timber_master, whose ring "
               "model and four channels do not apply, nor the v2.1 formula. Not implemented in the importer yet.",
-    "readback": "after import, before any material review: read back each PilotV22 static mesh's UV channel count (5) "
+    "readback": "after import, before any material review: read back each PilotV23 static mesh's UV channel count (5) "
                 "and, at known source vertices, the decoded UV0, UVLogQ, UVLogZ seed and UVKnot values against the FBX "
                 "source (to 1e-6), and the material's resolved parent and sampler types.",
     "import_decode": "Interchange imports every channel as (U, 1 - V). Decode with flip_v before reading UV0/UVLogQ/"
@@ -793,7 +804,7 @@ def _from_arris(m: MemberV2, f: int, u, width: float):
     return t * t * (3 - 2 * t)
 
 
-# The naguri (v2.2), against controlled, reference-based ranges. A chona
+# The naguri (v2.3), against controlled, reference-based ranges. A chona
 # stroke leaves one facet:
 # - across the grain, the blade's arc;
 # - along it, a chip deepest just after its steep entry, where the previous
@@ -801,8 +812,9 @@ def _from_arris(m: MemberV2, f: int, u, width: float):
 # Lanes overlap across and strokes overlap along, so the deepest cut wins
 # everywhere: no flat land, and crisp ridges where cuts meet. Rows are
 # staggered half a stroke; each swing turns up to 8 degrees in the face.
-NAGURI = {"lane_m": (0.030, 0.040), "stroke_m": (0.050, 0.070), "depth_m": (0.0012, 0.0026),
-          "half_width_of_lane": 0.62, "length_of_stroke": 1.35, "jitter": 0.24, "swing_deg": 8.0,
+NAGURI = {"lane_m": (0.026, 0.040), "lane_overlap": 0.9, "stroke_m": (0.045, 0.075), "advance": (0.55, 0.76),
+          "depth_m": (0.0012, 0.0026), "half_width_of_lane": 0.72, "width_jitter": 0.15, "shift": 0.10,
+          "swing_deg": 12.0, "meander": 0.16, "wave_m": (0.18, 0.40), "leaf": 0.40, "floor": 0.8,
           "entry": 0.3, "exit": 1.1}
 
 
@@ -814,40 +826,73 @@ def _naguri_profile(t):
     return tc ** e * (1.0 - tc) ** x / (peak ** e * (1.0 - peak) ** x)
 
 
-def adze(m: MemberV2, u, z, f):
-    """The chona-hatsuri as naguri facets (NAGURI), plus v1's slow undulation.
+@functools.lru_cache(maxsize=64)
+def _naguri_layout(seed: int, half: float, length: float):
+    """The chona's strokes on one face (v2.3), as a carpenter lays them.
 
-    v2.1 was v1's round (1 - q)^2 scoops on a lattice: they never covered
-    their lanes and faded to zero at every rim, so they read as a grid of
-    hammered dimples (root's review of the v2.1 originals)."""
-    seed = m.seed * 131 + f * 17
+    - **Lanes:** run along the grain across the face, each its own width,
+      overlapping its neighbour by a tenth.
+    - **Strokes:** follow one after another down each lane, each its own
+      length, advance, depth, swing, width and sideways shift.
+
+    Returns (centre, width, wave, phase, strokes) per lane, where strokes is
+    an array of (z0, length, depth, angle, width scale, shift)."""
     rng = np.random.default_rng(seed)
-    a = rng.uniform(*NAGURI["lane_m"])
-    b = rng.uniform(*NAGURI["stroke_m"])
-    jit = NAGURI["jitter"]
-    j0 = np.floor(u / a).astype(np.int64)
-    best = np.zeros(u.size)
-    for dj in (-1, 0, 1):
-        j = j0 + dj
-        zoff = (j % 2) * b * 0.5 + (T.hash01(seed, j, 7) - 0.5) * b * jit
-        k0 = np.floor((z - zoff) / b).astype(np.int64)
-        for dk in (-2, -1, 0, 1):
-            k = k0 + dk
+    lanes = []
+    u = -half - rng.uniform(0.0, NAGURI["lane_m"][1])
+    while u < half + NAGURI["lane_m"][1]:
+        a = rng.uniform(*NAGURI["lane_m"])
+        z = -rng.uniform(0.0, NAGURI["stroke_m"][1])
+        strokes = []
+        while z < length + NAGURI["stroke_m"][1]:
+            L = rng.uniform(*NAGURI["stroke_m"])
+            strokes.append((z, L, rng.uniform(*NAGURI["depth_m"]),
+                            math.radians(rng.uniform(-1.0, 1.0) * NAGURI["swing_deg"]),
+                            1.0 + rng.uniform(-1.0, 1.0) * NAGURI["width_jitter"], rng.normal(0.0, NAGURI["shift"])))
+            z += L * rng.uniform(*NAGURI["advance"])
+        lanes.append((u + a / 2, a, rng.uniform(*NAGURI["wave_m"]), rng.uniform(0.0, 2 * math.pi), np.array(strokes)))
+        u += a * NAGURI["lane_overlap"]
+    return tuple(lanes)
 
-            def h(c):
-                return T.hash01(seed, j, k, c) - 0.5
-            uc = (j + 0.5 + h(1) * jit) * a
-            zs = zoff + (k + h(2) * jit) * b
-            length = NAGURI["length_of_stroke"] * b * (1 + h(3) * jit)
-            hw = NAGURI["half_width_of_lane"] * a * (1 + h(4) * jit)
-            dep = NAGURI["depth_m"][0] + (NAGURI["depth_m"][1] - NAGURI["depth_m"][0]) * (h(5) + 0.5)
-            ang = math.radians(NAGURI["swing_deg"]) * h(6) * 2.0
-            du, dz = u - uc, z - zs
-            x = du * np.cos(ang) - dz * np.sin(ang)
-            t = (du * np.sin(ang) + dz * np.cos(ang)) / length
-            inside = (np.abs(x) < hw) & (t > 0.0) & (t < 1.0)
-            cut = np.where(inside, dep * np.clip(1.0 - (x / hw) ** 2, 0.0, None) * _naguri_profile(t), 0.0)
-            best = np.maximum(best, cut)
+
+def adze(m: MemberV2, u, z, f):
+    """The chona-hatsuri as naguri facets, plus v1's slow undulation (v2.3).
+
+    Each facet is a leaf-shaped scoop: narrow at its entry and exit, deepest
+    just after the strike, flat-bottomed across. Where scoops overlap, the
+    deeper wins, so neighbours meet in crisp curved ridges. The layout is
+    hand-laid (_naguri_layout).
+    - v2.1 was round scoops on a lattice: a grid of hammered dimples.
+    - v2.2 was rectangular facets in one lane width and stroke length per
+      face, every other lane offset by half a stroke: a staggered brick
+      pattern, most prominent in clay (root's reviews of the originals)."""
+    seed = m.seed * 131 + f * 17
+    u = np.asarray(u, np.float64)
+    z = np.asarray(z, np.float64)
+    half = (m.depth if f % 2 == 0 else m.width) / 2.0
+    best = np.zeros(u.size)
+    for uc0, a, wave, phase, strokes in _naguri_layout(seed, round(half, 6), round(float(m.length), 6)):
+        reach = a * (NAGURI["half_width_of_lane"] * (1 + NAGURI["width_jitter"]) + NAGURI["meander"]
+                     + 4 * NAGURI["shift"])
+        idx = np.nonzero(np.abs(u - uc0) < reach)[0]
+        if idx.size == 0:
+            continue
+        order = np.argsort(z[idx], kind="stable")
+        zs = z[idx][order]
+        for z0, L, dep, ang, wsc, sh in strokes:
+            lo, hi = np.searchsorted(zs, z0 - 0.01), np.searchsorted(zs, z0 + L + 0.01)
+            if hi <= lo:
+                continue
+            pick = idx[order[lo:hi]]
+            uc = uc0 + NAGURI["meander"] * a * math.sin(z0 / wave + phase) + sh * a
+            hw = NAGURI["half_width_of_lane"] * a * wsc
+            du, dz = u[pick] - uc, z[pick] - z0
+            x = du * math.cos(ang) - dz * math.sin(ang)
+            t = (du * math.sin(ang) + dz * math.cos(ang)) / L
+            w = hw * np.clip(np.sin(math.pi * np.clip(t, 0.0, 1.0)), 0.0, 1.0) ** NAGURI["leaf"]
+            inside = (t > 0.0) & (t < 1.0) & (np.abs(x) < w)
+            across = np.clip(1.0 - (x / np.maximum(w, 1e-9)) ** 2, 0.0, None) ** NAGURI["floor"]
+            best[pick] = np.maximum(best[pick], np.where(inside, dep * across * _naguri_profile(t), 0.0))
     return -best + T._adze_undulation(m, f, u, z) - 0.001
 
 

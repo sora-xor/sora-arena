@@ -41,12 +41,14 @@ INDOOR = (25e-6, 45e-6)
 # Each geometry version writes a namespace of its own. These are as frozen as
 # the v1 kit and its cache, each archived read-only:
 # - run 1, the v2 pilot (verified from the frozen 82869a4 inputs);
-# - the v2.1 pilot (made at 4481327).
-NAMESPACE = "NyaagyuDojoTimbersV22Pilot"
+# - the v2.1 pilot (made at 4481327);
+# - the v2.2 pilot (run at 0d9a6ef; its originals reviewed by root).
+NAMESPACE = "NyaagyuDojoTimbersV23Pilot"
 OUT = ROOT / "Local/ArtCache" / NAMESPACE
 RUN1 = ROOT / "Local/ArtCache/NyaagyuDojoTimbersV2Pilot"
 RUN_V21 = ROOT / "Local/ArtCache/NyaagyuDojoTimbersV21Pilot"
-FROZEN = (KIT, ROOT / "Local/ArtCache/NyaagyuDojoTimbers", RUN1, RUN_V21)
+RUN_V22 = ROOT / "Local/ArtCache/NyaagyuDojoTimbersV22Pilot"
+FROZEN = (KIT, ROOT / "Local/ArtCache/NyaagyuDojoTimbers", RUN1, RUN_V21, RUN_V22)
 
 
 def guard(path: Path) -> Path:

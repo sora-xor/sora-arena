@@ -8,11 +8,19 @@
   It ran once in Blender on CPU at `4481327` (exit 0, 15 renders) and was
   archived read-only (`data/timber_pilot_v21_run1.json`). Root's review:
   the geometry is corrected, and the wood character still fails.
-- **v2.2 (`sora-timber-geometry-v2.2`):** that wood character. Source and CPU
-  checks only: not run, rendered or imported (below).
+- **v2.2 (`sora-timber-geometry-v2.2`):** the wood character. It ran once
+  at `0d9a6ef` (Blender PID 96256, natural exit 0, 15 originals) and was
+  archived read-only (`data/timber_pilot_v22_run1.json`: 46 files,
+  477,383,434 bytes). Root reviewed all 15 and rejected them, as did I
+  (below).
+- **v2.3 (`sora-timber-geometry-v2.3`):** source and CPU only, not run.
+  - It redoes the naguri.
+  - It measures the two CC0 scans the focused patch study is judged against.
+  - It adds the study's driver.
 - **Untouched:** the frozen v1 slice (`6b0e93e`) and its 8.4 GB baseline cache.
-- **Namespaces:** v2.2 writes only `Local/ArtCache/NyaagyuDojoTimbersV22Pilot/`.
-  The path guard refuses run 1, the v2.1 run, the v1 kit and its cache.
+- **Namespaces:** v2.3 writes only `Local/ArtCache/NyaagyuDojoTimbersV23Pilot/`,
+  and its patch study only `Local/ArtCache/NyaagyuDojoTimbersV23Patch/`. The
+  path guards refuse run 1, the v2.1 and v2.2 runs, the v1 kit and its cache.
 
 ## Run 1 (v2), archived
 
@@ -148,7 +156,111 @@ with a crushed rim. They're sampled at 1.5 mm.
 at 2 cm, with grain, adze scallops, knots and dents left to the bake from the
 dense mesh.
 
-## v2.2: wood character (source and CPU only; not run)
+## v2.3: the naguri, the scan reference and the focused patch study (source and CPU only; not run)
+
+**Root's review of the v2.2 originals:**
+
+- Broad brown bands with hard, faceted boundaries dominate.
+- Fine longitudinal fibres are not resolved.
+- GrainClose has a faint diagonal crosshatch, cause unmeasured.
+- CheckClose is a mostly uniform dark slot with a smooth bright lip.
+- Clay GrainClose is nearly smooth apart from the crack.
+- The nuki's rectangular, staggered pattern is prominent in clay.
+- Root asked for one column and one rail, iterated against real close-up wood
+  at the same physical scale, before another full batch. Ring, fibre and
+  check character must show in clay and grazing light as well as in the
+  material.
+
+**The naguri** (`adze`, `_naguri_layout`):
+
+- The chōna strokes are hand-laid. Each lane has its own width, overlapping
+  its neighbour by a tenth. Each stroke has its own length, advance, depth,
+  swing, width and sideways shift.
+- Each facet is a leaf-shaped scoop: narrow at entry and exit, deepest just
+  after the strike, flat-bottomed across. The deeper cut wins where scoops
+  overlap.
+- **Measured** on the nuki's adzed faces: the strongest off-centre
+  autocorrelation of the field, high-passed at 12 mm, fell from 0.69 and 0.66
+  (v2.2's brick lattice: half a stroke along, one lane across) to 0.36 and
+  0.30, at one stroke's length within its own lane.
+- `test_naguri_has_no_brick_lattice` requires it below 0.45.
+
+**The scan reference** (`scripts/art/timber_scan_reference.py` →
+`data/timber_scan_reference.json`):
+
+- Inputs: Poly Haven's `hinoki_planks` and `japanese_cedar_planks` diffuse
+  maps, at their ledgered sizes of 1,890 and 1,130 mm, so 0.461 and
+  0.276 mm/px.
+- Measured on linear luminance, in 36 × 8 mm windows whose ring lines run
+  within 12° of the grain, with plank seams kept out.
+
+| | Hinoki (planed, flat-sawn) | Sugi |
+| --- | --- | --- |
+| Windows measured | 2,699 | 45 (mostly arched figure) |
+| Apparent ring spacing p10 / p50 / p90 | 1.46 / 3.14 / 11.5 mm | 5.8 / 8.3 / 14.0 mm |
+| Latewood share (below the p5–p95 midpoint), p50 | 0.37 | 0.32 |
+| Ring contrast p95/p5, p50 | 1.33 | 1.38 |
+| Earlywood / latewood mean luminance | 1.19 | 1.21 |
+| Fibre band (0.92–1.5 mm) RMS over ring band (1.5–15 mm), p50 | 0.31 | 0.15 |
+| Fibre band RMS over mean luminance, p50 | 2.0% | 1.3% |
+| Earlywood, latewood (sRGB) | #a07e59, #97734f | #bd6f12, #b16209 |
+
+How to read the table:
+
+- **Spacing is on the face.** A flat-sawn face cuts rings obliquely, so
+  apparent spacing runs wider than ring width. Hinoki's narrowest decile,
+  1.46 mm, sits at the low end of the pilot's 1.4–2.4 mm rings.
+- **The seam count is a count of dips.** Strong straight latewood lines and
+  knot rows add false seams in hinoki, so its plank width is the p75–p90 seam
+  spacing, 143–145 mm. Sugi's is 80 mm.
+- **The fibre band is a lower bound,** because the JPEG softens it. The
+  normal and roughness EXRs are DWA-compressed, which no host reader here
+  decodes, so the study reads them in Blender.
+
+**What this says about v2.2's materials, before any render:**
+
+- **The rings are stronger than either scan's.** The masters' and the
+  look-dev's EarlyColor and LateColor give a luminance ratio of 1.71. With
+  the latewood weight at its mean, 0.8, it is about 1.5. Both fresh scans are
+  at 1.19–1.21. That fits root's "broad brown bands".
+- **The latewood band is narrower and harder.** v2.2 rises from earlywood to
+  latewood over a tenth of a ring and gives the band 24% of it. The scans'
+  latewood share is 0.32–0.37.
+- **Fresh wood is an upper bound on contrast.** Age, soot and wiped urushi
+  (which soaks the porous earlywood more) all lower ring contrast. So matching
+  the fresh scans' contrast is a ceiling, not a target to tune toward.
+
+**The focused patch study** (`scripts/art/render_timber_patch_study.py`; it
+needs a Blender slot):
+
+- **Members:** the wall column and the nuki, built and checked as the pilot
+  builds them. Nothing is exported.
+- **Patches:** orthographic, fronto-parallel views at the sugi scan's
+  0.276 mm/px. The column's GrainClose region is 140 × 200 mm; the nuki's
+  adzed face is 100 × 240 mm.
+- **Views:**
+  - clay under a sun 10° off the face, travelling across and along the grain;
+  - the material under the same grazing sun, and under a soft sky with a key;
+  - base colour as emission, at both scans' pitches, for measurement;
+  - the shading normal (geometry and bump) in camera space.
+- **Two materials:**
+  - v2.3 as built;
+  - `scan_contrast`, whose late colour moves toward the early colour by
+    α = (1 − 1/r_t)/(1 − 1/r₀). Here r₀ is the measured v2.3 base-colour
+    ratio and r_t the scans' mean, 1.20. The run measures what that achieves.
+- **Measurements:**
+  - the scan reference's statistics, on the rendered base colour;
+  - across-grain slope band RMS, from the shading normals and from the scans'
+    normal maps. Poly Haven's normal strength is a processing choice, so slope
+    compares as an order of magnitude only.
+- **Output:** one contact sheet per patch, every panel at the same physical
+  size: the scans, both base colours, both materials under each light, and
+  clay under each light. Plus `study.json`.
+
+**Not done:** no Blender run, render, import or Unreal draw of v2.3. No
+photoreal claim.
+
+## v2.2: wood character (ran at `0d9a6ef`; rejected)
 
 Root reviewed the 15 v2.1 originals. The crack is continuous, but five
 surfaces still fail physical wood character. v2.2 corrects each with
@@ -171,9 +283,10 @@ rule and the finish (`UV_CONTRACT["ring"]["year_waves"]`, `["year"]`,
 namespace is `Local/ArtCache/NyaagyuDojoTimbersV22Pilot/`; the path guard
 refuses run 1 and the v2.1 run.
 
-**Not done:** no Blender run, render, import or Unreal draw of v2.2. Its
-renders, under the next bounded slot, decide whether these read as wood. No
-photoreal claim.
+**The run:** v2.2 ran once at `0d9a6ef` (Blender PID 96256, natural exit 0,
+15 originals; `data/timber_pilot_v22_run1.json`). Its renders did not read as
+wood: root's findings and the response are under v2.3 above. No Unreal import
+or draw of v2.2. No photoreal claim.
 
 ## v2.1: what changes and how it is checked
 
