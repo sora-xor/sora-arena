@@ -168,9 +168,12 @@ bool FSoraHorseShellCoverTest::RunTest(const FString& Parameters)
     (void)Parameters; using namespace SoraHorseShellTest;
     FBeatWorld W(*this,TEXT("HorseShellCover"),1,5); auto* E=Ready(W); if(!E) return false;
     auto* Bus=USoraGameEvents::Get(E); int Bursts=0; FVector BlastPoint;
+    FVector LaunchOrigin,LaunchDirection;
+    const auto Fired=Bus->OnWeaponFired.AddLambda([&](const FSoraWeaponFiredEvent& ShotEvent)
+    { if(ShotEvent.Shooter==E&&ShotEvent.Kind==ESoraShotKind::Shell) { LaunchOrigin=ShotEvent.Origin; LaunchDirection=ShotEvent.Direction; } });
     const auto Event=Bus->OnDetonated.AddLambda([&](const FSoraDetonatedEvent& D)
     { if(D.Instigator==E) { ++Bursts; BlastPoint=D.Location; } });
-    ON_SCOPE_EXIT { Bus->OnDetonated.Remove(Event); };
+    ON_SCOPE_EXIT { Bus->OnDetonated.Remove(Event); Bus->OnWeaponFired.Remove(Fired); };
     if(!Warning(W,*E)) return false;
     auto* Cover=Wall(W,650); if(!TestNotNull(TEXT("Physical cover after aim is locked"),Cover)) return false;
     auto* Shot=Release(W,*E); if(!Shot||!Land(W,E,Shot)) return false;
@@ -179,8 +182,21 @@ bool FSoraHorseShellCoverTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("Physical cover blocks horse blast damage"),W.Campaign()->TaskProgress().TargetHp[0],400);
     Cover->Destroy();
     if(!Warning(W,*E)) return false;
-    Cover=Wall(W,-1030); if(!Cover) return false;
-    Shot=Release(W,*E); if(!Shot||!Land(W,E,Shot)) return false;
+    // The first wall blocked sight after release, so ordinary navigation may
+    // have moved the shooter while that shell flew. Place this obstruction
+    // relative to the current shooter, not the original staged pose.
+    FVector WallAt=E->GetActorLocation()+E->GetActorForwardVector()*170.f; WallAt.Z=200;
+    Cover=Wall(W,WallAt.X); if(!Cover) return false;
+    Cover->SetActorLocation(WallAt); Cover->SetActorRotation(FRotator(0,E->GetActorRotation().Yaw,0));
+    Shot=Release(W,*E); if(!Shot) return false;
+    FCollisionQueryParams Query(SCENE_QUERY_STAT(HorseShellDudFixture),false,E); Query.AddIgnoredActor(Shot);
+    FHitResult Contact;
+    const bool Blocked=W.World->GetTestWorld()->SweepSingleByChannel(Contact,LaunchOrigin,LaunchOrigin+LaunchDirection*199.f,
+        FQuat::Identity,ECC_Visibility,FCollisionShape::MakeSphere(9.f),Query);
+    AddInfo(FString::Printf(TEXT("Horse dud fixture: shooter=(%s) launch=(%s) wall=(%s) first=%s distance=%.3f travel=%.3f"),
+        *E->GetActorLocation().ToString(),*LaunchOrigin.ToString(),*WallAt.ToString(),*GetNameSafe(Contact.GetActor()),Contact.Distance,Shot->TraveledCm()));
+    if(!TestTrue(TEXT("Actual launch corridor hits the intended wall before the 200 cm arming distance"),
+        Blocked&&Contact.GetActor()==Cover&&Contact.Distance<200)||!Land(W,E,Shot)) return false;
     TestEqual(TEXT("The shell stopped before 200 cm never broadcasts a detonation"),Bursts,1);
     TestEqual(TEXT("The dud deals no horse damage"),W.Campaign()->TaskProgress().TargetHp[0],400);
     Cover->Destroy();
