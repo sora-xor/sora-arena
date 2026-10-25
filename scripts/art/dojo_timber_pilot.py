@@ -38,14 +38,18 @@ import timber_density_study as D  # noqa: E402
 ROOT = HERE.parents[1]
 KIT = ROOT / "Content/SourceArt/Environment/NyaagyuDojoTimbers"
 INDOOR = (25e-6, 45e-6)
-NAMESPACE = "NyaagyuDojoTimbersV2Pilot"
+# v2.1 (sora-timber-geometry-v2.1) writes a namespace of its own. Run 1, the
+# v2 pilot (archived read-only, verified from the frozen 82869a4 inputs), is as
+# frozen as the v1 kit and its cache.
+NAMESPACE = "NyaagyuDojoTimbersV21Pilot"
 OUT = ROOT / "Local/ArtCache" / NAMESPACE
-FROZEN = (KIT, ROOT / "Local/ArtCache/NyaagyuDojoTimbers")
+RUN1 = ROOT / "Local/ArtCache/NyaagyuDojoTimbersV2Pilot"
+FROZEN = (KIT, ROOT / "Local/ArtCache/NyaagyuDojoTimbers", RUN1)
 
 
 def guard(path: Path) -> Path:
     """``path`` if it lies in the pilot namespace; refuses anything else,
-    above all the frozen v1 kit and its baseline cache."""
+    above all the frozen v1 kit, its baseline cache and the archived run 1."""
     p = Path(path).resolve()
     out = OUT.resolve()
     if p != out and out not in p.parents:
@@ -103,6 +107,31 @@ def budget():
     return rows
 
 
+def checks():
+    """Every pilot mesh's check_mesh result, and the room face's relief visibility,
+    as docs/art-direction/data/timber_pilot_checks.json records them."""
+    arrays = V.shared_arrays()
+    rows = []
+    for m, fam, kind, rec in pilot_members():
+        B = V.build(m, arrays)
+        mf = V.fallback(m)
+        Bf = V.build(mf, arrays)
+        dense, fb = V.check_mesh(B, m), V.check_mesh(Bf, mf)
+        rows.append({"asset": m.name, "kind": kind, "v1_triangles": rec["triangles"],
+                     "triangles": dense["metrics"]["triangles"], "fallback_triangles": fb["metrics"]["triangles"],
+                     "ok": dense["ok"] and fb["ok"], "dense_checks": dense["metrics"], "fallback_checks": fb["metrics"],
+                     "failures": dense["failures"] + fb["failures"],
+                     "visibility": V.relief_visibility(B, m, face=2 if kind == "Koshi" else 3)})
+    return {"pilot": rows, "digest": V.DIGEST_VERSION, "wander": [V.WANDER_RINGS_PER_UNIT, V.WANDER_AMPLITUDE],
+            "uv_contract": V.UV_CONTRACT}
+
+
 if __name__ == "__main__":
-    for row in budget():
-        print(json.dumps(row))
+    if "--checks" in sys.argv:
+        out = Path(sys.argv[sys.argv.index("--checks") + 1])
+        data = checks()
+        out.write_text(json.dumps(data, indent=1) + "\n")
+        print(out, "ok" if all(r["ok"] for r in data["pilot"]) else "FAILURES")
+    else:
+        for row in budget():
+            print(json.dumps(row))

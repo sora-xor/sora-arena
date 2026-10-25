@@ -4,24 +4,84 @@
    "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B01_V2",
    "kind": "wall",
    "v1_triangles": 470624,
-   "triangles": 454612,
-   "fallback_triangles": 44918,
+   "triangles": 547268,
+   "fallback_triangles": 45696,
    "ok": true,
    "dense_checks": {
-    "edges": 681918,
+    "edges": 820902,
     "edges_not_shared_by_two": 0,
     "repeated_directed_edges": 0,
-    "volume_m3": 0.4030553278370053,
+    "volume_m3": 0.4030552674911328,
     "degenerate_triangles": 0,
-    "min_dot_outside_checks": 0.4090900186447042,
-    "min_dot_in_checks": 0.01818738674106966,
+    "min_dot_outside_checks": 0.4082355352628907,
+    "min_dot_in_checks": 0.01816204555306445,
     "folded_triangles": 0,
     "steep_triangles_outside_checks": 0,
-    "aspect_p99_outside_checks": 66.7,
-    "aspect_max_outside_checks": 933.9,
+    "aspect_p99_outside_checks": 50.0,
+    "aspect_max_outside_checks": 1519.4,
     "max_angle_outside_checks_deg": 176.887,
-    "needles_over_175deg_outside_checks": 31,
+    "needles_over_175deg_outside_checks": 33,
     "row_order_crossings": 0,
+    "check_joins": [
+     {
+      "check": 0,
+      "fork": false,
+      "row_pairs": 410,
+      "joined": 410,
+      "junction_pairs": 0,
+      "steps": 0
+     },
+     {
+      "check": 1,
+      "fork": false,
+      "row_pairs": 110,
+      "joined": 110,
+      "junction_pairs": 0,
+      "steps": 0
+     },
+     {
+      "check": 2,
+      "fork": false,
+      "row_pairs": 340,
+      "joined": 340,
+      "junction_pairs": 0,
+      "steps": 0
+     },
+     {
+      "check": 3,
+      "fork": true,
+      "row_pairs": 17,
+      "joined": 17,
+      "junction_pairs": 0,
+      "steps": 0
+     }
+    ],
+    "junctions": [
+     {
+      "fork": 3,
+      "parent": 2,
+      "face": 3,
+      "z": 5.03671,
+      "window_rows": 2,
+      "window_length_m": 0.002,
+      "exempt_pairs": [],
+      "continuous": true
+     }
+    ],
+    "ring_error_rings": {
+     "close": {
+      "triangles": 360712,
+      "p50": 0.0013,
+      "p99": 0.0188,
+      "max": 0.0492
+     },
+     "far": {
+      "triangles": 59304,
+      "p50": 0.004,
+      "p99": 0.1132,
+      "max": 0.2331
+     }
+    },
     "checks": [
      {
       "check": 0,
@@ -60,70 +120,117 @@
      0.929,
      0.99,
      0.997,
-     0.993,
-     0.99,
+     0.987,
+     0.989,
      0.965,
-     0.935,
+     0.936,
      0.941,
      0.876,
      0.961,
      0.983
     ],
-    "grain_vertices": 144387,
+    "grain_vertices": 178285,
     "grain_recess_p50_m": 3.6e-05,
-    "grain_recess_p95_m": 4.2e-05,
+    "grain_recess_p95_m": 4.22e-05,
     "grain_phase_from_stored_uvs_max_error": 0.0,
-    "triangles": 454612,
-    "vertices": 227308
+    "triangles": 547268,
+    "vertices": 273636
    },
    "fallback_checks": {
-    "edges": 67377,
+    "edges": 68544,
     "edges_not_shared_by_two": 0,
     "repeated_directed_edges": 0,
-    "volume_m3": 0.4031044518166486,
+    "volume_m3": 0.4031049867776921,
     "degenerate_triangles": 0,
-    "min_dot_outside_checks": 0.4092660356464622,
-    "min_dot_in_checks": 0.011589240944955266,
+    "min_dot_outside_checks": 0.4089000589704396,
+    "min_dot_in_checks": 0.0182063163481829,
     "folded_triangles": 0,
     "steep_triangles_outside_checks": 0,
-    "aspect_p99_outside_checks": 68.7,
+    "aspect_p99_outside_checks": 67.7,
     "aspect_max_outside_checks": 519.7,
-    "max_angle_outside_checks_deg": 145.258,
+    "max_angle_outside_checks_deg": 143.043,
     "needles_over_175deg_outside_checks": 0,
     "row_order_crossings": 0,
-    "triangles": 44918,
-    "vertices": 22461
+    "check_joins": [
+     {
+      "check": 0,
+      "fork": false,
+      "row_pairs": 60,
+      "joined": 60,
+      "junction_pairs": 0,
+      "steps": 0
+     },
+     {
+      "check": 1,
+      "fork": false,
+      "row_pairs": 23,
+      "joined": 23,
+      "junction_pairs": 0,
+      "steps": 0
+     },
+     {
+      "check": 2,
+      "fork": false,
+      "row_pairs": 76,
+      "joined": 76,
+      "junction_pairs": 0,
+      "steps": 0
+     }
+    ],
+    "junctions": [
+     {
+      "fork": 3,
+      "parent": 2,
+      "face": 3,
+      "z": 5.03671,
+      "window_rows": 0,
+      "window_length_m": 0.0,
+      "exempt_pairs": [],
+      "continuous": true
+     }
+    ],
+    "ring_error_rings": {
+     "far": {
+      "triangles": 21376,
+      "p50": 0.0368,
+      "p99": 0.1407,
+      "max": 0.3027
+     }
+    },
+    "triangles": 45696,
+    "vertices": 22850
    },
+   "failures": [],
    "visibility": {
     "plain": {
-     "triangles": 18444,
-     "tilt_p50_deg": 0.273,
+     "triangles": 21252,
+     "tilt_p50_deg": 0.257,
      "tilt_p95_deg": 0.416,
      "shading_p95_at_30deg_pct": 1.3
     },
     "grain": {
-     "triangles": 145844,
-     "tilt_p50_deg": 0.372,
-     "tilt_p95_deg": 2.724,
-     "shading_p95_at_30deg_pct": 8.2
+     "triangles": 183567,
+     "tilt_p50_deg": 0.367,
+     "tilt_p95_deg": 2.693,
+     "shading_p95_at_30deg_pct": 8.1
     },
     "dent": {
-     "triangles": 17434,
-     "tilt_p50_deg": 1.577,
-     "tilt_p95_deg": 7.248,
+     "triangles": 17493,
+     "tilt_p50_deg": 1.597,
+     "tilt_p95_deg": 7.246,
      "shading_p95_at_30deg_pct": 21.9
     },
     "knot": {
-     "triangles": 505,
-     "tilt_p50_deg": 2.624,
-     "tilt_p95_deg": 4.988,
-     "shading_p95_at_30deg_pct": 15.1
+     "triangles": 503,
+     "tilt_p50_deg": 2.608,
+     "tilt_p95_deg": 4.573,
+     "shading_p95_at_30deg_pct": 13.8
     },
     "check": {
-     "triangles": 35113,
-     "tilt_p50_deg": 1.041,
-     "tilt_p95_deg": 88.175,
-     "shading_p95_at_30deg_pct": 266.6
+     "triangles": 38107,
+     "tilt_p50_deg": 0.977,
+     "tilt_p95_deg": 88.419,
+     "shading_p95_at_30deg_pct": 267.3
     }
    }
   },
@@ -131,24 +238,94 @@
    "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B00_V2",
    "kind": "open",
    "v1_triangles": 836068,
-   "triangles": 1088942,
-   "fallback_triangles": 54970,
+   "triangles": 1271458,
+   "fallback_triangles": 67048,
    "ok": true,
    "dense_checks": {
-    "edges": 1633413,
+    "edges": 1907187,
     "edges_not_shared_by_two": 0,
     "repeated_directed_edges": 0,
-    "volume_m3": 0.40298510036174945,
+    "volume_m3": 0.4029853042087417,
     "degenerate_triangles": 0,
-    "min_dot_outside_checks": 0.45429917988022267,
-    "min_dot_in_checks": 0.03270282472671877,
+    "min_dot_outside_checks": 0.45510785638562284,
+    "min_dot_in_checks": 0.03265681675334578,
     "folded_triangles": 0,
     "steep_triangles_outside_checks": 0,
-    "aspect_p99_outside_checks": 50.0,
-    "aspect_max_outside_checks": 1792.1,
+    "aspect_p99_outside_checks": 33.4,
+    "aspect_max_outside_checks": 3256.3,
     "max_angle_outside_checks_deg": 178.535,
-    "needles_over_175deg_outside_checks": 47,
+    "needles_over_175deg_outside_checks": 32,
     "row_order_crossings": 0,
+    "check_joins": [
+     {
+      "check": 0,
+      "fork": false,
+      "row_pairs": 434,
+      "joined": 434,
+      "junction_pairs": 0,
+      "steps": 0
+     },
+     {
+      "check": 1,
+      "fork": true,
+      "row_pairs": 17,
+      "joined": 17,
+      "junction_pairs": 0,
+      "steps": 0
+     },
+     {
+      "check": 2,
+      "fork": false,
+      "row_pairs": 334,
+      "joined": 334,
+      "junction_pairs": 0,
+      "steps": 0
+     },
+     {
+      "check": 3,
+      "fork": true,
+      "row_pairs": 16,
+      "joined": 16,
+      "junction_pairs": 0,
+      "steps": 0
+     }
+    ],
+    "junctions": [
+     {
+      "fork": 1,
+      "parent": 0,
+      "face": 3,
+      "z": 1.97332,
+      "window_rows": 3,
+      "window_length_m": 0.004,
+      "exempt_pairs": [],
+      "continuous": true
+     },
+     {
+      "fork": 3,
+      "parent": 2,
+      "face": 3,
+      "z": 3.0268,
+      "window_rows": 2,
+      "window_length_m": 0.002,
+      "exempt_pairs": [],
+      "continuous": true
+     }
+    ],
+    "ring_error_rings": {
+     "close": {
+      "triangles": 1087818,
+      "p50": 0.0006,
+      "p99": 0.0108,
+      "max": 0.0395
+     },
+     "far": {
+      "triangles": 118152,
+      "p50": 0.0075,
+      "p99": 0.1243,
+      "max": 0.3292
+     }
+    },
     "checks": [
      {
       "check": 0,
@@ -167,76 +344,141 @@
     ],
     "dent_depth_reached": [
      0.998,
-     0.992,
+     0.993,
      0.988,
-     0.998,
+     0.999,
      0.986,
      0.922,
      0.996,
      1.0,
-     0.942,
-     0.973,
+     0.941,
+     0.971,
      0.992,
      0.97,
      0.999,
      0.899,
-     0.993,
-     1.0,
+     0.994,
+     0.999,
      0.984,
      0.97,
      0.999,
      1.0,
      0.961,
-     0.996,
+     0.992,
      0.993,
      0.946,
      0.881,
      0.882,
      0.996
     ],
-    "grain_vertices": 466808,
-    "grain_recess_p50_m": 2.3e-05,
+    "grain_vertices": 541980,
+    "grain_recess_p50_m": 2.29e-05,
     "grain_recess_p95_m": 4.33e-05,
     "grain_phase_from_stored_uvs_max_error": 0.0,
-    "triangles": 1088942,
-    "vertices": 544473
+    "triangles": 1271458,
+    "vertices": 635731
    },
    "fallback_checks": {
-    "edges": 82455,
+    "edges": 100572,
     "edges_not_shared_by_two": 0,
     "repeated_directed_edges": 0,
-    "volume_m3": 0.40309301008092085,
+    "volume_m3": 0.4030931474942523,
     "degenerate_triangles": 0,
-    "min_dot_outside_checks": 0.4732691976493337,
-    "min_dot_in_checks": 0.03291438849675439,
+    "min_dot_outside_checks": 0.47308121454365787,
+    "min_dot_in_checks": 0.03278179803790543,
     "folded_triangles": 0,
     "steep_triangles_outside_checks": 0,
     "aspect_p99_outside_checks": 66.7,
-    "aspect_max_outside_checks": 371.9,
-    "max_angle_outside_checks_deg": 145.135,
+    "aspect_max_outside_checks": 404.4,
+    "max_angle_outside_checks_deg": 166.414,
     "needles_over_175deg_outside_checks": 0,
     "row_order_crossings": 0,
-    "triangles": 54970,
-    "vertices": 27487
+    "check_joins": [
+     {
+      "check": 0,
+      "fork": false,
+      "row_pairs": 65,
+      "joined": 65,
+      "junction_pairs": 0,
+      "steps": 0
+     },
+     {
+      "check": 1,
+      "fork": true,
+      "row_pairs": 1,
+      "joined": 1,
+      "junction_pairs": 0,
+      "steps": 0
+     },
+     {
+      "check": 2,
+      "fork": false,
+      "row_pairs": 76,
+      "joined": 76,
+      "junction_pairs": 0,
+      "steps": 0
+     },
+     {
+      "check": 3,
+      "fork": true,
+      "row_pairs": 3,
+      "joined": 3,
+      "junction_pairs": 0,
+      "steps": 0
+     }
+    ],
+    "junctions": [
+     {
+      "fork": 1,
+      "parent": 0,
+      "face": 3,
+      "z": 1.97332,
+      "window_rows": 0,
+      "window_length_m": 0.0,
+      "exempt_pairs": [],
+      "continuous": true
+     },
+     {
+      "fork": 3,
+      "parent": 2,
+      "face": 3,
+      "z": 3.0268,
+      "window_rows": 0,
+      "window_length_m": 0.0,
+      "exempt_pairs": [],
+      "continuous": true
+     }
+    ],
+    "ring_error_rings": {
+     "far": {
+      "triangles": 49864,
+      "p50": 0.0306,
+      "p99": 0.1532,
+      "max": 0.3646
+     }
+    },
+    "triangles": 67048,
+    "vertices": 33526
    },
+   "failures": [],
    "visibility": {
     "plain": {
-     "triangles": 22449,
-     "tilt_p50_deg": 0.081,
-     "tilt_p95_deg": 0.21,
+     "triangles": 27605,
+     "tilt_p50_deg": 0.086,
+     "tilt_p95_deg": 0.212,
      "shading_p95_at_30deg_pct": 0.6
     },
     "grain": {
-     "triangles": 205277,
-     "tilt_p50_deg": 0.746,
-     "tilt_p95_deg": 2.804,
+     "triangles": 240983,
+     "tilt_p50_deg": 0.751,
+     "tilt_p95_deg": 2.81,
      "shading_p95_at_30deg_pct": 8.5
     },
     "dent": {
-     "triangles": 6825,
-     "tilt_p50_deg": 1.757,
-     "tilt_p95_deg": 10.194,
-     "shading_p95_at_30deg_pct": 30.8
+     "triangles": 6845,
+     "tilt_p50_deg": 1.744,
+     "tilt_p95_deg": 10.306,
+     "shading_p95_at_30deg_pct": 31.2
     },
     "knot": {
      "triangles": 1246,
@@ -245,9 +487,9 @@
      "shading_p95_at_30deg_pct": 30.8
     },
     "check": {
-     "triangles": 33013,
-     "tilt_p50_deg": 1.225,
-     "tilt_p95_deg": 87.829,
+     "triangles": 36047,
+     "tilt_p50_deg": 1.163,
+     "tilt_p95_deg": 87.84,
      "shading_p95_at_30deg_pct": 265.5
     }
    }
@@ -256,24 +498,80 @@
    "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B00_V2",
    "kind": "Nageshi",
    "v1_triangles": 106320,
-   "triangles": 338460,
+   "triangles": 338226,
    "fallback_triangles": 9746,
    "ok": true,
    "dense_checks": {
-    "edges": 507690,
+    "edges": 507339,
     "edges_not_shared_by_two": 0,
     "repeated_directed_edges": 0,
-    "volume_m3": 0.035977121470410656,
+    "volume_m3": 0.035977109550907486,
     "degenerate_triangles": 0,
-    "min_dot_outside_checks": 0.5204699769896621,
-    "min_dot_in_checks": 0.02590947522153928,
+    "min_dot_outside_checks": 0.5403964073168616,
+    "min_dot_in_checks": 0.025863439906893576,
     "folded_triangles": 0,
     "steep_triangles_outside_checks": 0,
-    "aspect_p99_outside_checks": 48.1,
-    "aspect_max_outside_checks": 199.0,
+    "aspect_p99_outside_checks": 49.3,
+    "aspect_max_outside_checks": 200.0,
     "max_angle_outside_checks_deg": 151.334,
     "needles_over_175deg_outside_checks": 0,
     "row_order_crossings": 0,
+    "check_joins": [
+     {
+      "check": 0,
+      "fork": false,
+      "row_pairs": 54,
+      "joined": 54,
+      "junction_pairs": 0,
+      "steps": 0
+     },
+     {
+      "check": 1,
+      "fork": true,
+      "row_pairs": 13,
+      "joined": 13,
+      "junction_pairs": 0,
+      "steps": 0
+     },
+     {
+      "check": 2,
+      "fork": true,
+      "row_pairs": 13,
+      "joined": 13,
+      "junction_pairs": 0,
+      "steps": 0
+     }
+    ],
+    "junctions": [
+     {
+      "fork": 1,
+      "parent": 0,
+      "face": 3,
+      "z": 0.30674,
+      "window_rows": 2,
+      "window_length_m": 0.002,
+      "exempt_pairs": [],
+      "continuous": true
+     },
+     {
+      "fork": 2,
+      "parent": 0,
+      "face": 3,
+      "z": 0.45233,
+      "window_rows": 2,
+      "window_length_m": 0.002,
+      "exempt_pairs": [],
+      "continuous": true
+     }
+    ],
+    "ring_error_rings": {
+     "close": {
+      "triangles": 314180,
+      "p50": 0.0002,
+      "p99": 0.0074,
+      "max": 0.0233
+     }
+    },
     "checks": [
      {
       "check": 0,
@@ -286,54 +584,111 @@
     "dent_depth_reached": [
      0.853,
      0.985,
-     0.968,
-     0.996,
+     0.967,
+     0.995,
      0.999,
      1.0,
      0.925
     ],
-    "grain_vertices": 148621,
+    "grain_vertices": 148504,
     "grain_recess_p50_m": 2.41e-05,
     "grain_recess_p95_m": 3.22e-05,
     "grain_phase_from_stored_uvs_max_error": 0.0,
-    "triangles": 338460,
-    "vertices": 169232
+    "triangles": 338226,
+    "vertices": 169115
    },
    "fallback_checks": {
     "edges": 14619,
     "edges_not_shared_by_two": 0,
     "repeated_directed_edges": 0,
-    "volume_m3": 0.035990236208148556,
+    "volume_m3": 0.03599023361805552,
     "degenerate_triangles": 0,
-    "min_dot_outside_checks": 0.572799687181112,
-    "min_dot_in_checks": 0.02591917029700196,
+    "min_dot_outside_checks": 0.5571044112284039,
+    "min_dot_in_checks": 0.025888545741052864,
     "folded_triangles": 0,
     "steep_triangles_outside_checks": 0,
     "aspect_p99_outside_checks": 81.0,
-    "aspect_max_outside_checks": 494.3,
-    "max_angle_outside_checks_deg": 144.89,
+    "aspect_max_outside_checks": 247.2,
+    "max_angle_outside_checks_deg": 138.786,
     "needles_over_175deg_outside_checks": 0,
     "row_order_crossings": 0,
+    "check_joins": [
+     {
+      "check": 0,
+      "fork": false,
+      "row_pairs": 6,
+      "joined": 6,
+      "junction_pairs": 0,
+      "steps": 0
+     },
+     {
+      "check": 1,
+      "fork": true,
+      "row_pairs": 1,
+      "joined": 1,
+      "junction_pairs": 0,
+      "steps": 0
+     },
+     {
+      "check": 2,
+      "fork": true,
+      "row_pairs": 1,
+      "joined": 1,
+      "junction_pairs": 0,
+      "steps": 0
+     }
+    ],
+    "junctions": [
+     {
+      "fork": 1,
+      "parent": 0,
+      "face": 3,
+      "z": 0.30674,
+      "window_rows": 0,
+      "window_length_m": 0.0,
+      "exempt_pairs": [],
+      "continuous": true
+     },
+     {
+      "fork": 2,
+      "parent": 0,
+      "face": 3,
+      "z": 0.45233,
+      "window_rows": 0,
+      "window_length_m": 0.0,
+      "exempt_pairs": [],
+      "continuous": true
+     }
+    ],
+    "ring_error_rings": {
+     "far": {
+      "triangles": 5146,
+      "p50": 0.0085,
+      "p99": 0.0301,
+      "max": 0.0406
+     }
+    },
     "triangles": 9746,
     "vertices": 4875
    },
+   "failures": [],
    "visibility": {
     "grain": {
-     "triangles": 273757,
-     "tilt_p50_deg": 1.968,
-     "tilt_p95_deg": 4.86,
+     "triangles": 273547,
+     "tilt_p50_deg": 1.966,
+     "tilt_p95_deg": 4.856,
      "shading_p95_at_30deg_pct": 14.7
     },
     "dent": {
-     "triangles": 17220,
-     "tilt_p50_deg": 2.545,
-     "tilt_p95_deg": 7.339,
-     "shading_p95_at_30deg_pct": 22.2
+     "triangles": 17258,
+     "tilt_p50_deg": 2.623,
+     "tilt_p95_deg": 7.665,
+     "shading_p95_at_30deg_pct": 23.2
     },
     "check": {
-     "triangles": 6743,
-     "tilt_p50_deg": 3.494,
-     "tilt_p95_deg": 87.152,
+     "triangles": 6683,
+     "tilt_p50_deg": 3.481,
+     "tilt_p95_deg": 87.155,
      "shading_p95_at_30deg_pct": 263.5
     }
    }
@@ -342,24 +697,43 @@
    "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B00_V2",
    "kind": "Cornice",
    "v1_triangles": 114012,
-   "triangles": 40178,
+   "triangles": 41090,
    "fallback_triangles": 10012,
    "ok": true,
    "dense_checks": {
-    "edges": 60267,
+    "edges": 61635,
     "edges_not_shared_by_two": 0,
     "repeated_directed_edges": 0,
-    "volume_m3": 0.043544008218365314,
+    "volume_m3": 0.043544001938490735,
     "degenerate_triangles": 0,
     "min_dot_outside_checks": 0.3933657621089706,
-    "min_dot_in_checks": 0.04095260142594082,
+    "min_dot_in_checks": 0.04076009620107226,
     "folded_triangles": 0,
     "steep_triangles_outside_checks": 0,
-    "aspect_p99_outside_checks": 169.1,
+    "aspect_p99_outside_checks": 157.3,
     "aspect_max_outside_checks": 641.5,
     "max_angle_outside_checks_deg": 174.523,
     "needles_over_175deg_outside_checks": 0,
     "row_order_crossings": 0,
+    "check_joins": [
+     {
+      "check": 0,
+      "fork": false,
+      "row_pairs": 79,
+      "joined": 79,
+      "junction_pairs": 0,
+      "steps": 0
+     }
+    ],
+    "junctions": [],
+    "ring_error_rings": {
+     "far": {
+      "triangles": 25990,
+      "p50": 0.0003,
+      "p99": 0.1065,
+      "max": 0.2081
+     }
+    },
     "checks": [
      {
       "check": 0,
@@ -377,31 +751,51 @@
      0.924,
      0.993
     ],
-    "triangles": 40178,
-    "vertices": 20091
+    "triangles": 41090,
+    "vertices": 20547
    },
    "fallback_checks": {
     "edges": 15018,
     "edges_not_shared_by_two": 0,
     "repeated_directed_edges": 0,
-    "volume_m3": 0.043551816577653446,
+    "volume_m3": 0.043551827480112014,
     "degenerate_triangles": 0,
-    "min_dot_outside_checks": 0.578655060929502,
-    "min_dot_in_checks": 0.043810871719408624,
+    "min_dot_outside_checks": 0.5773392260164899,
+    "min_dot_in_checks": 0.04379959570826117,
     "folded_triangles": 0,
     "steep_triangles_outside_checks": 0,
     "aspect_p99_outside_checks": 71.0,
-    "aspect_max_outside_checks": 198.2,
+    "aspect_max_outside_checks": 199.3,
     "max_angle_outside_checks_deg": 136.208,
     "needles_over_175deg_outside_checks": 0,
     "row_order_crossings": 0,
+    "check_joins": [
+     {
+      "check": 0,
+      "fork": false,
+      "row_pairs": 10,
+      "joined": 10,
+      "junction_pairs": 0,
+      "steps": 0
+     }
+    ],
+    "junctions": [],
+    "ring_error_rings": {
+     "far": {
+      "triangles": 5408,
+      "p50": 0.0184,
+      "p99": 0.0669,
+      "max": 0.119
+     }
+    },
     "triangles": 10012,
     "vertices": 5008
    },
+   "failures": [],
    "visibility": {
     "plain": {
-     "triangles": 7292,
-     "tilt_p50_deg": 0.048,
+     "triangles": 7496,
+     "tilt_p50_deg": 0.049,
      "tilt_p95_deg": 0.111,
      "shading_p95_at_30deg_pct": 0.3
     },
@@ -413,7 +807,7 @@
     },
     "check": {
      "triangles": 4603,
-     "tilt_p50_deg": 0.035,
+     "tilt_p50_deg": 0.034,
      "tilt_p95_deg": 86.735,
      "shading_p95_at_30deg_pct": 262.2
     }
@@ -423,24 +817,43 @@
    "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B00_V2",
    "kind": "Koshi",
    "v1_triangles": 68280,
-   "triangles": 125590,
+   "triangles": 146728,
    "fallback_triangles": 6836,
    "ok": true,
    "dense_checks": {
-    "edges": 188385,
+    "edges": 220092,
     "edges_not_shared_by_two": 0,
     "repeated_directed_edges": 0,
-    "volume_m3": 0.006762855833742039,
+    "volume_m3": 0.0067627900250742294,
     "degenerate_triangles": 0,
     "min_dot_outside_checks": 0.1297556342626372,
-    "min_dot_in_checks": 0.056851596714574196,
+    "min_dot_in_checks": 0.05626540878349192,
     "folded_triangles": 0,
     "steep_triangles_outside_checks": 3,
-    "aspect_p99_outside_checks": 50.0,
-    "aspect_max_outside_checks": 614.6,
-    "max_angle_outside_checks_deg": 174.255,
+    "aspect_p99_outside_checks": 42.2,
+    "aspect_max_outside_checks": 892.3,
+    "max_angle_outside_checks_deg": 173.475,
     "needles_over_175deg_outside_checks": 0,
     "row_order_crossings": 0,
+    "check_joins": [
+     {
+      "check": 0,
+      "fork": false,
+      "row_pairs": 152,
+      "joined": 152,
+      "junction_pairs": 0,
+      "steps": 0
+     }
+    ],
+    "junctions": [],
+    "ring_error_rings": {
+     "close": {
+      "triangles": 120218,
+      "p50": 0.001,
+      "p99": 0.0232,
+      "max": 0.0445
+     }
+    },
     "checks": [
      {
       "check": 0,
@@ -453,49 +866,69 @@
     "dent_depth_reached": [
      0.875,
      0.99,
-     0.989,
+     0.99,
      0.993,
      0.976,
      0.994,
      0.986
     ],
-    "grain_vertices": 47251,
-    "grain_recess_p50_m": 4.67e-05,
+    "grain_vertices": 55467,
+    "grain_recess_p50_m": 4.63e-05,
     "grain_recess_p95_m": 0.0001243,
     "grain_phase_from_stored_uvs_max_error": 0.0,
-    "triangles": 125590,
-    "vertices": 62797
+    "triangles": 146728,
+    "vertices": 73366
    },
    "fallback_checks": {
     "edges": 10254,
     "edges_not_shared_by_two": 0,
     "repeated_directed_edges": 0,
-    "volume_m3": 0.006774796189881965,
+    "volume_m3": 0.006774799315789869,
     "degenerate_triangles": 0,
-    "min_dot_outside_checks": 0.6060552073453562,
-    "min_dot_in_checks": 0.05685399313288636,
+    "min_dot_outside_checks": 0.6058814126438758,
+    "min_dot_in_checks": 0.05683137957771702,
     "folded_triangles": 0,
     "steep_triangles_outside_checks": 0,
-    "aspect_p99_outside_checks": 169.1,
+    "aspect_p99_outside_checks": 178.4,
     "aspect_max_outside_checks": 344.1,
     "max_angle_outside_checks_deg": 135.0,
     "needles_over_175deg_outside_checks": 0,
     "row_order_crossings": 0,
+    "check_joins": [
+     {
+      "check": 0,
+      "fork": false,
+      "row_pairs": 23,
+      "joined": 23,
+      "junction_pairs": 0,
+      "steps": 0
+     }
+    ],
+    "junctions": [],
+    "ring_error_rings": {
+     "far": {
+      "triangles": 3038,
+      "p50": 0.0225,
+      "p99": 0.0909,
+      "max": 0.1371
+     }
+    },
     "triangles": 6836,
     "vertices": 3420
    },
+   "failures": [],
    "visibility": {
     "grain": {
-     "triangles": 32127,
-     "tilt_p50_deg": 4.361,
-     "tilt_p95_deg": 18.022,
-     "shading_p95_at_30deg_pct": 54.5
+     "triangles": 38098,
+     "tilt_p50_deg": 4.452,
+     "tilt_p95_deg": 18.104,
+     "shading_p95_at_30deg_pct": 54.7
     },
     "dent": {
-     "triangles": 1902,
-     "tilt_p50_deg": 3.342,
-     "tilt_p95_deg": 12.907,
-     "shading_p95_at_30deg_pct": 39.0
+     "triangles": 1995,
+     "tilt_p50_deg": 3.238,
+     "tilt_p95_deg": 13.24,
+     "shading_p95_at_30deg_pct": 40.0
     }
    }
   },
@@ -504,23 +937,61 @@
    "kind": "Nuki",
    "v1_triangles": 63976,
    "triangles": 98208,
-   "fallback_triangles": 6428,
+   "fallback_triangles": 7074,
    "ok": true,
    "dense_checks": {
     "edges": 147312,
     "edges_not_shared_by_two": 0,
     "repeated_directed_edges": 0,
-    "volume_m3": 0.005109137878678274,
+    "volume_m3": 0.005109142812504895,
     "degenerate_triangles": 0,
     "min_dot_outside_checks": 0.20013419216825712,
     "min_dot_in_checks": 0.02317221235465045,
     "folded_triangles": 0,
     "steep_triangles_outside_checks": 0,
-    "aspect_p99_outside_checks": 23.8,
+    "aspect_p99_outside_checks": 24.0,
     "aspect_max_outside_checks": 6136.5,
     "max_angle_outside_checks_deg": 152.134,
     "needles_over_175deg_outside_checks": 0,
     "row_order_crossings": 0,
+    "check_joins": [
+     {
+      "check": 0,
+      "fork": false,
+      "row_pairs": 106,
+      "joined": 106,
+      "junction_pairs": 0,
+      "steps": 0
+     },
+     {
+      "check": 1,
+      "fork": true,
+      "row_pairs": 18,
+      "joined": 18,
+      "junction_pairs": 0,
+      "steps": 0
+     }
+    ],
+    "junctions": [
+     {
+      "fork": 1,
+      "parent": 0,
+      "face": 3,
+      "z": 0.63763,
+      "window_rows": 1,
+      "window_length_m": 0.0,
+      "exempt_pairs": [],
+      "continuous": true
+     }
+    ],
+    "ring_error_rings": {
+     "far": {
+      "triangles": 66541,
+      "p50": 0.0012,
+      "p99": 0.0081,
+      "max": 0.0776
+     }
+    },
     "checks": [
      {
       "check": 0,
@@ -542,23 +1013,62 @@
     "vertices": 49106
    },
    "fallback_checks": {
-    "edges": 9642,
+    "edges": 10611,
     "edges_not_shared_by_two": 0,
     "repeated_directed_edges": 0,
-    "volume_m3": 0.005295158664373138,
+    "volume_m3": 0.005295156383072815,
     "degenerate_triangles": 0,
-    "min_dot_outside_checks": 0.56897310070306,
-    "min_dot_in_checks": 0.02648058982662113,
+    "min_dot_outside_checks": 0.389729447878909,
+    "min_dot_in_checks": 0.02646690555334364,
     "folded_triangles": 0,
     "steep_triangles_outside_checks": 0,
-    "aspect_p99_outside_checks": 126.3,
+    "aspect_p99_outside_checks": 81.7,
     "aspect_max_outside_checks": 477.8,
-    "max_angle_outside_checks_deg": 144.873,
+    "max_angle_outside_checks_deg": 161.188,
     "needles_over_175deg_outside_checks": 0,
     "row_order_crossings": 0,
-    "triangles": 6428,
-    "vertices": 3216
+    "check_joins": [
+     {
+      "check": 0,
+      "fork": false,
+      "row_pairs": 18,
+      "joined": 18,
+      "junction_pairs": 0,
+      "steps": 0
+     },
+     {
+      "check": 1,
+      "fork": true,
+      "row_pairs": 1,
+      "joined": 1,
+      "junction_pairs": 0,
+      "steps": 0
+     }
+    ],
+    "junctions": [
+     {
+      "fork": 1,
+      "parent": 0,
+      "face": 3,
+      "z": 0.63763,
+      "window_rows": 0,
+      "window_length_m": 0.0,
+      "exempt_pairs": [],
+      "continuous": true
+     }
+    ],
+    "ring_error_rings": {
+     "far": {
+      "triangles": 3138,
+      "p50": 0.0237,
+      "p99": 0.1173,
+      "max": 0.3085
+     }
+    },
+    "triangles": 7074,
+    "vertices": 3539
    },
+   "failures": [],
    "visibility": {
     "plain": {
      "triangles": 380,
@@ -567,35 +1077,79 @@
      "shading_p95_at_30deg_pct": 0.0
     },
     "adze": {
-     "triangles": 38232,
-     "tilt_p50_deg": 3.709,
-     "tilt_p95_deg": 24.614,
+     "triangles": 38226,
+     "tilt_p50_deg": 3.708,
+     "tilt_p95_deg": 24.615,
      "shading_p95_at_30deg_pct": 74.4
     },
     "dent": {
-     "triangles": 2242,
+     "triangles": 2243,
      "tilt_p50_deg": 5.194,
-     "tilt_p95_deg": 23.734,
+     "tilt_p95_deg": 23.73,
      "shading_p95_at_30deg_pct": 71.7
     },
     "knot": {
-     "triangles": 28,
-     "tilt_p50_deg": 6.3,
-     "tilt_p95_deg": 12.155,
+     "triangles": 29,
+     "tilt_p50_deg": 6.313,
+     "tilt_p95_deg": 12.139,
      "shading_p95_at_30deg_pct": 36.7
     },
     "check": {
-     "triangles": 6625,
-     "tilt_p50_deg": 5.509,
+     "triangles": 6629,
+     "tilt_p50_deg": 5.47,
      "tilt_p95_deg": 88.01,
      "shading_p95_at_30deg_pct": 266.1
     }
    }
   }
  ],
- "digest": "sora-timber-geometry-v2",
+ "digest": "sora-timber-geometry-v2.1",
  "wander": [
   300.0,
   2.6
- ]
+ ],
+ "uv_contract": {
+  "geometry": "sora-timber-geometry-v2.1",
+  "unreal_content_path": "/Game/Generated/Qualification/DojoTimberPilotV21",
+  "import_decode": "Interchange imports every channel as (U, 1 - V). Decode with flip_v before reading UV0/UVLogQ/UVLogZ/UVKnot as data; sample shared images at computed Blender coordinates through sample_blender (flip_v again), as import_nyaagyu_dojo_timbers.py (cd10643) does.",
+  "channels": [
+   {
+    "index": 0,
+    "blender_layer": "UV0",
+    "payload": "metric (s, z): arc length round the section, height (m)",
+    "unreal": "flip_v(TexCoord[0])"
+   },
+   {
+    "index": 1,
+    "blender_layer": "UV1",
+    "payload": "unique bake atlas (fallback NormalDX/Masks)",
+    "unreal": "TexCoord[1] as imported"
+   },
+   {
+    "index": 2,
+    "blender_layer": "UVLogQ",
+    "payload": "signed log-frame offset q = (P - pith) * r_warp / r (m). r_warp adds the periodic wobble (sora_timber_v2.wobble) and every knot's swirl. Continuous across knot edges: no knot-centred swap (that was v2).",
+    "unreal": "flip_v(TexCoord[2])"
+   },
+   {
+    "index": 3,
+    "blender_layer": "UVLogZ",
+    "payload": "(z m, seed01)",
+    "unreal": "seed = 1 - TexCoord[3].g"
+   },
+   {
+    "index": 4,
+    "blender_layer": "UVKnot",
+    "payload": "(knot ring radius r_k in the materials' ring units (0.55 mm knot rings), signed distance d from the knot's edge in knot radii, clamped to [-1, 1]); inside the knot where d < 0. Fallbacks carry (0, 1).",
+    "unreal": "r_k = TexCoord[4].r; d = 1 - TexCoord[4].g"
+   }
+  ],
+  "ring": {
+   "radius": "r = (d < 0 ? r_k : length(UVLogQ)) + (Fibre.G(UV0 / 0.25) - 0.5) * 0.00025",
+   "phase": "r / w + (RingNoise.R(nu, nv) - 0.5) * WANDER_AMPLITUDE, nu = r / (WANDER_RINGS_PER_UNIT * w) + seed * 37, nv = frac(seed * 7.31); RingNoise sampled at the Blender coordinate (sample_blender)",
+   "wander_rings_per_unit": 300.0,
+   "wander_amplitude": 2.6,
+   "knot_edge": "the select on d is per pixel; anti-alias over the pixel footprint, inside = saturate(0.5 - d / max(fwidth(d), 1e-6))"
+  }
+ }
 }

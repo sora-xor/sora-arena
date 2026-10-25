@@ -1,8 +1,8 @@
-"""Regression tests for the v2 pilot timbers (sora_timber_v2, dojo_timber_pilot).
+"""Regression tests for the v2.1 pilot timbers (sora_timber_v2, dojo_timber_pilot).
 
 Run: python3 -m unittest scripts/art/test_sora_timber_v2.py
 
-Numpy only; about 30 seconds. It builds the six real pilot members, dense and
+Numpy only; about 90 seconds. It builds the six real pilot members, dense and
 fallback, and proves:
 
 * **The six members** are closed, consistently wound, unfolded, crossing-free
@@ -14,13 +14,21 @@ fallback, and proves:
 * **Every reproduced defect is caught:** an open hole, a flipped triangle, a
   fold, misaligned UVs, and an adze that ignores the arris.
 * **The frozen v1 kit's inputs** are unchanged, and the pilot can only write
-  inside its own namespace.
+  inside its own namespace (never run 1's).
+* **v2.1's fixes for what run 1's renders showed,** each against a reproduction:
+  - the check staircase (v1's position-only ladder);
+  - ring beading near knots (no row refinement);
+  - the wobble seam at atan2's wrap;
+  - knot-edge frame blending (UVKnot).
+
+  Y-junctions are explicit, bounded and continuous, and can't hide a staircase.
 """
 from __future__ import annotations
 
 import copy
 import hashlib
 import json
+import math
 import sys
 import tempfile
 import unittest
@@ -170,10 +178,134 @@ class Baseline(unittest.TestCase):
 
     def test_pilot_writes_only_in_its_namespace(self):
         self.assertEqual(PILOT.guard(PILOT.OUT / "Dense" / "x.fbx"), PILOT.OUT / "Dense" / "x.fbx")
+        self.assertEqual(PILOT.NAMESPACE, "NyaagyuDojoTimbersV21Pilot")
         for bad in (PILOT.KIT / "FBX" / "x.fbx", PILOT.ROOT / "Local/ArtCache/NyaagyuDojoTimbers/Unique/x.fbx",
-                    PILOT.ROOT / "Content/x.fbx"):
+                    PILOT.ROOT / "Content/x.fbx", PILOT.RUN1 / "Dense" / "x.fbx", PILOT.RUN1 / "manifest.json"):
             with self.subTest(path=str(bad)), self.assertRaises(ValueError):
                 PILOT.guard(bad)
+
+
+class V21(unittest.TestCase):
+    """What run 1's renders showed, each reproduced and shown fixed."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.members = {kind: m for m, fam, kind, rec in PILOT.pilot_members()}
+        cls.wall = cls.members["wall"]
+        cls.B = V.build(cls.wall, ARRAYS)
+
+    def test_the_check_staircase_is_caught_and_gone(self):
+        joins, records = V.check_joins(self.B, self.wall)
+        self.assertTrue(all(j["steps"] == 0 and j["joined"] == j["row_pairs"] for j in joins), joins)
+        keep = V.ladder
+        try:
+            V.ladder = T.ladder                       # run 1: rows paired by position alone
+            B = V.build(self.wall, ARRAYS)
+        finally:
+            V.ladder = keep
+        r = V.check_mesh(B, self.wall)
+        self.assertTrue(any("step" in f for f in r["failures"]), r["failures"])
+        steps = sum(j["steps"] for j in r["metrics"]["check_joins"])
+        self.assertGreater(steps, 300)                # most row pairs, as measured on run 1
+
+    def test_y_junctions_are_explicit_bounded_and_continuous(self):
+        cs = V.checks_v2(self.wall)
+        for m in (self.wall, self.members["open"], self.members["Nageshi"], self.members["Nuki"]):
+            records = V.junctions(m)
+            forks = [i for i, c in enumerate(V.checks_v2(m)) if c.parent >= 0 and m.finish[c.face] != "hidden"]
+            self.assertEqual([r[0] for r in records], forks)        # one per fork, nothing by proximity
+            for j, par, f, z in records:
+                c, pc = V.checks_v2(m)[j], V.checks_v2(m)[par]
+                self.assertEqual(c.parent, par)
+                self.assertTrue(abs(z - pc.z0) < 1e-9 or abs(z - pc.z1) < 1e-9)   # at the parent's end
+            r = V.check_mesh(V.build(m, ARRAYS), m)["metrics"]
+            for rec in r["junctions"]:
+                self.assertTrue(rec["continuous"], rec)
+                self.assertLessEqual(rec["window_length_m"], V.JUNCTION_MAX_LENGTH)
+                self.assertEqual(rec["exempt_pairs"], [])          # every V-bottom joins, forks included
+        self.assertTrue(any(c.parent >= 0 for c in cs))
+
+    def test_a_staircase_cannot_hide_in_a_junction(self):
+        keep = V.ladder
+        try:
+            V.ladder = T.ladder
+            B = V.build(self.wall, ARRAYS)
+        finally:
+            V.ladder = keep
+        _joins, records = V.check_joins(B, self.wall)
+        exempt = [p for rec in records for p in rec["exempt_pairs"]]
+        self.assertTrue(exempt)
+        self.assertTrue(all(not p["continuous"] for p in exempt if not p["to_other_branch"]))
+        self.assertTrue(any(not rec["continuous"] for rec in records))
+
+    def test_ring_beading_near_knots_is_caught_and_gone(self):
+        ring = V.ring_error(self.B, self.wall)
+        self.assertLessEqual(ring["close"]["p99"], V.RING_ERROR_CLOSE[0])
+        self.assertLessEqual(ring["close"]["max"], V.RING_ERROR_CLOSE[1])
+        keep = V._refine_rows, V._refine_across
+        try:
+            V._refine_rows = lambda m, z, **k: z
+            V._refine_across = lambda m, f, z, u, *a, **k: u
+            B = V.build(self.wall, ARRAYS)
+        finally:
+            V._refine_rows, V._refine_across = keep
+        r = V.check_mesh(B, self.wall)
+        self.assertTrue(any("rings sit" in f and "close" in f for f in r["failures"]), r["failures"])
+
+    def test_the_wobble_has_no_seam(self):
+        z = np.linspace(0.5, 6.5, 200)
+        for m in (self.wall, self.members["open"]):
+            eps = 1e-6
+            v1 = np.abs(m.log.wobble(np.full(z.size, (math.pi - eps) * 0.08), z)
+                        - m.log.wobble(np.full(z.size, (-math.pi + eps) * 0.08), z)).max()
+            v21 = np.abs(V.wobble(m, np.full(z.size, math.pi - eps), z) - V.wobble(m, np.full(z.size, -math.pi + eps), z)).max()
+            self.assertGreater(v1 / m.log.ring_width, 1.0)       # v1's form jumps rings at the wrap
+            self.assertLess(v21 / m.log.ring_width, 1e-3)
+        r = V.check_mesh(V.build(self.members["open"], ARRAYS), self.members["open"])
+        self.assertTrue(r["ok"], r["failures"])                   # the seam was the open column's face 2
+
+    def test_uvknot_carries_the_knots_and_uvlogq_stays_continuous(self):
+        B, m = self.B, self.wall
+        _mask, kd, kr, *_ = T._knots(m, np.stack([B["samples"].x, B["samples"].y, B["samples"].z], 1))
+        inside = kd < kr
+        self.assertTrue(inside.any())
+        np.testing.assert_array_equal(B["uv4"][:, 1] < 0, inside)
+        fb = V.build(V.fallback(m), ARRAYS)
+        self.assertTrue(np.all(fb["uv4"] == np.array([0.0, 1.0])))
+        # No frame swap. Across every edge touching a knot, UVLogQ moves only as
+        # far as the surface plus the swirl's bend (under 1 cm). Swapping in the
+        # knot's own radius, as v2 did, would jump by its gap to the log radius
+        # (over 2 cm here).
+        t = B["tris"]
+        tt = t[inside[t].any(1)]
+        for a, b in ((0, 1), (1, 2), (2, 0)):
+            dq = np.linalg.norm(B["uv2"][tt[:, a]] - B["uv2"][tt[:, b]], axis=1)
+            dp = np.linalg.norm(B["verts"][tt[:, a]] - B["verts"][tt[:, b]], axis=1)
+            self.assertLess(float(np.max(dq - dp)), 0.01)
+        swap = np.abs(B["uv4"][inside, 0] - np.linalg.norm(B["uv2"][inside], axis=1))
+        self.assertGreater(float(swap.min()), 0.02)
+        # The material reference: the latewood on the stored channels is the ridges' phase, and the
+        # knot select uses the knot's own rings.
+        g = B["grain_sel"]
+        uv0 = np.stack([B["s"], B["z"]], 1)
+        ph = V.material_phase(uv0[g], B["uv2"][g], B["uv3"][g], B["uv4"][g], m.log.ring_width, ARRAYS)
+        self.assertEqual(float(np.max(np.abs(ph - B["grain_phase"][g]))), 0.0)
+        k = inside
+        ph_k = V.material_phase(uv0[k], B["uv2"][k], B["uv3"][k], B["uv4"][k], m.log.ring_width, ARRAYS)
+        ref = V.ring_phase(np.stack([B["uv4"][k, 0], np.zeros(int(k.sum()))], 1), float(B["uv3"][0, 1]), uv0[k],
+                           m.log.ring_width, ARRAYS)
+        np.testing.assert_array_equal(ph_k, ref)
+
+    def test_uv_contract_names_every_channel_in_export_order(self):
+        names = [c["blender_layer"] for c in V.UV_CONTRACT["channels"]]
+        self.assertEqual(names, ["UV0", "UV1", "UVLogQ", "UVLogZ", "UVKnot"])
+        self.assertEqual([c["index"] for c in V.UV_CONTRACT["channels"]], list(range(5)))
+        src = (PILOT.HERE / "sora_timber_lib.py").read_text()
+        self.assertIn('for layer, arr in (("UV0", uv0), ("UV1", uv1), ("UVLogQ", uv2), ("UVLogZ", uv3)):', src)
+        v2 = Path(V.__file__).read_text()
+        self.assertIn('uv_layers.new(name="UVKnot")', v2[v2.index("def to_blender("):v2.index("def canonical_digest(")])
+        self.assertEqual(V.UV_CONTRACT["geometry"], "sora-timber-geometry-v2.1")
+        self.assertTrue(V.UV_CONTRACT["unreal_content_path"].endswith("DojoTimberPilotV21"))
 
 
 if __name__ == "__main__":

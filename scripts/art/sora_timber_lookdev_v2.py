@@ -1,7 +1,7 @@
-"""Blender look-dev material for the v2 pilot timbers (sora-timber-geometry-v2).
+"""Blender look-dev material for the v2.1 pilot timbers (sora-timber-geometry-v2.1).
 
 This is ``sora_timber_lookdev.timber_material``, which stays frozen as an input
-of the v1 kit, with the three v2 changes:
+of the v1 kit, with the v2 and v2.1 changes:
 
 * **Ring width:** the member's own (``ring_width``), as the Unreal instances
   set it, not the preset's 0.0019 m.
@@ -10,6 +10,10 @@ of the v1 kit, with the three v2 changes:
   the same phase the geometry's raised grain is cut from.
 * **Relief:** the latewood ridge is real geometry now. The shader keeps only a
   small supplementary raise (``raise_m``) and the fibre bump.
+* **Knots (v2.1):** UVLogQ is the log frame everywhere. Inside a knot (UVKnot's
+  d < 0, per pixel) the ring radius is the knot's own (UVKnot's r_k), so the
+  edge is a smooth line through the triangles, as sora_timber_v2.material_phase
+  and UV_CONTRACT specify for Unreal.
 
 Review renders only. Blender 5.2.
 """
@@ -38,6 +42,8 @@ def timber_material(name: str, preset: str, shared: dict, ring_width: float, fal
     length = nb.node("ShaderNodeVectorMath", operation="LENGTH")
     nb.link(q, length.inputs[0])
     r = length.outputs["Value"]
+    r_knot, d_knot, _ = nb.vxyz(nb.uv("UVKnot"))
+    r = nb.lerp(r, r_knot, nb.m("LESS_THAN", d_knot, 0.0))
     uv0 = nb.uv("UV0")
     fibre = LD._tex(nb, shared["Fibre"], nb.vmul(uv0, 1.0 / 0.25))
     fib, streak, _ = nb.sep(fibre.outputs["Color"])

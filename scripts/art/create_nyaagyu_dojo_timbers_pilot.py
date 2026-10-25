@@ -1,4 +1,4 @@
-"""The v2 timber pilot: six members with real geometric raised grain and adze, SM5 fallbacks, close renders.
+"""The v2.1 timber pilot: six members with real geometric raised grain and adze, SM5 fallbacks, close renders.
 
 Run (Blender 5.2.2; the pinned CPU path, since Cycles' Metal compile hangs on macOS 27):
   blender -b --factory-startup --python-exit-code 1 --python scripts/art/create_nyaagyu_dojo_timbers_pilot.py -- --cpu
@@ -8,11 +8,18 @@ Run (Blender 5.2.2; the pinned CPU path, since Cycles' Metal compile hangs on ma
 
 The six members are dojo_timber_pilot.pilot_members(): the first chapter-1
 wall column, open column, nageshi, cornice, koshi and nuki. They have v1's
-logs, rebuilt with sora_timber_v2.
+logs, rebuilt with sora_timber_v2 (sora-timber-geometry-v2.1).
 
-Everything goes to the versioned namespace ``Local/ArtCache/NyaagyuDojoTimbersV2Pilot/``,
-never the frozen kit (Content/SourceArt/Environment/NyaagyuDojoTimbers) or
-its baseline cache (Local/ArtCache/NyaagyuDojoTimbers):
+Everything goes to the versioned namespace ``Local/ArtCache/NyaagyuDojoTimbersV21Pilot/``,
+never these, which the path guard refuses:
+* the frozen kit (Content/SourceArt/Environment/NyaagyuDojoTimbers);
+* its baseline cache (Local/ArtCache/NyaagyuDojoTimbers);
+* run 1, the archived v2 pilot (Local/ArtCache/NyaagyuDojoTimbersV2Pilot).
+
+Run 1 is verified only from the frozen 82869a4 inputs; this tree's v2.1
+sources can't reproduce its canonical geometry.
+
+The output:
 
 * ``Dense/<asset>.fbx``: the Nanite source;
 * ``Fallback/<asset>_Fallback.fbx`` and
@@ -22,8 +29,10 @@ its baseline cache (Local/ArtCache/NyaagyuDojoTimbers):
 * ``Renders/*.png`` and ``renders.json``: Cycles CPU source renders. Clay
   shots prove the geometry alone carries the relief; material shots use the
   v2 look-dev, whose latewood is the geometry's phase;
-* ``manifest.json``, ``evidence.json`` (each FBX's SHA-256 and v2 canonical
-  digest) and ``checks.json``.
+* ``manifest.json``, ``evidence.json`` (each FBX's SHA-256 and v2.1 canonical
+  digest) and ``checks.json``. The manifest carries sora_timber_v2.UV_CONTRACT:
+  each UV channel's payload, its Unreal decode, the material's ring formula
+  with the UVKnot select, and the Unreal content path.
 
 ``checks.json`` holds sora_timber_v2.check_mesh for every mesh. The run stops
 before exporting anything if a mesh fails: not closed, inconsistently wound,
@@ -197,8 +206,8 @@ def rebuild(arrays, on_member=None):
         checks[f"{m.name}:dense"] = V.check_mesh(B, m)
         checks[f"{m.name}:fallback"] = V.check_mesh(Bf, mf)
         checks[f"{m.name}:visibility"] = V.relief_visibility(B, m, face=2 if kind == "Koshi" else 3)
-        obj = T.to_blender(m.name, B, m)
-        objf = T.to_blender(mf.name, Bf, mf)
+        obj = V.to_blender(m.name, B, m)
+        objf = V.to_blender(mf.name, Bf, mf)
         if fam == "rail":
             RG.lay_down(obj, m, kind)
             RG.lay_down(objf, m, kind)
@@ -271,8 +280,8 @@ def main():
                 guard(OUT / "checks.json").write_text(json.dumps(checks, indent=1) + "\n")
                 raise SystemExit(f"pilot: {m.name} {label} fails its mesh checks: {report['failures']}")
         checks[f"{m.name}:visibility"] = V.relief_visibility(B, m, face=2 if kind == "Koshi" else 3)
-        obj = T.to_blender(m.name, B, m)
-        objf = T.to_blender(mf.name, Bf, mf)
+        obj = V.to_blender(m.name, B, m)
+        objf = V.to_blender(mf.name, Bf, mf)
         if fam == "rail":
             RG.lay_down(obj, m, kind)
             RG.lay_down(objf, m, kind)
@@ -310,13 +319,16 @@ def main():
         "versions": {"blender": bpy.app.version_string, "numpy": np.__version__, "python": platform.python_version()},
         "digest": V.DIGEST_VERSION,
         "wander": {"rings_per_unit": V.WANDER_RINGS_PER_UNIT, "amplitude": V.WANDER_AMPLITUDE},
+        "uv_contract": V.UV_CONTRACT,
         "shared_textures": {k: {"file": L.rel(p), "sha256": L.sha256(p), "kind": kind} for k, (p, kind) in shared_files.items()},
         "members": records, "renders": renders,
         "notes": {
-            "scope": "pilot only: six chapter-1 members in a versioned namespace; the frozen v1 kit and cache are untouched",
-            "uv": "as v1; UVLogQ is the log frame before the grain relief, the frame the raised grain is cut from",
-            "materials": "the latewood matches the geometry only with the v2 ring wander and Unreal's V-flip correction "
-                         "(q = (U, 1 - V), seed = 1 - UV3.V, RingNoise/RingRandom at 1 - v)",
+            "scope": "pilot only: six chapter-1 members in a versioned namespace; the frozen v1 kit, its cache and "
+                     "run 1 are untouched",
+            "uv": "UV0-UV3 as v1, plus UVKnot (UV4); UVLogQ is the log frame before the grain relief, the frame "
+                  "the raised grain is cut from, with v2.1's periodic wobble and no knot swap (see uv_contract)",
+            "materials": "the latewood matches the geometry only with the v2 ring wander, the UVKnot select and "
+                         "Unreal's (U, 1 - V) decode (uv_contract); the baseline master's ring model does not apply",
         },
     }
     guard(OUT / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=1) + "\n")

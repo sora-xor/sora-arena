@@ -1,4 +1,4 @@
-"""Version 2 of the dojo timber logs (sora-timber-geometry-v2), for the six-member pilot.
+"""Version 2.1 of the dojo timber logs (sora-timber-geometry-v2.1), for the six-member pilot.
 
 Numpy only; mesh creation and export reuse sora_timber_lib.to_blender in Blender.
 Version 1 (sora_timber_lib.py) and the frozen 6b0e93e kit are untouched: this
@@ -28,11 +28,26 @@ What v2 adds, all as real geometry on the Nanite logs:
   their own face. The arrises keep every sample in every row.
 * **A slight drying twist,** on top of v1's bow.
 
+**v2.1** fixes what the v2 pilot's run 1 renders showed:
+* **Check staircase:** each check is stitched in its own frame (ladder).
+* **Ring beading near knots:** rows and samples are refined until the
+  materials' linear interpolation holds the rings (RING_TOL_*).
+* **Knot-edge streaks:** UVLogQ stays continuous; the knot's own rings move to
+  UVKnot (UV4).
+* **The wobble seam at atan2's wrap:** the wobble is periodic (wobble).
+* **Forks:** each names its own parent check; Y-junctions are explicit
+  (junctions).
+
+UV_CONTRACT is the importer and material mapping. material_phase is its
+reference.
+
 ``check_mesh`` checks that the built mesh is closed, consistently oriented,
-free of degenerate or folded triangles and of row-order crossings. It also
-checks that the checks, dents, raised grain and adze have the relief they
-specify. The SM5 fallback (``fallback``) keeps the checks as geometry and
-leaves the rest to the bake, as in v1.
+free of degenerate or folded triangles and of row-order crossings. It
+checks that every groove runs unbroken (forks only at their recorded
+Y-junctions) and that the rings stay where the log's are between vertices.
+It also checks that the checks, dents, raised grain and adze have the relief
+they specify. The SM5 fallback (``fallback``) keeps the checks as geometry
+and leaves the rest to the bake, as in v1.
 """
 from __future__ import annotations
 
@@ -45,8 +60,25 @@ import numpy as np
 
 import sora_timber_lib as T
 
-DIGEST_VERSION = "sora-timber-geometry-v2"
+DIGEST_VERSION = "sora-timber-geometry-v2.1"
 LATEWOOD = 0.24                        # the masters' Latewood parameter
+# v2.1: between vertices the materials interpolate the log frame (UVLogQ)
+# linearly, so rows and samples go wherever that would move a ring. The
+# tolerance is the linear-interpolation error in rings: 0.03 where a player
+# comes within about a metre (under 0.4 px at 0.3 m in game), 0.2 elsewhere
+# (under half a pixel at 94 degrees and 1080p from a metre or more, for a
+# 1.4-2.4 mm ring).
+RING_TOL_CLOSE = 0.03
+RING_TOL_FAR = 0.2
+# How far past a check's zone (m) the stitching frame still follows the check.
+STITCH_BAND = 0.010
+# A fork shares its parent's groove for at most this long, over at most this
+# many row pairs per junction (check_joins).
+JUNCTION_MAX_LENGTH = 0.006
+JUNCTION_MAX_PAIRS = 4
+# check_mesh's limits on that ring error at triangle centroids: (p99, max).
+RING_ERROR_CLOSE = (0.03, 0.10)
+RING_ERROR_FAR = (0.2, 0.4)
 # Ring phases sampled across every ring. The geometric ridge is piecewise
 # linear through them: the flat earlywood floor (1.0 back to 0.51), the
 # latewood rise (0.51-0.70-0.83), and the abrupt fall to the next year's
@@ -154,6 +186,65 @@ def _phase_of_r(r, seed01, ring_width, arrays):
     return np.asarray(r) / ring_width + (var - 0.5) * WANDER_AMPLITUDE
 
 
+# ---------------------------------------------------------------------------
+# The v2.1 UV contract: what each channel carries and how Unreal decodes it
+# ---------------------------------------------------------------------------
+
+UNREAL_NAMESPACE = "/Game/Generated/Qualification/DojoTimberPilotV21"
+UV_CONTRACT = {
+    "geometry": DIGEST_VERSION,
+    "unreal_content_path": UNREAL_NAMESPACE,
+    "import_decode": "Interchange imports every channel as (U, 1 - V). Decode with flip_v before reading UV0/UVLogQ/"
+                     "UVLogZ/UVKnot as data; sample shared images at computed Blender coordinates through "
+                     "sample_blender (flip_v again), as import_nyaagyu_dojo_timbers.py (cd10643) does.",
+    "channels": [
+        {"index": 0, "blender_layer": "UV0", "payload": "metric (s, z): arc length round the section, height (m)",
+         "unreal": "flip_v(TexCoord[0])"},
+        {"index": 1, "blender_layer": "UV1", "payload": "unique bake atlas (fallback NormalDX/Masks)",
+         "unreal": "TexCoord[1] as imported"},
+        {"index": 2, "blender_layer": "UVLogQ", "payload": "signed log-frame offset q = (P - pith) * r_warp / r (m). "
+         "r_warp adds the periodic wobble (sora_timber_v2.wobble) and every knot's swirl. Continuous across knot "
+         "edges: no knot-centred swap (that was v2).", "unreal": "flip_v(TexCoord[2])"},
+        {"index": 3, "blender_layer": "UVLogZ", "payload": "(z m, seed01)", "unreal": "seed = 1 - TexCoord[3].g"},
+        {"index": 4, "blender_layer": "UVKnot", "payload": "(knot ring radius r_k in the materials' ring units "
+         "(0.55 mm knot rings), signed distance d from the knot's edge in knot radii, clamped to [-1, 1]); "
+         "inside the knot where d < 0. Fallbacks carry (0, 1).", "unreal": "r_k = TexCoord[4].r; d = 1 - TexCoord[4].g"},
+    ],
+    "textures": [
+        {"name": "T_TimberFibre", "pixels": "1024 x 1024 8-bit RGB, linear (no sRGB)", "sampler": "Masks",
+         "use": "R fine fibres, G streaks (also the ring radius jitter), B broad drift; UV0 / 0.25 m, drift at UV0 x 0.11"},
+        {"name": "T_TimberRingNoise", "pixels": "1024 x 64 16-bit grey, linear", "sampler": "LinearGrayscale",
+         "use": "R: ring-width wander row per log seed, bilinear, wrap"},
+        {"name": "T_TimberRingRandom", "pixels": "256 x 256 8-bit grey, linear", "sampler": "LinearGrayscale",
+         "use": "R: per-year latewood strength, NEAREST filtering, wrap"},
+        {"name": "T_<asset>_NormalDX (fallback only)", "pixels": "bake, DirectX green", "sampler": "Normal",
+         "use": "UV1"},
+        {"name": "T_<asset>_Masks (fallback only)", "pixels": "bake RGBA, linear", "sampler": "Masks",
+         "use": "UV1; RGB = cavity, wear, soot; the knot weight is the sample's own alpha output, not a component of RGB"},
+        {"name": "vertex colour Masks (dense)", "pixels": "per vertex RGBA floats", "sampler": "-",
+         "use": "RGB = cavity, wear, soot; A = knot weight (0.55-1.0, dead knots highest)"},
+    ],
+    "ring": {
+        "radius": "r = (d < 0 ? r_k : length(UVLogQ)) + (Fibre.G(UV0 / 0.25) - 0.5) * 0.00025",
+        "phase": "r / w + (RingNoise.R(nu, nv) - 0.5) * WANDER_AMPLITUDE, nu = r / (WANDER_RINGS_PER_UNIT * w) "
+                 "+ seed * 37, nv = frac(seed * 7.31); RingNoise sampled at the Blender coordinate (sample_blender)",
+        "wander_rings_per_unit": WANDER_RINGS_PER_UNIT, "wander_amplitude": WANDER_AMPLITUDE,
+        "knot_edge": "the select on d is per pixel; anti-alias over the pixel footprint, "
+                     "inside = saturate(0.5 - d / max(fwidth(d), 1e-6))",
+    },
+}
+
+
+def material_phase(uv0: np.ndarray, uv2: np.ndarray, uv3: np.ndarray, uv4: np.ndarray, ring_width: float,
+                   arrays: dict, inside: np.ndarray | None = None):
+    """The materials' ring phase from the decoded Blender channels (UV_CONTRACT):
+    the reference that the look-dev graph and Unreal's timber master must
+    reproduce. ``inside`` overrides the per-pixel knot select (d < 0)."""
+    sel = (uv4[:, 1] < 0.0) if inside is None else inside
+    q = np.where(sel[:, None], np.stack([uv4[:, 0], np.zeros(len(uv4))], 1), uv2)
+    return ring_phase(q, float(uv3[0, 1]) if len(uv3) else 0.0, uv0, ring_width, arrays)
+
+
 def ridge(f: np.ndarray, latewood: float = LATEWOOD):
     """The masters' latewood ridge on ring fraction ``f``: 0 in the earlywood, 1 at the ridge."""
     return T.smoothstep(1.0 - latewood - 0.25, 1.0 - latewood + 0.05, f) * (1.0 - T.smoothstep(0.82, 1.0, f))
@@ -238,6 +329,7 @@ def checks_v2(m: MemberV2):
                                 1 if h(130 + j) < 0.5 else -1, 0.00005 + 0.0001 * h(140 + j), 0.0003 + 0.0009 * h(150 + j))
                                for j in range(int((ck.z1 - ck.z0) / 0.3 * 3 * h(7)))])
         out.append(c)
+        main = len(out) - 1          # v2.1: both ends' forks name this check (v2 gave a second fork the first)
         for end, z_end in ((0, ck.z0), (1, ck.z1)):
             if h(8 + end) >= 0.3:
                 continue
@@ -249,7 +341,7 @@ def checks_v2(m: MemberV2):
             u_start = float(uc) - (drift * (z_end - zf0) if end == 0 else 0.0)
             out.append(CheckV2(face=ck.face, u0=u_start, drift=drift, z0=zf0, z1=zf1, width=0.0004, depth=0.0008,
                                meander=[], noise=[], bridges=[], ext0=0.002, ext1=0.002, steep=1.3,
-                               steep_left=True, ratio=4.0, lip=[], splinters=[], parent=len(out) - 1))
+                               steep_left=True, ratio=4.0, lip=[], splinters=[], parent=main))
     return out
 
 
@@ -287,6 +379,136 @@ def dent_sites(m: MemberV2):
 # Sampling
 # ---------------------------------------------------------------------------
 
+@dataclass
+class SamplesV2(T.Samples):
+    # Per row, every check sampled there: (check, face, centre u, zone lo, zone
+    # hi, face u0, face u1, own), where own is False for the plain placeholder
+    # grid just past a check's ends. ladder() stitches each check in its own frame.
+    checks_at: list = field(default_factory=list)
+
+
+def wobble(m: MemberV2, theta, z):
+    """The log's ring wobble, periodic round the pith (v2.1).
+
+    v1 evaluates ``log.wobble(0.08 theta, z)``. That jumps where atan2 wraps
+    at theta = +-pi: a seam of up to 2.3 rings the full length of any face
+    that crosses it (the pilot's open column, face 2; the frozen v1 kit has
+    it too). Here the same field is sampled on a circle of the same
+    circumference, so the wobble keeps its scale and has no seam."""
+    return (m.log.wobble(0.08 * np.cos(theta), z) + m.log.wobble(0.08 * np.sin(theta) + 17.0, z)) / math.sqrt(2.0)
+
+
+def _log_q(m: MemberV2, f, u, z, half_w, half_d):
+    """UVLogQ, the warped log frame before any relief, on face ``f``'s plane at
+    (u, z) as an (N, 2) array: the pith offset scaled for the log's wobble and
+    every knot's swirl, as build() stores it. The materials interpolate it
+    linearly and take its length per pixel, which is exact on a flat face but
+    for the warp. So only the warp needs rows and samples."""
+    u = np.asarray(u, np.float64)
+    z = np.broadcast_to(np.asarray(z, np.float64), u.shape)
+    x, y = T._face_xy(f, u, half_w, half_d)
+    _mask, _kd, _kr, swirl, _dead, _kb = T._knots(m, np.stack([x, y, z], 1))
+    px, py = m.log.pith_at(z)
+    qx, qy = x - px, y - py
+    r = np.hypot(qx, qy) + 1e-9
+    r_warp = r + wobble(m, np.arctan2(qy, qx), z) * np.clip(r / 0.03, 0, 1) + swirl
+    return np.stack([qx, qy], -1) * (r_warp / r)[..., None]
+
+
+def _ring_radius(m: MemberV2, f, u, z, half_w, half_d):
+    """|UVLogQ| on face ``f``'s plane at (u, z): the materials' ring radius."""
+    return np.linalg.norm(_log_q(m, f, u, z, half_w, half_d), axis=-1)
+
+
+def _interp_error(qa, qb, qm, ring_width):
+    """Rings between the material's ring radius halfway along an edge
+    (|mean of the end frames|) and the log's there (|qm|)."""
+    return np.abs(np.linalg.norm((qa + qb) / 2, axis=-1) - np.linalg.norm(qm, axis=-1)) / ring_width
+
+
+def _close_zone(m: MemberV2):
+    """(z0, z1) where a player comes within about a metre: the geometric grain's
+    zone, or None for a member never seen that close (and every fallback)."""
+    if not m.grain:
+        return None
+    return m.grain_zone if m.grain_zone is not None else (0.0, m.length)
+
+
+def _tol_at(m: MemberV2, z):
+    close = _close_zone(m)
+    z = np.asarray(z, np.float64)
+    if close is None:
+        return np.full(z.shape, RING_TOL_FAR)
+    return np.where((z >= close[0]) & (z <= close[1]), RING_TOL_CLOSE, RING_TOL_FAR)
+
+
+def _visible_span(m: MemberV2, f, half_w, half_d):
+    u0, u1 = T._face_span(f, half_w, half_d, m.arris_r)
+    if m.visible[f] is not None:
+        u0, u1 = max(u0, m.visible[f][0]), min(u1, m.visible[f][1])
+    return u0, u1
+
+
+def _refine_rows(m: MemberV2, z_rows, max_passes=8, min_gap=0.0015):
+    """``z_rows`` plus midpoints wherever interpolating the ring radius between
+    two rows would move a ring by more than the tolerance, on any shown face.
+    Knot swirls and the log's wobble bend the rings faster than a 10 mm or
+    4 cm row gap can follow."""
+    half_w, half_d = m.width / 2, m.depth / 2
+    faces = [f for f in range(4) if m.finish[f] != "hidden"]
+    grids = {}
+    for f in faces:
+        u0, u1 = _visible_span(m, f, half_w, half_d)
+        if u1 - u0 > 0.004:
+            grids[f] = np.linspace(u0 + 0.002, u1 - 0.002, max(2, int((u1 - u0) / 0.002)))
+    z = np.asarray(z_rows, np.float64)
+    for _ in range(max_passes):
+        za, zb = z[:-1], z[1:]
+        idx = np.nonzero(zb - za > min_gap)[0]
+        if not idx.size:
+            break
+        zm = (za + zb) / 2
+        err = np.zeros(zm.size)
+        for f, u in grids.items():
+            U = np.tile(u, idx.size)
+            qa, qb = (_log_q(m, f, U, np.repeat(zz[idx], u.size), half_w, half_d) for zz in (za, zb))
+            # At a third, half and two thirds of the gap: the warp isn't
+            # quadratic over a long gap, so the midpoint alone can miss the worst.
+            for t in (1 / 3, 0.5, 2 / 3):
+                qt = _log_q(m, f, U, np.repeat(za[idx] + t * (zb[idx] - za[idx]), u.size), half_w, half_d)
+                lin = (1 - t) * qa + t * qb
+                e = (np.abs(np.linalg.norm(lin, axis=-1) - np.linalg.norm(qt, axis=-1)) / m.log.ring_width)
+                err[idx] = np.maximum(err[idx], e.reshape(idx.size, u.size).max(1))
+        new = zm[idx][err[idx] > _tol_at(m, zm[idx])]
+        if not new.size:
+            break
+        z = np.unique(np.round(np.concatenate([z, new]), 7))
+    return z
+
+
+def _refine_across(m: MemberV2, f, z, u, half_w, half_d, keep_out, lo, hi, max_passes=8, min_gap=0.001):
+    """Row ``u`` (sorted) plus midpoints, between ``lo`` and ``hi`` and outside
+    ``keep_out``, wherever the ring radius between neighbours is off by more
+    than the tolerance."""
+    tol = float(_tol_at(m, z))
+    for _ in range(max_passes):
+        if u.size < 2:
+            break
+        um = (u[:-1] + u[1:]) / 2
+        idx = np.nonzero((np.diff(u) > min_gap) & (um > lo) & (um < hi))[0]
+        if not idx.size:
+            break
+        q = _log_q(m, f, np.concatenate([u[idx], u[idx + 1], um[idx]]), z, half_w, half_d)
+        qa, qb, qm = np.split(q, 3)
+        new = um[idx][_interp_error(qa, qb, qm, m.log.ring_width) > tol]
+        for a, b in keep_out:
+            new = new[(new < a) | (new > b)]
+        if not new.size:
+            break
+        u = np.unique(np.concatenate([u, new]))
+    return u
+
+
 def _grain_on(m: MemberV2, f: int, z: float) -> bool:
     if m.fallback or f not in m.grain or m.finish[f] != "planed":
         return False
@@ -298,12 +520,9 @@ def _phase_samples(m: MemberV2, f, z, lo, hi, half_w, half_d, arrays):
     if hi - lo < 0.001:
         return np.zeros(0)
     u = np.arange(lo, hi, 0.00005)
-    x, y = T._face_xy(f, u, half_w, half_d)
-    px, py = m.log.pith_at(np.full(u.size, z))
-    qx, qy = x - px, y - py
-    r = np.hypot(qx, qy) + 1e-9
-    theta = np.arctan2(qy, qx)
-    r = r + m.log.wobble(theta * 0.08, np.full(u.size, z)) * np.clip(r / 0.03, 0, 1)
+    # v2.1: with the knots' swirl, as the stored frame has it, so the samples
+    # sit on the ridges near knots too.
+    r = _ring_radius(m, f, u, z, half_w, half_d)
     phase = _phase_of_r(r, (m.log.seed % 997) / 997.0, m.log.ring_width, arrays)
     out = []
     for k in RIDGE_KNOTS:
@@ -351,7 +570,7 @@ def sample(m: MemberV2, arrays=None) -> T.Samples:
         z0, z1 = m.grain_zone if m.grain_zone is not None else (0.0, m.length)
         rows.append(lattice(z0, z1, m.grain_row_sp))
     z_rows = np.unique(np.round(np.concatenate(rows), 7))
-    z_rows = z_rows[(z_rows >= 0) & (z_rows <= m.length)]
+    z_rows = _refine_rows(m, z_rows[(z_rows >= 0) & (z_rows <= m.length)])
     base_set = set(base.tolist())
 
     def widened(a, b):
@@ -369,9 +588,11 @@ def sample(m: MemberV2, arrays=None) -> T.Samples:
     tc = np.linspace(0.0, math.pi / 2, m.corner_samples, endpoint=False)
     grades = np.array([0.0025]) if m.fallback else np.array([0.0006, 0.0014, 0.0025])
     xs, ys, zz, nxs, nys, segs, us, taus, dets, starts, counts = ([] for _ in range(11))
+    checks_at = []
     total = 0
     for z in z_rows:
         full = float(z) in base_set
+        row_checks = []
         handled = math.exp(-((z - hz) / hs) ** 2)
         R, Pexp = [], []
         for c in range(4):
@@ -396,13 +617,14 @@ def sample(m: MemberV2, arrays=None) -> T.Samples:
                     g = np.concatenate([g[(g >= vis[0]) & (g <= vis[1])], coarse[(coarse < vis[0]) | (coarse > vis[1])]])
                 pts = [np.array([u0]), u0 + grades, u1 - grades]
                 spans, extra, zones = [], [], []
-                for c, wa, wb in checks_w:
+                for ci, (c, wa, wb) in enumerate(checks_w):
                     if c.face != f or not (wa <= z <= wb):
                         continue
                     if not (c.lo <= z <= c.hi):
                         # Just past the check: a fine plain grid where its zone will be.
                         uc0, _hl, _hr, _ = c.at(min(max(z, c.lo), c.hi), straight=False)
                         extra.append(float(uc0) + np.arange(-0.004, 0.0041, 0.0005))
+                        row_checks.append((ci, f, float(uc0), float(uc0) - 0.004, float(uc0) + 0.004, u0, u1, False))
                         continue
                     uc, hl, hr, _ = c.at(z, straight=False)
                     hl, hr = max(float(hl), m.hw_floor), max(float(hr), m.hw_floor)
@@ -411,6 +633,7 @@ def sample(m: MemberV2, arrays=None) -> T.Samples:
                                           uc - hl * 1.6 - CHECK_BEYOND, uc + hr * 1.6 + CHECK_BEYOND])
                     zones.append((uc - hl * 1.6 - CHECK_BEYOND[-1], uc + hr * 1.6 + CHECK_BEYOND[-1], own))
                     spans.append((uc - hl * 1.6 - 0.003, uc + hr * 1.6 + 0.003))
+                    row_checks.append((ci, f, uc, zones[-1][0], zones[-1][1], u0, u1, True))
                 for kf, ku, kz, au, az, wa, wb in feet_w:
                     if kf == f and wa <= z <= wb:
                         spans.append((ku - au * 1.3, ku + au * 1.3))
@@ -439,6 +662,8 @@ def sample(m: MemberV2, arrays=None) -> T.Samples:
                     pts.append(own)
                 u = np.unique(np.concatenate(pts))
                 u = u[(u >= u0) & (u < u1 - 1e-7)]
+                u = _refine_across(m, f, float(z), u, half_w, half_d,
+                                   [(a - 0.0002, b + 0.0002) for a, b, _own in zones], lo, hi)
                 if u.size > 1:
                     keep = np.ones(u.size, bool)
                     keep[1:] = np.diff(u) > 0.00005
@@ -476,14 +701,16 @@ def sample(m: MemberV2, arrays=None) -> T.Samples:
             nxt = (f + 1) % 4
             hidden_corner = m.finish[f] == "hidden" and m.finish[nxt] == "hidden"
             dets.append(np.full(tc.size, 0.0 if hidden_corner else 1.0, np.float32))
+        checks_at.append(row_checks)
         n = sum(a.size for a in xs[len(xs) - 8:])
         starts.append(total)
         counts.append(n)
         total += n
         zz.append(np.full(n, z))
     cat = np.concatenate
-    return T.Samples(x=cat(xs), y=cat(ys), z=cat(zz), nx=cat(nxs), ny=cat(nys), seg=cat(segs), u=cat(us),
-                     tau=cat(taus), detail=cat(dets), row_start=np.array(starts), row_count=np.array(counts))
+    return SamplesV2(x=cat(xs), y=cat(ys), z=cat(zz), nx=cat(nxs), ny=cat(nys), seg=cat(segs), u=cat(us),
+                     tau=cat(taus), detail=cat(dets), row_start=np.array(starts), row_count=np.array(counts),
+                     checks_at=checks_at)
 
 
 # ---------------------------------------------------------------------------
@@ -534,6 +761,81 @@ def adze(m: MemberV2, u, z, f):
 # ---------------------------------------------------------------------------
 # Build
 # ---------------------------------------------------------------------------
+
+def ladder(S):
+    """sora_timber_lib.ladder, with every check stitched in its own frame (v2.1).
+
+    v1's ladder pairs consecutive rows by position along the face (tau). A
+    check's meander moves it up to about 3 mm sideways between rows, several
+    of its own half-widths. So pairing by position joined most rows' V-bottom
+    to the next row's wall or lip: the groove closed and reopened, offset,
+    every row (the pilot's staircase).
+
+    Here each row's keys on a check's face are taken from the row before's own
+    face frame, shifted by the check's sideways move since then: fully across
+    its zone, blending back to the row's own keys STITCH_BAND beyond. So each
+    of its samples meets its counterpart. The keys stay strictly increasing
+    along every row, which the merge needs, because the shift is far smaller
+    than the band. A reordering raises.
+    """
+    out_t = []
+    out_w = []
+    checks_at = getattr(S, "checks_at", None) or []
+    for i in range(S.row_start.size - 1):
+        a0, na = S.row_start[i], S.row_count[i]
+        b0, nb = S.row_start[i + 1], S.row_count[i + 1]
+        ta = S.tau[a0:a0 + na]
+        tb = S.tau[b0:b0 + nb]
+        if checks_at:
+            before = {c[0]: c for c in checks_at[i]}
+            shifted = None
+            # Where frames overlap, the groove that continues through both rows
+            # wins (applied last); then one just starting; then one ending into
+            # its placeholder grid. A placeholder in both rows has no groove to
+            # follow at all.
+            def rank(e):
+                was = e[0] in before and before[e[0]][7]
+                return 2 if (e[7] and was) else 1 if e[7] else 0
+            for ci, f, uc, lo, hi, u0, u1, own in sorted(checks_at[i + 1], key=rank):
+                if ci not in before or not (own or before[ci][7]):
+                    continue
+                _ci, _f, uc_a, _lo, _hi, u0_a, u1_a, _own = before[ci]
+                shifted = tb.copy() if shifted is None else shifted
+                u = S.u[b0:b0 + nb]
+                w = np.clip(1.0 - np.maximum(np.maximum(lo - u, u - hi), 0.0) / STITCH_BAND, 0.0, 1.0)
+                # Where the row before had this sample, in its own face frame:
+                # the arris radius changes a face's span row to row, so
+                # matching tau alone can miss a sample spacing.
+                follow = 2 * f + (u - (uc - uc_a) - u0_a) / (u1_a - u0_a)
+                on = S.seg[b0:b0 + nb] == 2 * f
+                shifted = np.where(on, (1.0 - w) * shifted + w * follow, shifted)
+            if shifted is not None:
+                if not np.all(np.diff(shifted) > 0):
+                    raise ValueError(f"ladder: a check's stitching frame reorders row {i + 1}")
+                tb = shifted
+        # v1's merge: extended sequences, elements 1..n then the first again (+8 round).
+        ka = np.concatenate([ta[1:], [ta[0] + 8.0]])
+        kb = np.concatenate([tb[1:], [tb[0] + 8.0]])
+        keys = np.concatenate([ka, kb])
+        is_a = np.concatenate([np.ones(na, bool), np.zeros(nb, bool)])
+        order = np.argsort(keys, kind="stable")
+        isa = is_a[order]
+        ca = np.cumsum(isa)
+        cb = np.cumsum(~isa)
+        cur_a = ca - isa
+        cur_b = cb - (~isa)
+        ia = lambda k: a0 + (k % na)  # noqa: E731
+        ib = lambda k: b0 + (k % nb)  # noqa: E731
+        t = np.where(isa[:, None],
+                     np.stack([ia(cur_a), ia(ca), ib(cur_b)], 1),
+                     np.stack([ia(cur_a), ib(cb), ib(cur_b)], 1))
+        w = np.where(isa[:, None],
+                     np.stack([cur_a >= na, ca >= na, cur_b >= nb], 1),
+                     np.stack([cur_a >= na, cb >= nb, cur_b >= nb], 1))
+        out_t.append(t)
+        out_w.append(w)
+    return np.concatenate(out_t).astype(np.int64), np.concatenate(out_w)
+
 
 def _row_arc(P, S):
     s = np.zeros(P.shape[0])
@@ -630,12 +932,22 @@ def build(m: MemberV2, arrays=None):
     qx, qy = P[:, 0] - px, P[:, 1] - py
     r = np.hypot(qx, qy) + 1e-9
     theta = np.arctan2(qy, qx)
-    r_warp = r + m.log.wobble(theta * 0.08, P[:, 2]) * np.clip(r / 0.03, 0, 1) + swirl
+    r_warp = r + wobble(m, theta, P[:, 2]) * np.clip(r / 0.03, 0, 1) + swirl
     q2x, q2y = qx * (r_warp / r), qy * (r_warp / r)
     inside = (kd < kr) & (not m.fallback)
+    # v2.1: UVLogQ stays the log frame everywhere, continuous across a knot's
+    # edge. v2 swapped in knot-centred rings inside, so triangles across the
+    # edge blended two frames tens of rings apart: radial streaks.
+    # The knot's own rings go to UVKnot = (r, d):
+    # - r, its centred ring radius in the materials' units (0.55 mm rings);
+    # - d, the signed distance from its edge in knot radii, clamped to [-1, 1].
+    # The materials take the knot's rings where the interpolated d < 0, so the
+    # edge is a smooth line through the triangles. A fallback keeps no knot
+    # rings (d = 1), as before.
     knot_rings = m.log.ring_width / 0.00055
-    q2x = np.where(inside, kd * knot_rings * np.cos(theta), q2x)
-    q2y = np.where(inside, kd * knot_rings * np.sin(theta), q2y)
+    near = np.isfinite(kd) & (not m.fallback)
+    uv4 = np.stack([np.where(near, kd, 0.0) * knot_rings,
+                    np.where(near, np.clip((kd - kr) / kr, -1.0, 1.0), 1.0)], 1)
     s, row_len = _row_arc(P, S)
     seed01 = (m.log.seed % 997) / 997.0
     grain_disp = np.zeros(N)
@@ -662,7 +974,7 @@ def build(m: MemberV2, arrays=None):
         gsel[idx] = True
         P[idx, 0] += S.nx[idx] * h
         P[idx, 1] += S.ny[idx] * h
-    tris, wrap = T.ladder(S)
+    tris, wrap = ladder(S)
     caps = T.end_caps(S, N) if m.end_caps else None
     row_of = np.repeat(np.arange(S.row_start.size), S.row_count)
     cavity = np.clip(check_depth / 0.004, 0, 1) * 0.9 + np.clip(adze_depth / 0.0025, 0, 1) * 0.35
@@ -692,10 +1004,22 @@ def build(m: MemberV2, arrays=None):
     colors = np.stack([cavity, wear, soot, knot_a], 1).astype(np.float32)
     return {
         "verts": P, "tris": tris, "wrap": wrap, "caps": caps, "s": s, "row_len": row_len, "row_of": row_of, "z": P[:, 2],
-        "uv2": np.stack([q2x, q2y], 1), "uv3": np.stack([P[:, 2], np.full(N, seed01)], 1), "colors": colors,
+        "uv2": np.stack([q2x, q2y], 1), "uv3": np.stack([P[:, 2], np.full(N, seed01)], 1), "uv4": uv4, "colors": colors,
         "samples": S, "grain_disp": grain_disp, "grain_phase": phase, "grain_sel": gsel, "dent_disp": dent_disp,
         "check_depth": check_depth, "check_zone": check_zone, "knot_mask": mask, "adze_depth": adze_depth,
     }
+
+
+def to_blender(name, B, m: MemberV2):
+    """sora_timber_lib.to_blender, plus v2.1's UVKnot layer (UV4, after UVLogZ)."""
+    obj = T.to_blender(name, B, m)
+    me = obj.data
+    vi = np.empty(len(me.loops), np.int32)
+    me.loops.foreach_get("vertex_index", vi)
+    uv4 = B["uv4"] if B["caps"] is None else np.concatenate([B["uv4"], [[0.0, 1.0], [0.0, 1.0]]])
+    layer = me.uv_layers.new(name="UVKnot")
+    layer.data.foreach_set("uv", uv4[vi].astype(np.float32).ravel())
+    return obj
 
 
 def canonical_digest(obj) -> str:
@@ -720,6 +1044,138 @@ def _all_tris(B, m):
         P = np.concatenate([P, np.array(ends)])
         tris = np.concatenate([tris] + list(caps))
     return P, tris
+
+
+def junctions(m: MemberV2):
+    """Every true Y-junction: where checks_v2 starts a forked hairline at its
+    parent check's end. [(fork, parent, face, z)], indices in checks_v2 order.
+    These are the only places a groove may part from the strip of rows."""
+    cs = checks_v2(m)
+    out = []
+    for j, c in enumerate(cs):
+        if c.parent < 0 or m.finish[c.face] == "hidden":
+            continue
+        par = cs[c.parent]
+        # A fork before the parent ends at its z0; one after starts at its z1.
+        z = c.z1 if abs(c.z1 - par.z0) <= abs(c.z0 - par.z1) else c.z0
+        out.append((j, c.parent, c.face, float(z)))
+    return out
+
+
+def check_joins(B, m: MemberV2):
+    """Every check on a shown face, forks included: of its consecutive rows
+    (z0..z1), how many join their V-bottoms (the samples nearest its centre)
+    with an edge. A row pair that doesn't is a step in the groove (a staircase).
+
+    The one exception is a recorded Y-junction (junctions()). Its window is
+    the rows where the fork and its parent both have their own samples and
+    their V's overlap: one groove there, parting into two. A pair touching
+    that window may join a V-bottom to the other branch's instead of its own,
+    but must stay continuous. Each V-bottom must join a V-bottom of either
+    branch in the adjacent row. The window is bounded (JUNCTION_MAX_LENGTH,
+    JUNCTION_MAX_PAIRS). Returns (per-check joins, per-junction records)."""
+    S, t = B["samples"], B["tris"]
+    n = S.x.size + 2
+    e = np.sort(np.concatenate([t[:, [0, 1]], t[:, [1, 2]], t[:, [2, 0]]]), 1)
+    edge_set = set((e[:, 0] * n + e[:, 1]).tolist())
+    z_row = S.z[S.row_start]
+    cs = checks_v2(m)
+    shown = [i for i, c in enumerate(cs) if m.finish[c.face] != "hidden"]      # sample()'s check order
+    own = {}                                                                     # check -> {row: centre u}
+    for k, entries in enumerate(getattr(S, "checks_at", None) or []):
+        for ci, _f, uc, _lo, _hi, _u0, _u1, is_own in entries:
+            if is_own:
+                own.setdefault(shown[ci], {})[k] = uc
+
+    def bottom(i, k):
+        c = cs[i]
+        st, ct = S.row_start[k], S.row_count[k]
+        idx = st + np.nonzero(S.seg[st:st + ct] == 2 * c.face)[0]
+        return int(idx[np.argmin(np.abs(S.u[idx] - float(c.at(z_row[k])[0])))])
+
+    def joined(a, b):
+        return (min(a, b) * n + max(a, b)) in edge_set
+
+    def reach(c, z):
+        _uc, hl, hr, _d = c.at(z)
+        return 1.6 * max(float(hl), float(hr), m.hw_floor)
+
+    records, exempt = [], {}
+    for j, par, f, zj in junctions(m):
+        both = sorted(set(own.get(j, {})) & set(own.get(par, {})))
+        window = [k for k in both if abs(own[j][k] - own[par][k]) < reach(cs[j], z_row[k]) + reach(cs[par], z_row[k])]
+        pairs, continuous = [], True
+        for i, other in ((j, par), (par, j)):
+            for k0 in sorted({k - 1 for k in window} | set(window)):
+                k1 = k0 + 1
+                if k0 not in own.get(i, {}) or k1 not in own.get(i, {}):
+                    continue
+                if not (cs[i].z0 <= z_row[k0] <= cs[i].z1 and cs[i].z0 <= z_row[k1] <= cs[i].z1):
+                    continue
+                a, b = bottom(i, k0), bottom(i, k1)
+                if joined(a, b):
+                    continue
+                # Not its own: it must reach the other branch's V-bottom, both ways.
+                alt0 = bottom(other, k0) if k0 in own.get(other, {}) else None
+                alt1 = bottom(other, k1) if k1 in own.get(other, {}) else None
+                fwd = alt1 is not None and joined(a, alt1)
+                back = alt0 is not None and joined(alt0, b)
+                ok = (fwd or (alt0 is not None and joined(alt0, alt1 if alt1 is not None else b))) and (back or fwd)
+                continuous &= bool(ok)
+                exempt.setdefault(i, set()).add(k0)
+                pairs.append({"check": i, "z": [round(float(z_row[k0]), 5), round(float(z_row[k1]), 5)],
+                              "to_other_branch": bool(fwd or back), "continuous": bool(ok),
+                              "branch_offset_mm": round(1e3 * abs(own[j].get(k0, own[j].get(k1, 0.0)) -
+                                                                  own[par].get(k0, own[par].get(k1, 0.0))), 3)})
+        zs = [float(z_row[k]) for k in window]
+        records.append({"fork": j, "parent": par, "face": f, "z": round(zj, 5),
+                        "window_rows": len(window), "window_length_m": round(max(zs) - min(zs), 5) if zs else 0.0,
+                        "exempt_pairs": pairs, "continuous": bool(continuous)})
+    out = []
+    for i, c in enumerate(cs):
+        if m.finish[c.face] == "hidden":
+            continue
+        rows = np.nonzero((z_row >= c.z0) & (z_row <= c.z1))[0]
+        if rows.size < 2:
+            continue
+        pairs = [(int(a), int(b)) for a, b in zip(rows, rows[1:]) if b == a + 1]
+        ok = [joined(bottom(i, a), bottom(i, b)) for a, b in pairs]
+        at_junction = [a in exempt.get(i, ()) for a, b in pairs]
+        out.append({"check": i, "fork": c.parent >= 0, "row_pairs": len(pairs), "joined": int(sum(ok)),
+                    "junction_pairs": int(sum(at_junction)),
+                    "steps": int(sum(1 for o, jn in zip(ok, at_junction) if not o and not jn))})
+    return out, records
+
+
+def ring_error(B, m: MemberV2):
+    """How far the materials' rings sit from the log's between vertices: at
+    every shown side triangle's centroid, the interpolated |UVLogQ| against the
+    frame build() would store there, in rings. Reported for the close zone and
+    the rest. As in build(), the frame is taken before the grain relief, with
+    the knots' swirl at the undeformed surface."""
+    P, S, t = B["verts"], B["samples"], B["tris"]
+    shown = (S.seg % 2 == 0) & (S.detail > 0)
+    tt = t[shown[t].all(1)]
+    pre = P.copy()
+    pre[:, 0] -= S.nx * B["grain_disp"]
+    pre[:, 1] -= S.ny * B["grain_disp"]
+    cen = pre[tt].mean(1)
+    undeformed = np.stack([S.x, S.y, S.z], 1)[tt].mean(1)
+    _mask, _kd, _kr, swirl, _dead, _kb = T._knots(m, undeformed)
+    px, py = m.log.pith_at(cen[:, 2])
+    qx, qy = cen[:, 0] - px, cen[:, 1] - py
+    r = np.hypot(qx, qy) + 1e-9
+    exact = r + wobble(m, np.arctan2(qy, qx), cen[:, 2]) * np.clip(r / 0.03, 0, 1) + swirl
+    q = B["uv2"][tt].mean(1)
+    err = np.abs(np.hypot(q[:, 0], q[:, 1]) - exact) / m.log.ring_width
+    close = _close_zone(m)
+    in_close = np.zeros(err.size, bool) if close is None else (cen[:, 2] >= close[0]) & (cen[:, 2] <= close[1])
+    out = {}
+    for name, sel in (("close", in_close), ("far", ~in_close)):
+        if sel.any():
+            out[name] = {"triangles": int(sel.sum()), "p50": round(float(np.percentile(err[sel], 50)), 4),
+                         "p99": round(float(np.percentile(err[sel], 99)), 4), "max": round(float(err[sel].max()), 4)}
+    return out
 
 
 def check_mesh(B, m: MemberV2):
@@ -801,6 +1257,29 @@ def check_mesh(B, m: MemberV2):
     metrics["row_order_crossings"] = crossings
     if crossings:
         failures.append(f"{crossings} samples cross their neighbours along a row (local self-intersection)")
+    # v2.1: every check's groove runs unbroken, row to row; forks part only
+    # at their recorded, bounded, continuous Y-junctions.
+    joins, junction_records = check_joins(B, m)
+    metrics["check_joins"] = joins
+    metrics["junctions"] = junction_records
+    broken = [j for j in joins if j["steps"]]
+    if broken:
+        failures.append("checks " + ", ".join(f"{j['check']} ({j['steps']}/{j['row_pairs']})" for j in broken)
+                        + " step: consecutive rows don't join their V-bottoms")
+    for r in junction_records:
+        if not r["continuous"]:
+            failures.append(f"the Y-junction of fork {r['fork']} and check {r['parent']} at z {r['z']} breaks the groove")
+        if r["window_length_m"] > JUNCTION_MAX_LENGTH or len(r["exempt_pairs"]) > JUNCTION_MAX_PAIRS:
+            failures.append(f"the Y-junction of fork {r['fork']} and check {r['parent']} at z {r['z']} spans "
+                            f"{r['window_length_m'] * 1e3:.1f} mm and {len(r['exempt_pairs'])} row pairs "
+                            f"(limits {JUNCTION_MAX_LENGTH * 1e3:.0f} mm, {JUNCTION_MAX_PAIRS})")
+    # v2.1: between vertices the materials' rings stay where the log's are.
+    ring = ring_error(B, m)
+    metrics["ring_error_rings"] = ring
+    for name, (p99_max, max_max) in (("close", RING_ERROR_CLOSE), ("far", RING_ERROR_FAR)):
+        if name in ring and (ring[name]["p99"] > p99_max or ring[name]["max"] > max_max):
+            failures.append(f"the materials' rings sit up to {ring[name]['max']:.3f} rings (p99 {ring[name]['p99']:.3f}) "
+                            f"from the log's between vertices ({name}; limits p99 {p99_max}, max {max_max})")
     # Features.
     if not m.fallback:
         metrics.update(_feature_metrics(B, m, failures))
