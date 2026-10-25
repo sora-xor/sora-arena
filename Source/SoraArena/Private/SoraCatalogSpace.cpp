@@ -762,6 +762,31 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
             !SpacePoints(Rows(*O, TEXT("stations")), B.Stations) || !SpacePoints(Rows(*O, TEXT("spawns")), B.Spawns) ||
             !Exit || !SpaceVolume(*Exit, B.Exit, false) || !Kit || !PatrolRows || !VolumeRows || !StationRows)
             return Bad(FString::Printf(TEXT("beat %s lacks a required field"), *Beat.Id));
+        const auto BridgeField=O->TryGetField(TEXT("bridge"));
+        if(BridgeField.IsValid()!=(Beat.Id==TEXT("ch07.b13"))) return Bad(Beat.Id+TEXT(" bridge presence"));
+        if(BridgeField)
+        {
+            const auto Bridge=BridgeField->Type==EJson::Object?BridgeField->AsObject():nullptr;
+            const auto Exact=[&](const TCHAR* Key,int Expected)
+            { int Value=0; const auto V=Bridge?Bridge->TryGetField(Key):nullptr; return V&&V->Type==EJson::Number&&Int(*Bridge,Key,Value)&&Value==Expected; };
+            double Port[2]={};
+            const auto PortField=Bridge?Bridge->TryGetField(TEXT("port")):nullptr;
+            const auto NumericPair=[](const TSharedPtr<FJsonValue>& V)
+            {
+                if(!V||V->Type!=EJson::Array||V->AsArray().Num()!=2) return false;
+                for(const auto& N:V->AsArray()) if(!N||N->Type!=EJson::Number) return false;
+                return true;
+            };
+            if(!Bridge||!NumericPair(Bridge->TryGetField(TEXT("center")))||!NumericPair(PortField)||!SpacePoint(Bridge->TryGetField(TEXT("center")),B.Bridge.Center)||
+                !Exact(TEXT("list_deg"),10)||!Exact(TEXT("uphill_permille"),850)||!Exact(TEXT("downhill_permille"),1100)||
+                !Exact(TEXT("every_ms"),6000)||!Exact(TEXT("warning_ms"),700)||!Exact(TEXT("damage"),30)||
+                !Exact(TEXT("stagger_ms"),600)||!Exact(TEXT("chairs"),6)||!Exact(TEXT("pods"),4)||
+                !SpaceVector(PortField,2,Port)||Port[0]!=0||Port[1]!=-1||B.Zone<0||
+                S.Zones[B.Zone].Place!=TEXT("pl_bridge")||S.Zones[B.Zone].Form!=TEXT("hall")||
+                S.Zones[B.Zone].Rect.GetSize()!=FVector2D(5600,4200)||B.Bridge.Center!=S.Zones[B.Zone].Rect.GetCenter())
+                return Bad(Beat.Id+TEXT(" physical bridge contract"));
+            B.Bridge.bEnabled=true;
+        }
         const auto WindField=O->TryGetField(TEXT("wind"));
         const bool RidgeBeat=Beat.Id==TEXT("ch07.b10");
         const bool WindBeat=RidgeBeat||Beat.Id==TEXT("ch07.b08")||Beat.Id==TEXT("ch07.b09");

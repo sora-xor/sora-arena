@@ -74,7 +74,11 @@ bool USoraNavigation::ScanArena(FBox& Bounds, TArray<FBox>& LowBoxes) const
             return;
         const FBox Box = Piece->Bounds.GetBox();
         Bounds += Box;
-        if (IsLowBox(Box, Piece->GetComponentRotation()))
+        // Listed bridge cover remains cover. Its conservative world footprint
+        // is projected onto the rebuilt sloped navmesh by GatherCover.
+        FRotator Rotation=Piece->GetComponentRotation();
+        if(Piece->ComponentHasTag(TEXT("BridgeCover"))&&FMath::Abs(Rotation.Roll)<=10.01f) Rotation.Roll=0;
+        if (IsLowBox(Box, Rotation))
             LowBoxes.Add(Box);
     });
     if (!Bounds.IsValid)

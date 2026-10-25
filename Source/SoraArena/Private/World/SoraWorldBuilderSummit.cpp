@@ -76,6 +76,7 @@ void ASoraWorldBuilder::Tick(float DeltaSeconds)
     Super::Tick(DeltaSeconds);
     TickSpireAlarm();
     TickSeizure();
+    TickBridge(DeltaSeconds);
 }
 
 bool ASoraWorldBuilder::CanReachSummitSpine(const ASoraPlayerCharacter& Hero) const

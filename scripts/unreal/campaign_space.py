@@ -611,6 +611,8 @@ def derive_space(chapter, beats, places, collectibles, triggers, layout, fail):
                 fail(item["id"], f"zone {item['place']} has no nook left")
             at = _frac(zones[index].rect, *NOOK_AT[taken])
         pickups.append({"collectible": item["id"], "zone": index, "at": list(at)})
+    from campaign_bridge import place_bridge
+    place_bridge(beats, records, [zone.record() for zone in zones], fail)
     from campaign_helm import place_helm
     place_helm(beats, records, [zone.record() for zone in zones], fail)
     place_wind(beats, records, zones, fail)

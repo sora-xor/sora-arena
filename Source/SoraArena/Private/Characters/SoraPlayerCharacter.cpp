@@ -239,6 +239,9 @@ void ASoraPlayerCharacter::TickPlay(float Dt)
     TickVault();
     const USoraStealth* Stealth=USoraStealth::Get(this);
     GetCharacterMovement()->MaxWalkSpeed=FSoraCatalog::Get().Class(ClassId).Speed*Equipment->MoveScale(bSprint)*(Stealth?Stealth->HeroMoveScale():1.f);
+    // CharacterMovement ticks before its owner and has consumed this frame's
+    // input; the last consumed vector is the actual current movement intent.
+    if(G&&G->Arena()) GetCharacterMovement()->MaxWalkSpeed*=G->Arena()->BridgeMoveScale(*this,GetLastMovementInputVector());
     // The water caps his pace: a swimmer's stroke, slower still in a dive.
     if(const USoraFieldcraft* Craft=HeroFieldcraft(*this); Craft&&Craft->HeroPace()>0.f)
     {
