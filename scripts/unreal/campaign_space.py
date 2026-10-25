@@ -617,6 +617,8 @@ def derive_space(chapter, beats, places, collectibles, triggers, layout, fail):
     place_helm(beats, records, [zone.record() for zone in zones], fail)
     place_wind(beats, records, zones, fail)
     place_lift(beats, records, fail)
+    from campaign_canisters import place_canisters
+    place_canisters(beats, records, fail)
     place_flood(beats, records, zones, fail)
     from campaign_horse_treatment import place_horse_treatment
     place_horse_treatment(beats, records, fail)

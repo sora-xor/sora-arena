@@ -23,7 +23,8 @@ void ASoraWorldBuilder::BuildWindSpace(const FSoraBeat& Beat)
         for(float X:{1000.f,7000.f}) Box(TEXT("HangarPortWall"),O+FVector(X,4530,1000),FVector(2000,60,2000),Metal,true);
         Box(TEXT("HangarMouthLintel"),O+FVector(4000,4530,1700),FVector(4000,60,600),Metal,true);
         // Three walk-around shuttle proxies, with a continuous gallery and
-        // real stair flights. Art/canister behavior is not claimed here.
+        // real stair flights. Art is provisional; the separate fieldcraft stage
+        // owns the three authored shootable fuel canisters on b08.
         for(float X:{1500.f,4000.f,6500.f})
             Box(TEXT("HangarShuttleProxy"),O+FVector(X,2500,230),FVector(1800,1400,460),Metal,true);
         Box(TEXT("HangarGallery"),O+FVector(4000,200,775),FVector(7000,400,50),Metal,true);

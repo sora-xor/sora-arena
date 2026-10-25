@@ -10118,7 +10118,39 @@
      "recoveries": 3
     },
     "height_cm": 0,
-    "lift": null
+    "lift": null,
+    "fuel_canisters": {
+     "blast_radius_cm": 360,
+     "damage": 80,
+     "hurts_player": true,
+     "trigger": "positive_ranged_hit",
+     "items": [
+      {
+       "id": "fc_01",
+       "floor_cm": [
+        40800,
+        -1050,
+        0
+       ]
+      },
+      {
+       "id": "fc_02",
+       "floor_cm": [
+        43200,
+        -1050,
+        0
+       ]
+      },
+      {
+       "id": "fc_03",
+       "floor_cm": [
+        42000,
+        1550,
+        0
+       ]
+      }
+     ]
+    }
    },
    {
     "beat": "ch07.b09",

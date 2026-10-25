@@ -601,8 +601,14 @@ struct FSoraMoltenSpace
     bool bEnabled=false;
     TArray<FSoraVolume> Channels;
 };
+struct FSoraFuelCanister
+{
+    FName Id;
+    FVector Floor=FVector::ZeroVector;
+};
 struct FSoraBeatSpace
 {
+    TArray<FSoraFuelCanister> FuelCanisters;
     FSoraMoltenSpace Molten;
     FSoraFoundryDefenseSpace FoundryDefense;
     bool bHorseTreatment=false;
