@@ -1,5 +1,5 @@
 #pragma once
-struct FJsonObject;
+class FJsonObject;
 struct FSoraBeat;
 struct FSoraSpace;
 namespace SoraCatalogRelay
