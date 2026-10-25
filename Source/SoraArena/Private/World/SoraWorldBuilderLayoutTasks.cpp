@@ -123,6 +123,7 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
     StageEpilogue(Beat);
     StageSupply(Beat);
     StageHelm(Beat);
+    StageBulkhead(Beat);
     StageGalleryPois(Chapter,Beat);
     bSummitActive=Space.Summit.Enabled();
     ResetSpireAlarm(Space.Spire.Enabled());
@@ -475,6 +476,7 @@ void ASoraWorldBuilder::ClearKit()
     BellowsNotches.Reset(); BellowsSparks.Reset(); BellowsFeet.Reset(); BellowsShownBand=0;
     WorkshopParts.Reset(); WorkshopRing.Reset(); WorkshopStep=-1; bWorkshopHammer=false;
     HelmWheel=nullptr; HelmNeedle=nullptr;
+    BulkheadLever=nullptr; BulkheadHandle=nullptr; BulkheadAt=FVector::ZeroVector;
     KitGauge=nullptr; KitWheel=nullptr; KitFill=nullptr; KitLight=nullptr; Lift=nullptr;
     KitWork=NAME_None; KitHoldRadius=0.f;
     KitHoldSize=FVector2D::ZeroVector;

@@ -3060,7 +3060,7 @@
     ],
     "defeat": "capture",
     "capture_event": "interact:bulkhead_lever",
-    "capture_hold_ms": 0,
+    "capture_hold_ms": 2000,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -12346,7 +12346,11 @@
      "charge": null
     },
     "height_cm": 0,
-    "lift": null
+    "lift": null,
+    "bulkhead": [
+     48680,
+     180
+    ]
    },
    {
     "beat": "ch06.b14",

@@ -156,6 +156,11 @@ public:
     FVector SummitSpinePoint() const { return SummitCenter+FVector(0,-201,220); }
     bool CanReachSummitSpine(const ASoraPlayerCharacter& Hero) const;
     void ShowSummitSpine(bool Ready,float CutProgress=0.f);
+    void StageBulkhead(const FSoraBeat& Beat);
+    FVector BulkheadPoint() const { return BulkheadAt+FVector(11,0,100); }
+    FVector BulkheadApproach() const { return BulkheadAt+FVector(140,0,0); }
+    bool CanReachBulkhead(const ASoraPlayerCharacter& Hero) const;
+    void ShowBulkhead(bool Ready,float Progress);
     void ShowRecoveryBundle(bool Visible);
     void ShowEpilogue(bool SwordFound, bool SwordReturned, int32 Plaques);
     int32 RehungPlaques() const { return EpiloguePlaques; }
@@ -211,6 +216,9 @@ private:
     FVector SummitCenter=FVector::ZeroVector;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> SummitSpine;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> SummitSeam;
+    FVector BulkheadAt=FVector::ZeroVector;
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> BulkheadLever;
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> BulkheadHandle;
     void BuildSummitTiles();
     void ClearSummitTiles();
     void ResetSeizure();

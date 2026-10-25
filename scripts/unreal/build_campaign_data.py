@@ -907,17 +907,25 @@ def normalize_task(beat):
     elif kind == "boss":
         task.update(goal="opponent_down", opponent=params["boss"], defeat=BOSS_DEFEATS[params["defeat"]],
                     phases=[permille(phase["hp_pct_start"] / 100, f"{where}.phases") for phase in params["phases"]])
+        if beat["id"] in ("ch06.b13", "ch08.b14") and task["defeat"] != "capture":
+            fail(where, "the authored take-alive ending requires capture")
         if task["defeat"] == "capture":
             # The hand that binds a yielded boss: ch06's bulkhead lever, ch08's engine spine.
             ext = beat["ext"]
-            binding = (ext.get("defeat_interact") or {}).get("id") or (ext.get("post_defeat") or {}).get("interact")
-            if not isinstance(binding, str) or not re.fullmatch(r"\w+", binding):
-                fail(where, "a capture names no interaction that binds the boss")
+            contracts = {"ch06.b13": ("boss_eskro", "defeat_interact", "id", "bulkhead_lever", 2000),
+                         "ch08.b14": ("boss_val_amort", "post_defeat", "interact", "engine_spine", 1500)}
+            contract = contracts.get(beat["id"])
+            if contract is None:
+                fail(where, "capture has no authored held interaction")
+            boss, field, key, binding, duration = contract
+            interaction = expect(ext.get(field), (dict,), f"{where}.{field}")
+            if params["boss"] != boss or interaction.get(key) != binding or \
+                    ("post_defeat" if field == "defeat_interact" else "defeat_interact") in ext:
+                fail(where, "capture must name its own authored boss and interaction")
             task["capture_event"] = f"interact:{binding}"
-            if binding == "engine_spine":
-                task["capture_hold_ms"] = whole_ms((ext.get("post_defeat") or {}).get("hold_s"), f"{where}.post_defeat.hold_s")
-                if task["capture_hold_ms"] <= 0:
-                    fail(where, "the engine spine needs a positive held draw-cut")
+            task["capture_hold_ms"] = whole_ms(interaction.get("hold_s"), f"{where}.{field}.hold_s")
+            if task["capture_hold_ms"] != duration:
+                fail(where, f"{binding} requires its authored {duration} ms hold")
     elif kind == "explore_optional":
         task["goal"] = "cache"
         if beat["id"] == "ch01.b08":
@@ -1717,8 +1725,8 @@ def self_test():
             "register": "samurai_restrained", "duration_s": 1.5}
     ride = {"id": "ch01.b06", "type": "horseback_ride", "unlocks": {"mechanics": []}, "ext": {},
             "params": {"horse": "kurimaru", "gaits": ["walk", "trot"], "weapons": [0, 18]}}
-    capture = {"id": "ch08.b14", "type": "boss", "fail": [], "ext": {"defeat_interact": {"id": "bulkhead_lever"}},
-               "params": {"boss": "boss_val_amort", "defeat": "capture", "phases": [{"hp_pct_start": 100}]}}
+    capture = {"id": "ch06.b13", "type": "boss", "fail": [], "ext": {"defeat_interact": {"id": "bulkhead_lever", "hold_s": 2}},
+               "params": {"boss": "boss_eskro", "defeat": "capture", "phases": [{"hp_pct_start": 100}]}}
     lesson = {"id": "ch01.b04", "type": "duel", "fail": [], "ext": {"scored_bouts": {"count": 2}},
               "params": {"opponent": "npc_matsukichi", "weapons": {"player": "bokuto"}, "loss_policy": "retry",
                          "scoring": {"mode": "lesson_gates"}, "lesson_gates": [{"gate": "marobashi_flank", "count": 2}]}}

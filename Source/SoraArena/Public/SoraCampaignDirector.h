@@ -133,6 +133,7 @@ public:
     // Input releases and menu/dialogue boundaries discard the transient cut
     // immediately, including when the gameplay clock cannot tick.
     void CancelSpineCut();
+    void CancelBulkheadHold();
     void ReleaseWindBrace();
     bool IsWindBraced() const { return WindAnchor!=INDEX_NONE; }
     bool InWindLee() const { return bWindLee; }
@@ -363,14 +364,21 @@ private:
     // have none). Weak keys: a fallen opponent's entry leaves with it, and an
     // opponent built later at a freed address never inherits it.
     TMap<TWeakObjectPtr<const ASoraEnemy>, int32> EnemyWaves;
-    // A captured boss yielded here, waiting for the hero's hand.
+    // A yielded boss persists until its authored held capture completes.
     UPROPERTY() TObjectPtr<ASoraEnemy> Captive;
     TWeakObjectPtr<ASoraEnemy> SealTarget;
     float SealStartedAt = 0.f;
     bool BeginSealCut(ASoraPlayerCharacter& Player);
     void TickSealCut();
-    FVector2D CaptiveAt = FVector2D::ZeroVector;
     SoraSummitRules::FCut SpineCut;
+    SoraSummitRules::FCut BulkheadHold;
+    FSoraMillisecondClock BulkheadClock;
+    bool IsBulkheadCapture() const;
+    SoraText::FLine BulkheadText() const;
+    bool BulkheadEligible() const;
+    void BeginBulkheadCapture();
+    bool InteractBulkhead();
+    void TickBulkhead(float DeltaSeconds);
     int32 SpineReadyMs=0;
     int32 PendingSummitPhaseSave=INDEX_NONE;
     void SaveArrivedSummitPhase();
