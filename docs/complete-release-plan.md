@@ -11,6 +11,46 @@ production. Work runs in isolated worktrees, with a single coordinated Unreal
 and GPU rendering lane. The shared checkout is not a build or render workspace.
 The local coordination mailboxes record current ownership, commits and lane use.
 
+## October 26 relay runtime and press regression status
+
+The complete release remains unfinished. The current functional work is the
+relay inspector's upper route and its assisted campaign exit assertion;
+Claude is independently comparing bow poses and fur capture run-up in its
+art worktree. These results supersede older pending-runtime statements below.
+
+All eleven press fixtures pass on exact `ae5bee6`, alongside CopyDesks and
+Candle. The catwalk guard completes its circuit through normal movement,
+waits at a physical barrier and resumes after removal. The net interruption
+fixture verifies cancellation, natural net expiry and the requirement for a
+fresh interaction. The full assisted campaign passed on `a6f9046` before
+relay integration. This establishes directed behavior, not ordinary combat,
+stealth difficulty, visual quality or a current packaged release.
+
+The first integrated relay runtime at `ae5bee6` passes Controls, Scan, Exit
+and Lookout; seventeen of twenty selected fixtures succeed. The gallery
+fixture also passes at `2ddd15d` after allowing ordinary stair descent to
+finish landing. The inspector stalls near the top of the stair, and the
+campaign fixture incorrectly expects a hold after the relay exit advances
+to the next beat. The prepared correction follows authored supported stair
+waypoints using the walking capsule, retains actual arrival and obstruction
+requirements, and checks the return to the floor post. Its Unreal execution
+is pending while Claude holds the engine lane. Original failed runs and
+signed source hashes remain in the [relay record](qualification/relay-room.md).
+
+Art remains WIP. The repaired material assignment has fresh editor readback;
+the prior lit bow/paw capture still failed during teardown. A minimal
+multi-frame exit probe now exits naturally at editor 0/wrapper 0, but a real
+capture must independently confirm it. The bow's existing aimed poses cover
+part of the fixed reticle disc, and fur cards, cloth, wrapping and arrow
+finish remain unresolved. The new right-cheek candidate and the controlled
+four-frame/longer-run-up comparison do not change the runtime pose contract.
+No latest art has been admitted into the release.
+
+The latest completed Mac package remains `c655b6b` and the production native
+bridge remains `10ad7dad`. Current-source packages, M1 and Windows behavior,
+ordinary-input gameplay, performance and full native/network settlement
+acceptance remain open.
+
 ## October 25 completed bounded proof and desk regression
 
 Signed native `cd9263628d` completes its retained-binary final-tick-death proof
