@@ -41,6 +41,10 @@ void USoraCampaignDirector::RefreshDialogueHold()
     bDialogueHeld=bWanted;
     if(bWanted)
     {
+#if WITH_DEV_AUTOMATION_TESTS
+        if(const auto* Beat=ActiveBeatData();Beat&&Beat->Space.PressHall.bEnabled)
+            UE_LOG(LogTemp,Display,TEXT("Press dialogue cancels work: line=%d held_point=%d held_ms=%d"),Queue[0].Line,HeldPoint,HeldMs);
+#endif
         CancelFoundryWork();
         CancelHorseTreatment();
         CancelCopying();
