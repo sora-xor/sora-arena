@@ -185,6 +185,78 @@ class Baseline(unittest.TestCase):
                 PILOT.guard(bad)
 
 
+class JunctionGate(unittest.TestCase):
+    """check_joins on explicit edge graphs: a parent at u = 0 for z 0-2 mm and
+    its fork 0.5 mm away for z 2-4 mm, five rows of two samples (parent, fork)
+    with both checks' own samples in every row. After Codex's counterexample
+    on 3a4aba6 (Saved/Qualification/2026-10-25/timber-v21-review-3a4aba6)."""
+
+    def graph(self, edges, fork_u=0.0005):
+        from types import SimpleNamespace
+
+        def check(u, z0, z1, parent=-1):
+            return V.CheckV2(face=0, u0=u, drift=0.0, z0=z0, z1=z1, width=0.0004, depth=0.0008, meander=[], noise=[],
+                             bridges=[], ext0=0.002, ext1=0.002, steep=1.3, steep_left=True, ratio=4.0, lip=[],
+                             splinters=[], parent=parent)
+        cs = [check(0.0, 0.0, 0.002), check(fork_u, 0.002, 0.004, 0)]
+        z = np.arange(5) * 0.001
+        entries = [[(i, 0, c.u0, -0.005, 0.005, -0.01, 0.01, True) for i, c in enumerate(cs)] for _ in z]
+        S = SimpleNamespace(x=np.zeros(10), z=np.repeat(z, 2), u=np.tile([0.0, fork_u], 5), seg=np.zeros(10, int),
+                            row_start=np.arange(5) * 2, row_count=np.full(5, 2), checks_at=entries)
+        m = SimpleNamespace(finish=("planed", "hidden", "hidden", "hidden"), hw_floor=0.00016)
+        B = {"samples": S, "tris": np.array([[a, b, 10] for a, b in edges])}
+        keep = V.checks_v2
+        try:
+            V.checks_v2 = lambda _m: cs
+            return V.check_joins(B, m)
+        finally:
+            V.checks_v2 = keep
+
+    def own_edges(self):
+        return [(2 * k + i, 2 * (k + 1) + i) for k in range(4) for i in range(2)]
+
+    def test_every_groove_joined_needs_no_exemption(self):
+        joins, junctions = self.graph(self.own_edges())
+        self.assertTrue(all(j["steps"] == 0 and j["joined"] == j["row_pairs"] for j in joins))
+        self.assertEqual(junctions[0]["exempt_pairs"], [])
+        self.assertTrue(junctions[0]["continuous"])
+
+    def test_only_the_forward_endpoint_is_broken(self):
+        e = self.own_edges()
+        e.remove((0, 2))
+        e.append((0, 3))                     # the parent's first V-bottom reaches the fork's...
+        joins, junctions = self.graph(e)     # ...but nothing from row 0 reaches the parent's second
+        self.assertFalse(junctions[0]["continuous"], junctions)
+        p = junctions[0]["exempt_pairs"][0]
+        self.assertEqual((p["forward_to_other_branch"], p["backward_from_other_branch"]), (True, False))
+
+    def test_only_the_backward_endpoint_is_broken(self):
+        e = self.own_edges()
+        e.remove((0, 2))
+        e.append((1, 2))                     # the fork's row-0 V-bottom reaches the parent's second, nothing leaves the first
+        joins, junctions = self.graph(e)
+        self.assertFalse(junctions[0]["continuous"], junctions)
+        p = junctions[0]["exempt_pairs"][0]
+        self.assertEqual((p["forward_to_other_branch"], p["backward_from_other_branch"]), (False, True))
+
+    def test_a_crossing_that_supplies_both_endpoints_is_a_junction(self):
+        e = self.own_edges()
+        e.remove((0, 2))
+        e += [(0, 3), (1, 2)]
+        joins, junctions = self.graph(e)
+        self.assertTrue(junctions[0]["continuous"], junctions)
+        self.assertEqual(len(junctions[0]["exempt_pairs"]), 1)
+        self.assertEqual(sum(j["steps"] for j in joins), 0)
+
+    def test_far_from_its_fork_a_break_is_a_step(self):
+        e = self.own_edges()
+        e.remove((0, 2))
+        e += [(0, 3), (1, 2)]
+        joins, junctions = self.graph(e, fork_u=0.004)   # 4 mm apart: the V's never overlap, no window
+        self.assertEqual(junctions[0]["window_rows"], 0)
+        self.assertEqual(joins[0]["steps"], 1)
+
+
 class V21(unittest.TestCase):
     """What run 1's renders showed, each reproduced and shown fixed."""
 
@@ -235,7 +307,8 @@ class V21(unittest.TestCase):
         _joins, records = V.check_joins(B, self.wall)
         exempt = [p for rec in records for p in rec["exempt_pairs"]]
         self.assertTrue(exempt)
-        self.assertTrue(all(not p["continuous"] for p in exempt if not p["to_other_branch"]))
+        for p in exempt:
+            self.assertEqual(p["continuous"], p["forward_to_other_branch"] and p["backward_from_other_branch"])
         self.assertTrue(any(not rec["continuous"] for rec in records))
 
     def test_ring_beading_near_knots_is_caught_and_gone(self):

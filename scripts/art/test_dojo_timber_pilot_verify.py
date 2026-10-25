@@ -60,17 +60,19 @@ class Verify(unittest.TestCase):
                 p.chmod(p.stat().st_mode | stat.S_IWUSR)
         self.tmp.cleanup()
 
-    def everything(self, rebuilt=None, checks=None, archive=None):
+    def everything(self, rebuilt=None, checks=None, archive=None, accept_generator=None):
         manifest, evidence, original = VF.load_run(self.run)
         fbx = VF.compare_fbx(self.root, evidence)
         digests = VF.compare_digests(manifest, evidence, rebuilt or {"SM_A": ("d1", "f1")})
         check_cmp = VF.compare_checks(original, checks if checks is not None else json.loads(json.dumps(self.checks)))
         shared = VF.compare_shared(self.root, manifest, self.rebuilt_dir)
         inputs = VF.compare_inputs(self.root, manifest)
-        return VF.verdict(fbx, digests, check_cmp, shared, inputs, archive)
+        return VF.verdict(fbx, digests, check_cmp, shared, inputs, archive, accept_generator)
 
     def test_an_unchanged_run_verifies(self):
-        self.assertEqual(self.everything(), ("VERIFIED", []))
+        self.assertEqual(self.everything(), (VF.PASSED, []))
+        self.assertEqual(VF.PASSED, "GEOMETRY_INPUTS_VERIFIED")
+        self.assertIn("Not a re-export, re-bake or re-render", VF.SCOPE)
 
     def test_never_writes_into_the_run(self):
         receipt = A.receipt(self.run, "r", self.run / "checks.json", 0, "x")
@@ -78,7 +80,7 @@ class Verify(unittest.TestCase):
         if os.geteuid() == 0:
             self.skipTest("root ignores permission bits")
         status, _ = self.everything()          # would raise PermissionError on any write
-        self.assertEqual(status, "VERIFIED")
+        self.assertEqual(status, VF.PASSED)
         self.assertEqual(A.files_digest(A.listing(self.run)), receipt["files_digest"])
         path = VF.receipt_path("Pilot", base=self.root / "Verification")
         VF.write_receipt(path, self.run, {"status": status})
@@ -118,6 +120,22 @@ class Verify(unittest.TestCase):
         status, problems = self.everything()
         self.assertEqual((status, problems), ("INPUTS_CHANGED", ["input scripts/lib.py"]))
 
+    def test_a_changed_generator_is_inputs_changed_unless_exactly_accepted(self):
+        # Codex's counterexample on 82869a4: generator-only drift still verified.
+        (self.root / "scripts/gen.py").write_text("changed generator")
+        status, problems = self.everything()
+        self.assertEqual(status, "INPUTS_CHANGED")
+        self.assertTrue(any(p.startswith("generator scripts/gen.py") for p in problems), problems)
+        now = sha(b"changed generator")
+        self.assertEqual(self.everything(accept_generator=now), (VF.PASSED, []))
+        self.assertEqual(self.everything(accept_generator=sha(b"some other generator"))[0], "INPUTS_CHANGED")
+        drift = VF.generator_drift(VF.compare_inputs(self.root, self.manifest), now)
+        self.assertEqual((drift["accepted"], drift["current_sha256"], drift["manifest_sha256"], drift["pinned_sha256"]),
+                         (True, now, sha(b"gen"), now))           # the original hash is kept beside the pin
+        wrong = VF.generator_drift(VF.compare_inputs(self.root, self.manifest), sha(b"x"))
+        self.assertEqual((wrong["accepted"], wrong["pinned_sha256"]), (False, sha(b"x")))
+        self.assertIsNone(VF.generator_drift(VF.compare_inputs(self.root, {**self.manifest, "generator_sha256": now})))
+
     def test_archive_receipt_comparison(self):
         archive_dir = self.root / "Archive/run1"
         log = self.root / "run.log"
@@ -125,7 +143,7 @@ class Verify(unittest.TestCase):
         A.archive(self.run, archive_dir, "run1", log, 0)
         cmp = VF.compare_archive(self.run, archive_dir / "receipt.json")
         self.assertTrue(cmp["ok"])
-        self.assertEqual(self.everything(archive=cmp), ("VERIFIED", []))
+        self.assertEqual(self.everything(archive=cmp), (VF.PASSED, []))
         for p in [self.run, *self.run.rglob("*")]:
             p.chmod(p.stat().st_mode | stat.S_IWUSR)
         (self.run / "Shared/T_Noise.png").write_bytes(b"tampered")

@@ -175,6 +175,27 @@ Rows and samples come from the same criterion, `RING_TOL_*`. The tests show
 that without the refinement the wall column fails the close limits (p99 0.055,
 max 0.108).
 
+**Both gates are sampled scope, not universal surface certification:**
+
+- the joins gate tests each check's V-bottoms between the rows of its body
+  (z0..z1);
+- the ring gate tests one point per triangle (its centroid).
+
+The material review (Unreal readback and originals) still has to show the
+surface.
+
+**The junction exception (review of `3a4aba6`).** A pair whose own V-bottoms
+don't join may cross to the other branch only if **both** endpoints stay in
+the groove:
+
+- forward: the earlier V-bottom joins the other branch's in the later row;
+- backward: the other branch's in the earlier row joins the later V-bottom.
+
+Codex's counterexample was a five-row graph with only the forward edge, and
+`3a4aba6` called it continuous. It now fails. The tests reproduce it
+(`JunctionGate`), its mirror, a two-sided crossing that passes, and a break
+4 mm from its fork, which stays a step.
+
 **Triangles:**
 
 | Member | v2 (run 1) dense | v2.1 dense | v2 fallback | v2.1 fallback |
@@ -229,6 +250,17 @@ own rings. The Blender look-dev implements it.
 | Fallback Masks | Masks | knot weight from the sample's alpha output, not from RGB |
 
 The baseline master's ring model does not apply to v2.1 assets.
+
+**What the Unreal side still needs (not implemented yet):**
+
+- **A dedicated PilotV21 timber master,** and fallback master, in that content
+  path. It decodes UV4 and applies this ring formula. Never the baseline
+  `timber_master`.
+- **A readback after import,** before any material review:
+  - each mesh's UV channel count (5);
+  - the decoded UV0, UVLogQ, seed and UVKnot at known source vertices, to
+    1e-6 against the FBX;
+  - the material's resolved parent and sampler types.
 
 ## The six members (`scripts/art/dojo_timber_pilot.py`)
 
@@ -348,10 +380,19 @@ The 15 renders are clay and v2-material pairs:
 - **Renders, about 10–15 min:** about 40–60 s each.
 
 The run stops before exporting anything if a mesh fails its checks.
-Afterwards, `-- --cpu --verify [--archive-receipt …]` only reads the run. It
-rebuilds the members and compares the digests, checks, FBX SHA, Shared
-textures and inputs with the run's own evidence. Its only output is a new
-receipt under `Local/ArtCache/Verification/`.
+Afterwards, `-- --cpu --verify [--archive-receipt …] [--accept-generator SHA]`
+only reads the run.
+
+- **What it does:** it rebuilds the members and compares the digests, checks,
+  FBX SHA, Shared textures and inputs with the run's own evidence.
+- **Its verdict** is `GEOMETRY_INPUTS_VERIFIED`: geometry and inputs only. It
+  is not a re-export, re-bake or re-render; FBX bytes, baked maps and renders
+  are checked as the original files.
+- **A changed generator** fails as `INPUTS_CHANGED`, unless its exact current
+  SHA is pinned. For run 1 that is the verify-only driver of `82869a4`
+  against the `0c8809f` generator that made it. The receipt keeps the
+  original hash, the pin and the acceptance.
+- **Its only output** is a new receipt under `Local/ArtCache/Verification/`.
 
 **After the run (your lane):**
 

@@ -15,6 +15,10 @@ without bpy, so it can be tested:
     against the manifest;
   - the current generator and inputs against the manifest;
   - every file of the run against its archive receipt, when one is given.
+* **Its scope, stated in every receipt (SCOPE):** geometry and inputs only.
+  It rebuilds the canonical digests and check reports, and compares existing
+  files by hash. It is not a re-export, re-bake or re-render, so its
+  passing verdict is GEOMETRY_INPUTS_VERIFIED, never a bare "verified".
 * **A new, unique receipt** is written outside the run, under
   ``Local/ArtCache/Verification/<namespace>/``. Its name carries the UTC time
   and the process id, and it is created exclusively, so a receipt is never
@@ -30,6 +34,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 VERIFY_ROOT = ROOT / "Local/ArtCache/Verification"
+PASSED = "GEOMETRY_INPUTS_VERIFIED"
+SCOPE = ("geometry and inputs only: canonical geometry digests and check reports rebuilt in Blender and compared with "
+         "the manifest and original evidence; existing FBX, Shared textures and (optionally) every archived file "
+         "compared by SHA-256; generator and inputs compared with the manifest. Not a re-export, re-bake or re-render: "
+         "FBX bytes, baked maps and renders are checked as the original files only.")
 
 
 def sha256(path: Path) -> str:
@@ -146,14 +155,36 @@ def write_receipt(path: Path, run_dir: Path, data: dict, frozen=()):
     return p
 
 
-def verdict(fbx, digests, checks, shared, inputs, archive=None):
-    """VERIFIED only if everything matches. INPUTS_CHANGED when an input
-    differs from the manifest, since a rebuild can't then reproduce the run. Else MISMATCH."""
+def generator_drift(inputs, accept_generator=None):
+    """The generator against the manifest: None when unchanged. Otherwise
+    the manifest's original hash (kept as the run's provenance), the current
+    one, the hash the operator pinned (--accept-generator), and whether that
+    pin accepts it. It is accepted only when the pin is the current
+    generator's exact SHA-256: for run 1, the verify-only driver of the
+    frozen 82869a4 against the 0c8809f generator that made it."""
+    gen = inputs["generator"]
+    if gen["same"]:
+        return None
+    return {"file": gen["file"], "manifest_sha256": gen["expected_sha256"], "current_sha256": gen["sha256"],
+            "pinned_sha256": accept_generator,
+            "accepted": accept_generator is not None and accept_generator == gen["sha256"]}
+
+
+def verdict(fbx, digests, checks, shared, inputs, archive=None, accept_generator=None):
+    """PASSED (GEOMETRY_INPUTS_VERIFIED, within SCOPE) only if everything
+    matches. INPUTS_CHANGED when an input, or the generator, differs from the
+    manifest, since a rebuild can't then reproduce the run. The generator is
+    exempt only by an explicit, exact pin (generator_drift). Else MISMATCH."""
     problems = ([f"fbx {e['file']}" for e in fbx if not e["ok"]]
                 + [f"digest {e['asset']}:{e['mesh']}" for e in digests if not e["ok"]]
                 + [f"checks {e['entry']}" for e in checks if not e["identical"]]
                 + [f"shared {e['texture']}" for e in shared if not e["ok"]]
                 + ([] if archive is None or archive["ok"] else ["archive files_digest"]))
-    if inputs["changed_inputs"]:
-        return "INPUTS_CHANGED", problems + [f"input {p}" for p in inputs["changed_inputs"]]
-    return ("VERIFIED" if not problems else "MISMATCH"), problems
+    changed = [f"input {p}" for p in inputs["changed_inputs"]]
+    drift = generator_drift(inputs, accept_generator)
+    if drift and not drift["accepted"]:
+        changed.append(f"generator {drift['file']} (manifest {drift['manifest_sha256'][:12]}, now "
+                       f"{(drift['current_sha256'] or 'missing')[:12]})")
+    if changed:
+        return "INPUTS_CHANGED", problems + changed
+    return (PASSED if not problems else "MISMATCH"), problems

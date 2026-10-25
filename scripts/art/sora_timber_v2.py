@@ -194,6 +194,12 @@ UNREAL_NAMESPACE = "/Game/Generated/Qualification/DojoTimberPilotV21"
 UV_CONTRACT = {
     "geometry": DIGEST_VERSION,
     "unreal_content_path": UNREAL_NAMESPACE,
+    "master": "a dedicated PilotV21 timber master (and fallback master) in the PilotV21 content path that decodes UV4 "
+              "and applies the v2.1 ring formula below; never the baseline timber_master, whose ring model and four "
+              "channels do not apply. Not implemented in the importer yet.",
+    "readback": "after import, before any material review: read back each PilotV21 static mesh's UV channel count (5) "
+                "and, at known source vertices, the decoded UV0, UVLogQ, UVLogZ seed and UVKnot values against the FBX "
+                "source (to 1e-6), and the material's resolved parent and sampler types.",
     "import_decode": "Interchange imports every channel as (U, 1 - V). Decode with flip_v before reading UV0/UVLogQ/"
                      "UVLogZ/UVKnot as data; sample shared images at computed Blender coordinates through "
                      "sample_blender (flip_v again), as import_nyaagyu_dojo_timbers.py (cd10643) does.",
@@ -1067,12 +1073,21 @@ def check_joins(B, m: MemberV2):
     (z0..z1), how many join their V-bottoms (the samples nearest its centre)
     with an edge. A row pair that doesn't is a step in the groove (a staircase).
 
+    Sampled scope: this tests each check's V-bottom between the rows of its
+    body (z0..z1), not every edge of its walls or its hairline runs. It is a
+    gate against the staircase, not a certification of the whole groove.
+
     The one exception is a recorded Y-junction (junctions()). Its window is
     the rows where the fork and its parent both have their own samples and
     their V's overlap: one groove there, parting into two. A pair touching
-    that window may join a V-bottom to the other branch's instead of its own,
-    but must stay continuous. Each V-bottom must join a V-bottom of either
-    branch in the adjacent row. The window is bounded (JUNCTION_MAX_LENGTH,
+    that window whose own V-bottoms don't join may cross to the other branch,
+    but only if both endpoints stay in the groove:
+    - the earlier V-bottom joins the other branch's in the later row
+      (forward);
+    - the other branch's in the earlier row joins the later V-bottom
+      (backward).
+    One without the other leaves an endpoint broken (Codex's counterexample
+    on 3a4aba6), so it fails. The window is bounded (JUNCTION_MAX_LENGTH,
     JUNCTION_MAX_PAIRS). Returns (per-check joins, per-junction records)."""
     S, t = B["samples"], B["tris"]
     n = S.x.size + 2
@@ -1115,16 +1130,17 @@ def check_joins(B, m: MemberV2):
                 a, b = bottom(i, k0), bottom(i, k1)
                 if joined(a, b):
                     continue
-                # Not its own: it must reach the other branch's V-bottom, both ways.
+                # Not its own: both endpoints must reach the other branch's V-bottom.
                 alt0 = bottom(other, k0) if k0 in own.get(other, {}) else None
                 alt1 = bottom(other, k1) if k1 in own.get(other, {}) else None
                 fwd = alt1 is not None and joined(a, alt1)
                 back = alt0 is not None and joined(alt0, b)
-                ok = (fwd or (alt0 is not None and joined(alt0, alt1 if alt1 is not None else b))) and (back or fwd)
+                ok = fwd and back
                 continuous &= bool(ok)
                 exempt.setdefault(i, set()).add(k0)
                 pairs.append({"check": i, "z": [round(float(z_row[k0]), 5), round(float(z_row[k1]), 5)],
-                              "to_other_branch": bool(fwd or back), "continuous": bool(ok),
+                              "forward_to_other_branch": bool(fwd), "backward_from_other_branch": bool(back),
+                              "continuous": bool(ok),
                               "branch_offset_mm": round(1e3 * abs(own[j].get(k0, own[j].get(k1, 0.0)) -
                                                                   own[par].get(k0, own[par].get(k1, 0.0))), 3)})
         zs = [float(z_row[k]) for k in window]
@@ -1152,7 +1168,11 @@ def ring_error(B, m: MemberV2):
     every shown side triangle's centroid, the interpolated |UVLogQ| against the
     frame build() would store there, in rings. Reported for the close zone and
     the rest. As in build(), the frame is taken before the grain relief, with
-    the knots' swirl at the undeformed surface."""
+    the knots' swirl at the undeformed surface.
+
+    Sampled scope: one point per triangle (its centroid), not the whole
+    surface; the per-pixel UVKnot select and the anti-aliasing are left to the
+    material review."""
     P, S, t = B["verts"], B["samples"], B["tris"]
     shown = (S.seg % 2 == 0) & (S.detail > 0)
     tt = t[shown[t].all(1)]

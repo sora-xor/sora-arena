@@ -4,7 +4,7 @@ Run (Blender 5.2.2; the pinned CPU path, since Cycles' Metal compile hangs on ma
   blender -b --factory-startup --python-exit-code 1 --python scripts/art/create_nyaagyu_dojo_timbers_pilot.py -- --cpu
       [--samples 96] [--bake-res 2048] [--no-renders]
   blender -b --factory-startup --python-exit-code 1 --python scripts/art/create_nyaagyu_dojo_timbers_pilot.py -- --cpu
-      --verify [--archive-receipt Local/ArtCache/Archive/<namespace>/run1/receipt.json]
+      --verify [--archive-receipt Local/ArtCache/Archive/<namespace>/run1/receipt.json] [--accept-generator SHA256]
 
 The six members are dojo_timber_pilot.pilot_members(): the first chapter-1
 wall column, open column, nageshi, cornice, koshi and nuki. They have v1's
@@ -52,6 +52,15 @@ every member, and compares:
 * the inputs with the manifest;
 * optionally, every file with its archive receipt.
 
+A generator that differs from the manifest's fails as INPUTS_CHANGED, unless
+``--accept-generator`` names its exact current SHA-256, say for a
+verify-only edit. The receipt keeps the manifest's original generator hash,
+and records the pin and whether it was accepted.
+
+Its passing verdict is GEOMETRY_INPUTS_VERIFIED: geometry and inputs only
+(dojo_timber_pilot_verify.SCOPE). It is not a re-export, re-bake or
+re-render.
+
 Its only output is a new receipt under
 ``Local/ArtCache/Verification/<namespace>/``, created exclusively. It exits 1
 unless everything matches.
@@ -97,12 +106,14 @@ guard = PILOT.guard
 def parse():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     o = {"cpu": "--cpu" in argv, "renders": "--no-renders" not in argv, "verify": "--verify" in argv,
-         "samples": 96, "bake_res": 2048, "archive_receipt": None}
+         "samples": 96, "bake_res": 2048, "archive_receipt": None, "accept_generator": None}
     for key in ("--samples", "--bake-res"):
         if key in argv:
             o[key[2:].replace("-", "_")] = int(argv[argv.index(key) + 1])
     if "--archive-receipt" in argv:
         o["archive_receipt"] = Path(argv[argv.index("--archive-receipt") + 1])
+    if "--accept-generator" in argv:
+        o["accept_generator"] = argv[argv.index("--accept-generator") + 1]
     return o
 
 
@@ -232,9 +243,9 @@ def verify(o):
     check_cmp = VF.compare_checks(original_checks, checks)
     inputs = VF.compare_inputs(L.ROOT, manifest)
     archive = VF.compare_archive(OUT, o["archive_receipt"]) if o["archive_receipt"] else None
-    status, problems = VF.verdict(fbx, digest_cmp, check_cmp, shared, inputs, archive)
+    status, problems = VF.verdict(fbx, digest_cmp, check_cmp, shared, inputs, archive, o["accept_generator"])
     data = {
-        "schema_version": 1, "kind": "art-run-verification", "status": status, "problems": problems,
+        "schema_version": 1, "kind": "art-run-verification", "status": status, "scope": VF.SCOPE, "problems": problems,
         "run": L.rel(OUT), "run_manifest_sha256": L.sha256(OUT / "manifest.json"),
         "run_evidence_sha256": L.sha256(OUT / "evidence.json"), "run_checks_sha256": L.sha256(OUT / "checks.json"),
         "verifier": {"generator": GEN, "generator_sha256": L.sha256(L.ROOT / GEN), "head": _git("rev-parse", "HEAD"),
@@ -242,14 +253,15 @@ def verify(o):
         "versions": {"blender": bpy.app.version_string, "numpy": np.__version__, "python": platform.python_version()},
         "started_utc": started, "finished_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "digests": digest_cmp, "fbx": fbx, "checks": check_cmp, "shared_textures": shared, "inputs": inputs,
+        "generator_drift": VF.generator_drift(inputs, o["accept_generator"]),
         "archive": archive,
     }
     path = VF.write_receipt(VF.receipt_path(manifest["kit"]), OUT, data, frozen=PILOT.FROZEN)
     print("PILOT_VERIFY_RECEIPT", L.rel(path), flush=True)
-    if status != "VERIFIED":
+    if status != VF.PASSED:
         print(f"PILOT_VERIFY_{status}", "; ".join(problems), flush=True)
         sys.exit(1)
-    print("PILOT_VERIFIED_ALL", len(digests), flush=True)
+    print("PILOT_GEOMETRY_INPUTS_VERIFIED", len(digests), flush=True)
 
 
 def main():
