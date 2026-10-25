@@ -67,7 +67,10 @@ world location, pitch/yaw/roll and scale for each timber instance. Counts and
 bounds alone do not prove placement coverage.
 
 The archive checks the frozen `sora-dojo-timber-campaign-binding-v1` contract
-introduced by Claude at `5d4308d`. All eight chapters, both column/rail manifests,
+introduced by Claude at `5d4308d` and corrected at `1b4221b`. The accepted binder
+is SHA256 `f114fea4e4e40e73d0b11f452e57255b5e3800d34b11e7fdea7f04489f5513c5`;
+it rejects duplicate records and mismatched rail/column fields, including rail
+lengths. All eight chapters, both column/rail manifests,
 the binding, binder, generator scripts and manifest inputs must match runtime
 size/MD5 observations, current bytes, and the archive's exact source commit.
 Binding SHA256 values must agree with those sources. The independent layout

@@ -32,7 +32,7 @@ MANIFESTS = (TIMBER_ROOT + "manifest.json", TIMBER_ROOT + "Rails/manifest.json")
 # The independent layout model below is reviewed against this immutable binder,
 # its placement helper and rail layout. A changed algorithm needs a new review.
 LAYOUT_SOURCES = {
-    BINDER: "e7d46d8dc356c1e428ae8d175e50bd162d9f42a19c058a4b7fd193c89535efd3",
+    BINDER: "f114fea4e4e40e73d0b11f452e57255b5e3800d34b11e7fdea7f04489f5513c5",
     "scripts/art/dojo_hall_placements.py": "63b345dec4a31e9549a094fffbd5df6207ba5920c68c54192e412aaccf905773",
     "scripts/art/create_nyaagyu_dojo_rails.py": "d1246e47bf9c74961a18b26d7687b86425173a120f117e3068eef88ecbe63192"}
 MANIFEST_INPUTS = ("scripts/art/sora_timber_lib.py", "scripts/art/sora_timber_lookdev.py",
