@@ -62,6 +62,14 @@ bool FSoraViewmodelProjectionTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("State interpolation is stable across frame partitions"),FMath::IsNearlyEqual(1.f-(1.f-A)*(1.f-A),B,1e-6f));
     TestEqual(TEXT("No elapsed time cannot jump state"),BlendAlpha(0,12),0.f);
     auto* Camera=NewObject<UCameraComponent>();
+    FTransform DefaultAdditive; float DefaultAdditiveFOV=-1;
+    Camera->GetAdditiveOffset(DefaultAdditive,DefaultAdditiveFOV);
+    const FMinimalViewInfo DefaultView=CameraView(*Camera);
+    TestTrue(TEXT("Disabled default additive fields are identity/zero, and the camera is perspective"),
+        DefaultAdditive.Equals(FTransform::Identity)&&DefaultAdditiveFOV==0&&
+        DefaultView.ProjectionMode==ECameraProjectionMode::Perspective&&
+        DefaultView.Location.Equals(Camera->GetComponentLocation())&&DefaultView.Rotation.Equals(Camera->GetComponentRotation())&&
+        DefaultView.FOV==Camera->FieldOfView);
     Camera->SetWorldLocationAndRotation(FVector(71,-52,43),FRotator(31,73,0));
     Camera->FieldOfView=87.f; Camera->FirstPersonFieldOfView=62.f; Camera->FirstPersonScale=.53f;
     Camera->bEnableFirstPersonFieldOfView=true; Camera->bEnableFirstPersonScale=true;
@@ -75,6 +83,22 @@ bool FSoraViewmodelProjectionTest::RunTest(const FString& Parameters)
         Snapshot.Rotation.Equals(Native.Rotation,1e-8)&&Snapshot.FOV==Native.FOV&&
         Snapshot.FirstPersonFOV==Native.FirstPersonFOV&&Snapshot.FirstPersonScale==Native.FirstPersonScale&&
         Snapshot.CalculateFirstPersonFOVCorrectionFactor()==Native.CalculateFirstPersonFOVCorrectionFactor());
+    // The unadmitted path must still be the original local offset * action,
+    // even when the presentation camera has an independently rotated offset.
+    auto* Legacy=NewObject<USoraViewmodelComponent>(); Legacy->SetupAttachment(Camera);
+    for(const FRotator Offset:{FRotator::ZeroRotator,FRotator(.18,.28,0),FRotator(-.18,-.28,0)})
+        for(int32 ActionIndex=0;ActionIndex<3;++ActionIndex)
+    {
+        const FVector LiveRay=Camera->GetComponentQuat().RotateVector(Offset.Vector());
+        Legacy->Sway(1.f/60.f,.137f,.5f,ActionIndex==1,ActionIndex==2,true,true,Snapshot,LiveRay);
+        const float Pitch=ActionIndex==1?-30.f:ActionIndex==2?25.f:-15.f;
+        TestTrue(TEXT("Additive camera rotation cannot counter-rotate an unadmitted weapon"),
+            Legacy->GetRelativeRotation().Quaternion().Equals(Offset.Quaternion()*FRotator(Pitch,0,-15).Quaternion(),1e-6));
+        TestFalse(TEXT("The prior view-space inverse would fail this rotated-offset regression"),
+            Snapshot.Rotation.UnrotateVector(LiveRay).Rotation().Quaternion().Equals(Offset.Quaternion(),1e-4));
+    }
+    Camera->ClearAdditiveOffset(); Camera->GetAdditiveOffset(DefaultAdditive,DefaultAdditiveFOV);
+    TestTrue(TEXT("Clearing an additive offset restores identity/zero fields"),DefaultAdditive.Equals(FTransform::Identity)&&DefaultAdditiveFOV==0);
     for(const float WorldFOV:{75.f,94.f,110.f}) for(const float FirstFOV:{55.f,70.f,90.f})
     {
         FMinimalViewInfo View; View.Location=FVector(517,-991,87); View.Rotation=FRotator(31,73,0);
@@ -90,6 +114,8 @@ bool FSoraViewmodelProjectionTest::RunTest(const FString& Parameters)
         View.bUseFirstPersonParameters=false;
         const FVector Ray=FRotator(17,42,0).Vector();
         TestTrue(TEXT("Ordinary camera does not receive FP correction"),CorrectedWorldDirection(View,Ray).Equals(Ray,1e-8));
+        View.bUseFirstPersonParameters=true; View.ProjectionMode=ECameraProjectionMode::Orthographic;
+        TestTrue(TEXT("Perspective correction is never claimed for orthographic views"),CorrectedWorldDirection(View,Ray).Equals(Ray,1e-8));
     }
     // No world/actor is needed to exercise the exact old world-visible branch.
     auto* NPC=NewObject<USoraViewmodelComponent>();

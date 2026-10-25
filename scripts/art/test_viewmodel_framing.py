@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import copy
 import json
+import math
 import sys
 import tempfile
 import unittest
@@ -59,6 +60,21 @@ class Framing(unittest.TestCase):
 
     def test_committed_contract_passes(self):
         self.assertEqual(self.run_contract(self.contract)[0], 0)
+
+    def test_legacy_aim_is_in_the_eye_frame_not_additive_view_frame(self):
+        # Source math only; the corresponding engine automation calls Sway.
+        # UE's camera additive transform must not change BowAimOffset's frame.
+        def inverse(rows, vector):
+            return tuple(sum(axis[i] * vector[i] for i in range(3)) for axis in rows)
+
+        for eye_angles in ((0, 0, 0), (31, 73, 0)):
+            eye = F.rotation(*eye_angles)
+            view = F.compose(eye, F.rotation(2, 3, 0))
+            for offset in ((0, 0, 0), (.18, .28, 0), (-.18, -.28, 0)):
+                local_ray = F.apply(F.rotation(*offset), (1, 0, 0))
+                gameplay_ray = F.apply(eye, local_ray)
+                self.assertLess(math.dist(inverse(eye, gameplay_ray), local_ray), 1e-12)
+                self.assertGreater(math.dist(inverse(view, gameplay_ray), local_ray), .05)
 
     def test_empty_short_and_duplicated_tables_fail(self):
         c = self.mutated()

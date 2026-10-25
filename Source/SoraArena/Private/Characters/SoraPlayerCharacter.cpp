@@ -57,6 +57,7 @@ ASoraPlayerCharacter::ASoraPlayerCharacter(const FObjectInitializer& ObjectIniti
 {
     Camera=CastChecked<UCameraComponent>(GetEye());
     Camera->bUsePawnControlRotation=true; Camera->FieldOfView=94.f;
+    Camera->ProjectionMode=ECameraProjectionMode::Perspective;
     // UE 5.8's native viewmodel projection keeps a readable weapon silhouette
     // while shrinking the actual primitive away from nearby world geometry.
     Camera->bEnableFirstPersonFieldOfView=true;

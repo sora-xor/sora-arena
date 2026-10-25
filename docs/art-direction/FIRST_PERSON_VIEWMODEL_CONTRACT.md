@@ -27,6 +27,12 @@ Runtime correction reads the actual camera's `FMinimalViewInfo` and calls
 Only rest/action/anchor transitions blend. The live aim direction remains current
 on the first transition frame. The contract's 2–6° aim inputs are stress cases;
 gameplay sway is bounded at 0.18° pitch and 0.28° yaw.
+The camera snapshot covers the game's explicitly perspective camera component;
+XR and custom camera-manager modifications are outside this qualification. UE's
+disabled additive transform defaults to identity with zero FOV offset, and
+`ClearAdditiveOffset` restores both. Unadmitted meshes recover the gameplay
+offset using their attached eye component, so an additive camera rotation cannot
+counter-rotate their legacy pose.
 
 Pending engine checks: `SoraArena.Presentation.ViewmodelContract`,
 `SoraArena.Presentation.ViewmodelProjection`,
