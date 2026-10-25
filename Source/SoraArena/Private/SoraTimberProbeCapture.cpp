@@ -12,6 +12,7 @@
 #include "DataDrivenShaderPlatformInfo.h"
 #include "Dom/JsonObject.h"
 #include "DynamicRHI.h"
+#include "DynamicResolutionState.h"
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
 #include "Engine/PointLight.h"
@@ -68,6 +69,27 @@ TArray<TSharedPtr<FJsonValue>> UV(const FVector2f& V)
 { return {MakeShared<FJsonValueNumber>(V.X),MakeShared<FJsonValueNumber>(V.Y)}; }
 TArray<TSharedPtr<FJsonValue>> Color(const FVector4& V)
 { return {MakeShared<FJsonValueNumber>(V.X),MakeShared<FJsonValueNumber>(V.Y),MakeShared<FJsonValueNumber>(V.Z),MakeShared<FJsonValueNumber>(V.W)}; }
+TSharedRef<FJsonObject> ResolutionControl()
+{
+    auto O=MakeShared<FJsonObject>(); const auto* V=IConsoleManager::Get().FindConsoleVariable(TEXT("r.ScreenPercentage"));
+    O->SetNumberField(TEXT("screen_percentage"),V?V->GetFloat():-1);
+    O->SetNumberField(TEXT("flags"),V?uint32(V->GetFlags()):0);
+    O->SetStringField(TEXT("set_by"),V?GetConsoleVariableSetByName(V->GetFlags()):TEXT("absent"));
+    FDynamicResolutionStateInfos Dynamic; GEngine->GetDynamicResolutionCurrentStateInfos(Dynamic);
+    const TCHAR* Status=TEXT("unknown");
+    switch (Dynamic.Status)
+    {
+        case EDynamicResolutionStatus::Unsupported: Status=TEXT("Unsupported"); break;
+        case EDynamicResolutionStatus::Disabled: Status=TEXT("Disabled"); break;
+        case EDynamicResolutionStatus::Paused: Status=TEXT("Paused"); break;
+        case EDynamicResolutionStatus::Enabled: Status=TEXT("Enabled"); break;
+        case EDynamicResolutionStatus::DebugForceEnabled: Status=TEXT("DebugForceEnabled"); break;
+    }
+    O->SetStringField(TEXT("dynamic_resolution_status"),Status);
+    const auto* Override=IConsoleManager::Get().FindConsoleVariable(TEXT("r.Test.OverrideScreenPercentageInterface"));
+    O->SetNumberField(TEXT("test_interface_override"),Override?Override->GetInt():-1);
+    return O;
+}
 // This callback runs on the game thread after the actual viewport view has
 // blended its unbound volumes and owned camera. It only observes the one view
 // whose screenshot request matches the original file; no synthetic CalcSceneView.
@@ -91,6 +113,16 @@ public:
             if (!View||!View->bIsGameView||View->bIsSceneCapture||View->bIsReflectionCapture||!View->IsPrimarySceneView()) continue;
             Frame->SetNumberField(TEXT("final_view_observations"),++Observations);
             Frame->SetNumberField(TEXT("final_view_frame"),double(Family.FrameCounter));
+            auto Resolution=ResolutionControl(); const auto* Driver=Family.GetScreenPercentageInterface();
+            // Public upper bound, not a GPU measurement. With dynamic resolution
+            // disabled UE's legacy driver uses this same static primary fraction.
+            Resolution->SetNumberField(TEXT("primary_fraction_upper_bound"),Driver?Driver->GetResolutionFractionsUpperBound()[GDynamicPrimaryResolutionFraction]:-1);
+            Resolution->SetNumberField(TEXT("secondary_fraction"),Family.SecondaryViewFraction);
+            Resolution->SetBoolField(TEXT("screen_percentage_show_flag"),Family.EngineShowFlags.ScreenPercentage);
+            const auto& Rect=View->UnscaledViewRect;
+            Resolution->SetArrayField(TEXT("unscaled_view_rect"),{MakeShared<FJsonValueNumber>(Rect.Min.X),MakeShared<FJsonValueNumber>(Rect.Min.Y),
+                MakeShared<FJsonValueNumber>(Rect.Width()),MakeShared<FJsonValueNumber>(Rect.Height())});
+            Frame->SetObjectField(TEXT("final_resolution"),Resolution);
             auto O=MakeShared<FJsonObject>(); const auto& P=View->FinalPostProcessSettings;
 #define PROBE_SETTING(Name) O->SetNumberField(TEXT(#Name),P.Name)
             PROBE_SETTING(AutoExposureMethod); PROBE_SETTING(AutoExposureApplyPhysicalCameraExposure); PROBE_SETTING(AutoExposureBias);
@@ -140,7 +172,8 @@ private:
     bool ShowHUD=true,WasPaused=false; SoraUI::EScreen OldScreen=SoraUI::EScreen::Title;
     FEngineShowFlags OldFlags{ESFIM_Game}; FName OldNaniteMode;
     FString Folder,Pending,Platform,Slots[3]; TArray<uint8> Profiles[3]; bool Existed[3]={};
-    FCVar Visualize,Composite,Edges,Shading; FDelegateHandle Screenshot;
+    FCVar Visualize,Composite,Edges,Shading,ScreenPercentage; FDelegateHandle Screenshot;
+    TSharedPtr<FJsonObject> OriginalResolution;
     TSharedPtr<FViewObservation,ESPMode::ThreadSafe> ViewObservation;
     FVector2D Size=FVector2D::ZeroVector; FVector CameraAt; FRotator CameraRotation;
     TArray<TSharedPtr<FJsonValue>> Meshes,Frames,Packages,Inputs;
@@ -186,8 +219,10 @@ private:
         WasPaused=M->GetWorld()->IsPaused(); OldTarget=PC()->GetViewTarget(); HUD=PC()->GetHUD(); if (HUD.IsValid()) ShowHUD=HUD->bShowHUD;
         OldViewMode=Viewport()->ViewModeIndex; OldFlags=Viewport()->EngineShowFlags; OldNaniteMode=Viewport()->GetCurrentNaniteVisualizationMode(); BackedUp=true;
         GetNaniteVisualizationData();
-        if (!Visualize.Save(TEXT("r.Nanite.Visualize"))||!Composite.Save(TEXT("r.Nanite.Visualize.Composite"))||!Edges.Save(TEXT("r.Nanite.Visualize.EdgeDetect"))||!Shading.Save(TEXT("r.Nanite.Visualize.DebugShading")))
-        { Fail(TEXT("Missing Nanite visualization controls")); return; }
+        if (!Visualize.Save(TEXT("r.Nanite.Visualize"))||!Composite.Save(TEXT("r.Nanite.Visualize.Composite"))||!Edges.Save(TEXT("r.Nanite.Visualize.EdgeDetect"))||!Shading.Save(TEXT("r.Nanite.Visualize.DebugShading"))||!ScreenPercentage.Save(TEXT("r.ScreenPercentage")))
+        { Fail(TEXT("Missing visualization or resolution controls")); return; }
+        OriginalResolution=ResolutionControl(); ScreenPercentage.Set(TEXT("100"));
+        if (ScreenPercentage.Var->GetFloat()!=100.f) { Fail(TEXT("Could not establish 100 percent probe screen percentage")); return; }
         Folder=FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()/TEXT("Screenshots/SoraTimberProbe")/FGuid::NewGuid().ToString(EGuidFormats::Digits));
         IFileManager::Get().MakeDirectory(*Folder,true);
         InventoryFiles(); if (Failed) return;
@@ -347,6 +382,11 @@ private:
     }
     void Capture()
     {
+        const auto Resolution=ResolutionControl(); const FString Dynamic=Resolution->GetStringField(TEXT("dynamic_resolution_status"));
+        if (Resolution->GetNumberField(TEXT("screen_percentage"))!=100||
+            (ScreenPercentage.Var->GetFlags()&ECVF_SetByMask)!=(ScreenPercentage.Flags&ECVF_SetByMask)||
+            (Dynamic!=TEXT("Disabled")&&Dynamic!=TEXT("Unsupported"))||Resolution->GetNumberField(TEXT("test_interface_override"))!=0)
+        { Fail(TEXT("Probe requires unchanged 100 percent control and inactive dynamic/test resolution overrides")); return; }
         FlushRenderingCommands(); const auto& Data=GetNaniteVisualizationData(); const bool Diagnostic=SM6&&(Mode()==1||Mode()==2);
         if ((Diagnostic&&(!Data.IsActive()||Data.GetActiveModeName()!=FName(Modes[Mode()])))||(!Diagnostic&&Data.IsActive())) { Fail(TEXT("Renderer has not selected requested visualization")); return; }
         if (!PC()->PlayerCameraManager->GetCameraLocation().Equals(CameraAt,.01)||!PC()->PlayerCameraManager->GetCameraRotation().Equals(CameraRotation,.001)||PC()->GetViewTarget()!=Camera.Get()) { Fail(TEXT("Actual probe camera mismatch")); return; }
@@ -397,7 +437,7 @@ private:
     {
         if (Cleaned) return; Cleaned=true; if (Waiting) FScreenshotRequest::Reset(); FScreenshotRequest::OnScreenshotRequestProcessed().Remove(Screenshot);
         if (ViewObservation.IsValid()) { ViewObservation->Disarm(); ViewObservation.Reset(); }
-        bool Restored=true; for (const FCVar* C:{&Visualize,&Composite,&Edges,&Shading}) Restored=C->Restore()&&Restored;
+        bool Restored=true; for (const FCVar* C:{&Visualize,&Composite,&Edges,&Shading,&ScreenPercentage}) Restored=C->Restore()&&Restored;
         if (BackedUp&&!M.IsValid()) Restored=false;
         if (BackedUp&&M.IsValid())
         {
@@ -437,6 +477,8 @@ private:
         O->SetStringField(TEXT("rhi"),GDynamicRHI?GDynamicRHI->GetName():TEXT("none")); O->SetBoolField(TEXT("null_rhi"),GUsingNullRHI); O->SetStringField(TEXT("adapter"),GRHIAdapterName);
         O->SetArrayField(TEXT("viewport"),{MakeShared<FJsonValueNumber>(Size.X),MakeShared<FJsonValueNumber>(Size.Y)}); O->SetArrayField(TEXT("fixture_origin"),Vec(Origin));
         O->SetArrayField(TEXT("meshes"),Meshes); O->SetArrayField(TEXT("frames"),Frames); O->SetNumberField(TEXT("frame_count"),Frames.Num()); O->SetArrayField(TEXT("asset_files"),Packages); O->SetArrayField(TEXT("source_inputs"),Inputs);
+        if (OriginalResolution.IsValid()) O->SetObjectField(TEXT("original_resolution_control"),OriginalResolution);
+        O->SetObjectField(TEXT("restored_resolution_control"),ResolutionControl());
         O->SetStringField(TEXT("lighting"),TEXT("two temporary point lights, key 20M lm warm/fill 5M lm cool; manual ISO100 1/60 f2.8, bias0; directional/fog/atmosphere/sky/GI/reflection excluded; neutral global grade and no bloom/AO; final screenshot-view settings recorded, no photometric calibration"));
         O->SetBoolField(TEXT("restored"),Restored); O->SetBoolField(TEXT("packages_unchanged"),Unchanged); O->SetBoolField(TEXT("passed"),!Failed&&!Test.HasAnyErrors()&&Step==Count());
         O->SetStringField(TEXT("acceptance"),TEXT("original paired pixels and human geometry/material review required; no GPU counters inferred; SM5 generated fallback differs from authored pool"));

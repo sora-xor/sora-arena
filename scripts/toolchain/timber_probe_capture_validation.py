@@ -102,6 +102,10 @@ def validate_metadata(meta, names, width, height):
     require(type(sm6) is bool and meta.get("nanite_eligible") is sm6, "requested/capable shader model mismatch")
     require(meta.get("rhi") == "Metal" and meta.get("null_rhi") is False and meta.get("shader_platform") == ("METAL_SM6" if sm6 else "METAL_SM5"), "not the requested actual Metal shader platform")
     require(bool(meta.get("adapter")) and meta.get("viewport") == [width, height] and meta.get("fixture_origin") == [1000000]*3, "missing actual device/fixture identity")
+    original_resolution, restored_resolution = meta.get("original_resolution_control"), meta.get("restored_resolution_control")
+    require(isinstance(original_resolution, dict) and original_resolution == restored_resolution and
+            type(original_resolution.get("screen_percentage")) in (int, float) and math.isfinite(original_resolution["screen_percentage"]) and
+            type(original_resolution.get("flags")) is int and bool(original_resolution.get("set_by")), "resolution control/priority was not preserved and restored")
     meshes = meta.get("meshes", [])
     require([m.get("name") for m in meshes] == list(NAMES), "probe must observe exactly five dense and four authored conventional meshes")
     for i, mesh in enumerate(meshes):
@@ -163,6 +167,15 @@ def validate_metadata(meta, names, width, height):
                 require(type(actual_value) in (int, float) and math.isfinite(actual_value) and abs(actual_value-expected_value) < 1e-5, "unexpected final post-process " + key)
         flags = frame.get("final_show_flags", {})
         require(all(flags.get(key) is False for key in EXCLUDED_SHOW_FLAGS), "production sun/GI/reflections or atmosphere leak into fixture view")
+        resolution = frame.get("final_resolution", {})
+        require(resolution.get("screen_percentage") == 100 and resolution.get("flags") == original_resolution["flags"] and
+                resolution.get("set_by") == original_resolution["set_by"] and
+                resolution.get("dynamic_resolution_status") in ("Disabled", "Unsupported") and resolution.get("test_interface_override") == 0,
+                "final resolution control differs or dynamic/test scaling is active")
+        require(all(type(resolution.get(key)) in (int, float) and math.isfinite(resolution[key]) and abs(resolution[key]-1) < 1e-6
+                    for key in ("primary_fraction_upper_bound", "secondary_fraction")) and
+                resolution.get("unscaled_view_rect") == [0, 0, width, height] and type(resolution.get("screen_percentage_show_flag")) is bool,
+                "final static resolution fraction/viewport differs")
         if identity[1] == "full":
             camera = frame["camera"] + frame["rotation"] + [frame["fov"]]
             require(full_cameras.setdefault(identity[0], camera) == camera, "paired visualization cameras moved")
