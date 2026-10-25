@@ -290,9 +290,11 @@ until the import step switches to these files.
   rounded-rectangular stave section (2.85 x 2.15 cm at the grip, tapering)
   in black urushi; shigetō bands of flat split rattan wound two-and-a-bit
   turns by hand under lacquer, worn to the golden skin on the crowns; a
-  deerskin nigiri wound as a shingled spiral strip; horn hazu; a
-  resin-coated hemp string with nakajikake. The ya has a tapered yadake
-  shaft with four nodes, horn hazu, silk bindings, a yanagi-ba point and
+  built-up nigiri wound with one skived deerskin strip whose laps step a
+  fraction of a millimetre; horn hazu; a resin-coated hemp string with
+  nakajikake. The ya has a tapered, polished yadake shaft whose four nodes
+  are each placed and shaped a little differently, browned where it was
+  straightened over a fire, with horn hazu, silk bindings, a yanagi-ba point and
   three dyed hawk-feather vanes (the red is Nyaakoto's character choice)
   whose barbs, natural barring and ragged trimmed edge are an alpha mask on
   thin vane geometry.

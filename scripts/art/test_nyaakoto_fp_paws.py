@@ -49,6 +49,24 @@ class Skin(unittest.TestCase):
         self.assertGreater(float(g.min()), 0.0)                     # never inside the bow
         self.assertGreater(int((g < 0.0008).sum()), 50)             # but holding it
 
+    def test_the_grip_it_is_carved_to_is_the_rigs(self):
+        # GRIP_WRAP, which the skin is carved to, against the leather the rig
+        # emits (W18_rig_check_geometry.npz rest vertices). Across the span the
+        # strip covers at every angle, the leather's 99th-percentile half-depth
+        # and half-width must lie within CARVE_GAP of GRIP_WRAP's: never through
+        # the skin, never more than twice the gap off it. Bow-only vertices:
+        # the string and arrow lie outside 30 mm.
+        import yumi_draw as YD
+        import yumi_nigiri as NG
+        V = np.load(YD.RIG_GEOMETRY)["rest"]
+        lo, hi = NG.covered_span(YD.GRIP_HALF)
+        sel = (V[:, 2] > lo) & (V[:, 2] < hi) & (np.abs(V[:, 0]) < 0.03) & (np.abs(V[:, 1]) < 0.03)
+        self.assertGreater(int(sel.sum()), 500)
+        a = float(np.percentile(np.abs(V[sel, 0]), 99))
+        b = float(np.percentile(np.abs(V[sel, 1]), 99))
+        self.assertLessEqual(abs(a - P.GRIP_WRAP["a"]), P.CARVE_GAP, f"half-depth {a * 1000:.3f} mm")
+        self.assertLessEqual(abs(b - P.GRIP_WRAP["b"]), P.CARVE_GAP, f"half-width {b * 1000:.3f} mm")
+
     def test_the_arrow_rests_on_the_dewclaw(self):
         pts, r = self.skel["chains"]["I"]
         top = max(p[2] + rr for p, rr in zip(pts[1:], r[1:]))

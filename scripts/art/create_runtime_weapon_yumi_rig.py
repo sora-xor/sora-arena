@@ -839,8 +839,11 @@ def main():
         "schema_version": 3, "check_geometry_schema": Y.RIG_SCHEMA,
         "asset": "SK_Weapon_18", "skeleton": "SK_Weapon_18_Skeleton", "action": "A_Weapon_18_Draw",
         "generator": GEN, "generator_sha256": sha256(ROOT / GEN),
+        # Every source the static bow was generated from, so a rig is never
+        # silently older than its bow (test_yumi_nigiri_ya.Rebuild).
         "inputs": {rel(p): sha256(p) for p in (STATIC_FBX, ARROW_FBX, RECORD, HERE / "yumi_draw.py",
-                                                HERE / "create_runtime_weapon_yumi.py")},
+                                                HERE / "create_runtime_weapon_yumi.py", HERE / "yumi_nigiri.py",
+                                                HERE / "yumi_ya.py", HERE / "create_runtime_weapon_lib.py")},
         "versions": {"blender": bpy.app.version_string},
         "draw": {"frames": "frame i = draw fraction i/10 at 10 fps: the take A_Weapon_18_Draw's time in seconds is the "
                            "draw fraction (0-1 s); drive the animation's time from it",
