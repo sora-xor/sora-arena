@@ -217,7 +217,14 @@ def timber_master(name, shared, fallback: bool):
     m.set_editor_property("tangent_space_normal", False)
     m.set_editor_property("used_with_nanite", True)
     m.set_editor_property("used_with_instanced_static_meshes", True)
+    # UE hides MP_CustomData0/1 from Python. Named MakeMaterialAttributes
+    # inputs expose the same clear-coat channels without dropping either one.
+    m.set_editor_property("use_material_attributes", True)
     g = Graph(m)
+    attributes = g.n(unreal.MaterialExpressionMakeMaterialAttributes)
+    required_pins = {"BaseColor", "Roughness", "ClearCoat", "ClearCoatRoughness", "Normal"}
+    require(required_pins <= set(lib.get_material_expression_input_names(attributes)),
+            f"{name}: required timber material attributes are unavailable")
     uvq = g.n(unreal.MaterialExpressionTextureCoordinate, coordinate_index=2)
     uvz = g.n(unreal.MaterialExpressionTextureCoordinate, coordinate_index=3)
     seed = g.mask(uvz, "g")
@@ -294,21 +301,21 @@ def timber_master(name, shared, fallback: bool):
     base = g.lerp(base, g.color("WornColor", (0.15, 0.09, 0.05)),
                   g.op(unreal.MaterialExpressionMultiply, edge, g.scalar("WearColorAmount", 0.45)))
     base = g.lerp(base, g.const(0.0), g.op(unreal.MaterialExpressionMultiply, cav, 0.65))
-    lib.connect_material_property(base, "", unreal.MaterialProperty.MP_BASE_COLOR)
+    g.link(base, attributes, "BaseColor")
     rough = g.op(unreal.MaterialExpressionAdd, g.scalar("Roughness", 0.55),
                  g.op(unreal.MaterialExpressionAdd,
                       g.op(unreal.MaterialExpressionAdd, g.op(unreal.MaterialExpressionMultiply, lw, 0.06),
                            g.op(unreal.MaterialExpressionMultiply, soot, 0.15)),
                       g.op(unreal.MaterialExpressionAdd, g.op(unreal.MaterialExpressionMultiply, edge, -0.12),
                            g.op(unreal.MaterialExpressionMultiply, g.op(unreal.MaterialExpressionSubtract, fib, 0.5), 0.12))))
-    lib.connect_material_property(g.one(unreal.MaterialExpressionSaturate, rough), "", unreal.MaterialProperty.MP_ROUGHNESS)
-    lib.connect_material_property(g.scalar("ClearCoat", 1.0), "", unreal.MaterialProperty.MP_CUSTOM_DATA0)
+    g.link(g.one(unreal.MaterialExpressionSaturate, rough), attributes, "Roughness")
+    g.link(g.scalar("ClearCoat", 1.0), attributes, "ClearCoat")
     ccr = g.op(unreal.MaterialExpressionAdd, g.scalar("ClearCoatRoughness", 0.17),
                g.op(unreal.MaterialExpressionAdd,
                     g.op(unreal.MaterialExpressionAdd, g.op(unreal.MaterialExpressionMultiply, soot, 0.16),
                          g.op(unreal.MaterialExpressionMultiply, grime, -0.08)),
                     g.op(unreal.MaterialExpressionMultiply, g.op(unreal.MaterialExpressionSubtract, streak, 0.5), 0.10)))
-    lib.connect_material_property(g.one(unreal.MaterialExpressionSaturate, ccr), "", unreal.MaterialProperty.MP_CUSTOM_DATA1)
+    g.link(g.one(unreal.MaterialExpressionSaturate, ccr), attributes, "ClearCoatRoughness")
     # Normal: ridge + fibre height (metres -> cm) as a surface-gradient bump.
     height_m = g.op(unreal.MaterialExpressionAdd, g.op(unreal.MaterialExpressionMultiply, ridge, g.scalar("RaiseMeters", 0.00002)),
                     g.op(unreal.MaterialExpressionMultiply, fib, g.scalar("FibreMeters", 0.000012)))
@@ -331,7 +338,9 @@ def timber_master(name, shared, fallback: bool):
     g.link(pos, bump, "P")
     g.link(height_cm, bump, "H")
     g.link(normal_in, bump, "N")
-    lib.connect_material_property(bump, "", unreal.MaterialProperty.MP_NORMAL)
+    g.link(bump, attributes, "Normal")
+    require(lib.connect_material_property(attributes, "", unreal.MaterialProperty.MP_MATERIAL_ATTRIBUTES),
+            f"{name}: material attributes output failed")
     lib.layout_material_expressions(m)
     lib.recompile_material(m)
     assets.save_loaded_asset(m)

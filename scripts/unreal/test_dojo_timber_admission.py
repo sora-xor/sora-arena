@@ -316,5 +316,100 @@ class Probe(unittest.TestCase):
         self.assertEqual(mesh.mock_calls, [])
 
 
+class TimberMaterialInputs(unittest.TestCase):
+    """Exercise both real graph builders with UE's hidden root pins absent."""
+    def graph(self, missing_pin=None, reject_pin=None, reject_output=False):
+        class Node:
+            def __init__(self, kind):
+                self.kind, self.props, self.inputs = kind, {}, {}
+            def set_editor_property(self, key, value):
+                self.props[key] = value
+            def get_name(self):
+                return self.kind
+        class PublicUnreal(SimpleNamespace):
+            def __getattr__(self, name):
+                if name.startswith("MaterialExpression"):
+                    return name
+                raise AttributeError(name)
+        unreal = PublicUnreal(
+            MaterialProperty=SimpleNamespace(MP_BASE_COLOR="BaseColor", MP_ROUGHNESS="Roughness",
+                                             MP_NORMAL="Normal", MP_MATERIAL_ATTRIBUTES="Attributes"),
+            MaterialShadingModel=SimpleNamespace(MSM_CLEAR_COAT="ClearCoat"),
+            MaterialSamplerType=SimpleNamespace(SAMPLERTYPE_LINEAR_COLOR="linear", SAMPLERTYPE_MASKS="masks", SAMPLERTYPE_NORMAL="normal"),
+            MaterialVectorCoordTransformSource=SimpleNamespace(TRANSFORMSOURCE_TANGENT="tangent"),
+            MaterialVectorCoordTransform=SimpleNamespace(TRANSFORM_WORLD="world"),
+            WorldPositionIncludedOffsets=SimpleNamespace(WPT_CAMERA_RELATIVE_NO_OFFSETS="camera_relative"),
+            CustomMaterialOutputType=SimpleNamespace(CMOT_FLOAT3="float3"),
+            CustomInput=lambda **kwargs: kwargs, LinearColor=lambda *args: args)
+        material, nodes, outputs = Node("material"), [], []
+        def create(material, kind, x, y):
+            node = Node(kind); nodes.append(node); return node
+        def connect(source, output, target, pin):
+            if target.kind == "MaterialExpressionMakeMaterialAttributes" and pin == reject_pin:
+                return False
+            target.inputs[pin] = (source, output)
+            return True
+        def root(source, output, prop):
+            outputs.append((source, output, prop))
+            return not reject_output
+        pins = {"BaseColor", "Roughness", "ClearCoat", "ClearCoatRoughness", "Normal"} - {missing_pin}
+        lib = SimpleNamespace(create_material_expression=create, get_material_expressions=lambda m: [],
+                              get_material_expression_input_names=lambda n: pins,
+                              connect_material_expressions=connect, connect_material_property=root,
+                              layout_material_expressions=Mock(), recompile_material=Mock())
+        assets = SimpleNamespace(does_asset_exist=lambda path: True, load_asset=lambda path: material, save_loaded_asset=Mock())
+        path = Path(__file__).with_name("import_nyaagyu_dojo_timbers.py")
+        parsed = ast.parse(path.read_text())
+        selected = [n for n in parsed.body if isinstance(n, (ast.ClassDef, ast.FunctionDef)) and n.name in ("Graph", "require", "timber_master")]
+        ns = {"unreal": unreal, "lib": lib, "assets": assets, "DEST": A.PROBE_DEST, "BUMP_HLSL": "unchanged source shader"}
+        exec(compile(ast.Module(body=selected, type_ignores=[]), str(path), "exec"), ns)
+        shared = {key: Node(key) for key in ("Fibre", "RingNoise", "RingRandom", "DefaultNormal", "DefaultMasks")}
+        return ns, shared, material, nodes, outputs, assets
+
+    def test_both_masters_keep_all_five_outputs_and_clearcoat_controls(self):
+        for fallback in (False, True):
+            with self.subTest(fallback=fallback):
+                ns, shared, material, nodes, outputs, assets = self.graph()
+                ns["timber_master"]("M_SoraTimber", shared, fallback)
+                attributes = next(n for n in nodes if n.kind == "MaterialExpressionMakeMaterialAttributes")
+                self.assertEqual(set(attributes.inputs), {"BaseColor", "Roughness", "ClearCoat", "ClearCoatRoughness", "Normal"})
+                self.assertEqual(outputs, [(attributes, "", "Attributes")])
+                self.assertTrue(material.props["use_material_attributes"])
+                self.assertEqual(material.props["shading_model"], "ClearCoat")
+                self.assertFalse(material.props["tangent_space_normal"])
+                self.assertTrue(material.props["used_with_nanite"])
+                coat = attributes.inputs["ClearCoat"][0]
+                self.assertEqual((coat.props["parameter_name"], coat.props["default_value"]), ("ClearCoat", 1.0))
+                self.assertEqual(attributes.inputs["ClearCoatRoughness"][0].kind, "MaterialExpressionSaturate")
+                params = {n.props["parameter_name"]: n for n in nodes if "parameter_name" in n.props}
+                self.assertEqual(params["ClearCoatRoughness"].props["default_value"], 0.17)
+                normal = attributes.inputs["Normal"][0]
+                self.assertEqual(normal.kind, "MaterialExpressionCustom")
+                self.assertEqual(set(normal.inputs), {"P", "H", "N"})
+                self.assertEqual("NormalMap" in params, fallback)
+                self.assertEqual("MasksMap" in params, fallback)
+                assets.save_loaded_asset.assert_called_once_with(material)
+
+    def test_missing_clearcoat_attribute_rejects_before_save(self):
+        ns, shared, _, _, _, assets = self.graph(missing_pin="ClearCoat")
+        with self.assertRaisesRegex(RuntimeError, "required timber material attributes"):
+            ns["timber_master"]("M_SoraTimber", shared, True)
+        assets.save_loaded_asset.assert_not_called()
+
+    def test_rejected_attribute_links_do_not_silently_weaken_material(self):
+        for pin in ("ClearCoat", "ClearCoatRoughness", "Normal"):
+            with self.subTest(pin=pin):
+                ns, shared, _, _, _, assets = self.graph(reject_pin=pin)
+                with self.assertRaisesRegex(RuntimeError, "link"):
+                    ns["timber_master"]("M_SoraTimber", shared, True)
+                assets.save_loaded_asset.assert_not_called()
+
+    def test_failed_material_attributes_root_rejects_before_save(self):
+        ns, shared, _, _, _, assets = self.graph(reject_output=True)
+        with self.assertRaisesRegex(RuntimeError, "material attributes output failed"):
+            ns["timber_master"]("M_SoraTimber", shared, False)
+        assets.save_loaded_asset.assert_not_called()
+
+
 if __name__ == "__main__":
     unittest.main()
