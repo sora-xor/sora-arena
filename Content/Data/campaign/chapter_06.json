@@ -274,7 +274,10 @@
     "pickup_hold_ms": 0,
     "unload_hold_ms": 0,
     "objective_hold_ms": [],
-    "equipment_weapons": null,
+    "equipment_weapons": [
+     0,
+     4
+    ],
     "recovery": null
    },
    "ext": {}
@@ -525,7 +528,10 @@
     "pickup_hold_ms": 0,
     "unload_hold_ms": 0,
     "objective_hold_ms": [],
-    "equipment_weapons": null,
+    "equipment_weapons": [
+     0,
+     4
+    ],
     "recovery": null
    },
    "ext": {
@@ -754,7 +760,11 @@
     "pickup_hold_ms": 0,
     "unload_hold_ms": 0,
     "objective_hold_ms": [],
-    "equipment_weapons": null,
+    "equipment_weapons": [
+     0,
+     4,
+     18
+    ],
     "recovery": null
    },
    "ext": {
@@ -1104,7 +1114,11 @@
      3000,
      0
     ],
-    "equipment_weapons": null,
+    "equipment_weapons": [
+     0,
+     4,
+     18
+    ],
     "recovery": null
    },
    "ext": {
@@ -1254,7 +1268,12 @@
     "pickup_hold_ms": 0,
     "unload_hold_ms": 0,
     "objective_hold_ms": [],
-    "equipment_weapons": null,
+    "equipment_weapons": [
+     0,
+     3,
+     4,
+     18
+    ],
     "recovery": null
    },
    "ext": {
@@ -1774,7 +1793,12 @@
     "pickup_hold_ms": 0,
     "unload_hold_ms": 0,
     "objective_hold_ms": [],
-    "equipment_weapons": null,
+    "equipment_weapons": [
+     0,
+     3,
+     4,
+     18
+    ],
     "recovery": null
    },
    "ext": {
@@ -1936,7 +1960,13 @@
     "pickup_hold_ms": 0,
     "unload_hold_ms": 0,
     "objective_hold_ms": [],
-    "equipment_weapons": null,
+    "equipment_weapons": [
+     0,
+     3,
+     4,
+     13,
+     18
+    ],
     "recovery": null
    },
    "ext": {
@@ -2177,7 +2207,13 @@
     "pickup_hold_ms": 0,
     "unload_hold_ms": 0,
     "objective_hold_ms": [],
-    "equipment_weapons": null,
+    "equipment_weapons": [
+     0,
+     3,
+     4,
+     13,
+     18
+    ],
     "recovery": null
    },
    "ext": {
@@ -2328,7 +2364,13 @@
     "pickup_hold_ms": 0,
     "unload_hold_ms": 0,
     "objective_hold_ms": [],
-    "equipment_weapons": null,
+    "equipment_weapons": [
+     0,
+     3,
+     4,
+     13,
+     18
+    ],
     "recovery": null
    },
    "ext": {
@@ -2478,7 +2520,14 @@
     "pickup_hold_ms": 0,
     "unload_hold_ms": 0,
     "objective_hold_ms": [],
-    "equipment_weapons": null,
+    "equipment_weapons": [
+     0,
+     3,
+     4,
+     10,
+     13,
+     18
+    ],
     "recovery": null
    },
    "ext": {
@@ -2845,7 +2894,14 @@
      4000,
      0
     ],
-    "equipment_weapons": null,
+    "equipment_weapons": [
+     0,
+     3,
+     4,
+     10,
+     13,
+     18
+    ],
     "recovery": null
    },
    "ext": {
@@ -2978,7 +3034,14 @@
     "pickup_hold_ms": 0,
     "unload_hold_ms": 0,
     "objective_hold_ms": [],
-    "equipment_weapons": null,
+    "equipment_weapons": [
+     0,
+     3,
+     4,
+     10,
+     13,
+     18
+    ],
     "recovery": null
    },
    "ext": {}
@@ -3117,7 +3180,14 @@
     "pickup_hold_ms": 0,
     "unload_hold_ms": 0,
     "objective_hold_ms": [],
-    "equipment_weapons": null,
+    "equipment_weapons": [
+     0,
+     3,
+     4,
+     10,
+     13,
+     18
+    ],
     "recovery": null
    },
    "ext": {
@@ -3437,7 +3507,14 @@
     "pickup_hold_ms": 0,
     "unload_hold_ms": 0,
     "objective_hold_ms": [],
-    "equipment_weapons": null,
+    "equipment_weapons": [
+     0,
+     3,
+     4,
+     10,
+     13,
+     18
+    ],
     "recovery": null
    },
    "ext": {
@@ -3571,7 +3648,14 @@
     "pickup_hold_ms": 0,
     "unload_hold_ms": 0,
     "objective_hold_ms": [],
-    "equipment_weapons": null,
+    "equipment_weapons": [
+     0,
+     3,
+     4,
+     10,
+     13,
+     18
+    ],
     "recovery": null
    },
    "ext": {}
@@ -3686,7 +3770,14 @@
     "pickup_hold_ms": 0,
     "unload_hold_ms": 0,
     "objective_hold_ms": [],
-    "equipment_weapons": null,
+    "equipment_weapons": [
+     0,
+     3,
+     4,
+     10,
+     13,
+     18
+    ],
     "recovery": null
    },
    "ext": {}

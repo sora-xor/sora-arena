@@ -670,7 +670,12 @@ bool USoraCampaignDirector::CanHold(int32 WeaponId,bool bNotify)
     }
     if(!SoraBeatRules::EquipmentAllows(TaskState,Task,WeaponId))
     {
-        if(bNotify) Notify(SoraText::Line(NSLOCTEXT("SoraArena.Campaign","HiddenArms","刀と弓は空井戸の底に隠してある。今は脇差だけだ。")),3.f);
+        if(bNotify)
+        {
+            if(ChapterId==2) Notify(SoraText::Line(NSLOCTEXT("SoraArena.Campaign","HiddenArms","刀と弓は空井戸の底に隠してある。今は脇差だけだ。")),3.f);
+            else if(ChapterId==5&&WeaponId==18) Notify(SoraText::Line(NSLOCTEXT("SoraArena.Campaign","UnstrungInfiltrationBow","弓の弦はまだ張っていない。水門を抜けてから張ろう。")),3.f);
+            else Notify(SoraText::Line(NSLOCTEXT("SoraArena.Campaign","MissionArms","この武器は持ってきていない。手元の武器を使おう。")),3.f);
+        }
         return false;
     }
     if(TaskState.Carrying&&Task.Task==SoraBeatRules::ETask::Carry&&(Task.CarryWeaponsMask&(1u<<WeaponId))==0u)

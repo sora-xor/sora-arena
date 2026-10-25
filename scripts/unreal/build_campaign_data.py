@@ -1559,6 +1559,52 @@ def equipment_recovery(beats):
         fail("equipment", "temporary loadout has no recovery pickup")
 
 
+def infiltration_equipment(document, beats, prefix):
+    """Restrict carried mission arms without granting optional weapon unlocks.
+
+    The b03 setup is a non-blocking animation: its bow is usable at beat entry.
+    A permission for the b07 SMG still needs the ordinary optional-cache unlock.
+    Rebuilding the mask for every beat also covers checkpoint and chapter replay.
+    """
+    if prefix != "ch06":
+        return
+    raw = expect(document.get("start_loadout"), (dict,), prefix + ".start_loadout")
+    expected = {"hip": 0, "side": 4, "back": 18, "back_strung_at": "ch06.b03",
+                "polearm": None, "firearm": None, "quiver_arrows": 12,
+                "armor": "none_infiltration_dress"}
+    if set(raw) != set(expected):
+        fail(prefix, "infiltration needs the complete authored start loadout")
+    for key in ("hip", "side", "back", "quiver_arrows"):
+        expect_int(raw[key], prefix + ".start_loadout." + key, 0)
+    if raw != expected:
+        fail(prefix, "unsupported infiltration start loadout")
+    by_id = {beat["id"]: beat for beat in beats}
+    if len(by_id) != len(beats) or list(by_id) != [f"ch06.b{n:02d}" for n in range(1, 17)]:
+        fail(prefix, "infiltration equipment requires the sixteen authored beats in order")
+    setup = by_id[raw["back_strung_at"]]["ext"].get("setup")
+    if (not isinstance(setup, dict) or set(setup) != {"string_bow_at_start", "string_anim_s"}
+            or setup["string_bow_at_start"] is not True
+            or whole_ms(setup["string_anim_s"], "ch06.b03.string_anim_s") != 3000):
+        fail(prefix, "infiltration bow must become usable at the non-blocking b03 setup")
+    handoffs = {"ch06.b05": ([3], False), "ch06.b07": ([13], True), "ch06.b10": ([10], False)}
+    allowed = {raw["hip"], raw["side"]}
+    for beat in beats:
+        where = beat["id"]
+        weapons = beat["unlocks"]["weapons"]
+        for weapon in weapons:
+            expect_int(weapon, where + ".unlocks.weapons", 0)
+        if weapons != handoffs.get(where, ([], False))[0] or beat["unlocks"]["grants"]:
+            fail(where, "infiltration weapon handoff changed; review carried mission arms")
+        if where in handoffs and beat["optional"] != handoffs[where][1]:
+            fail(where, "infiltration handoff must preserve its required/optional unlock boundary")
+        if beat["task"]["recovery"] is not None:
+            fail(where, "infiltration loadout is not an equipment-recovery interaction")
+        if where == raw["back_strung_at"]:
+            allowed.add(raw["back"])
+        allowed.update(weapons)
+        beat["task"]["equipment_weapons"] = sorted(allowed)
+
+
 def checkpoints(beats):
     """Checkpoint positions in target time (centiseconds from chapter start).
 
@@ -1611,6 +1657,7 @@ def build_chapter(number, places):
         beats.append(beat)
         previous = beat["id"]
     equipment_recovery(beats)
+    infiltration_equipment(document, beats, prefix)
     bark_pool_triggers(document, prefix, beats, triggers)
     order = {beat["id"]: index for index, beat in enumerate(beats)}
     # Authored order within a beat; the chapter-wide b00 pool last.

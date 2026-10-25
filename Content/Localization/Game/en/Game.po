@@ -186,6 +186,12 @@ msgctxt "SoraArena.Campaign,MaaiLesson"
 msgid "間合い：師に向き、水月の輪を 0.5 秒保つ。{Done} / {Count} 歩"
 msgstr "MAAI: face Sensei; hold the moon ring for 0.5 s. Steps {Done} / {Count}"
 
+#. Key:	MissionArms
+#: Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp
+msgctxt "SoraArena.Campaign,MissionArms"
+msgid "この武器は持ってきていない。手元の武器を使おう。"
+msgstr "You did not bring this weapon. Use the weapons you are carrying."
+
 #. Key:	MountFromRight
 #: Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp
 msgctxt "SoraArena.Campaign,MountFromRight"
@@ -227,6 +233,12 @@ msgstr "From the saddle the yari thrusts forward and to the right."
 msgctxt "SoraArena.Campaign,SaddleYumiArc"
 msgid "馬上の弓は左手側へ射る。"
 msgstr "From the saddle the yumi shoots to the left."
+
+#. Key:	UnstrungInfiltrationBow
+#: Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp
+msgctxt "SoraArena.Campaign,UnstrungInfiltrationBow"
+msgid "弓の弦はまだ張っていない。水門を抜けてから張ろう。"
+msgstr "The bow is still unstrung. String it after passing the water gate."
 
 #. Key:	WhistleKurimaru
 #: Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp
