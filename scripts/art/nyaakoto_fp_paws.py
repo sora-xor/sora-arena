@@ -569,6 +569,39 @@ FUR = {
 # own 0.82 multiplies it again (about 0.59 in all).
 TABBY = {"white": (0.742, 0.693, 0.617), "grey": (0.50, 0.50, 0.50), "stripe": (0.20, 0.20, 0.21),
          "period_m": 0.015, "white_from_knuckles_m": -0.010, "undercoat": 0.72}
+# ---------------------------------------------------------------------------
+# Shell fur (v6): the coat as translucent offset layers of the skin, not cards.
+# Root's reviews of captures v5 and v6: the masked cards read as "bright
+# angular white flakes over dark gaps". Their two failure modes come from one
+# construction, masked cards on a thin sheet: thin alpha dithered into speckle
+# (v3), and opaque cores tiled into a patchwork (v4, v5). Shells stack layers
+# of the skin, each drawing only the cross-sections of the strands that reach
+# its height (create_nyaakoto_fp_shell_texture.py). Every gap is deeper coat;
+# a translucent material has no dither; nothing has a card's outline.
+# - **The layers:** `layers` shells on the paw's own coarser skin (step_m), at
+#   h_i = H x ((i + 0.5) / layers)^spacing_power. H is the coat's height by
+#   region, clamped clear of the bow.
+# - **The comb:** each shell slides along the coat's flow (coat_flow, as the
+#   cards) by h x tan(lean_deg), so the strands lean as the coat lies.
+# - **The colour:** the tabby colour, the form's occlusion, and a self-shadow
+#   from deep_shade at the skin to 1 at the top. Alpha is the shell's height
+#   share, which the material uses to pick the strand texture's channels.
+# - **The UVs:** a box projection of the base skin, one texture tile per
+#   uv_tile_m, shared by every shell, so a strand stays one column.
+# Fins for silhouettes are not built: shells' layered edges are the known
+# limit of the method, to judge in the capture.
+FUR_MODE = "shells"                      # v6: the coat as shells; "cards" builds v5's fur cards instead
+SHELLS = {
+    "layers": 10,
+    "step_m": 0.0016,                    # the shells' own skin (surface nets), coarser than the skin's 0.9 mm
+    "height_m": {"ruff": 0.0030, "dorsal": 0.0018, "digit": 0.0012, "dewclaw": 0.0010},
+    "first_m": 0.00015,                  # the lowest shell's least height above the skin
+    "spacing_power": 1.15,               # shells closer together near the skin
+    "lean_deg": 50.0,                    # the comb along the coat's flow
+    "clear_m": 0.0004,                   # shells stop this far off the bow
+    "uv_tile_m": 0.004,                  # create_nyaakoto_fp_shell_texture.TILE_MM
+    "deep_shade": 0.55,                  # the lowest shell's colour, as a share of the top's
+}
 
 
 def vertex_normals(V, T):
@@ -665,6 +698,71 @@ def skin_colour(mesh, occluder, cfg=FUR):
     return tabby_colour(V, mesh["skeleton"]) * (TABBY["undercoat"] * occlusion_shade(ao, cfg["occlusion"]))[:, None]
 
 
+def fur_shells(skel, field, keep_out=grip_sdf, cfg=SHELLS, fur=FUR, base=None):
+    """The coat as shells: verts, tris (outward), uv, colour (RGBA; A the shell's height share), normals, and counts.
+
+    ``base`` is the shells' own skin mesh (mesh_bow_paw at step_m unless given). Only furred skin grows shells: not
+    the pads, not where the skin rests on the leather, not under the kote's sleeve, by the cards' rules."""
+    if base is None:
+        base = mesh_bow_paw(step=cfg["step_m"], smooth=6)
+    V, T = base["verts"], base["tris"]
+    N = vertex_normals(V, T)
+    cls = fur_region(base["region"])
+    s = (V - skel["wrist"]) @ (-FOREARM_DIR)
+    furred = np.array([c is not None for c in cls]) & (keep_out(V) > fur["contact_clear_m"]) & (s > fur["sleeve_from_m"])
+    keep_tri = furred[T].all(1)
+    used = np.unique(T[keep_tri])
+    remap = -np.ones(len(V), np.int64)
+    remap[used] = np.arange(len(used))
+    Vb, Nb, Tb, kind, sb = V[used], N[used], remap[T[keep_tri]], cls[used], s[used]
+    ruff = (sb > -fur["ruff_m"][1]) & (sb < fur["ruff_m"][0] + 0.012) & (kind == "dorsal")
+    H = np.array([cfg["height_m"]["ruff" if r else str(k)] for r, k in zip(ruff, kind)])
+    H = np.minimum(H, np.maximum(keep_out(Vb) - cfg["clear_m"], 0.0))
+    # The coat's flow, as the cards': the nearest bone's distal direction in the skin's plane, turned by coat_flow.
+    _k, distal, _t = _nearest_segment(Vb, _segments(skel))
+    tang = distal - Nb * np.einsum("ij,ij->i", distal, Nb)[:, None]
+    tang /= np.maximum(np.linalg.norm(tang, axis=1, keepdims=True), 1e-9)
+    side = np.cross(Nb, tang)
+    turn = np.radians(coat_flow(Vb, fur))
+    tang = tang * np.cos(turn)[:, None] + side * np.sin(turn)[:, None]
+    lean = math.tan(math.radians(cfg["lean_deg"]))
+    axis = np.argmax(np.abs(Nb), 1)
+    uv = np.stack([np.where(axis == 0, Vb[:, 1], Vb[:, 0]), np.where(axis == 2, Vb[:, 1], Vb[:, 2])], 1) / cfg["uv_tile_m"]
+    both = lambda p: np.minimum(field(p), keep_out(p))
+    colour = tabby_colour(Vb, skel) * occlusion_shade(form_occlusion(Vb, Nb, both, fur["occlusion"]), fur["occlusion"])[:, None]
+    L = cfg["layers"]
+    verts, cols, tris, share = [], [], [], []
+    for i in range(L):
+        frac = ((i + 0.5) / L) ** cfg["spacing_power"]
+        h = np.maximum(H * frac, np.minimum(cfg["first_m"], H))
+        P = Vb + Nb * h[:, None] + tang * (h * lean)[:, None]
+        for f in (0.6, 0.3, 0.0):                                # never into the bow: slide back toward the base
+            bad = keep_out(P) < cfg["clear_m"]
+            if not bad.any():
+                break
+            P[bad] = Vb[bad] + (P[bad] - Vb[bad]) * f
+        shade = cfg["deep_shade"] + (1.0 - cfg["deep_shade"]) * (i + 0.5) / L
+        verts.append(P)
+        cols.append(np.concatenate([colour * shade, np.full((len(Vb), 1), frac)], 1))
+        tris.append(Tb + i * len(Vb))
+        share.append(frac)
+    return {"verts": np.concatenate(verts), "tris": np.concatenate(tris), "uv": np.tile(uv, (L, 1)),
+            "colour": np.concatenate(cols), "normals": np.tile(Nb, (L, 1)), "layers": L, "base_vertices": len(Vb),
+            "height_m": H, "shares": share, "base": base}
+
+
+def coat_flow(points, cfg=FUR):
+    """The coat's slow turn about the skin's normal at points, in degrees: a few seeded plane waves over the skin,
+    so neighbouring clumps turn together (fur_cards; fur_shells combs along the same field)."""
+    waves = np.random.default_rng(cfg["seed"] + 1)
+    flow = np.zeros(len(points))
+    for _ in range(4):
+        k = waves.normal(size=3)
+        k *= 2 * np.pi / (np.linalg.norm(k) * waves.uniform(*cfg["flow_wavelength_m"]))
+        flow += np.sin(points @ k + waves.uniform(0, 2 * np.pi))
+    return flow * (cfg["flow_deg"] / 2.0)                    # four unit waves: about +-1 standard deviation each
+
+
 def fur_cards(mesh, field, keep_out=grip_sdf, cfg=FUR):
     """Fur cards on a skin mesh: verts, tris (front faces out), uvs, colours, shading normals and the card count.
 
@@ -705,15 +803,8 @@ def fur_cards(mesh, field, keep_out=grip_sdf, cfg=FUR):
     tang = distal - n * np.einsum("ij,ij->i", distal, n)[:, None]
     tang /= np.maximum(np.linalg.norm(tang, axis=1, keepdims=True), 1e-9)
     side = np.cross(n, tang)
-    # The coat's direction field: a few seeded plane waves over the skin, so
-    # neighbouring clumps turn together, plus each clump's own small scatter.
-    waves = np.random.default_rng(cfg["seed"] + 1)
-    flow = np.zeros(count)
-    for _ in range(4):
-        k = waves.normal(size=3)
-        k *= 2 * np.pi / (np.linalg.norm(k) * waves.uniform(*cfg["flow_wavelength_m"]))
-        flow += np.sin(root @ k + waves.uniform(0, 2 * np.pi))
-    flow *= cfg["flow_deg"] / 2.0                            # four unit waves: about +-1 standard deviation each
+    # The coat's direction field (coat_flow), plus each clump's own small scatter.
+    flow = coat_flow(root, cfg)
     swirl = np.radians(flow + rng.normal(0.0, cfg["swirl_deg"], count))
     tang = tang * np.cos(swirl)[:, None] + side * np.sin(swirl)[:, None]
     side = np.cross(n, tang)

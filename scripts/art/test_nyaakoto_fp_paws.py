@@ -243,6 +243,55 @@ class Fur(unittest.TestCase):
         self.assertTrue(np.allclose(uv[:, -1, :, 1], 0.5))
 
 
+class Shells(unittest.TestCase):
+    """v6: the coat as shells (fur_shells), on its own 1.6 mm skin."""
+
+    @classmethod
+    def setUpClass(cls):
+        skel = cls.skel = P.bow_paw_skeleton()
+        cls.field = staticmethod(lambda p: P.paw_sdf(p, skel)[0])
+        cls.sh = P.fur_shells(skel, cls.field)
+        cls.L, cls.n = cls.sh["layers"], cls.sh["base_vertices"]
+        cls.V = cls.sh["verts"].reshape(cls.L, cls.n, 3)
+
+    def test_shells_stand_clear_of_the_bow(self):
+        self.assertGreaterEqual(float(P.grip_sdf(self.sh["verts"]).min()), P.SHELLS["clear_m"] - 1e-6)
+
+    def test_shells_lie_above_the_skin(self):
+        # The shells' skin is coarser than the skin's, so where it cuts a curve a few points of the lowest shell dip
+        # under the fine skin, which hides them.
+        self.assertGreater(float((self.field(self.sh["verts"]) > 0).mean()), 0.999)
+
+    def test_each_shell_is_higher_and_its_alpha_is_its_height_share(self):
+        heights = [float(np.median(self.field(self.V[i]))) for i in range(self.L)]
+        self.assertTrue(all(b > a for a, b in zip(heights, heights[1:])), heights)
+        A = self.sh["colour"][:, 3].reshape(self.L, self.n)
+        self.assertTrue(np.allclose(A, np.array(self.sh["shares"])[:, None]))
+        self.assertTrue(0 < self.sh["shares"][0] < self.sh["shares"][-1] <= 1.0)
+        self.assertLessEqual(float(self.sh["height_m"].max()), max(P.SHELLS["height_m"].values()) + 1e-12)
+
+    def test_shells_face_out_and_deeper_ones_are_darker(self):
+        V, T, N = self.sh["verts"], self.sh["tris"], self.sh["normals"]
+        face = np.cross(V[T[:, 1]] - V[T[:, 0]], V[T[:, 2]] - V[T[:, 0]])
+        cos = np.einsum("ij,ij->i", face, N[T[:, 0]])
+        self.assertGreater(float((cos > 0).mean()), 0.99)
+        rgb = self.sh["colour"][:, :3].reshape(self.L, self.n, 3)
+        ratio = float(rgb[0].mean() / rgb[-1].mean())
+        want = (P.SHELLS["deep_shade"] + (1 - P.SHELLS["deep_shade"]) * 0.5 / self.L) / \
+            (P.SHELLS["deep_shade"] + (1 - P.SHELLS["deep_shade"]) * (self.L - 0.5) / self.L)
+        self.assertAlmostEqual(ratio, want, places=6)
+
+    def test_the_comb_leans_each_shell_along_the_skin(self):
+        # Where nothing slid a shell back off the bow, its offset's share along the skin is tan(lean) of its height.
+        top = self.V[-1] - self.V[0]
+        N = self.sh["normals"][: self.n]
+        up = np.einsum("ij,ij->i", top, N)
+        along = np.linalg.norm(top - up[:, None] * N, axis=1)
+        free = P.grip_sdf(self.V[-1]) > P.SHELLS["clear_m"] + 0.002
+        ratio = along[free] / np.maximum(up[free], 1e-9)
+        self.assertAlmostEqual(float(np.median(ratio)), math.tan(math.radians(P.SHELLS["lean_deg"])), delta=0.05)
+
+
 class Kote(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

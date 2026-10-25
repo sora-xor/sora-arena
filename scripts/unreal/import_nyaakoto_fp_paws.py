@@ -45,14 +45,18 @@ ROOT = Path(unreal.Paths.project_dir()).resolve()
 SRC = ROOT / "Content/SourceArt/Characters/NyaakotoFirstPersonPaws"
 PROD = SRC / "Production"
 FUR = SRC / "FurCards"
+SHELLS = SRC / "FurShells"
 PADS = SRC / "Textures"
 HERO = ROOT / "Content/SourceArt/Characters/Hero/PBR"
 DEST = "/Game/Generated/Qualification/NyaakotoFPPaws"
 OUT = ROOT / "Saved/NyaakotoFPPaws/Unreal"
 OPTS = dict(a.split("=", 1) for a in sys.argv[1:] if "=" in a)
 NAME = "SM_NyaakotoFP_PawL_Yumi"
-SLOTS = ("M_NyaakotoFP_FurSkin", "M_NyaakotoFP_PawPad", "M_NyaakotoFP_FurCards", "M_NyaakotoFP_KoteSilk",
+SLOTS = ("M_NyaakotoFP_FurSkin", "M_NyaakotoFP_PawPad", "M_NyaakotoFP_FurShells", "M_NyaakotoFP_KoteSilk",
          "M_NyaakotoFP_KoteUrushi", "M_NyaakotoFP_CordVermilion", "M_NyaakotoFP_MonGold")
+# v6: the coat is shells (nyaakoto_fp_paws.FUR_MODE); its slot replaces the fur cards'. The cards' material and
+# atlas are still built here: the capture's ID pass masks with the atlas.
+FUR_SLOT = "M_NyaakotoFP_FurShells"
 
 tools = unreal.AssetToolsHelpers.get_asset_tools()
 assets = unreal.EditorAssetLibrary
@@ -96,6 +100,9 @@ def texture(path, kind):
     if kind == "normal":
         t.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_NORMALMAP)
         t.set_editor_property("flip_green_channel", False)          # DirectX already
+    elif kind == "vector":
+        # Data in all four channels (the shells' strand coverage by height): uncompressed, linear.
+        t.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_VECTOR_DISPLACEMENTMAP)
     elif kind == "linear":
         t.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_MASKS)
     assets.save_loaded_asset(t)
@@ -113,6 +120,9 @@ if list(record["material_slots"]) != list(SLOTS):
     fail(f"the build's slots {record['material_slots']} differ from {list(SLOTS)}")
 if not record["checks"]["ok"]:
     fail(f"the build's own checks failed: {record['checks']}")
+shell_rec = json.loads((SHELLS / "manifest.json").read_text(encoding="utf-8"))
+if sha256(SHELLS / shell_rec["texture"]["file"]) != shell_rec["texture"]["sha256"]:
+    fail(f"the shells' strand texture differs from its manifest")
 fur_rec = json.loads((FUR / "manifest.json").read_text(encoding="utf-8"))
 for key, m in fur_rec["maps"].items():
     if sha256(FUR / m["file"]) != m["sha256"]:
@@ -139,6 +149,7 @@ tex = {
     "fur_albedo": texture(FUR / "T_NyaakotoFP_FurCards_Albedo.png", "colour"),
     "fur_normal": texture(FUR / "T_NyaakotoFP_FurCards_NormalDX.png", "normal"),
     "fur_masks": texture(FUR / "T_NyaakotoFP_FurCards_Masks.png", "linear"),
+    "shell_strands": texture(SHELLS / "T_NyaakotoFP_FurShells_Strands.png", "vector"),
     "skin_albedo": texture(HERO / "T_Nyaakoto_fur_white_Albedo.png", "colour"),
     "skin_normal": texture(HERO / "T_Nyaakoto_fur_white_NormalDX.png", "normal"),
     "pad_albedo": texture(PADS / "T_Nyaakoto_PawPad_Albedo.png", "colour"),
@@ -243,6 +254,49 @@ def mat_fur_cards():
     return finish(m)
 
 
+def mat_fur_shells():
+    """v6: the coat's shells (nyaakoto_fp_paws.fur_shells). Translucent, lit per pixel (Surface ForwardShading),
+    so there is no dither and no card outline. Its colour is the vertex colour; its opacity is the strand texture's
+    coverage at the shell's height (vertex alpha, clamped to the texture's heights 0.15-0.90), blended between the
+    texture's four channels by tents a quarter wide (create_nyaakoto_fp_shell_texture.HEIGHTS), x 0.95."""
+    m = fresh("M_NyaakotoFP_FurShells")
+    m.set_editor_property("blend_mode", unreal.BlendMode.BLEND_TRANSLUCENT)
+    m.set_editor_property("translucency_lighting_mode",
+                          unreal.TranslucencyLightingMode.TLM_SURFACE_PER_PIXEL_LIGHTING)
+    strands = sampler(m, tex["shell_strands"], -1500, 0)
+    vc = node(m, unreal.MaterialExpressionVertexColor, -1500, -600)
+    h = node(m, unreal.MaterialExpressionClamp, -1300, -500, min_default=0.15, max_default=0.90)
+    link(vc, "A", h, "")
+    total = None
+    for i, (chan, centre) in enumerate((("R", 0.15), ("G", 0.40), ("B", 0.65), ("A", 0.90))):
+        y = -500 + 160 * i
+        d = node(m, unreal.MaterialExpressionSubtract, -1150, y, const_b=centre)
+        link(h, "", d, "A")
+        a = node(m, unreal.MaterialExpressionAbs, -1000, y)
+        link(d, "", a, "")
+        k = node(m, unreal.MaterialExpressionMultiply, -850, y, const_b=4.0)
+        link(a, "", k, "A")
+        w = node(m, unreal.MaterialExpressionOneMinus, -700, y)
+        link(k, "", w, "")
+        ws = node(m, unreal.MaterialExpressionSaturate, -550, y)
+        link(w, "", ws, "")
+        term = mul(m, strands, chan, ws, "", -400, y)
+        if total is None:
+            total = term
+        else:
+            add = node(m, unreal.MaterialExpressionAdd, -250, y)
+            link(total, "", add, "A")
+            link(term, "", add, "B")
+            total = add
+    opacity = node(m, unreal.MaterialExpressionMultiply, -100, -200, const_b=0.95)
+    link(total, "", opacity, "A")
+    out(opacity, "", MP.MP_OPACITY)
+    out(vc, "", MP.MP_BASE_COLOR)
+    out(node(m, unreal.MaterialExpressionConstant, -400, 400, r=0.65), "", MP.MP_ROUGHNESS)
+    out(node(m, unreal.MaterialExpressionConstant, -400, 500, r=0.35), "", MP.MP_SPECULAR)
+    return finish(m)
+
+
 def mat_fur_skin():
     m = fresh("M_NyaakotoFP_FurSkin")
     alb = sampler(m, tex["skin_albedo"], -800, -200, tiling=6.0)
@@ -324,6 +378,7 @@ materials = {
     "M_NyaakotoFP_FurSkin": mat_fur_skin(),
     "M_NyaakotoFP_PawPad": mat_pad(),
     "M_NyaakotoFP_FurCards": mat_fur_cards(),
+    "M_NyaakotoFP_FurShells": mat_fur_shells(),
     "M_NyaakotoFP_KoteSilk": mat_silk(),
     # v3: one lobe at 0.25, as the Blender source now has it. The clear coat's
     # amount and roughness can't be set from Python (CustomData0/1 hidden), and
@@ -396,9 +451,9 @@ def card_normal_readback(sample_every=8):
     convention; same_side_share records the convention."""
     sub = unreal.get_editor_subsystem(unreal.StaticMeshEditorSubsystem)
     sections = [s for s in range(mesh.get_num_sections(0))
-                if bound[sub.get_lod_material_slot(mesh, 0, s)] == "M_NyaakotoFP_FurCards"]
+                if bound[sub.get_lod_material_slot(mesh, 0, s)] == FUR_SLOT]
     if len(sections) != 1:
-        fail(f"the fur cards have {len(sections)} sections in LOD 0")
+        fail(f"the fur ({FUR_SLOT}) has {len(sections)} sections in LOD 0")
     verts, tris, normals, _uvs, _tangents = unreal.ProceduralMeshLibrary.get_section_from_static_mesh(
         mesh, 0, sections[0])
     angles, same = [], 0

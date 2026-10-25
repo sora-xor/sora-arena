@@ -1,0 +1,39 @@
+{
+ "schema_version": 1,
+ "generator": "scripts/art/create_nyaakoto_fp_shell_texture.py",
+ "seed": 20261025,
+ "texture": {
+  "file": "T_NyaakotoFP_FurShells_Strands.png",
+  "size": [
+   512,
+   512
+  ],
+  "mode": "RGBA",
+  "colour_space": "linear",
+  "sha256": "1a78f60bc58f8522a9f3aa1b4c5c881ab1403ff4a93e2aeb5f9dc7d388714b05"
+ },
+ "tile_mm": 4.0,
+ "spacing_mm": 0.18,
+ "strands": 494,
+ "r0": 0.58,
+ "taper": 0.6,
+ "length": [
+  0.45,
+  1.0
+ ],
+ "heights": [
+  0.15,
+  0.4,
+  0.65,
+  0.9
+ ],
+ "aa": 0.06,
+ "mean_coverage": {
+  "R (h 0.15)": 0.742,
+  "G (h 0.4)": 0.3834,
+  "B (h 0.65)": 0.1069,
+  "A (h 0.9)": 0.0067
+ },
+ "tileable": "wrapped: strand distances and the discs wrap at the tile's edges",
+ "provenance": "original and procedural: every strand placed by this script from its seed; no external image, scan or third-party texture"
+}

@@ -55,6 +55,7 @@ import nyaakoto_fp_paws as P  # noqa: E402
 GEN = "scripts/art/create_nyaakoto_fp_paws.py"
 OUT = ROOT / "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/Production"
 FUR_TEX = ROOT / "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/FurCards"
+SHELL_TEX = ROOT / "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/FurShells"
 PAD_TEX = ROOT / "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/Textures"
 HERO_PBR = ROOT / "Content/SourceArt/Characters/Hero/PBR"
 KAMON = ROOT / "Content/SourceArt/UI/SoraKamonMon/SM_SoraKamon.fbx"
@@ -103,7 +104,8 @@ def make_mesh(name, verts, tris, uv=None, colour=None, mat_index=None, smooth=Tr
         layer.data.foreach_set("uv", np.asarray(uv, np.float32)[tris.ravel()].ravel())
     if colour is not None:
         col = me.color_attributes.new(name="Col", type="BYTE_COLOR", domain="POINT")
-        rgba = np.concatenate([np.asarray(colour, np.float32), np.ones((len(verts), 1), np.float32)], 1)
+        colour = np.asarray(colour, np.float32)
+        rgba = colour if colour.shape[1] == 4 else np.concatenate([colour, np.ones((len(verts), 1), np.float32)], 1)
         col.data.foreach_set("color", rgba.ravel())
     if smooth:
         me.shade_smooth()
@@ -171,6 +173,28 @@ def mat_fur_cards():
     nb.feed(nb.bsdf.inputs["Subsurface Weight"], 0.12)
     nb.feed(nb.bsdf.inputs["Subsurface Radius"], (0.0025, 0.002, 0.0016))
     nb.mat.use_backface_culling = False
+    return nb.mat
+
+
+def mat_fur_shells():
+    """v6: the coat's shells (nyaakoto_fp_paws.fur_shells), as the Unreal material: the vertex colour, and the strand
+    texture's coverage at the shell's height (vertex alpha, clamped to the texture's heights 0.15-0.90) as alpha,
+    blended between its four channels by tents a quarter wide."""
+    nb = L.NB("M_NyaakotoFP_FurShells")
+    tex = nb.img(SHELL_TEX / "T_NyaakotoFP_FurShells_Strands.png", nb.uv("UV0"), "Non-Color")
+    tex.image.alpha_mode = "CHANNEL_PACKED"                  # A is data (the top height's coverage), not opacity
+    r, g, b = nb.sep(tex.outputs["Color"])
+    vc = nb.node("ShaderNodeVertexColor", layer_name="Col")
+    h = nb.m("MINIMUM", nb.m("MAXIMUM", vc.outputs["Alpha"], 0.15), 0.90)
+    total = None
+    for chan, centre in ((r, 0.15), (g, 0.40), (b, 0.65), (tex.outputs["Alpha"], 0.90)):
+        w = nb.m("MAXIMUM", nb.one_minus(nb.mul(nb.absf(nb.sub(h, centre)), 4.0)), 0.0)
+        term = nb.mul(chan, w)
+        total = term if total is None else nb.add(total, term)
+    nb.feed(nb.bsdf.inputs["Base Color"], vc.outputs["Color"])
+    nb.feed(nb.bsdf.inputs["Alpha"], nb.mul(total, 0.95))
+    nb.feed(nb.bsdf.inputs["Roughness"], 0.65)
+    nb.feed(nb.bsdf.inputs["Sheen Weight"], 0.3)
     return nb.mat
 
 
@@ -256,11 +280,14 @@ def build(step):
 
     def field(p):
         return P.paw_sdf(p, skel)[0]
-    fur = P.fur_cards(m, field)
+    # v6: the coat as shells (P.FUR_MODE); "cards" builds v5's fur cards instead.
+    shells = P.fur_shells(skel, field) if P.FUR_MODE == "shells" else None
+    fur = P.fur_cards(m, field) if shells is None else None
     parts, mon = K.bow_kote(skel)
     t1 = time.time()
-    mats = {"skin": mat_fur_skin(), "pad": mat_pad(), "fur": mat_fur_cards(), "M_NyaakotoFP_KoteSilk": mat_silk(),
+    mats = {"skin": mat_fur_skin(), "pad": mat_pad(), "M_NyaakotoFP_KoteSilk": mat_silk(),
             "M_NyaakotoFP_KoteUrushi": mat_urushi(), "M_NyaakotoFP_CordVermilion": mat_cord(), "gold": mat_gold()}
+    mats["fur"] = mat_fur_shells() if shells is not None else mat_fur_cards()
     is_pad = np.array([str(r).startswith("pad") for r in m["region"]])
     tri_pad = is_pad[m["tris"]].sum(1) >= 2
     # v5: the skin is the coat's bottom, darkened by the form's occlusion over the paw and the grip.
@@ -276,8 +303,12 @@ def build(step):
     bpy.ops.object.mode_set(mode="OBJECT")
     skin.data.uv_layers.active.name = "UV0"
     skin.select_set(False)
-    cards = make_mesh("PawL_FurCards", fur["verts"], fur["tris"], uv=fur["uv"], colour=fur["colour"],
-                      normals=fur["normals"])
+    if shells is not None:
+        cards = make_mesh("PawL_FurShells", shells["verts"], shells["tris"], uv=shells["uv"], colour=shells["colour"],
+                          normals=shells["normals"])
+    else:
+        cards = make_mesh("PawL_FurCards", fur["verts"], fur["tris"], uv=fur["uv"], colour=fur["colour"],
+                          normals=fur["normals"])
     cards.data.materials.append(mats["fur"])
     kote = []
     for part in parts:
@@ -286,15 +317,24 @@ def build(step):
         kote.append(o)
     mon_obj = place_mon(mon, mats["gold"])
     objs = [skin, cards] + kote + [mon_obj]
-    info = {"skin_triangles": int(len(m["tris"])), "fur_cards": int(fur["cards"]), "fur_card_triangles": int(len(fur["tris"])),
+    info = {"skin_triangles": int(len(m["tris"])), "fur_mode": P.FUR_MODE,
             "kote_parts": len(parts), "kote_triangles": int(sum(len(p["tris"]) for p in parts)),
             "mon_triangles": len(mon_obj.data.polygons), "build_s": round(t1 - t0, 1),
-            "fur_skin_normal_weight": P.FUR["skin_normal"], "fur_tip_width": P.FUR["tip_width"],
-            "fur_occlusion": {"p5": round(float(np.percentile(fur["occlusion"], 5)), 4),
-                              "median": round(float(np.median(fur["occlusion"])), 4),
-                              "share_below_0.8": round(float((fur["occlusion"] < 0.8).mean()), 4)},
             "coat_white": list(P.TABBY["white"]), "undercoat": P.TABBY["undercoat"]}
-    return m, fur, parts, objs, info
+    if shells is not None:
+        H = shells["height_m"] * 1e3
+        info.update(fur_shell_layers=shells["layers"], fur_shell_triangles=int(len(shells["tris"])),
+                    fur_shell_base_vertices=int(shells["base_vertices"]),
+                    fur_shell_height_mm={"p5": round(float(np.percentile(H, 5)), 3),
+                                         "median": round(float(np.median(H)), 3),
+                                         "p95": round(float(np.percentile(H, 95)), 3)})
+    else:
+        info.update(fur_cards=int(fur["cards"]), fur_card_triangles=int(len(fur["tris"])),
+                    fur_skin_normal_weight=P.FUR["skin_normal"], fur_tip_width=P.FUR["tip_width"],
+                    fur_occlusion={"p5": round(float(np.percentile(fur["occlusion"], 5)), 4),
+                                   "median": round(float(np.median(fur["occlusion"])), 4),
+                                   "share_below_0.8": round(float((fur["occlusion"] < 0.8).mean()), 4)})
+    return m, fur, shells, parts, objs, info
 
 
 def card_normal_angles(verts, tris, normals):
@@ -313,40 +353,51 @@ def angle_stats(deg):
             "max": round(float(deg.max()), 3), "corners": int(deg.size)}
 
 
-def checks(m, fur, parts):
+def checks(m, fur, parts, shells=None):
     """Fit against the bow and the checker's design envelope; closure of every solid part; the cards' fronts
-    and shading normals (v4)."""
+    and shading normals (v4), or the shells' clearance of the bow and the skin (v6)."""
     skel = m["skeleton"]
     V = m["verts"]
     g = P.grip_sdf(V)
-    tips = P.grip_sdf(fur["tips"])
-    FV, FT, K = fur["verts"], fur["tris"], P.FUR["segments"]
-    face = np.cross(FV[FT[:, 1]] - FV[FT[:, 0]], FV[FT[:, 2]] - FV[FT[:, 0]])
-    area = np.linalg.norm(face, axis=1)
-    live = area > 1e-14
-    card = (np.arange(len(FT)) % (fur["cards"] * K)) // K
-    front = np.einsum("ij,ij->i", face[live] / area[live, None], fur["root_normals"][card[live]])
-    skin = np.repeat(fur["root_normals"], 2 * (K + 1), axis=0)
-    bent = np.degrees(np.arccos(np.clip(np.einsum("ij,ij->i", fur["normals"], skin), -1.0, 1.0)))
     env = P.round_cone(V, np.array((-0.004, 0.0, -0.055)), np.array((-0.004, 0.0, 0.062)), 0.036, 0.036)
     out = {
         "skin_closed": P.is_closed_manifold(m["tris"]),
         "skin_min_clearance_mm": round(float(g.min()) * 1e3, 3),
         "skin_contact_vertices": int((g < 0.0005).sum()),
-        "fur_tips_inside_bow": int((tips < 0.0).sum()),
         "kote_parts_closed": all(P.is_closed_manifold(p["tris"]) for p in parts),
         "kote_min_clearance_mm": round(min(float(P.grip_sdf(p["verts"]).min()) for p in parts) * 1e3, 2),
         "skin_outside_paw_l_envelope_share": round(float((env > 0).mean()), 4),
         "dewclaw_tip_below_arrow_mm": round((P.ARROW_PASS[2] - P.ARROW_SHAFT_R - float(
             skel["chains"]["I"][0][-1][2] + skel["chains"]["I"][1][-1])) * 1e3, 2),
-        "fur_live_triangle_share": round(float(live.mean()), 5),
-        "fur_front_min_cos_to_skin": round(float(front.min()), 4),
-        "fur_shading_normal_max_deg_from_skin": round(float(bent.max()), 3),
-        "fur_corner_normal_from_face_deg": angle_stats(card_normal_angles(FV, FT, fur["normals"])),
     }
-    out["ok"] = (out["skin_closed"] and out["skin_min_clearance_mm"] >= 0.1 and out["fur_tips_inside_bow"] == 0
-                 and out["kote_parts_closed"] and out["kote_min_clearance_mm"] > 0
-                 and out["fur_front_min_cos_to_skin"] > 0 and out["fur_shading_normal_max_deg_from_skin"] <= 20.0)
+    ok = (out["skin_closed"] and out["skin_min_clearance_mm"] >= 0.1 and out["kote_parts_closed"]
+          and out["kote_min_clearance_mm"] > 0)
+    if shells is not None:
+        SV, ST = shells["verts"], shells["tris"]
+        above = P.paw_sdf(SV, skel)[0]
+        out.update(shells_min_clearance_mm=round(float(P.grip_sdf(SV).min()) * 1e3, 3),
+                   shells_above_skin_share=round(float((above > 0).mean()), 6),
+                   shells_layers=shells["layers"],
+                   fur_corner_normal_from_face_deg=angle_stats(card_normal_angles(SV, ST, shells["normals"])))
+        ok = ok and out["shells_min_clearance_mm"] >= P.SHELLS["clear_m"] * 1e3 - 0.001 \
+            and out["shells_above_skin_share"] >= 0.999
+    else:
+        tips = P.grip_sdf(fur["tips"])
+        FV, FT, K = fur["verts"], fur["tris"], P.FUR["segments"]
+        face = np.cross(FV[FT[:, 1]] - FV[FT[:, 0]], FV[FT[:, 2]] - FV[FT[:, 0]])
+        area = np.linalg.norm(face, axis=1)
+        live = area > 1e-14
+        card = (np.arange(len(FT)) % (fur["cards"] * K)) // K
+        front = np.einsum("ij,ij->i", face[live] / area[live, None], fur["root_normals"][card[live]])
+        skin = np.repeat(fur["root_normals"], 2 * (K + 1), axis=0)
+        bent = np.degrees(np.arccos(np.clip(np.einsum("ij,ij->i", fur["normals"], skin), -1.0, 1.0)))
+        out.update(fur_tips_inside_bow=int((tips < 0.0).sum()), fur_live_triangle_share=round(float(live.mean()), 5),
+                   fur_front_min_cos_to_skin=round(float(front.min()), 4),
+                   fur_shading_normal_max_deg_from_skin=round(float(bent.max()), 3),
+                   fur_corner_normal_from_face_deg=angle_stats(card_normal_angles(FV, FT, fur["normals"])))
+        ok = ok and out["fur_tips_inside_bow"] == 0 and out["fur_front_min_cos_to_skin"] > 0 \
+            and out["fur_shading_normal_max_deg_from_skin"] <= 20.0
+    out["ok"] = ok
     return out
 
 
@@ -553,9 +604,9 @@ def main():
     t0 = time.time()
     bpy.ops.wm.read_factory_settings(use_empty=True)
     OUT.mkdir(parents=True, exist_ok=True)
-    m, fur, parts, objs, info = build(a["step"])
+    m, fur, shells, parts, objs, info = build(a["step"])
     print("FP_PAWS_BUILT", json.dumps(info), flush=True)
-    chk = checks(m, fur, parts)
+    chk = checks(m, fur, parts, shells)
     print("FP_PAWS_CHECKS", json.dumps(chk), flush=True)
     if not chk["ok"]:
         raise SystemExit(f"fp paws: checks failed {chk}")
@@ -563,7 +614,7 @@ def main():
     slots, tris, bounds = export(objs, fbx)
     print("FP_PAWS_EXPORTED", rel(fbx), tris, "triangles", slots, flush=True)
     # The FBX carries the built normals: in its own bytes, the card corners sit off their faces as the arrays do.
-    trip = fbx_card_normals(fbx, slots.index("M_NyaakotoFP_FurCards"))
+    trip = fbx_card_normals(fbx, slots.index("M_NyaakotoFP_FurShells" if shells is not None else "M_NyaakotoFP_FurCards"))
     built = chk["fur_corner_normal_from_face_deg"]
     chk["fbx_fur_corner_normal_from_face_deg"] = trip
     print("FP_PAWS_FBX_NORMALS", json.dumps({"built": built, "fbx": trip}), flush=True)
@@ -572,7 +623,8 @@ def main():
     renders = review(objs, a["samples"]) if a["review"] else []
     blend = OUT / "Nyaakoto_FP_PawL_Yumi.blend"
     bpy.ops.wm.save_as_mainfile(filepath=str(blend), compress=True)
-    inputs = [HERE / "nyaakoto_fp_paws.py", HERE / "nyaakoto_fp_kote.py", FUR_TEX / "manifest.json", KAMON, RIG_FBX,
+    inputs = [HERE / "nyaakoto_fp_paws.py", HERE / "nyaakoto_fp_kote.py", FUR_TEX / "manifest.json",
+              SHELL_TEX / "manifest.json", SHELL_TEX / "T_NyaakotoFP_FurShells_Strands.png", KAMON, RIG_FBX,
               RIG_RECORD, ARROW_FBX] + sorted(FUR_TEX.glob("T_*.png")) + sorted(PAD_TEX.glob("T_*.png")) + \
         [HERO_PBR / f"T_Nyaakoto_{s}_{c}.png" for s in ("fur_white", "silk_indigo") for c in ("Albedo", "NormalDX")] + \
         [HERO_PBR / "T_Nyaakoto_silk_indigo_ORM.png"]
