@@ -267,7 +267,8 @@ private:
     FCVar Visualize,Composite,Edges,Shading;
     FDelegateHandle Screenshot;
     FVector2D ViewportSize=FVector2D::ZeroVector;
-    TArray<TSharedPtr<FJsonValue>> Frames,Meshes,AssetFiles,DerivedAssets,CoverageInputs;
+    TArray<TSharedPtr<FJsonValue>> Frames,Meshes,AssetFiles,DerivedAssets,CoverageInputs,ChapterEstateHalls;
+    FString ChapterId;
     TSet<FString> HashedFiles;
     int32 Count() const { return SM6?6:2; }
     APlayerController* PC() const { return M.IsValid()?UGameplayStatics::GetPlayerController(M.Get(),0):nullptr; }
@@ -348,6 +349,17 @@ private:
     }
     void Inventory()
     {
+        const FSoraChapter* Chapter=M->Campaign()->ActiveChapter();
+        if (!Chapter) { Fail(TEXT("Nanite capture has no active chapter")); return; }
+        ChapterId=Chapter->Id;
+        for (const FSoraZone& Zone:Chapter->Space.Zones)
+        {
+            if (Zone.Style!=TEXT("estate")||Zone.Form!=TEXT("hall")) continue;
+            auto Hall=MakeShared<FJsonObject>(); Hall->SetStringField(TEXT("zone"),Zone.Id);
+            Hall->SetArrayField(TEXT("rect"),{MakeShared<FJsonValueNumber>(Zone.Rect.Min.X),MakeShared<FJsonValueNumber>(Zone.Rect.Min.Y),
+                MakeShared<FJsonValueNumber>(Zone.Rect.Max.X),MakeShared<FJsonValueNumber>(Zone.Rect.Max.Y)});
+            Hall->SetNumberField(TEXT("wall_cm"),Zone.WallHeight); ChapterEstateHalls.Add(MakeShared<FJsonValueObject>(Hall));
+        }
         TSet<const UStaticMesh*> ObservedAssets;
         // Only actual registered components from the current production world.
         // Bounds/asset validity are identities, never a visible-draw counter.
@@ -398,15 +410,30 @@ private:
             O->SetArrayField(TEXT("cached_bounds_origin"),Vec(C->Bounds.Origin)); O->SetArrayField(TEXT("cached_bounds_extent"),Vec(C->Bounds.BoxExtent));
             const auto* Instances=Cast<UInstancedStaticMeshComponent>(C);
             O->SetNumberField(TEXT("instances"),Instances?Instances->GetInstanceCount():1);
+            if (Timber)
+            {
+                TArray<TSharedPtr<FJsonValue>> Transforms;
+                for (int32 I=0;I<(Instances?Instances->GetInstanceCount():1);++I)
+                {
+                    FTransform Transform=C->GetComponentTransform();
+                    if (Instances&&!Instances->GetInstanceTransform(I,Transform,true))
+                    { Fail(TEXT("Timber instance world transform is unavailable")); return; }
+                    auto T=MakeShared<FJsonObject>(); const FRotator R=Transform.Rotator();
+                    T->SetArrayField(TEXT("location"),Vec(Transform.GetLocation()));
+                    T->SetArrayField(TEXT("rotation"),Vec(FVector(R.Pitch,R.Yaw,R.Roll)));
+                    T->SetArrayField(TEXT("scale"),Vec(Transform.GetScale3D())); Transforms.Add(MakeShared<FJsonValueObject>(T));
+                }
+                O->SetArrayField(TEXT("instance_transforms"),Transforms);
+            }
             TArray<TSharedPtr<FJsonValue>> Materials;
             for (int32 I=0;I<C->GetNumMaterials();++I)
                 Materials.Add(MakeShared<FJsonValueString>(GetPathNameSafe(C->GetMaterial(I))));
             O->SetArrayField(TEXT("materials"),Materials); Meshes.Add(MakeShared<FJsonValueObject>(O));
         }
         if (Meshes.IsEmpty()) Fail(TEXT("Production dojo geometry is absent; primitive replacements are not evidence"));
-        // Preserve exact current inputs, including absence. The unfrozen timber
-        // manifest contract cannot yet establish expected placement coverage.
-        // Do not manufacture an expected set from the meshes that happened to load.
+        // Preserve exact current inputs, including absence. Archive validation
+        // binds them to committed chapters and the reviewed immutable binder.
+        // Never manufacture expectations from meshes that happened to load.
         TArray<FString> Inputs;
         for (int32 Chapter=1;Chapter<=8;++Chapter)
             Inputs.Add(FString::Printf(TEXT("Content/Data/campaign/chapter_%02d.json"),Chapter));
@@ -414,7 +441,10 @@ private:
             TEXT("Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/manifest.json"),
             TEXT("Content/SourceArt/Environment/NyaagyuDojoTimbers/Floor/manifest.json"),
             TEXT("scripts/art/dojo_hall_placements.py"),TEXT("scripts/art/create_nyaagyu_dojo_timbers.py"),
-            TEXT("scripts/art/create_nyaagyu_dojo_rails.py"),TEXT("scripts/art/create_nyaagyu_dojo_floor.py")}) Inputs.Add(Input);
+            TEXT("scripts/art/create_nyaagyu_dojo_rails.py"),TEXT("scripts/art/create_nyaagyu_dojo_floor.py"),
+            TEXT("Content/SourceArt/Environment/NyaagyuDojoTimbers/campaign_binding.json"),TEXT("scripts/art/bind_dojo_timbers.py"),
+            TEXT("scripts/art/sora_timber_lib.py"),TEXT("scripts/art/sora_timber_lookdev.py"),TEXT("scripts/art/sora_timber_bake.py"),
+            TEXT("scripts/art/sora_prop_lib.py"),TEXT("scripts/art/create_runtime_weapon_lib.py")}) Inputs.Add(Input);
         for (const FString& Relative:Inputs)
         {
             const FString File=FPaths::ConvertRelativePathToFull(FPaths::ProjectDir()/Relative);
@@ -528,7 +558,7 @@ private:
         Test.TestTrue(TEXT("Nanite diagnostic restores original menu checkpoint, HUD, profile bytes/existence and temporary cvars"),Restored);
         if (!Folder.IsEmpty())
         {
-            auto O=MakeShared<FJsonObject>(); O->SetStringField(TEXT("schema"),TEXT("sora-arena.nanite-draw.v2"));
+            auto O=MakeShared<FJsonObject>(); O->SetStringField(TEXT("schema"),TEXT("sora-arena.nanite-draw.v3"));
             O->SetStringField(TEXT("scope"),Scope); O->SetBoolField(TEXT("sm6_requested"),SM6);
             O->SetBoolField(TEXT("nanite_eligible"),NaniteEligible);
             O->SetStringField(TEXT("shader_platform"),ShaderPlatform); O->SetStringField(TEXT("rhi"),GDynamicRHI?GDynamicRHI->GetName():TEXT("none"));
@@ -537,8 +567,15 @@ private:
             O->SetArrayField(TEXT("asset_files"),AssetFiles); O->SetArrayField(TEXT("meshes"),Meshes); O->SetArrayField(TEXT("frames"),Frames); O->SetNumberField(TEXT("frame_count"),Frames.Num());
             O->SetArrayField(TEXT("derived_assets"),DerivedAssets);
             O->SetArrayField(TEXT("coverage_inputs"),CoverageInputs);
+            O->SetStringField(TEXT("chapter_id"),ChapterId); O->SetArrayField(TEXT("chapter_estate_halls"),ChapterEstateHalls);
+            auto CaptureScope=MakeShared<FJsonObject>();
+            CaptureScope->SetStringField(TEXT("chapter_file"),TEXT("Content/Data/campaign/chapter_01.json"));
+            CaptureScope->SetStringField(TEXT("zone"),TEXT("pl_tsumagizaka_dojo"));
+            CaptureScope->SetArrayField(TEXT("rect"),{MakeShared<FJsonValueNumber>(8000),MakeShared<FJsonValueNumber>(-1300),
+                MakeShared<FJsonValueNumber>(11600),MakeShared<FJsonValueNumber>(1300)});
+            O->SetObjectField(TEXT("capture_scope"),CaptureScope);
             auto Coverage=MakeShared<FJsonObject>();
-            Coverage->SetStringField(TEXT("status"),TEXT("unqualified_manifest_contract_pending"));
+            Coverage->SetStringField(TEXT("status"),TEXT("requires_archive_source_binding"));
             Coverage->SetBoolField(TEXT("qualified"),false);
             O->SetObjectField(TEXT("timber_placement_coverage"),Coverage);
             O->SetBoolField(TEXT("restored"),Restored); O->SetBoolField(TEXT("passed"),!Failed&&!Test.HasAnyErrors()&&Step==Count());

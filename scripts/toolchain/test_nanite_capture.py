@@ -6,8 +6,10 @@ import json
 import os
 from pathlib import Path
 import struct
+import subprocess
 import tempfile
 import unittest
+from unittest.mock import patch
 import zlib
 
 SPEC = importlib.util.spec_from_file_location("capture_report", Path(__file__).with_name("verify-capture-report.py"))
@@ -312,6 +314,12 @@ class NaniteArchive(unittest.TestCase):
         self.log = f"LogAutomationController: Display: SORA_NANITE_DRAW_FRAME {self.folder / 'entry-Lit.png'} [log]"
         with self.assertRaisesRegex(ValueError, "no screenshot"): self.archive()
 
+    def test_missing_last_original_fails_and_preserves_preceding_original_bytes(self):
+        (self.folder / "ceiling-Triangles.png").unlink()
+        with self.assertRaises(FileNotFoundError): self.archive()
+        for name, data in list(self.images.items())[:-1]:
+            self.assertEqual((self.output / "frames/SoraNaniteDraw/run" / name).read_bytes(), data)
+
     def test_duplicate_missing_stale_and_wrong_test_metadata_fail(self):
         self.log += "\n" + self.log.splitlines()[0]
         with self.assertRaisesRegex(ValueError, "duplicate"): self.archive()
@@ -341,6 +349,181 @@ class NaniteArchive(unittest.TestCase):
         self.assertNotIn("SetMaterial(", source)
         self.assertNotIn("r.Nanite\").Set", source)
         self.assertIn('const TCHAR* Modes[]={TEXT("Lit"),TEXT("Mask"),TEXT("Triangles")};', source)
+        for path in N.COVERAGE_INPUTS[8:]: self.assertIn(f'TEXT("{path}")', source)
+        for field in ("capture_scope", "chapter_id", "chapter_estate_halls", "instance_transforms"):
+            self.assertIn(f'TEXT("{field}")', source)
+
+
+class TimberBinding(unittest.TestCase):
+    """Synthetic sources/transport; never claims engine or authored-art proof."""
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory(); self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.meta = metadata()
+        self.commit = "a" * 40
+        self.committed = {}
+        self.rects = ([8000, -1300, 11600, 1300], [38800, -1300, 42400, 1300],
+                      [45200, -1300, 48800, 1300], [51800, -1300, 55400, 1300])
+        self.zones = [{"id": "pl_tsumagizaka_dojo" if i == 0 else ("pl_dojo_smithy" if i == 1 else f"other_{i}"),
+                       "style": "estate", "form": "hall", "rect": rect, "wall_cm": 700} for i, rect in enumerate(self.rects)]
+        for index, path in enumerate(N.COVERAGE_INPUTS[:8]):
+            self.write(path, {"id": f"chapter_{index+1:02}", "space": {"zones": self.zones[:2] if index == 0 else self.zones[2:] if index == 1 else []}})
+        for path in set(N.MANIFEST_INPUTS) | set(N.LAYOUT_SOURCES) | {"scripts/art/create_nyaagyu_dojo_timbers.py"}:
+            self.write(path, b"synthetic source, not executed: " + path.encode())
+        pinned = {p: self.sha(p) for p in N.LAYOUT_SOURCES}
+        self.addCleanup(patch.stopall)
+        patch.object(N, "LAYOUT_SOURCES", pinned).start()
+        layout = N.hall_layout(self.rects[0])
+        for path, kit, generator, inputs, group in (
+            (N.MANIFESTS[0], "NyaagyuDojoTimbers", "scripts/art/create_nyaagyu_dojo_timbers.py", set(N.MANIFEST_INPUTS), "columns"),
+            (N.MANIFESTS[1], "NyaagyuDojoRails", "scripts/art/create_nyaagyu_dojo_rails.py",
+             set(N.MANIFEST_INPUTS)-{"scripts/art/sora_timber_lookdev.py", "scripts/art/sora_prop_lib.py"}, "rails")):
+            self.write(path, {"schema_version": 1, "kit": kit, "generator": generator, "generator_sha256": self.sha(generator),
+                "inputs": {p: self.sha(p) for p in inputs}, "placements": [{**r, "asset": n} for n, r in layout.items() if r["group"] == group]})
+        self.binding = {"schema": "sora-dojo-timber-campaign-binding-v1", "binder": N.BINDER, "binder_sha256": self.sha(N.BINDER),
+            "manifests": {p: self.sha(p) for p in N.MANIFESTS}, "campaign": {p: self.sha(p) for p in N.COVERAGE_INPUTS[:8]},
+            "halls": [{"rect": r, "zones": [f"chapter_{1 if i < 2 else 2:02}.json:{self.zones[i]['id']}"],
+                       "columns": 65, "columns_with_own_log": 65 if i == 0 else 0,
+                       "rails": 235, "rails_with_own_log": 235 if i == 0 else 0} for i, r in enumerate(self.rects)],
+            "coverage": {"columns": 260, "columns_with_own_log": 65, "rails": 940, "rails_with_own_log": 235}}
+        self.write(N.BINDING, self.binding)
+        self.meta.update(capture_scope=copy.deepcopy(N.CAPTURE_SCOPE), chapter_id="chapter_01",
+            chapter_estate_halls=[{"zone": z["id"], "rect": z["rect"], "wall_cm": 700} for z in self.zones[:2]])
+        for name, row in layout.items():
+            mesh = add_timber(self.meta, name)
+            mesh["instance_transforms"] = [N.placement_transform(row, 700)]
+        self.refresh()
+        def git_show(args, **kwargs):
+            path = args[-1].partition(":")[2]
+            return subprocess.CompletedProcess(args, 0 if path in self.committed else 1, self.committed.get(path, b""), b"")
+        patch.object(N.subprocess, "run", side_effect=git_show).start()
+
+    def write(self, path, value):
+        p = self.root / path; p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_bytes(value if isinstance(value, bytes) else json.dumps(value).encode())
+
+    def sha(self, path): return hashlib.sha256((self.root/path).read_bytes()).hexdigest()
+
+    def refresh(self, commit=True):
+        records = []
+        for path in N.COVERAGE_INPUTS:
+            file = self.root/path
+            record = {"path": path, "exists": file.is_file()}
+            if file.is_file():
+                data = file.read_bytes(); record.update(bytes=len(data), md5=hashlib.md5(data).hexdigest())
+                if commit: self.committed[path] = data
+            records.append(record)
+        self.meta["coverage_inputs"] = records
+
+    def check(self): return N.placement_coverage(self.meta, self.root, self.commit)
+
+    def reject(self, text):
+        result = self.check()
+        self.assertFalse(result["qualified"])
+        self.assertIn(text, "; ".join(result["errors"]))
+
+    def test_exact_first_dojo_acceptance_keeps_smithy_estate_and_other_classes_incomplete(self):
+        result = self.check()
+        self.assertEqual(result["errors"], [])
+        self.assertTrue(result["qualified"])
+        self.assertEqual(len(result["expected_scope_assets"]), 300)
+        self.assertEqual(result["estate"]["coverage"], self.binding["coverage"])
+        self.assertFalse(result["estate"]["complete_source_logs"])
+        self.assertEqual(result["chapter_halls"][1]["columns_with_own_log"], 0)
+        for key in ("estate_qualified", "pool_placement_qualified", "floor_placement_qualified", "photoreal_qualified"):
+            self.assertFalse(result[key])
+        reviewed = N.inspect(self.meta, originals(self.meta), WIDTH, HEIGHT, VERIFY.bow_capture_validation.rgb8, result)
+        self.assertTrue(reviewed["nanite_draw_evidence"])
+        self.assertFalse(reviewed["release_qualified"])
+
+    def test_model_has_reviewed_counts_seed_and_transforms(self):
+        layout = N.hall_layout(self.rects[0])
+        self.assertEqual(sum(r["group"] == "columns" for r in layout.values()), 65)
+        row = layout["SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B00"]
+        self.assertEqual(row["seed"], 270457030)
+        self.assertEqual(N.placement_transform(row, 700)["location"], [8000, -1300, 0])
+        row = layout["SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B00"]
+        self.assertEqual(row["seed"], 3819177482)
+        self.assertEqual(N.placement_transform(row, 350)["location"], [8090, -1300, 0])
+
+    def test_missing_one_or_all_observed_placements_cannot_pass(self):
+        self.meta["meshes"].pop(); self.reject("missing runtime timber placements: 1")
+        self.meta["meshes"] = self.meta["meshes"][:1]; self.reject("missing runtime timber placements: 300")
+
+    def test_duplicate_and_unexpected_runtime_names_fail(self):
+        duplicate = copy.deepcopy(self.meta["meshes"][-1]); duplicate["component"] += "duplicate"
+        self.meta["meshes"].append(duplicate); self.reject("duplicate runtime")
+        self.meta["meshes"].pop()
+        add_timber(self.meta, "SM_DojoTimberColumn_38800_m1300_42400_1300_S0_B00")
+        self.reject("unexpected runtime")
+
+    def test_runtime_transform_and_nanite_resource_failure_fail(self):
+        for key in ("location", "rotation", "scale"):
+            with self.subTest(key=key):
+                transform = self.meta["meshes"][1]["instance_transforms"][0]
+                transform[key][0] += 1; self.reject(f"timber {key}"); transform[key][0] -= 1
+        for key, bad in (("has_nanite_data", False), ("disallow_nanite", True), ("force_disable_nanite", True)):
+            old = self.meta["meshes"][1][key]; self.meta["meshes"][1][key] = bad
+            self.reject("enabled Nanite resources"); self.meta["meshes"][1][key] = old
+        self.meta["meshes"][1].pop("instance_transforms"); self.reject("lacks its instance transform")
+
+    def test_sm5_pools_and_floor_are_inventory_only(self):
+        self.meta["sm6_requested"] = False; self.meta["meshes"] = self.meta["meshes"][:1]
+        for name in ("SM_DojoTimberColumn_MAC_Wall_02", "SM_DojoTimberRail_MAC_Nuki_01", "SM_DojoTimberFloor_00"):
+            add_timber(self.meta, name)["instances"] = 99
+        result = self.check()
+        self.assertEqual(result["errors"], [])
+        self.assertFalse(result["qualified"])
+        self.assertEqual(result["status"], "bound_sources_sm5_inventory_only")
+        self.assertFalse(result["pool_placement_qualified"])
+        self.assertFalse(result["floor_placement_qualified"])
+
+    def test_current_runtime_sources_must_equal_archive_commit(self):
+        path = N.COVERAGE_INPUTS[0]
+        self.write(path, (self.root/path).read_bytes()+b" "); self.refresh(commit=False)
+        self.reject("differs from archive commit")
+        self.refresh(); self.reject("stale or incomplete chapter binding")
+
+    def test_stale_binder_manifest_generator_and_inputs_fail(self):
+        for path, message in ((N.BINDER, "unreviewed timber layout source"),
+                (N.MANIFESTS[0], "stale or incomplete timber manifest binding"),
+                ("scripts/art/create_nyaagyu_dojo_timbers.py", "stale timber generator/input binding"),
+                ("scripts/art/sora_timber_lib.py", "stale timber generator/input binding")):
+            with self.subTest(path=path):
+                original = (self.root/path).read_bytes()
+                self.write(path, original+b" "); self.refresh(); self.reject(message)
+                self.write(path, original); self.refresh()
+
+    def test_rail_seed_kind_and_duplicate_json_keys_are_rejected_independently(self):
+        path = N.MANIFESTS[1]; original = json.loads((self.root/path).read_text())
+        for key, bad in (("seed", 1), ("kind", "Koshi")):
+            manifest = copy.deepcopy(original); manifest["placements"][0][key] = bad
+            self.write(path, manifest); self.binding["manifests"][path] = self.sha(path)
+            self.write(N.BINDING, self.binding); self.refresh(); self.reject("differs from chapter layout")
+        self.write(N.BINDING, b'{"schema":"a","schema":"b"}'); self.refresh()
+        self.reject("duplicate binding JSON key")
+
+    def test_duplicate_unexpected_malformed_or_missing_manifest_placements_fail(self):
+        path = N.MANIFESTS[0]; original = json.loads((self.root/path).read_text())
+        for mutation, error in (("duplicate", "duplicate timber manifest"), ("unexpected", "unexpected/stale"),
+                                ("kind", "differs from chapter"), ("missing", "named dojo lacks complete")):
+            manifest = copy.deepcopy(original)
+            if mutation == "duplicate": manifest["placements"].append(manifest["placements"][0])
+            elif mutation == "unexpected": manifest["placements"][0]["asset"] += "stale"
+            elif mutation == "kind": manifest["placements"][0]["kind"] = "wall"
+            else: manifest["placements"].pop()
+            self.write(path, manifest); self.binding["manifests"][path] = self.sha(path)
+            if mutation == "missing":
+                self.binding["halls"][0]["columns_with_own_log"] = 64
+                self.binding["coverage"]["columns_with_own_log"] = 64
+            self.write(N.BINDING, self.binding); self.refresh(); self.reject(error)
+
+    def test_forged_scope_hall_counts_or_estate_completion_fail(self):
+        self.meta["capture_scope"]["zone"] = "pl_dojo_smithy"; self.reject("runtime chapter/scope")
+        self.meta["capture_scope"] = copy.deepcopy(N.CAPTURE_SCOPE)
+        self.meta["chapter_estate_halls"].pop(); self.reject("runtime chapter/scope")
+        self.binding["coverage"]["columns_with_own_log"] = 260
+        self.write(N.BINDING, self.binding); self.refresh(); self.reject("hall/estate counts")
 
 
 if __name__ == "__main__":
