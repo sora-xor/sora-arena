@@ -48,7 +48,9 @@ void ASoraWorldBuilder::BuildCampaign(const FSoraChapter& Chapter)
             { return B.Space.Zone==Index&&B.Space.Bridge.bEnabled; });
         const FSoraBeat* Relay=Chapter.Beats.FindByPredicate([Index](const FSoraBeat& B)
             { return B.Space.Zone==Index&&B.Space.RelayRoom.bEnabled; });
-        if(Relay) BuildRelayRoom(*Relay); else if(Bridge) BuildBridge(Space.Zones[Index],Index,*Bridge); else if(Moat) BuildMoat(*Moat); else if(Climb) BuildClimb(*Climb); else if(Wind) BuildWindSpace(*Wind); else if(Flood) BuildFlood(*Flood); else if(Spire) BuildSpire(*Spire); else if(Summit) BuildSummit(*Summit); else BuildZone(Space.Zones[Index],Index,Recovery);
+        const bool Archive=Chapter.Beats.ContainsByPredicate([Index](const FSoraBeat& B)
+            { return B.Space.Zone==Index&&B.Id==TEXT("ch06.b09"); });
+        if(Archive) BuildArchive(Space.Zones[Index]); else if(Relay) BuildRelayRoom(*Relay); else if(Bridge) BuildBridge(Space.Zones[Index],Index,*Bridge); else if(Moat) BuildMoat(*Moat); else if(Climb) BuildClimb(*Climb); else if(Wind) BuildWindSpace(*Wind); else if(Flood) BuildFlood(*Flood); else if(Spire) BuildSpire(*Spire); else if(Summit) BuildSummit(*Summit); else BuildZone(Space.Zones[Index],Index,Recovery);
     }
     BuildChapterWood(Chapter);
     NodePositions.Reset(); Nodes.Reset(); SiteEffects.Reset(); SiteRestoredColors.Reset();

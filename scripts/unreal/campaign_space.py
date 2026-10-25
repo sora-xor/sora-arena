@@ -521,6 +521,9 @@ def derive_space(chapter, beats, places, collectibles, triggers, layout, fail):
         if prefix == "ch06" and place_id == "pl_relay_room":
             zone_gap += width - 2000
             width, height, wall = 2000, 1000, 800
+        if prefix == "ch06" and place_id == "pl_archive":
+            zone_gap += width - 2600
+            width, height, wall = 2600, 1800, 600
         if place_id in hosts_boss:
             width, height = max(width, BOSS_SIZE[0]), max(height, BOSS_SIZE[1])
         rect = (x, -height // 2, x + width, height // 2)
@@ -649,6 +652,8 @@ def derive_space(chapter, beats, places, collectibles, triggers, layout, fail):
     place_press_hall(beats, records, zones, pickups, fail)
     from campaign_relay import place_relay
     place_relay(beats, records, zones, pickups, fail)
+    from campaign_archive import place_archive
+    place_archive(beats, records, zones, fail)
     for beat, record in zip(beats, records):
         if beat["id"] == "ch06.b13":
             # Chapter 6 §3 L8 puts the bulkhead lever beside the freight-lift

@@ -66,6 +66,7 @@ from campaign_molten import molten_valid
 from campaign_canisters import canisters_valid
 from campaign_press import press_hall_valid
 from campaign_relay import relay_valid
+from campaign_archive import archive_valid
 from campaign_moat import moat_valid
 from campaign_space import arena_blockers, spook_dismount
 from campaign_cargo import cargo_manifest
@@ -893,6 +894,7 @@ def validate(catalog, campaign, chapters, legacy, roster):
     for chapter in chapters:
         require(press_hall_valid(chapter), "press hall must retain its authored machines and noise rules")
         require(relay_valid(chapter), "relay room must retain its authored nodes, scan and lock rules")
+        require(archive_valid(chapter), "archive must retain its authored footprint and solid duel posts")
         for record in chapter["space"]["beats"]:
             nets = record["fieldcraft"]["nets"]
             require(not nets or nets["quarry"][0]["kind"] != "person" or nets["windup_ms"] == drone_net,

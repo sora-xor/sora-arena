@@ -140,6 +140,7 @@ public:
     void BuildMoat(const FSoraBeat& Beat);
     void BuildClimb(const FSoraBeat& Beat);
     void BuildRelayRoom(const FSoraBeat& Beat);
+    void BuildArchive(const FSoraZone& Zone);
     void StageKit(const FSoraChapter& Chapter, int32 Beat);
     void ShowKit(const FSoraKitView& View);
     void ClearKit();

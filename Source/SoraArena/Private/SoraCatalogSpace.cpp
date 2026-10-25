@@ -1,4 +1,5 @@
 #include "SoraCatalogFlood.h"
+#include "SoraCatalogArchive.h"
 #include "SoraCatalogClimb.h"
 #include "SoraCatalogFoundryDefense.h"
 #include "SoraCatalogHorseTreatment.h"
@@ -1068,6 +1069,7 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
         if(!SoraCatalogCanisters::Read(*O,Beat)) return Bad(Beat.Id+TEXT(" fuel canisters"));
         if(!SoraCatalogPress::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" press hall"));
         if(!SoraCatalogRelay::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" relay room"));
+        if(!SoraCatalogArchive::Valid(Beat,S)) return Bad(Beat.Id+TEXT(" archive geometry"));
         if(!SoraCatalogFlood::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" flood route"));
         if(!SoraCatalogClimb::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" climb routes"));
         if(!SoraCatalogMoat::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" physical moat"));
