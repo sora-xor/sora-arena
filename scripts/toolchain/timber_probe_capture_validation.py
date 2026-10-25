@@ -32,6 +32,14 @@ TEXTURES = tuple("Textures/T_" + n.removeprefix("SM_") + "_" + suffix
                  for n in NAMES[5:] for suffix in ("Masks", "NormalDX")) + tuple(
     "Textures/T_Timber" + n for n in ("Fibre", "RingNoise", "RingRandom"))
 PACKAGES = NAMES + tuple("MI_" + n for n in NAMES) + ("M_SoraTimber", "M_SoraTimberNanite") + TEXTURES
+FINAL_POST_PROCESS = {"AutoExposureMethod": 2, "AutoExposureApplyPhysicalCameraExposure": 1, "AutoExposureBias": 0,
+                      "CameraISO": 100, "CameraShutterSpeed": 60, "DepthOfFieldFstop": 2.8,
+                      "DynamicGlobalIlluminationMethod": 0, "ReflectionMethod": 0, "ScreenSpaceReflectionIntensity": 0,
+                      "BloomIntensity": 0, "LensFlareIntensity": 0, "VignetteIntensity": 0, "AmbientOcclusionIntensity": 0,
+                      "WhiteTemp": 6500, "WhiteTint": 0,
+                      "ColorSaturation": [1]*4, "ColorContrast": [1]*4, "ColorGamma": [1]*4, "ColorGain": [1]*4, "ColorOffset": [0]*4}
+EXCLUDED_SHOW_FLAGS = ("DirectionalLights", "Fog", "Atmosphere", "SkyLighting", "GlobalIllumination",
+                       "LumenGlobalIllumination", "ReflectionEnvironment", "ScreenSpaceReflections", "LumenReflections")
 
 
 def object_path(name):
@@ -144,6 +152,17 @@ def validate_metadata(meta, names, width, height):
         require(finite_vector(frame.get("camera"), 3) and finite_vector(frame.get("rotation"), 3) and abs(frame.get("fov", 0)-35) < .01, "missing actual camera")
         require(type(frame.get("request_frame")) in (int, float) and previous < frame["request_frame"] <= frame.get("screenshot_processed_frame", -1), "invalid screenshot frame chronology")
         previous = frame["screenshot_processed_frame"]
+        require(frame.get("final_view_observations") == 1 and type(frame.get("final_view_frame")) in (int, float) and
+                frame["request_frame"] <= frame["final_view_frame"] <= previous, "final blended settings are not bound to exactly one screenshot view")
+        final = frame.get("final_post_process", {})
+        for key, expected_value in FINAL_POST_PROCESS.items():
+            actual_value = final.get(key)
+            if isinstance(expected_value, list):
+                require(finite_vector(actual_value, 4) and all(abs(a-b) < 1e-5 for a, b in zip(actual_value, expected_value)), "nonneutral final post-process " + key)
+            else:
+                require(type(actual_value) in (int, float) and math.isfinite(actual_value) and abs(actual_value-expected_value) < 1e-5, "unexpected final post-process " + key)
+        flags = frame.get("final_show_flags", {})
+        require(all(flags.get(key) is False for key in EXCLUDED_SHOW_FLAGS), "production sun/GI/reflections or atmosphere leak into fixture view")
         if identity[1] == "full":
             camera = frame["camera"] + frame["rotation"] + [frame["fov"]]
             require(full_cameras.setdefault(identity[0], camera) == camera, "paired visualization cameras moved")
