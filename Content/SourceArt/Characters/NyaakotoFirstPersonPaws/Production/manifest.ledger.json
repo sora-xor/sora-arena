@@ -3,12 +3,12 @@
   "kind": "asset-ledger",
   "ledger_id": "own-NyaakotoFP_PawL_Yumi",
   "source": "project",
-  "purpose": "OWN record for Nyaakoto's first-person bow paw v4 (SM_NyaakotoFP_PawL_Yumi): the static mesh in the Grip_L socket frame (skin, pads, fur cards, and the kote with the pinned SORA mon), its editable .blend, its build record, and four Cycles review originals on the rebuilt SK_Weapon_18 at full draw. v4 (2026-10-25): the fur-card atlas v4, cards whose fronts face out and whose shading normals bend 0.75 toward the skin, written as custom normals; the layout and seeds are v3's. Built by the seeded generators from project inputs only. The Unreal use is the isolated qualification import (import_nyaakoto_fp_paws.py), not the game. Review originals: not admitted, not photoreal.",
+  "purpose": "OWN record for Nyaakoto's first-person bow paw v5 (SM_NyaakotoFP_PawL_Yumi): the static mesh in the Grip_L socket frame (skin, pads, fur cards, and the kote with the pinned SORA mon), its editable .blend, its build record, and four Cycles review originals on the rebuilt SK_Weapon_18 at full draw. v5 (2026-10-25): the fur-card atlas v5, the hero's white with form occlusion and an undercoat baked into the vertex colours, cards tapered to 20 % at their tips and curled, and a kote sleeve with a second fold family and puff between its cords. Built by the seeded generators from project inputs only. The Unreal use is the isolated qualification import (import_nyaakoto_fp_paws.py), not the game. Review originals: not admitted, not photoreal.",
   "generator": "scripts/assets/write_own_ledger.py",
   "records": [
     {
       "asset_id": "NyaakotoFP_PawL_Yumi",
-      "name": "Nyaakoto first-person bow paw (SM_NyaakotoFP_PawL_Yumi, v4)",
+      "name": "Nyaakoto first-person bow paw (SM_NyaakotoFP_PawL_Yumi, v5)",
       "kind": "generated-art",
       "tier": "OWN",
       "license": "project-owned",
@@ -24,7 +24,7 @@
       "attribution_text": null,
       "changes": null,
       "access": "generated",
-      "acquired_at_utc": "2026-10-25T20:53:00Z",
+      "acquired_at_utc": "2026-10-25T21:22:58Z",
       "acquired_by": "agent",
       "storage": "repo-lfs",
       "used_by": [
@@ -39,7 +39,7 @@
       "derived_from": [
         {
           "path": "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/FurCards/manifest.json",
-          "sha256": "cf22b04cfa798b93bb464dbe950c97d1a11d153627ffeac63b2fb89769406bdf"
+          "sha256": "0465e707d9ca9e7b363130cd77b12af9464dc49be75d84a1e21f009a9523f21c"
         },
         {
           "path": "Content/SourceArt/UI/SoraKamonMon/SM_SoraKamon.fbx",
@@ -59,15 +59,15 @@
         },
         {
           "path": "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/FurCards/T_NyaakotoFP_FurCards_Albedo.png",
-          "sha256": "c264421907db224cada2987943480c548b24369dc67e29c99e3bd1cf4ed1200e"
+          "sha256": "8b47b4805f467896a948142102a7ed56b0a51b591ff5776dd8c21a3a038832ac"
         },
         {
           "path": "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/FurCards/T_NyaakotoFP_FurCards_Masks.png",
-          "sha256": "c33d649cbbcbfd939234bca7285b00f27ff3c15d643635eb23ce250cf015d0c0"
+          "sha256": "897de43557a34fcf901882487ad70dd86944ee2ce55b31dc63a68869e17d2784"
         },
         {
           "path": "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/FurCards/T_NyaakotoFP_FurCards_NormalDX.png",
-          "sha256": "c7a1ffd9a6358a7c7f35e63e8d44cfe85876467b2c2ea21b780db8ab32d0cfb0"
+          "sha256": "4b1bd4e8733b39beecb8850ea85677cd1e8186d36278da4e34efd3c95d368210"
         },
         {
           "path": "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/Textures/T_Nyaakoto_PawPad_Albedo.png",
@@ -105,33 +105,33 @@
       "files": [
         {
           "path": "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/Production/Nyaakoto_FP_PawL_Yumi.blend",
-          "bytes": 20289471,
-          "sha256": "fcd66dbc17479289918d6bc1b544ef164e133cb1790e52345c71a5a67326609d"
+          "bytes": 20418994,
+          "sha256": "201ca3316aa3b299221d99d116f1d2a275f792d289006f6d23b20d0427245f8c"
         },
         {
           "path": "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/Production/Renders/SM_NyaakotoFP_PawL_Yumi_ArcherClose.png",
-          "bytes": 2301874,
-          "sha256": "b056a5d795d862ee7e6a4983f0077b78f071dd9f9e577b2ddabb825a9296c6aa"
+          "bytes": 2345903,
+          "sha256": "36da44e4114b1a4a0ec3ffdcb997e810f7b89537f3bcf0b8415942d03786efed"
         },
         {
           "path": "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/Production/Renders/SM_NyaakotoFP_PawL_Yumi_FirstPerson.png",
-          "bytes": 1865030,
-          "sha256": "2b5e9c4af34f1896cf31d91648e1e96c757dd6e2deba03ddcd7c9ee8cdef3b02"
+          "bytes": 1866299,
+          "sha256": "2245eef8ce69a0ce82c0a6a9aaa5c6a608a61f2521aa973219cfc4e8cff1f5bf"
         },
         {
           "path": "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/Production/Renders/SM_NyaakotoFP_PawL_Yumi_FurMacro.png",
-          "bytes": 2483469,
-          "sha256": "043852c17237e59d942b00a7763bcbb6618229fbac685cee688a26d560609572"
+          "bytes": 2571586,
+          "sha256": "ae01440eee29148284ca49a4b62b174c8cc093a5aa349b1448db1a13d7f11e29"
         },
         {
           "path": "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/Production/Renders/SM_NyaakotoFP_PawL_Yumi_LeftSide.png",
-          "bytes": 2160158,
-          "sha256": "44011918c519aadd25c560e826df2494894c225368b3c4141929672a0e0d0dcf"
+          "bytes": 2186677,
+          "sha256": "9093a67fa2bc4f8bdce8680c37b8a459810fdc4ca8bd0feba02faff25bf09c1b"
         },
         {
           "path": "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/Production/SM_NyaakotoFP_PawL_Yumi.fbx",
-          "bytes": 58178780,
-          "sha256": "3c4a6deb5735ce66ee4a574f07d724b618febdfc6934122ce5326efdb8a6ab87"
+          "bytes": 58889692,
+          "sha256": "64d02d64eea72983c9a2a2d235f5202d8ca37188b4ff610b54f0b88ce0893894"
         }
       ]
     }
