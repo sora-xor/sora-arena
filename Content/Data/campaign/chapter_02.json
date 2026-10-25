@@ -11700,7 +11700,17 @@
      "charge": null
     },
     "height_cm": 0,
-    "lift": null
+    "lift": null,
+    "horse_treatment": {
+     "targets": [
+      "pack_horse_a",
+      "pack_horse_b"
+     ],
+     "hold_ms": 2000,
+     "heal_hp": 60,
+     "cooldown_ms": 20000,
+     "cooldown_scope": "per_horse"
+    }
    },
    {
     "beat": "ch02.b07",

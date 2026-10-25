@@ -68,7 +68,7 @@ void USoraCampaignDirector::StopPlayerCrank(bool bWaitForRelease)
     CrankInput={};
     BellowsTreads={};
     if(bWaitForRelease) SoraCrankInputRules::Stop(CrankInput);
-    if(auto* Hero=Mode().Hero()) Hero->GetViewmodel()->SetHiddenInGame(HelmOccupiesHands()||FoundryOccupiesHands(),true);
+    if(auto* Hero=Mode().Hero()) Hero->GetViewmodel()->SetHiddenInGame(HelmOccupiesHands()||FoundryOccupiesHands()||HorseTreatmentOccupiesHands(),true);
 }
 bool USoraCampaignDirector::TurnPlayerCrank(bool bBegin)
 {
@@ -96,7 +96,7 @@ bool USoraCampaignDirector::TurnPlayerCrank(bool bBegin)
     if(Task.CrankTwoHanded)
     {
         Kit->Halt(); Kit->DropStance();
-        Mode().Hero()->GetViewmodel()->SetHiddenInGame(CrankOccupiesHands()||HelmOccupiesHands()||FoundryOccupiesHands(),true);
+        Mode().Hero()->GetViewmodel()->SetHiddenInGame(CrankOccupiesHands()||HelmOccupiesHands()||FoundryOccupiesHands()||HorseTreatmentOccupiesHands(),true);
     }
     const bool bWorked=Turned.Result==ETurn::InBand||Turned.Result==ETurn::Slow;
     Fire(Turned.Result==ETurn::TooFast?TEXT("rate_band:above"):Turned.Result==ETurn::Slow?TEXT("rate_band:below"):TEXT("rate_band:in"));
@@ -136,5 +136,5 @@ void USoraCampaignDirector::TickPlayerCrank(int32 DeltaMs)
         // TickBeat owns UpdateObjective/Progressed and the completion/wave edge.
     }
     if(Task.AlternateTreads&&IsWorkingCrank()) PresentRhythmCue();
-    if(Hero) Hero->GetViewmodel()->SetHiddenInGame(CrankOccupiesHands()||HelmOccupiesHands()||FoundryOccupiesHands(),true);
+    if(Hero) Hero->GetViewmodel()->SetHiddenInGame(CrankOccupiesHands()||HelmOccupiesHands()||FoundryOccupiesHands()||HorseTreatmentOccupiesHands(),true);
 }

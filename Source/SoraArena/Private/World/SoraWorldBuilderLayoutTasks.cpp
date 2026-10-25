@@ -290,11 +290,16 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
     else if(KitWork==TEXT("defend"))
     {
         BuildFoundryDefense(Space);
+        DefendedHorses.Init(nullptr,Space.Targets.Num());
         for(int32 Target=0;Target<Space.Targets.Num();++Target)
         {
             const FVector P=Floor(Space.Targets[Target]);
             const FName Kind=Space.TargetKinds[Target];
-            if(Kind==TEXT("horse")) KitHorse(P,90.f,TEXT("bay"),true);
+            if(Kind==TEXT("horse"))
+            {
+                DefendedHorses[Target]=KitHorse(P,90.f,TEXT("bay"),true);
+                if(DefendedHorses[Target]) DefendedHorses[Target]->PackId=Beat.Targets[Target];
+            }
             else if(Kind==TEXT("furnace"))
             {
                 if(!Space.FoundryDefense.bEnabled) KitShape(TEXT("TargetFurnace"),KitCube,P+FVector(0,0,110),FVector(1.8f,1.8f,2.2f),FLinearColor(.25f,.22f,.2f),TEXT("Stone"),true);
@@ -469,6 +474,7 @@ void ASoraWorldBuilder::ClearKit()
     for(const auto& Mesh:KitPieces) if(Mesh) Mesh->DestroyComponent();
     for(const auto& Walker:KitWalkers) if(Walker) Walker->DestroyComponent();
     for(const auto& Member:KitParty) if(Member) Member->DestroyComponent();
+    DefendedHorses.Reset();
     for(const auto& Actor:KitActors) if(Actor) Actor->Destroy();
     if(KitLight) KitLight->Destroy();
     ToranosukePlaque=nullptr; NyaakotoPlaque=nullptr; WashioSword.Reset(); EpiloguePlaques=0; bEpilogueSwordReturned=false;

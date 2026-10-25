@@ -122,6 +122,7 @@ void USoraCampaignDirector::HeroDamaged(const FSoraDamagedEvent& Event)
     const ASoraGameMode& M=Mode();
     if(!ActiveBeatData()||Event.Victim!=M.Hero()) return;
     CancelFoundryWork();
+    CancelHorseTreatment();
     if(bPryingCarryGate) bCarryGateHit=true;
     if(IsHelmHold()) CancelHelm();
     StopPlayerCrank();
@@ -451,6 +452,7 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     SoraBeatRules::ApplyRhythmDifficulty(Task,static_cast<int32>(SoraAccessibility::CampaignDifficulty(this)));
     TaskState=SoraBeatRules::StartTask(Task,Phase);
     ResetFoundry();
+    ResetHorseTreatment();
     ResetHelm();
     SpineCut={}; SpineReadyMs=0; bSpinePromptShown=false; bSpineMutoRaised=false;
     BulkheadHold={}; BulkheadClock.Reset();
@@ -731,6 +733,7 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
     Step.CrankDecayMultiplier=LiftDecayMultiplier();
     if(!TickHelm(Step)) SoraBeatRules::Tick(TaskState,Task,Step);
     if(M.bDefeated) return;
+    TickHorseTreatment(DeltaMs);
     TickFoundry(DeltaMs);
     if(ActiveBeatData()!=&Beat||M.bDefeated) return;
     TickArchery(DeltaMs);
@@ -890,6 +893,7 @@ void USoraCampaignDirector::TickHeldWork(int32 DeltaMs,float DeltaSeconds)
 }
 float USoraCampaignDirector::HeldWorkProgress() const
 {
+    if(HorseTreatmentOccupiesHands()) return float(Treatment.HeldMs)/SoraHorseTreatmentRules::HoldMs;
     if(FoundryOccupiesHands()) return float(Foundry.HeldMs)/SoraFoundryDefenseRules::Need(Foundry.Work);
     if(IsHelmHold()&&Helm.Working) return static_cast<float>(Helm.HeldMs)/ActiveSpace()->Helm.Contract.WorkMs;
     if(SpineCut.Active&&ActiveBeatData()&&ActiveBeatData()->CaptureHoldMs>0)
@@ -1191,6 +1195,7 @@ bool USoraCampaignDirector::AwaitingCapture() const
 void USoraCampaignDirector::ClearEncounter()
 {
     ResetFoundry();
+    ResetHorseTreatment();
     BulkheadHold={}; BulkheadClock.Reset();
     CancelHelm();
     Helm={};
@@ -1378,6 +1383,7 @@ void USoraCampaignDirector::HandleFailure(SoraBeatRules::ERetry Outcome,const FS
         break;
     }
     CancelFoundryWork();
+    CancelHorseTreatment();
     CancelBulkheadHold();
     M.bDefeated=true;
     ClearDialogue();
@@ -1723,7 +1729,7 @@ void USoraCampaignDirector::SuspendDojo(bool bIncludeHero)
 }
 void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
 {
-    if(InteractFoundry(Player)) return;
+    if(InteractHorseTreatment(Player)||InteractFoundry(Player)) return;
     using SoraBeatRules::EStroke;
     ASoraGameMode& M=Mode();
     if(!M.bCampaign) { ArenaInteract(Player); return; }
@@ -2181,6 +2187,7 @@ FString USoraCampaignDirector::ObjectiveText() const
     if(bWoodTransit) return TEXT("林を散策するか、南の道から鍛冶場へ進む");
     if(IsToriiEpilogue()) return EpilogueObjectiveText(false);
     if(IsArcheryLesson()) return ArcheryText(false);
+    if(IsHorseTreatment()) return HorseTreatmentText(false);
     if(IsFoundryDefense()) return FoundryText(false);
     if(IsHelmHold()) return HelmText(false);
     if(IsBulkheadCapture()&&AwaitingCapture()) return BulkheadText().Japanese;
@@ -2226,6 +2233,7 @@ FString USoraCampaignDirector::ObjectiveTextEnglish() const
     if(bWoodTransit) return TEXT("Explore the wood, or take the south terrace to the smithy");
     if(IsToriiEpilogue()) return EpilogueObjectiveText(true);
     if(IsArcheryLesson()) return ArcheryText(true);
+    if(IsHorseTreatment()) return HorseTreatmentText(true);
     if(IsFoundryDefense()) return FoundryText(true);
     if(IsHelmHold()) return HelmText(true);
     if(IsBulkheadCapture()&&AwaitingCapture()) return BulkheadText().English;

@@ -10,6 +10,7 @@
 #include "SoraRegistry.h"
 #include "SoraHelmRules.h"
 #include "SoraFoundryDefenseRules.h"
+#include "SoraHorseTreatmentRules.h"
 #include "SoraMillisecondClock.h"
 #include "SoraCampaignDirector.generated.h"
 class ACameraActor;
@@ -235,6 +236,12 @@ public:
     // pickup (ch03.b05's 釣瓶, waiting while a guard watches) or an objective
     // worked with Interact held (a charge planted, a relay node pulled).
     float HeldWorkProgress() const;
+    bool IsHorseTreatment() const;
+    ASoraHorse* TreatmentHorse(int32 Index) const;
+    bool InteractHorseTreatment(ASoraPlayerCharacter& Hero);
+    void CancelHorseTreatment();
+    bool HorseTreatmentOccupiesHands() const { return IsHorseTreatment()&&Treatment.Index>=0; }
+    const SoraHorseTreatmentRules::FState& HorseTreatmentState() const { return Treatment; }
     bool IsFoundryDefense() const;
     ASoraFoundryFurnace* FoundryFurnace() const;
     ASoraCompanion* FoundryKozo() const;
@@ -331,6 +338,11 @@ public:
     int32 KillsNeeded = 0;
     bool bCampaignComplete = false;
 private:
+    SoraHorseTreatmentRules::FState Treatment;
+    void ResetHorseTreatment();
+    void TickHorseTreatment(int32 DeltaMs);
+    bool HorseTreatmentEligible(int32 Index) const;
+    FString HorseTreatmentText(bool English) const;
     SoraFoundryDefenseRules::FState Foundry;
     void ResetFoundry();
     void TickFoundry(int32 DeltaMs);

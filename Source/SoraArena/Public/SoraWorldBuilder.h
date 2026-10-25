@@ -141,6 +141,7 @@ public:
     void StageKit(const FSoraChapter& Chapter, int32 Beat);
     void ShowKit(const FSoraKitView& View);
     void ClearKit();
+    ASoraHorse* DefendedHorse(int32 Index) const { return DefendedHorses.IsValidIndex(Index)?DefendedHorses[Index].Get():nullptr; }
     ASoraFoundryFurnace* FoundryTarget() const;
     void ShowFoundrySupplies(unsigned Used,unsigned Netted);
     ASoraCampaignLift* CampaignLift() const;
@@ -292,6 +293,7 @@ private:
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> RecoveryBundle;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> RecoveryHatch;
     UPROPERTY() TArray<TObjectPtr<AActor>> KitActors;
+    UPROPERTY() TArray<TObjectPtr<ASoraHorse>> DefendedHorses;
     TWeakObjectPtr<ASoraFoundryFurnace> FoundryActor;
     TArray<TWeakObjectPtr<UStaticMeshComponent>> FoundryTubs,FoundryBellows;
     unsigned FoundryUsedShown=~0u;

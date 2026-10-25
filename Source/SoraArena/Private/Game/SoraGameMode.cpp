@@ -122,6 +122,7 @@ void ASoraGameMode::SetMenuOpen(bool bOpen)
         {
             CampaignDirector->StopPlayerCrank();
             CampaignDirector->CancelFoundryWork();
+            CampaignDirector->CancelHorseTreatment();
             CampaignDirector->CancelHelm();
             CampaignDirector->CancelSpineCut();
             CampaignDirector->CancelBulkheadHold();
