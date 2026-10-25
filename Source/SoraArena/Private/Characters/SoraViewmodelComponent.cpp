@@ -180,7 +180,10 @@ void USoraViewmodelComponent::Sway(float DeltaSeconds,float LifeTime,float Movin
     // Unadmitted meshes retain their prior framing. No authored paw is invented.
     const float Pitch=bReloading?-30.f:bStrike?25.f:bBowDrawing?-15.f:0.f,Roll=bSprint?-15.f:0.f;
     SetRelativeLocation(FVector(40,18+FMath::Sin(LifeTime*8)*Moving*.7,-18+FMath::Cos(LifeTime*16)*Moving*.6));
-    const FVector EyeRay=View.Rotation.UnrotateVector(GameplayRay);
+    // Gameplay offset is camera-component-local. The presentation view can
+    // include an additive camera rotation, which must not counter-rotate this
+    // legacy branch (or change the old BowAimOffset * action composition).
+    const FVector EyeRay=GetAttachParent()?GetAttachParent()->GetComponentQuat().UnrotateVector(GameplayRay):GameplayRay;
     SetRelativeRotation(EyeRay.Rotation().Quaternion()*FRotator(Pitch,0,Roll).Quaternion());
 }
 void USoraViewmodelComponent::KernelPose(float Windup,bool bReloading)

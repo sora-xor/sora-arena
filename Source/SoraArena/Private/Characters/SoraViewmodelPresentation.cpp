@@ -139,7 +139,10 @@ FMinimalViewInfo CameraView(const UCameraComponent& Camera)
 {
     // UE 5.8 CameraComponent.cpp projection fields, read without GetCameraView's
     // SetWorldRotation/HandleXRCamera side effects. Cleared additive offsets are
-    // identity/zero (ClearAdditiveOffset); both supported setters retain this.
+    // identity/zero (FTransform's default constructor plus UObject zeroed
+    // allocation, and ClearAdditiveOffset); supported setters retain this.
+    // This snapshot covers the game's perspective component, not XR or a
+    // custom camera manager's post-component modifications.
     FMinimalViewInfo View; FTransform Additive; float AdditiveFOV=0;
     Camera.GetAdditiveOffset(Additive,AdditiveFOV);
     const FTransform Transform=Additive*Camera.GetComponentTransform();
@@ -157,7 +160,7 @@ FMinimalViewInfo CameraView(const UCameraComponent& Camera)
 FVector CorrectedWorldDirection(const FMinimalViewInfo& View,const FVector& GameplayDirection)
 {
     const FVector Direction=GameplayDirection.GetSafeNormal();
-    if(!View.bUseFirstPersonParameters) return Direction;
+    if(View.ProjectionMode!=ECameraProjectionMode::Perspective||!View.bUseFirstPersonParameters) return Direction;
     const float Factor=View.CalculateFirstPersonFOVCorrectionFactor();
     if(!FMath::IsFinite(Factor)||Factor<=UE_SMALL_NUMBER) return Direction;
     return (View.TransformFirstPersonToWorld(View.Location+Direction*10000.f,true)-View.Location).GetSafeNormal();
