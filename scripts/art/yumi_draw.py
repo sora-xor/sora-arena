@@ -230,94 +230,219 @@ def string_segments(sockets):
 
 
 # ---------------------------------------------------------------------------
-# First-person footprint
+# First-person footprint: a sampled design envelope
 # ---------------------------------------------------------------------------
+
+# What these checks are, stated in every report. Codex's review of fa6aa2b /
+# 384819b found that the first version passed geometry behind the camera,
+# sampled open cylinders and four stave extrema, and stretched the string in
+# its release model.
+SCOPE = ("sampled design envelope, not the emitted or skinned asset: closed capsules and spheres for the arrow and "
+         "paws, the generator's rounded-rectangle stave section (POWER 4.6, 28 points, tip taper) inflated for the "
+         "nigiri, rattan and hazu; point samples with a local spacing margin, visibility of the mandatory parts, and "
+         "near-plane crossings inside the frame. The timeline is sampled at its fps in rest and the nominal bob "
+         "extremes, not a continuous-time bound or the native camera path.")
+STAVE_SECTION_POINTS = 28
+ENVELOPE_GRIP_M = 0.004            # the deerskin nigiri wound over the stave
+ENVELOPE_RATTAN_M = 0.0015         # rattan bands and lacquer
+ENVELOPE_HAZU = 1.10               # horn hazu, up to 6% wider than the stave (cap_rings) plus margin
+# Parts that must be visible (in front of the near plane and in the frame) in a pose.
+MANDATORY = {"bow.drawn": ("stave", "arrow", "paw_L"), "bow": ("stave", "paw_L")}
+
 
 def _lerp(a, b, t):
     return tuple(a[i] + (b[i] - a[i]) * t for i in range(3))
 
 
-def _stave_edges(shape, every=1):
-    """Points on the stave's left and right edges (+-Y) and its back and belly, along the centreline."""
+def _stave_envelope(shape, every=3):
+    """Rings of the stave's envelope along the centreline: the generator's
+    section, its tip taper, inflated for the nigiri, rattan and hazu."""
     samples = list(reversed(shape["low"]))[:-1] + shape["up"]
     frames = _frames(shape["low"], shape["up"])
-    pts = []
-    for i in range(0, len(samples), every):
+    ex = 2.0 / _C["POWER"]
+    rings = []
+    for i in list(range(0, len(samples), every)) + [len(samples) - 1]:
         sig, p, _t, n = frames[i]
         w, d = thickness(sig)
-        for sy in (-1.0, 1.0):
-            pts.append((p[0], p[1] + sy * w / 2, p[2]))
-        for sx in (-1.0, 1.0):
-            pts.append((p[0] + n[0] * sx * d / 2, p[1], p[2] + n[2] * sx * d / 2))
-    return pts
+        rem = min(sig + L_LOW, L_UP - sig)
+        if rem < 0.035:
+            f = rem / 0.035
+            w *= 0.62 + 0.38 * f
+            d *= 0.62 + 0.38 * f
+        if rem < 0.045:
+            w, d = w * ENVELOPE_HAZU, d * ENVELOPE_HAZU
+        pad = ENVELOPE_GRIP_M if abs(sig) <= GRIP_HALF + 0.01 else ENVELOPE_RATTAN_M
+        w, d = w + 2 * pad, d + 2 * pad
+        ring = []
+        for k in range(STAVE_SECTION_POINTS):
+            a = math.tau * k / STAVE_SECTION_POINTS
+            ca, sa = math.cos(a), math.sin(a)
+            yy = w / 2 * math.copysign(abs(ca) ** ex, ca)
+            xx = d / 2 * math.copysign(abs(sa) ** ex, sa)
+            ring.append((p[0] + n[0] * xx, p[1] + yy, p[2] + n[2] * xx))
+        rings.append(ring)
+    return rings
 
 
-def _capsule(a, b, r, n_along=24, n_round=16):
-    pts = []
-    ax = tuple(b[i] - a[i] for i in range(3))
-    L = math.sqrt(sum(c * c for c in ax)) or 1e-9
-    t = tuple(c / L for c in ax)
-    # Any two directions perpendicular to t.
+def _basis(t):
     ref = (0.0, 0.0, 1.0) if abs(t[2]) < 0.9 else (1.0, 0.0, 0.0)
     u = (t[1] * ref[2] - t[2] * ref[1], t[2] * ref[0] - t[0] * ref[2], t[0] * ref[1] - t[1] * ref[0])
     un = math.sqrt(sum(c * c for c in u))
     u = tuple(c / un for c in u)
     v = (t[1] * u[2] - t[2] * u[1], t[2] * u[0] - t[0] * u[2], t[0] * u[1] - t[1] * u[0])
+    return u, v
+
+
+def _capsule(a, b, r, n_along=24, n_round=16, n_cap=6):
+    """Rings of a closed capsule: the cylinder from a to b and a hemisphere
+    at each end, so its axial extent is [a - r, b + r]."""
+    ax = tuple(b[i] - a[i] for i in range(3))
+    L = math.sqrt(sum(c * c for c in ax))
+    if L < 1e-9:
+        return _sphere(a, r, n_lat=2 * n_cap, n_lon=n_round)
+    t = tuple(c / L for c in ax)
+    u, v = _basis(t)
+
+    def ring(c, rad):
+        return [tuple(c[k] + rad * (math.cos(math.tau * j / n_round) * u[k] + math.sin(math.tau * j / n_round) * v[k])
+                      for k in range(3)) for j in range(n_round)]
+    rings = []
+    for i in range(n_cap, 0, -1):                               # the cap behind a
+        phi = math.pi / 2 * i / n_cap
+        c = tuple(a[k] - t[k] * r * math.sin(phi) for k in range(3))
+        rings.append(ring(c, r * math.cos(phi)) if i < n_cap else [c] * n_round)
     for i in range(n_along + 1):
-        c = _lerp(a, b, i / n_along)
-        for j in range(n_round):
-            ang = math.tau * j / n_round
-            pts.append(tuple(c[k] + r * (math.cos(ang) * u[k] + math.sin(ang) * v[k]) for k in range(3)))
-    return pts
+        rings.append(ring(_lerp(a, b, i / n_along), r))
+    for i in range(1, n_cap + 1):                               # the cap beyond b
+        phi = math.pi / 2 * i / n_cap
+        c = tuple(b[k] + t[k] * r * math.sin(phi) for k in range(3))
+        rings.append(ring(c, r * math.cos(phi)) if i < n_cap else [c] * n_round)
+    return rings
+
+
+def _sphere(c, r, n_lat=12, n_lon=16):
+    rings = []
+    for i in range(n_lat + 1):
+        th = math.pi * i / n_lat
+        z, rad = r * math.cos(th), r * math.sin(th)
+        rings.append([(c[0] + rad * math.cos(math.tau * j / n_lon), c[1] + rad * math.sin(math.tau * j / n_lon), c[2] + z)
+                      for j in range(n_lon)])
+    return rings
 
 
 def parts(shape):
-    """Sample points of each visible part, in bow metres (Blender axes)."""
+    """Each part's envelope as a list of closed groups (each a list of rings
+    of points, in bow metres, Blender axes). Groups are assessed apart, so no
+    segment joins one group's end to the next one's start."""
     s = shape["sockets"]
     nock, tip = shape.get("arrow", (s["Grip_R"], s["Muzzle"]))
-    out = {"stave": _stave_edges(shape)}
-    out["string"] = [_lerp(a, b, i / 60) for a, b in string_segments(s) for i in range(61)]
-    out["arrow"] = _capsule(nock, tip, 0.0042, n_along=80, n_round=8)
-    out["paw_L"] = (_capsule(PAW_L["from"], PAW_L["to"], PAW_L["radius"])
-                    + _capsule(PAW_L["from"], PAW_L["forearm_to"], PAW_L["forearm_radius"]))
+    out = {"stave": [_stave_envelope(shape)]}
+    out["string"] = [_capsule(a, b, 0.0031, n_along=60, n_round=8, n_cap=2) for a, b in string_segments(s)]
+    out["arrow"] = [_capsule(nock, tip, 0.0042, n_along=80, n_round=8, n_cap=3)]
+    out["paw_L"] = [_capsule(PAW_L["from"], PAW_L["to"], PAW_L["radius"]),
+                    _capsule(PAW_L["from"], PAW_L["forearm_to"], PAW_L["forearm_radius"])]
+    return out
+
+
+def place_many(rest, points_m, scale, state=None):
+    """check_viewmodel_framing.place for many points at once (numpy), about the
+    Grip_L anchor at the bow origin: eye-space centimetres."""
+    import numpy as np
+    state = state or {}
+    q = F.rotation(*rest["rotation_deg"])
+    if state.get("pitch") or state.get("roll"):
+        q = F.compose(F.rotation(state.get("pitch", 0.0), 0.0, state.get("roll", 0.0)), q)
+    by, bz = state.get("bob", (0.0, 0.0))
+    a = rest["anchor_cm"]
+    origin = np.array([a[0], a[1] + by, a[2] + bz + state.get("lift", 0.0)])
+    P = np.asarray(points_m, np.float64)
+    ue = np.stack([100.0 * P[..., 0], -100.0 * P[..., 1], 100.0 * P[..., 2]], -1) * scale
+    return origin + ue @ np.asarray(q, np.float64)
+
+
+def assess(groups, rest, state, contract):
+    """One part's projection, over its groups: visibility, nearest approach
+    (with a local spacing margin), near-plane crossings inside the frame."""
+    out = {"in_front": 0.0, "visible": False, "near_clip_in_frame": 0, "clip_points": []}
+    n = 0
+    for rings in groups:
+        r = _assess_group(rings, rest, state, contract)
+        k = len(rings) * len(rings[0])
+        out["in_front"] += r["in_front"] * k
+        n += k
+        out["visible"] |= r["visible"]
+        out["near_clip_in_frame"] += r["near_clip_in_frame"]
+        out["clip_points"] += r["clip_points"]
+        if "nearest_conservative" in r and r["nearest_conservative"] < out.get("nearest_conservative", 9.0):
+            for key in ("nearest_half_heights", "margin", "nearest_conservative"):
+                out[key] = r[key]
+    out["in_front"] = round(out["in_front"] / max(n, 1), 4)
+    out["clip_points"] = out["clip_points"][:4]
+    return out
+
+
+def _assess_group(rings, rest, state, contract):
+    import numpy as np
+    screen = F.Screen(contract["camera"])
+    R = np.array(rings, np.float64)                             # (rings, points, 3)
+    E = place_many(rest, R, contract["mesh_scale"], state)
+    x = E[..., 0]
+    near_x = screen.near / screen.scale
+    front = x > near_x
+    with np.errstate(divide="ignore", invalid="ignore"):
+        u = E[..., 1] / x / screen.tan_h
+        v = E[..., 2] / x / screen.tan_v
+    on_frame = front & (np.abs(u) <= 1.0) & (np.abs(v) <= 1.0)
+    dist = np.where(front, np.hypot(u * screen.aspect, v), np.inf)
+    out = {"in_front": round(float(front.mean()), 4), "visible": bool(on_frame.any())}
+    if front.any():
+        i, j = np.unravel_index(np.argmin(dist), dist.shape)
+        # Local margin: half the longest screen gap from the nearest sample to
+        # its ring and axial neighbours that are also in front.
+        gaps = []
+        for di, dj in ((0, 1), (0, -1), (1, 0), (-1, 0)):
+            ii, jj = i + di, (j + dj) % R.shape[1]
+            if 0 <= ii < R.shape[0] and front[ii, jj]:
+                gaps.append(math.hypot((u[ii, jj] - u[i, j]) * screen.aspect, v[ii, jj] - v[i, j]))
+        margin = max(gaps) / 2 if gaps else 0.0
+        out.update({"nearest_half_heights": round(float(dist[i, j]), 4), "margin": round(margin, 4),
+                    "nearest_conservative": round(float(dist[i, j]) - margin, 4)})
+    # Near-plane crossings along rings and along the axis, inside the frame.
+    clipped, where = 0, []
+    for A, B in ((E[:, :-1], E[:, 1:]), (E[:-1], E[1:])):
+        fa, fb = A[..., 0] > near_x, B[..., 0] > near_x
+        cross = fa != fb
+        if cross.any():
+            a_, b_ = A[cross], B[cross]
+            t = (near_x - a_[:, 0]) / (b_[:, 0] - a_[:, 0])
+            c = a_ + (b_ - a_) * t[:, None]
+            cu = c[:, 1] / near_x / screen.tan_h
+            cv = c[:, 2] / near_x / screen.tan_v
+            inside = (np.abs(cu) <= 1.0) & (np.abs(cv) <= 1.0)
+            clipped += int(np.sum(inside))
+            where += [(round(float(a), 3), round(float(b), 3)) for a, b in zip(cu[inside], cv[inside])]
+    out["near_clip_in_frame"] = clipped
+    out["clip_points"] = where[:4]
     return out
 
 
 def footprint(pose_name="bow.drawn", shape=None, contract=None):
-    """Each part's nearest approach to the reticle (half-heights), its screen
-    extent, and how much of it lies in front of the near plane, in the A4 pose."""
+    """Each part's envelope in the A4 pose at rest: visibility, nearest
+    approach to the reticle (half-heights, conservative), near-plane cuts in
+    the frame. ``clear`` needs every mandatory part visible, every visible
+    part outside the clear radius and no cut in the frame (SCOPE)."""
     contract = contract or F.json.loads(F.CONTRACT.read_text())
     pose = contract["poses"][pose_name]
-    screen = F.Screen(contract["camera"])
     shape = shape or (drawn() if pose_name == "bow.drawn" else braced())
-    scale = contract["mesh_scale"]
-    report = {}
-    for name, pts in parts(shape).items():
-        sockets = {"Grip_L": (0.0, 0.0, 0.0)}
-        sockets.update({f"p{i}": p for i, p in enumerate(pts)})
-        eye, _q = F.place(pose["rest"], sockets, pose["anchor"], scale)
-        # The checker's near plane: first-person depth (x * first_person_scale) beyond near_plane_cm.
-        front = [eye[f"p{i}"] for i in range(len(pts)) if eye[f"p{i}"][0] * screen.scale > screen.near]
-        if not front:
-            report[name] = {"in_front": 0}
-            continue
-        d = [screen.reticle_distance(p) for p in front]
-        uv = [screen.uv(p) for p in front]
-        report[name] = {"in_front": round(len(front) / len(pts), 3), "nearest_half_heights": round(min(d), 4),
-                        "u": [round(min(a for a, _ in uv), 3), round(max(a for a, _ in uv), 3)],
-                        "v": [round(min(b for _, b in uv), 3), round(max(b for _, b in uv), 3)]}
-    report["clear_radius"] = screen.clear
-    report["clear"] = all(v.get("nearest_half_heights", 9.0) >= screen.clear for k, v in report.items()
-                          if isinstance(v, dict))
+    clear_r = contract["camera"]["reticle_clear_radius"]
+    report = {"scope": SCOPE, "clear_radius": clear_r, "parts": {}}
+    for name, groups in parts(shape).items():
+        report["parts"][name] = assess(groups, pose["rest"], None, contract)
+    report["missing"] = [n for n in MANDATORY.get(pose_name, ()) if not report["parts"][n]["visible"]]
+    report["clear"] = (not report["missing"]
+                       and all(p.get("nearest_conservative", 9.0) >= clear_r for p in report["parts"].values() if p["visible"])
+                       and all(p["near_clip_in_frame"] == 0 for p in report["parts"].values()))
     return report
-
-
-if __name__ == "__main__":
-    import json
-    br, dr = braced(), drawn()
-    print(json.dumps({"braced_sockets": br["sockets"], "string_m": br["string_m"], "drawn_k": dr["k"],
-                      "drawn_sockets": dr["sockets"], "arrow": dr["arrow"],
-                      "footprint_drawn": footprint("bow.drawn", dr), "footprint_rest": footprint("bow", br)}, indent=1))
 
 
 # ---------------------------------------------------------------------------
@@ -330,9 +455,12 @@ if __name__ == "__main__":
 # between its two bones, so it stays straight at any draw.
 RIG_BONES = {"upper": 12, "lower": 8}
 DRAW_S = 0.65                       # the HUD's hold to full draw
-RELEASE_S = 0.03                    # the string's return to brace
-RELEASE_OVERSHOOT = 0.06            # past brace (in draw fraction), damped out
-RELEASE_DAMP_S = 0.12
+# The release returns the string exactly to brace in RELEASE_S and holds it
+# there. An unstretched string can't pass brace: its real few-millimetre
+# elastic vibration about brace is not modelled (an earlier overshoot moved
+# the nock 4 cm past brace with the tips fixed and stretched the string by
+# 1.87 mm; Codex's review of fa6aa2b).
+RELEASE_S = 0.03
 # The draw paw in the yugake, its thumb hooked on the string under the nock.
 # Bow metres from the nock: centre, radius, and the forearm toward the right elbow.
 PAW_R = {"centre": (-0.02, -0.03, -0.015), "radius": 0.045, "forearm_to": (-0.26, -0.16, -0.10),
@@ -347,26 +475,17 @@ _SHAPES = {}
 
 
 def shape_at(d):
-    """The bow at draw fraction d (0 braced, 1 full draw; below 0 is the
-    release's overshoot past brace, mirrored as a small reverse bend)."""
+    """The bow at draw fraction d: 0 braced, 1 full draw (DRAW_M). The string
+    keeps its unstretched length at every d; d < 0 (past brace) is refused."""
+    if d < 0.0 or d > 1.0 + 1e-9:
+        raise ValueError(f"yumi: draw fraction {d} outside [0, 1]; the string can't pass brace or full draw")
     key = round(d, 4)
     if key not in _SHAPES:
-        if abs(key) < 1e-9:
+        if key < 1e-9:
             _SHAPES[key] = braced()
         else:
             x0 = brace_nock_x()
-            nock_x = x0 + key * (-DRAW_M - x0)
-            if key > 0:
-                _SHAPES[key] = drawn(-nock_x)
-            else:
-                # Past brace the string leads the limbs forward: model it as the
-                # brace shape with the nock moved ahead and the tips eased forward.
-                br = braced()
-                sh = dict(br)
-                sk = dict(br["sockets"])
-                sk["Grip_R"] = (nock_x, 0.0, NOCK_Z)
-                sh["sockets"] = sk
-                _SHAPES[key] = sh
+            _SHAPES[key] = drawn(-(x0 + key * (-DRAW_M - x0)))
     return _SHAPES[key]
 
 
@@ -436,49 +555,50 @@ def skinning_error(d, every=5):
 
 def draw_fraction(t, release_at):
     """The draw over time: steady to full in DRAW_S while held (the HUD's
-    0.65 s), then the string's snap back past brace and its damped return."""
+    0.65 s), then straight back to brace in RELEASE_S, and held there."""
     if t < release_at:
         return min(max(t / DRAW_S, 0.0), 1.0)
     d0 = min(release_at / DRAW_S, 1.0)
-    tr = t - release_at
-    if tr < RELEASE_S:
-        return d0 * (1.0 - tr / RELEASE_S) - RELEASE_OVERSHOOT * (tr / RELEASE_S)
-    return -RELEASE_OVERSHOOT * math.exp(-(tr - RELEASE_S) / RELEASE_DAMP_S) * math.cos(
-        math.tau * (tr - RELEASE_S) / (2.2 * RELEASE_DAMP_S))
+    return max(d0 * (1.0 - (t - release_at) / RELEASE_S), 0.0)
 
 
-def _paw_r_points(nock, flown=0.0):
-    """The draw paw at the nock; after the release it flies back and out (hanare)."""
+def _paw_r_rings(nock, flown=0.0):
+    """The draw paw's envelope at the nock (a sphere and its forearm); after
+    the release it flies back and out (hanare)."""
     c = tuple(nock[i] + PAW_R["centre"][i] for i in range(3))
     away = (-0.30 * flown, -0.20 * flown, 0.02 * flown)
     c = tuple(c[i] + away[i] for i in range(3))
-    pts = _capsule(c, (c[0] + 1e-4, c[1], c[2]), PAW_R["radius"], n_along=2, n_round=16)
-    pts += _capsule(c, tuple(c[i] + PAW_R["forearm_to"][i] for i in range(3)), PAW_R["forearm_radius"], n_along=12,
-                    n_round=12)
-    return pts
+    return [_sphere(c, PAW_R["radius"]), _capsule(c, tuple(c[i] + PAW_R["forearm_to"][i] for i in range(3)),
+                                                  PAW_R["forearm_radius"], n_along=12, n_round=12)]
 
 
 def timeline(contract=None, anchor_y=None, release_at=1.2, end=1.8, fps=60.0, states=("rest", "bob_up_right",
                                                                                          "bob_down_left"),
-             pose_follows_draw=False):
+             pose_follows_draw=False, anchor_z=None):
     """Simulate the presentation from the draw press (t = 0) through the hold,
-    the release at ``release_at`` and the return. The rest blends bow ->
-    bow.drawn -> bow at blend_per_s, as the runtime does (first-order). The rig
-    draws as draw_fraction; the bow paw stays at the grip, the draw paw rides
-    the nock and flies back at the release, and the arrow is shown until
-    the release. Returns per frame and state each part's nearest approach to
-    the reticle (half-heights) and the clear radius."""
+    the release at ``release_at`` and the return, sampled at ``fps`` in each of
+    ``states`` (SCOPE: not continuous time, not the native camera path).
+
+    - **The pose:** the rest blends bow -> bow.drawn -> bow at blend_per_s, as
+      the runtime does (first order), optionally following the draw
+      (motion.bow_draw_presentation).
+    - **The parts:** the rig draws as draw_fraction. The bow paw stays at the
+      grip; the draw paw rides the nock and flies back at the release; the
+      arrow is shown until the release.
+
+    Returns per frame the string's length and, per part (worst over states),
+    its assess() figures."""
     contract = contract or F.json.loads(F.CONTRACT.read_text())
     rest_pose = contract["poses"]["bow"]
     drawn_pose = contract["poses"]["bow.drawn"]
-    screen = F.Screen(contract["camera"])
-    scale = contract["mesh_scale"]
     k = contract["motion"]["blend_per_s"]
     a_rest = [float(v) for v in rest_pose["rest"]["anchor_cm"]]
     r_rest = [float(v) for v in rest_pose["rest"]["rotation_deg"]]
     a_drawn = [float(v) for v in drawn_pose["rest"]["anchor_cm"]]
     if anchor_y is not None:
         a_drawn[1] = anchor_y
+    if anchor_z is not None:
+        a_drawn[2] = anchor_z
     r_drawn = [float(v) for v in drawn_pose["rest"]["rotation_deg"]]
     anchor, rot = list(a_rest), list(r_rest)
     frames = []
@@ -497,45 +617,69 @@ def timeline(contract=None, anchor_y=None, release_at=1.2, end=1.8, fps=60.0, st
         rot = [rot[i] + (target_r[i] - rot[i]) * f for i in range(3)]
         d = draw_fraction(t, release_at)
         shape = shape_at(d)
-        s = shape["sockets"]
         p = parts(shape)
-        nock = s["Grip_R"]
         if t >= release_at:
             p.pop("arrow")
+        # The draw paw rides the nock while drawing. At the release the hand
+        # lets the string go: it flies back from where it was, not with the string.
+        if t < release_at:
+            paw_at = shape["sockets"]["Grip_R"]
+            held = paw_at
         flown = 0.0 if t < release_at else min((t - release_at) / 0.10, 1.0)
-        p["paw_R"] = _paw_r_points(nock, flown)
-        row = {"t": round(t, 4), "draw": round(d, 4), "anchor": [round(v, 3) for v in anchor], "parts": {}}
-        for state_name in states:
-            st = contract["envelopes"]["states"][state_name]
-            rest = {"anchor_cm": anchor, "rotation_deg": rot}
-            for name, pts in p.items():
-                sockets = {"Grip_L": (0.0, 0.0, 0.0)}
-                sockets.update({f"p{i}": q for i, q in enumerate(pts)})
-                eye, _q = F.place(rest, sockets, "Grip_L", scale, st)
-                front = [eye[f"p{i}"] for i in range(len(pts)) if eye[f"p{i}"][0] * screen.scale > screen.near]
-                dist = min((screen.reticle_distance(e) for e in front), default=None)
-                prev = row["parts"].get(name)
-                if dist is not None and (prev is None or dist < prev):
-                    row["parts"][name] = round(dist, 4)
+        p["paw_R"] = _paw_r_rings(paw_at if t < release_at else held, flown)
+        segs = string_segments(shape["sockets"])
+        row = {"t": round(t, 4), "draw": round(d, 4), "anchor": [round(v, 3) for v in anchor],
+               "string_m": sum(_dist(a, b) for a, b in segs), "parts": {}}
+        rest = {"anchor_cm": anchor, "rotation_deg": rot}
+        for name, groups in p.items():
+            worst = None
+            for state_name in states:
+                r = assess(groups, rest, contract["envelopes"]["states"][state_name], contract)
+                if worst is None:
+                    worst = dict(r)
+                else:
+                    worst["visible"] = worst["visible"] and r["visible"]
+                    worst["near_clip_in_frame"] = max(worst["near_clip_in_frame"], r["near_clip_in_frame"])
+                    worst["clip_points"] = (worst["clip_points"] + r["clip_points"])[:8]
+                    if r.get("nearest_conservative", 9.0) < worst.get("nearest_conservative", 9.0):
+                        for key in ("nearest_half_heights", "margin", "nearest_conservative"):
+                            worst[key] = r[key]
+            row["parts"][name] = worst
         frames.append(row)
         t += dt
-    return {"clear_radius": screen.clear, "fps": fps, "release_at": release_at, "frames": frames}
+    return {"scope": SCOPE, "clear_radius": contract["camera"]["reticle_clear_radius"], "fps": fps,
+            "release_at": release_at, "frames": frames}
 
 
 def summary(tl):
-    """Per part: the nearest approach over the aim hold (full draw, the pose
-    settled, before the release) and over the transitions, with how long each
-    phase sits inside the clear radius."""
+    """Per part and phase (draw, hold, release): the nearest conservative
+    approach to the reticle, how long it sits inside the clear radius,
+    frames where a mandatory part is not visible (the hold), and frames with
+    a near-plane cut inside the frame."""
     clear = tl["clear_radius"]
     dt = 1.0 / tl["fps"]
     out = {}
     for fr in tl["frames"]:
         settled = fr["draw"] >= 1.0 and fr["t"] < tl["release_at"] and fr["t"] >= DRAW_S
         phase = "hold" if settled else ("draw" if fr["t"] < tl["release_at"] else "release")
-        for name, dist in fr["parts"].items():
-            o = out.setdefault(name, {})
-            ph = o.setdefault(phase, {"nearest": 9.0, "inside_s": 0.0})
-            ph["nearest"] = min(ph["nearest"], dist)
-            if dist < clear:
+        for name, r in fr["parts"].items():
+            ph = out.setdefault(name, {}).setdefault(phase, {"nearest": 9.0, "inside_s": 0.0, "hidden_frames": 0,
+                                                             "near_clip_frames": 0})
+            if not r["visible"]:
+                if phase == "hold" and name in MANDATORY["bow.drawn"]:
+                    ph["hidden_frames"] += 1
+                continue
+            ph["nearest"] = min(ph["nearest"], r.get("nearest_conservative", 9.0))
+            if r.get("nearest_conservative", 9.0) < clear:
                 ph["inside_s"] = round(ph["inside_s"] + dt, 4)
+            if r["near_clip_in_frame"]:
+                ph["near_clip_frames"] += 1
     return out
+
+
+if __name__ == "__main__":
+    import json
+    br, dr = braced(), drawn()
+    print(json.dumps({"braced_sockets": br["sockets"], "string_m": br["string_m"], "drawn_k": dr["k"],
+                      "drawn_sockets": dr["sockets"], "arrow": dr["arrow"],
+                      "footprint_drawn": footprint("bow.drawn", dr), "footprint_rest": footprint("bow", br)}, indent=1))

@@ -19,7 +19,7 @@ the look need real first-person captures.
    rest and state blend. Live gameplay aim (`BowAimOffset`, the shot direction,
    the HUD ray) is never delayed or changed.
 2. **The drawn bow replaces the legacy −15° drawing tilt.** Stacked, the
-   arrow line misses the reticle at 20 m by 0.654 half-heights (the tolerance
+   arrow line misses the reticle at 20 m by 0.659 half-heights (the tolerance
    is 0.02). The checker reproduces that and refuses any `pitch_deg` entry for
    drawing.
 3. **Weapons 19 and 20:** their authored meshes are approved once they pass
@@ -62,7 +62,7 @@ half-heights, against a clear radius of 0.12.
 | heavy | (36, 13, −12.5) | (24, 4, 0) | kanabō, forge hammer | u 0.52, v −0.88, was −1.06 (below the frame) | strike, windup, sprint |
 | kama | (36, 12, −13) | (20, −8, 0) | kusarigama | u 0.48, v −0.92; chain paw u −0.21 | strike, windup, sprint |
 | bow | (45, −15, −12) | (0, 6, −8) | yumi | bow paw u −0.48, v −0.68 | reload (at −10°), sprint |
-| bow.drawn | (60, −5, −9.5) | (0.25, 0.1, 0) | yumi while drawing | arrow rest u −0.08, v −0.18 | aim (below) |
+| bow.drawn | (60, −6, −14) **proposed** | (0.25, 0.1, 0) | yumi while drawing | arrow rest u −0.11, v −0.36 | aim (below) |
 
 Each pose sorts its grips three ways:
 
@@ -85,49 +85,85 @@ the screen point (u, v) where the HUD ray lands: the direction
 
 | BowAimOffset (yaw, pitch) | Same angle on both cameras | Corrected |
 | --- | --- | --- |
-| (2°, 0°) | 0.029 | 0.008 |
-| (0°, 2°) | 0.034 | 0.008 |
-| (4°, −3°) | 0.067 | 0.008 |
-| (6°, 4°) | 0.105 | 0.013 |
+| (2°, 0°) | 0.027 | 0.013 |
+| (0°, 2°) | 0.028 | 0.014 |
+| (4°, −3°) | 0.070 | 0.012 |
+| (6°, 4°) | 0.101 | 0.018 |
 
-Errors are in half-heights; the tolerance is 0.02. At rest the drawn arrow
-lands 0.006 from the reticle at 20 m.
+Errors are in half-heights; the tolerance is 0.02. They are measured at the
+proposed kai hold below; at the first authored hold they were 0.006–0.011.
+At rest the drawn arrow lands 0.001 from the reticle at 20 m.
 
 **The bow's volumes, not only its sockets.** Codex's BowAim originals (720p,
 `e237b9f`) showed that the socket checks did not represent the proxy
 volumes: a 22 cm grip box and a 13 cm paw cube covered the target.
-`scripts/art/yumi_draw.py` checks the authored parts as volumes, through this
-contract's own placement and projection (first-person depth × 0.6 beyond the
-near plane):
+`scripts/art/yumi_draw.py` checks the authored parts as a **sampled design
+envelope** (its `SCOPE`), through this contract's own placement and
+projection. The envelope:
 
-- the stave, its full section along the solved shape;
+- the stave: the generator's own rounded-rectangle section (28 points, tip
+  taper), inflated for the nigiri, rattan and hazu;
 - the string;
-- the nocked arrow;
-- the bow paw round the nigiri, with its forearm;
-- the draw paw in the yugake at the nock.
+- the nocked arrow and both paws: closed capsules and a sphere;
+- each nearest approach less a local sampling margin.
 
-It simulates them frame by frame (60 fps) through the draw (0.65 s), the
-hold, the release and the return, in rest and both bobs.
+It also checks three things:
 
-- **At the old anchor (60, −3, −9.5)**, the stave's volume sits 0.054
-  half-heights from the reticle all through the hold, inside the 0.12 radius.
-  The Grip_L socket alone (0.127) hid it.
-- **The authored anchor is (60, −5, −9.5).** Every volume clears 0.12 in
-  every phase, provided the presentation follows the draw
-  (`motion.bow_draw_presentation`): while drawing, the target is
-  lerp(bow rest, bow.drawn rest, draw fraction), then blended at 12/s.
-  Targeting bow.drawn at once lets the nocked, not-yet-drawn arrow reach
-  forward to 0.084 for 0.47 s.
+- that the stave, arrow and bow paw are visible at full draw;
+- that no near-plane crossing (first-person depth × 0.6 beyond 10 cm, so
+  16.7 cm before the eye) falls inside the frame;
+- the string's length in every frame. The release returns exactly to brace,
+  and the string never stretches.
 
-  | Part | Nearest approach (half-heights) |
-  | --- | --- |
-  | Stave | 0.139 (hold, in the bob) |
-  | Arrow | 0.127 (draw), 0.157 (hold) |
-  | Bow paw | 0.193 |
-  | Draw paw | 0.132 (release) |
-  | String | more than 0.45 |
+It runs frame by frame through the draw (0.65 s), the hold, the release and
+the return, in rest and both bobs. Codex's review of `fa6aa2b` found the first
+version passing geometry behind the camera, sampling open cylinders and four
+section points, and stretching the string by 1.87 mm in its release
+overshoot. Each of those is now a regression test.
 
-  This is presentation only. The temporary proxy keeps its own fixed poses.
+It is not the emitted or skinned asset, continuous time or the native camera
+path. Rendered poses decide.
+
+**What the envelope found, kept as failing cases in the tests:**
+
+| Hold | Anchor | Result |
+| --- | --- | --- |
+| The first authored hold | (60, −3, −9.5) | The stave sits inside the 0.12 radius all through the hold. The Grip_L socket alone (0.127) hid it |
+| The first candidate | (60, −5, −9.5) | The conservative stave envelope reaches 0.116 in the bob. The **nocked arrow is cut by the near plane inside the frame**, at about (u −0.39, v −0.70), through the draw and the hold |
+
+**Design proposal, for rendered poses to decide: the kai hold (60, −6, −14).**
+
+- **The pose.** At kai the arrow lies at mouth level, under the cheekbone,
+  as in kyūdō. Here that puts the arrow 7.75 cm below the eye, rather than
+  4.25. The lower hold is what moves the arrow's near-plane crossing below
+  the frame. The extra 1 cm left gives the inflated stave margin in the bob.
+- **Its screen boxes are widened, and this is a proposal, not a quiet
+  relaxation:**
+  - Grip_L's v range grows from −0.6 to −0.7, because Grip_L now sits at
+    −0.59 and the downward bob would push it out;
+  - the Muzzle box becomes u −0.15 to 0 and v −0.45 to −0.1, from −0.12 to 0
+    and −0.25 to −0.1. The arrow rest is now at (−0.11, −0.36).
+- **Aim:** at rest it lands 0.001 from the reticle at 20 m; the corrected
+  offsets miss by 0.012–0.018 (tolerance 0.02).
+- **Presentation:** it should follow the draw (`motion.bow_draw_presentation`:
+  the target is lerp(bow rest, bow.drawn rest, draw fraction), then blended at
+  12/s). Blending to bow.drawn at once cuts the string mid-frame as it passes
+  the face.
+
+**Nearest conservative approach with the proposal and the draw-led pose**
+(half-heights, in rest and both bobs, through draw, hold and release):
+
+| Part | Nearest approach | Note |
+| --- | --- | --- |
+| Stave | 0.159 | – |
+| Arrow | 0.124 drawing, 0.320 holding | no in-frame cut |
+| Bow paw | at least 0.306 | – |
+| String | at least 0.60 | – |
+| Draw paw | 0.963 | after the release it flies back from the cheek, not with the string |
+
+**Residual, reported plainly:** the draw paw's forearm crosses the near plane
+in the frame's bottom-left region (u ≤ −0.82, v ≤ −0.74) for 10 sampled
+frames (0.17 s) early in the draw.
 
 **The continuous draw rig.** Production W18 is a skeletal yumi, not a
 rest/drawn mesh swap.
