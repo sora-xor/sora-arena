@@ -33,6 +33,18 @@ cargo_capture_validation = importlib.util.module_from_spec(CARGO_SPEC)
 CARGO_SPEC.loader.exec_module(cargo_capture_validation)
 
 
+WITHDRAWAL_SPEC = importlib.util.spec_from_file_location("withdrawal_capture_validation", Path(__file__).with_name("withdrawal_capture_validation.py"))
+withdrawal_capture_validation = importlib.util.module_from_spec(WITHDRAWAL_SPEC)
+WITHDRAWAL_SPEC.loader.exec_module(withdrawal_capture_validation)
+
+
+class WithdrawalCaptureEvidenceError(ValueError):
+    """Preserve originals even when live retreat observations fail."""
+    def __init__(self, message, frames):
+        super().__init__(message)
+        self.frames = frames
+
+
 class NaniteDrawEvidenceError(ValueError):
     """The originals are complete, but their visible-draw gate failed."""
     def __init__(self, message, frames):
@@ -244,6 +256,7 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
         "SORA_WEAPON_HUD_FIXTURE_FRAME": ("SoraCapture.WeaponHUDFixture.", "prepared gameplay UI fixture; not playthrough evidence"),
         "SORA_BOW_AIM_FRAME": ("SoraCapture.BowAim.", "live mapped bow aim from prepared checkpoint/view; not playthrough or art acceptance"),
         "SORA_CARGO_FRAME": ("SoraCapture.Cargo.", cargo_capture_validation.SCOPE),
+        "SORA_WITHDRAWAL_FRAME": ("SoraCapture.HorseWithdrawal.", withdrawal_capture_validation.SCOPE),
         "SORA_CODEX_FRAME": ("SoraCapture.Codex.", codex_capture_validation.SCOPE),
         "SORA_NANITE_DRAW_FRAME": ("SoraCapture.NaniteDraw.", nanite_capture_validation.SCOPE),
         "SORA_TIMBER_PROBE_FRAME": ("SoraCapture.TimberProbe.", timber_probe_capture_validation.SCOPE),
@@ -267,6 +280,7 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
     bow_sequences = {}
     codex_sequences = {}
     cargo_sequences = {}
+    withdrawal_sequences = {}
     nanite_sequences = {}
     probe_sequences = {}
     seen = set()
@@ -311,6 +325,8 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
                 stream.write(metadata_bytes)
             frame.update(observations=str(metadata_target.relative_to(output)),
                          observations_sha256=hashlib.sha256(metadata_bytes).hexdigest(), reticle_pixels=pixels)
+        if marker == "SORA_WITHDRAWAL_FRAME":
+            withdrawal_sequences.setdefault(path.parent, []).append((path, target, frame))
         if marker == "SORA_CARGO_FRAME":
             cargo_sequences.setdefault(path.parent, []).append((path, target, frame))
         if marker == "SORA_CODEX_FRAME":
@@ -320,6 +336,26 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
         if marker == "SORA_TIMBER_PROBE_FRAME":
             probe_sequences.setdefault(path.parent, []).append((path, target, frame))
         frames.append(frame)
+    if withdrawal_sequences:
+        expected = [test.get("fullTestPath") for test in report.get("tests", [])
+                    if test.get("fullTestPath", "").startswith("SoraCapture.HorseWithdrawal.")]
+        if len(withdrawal_sequences) != 1 or expected != ["SoraCapture.HorseWithdrawal.Live"]:
+            raise WithdrawalCaptureEvidenceError("withdrawal requires one matching Live run", frames)
+        for folder, sequence in withdrawal_sequences.items():
+            sidecar = (folder / "capture.json").resolve()
+            if sidecar.parent != folder or sidecar.stat().st_mtime_ns < max(start_ns, *(p.stat().st_mtime_ns for p, _, _ in sequence)):
+                raise WithdrawalCaptureEvidenceError("stale/escaped withdrawal metadata", frames)
+            raw = sidecar.read_bytes()
+            target = sequence[0][1].parent / "capture.json"
+            with target.open("xb") as stream:
+                stream.write(raw)
+            for path, _, frame in sequence:
+                frame.update(observations=str(target.relative_to(output)), observations_source=str(sidecar),
+                             observations_sha256=hashlib.sha256(raw).hexdigest(), withdrawal_phase=path.stem)
+            try:
+                withdrawal_capture_validation.verify_sequence(json.loads(raw), [p.name for p, _, _ in sequence], width, height)
+            except (ValueError, TypeError, KeyError) as error:
+                raise WithdrawalCaptureEvidenceError(str(error), frames) from error
     if cargo_sequences:
         expected = [test.get("fullTestPath") for test in report.get("tests", [])
                     if test.get("fullTestPath", "").startswith("SoraCapture.Cargo.")]
@@ -498,7 +534,7 @@ def main() -> int:
         try:
             frames = archive_frames(log, report, project, engine_base, output, start_ns, width, height)
         except (OSError, ValueError, zlib.error) as error:
-            if isinstance(error, (NaniteDrawEvidenceError, CargoCaptureEvidenceError, CampaignCaptureEvidenceError)):
+            if isinstance(error, (NaniteDrawEvidenceError, CargoCaptureEvidenceError, CampaignCaptureEvidenceError, WithdrawalCaptureEvidenceError)):
                 frames = error.frames
             failures.append(f"screenshot archive: {error}")
         manifest = {"source_commit": (output / "source-commit.txt").read_text().strip(),

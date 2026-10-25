@@ -139,6 +139,7 @@ def checks(python: str = sys.executable) -> list[Check]:
         ("capture-report-guards", "scripts/toolchain/test_capture_report.py"),
         ("capture-frame-contract", "scripts/toolchain/test_capture_frame_contract.py"),
         ("cargo-capture-evidence", "scripts/toolchain/test_cargo_capture.py"),
+        ("withdrawal-capture-evidence", "scripts/toolchain/test_withdrawal_capture.py"),
         ("nanite-draw-evidence", "scripts/toolchain/test_nanite_capture.py"),
         ("timber-probe-evidence", "scripts/toolchain/test_timber_probe_capture.py"),
         ("dojo-nanite-import", "scripts/unreal/test_dojo_nanite.py"),
