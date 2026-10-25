@@ -5,6 +5,7 @@ import importlib.util
 import io
 import json
 import os
+import subprocess
 from pathlib import Path
 import sys
 import tempfile
@@ -109,6 +110,21 @@ class SourceChecks(unittest.TestCase):
         module.write_text("import unittest\nclass Missing(unittest.TestCase):\n @unittest.skip('dependency unavailable')\n def test_required(self): pass\n")
         with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
             self.assertEqual(RUNNER.unit_tests(str(module)), 1)
+
+    def test_unit_cli_resolves_repository_imports_without_cwd_or_pythonpath(self):
+        # This was the failing GitHub gate: -m unittest masked the missing
+        # repository path, while source_checks loads tests directly by file.
+        env = dict(os.environ)
+        env.pop("PYTHONPATH", None)
+        env.pop("PYTHONOPTIMIZE", None)
+        result = subprocess.run(
+            [sys.executable, "-B", str(Path(RUNNER.__file__).resolve()),
+             "--unit-tests", "scripts/unreal/test_timber_uv_roundtrip.py"],
+            cwd=self.root, env=env, text=True, stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT, timeout=30)
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertIn("Ran 4 tests", result.stdout)
+        self.assertIn("OK", result.stdout)
 
     def test_lfs_pointer_cannot_count_as_verified_asset_bytes(self):
         (self.root / "asset.fbx").write_bytes(b"version https://git-lfs.github.com/spec/v1\noid sha256:example\n")
