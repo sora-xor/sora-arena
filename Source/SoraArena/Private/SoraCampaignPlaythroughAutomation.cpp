@@ -1685,6 +1685,7 @@ bool PlayPhases(FAutomationTestBase& Test, FState& State)
                 if(!Advance(Test,State,1,FrameSeconds)) return false;
             if(!Advance(Test,State,2,FrameSeconds)) return false;
         }
+        if(Beat.Id==TEXT("ch06.b09")&&(!WaitForDialogue(Test,State)||!Advance(Test,State,2,FrameSeconds))) return false;
         if (!Test.TestEqual(*(Context + TEXT(" begins")), Campaign(State)->ActivePhase(), Phase) || !ExpectCheckpoint(Test, State))
             return Fail(Test, State, Context + TEXT(" was not saved"));
         ++State.PhaseReloads;

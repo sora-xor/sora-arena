@@ -1020,8 +1020,12 @@ void USoraCampaignDirector::EnterPhases(int32 Before,bool bSave)
     {
         BeatPhase=Phase;
         if(Mode().Arena()) Mode().Arena()->ShowArchivePage(Beat,BeatPhase);
+        // The family-page reveal precedes the remembered phase-two lesson;
+        // otherwise its radio lines sit ahead of the blocking exchange.
+        const bool Archive=Beat.Id==TEXT("ch06.b09");
+        if(Archive&&Beat.PhaseEvents.IsValidIndex(Phase-1)) Fire(TEXT("duel_event:")+Beat.PhaseEvents[Phase-1]);
         Fire(FString::Printf(TEXT("%s_phase:%d"),bDuel?TEXT("duel"):TEXT("boss"),Phase+1));
-        if(bDuel&&Beat.PhaseEvents.IsValidIndex(Phase-1)) Fire(TEXT("duel_event:")+Beat.PhaseEvents[Phase-1]);
+        if(bDuel&&!Archive&&Beat.PhaseEvents.IsValidIndex(Phase-1)) Fire(TEXT("duel_event:")+Beat.PhaseEvents[Phase-1]);
         Telemetry(TEXT("phase"));
     }
     // A long boss or duel also saves at each later phase; the opponent then
@@ -2249,7 +2253,7 @@ void USoraCampaignDirector::SaveCheckpoint(int32 AtBeat)
 bool USoraCampaignDirector::CanCheckpointHere() const
 {
     const FSoraChapter* Chapter=ActiveChapter();
-    return Chapter&&Mode().bCampaign&&!BeatState.Complete&&Chapter->Rules.IsValidIndex(BeatIndex)&&
+    return Chapter&&Mode().bCampaign&&!BeatState.Complete&&PendingArchivePhaseSave==INDEX_NONE&&Chapter->Rules.IsValidIndex(BeatIndex)&&
         SoraBeatRules::CheckpointValid(BeatState,Chapter->Rules.GetData(),Chapter->Rules.Num(),EntryWeapons,EntryMechanics,
             EntryFlags,BeatIndex,BeatPhase)&&
         SoraBeatRules::TaskCheckpointValid(Chapter->Tasks[BeatIndex],BeatPhase);

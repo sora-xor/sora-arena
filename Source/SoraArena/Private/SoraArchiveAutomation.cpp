@@ -103,11 +103,15 @@ bool FSoraArchiveFamilyPageTest::RunTest(const FString&)
         if(!W.Tick(2)||!TestEqual(TEXT("Actual opponent health enters the family-page phase"),W.Campaign()->ActivePhase(),1)||
             !PageIsLit(W,true)) return false;
         TestTrue(TEXT("The family-page dialogue holds combat"),W.Campaign()->IsDialogueBlocking()&&!W.Hero()->CanPlay());
+        const auto* Reveal=W.Campaign()->CurrentDialogueCue();
+        TestTrue(TEXT("The family-page exchange precedes the remembered lesson"),Reveal&&Reveal->Id==TEXT("ch06.b09.toranosuke.005"));
         const auto* BeforeReveal=Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(W.Slot,0));
         if(!TestTrue(TEXT("Quitting during the reveal still resumes before the exchange"),
             BeforeReveal&&BeforeReveal->CheckpointChapter==5&&BeforeReveal->CheckpointBeat==8&&BeforeReveal->CheckpointPhase==0)) return false;
         for(int I=0;I<1800&&W.Campaign()->IsDialogueBlocking();++I) if(!W.Tick(1)) return false;
         if(!TestFalse(TEXT("The authored reveal releases control"),W.Campaign()->IsDialogueBlocking())||!W.Tick(2)) return false;
+        const auto* Memory=W.Campaign()->CurrentDialogueCue();
+        TestTrue(TEXT("The remembered lesson follows the blocking exchange"),Memory&&Memory->Id==TEXT("ch06.b09.sekireisai.001"));
         const auto* Saved=Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(W.Slot,0));
         if(!TestTrue(TEXT("Only the completed reveal saves the actual mid-duel checkpoint"),Saved&&Saved->CheckpointChapter==5&&Saved->CheckpointBeat==8&&Saved->CheckpointPhase==1)) return false;
         W.Fieldcraft()->OnEvent.Remove(W.EventsHandle);

@@ -63,3 +63,10 @@ The candidate now leaves the earlier checkpoint in place while dialogue holds
 combat and saves the second phase once control returns. The prepared fixture
 checks disk state before and after that boundary, then reloads the resulting
 save. This timing correction still awaits engine execution.
+
+The phase transition also queued the remembered radio lesson before the
+family exchange. The archive now queues the blocking reveal first, followed
+by the phase-two lesson; other encounters retain their order. The fixture
+checks both subtitle identities. The assisted campaign waits for that real
+blocking exchange before expecting its phase save. This remains dialogue
+staging; the authored twenty-second cinematic and rack impact are not finished.
