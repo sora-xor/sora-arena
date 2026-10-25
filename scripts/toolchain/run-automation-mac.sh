@@ -41,6 +41,7 @@ mkdir -p "$OUTPUT"
 # the shell reads them from its own working directory. Give both the same path.
 OUTPUT="$(cd -- "$OUTPUT" && pwd)"
 LOG="$OUTPUT/editor.log"
+LOG_COMPLETION="$OUTPUT/editor-log-completion.json"
 REPORT="$OUTPUT/report"
 rm -rf "$REPORT"
 # Unreal does not rebuild the project module with -unattended, so a stale one
@@ -58,9 +59,12 @@ guard_config
 
 echo "Running Unreal automation '$FILTER'; log: $LOG" >&2
 set +e
-"$EDITOR_CMD" "$PROJECT" "-ExecCmds=Automation RunTests $FILTER;Quit" \
+# Trace descendants can retain stdout after the editor exits. Only the
+# collector owns the log file; finish its inherited stream before validation.
+python3 "$SCRIPT_DIR/run_logged_process.py" --log "$LOG" --receipt "$LOG_COMPLETION" -- \
+  "$EDITOR_CMD" "$PROJECT" "-ExecCmds=Automation RunTests $FILTER;Quit" \
   -unattended -nopause -nullrhi -nosplash -nosound -stdout -FullStdOutLogOutput \
-  "${EDITOR_CONFIG_ARGS[@]}" "-ReportExportPath=$REPORT" >"$LOG" 2>&1
+  "${EDITOR_CONFIG_ARGS[@]}" "-ReportExportPath=$REPORT"
 EDITOR_STATUS=$?
 set -e
 
