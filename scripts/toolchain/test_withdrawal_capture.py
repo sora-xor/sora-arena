@@ -3,6 +3,7 @@ import copy
 import hashlib
 import importlib.util
 import json
+import math
 import os
 from pathlib import Path
 import struct
@@ -23,12 +24,15 @@ def observations():
                 defense_ms=150003, defense_world_s=151.2, defense_wall_s=151.3,
                 walked_cm=12000, gate_clear_world_s=2.6, gate_clear_wall_s=2.61, frames=[])
     for i, phase in enumerate(RULES.PHASES):
-        people = [dict(actor=f'Enemy{n}', position=[[-300,-700,-2300][i]+n*10, n*10,90],
-                       screen=[350+n*60,360], at_approach=(i==2),feet_z=0,grounded=True) for n in range(6)]
+        people = [dict(actor=f'Enemy{n}', position=[[-300,-700,-2300,-2300][i]+n*10, n*10,90],
+                       screen=[350+n*60,360], at_approach=(i>=2),feet_z=0,grounded=True) for n in range(6)]
         data['frames'].append(dict(phase=phase,file=phase+'.png',request_frame=9100+i*120,processed_frame=9100+i*120,
-            world_s=[151.2,153.2,160.2][i],wall_s=[151.3,153.31,160.31][i],walked_cm=[0,2400,12000][i],
-            defense_ms=150003,paused=False,hud_drawn=True,english=True,camera=[-500,-3400,1900],survivors=people,
-            cue=['ch02.b02.enforcer.009','ch02.b02.enforcer.009','ch02.b06.kohagi.006'][i]))
+            world_s=[151.2,153.2,160.2,160.3][i],wall_s=[151.3,153.31,160.31,160.41][i],walked_cm=[0,2400,12000,12000][i],
+            defense_ms=150003,paused=False,hud_drawn=(i<3),english=True,
+            camera=[-500,-3400,1900] if i<3 else [-2220,0,1200],
+            camera_rotation=[math.degrees(math.atan2(-1800,3400)),90,0] if i<3 else [math.degrees(math.atan2(-1110,80)),180,0],
+            camera_fov=75 if i<3 else 45,survivors=people,
+            cue='ch02.b02.enforcer.009' if i<2 else 'ch02.b06.kohagi.006'))
     return data
 
 
@@ -82,7 +86,7 @@ class WithdrawalCaptureTests(unittest.TestCase):
     def test_failed_semantics_still_preserve_all_actual_pixels(self):
         self.data['passed']=False;self.write()
         with self.assertRaises(VERIFY.WithdrawalCaptureEvidenceError) as caught:self.archive()
-        frames=caught.exception.frames;self.assertEqual(len(frames),3)
+        frames=caught.exception.frames;self.assertEqual(len(frames),4)
         for f in frames:
             self.assertEqual((self.root/'archive1'/f['path']).read_bytes(),self.png)
             self.assertEqual((self.root/'archive1'/f['observations']).read_bytes(),self.sidecar.read_bytes())
@@ -114,6 +118,24 @@ class WithdrawalCaptureTests(unittest.TestCase):
                 with self.assertRaises(ValueError):self.verify()
         self.data=copy.deepcopy(original);self.data['frames'][1]['survivors']=copy.deepcopy(self.data['frames'][0]['survivors'])
         with self.assertRaisesRegex(ValueError,'displacement'):self.verify()
+
+    def test_detail_cannot_replace_hud_evidence_or_reuse_wide_camera(self):
+        original=copy.deepcopy(self.data)
+        mutations=[lambda r:r.update(camera=[-500,-3400,1900]),lambda r:r.update(camera_rotation=[0,180,0]),
+                   lambda r:r.update(camera_fov=75),lambda r:r.update(camera_fov=float('nan')),
+                   lambda r:r.update(hud_drawn=True),lambda r:r.update(hud_drawn=0),
+                   lambda r:r.update(cue='cinematic'),lambda r:r.update(request_frame=9340,processed_frame=9340),
+                   lambda r:r['survivors'][0].update(grounded=False),
+                   lambda r:r['survivors'][0].update(actor='replacement'),
+                   lambda r:r['survivors'][0].update(position=[-1000,0,90])]
+        for i,mutate in enumerate(mutations):
+            with self.subTest(mutation=i):
+                self.data=copy.deepcopy(original);mutate(self.data['frames'][3])
+                with self.assertRaises(ValueError):self.verify()
+        for phase in range(3):
+            with self.subTest(hidden_overview=phase):
+                self.data=copy.deepcopy(original);self.data['frames'][phase]['hud_drawn']=False
+                with self.assertRaises(ValueError):self.verify()
 
 
 if __name__=='__main__':unittest.main()

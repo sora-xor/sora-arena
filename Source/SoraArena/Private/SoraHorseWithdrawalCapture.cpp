@@ -15,6 +15,7 @@
 #include "AssetCompilingManager.h"
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
+#include "Camera/PlayerCameraManager.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "ContentStreaming.h"
@@ -47,8 +48,9 @@ namespace SoraWithdrawalCapture
 {
 namespace R=SoraHorseWithdrawalRules;
 using FJson=TSharedPtr<FJsonObject>;
-const TCHAR* Phases[]={TEXT("retreat-bark"),TEXT("walking"),TEXT("gate-clear")};
-const TCHAR* Scope=TEXT("prepared checkpoint/camera; combat frozen during real defense timer; live survivor navigation and HUD; not ordinary defense or art acceptance");
+const TCHAR* Phases[]={TEXT("retreat-bark"),TEXT("walking"),TEXT("gate-clear"),TEXT("arrival-detail")};
+constexpr int32 PhaseCount=UE_ARRAY_COUNT(Phases);
+const TCHAR* Scope=TEXT("prepared checkpoint/cameras; combat frozen during real defense timer; live survivor navigation, three bilingual HUD frames and one HUD-hidden arrival detail; not ordinary defense or art acceptance");
 void Vector(FJson J,const TCHAR* Name,const FVector& V)
 { J->SetArrayField(Name,{MakeShared<FJsonValueNumber>(V.X),MakeShared<FJsonValueNumber>(V.Y),MakeShared<FJsonValueNumber>(V.Z)}); }
 bool AtApproach(const ASoraEnemy& Enemy)
@@ -101,6 +103,18 @@ public:
         const auto* Cue=C()->CurrentDialogueCue();
         if(Cue&&Cue->Id==TEXT("ch02.b06.kohagi.006")&&ClearWorld<0)
         { ClearWorld=WorldTime(); ClearWall=Now; }
+        if(Phase==3)
+        {
+            if(!DetailCameraApplied)
+            {
+                // The three overview originals retain the ordinary HUD. Only
+                // this extra detail hides it; no survivor or clock is changed.
+                SetCamera(FVector(-2220,0,1200),FVector(-2300,0,90),45.f);
+                HUD->bShowHUD=false; DetailCameraApplied=true; DetailCameraFrame=GFrameCounter;
+            }
+            // Let the player camera cache and renderer observe the new view.
+            if(GFrameCounter>DetailCameraFrame+1) CaptureFrame();
+        }
         return false;
     }
 private:
@@ -120,15 +134,22 @@ private:
     FDelegateHandle DrawHandle,ScreenshotHandle,CompleteHandle,ShotHandle;
     FVector2D Viewport;
     bool Started=false,Failed=false,Cleaned=false,Released=false,Completed=false,ShowHUD=true;
+    bool DetailCameraApplied=false;
     bool WasCampaign=false,WasPractice=false,WasEnglish=true,HadCampaign=false,HadControls=false,HadSettings=false;
     int32 Phase=0,DefenseMs=0,DownBefore=0,DownAtCompletion=0,Completions=0,Shots=0;
     uint64 RequestFrame=0;
+    uint64 DetailCameraFrame=0;
     double BeganWall=0,BeganWorld=0,RetreatWorld=0,RetreatWall=0,ClearWorld=-1,ClearWall=-1,CompleteWorld=-1,CompleteWall=-1,Walked=0;
     ASoraPlayerCharacter* Hero() const { return M.IsValid()?M->Hero():nullptr; }
     APlayerController* PC() const { return Hero()?Cast<APlayerController>(Hero()->GetController()):nullptr; }
     USoraCampaignDirector* C() const { return M.IsValid()?M->Campaign():nullptr; }
     double WorldTime() const { return M->GetWorld()->GetTimeSeconds(); }
     int Down() const { const auto& S=C()->TaskProgress(); return S.Down[0]+S.Down[1]+S.Down[2]; }
+    void SetCamera(const FVector& Eye,const FVector& At,float FOV)
+    {
+        Camera->SetActorLocation(Eye); Camera->SetActorRotation((At-Eye).Rotation());
+        Camera->GetCameraComponent()->SetFieldOfView(FOV);
+    }
     void Fail(const TCHAR* Why) { Test.AddError(Why); Failed=true; }
     bool OrdinaryClock(bool AllowPause=false) const
     {
@@ -174,9 +195,7 @@ private:
         M->ResetRound(); M->BeginRound(); M->bEnglishSubtitles=true; HUD->bShowHUD=true; BeganWorld=WorldTime();
         Camera=M->GetWorld()->SpawnActor<ACameraActor>();
         if(!Camera.IsValid()) { Fail(TEXT("Could not create withdrawal review camera")); return; }
-        const FVector Eye(-500,-3400,1900),At(-500,0,100);
-        Camera->SetActorLocation(Eye); Camera->SetActorRotation((At-Eye).Rotation());
-        Camera->GetCameraComponent()->SetFieldOfView(75); PC()->SetViewTarget(Camera.Get());
+        SetCamera(FVector(-500,-3400,1900),FVector(-500,0,100),75.f); PC()->SetViewTarget(Camera.Get());
         DrawHandle=HUD->OnReticleDrawn.AddRaw(this,&FRun::Drawn);
         ScreenshotHandle=FScreenshotRequest::OnScreenshotRequestProcessed().AddRaw(this,&FRun::Captured);
         Events=USoraGameEvents::Get(M.Get()); if(!Events.IsValid()) { Fail(TEXT("Withdrawal event bus is unavailable")); return; }
@@ -188,7 +207,7 @@ private:
             ++Completions; DownAtCompletion=Down(); CompleteWorld=WorldTime(); CompleteWall=FPlatformTime::Seconds();
             bool Arrived=Survivors.Num()==6;
             for(const auto& W:Survivors) Arrived&=W.IsValid()&&W->IsAlive()&&AtApproach(*W.Get());
-            if(!Released||Phase!=3||Completions!=1||Shots!=0||Down()!=DownBefore||!Arrived||ClearWorld<0||
+            if(!Released||Phase!=PhaseCount||Completions!=1||Shots!=0||Down()!=DownBefore||!Arrived||ClearWorld<0||
                 CompleteWorld-ClearWorld<2.5||CompleteWall-ClearWall<2.4)
                 Fail(TEXT("Withdrawal completed without its captured real arrivals and full gate-clear call"));
             Completed=true;
@@ -197,13 +216,23 @@ private:
     void Drawn(const FVector2D& Center)
     {
         (void)Center;
-        if(Failed||!Released||Phase>=3||!PendingFile.IsEmpty()) return;
+        if(Phase<3) CaptureFrame();
+    }
+    void CaptureFrame()
+    {
+        if(Failed||!Released||Phase>=PhaseCount||!PendingFile.IsEmpty()) return;
         const auto* Cue=C()->CurrentDialogueCue();
         if(Phase==0&&(!Cue||Cue->Id!=TEXT("ch02.b02.enforcer.009"))) return;
         if(Phase==1&&(WorldTime()-RetreatWorld<1.5||Walked<1000)) return;
-        if(Phase==2&&(!Cue||Cue->Id!=TEXT("ch02.b06.kohagi.006"))) return;
-        if(!OrdinaryClock()||M->bMenu||!HUD->bShowHUD||!M->bEnglishSubtitles||C()->ActiveBeat()!=5)
-        { Fail(TEXT("Withdrawal HUD lost its live bilingual state")); return; }
+        if(Phase>=2&&(!Cue||Cue->Id!=TEXT("ch02.b06.kohagi.006"))) return;
+        const bool WithHUD=Phase<3;
+        if(!OrdinaryClock()||M->bMenu||HUD->bShowHUD!=WithHUD||!M->bEnglishSubtitles||C()->ActiveBeat()!=5)
+        { Fail(TEXT("Withdrawal frame lost its live presentation state")); return; }
+        const APlayerCameraManager* View=PC()->PlayerCameraManager;
+        if(!View||!View->GetCameraLocation().Equals(Camera->GetActorLocation(),.01)||
+            !View->GetCameraRotation().Equals(Camera->GetActorRotation(),.001)||
+            !FMath::IsNearlyEqual(View->GetFOVAngle(),Camera->GetCameraComponent()->FieldOfView,.001f))
+        { Fail(TEXT("Withdrawal rendered camera has not reached the prepared view")); return; }
         int32 W=0,H=0; PC()->GetViewportSize(W,H); const FSoraHUDFrame Layout(*HUD.Get(),*M.Get(),W,H); FString Why;
         if(!SoraHUDPanels::BottomHUDLayoutFits(Layout,*Hero(),Why)||!SoraHUDPanels::StoryTrackerLayoutFits(Layout,Why)||
             !SoraHUDPanels::CaptionStoryLayoutFits(Layout,Why)) { Fail(*(TEXT("Withdrawal HUD: ")+Why)); return; }
@@ -213,13 +242,15 @@ private:
         Last->SetNumberField(TEXT("request_frame"),double(GFrameCounter)); RequestFrame=GFrameCounter;
         Last->SetNumberField(TEXT("world_s"),WorldTime()); Last->SetNumberField(TEXT("wall_s"),FPlatformTime::Seconds()-BeganWall);
         Last->SetNumberField(TEXT("walked_cm"),Walked); Last->SetNumberField(TEXT("defense_ms"),C()->TaskProgress().ElapsedMs);
-        Last->SetBoolField(TEXT("paused"),false); Last->SetBoolField(TEXT("hud_drawn"),true); Last->SetBoolField(TEXT("english"),true);
-        Vector(Last,TEXT("camera"),Camera->GetActorLocation());
+        Last->SetBoolField(TEXT("paused"),false); Last->SetBoolField(TEXT("hud_drawn"),WithHUD); Last->SetBoolField(TEXT("english"),true);
+        Vector(Last,TEXT("camera"),View->GetCameraLocation());
+        Vector(Last,TEXT("camera_rotation"),FVector(View->GetCameraRotation().Pitch,View->GetCameraRotation().Yaw,View->GetCameraRotation().Roll));
+        Last->SetNumberField(TEXT("camera_fov"),View->GetFOVAngle());
         TArray<TSharedPtr<FJsonValue>> People;
         for(const auto& Weak:Survivors)
         {
             const auto* Enemy=Weak.Get();
-            if(!Enemy||!Enemy->IsAlive()||(Phase==2&&!AtApproach(*Enemy))) { Fail(TEXT("Withdrawal frame has missing/unarrived survivors")); return; }
+            if(!Enemy||!Enemy->IsAlive()||(Phase>=2&&!AtApproach(*Enemy))) { Fail(TEXT("Withdrawal frame has missing/unarrived survivors")); return; }
             FVector2D Screen;
             if(!PC()->ProjectWorldLocationToScreen(Enemy->GetActorLocation(),Screen)||Screen.X<25||Screen.X>Viewport.X-25||Screen.Y<60||Screen.Y>Viewport.Y-100)
             { Fail(TEXT("A real withdrawing survivor is outside the prepared view")); return; }
@@ -240,6 +271,7 @@ private:
         { Fail(TEXT("Withdrawal original PNG does not match its observed live HUD frame")); return; }
         Last->SetNumberField(TEXT("processed_frame"),double(GFrameCounter)); Frames.Add(MakeShared<FJsonValueObject>(Last));
         UE_LOG(LogTemp,Display,TEXT("SORA_WITHDRAWAL_FRAME %s"),*PendingFile); PendingFile.Reset(); ++Phase;
+        if(Phase==PhaseCount) HUD->bShowHUD=true;
     }
     void Cleanup()
     {
@@ -272,8 +304,8 @@ private:
         const bool Deleted=Slot.IsEmpty()||!UGameplayStatics::DoesSaveGameExist(Slot,0);
         if(!Profiles||!Mappings||!Deleted) Fail(TEXT("Withdrawal capture failed profile/mapping/temporary-slot cleanup"));
         if(Folder.IsEmpty()) return;
-        auto J=MakeShared<FJsonObject>(); J->SetStringField(TEXT("schema"),TEXT("sora-arena.withdrawal-capture.v1")); J->SetStringField(TEXT("scope"),Scope);
-        J->SetBoolField(TEXT("passed"),!Failed&&Completed&&Phase==3); J->SetBoolField(TEXT("ordinary_clock"),true);
+        auto J=MakeShared<FJsonObject>(); J->SetStringField(TEXT("schema"),TEXT("sora-arena.withdrawal-capture.v2")); J->SetStringField(TEXT("scope"),Scope);
+        J->SetBoolField(TEXT("passed"),!Failed&&Completed&&Phase==PhaseCount); J->SetBoolField(TEXT("ordinary_clock"),true);
         J->SetBoolField(TEXT("profiles_preserved"),Profiles); J->SetBoolField(TEXT("mappings_preserved"),Mappings); J->SetBoolField(TEXT("temporary_slot_deleted"),Deleted);
         J->SetArrayField(TEXT("viewport"),{MakeShared<FJsonValueNumber>(Viewport.X),MakeShared<FJsonValueNumber>(Viewport.Y)});
         J->SetArrayField(TEXT("frames"),Frames); J->SetNumberField(TEXT("completions"),Completions); J->SetNumberField(TEXT("survivor_shots"),Shots);

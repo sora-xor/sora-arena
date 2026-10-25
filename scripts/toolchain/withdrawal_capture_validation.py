@@ -1,10 +1,11 @@
 """Validate live retreat observations; original pixels still need visual review."""
 import math
 
-SCHEMA = 'sora-arena.withdrawal-capture.v1'
-SCOPE = ('prepared checkpoint/camera; combat frozen during real defense timer; live survivor navigation and HUD; '
+SCHEMA = 'sora-arena.withdrawal-capture.v2'
+SCOPE = ('prepared checkpoint/cameras; combat frozen during real defense timer; '
+         'live survivor navigation, three bilingual HUD frames and one HUD-hidden arrival detail; '
          'not ordinary defense or art acceptance')
-PHASES = ('retreat-bark', 'walking', 'gate-clear')
+PHASES = ('retreat-bark', 'walking', 'gate-clear', 'arrival-detail')
 
 
 def number(row, key, integer=False):
@@ -34,8 +35,8 @@ def verify_sequence(data, filenames, width, height):
         raise ValueError('withdrawal viewport mismatch')
     rows = data.get('frames')
     expected = [p+'.png' for p in PHASES]
-    if filenames != expected or not isinstance(rows, list) or len(rows) != 3:
-        raise ValueError('withdrawal needs three unique original phases in order')
+    if filenames != expected or not isinstance(rows, list) or len(rows) != 4:
+        raise ValueError('withdrawal needs four unique original phases in order')
     if number(data, 'completions', True) != 1 or number(data, 'survivor_shots', True) != 0:
         raise ValueError('withdrawal completion/shots disagree')
     if number(data, 'down_before', True) != number(data, 'down_at_completion', True):
@@ -50,19 +51,23 @@ def verify_sequence(data, filenames, width, height):
     for index, (phase, row) in enumerate(zip(PHASES, rows)):
         if not isinstance(row, dict) or row.get('phase') != phase or row.get('file') != expected[index]:
             raise ValueError('withdrawal phase/filename mismatch')
-        if row.get('paused') is not False or row.get('hud_drawn') is not True or row.get('english') is not True:
-            raise ValueError('withdrawal requires the live bilingual HUD')
+        if row.get('paused') is not False or row.get('hud_drawn') is not (index < 3) or row.get('english') is not True:
+            raise ValueError('withdrawal requires three live bilingual HUD frames and one HUD-hidden detail')
         current = [number(row, 'request_frame', True), number(row, 'world_s'), number(row, 'wall_s')]
         if (number(row, 'processed_frame', True) != current[0] or any(a <= b for a,b in zip(current,previous))
                 or number(row, 'defense_ms', True) != data['defense_ms']):
             raise ValueError('withdrawal frame identity/order/clock mismatch')
         previous = current
         camera = vector(row.get('camera'), 3)
-        if index and camera != rows[0]['camera']:
-            raise ValueError('withdrawal observer camera moved')
+        rotation = vector(row.get('camera_rotation'), 3)
+        eye, pitch, yaw, fov = (([-500,-3400,1900],math.degrees(math.atan2(-1800,3400)),90,75) if index < 3
+                               else ([-2220,0,1200],math.degrees(math.atan2(-1110,80)),180,45))
+        angle_errors = [abs((actual-wanted+180)%360-180) for actual,wanted in zip(rotation,[pitch,yaw,0])]
+        if math.dist(camera,eye) > .01 or max(angle_errors) > .001 or abs(number(row,'camera_fov')-fov) > .001:
+            raise ValueError('withdrawal rendered camera differs from its required view')
         if index == 0 and row.get('cue') != 'ch02.b02.enforcer.009':
             raise ValueError('retreat original lacks its real bark')
-        if index == 2 and row.get('cue') != 'ch02.b06.kohagi.006':
+        if index >= 2 and row.get('cue') != 'ch02.b06.kohagi.006':
             raise ValueError('arrival original lacks the real gate-clear call')
         if number(row, 'walked_cm') < (1000 if index else 0):
             raise ValueError('withdrawal did not walk its route')
@@ -83,7 +88,7 @@ def verify_sequence(data, filenames, width, height):
                 raise ValueError('withdrawal survivor is outside the view')
             if type(person.get('at_approach')) is not bool:
                 raise ValueError('invalid approach observation')
-            if index == 2 and (person['at_approach'] is not True or math.dist(pos[:2],[-2300,0]) > 220
+            if index >= 2 and (person['at_approach'] is not True or math.dist(pos[:2],[-2300,0]) > 220
                     or abs(number(person,'feet_z')) > 30 or person.get('grounded') is not True):
                 raise ValueError('withdrawal call preceded grounded physical arrival')
         positions.append(at)
