@@ -1,0 +1,395 @@
+{
+ "budgets": {
+  "F": {
+   "row_sp": 0.04,
+   "across_sp": 0.02,
+   "check_row_sp": 0.008,
+   "check_end_sp": 0.002,
+   "fine": 0.0015,
+   "dent_sp": 0.0015
+  },
+  "C": {
+   "row_sp": 0.04,
+   "across_sp": 0.02,
+   "check_row_sp": 0.015,
+   "check_end_sp": 0.003,
+   "fine": 0.0015,
+   "dent_sp": 0.0015
+  }
+ },
+ "members": [
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B01",
+   "kind": "wall",
+   "manifest_triangles": 470624,
+   "rebuilt_triangles": 470624,
+   "relief_room_face_today": {
+    "plain": {
+     "triangles": 161371,
+     "tilt_p50_deg": 0.0455,
+     "tilt_p95_deg": 0.1371,
+     "tilt_p99_deg": 0.5248,
+     "tilt_max_deg": 28.561,
+     "shading_p95_at_10deg_pct": 1.36,
+     "shading_p95_at_30deg_pct": 0.41
+    },
+    "dent": {
+     "triangles": 2877,
+     "tilt_p50_deg": 0.6161,
+     "tilt_p95_deg": 4.8021,
+     "tilt_p99_deg": 15.5751,
+     "tilt_max_deg": 27.793,
+     "shading_p95_at_10deg_pct": 47.53,
+     "shading_p95_at_30deg_pct": 14.52
+    },
+    "knot": {
+     "triangles": 16,
+     "tilt_p50_deg": 0.5195,
+     "tilt_p95_deg": 1.7489,
+     "tilt_p99_deg": 1.8151,
+     "tilt_max_deg": 1.832,
+     "shading_p95_at_10deg_pct": 17.31,
+     "shading_p95_at_30deg_pct": 5.29
+    },
+    "check": {
+     "triangles": 7585,
+     "tilt_p50_deg": 88.8283,
+     "tilt_p95_deg": 89.2341,
+     "tilt_p99_deg": 89.3269,
+     "tilt_max_deg": 89.415,
+     "shading_p95_at_10deg_pct": 883.26,
+     "shading_p95_at_30deg_pct": 269.75
+    }
+   },
+   "check_topology_dense": {
+    "today": [
+     {
+      "check": 0,
+      "face": 3,
+      "rows": 254,
+      "count_min": 13,
+      "count_max": 21,
+      "row_to_row_changes": 72,
+      "change_rate": 0.285
+     },
+     {
+      "check": 1,
+      "face": 3,
+      "rows": 93,
+      "count_min": 13,
+      "count_max": 21,
+      "row_to_row_changes": 14,
+      "change_rate": 0.152
+     },
+     {
+      "check": 2,
+      "face": 3,
+      "rows": 306,
+      "count_min": 13,
+      "count_max": 21,
+      "row_to_row_changes": 98,
+      "change_rate": 0.321
+     }
+    ],
+    "zone_clear_F": [
+     {
+      "check": 0,
+      "face": 3,
+      "rows": 372,
+      "count_min": 17,
+      "count_max": 35,
+      "row_to_row_changes": 19,
+      "change_rate": 0.051
+     },
+     {
+      "check": 1,
+      "face": 3,
+      "rows": 172,
+      "count_min": 17,
+      "count_max": 17,
+      "row_to_row_changes": 0,
+      "change_rate": 0.0
+     },
+     {
+      "check": 2,
+      "face": 3,
+      "rows": 427,
+      "count_min": 17,
+      "count_max": 17,
+      "row_to_row_changes": 0,
+      "change_rate": 0.0
+     }
+    ]
+   },
+   "check_topology_fallback": {
+    "today": [
+     {
+      "check": 0,
+      "face": 3,
+      "rows": 58,
+      "count_min": 13,
+      "count_max": 20,
+      "row_to_row_changes": 3,
+      "change_rate": 0.053
+     },
+     {
+      "check": 1,
+      "face": 3,
+      "rows": 24,
+      "count_min": 13,
+      "count_max": 19,
+      "row_to_row_changes": 2,
+      "change_rate": 0.087
+     },
+     {
+      "check": 2,
+      "face": 3,
+      "rows": 77,
+      "count_min": 13,
+      "count_max": 20,
+      "row_to_row_changes": 12,
+      "change_rate": 0.158
+     }
+    ],
+    "zone_clear": [
+     {
+      "check": 0,
+      "face": 3,
+      "rows": 58,
+      "count_min": 17,
+      "count_max": 17,
+      "row_to_row_changes": 0,
+      "change_rate": 0.0
+     },
+     {
+      "check": 1,
+      "face": 3,
+      "rows": 24,
+      "count_min": 17,
+      "count_max": 17,
+      "row_to_row_changes": 0,
+      "change_rate": 0.0
+     },
+     {
+      "check": 2,
+      "face": 3,
+      "rows": 77,
+      "count_min": 17,
+      "count_max": 17,
+      "row_to_row_changes": 0,
+      "change_rate": 0.0
+     }
+    ],
+    "samples_today": 21549,
+    "samples_zone_clear": 22117
+   },
+   "budget_triangles": {
+    "F": 203194,
+    "C": 159462,
+    "G": 169498
+   }
+  },
+  {
+   "asset": "SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B00",
+   "kind": "open",
+   "manifest_triangles": 836068,
+   "rebuilt_triangles": 836068,
+   "relief_room_face_today": {
+    "plain": {
+     "triangles": 179966,
+     "tilt_p50_deg": 0.035,
+     "tilt_p95_deg": 0.1189,
+     "tilt_p99_deg": 0.4319,
+     "tilt_max_deg": 31.588,
+     "shading_p95_at_10deg_pct": 1.18,
+     "shading_p95_at_30deg_pct": 0.36
+    },
+    "dent": {
+     "triangles": 1568,
+     "tilt_p50_deg": 0.5124,
+     "tilt_p95_deg": 3.8487,
+     "tilt_p99_deg": 6.8165,
+     "tilt_max_deg": 27.329,
+     "shading_p95_at_10deg_pct": 38.1,
+     "shading_p95_at_30deg_pct": 11.63
+    },
+    "knot": {
+     "triangles": 57,
+     "tilt_p50_deg": 1.2745,
+     "tilt_p95_deg": 15.7261,
+     "tilt_p99_deg": 18.2237,
+     "tilt_max_deg": 18.588,
+     "shading_p95_at_10deg_pct": 155.66,
+     "shading_p95_at_30deg_pct": 47.54
+    },
+    "check": {
+     "triangles": 8345,
+     "tilt_p50_deg": 86.7621,
+     "tilt_p95_deg": 89.2155,
+     "tilt_p99_deg": 89.3424,
+     "tilt_max_deg": 89.41,
+     "shading_p95_at_10deg_pct": 883.08,
+     "shading_p95_at_30deg_pct": 269.7
+    }
+   },
+   "check_topology_dense": {
+    "today": [
+     {
+      "check": 0,
+      "face": 3,
+      "rows": 230,
+      "count_min": 13,
+      "count_max": 21,
+      "row_to_row_changes": 120,
+      "change_rate": 0.524
+     },
+     {
+      "check": 1,
+      "face": 3,
+      "rows": 266,
+      "count_min": 13,
+      "count_max": 21,
+      "row_to_row_changes": 77,
+      "change_rate": 0.291
+     }
+    ],
+    "zone_clear_F": [
+     {
+      "check": 0,
+      "face": 3,
+      "rows": 494,
+      "count_min": 17,
+      "count_max": 27,
+      "row_to_row_changes": 12,
+      "change_rate": 0.024
+     },
+     {
+      "check": 1,
+      "face": 3,
+      "rows": 361,
+      "count_min": 17,
+      "count_max": 17,
+      "row_to_row_changes": 0,
+      "change_rate": 0.0
+     }
+    ]
+   },
+   "check_topology_fallback": {
+    "today": [
+     {
+      "check": 0,
+      "face": 3,
+      "rows": 57,
+      "count_min": 13,
+      "count_max": 20,
+      "row_to_row_changes": 11,
+      "change_rate": 0.196
+     },
+     {
+      "check": 1,
+      "face": 3,
+      "rows": 67,
+      "count_min": 12,
+      "count_max": 20,
+      "row_to_row_changes": 10,
+      "change_rate": 0.152
+     }
+    ],
+    "zone_clear": [
+     {
+      "check": 0,
+      "face": 3,
+      "rows": 57,
+      "count_min": 17,
+      "count_max": 17,
+      "row_to_row_changes": 0,
+      "change_rate": 0.0
+     },
+     {
+      "check": 1,
+      "face": 3,
+      "rows": 67,
+      "count_min": 17,
+      "count_max": 17,
+      "row_to_row_changes": 0,
+      "change_rate": 0.0
+     }
+    ],
+    "samples_today": 27307,
+    "samples_zone_clear": 27210
+   },
+   "budget_triangles": {
+    "F": 239718,
+    "C": 202894,
+    "G": 204358
+   }
+  },
+  {
+   "asset": "SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B00",
+   "kind": "Nageshi",
+   "manifest_triangles": 106320,
+   "rebuilt_triangles": 106320,
+   "budget_triangles": {
+    "F": 39396,
+    "C": 34372,
+    "G": 32196
+   }
+  },
+  {
+   "asset": "SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B00",
+   "kind": "Cornice",
+   "manifest_triangles": 114012,
+   "rebuilt_triangles": 114012,
+   "budget_triangles": {
+    "F": 37706,
+    "C": 31738,
+    "G": 30570
+   }
+  },
+  {
+   "asset": "SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B00",
+   "kind": "Koshi",
+   "manifest_triangles": 68280,
+   "rebuilt_triangles": 68280,
+   "budget_triangles": {
+    "F": 40444,
+    "C": 32270,
+    "G": 32380
+   }
+  },
+  {
+   "asset": "SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B00",
+   "kind": "Nuki",
+   "manifest_triangles": 63976,
+   "rebuilt_triangles": 63976,
+   "budget_triangles": {
+    "F": 30210,
+    "C": 23892,
+    "G": 23970
+   }
+  }
+ ],
+ "hall": {
+  "committed": {
+   "columns": 35898400,
+   "rails": 21211910,
+   "hall": 57110310
+  },
+  "F": {
+   "columns": 16370420,
+   "rails": 5976818,
+   "hall": 22347238
+  },
+  "C": {
+   "columns": 12670846,
+   "rails": 5235284,
+   "hall": 17906130
+  },
+  "G": {
+   "columns": 13777396,
+   "rails": 4851442,
+   "hall": 18628838
+  }
+ },
+ "seconds": 29.9
+}
