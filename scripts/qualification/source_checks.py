@@ -159,6 +159,7 @@ def checks(python: str = sys.executable) -> list[Check]:
     unit("assets", "capture-luminance", "scripts/art/test_analyze_capture_luminance.py")
     script("assets", "viewmodel-framing", "scripts/art/check_viewmodel_framing.py")
     unit("assets", "viewmodel-framing-tests", "scripts/art/test_viewmodel_framing.py")
+    unit("assets", "fallback-bow-volume-tests", "scripts/art/test_fallback_bow_framing.py")
     for name in ("asset_ledger", "fetch_cc0", "fetch_cat_base_v6_sources", "lane_records"):
         unit("assets", name.replace("_", "-") + "-tests", f"scripts/assets/tests/test_{name}.py")
     script("audio", "audio-data", "scripts/audio/validate_audio_data.py")

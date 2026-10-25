@@ -155,23 +155,72 @@ bool FSoraViewmodelBowTransitionTest::RunTest(const FString& Parameters)
         Upper->GetRelativeRotation().Equals(FRotator(5,0,0),1e-8));
     const FVector GameplayRay=Kit->BowAimDirection(); const int32 Ammo=Kit->Ammo;
     const FMinimalViewInfo View=CameraView(*Hero->GetCamera());
-    const auto& Rest=Contract->Poses.FindChecked(TEXT("bow")); const auto& Drawn=Contract->Poses.FindChecked(TEXT("bow.drawn"));
+    const auto Rest=FallbackBowPose(false),Drawn=FallbackBowPose(true);
     // Direct visual state updates must not consume ammo, begin a draw, or rewrite its ray.
     Model->Sway(2,0,0,false,false,false,false,View,GameplayRay);
     const FVector Before=Model->GetRelativeLocation();
     Model->Sway(1.f/60.f,0,0,false,false,false,true,View,GameplayRay);
-    TestTrue(TEXT("Draw state moves towards its own anchor without snapping"),Model->PresentationPose()==TEXT("bow.drawn")&&
+    TestTrue(TEXT("Draw state moves towards its own fallback anchor without snapping"),Model->PresentationPose()==Drawn.Name&&
         Model->GetRelativeLocation().Equals(FMath::Lerp(Before,Drawn.Location,BlendAlpha(1.f/60.f,Contract->BlendPerSecond)),1e-6));
     const FVector DrawDirection=(View.TransformWorldToFirstPerson(View.Location+Model->GetForwardVector()*10000.f,true)-View.Location).GetSafeNormal();
     TestTrue(TEXT("The first blend frame already follows the unsmoothed live ray"),DrawDirection.Equals(GameplayRay,1e-6));
     Model->Sway(2,0,0,true,false,false,false,View,GameplayRay);
-    TestTrue(TEXT("Reload returns to rest with the bow-specific -10 degree action"),Model->PresentationPose()==TEXT("bow")&&
+    TestTrue(TEXT("Reload returns to fallback rest with the bow-specific -10 degree action"),Model->PresentationPose()==Rest.Name&&
         Model->GetRelativeLocation().Equals(Rest.Location,1e-5)&&Model->GetRelativeRotation().Quaternion().Equals(
             FRotator(-10,0,0).Quaternion()*Rest.Rotation,1e-5));
     Model->Sway(2,0,0,false,false,false,false,View,GameplayRay);
     Model->Sway(1.f/60.f,.137f,1,false,false,false,false,View,GameplayRay);
     TestTrue(TEXT("Bob translates in eye coordinates, independent of the rest roll"),Model->GetRelativeLocation().Equals(Rest.Location+
         FVector(0,FMath::Sin(.137f*Contract->BobYRate)*Contract->BobY,FMath::Cos(.137f*Contract->BobZRate)*Contract->BobZ),1e-5));
+    const auto BoundsFit=[&]()
+    {
+        TArray<FPartBounds> Bounds;
+        if(!Model->FallbackBowBounds(Bounds)) return false;
+        const double Tan=FMath::Tan(FMath::DegreesToRadians(View.FOV*.5f));
+        const FVector RayInView=View.Rotation.UnrotateVector(GameplayRay);
+        const double Center=RayInView.Y/RayInView.X/Tan;
+        bool GripVisible=false,StaveVisible=false;
+        for(const auto& Part:Bounds)
+        {
+            FBox2D Projected(ForceInit);
+            for(const FVector& Corner:Part.WorldCorners)
+            {
+                const FVector Point=View.Rotation.UnrotateVector(View.TransformWorldToFirstPerson(Corner,false)-View.Location);
+                if(Point.X<View.GetFinalPerspectiveNearClipPlane()+2.f-.01f) return false;
+                Projected+=FVector2D(Point.Y/Point.X/Tan,Point.Z/Point.X/Tan*View.AspectRatio);
+            }
+            if(!Part.bArrow&&Projected.Max.X>Center-.14+1e-4) return false;
+            if(Part.Name==TEXT("YumiGrip"))
+            {
+                // Loaded geometry, not a remembered socket or a fabricated box.
+                if(!FMath::IsNearlyEqual(FVector::Distance(Part.WorldCorners[0],Part.WorldCorners[1]),9.,1e-4)||
+                   !FMath::IsNearlyEqual(FVector::Distance(Part.WorldCorners[0],Part.WorldCorners[2]),7.,1e-4)||
+                   !FMath::IsNearlyEqual(FVector::Distance(Part.WorldCorners[0],Part.WorldCorners[4]),22.,1e-4)) return false;
+                GripVisible=Projected.Min.X>=-.9&&Projected.Max.X<=.9&&Projected.Min.Y>=-.9&&Projected.Max.Y<=.9&&
+                    Projected.GetSize().X>=.07&&Projected.GetSize().Y>=.30;
+            }
+            if(Part.Name==TEXT("YumiLower")||Part.Name==TEXT("YumiUpper"))
+                StaveVisible|=FMath::Min(Projected.Max.Y,1.)-FMath::Max(Projected.Min.Y,-1.)>=.5&&
+                    FMath::Min(Projected.Max.X,1.)-FMath::Max(Projected.Min.X,-1.)>=.006;
+        }
+        return GripVisible&&StaveVisible;
+    };
+    Model->SetRelativeLocation(FVector(60,-3,-9.5)); Model->SetRelativeRotation(FQuat::Identity);
+    TestFalse(TEXT("Previous authored anchor fails the actual proxy volume regression"),BoundsFit());
+    Model->Sway(2,0,0,false,false,false,false,View,GameplayRay);
+    struct FState { bool Draw,Reload,Strike,Sprint; };
+    const FState States[]={{false,false,false,false},{true,false,false,false},{false,false,false,false},
+        {false,true,false,false},{false,false,false,true},{true,false,false,true},{false,false,true,true}};
+    for(const auto& State:States) for(int32 Frame=0;Frame<90;++Frame)
+    {
+        Model->Sway(1.f/60.f,Frame/60.f,1.f,State.Reload,State.Strike,State.Sprint,State.Draw,View,GameplayRay);
+        if(!TestTrue(TEXT("Actual proxy bounds clear aim and retain visible grip/stave throughout draw/rest/reload/sprint blends"),BoundsFit())) return false;
+        if(State.Draw)
+        {
+            const FVector Direction=(View.TransformWorldToFirstPerson(View.Location+Model->GetForwardVector()*10000.f,true)-View.Location).GetSafeNormal();
+            if(!TestTrue(TEXT("Clearance leaves live native presentation direction unchanged"),Direction.Equals(GameplayRay,1e-6))) return false;
+        }
+    }
     TestTrue(TEXT("Presentation state never changes live equipment state"),Kit->Ammo==Ammo&&!Kit->IsBowDrawing()&&Kit->BowAimDirection().Equals(GameplayRay,1e-8));
     return !HasAnyErrors();
 }

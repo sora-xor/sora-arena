@@ -413,9 +413,17 @@ class BowCaptureTests(unittest.TestCase):
                         drawing=index < 3, attack_held=index < 3, ammo=12 if index < 3 else 11,
                         reticle=center, projected=center.copy(), target=[80, 45], camera=[0, 0, 152], rotation=[0, 0, 0],
                         offset_degrees=offset, ray=[1, 0, 0], bow_quat=[0, 0, 0, 1],
-                        presentation_schema_version=1, fallback_bow=True,
-                        presentation_pose="bow.drawn" if index < 3 else "bow",
+                        presentation_schema_version=2, fallback_bow=True,
+                        presentation_pose="fallback.bow.drawn" if index < 3 else "fallback.bow",
                         presentation_projected_direction=[1, 0, 0], world_fov=94, first_person_fov=70)
+            meta.update(fallback_near_clip_cm=10, fallback_aim_clearance_pixels=160*.07,
+                        fallback_component_bounds=[
+                            dict(part=name, narrow_arrow=name in ("NockedArrow", "Arrowhead"), corner_count=8,
+                                 min_fp_depth_cm=30, projected_rect=rect)
+                            for name, rect in (("YumiLower", [35, 40, 41, 100]), ("YumiUpper", [35, -20, 41, 45]),
+                                               ("YumiGrip", [32, 40, 42, 60]), ("YumiString", [25, -30, 27, 100]),
+                                               ("FurPaw", [15, 55, 40, 80]), ("NockedArrow", [55, 47, 79, 49]),
+                                               ("Arrowhead", [78, 47, 80, 49]))])
             if phase == "negative":
                 meta["shot_ray"] = meta["ray"].copy()
                 meta.update(sample_world_s=100, release_world_s=100, release_delay_s=0,
@@ -452,6 +460,27 @@ class BowCaptureTests(unittest.TestCase):
         frames[1][0]["first_person_fov"] = 80
         with self.assertRaisesRegex(ValueError, "camera FOV"):
             VERIFY.bow_capture_validation.verify_sequence(frames)
+
+    def test_actual_fallback_volumes_must_clear_aim_without_hiding_the_bow(self):
+        for mutation in ("missing", "duplicate", "occluding", "hidden_grip", "tiny_grip", "hidden_stave",
+                         "near_clip", "relaxed_margin", "wide_arrow", "arrow_as_grip", "missing_corners"):
+            meta, png = self.observations()[0]
+            rows = meta["fallback_component_bounds"]
+            if mutation == "missing": rows.pop()
+            elif mutation == "duplicate": rows[0] = rows[1].copy()
+            elif mutation == "occluding": rows[2]["projected_rect"] = [72, 40, 82, 60]
+            elif mutation == "hidden_grip": rows[2]["projected_rect"] = [-20, 40, -10, 60]
+            elif mutation == "tiny_grip": rows[2]["projected_rect"] = [32, 40, 33, 41]
+            elif mutation == "hidden_stave":
+                rows[0]["projected_rect"] = [-30, 40, -20, 100]
+                rows[1]["projected_rect"] = [-30, -20, -20, 45]
+            elif mutation == "near_clip": rows[0]["min_fp_depth_cm"] = 11
+            elif mutation == "relaxed_margin": meta["fallback_aim_clearance_pixels"] = 1
+            elif mutation == "wide_arrow": rows[5]["projected_rect"] = [55, 40, 79, 55]
+            elif mutation == "arrow_as_grip": rows[2]["narrow_arrow"] = True
+            elif mutation == "missing_corners": rows[2]["corner_count"] = 1
+            with self.subTest(mutation=mutation), self.assertRaises(ValueError):
+                VERIFY.bow_capture_validation.verify_frame(meta, png, 160, 90)
 
     def test_shot_recenter_missing_phase_and_camera_motion_are_rejected(self):
         data = self.observations()

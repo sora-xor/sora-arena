@@ -135,7 +135,7 @@ void USoraViewmodelComponent::BeginPresentation(bool bFallbackBow)
     const auto* Contract=SoraViewmodelPresentation::Get();
     const auto* Entry=Contract?Contract->Weapons.Find(PresentationWeapon):nullptr;
     if(!Entry) return;
-    const auto& Pose=Contract->Poses.FindChecked(Entry->Pose);
+    const auto Pose=bFallbackBow?SoraViewmodelPresentation::FallbackBowPose(false):Contract->Poses.FindChecked(Entry->Pose);
     bPresentationReady=true; bFallbackBowPresentation=bFallbackBow;
     SmoothedAnchor=Pose.Location; SmoothedRest=Pose.Rotation; ActivePose=Pose.Name;
     SmoothedPitch=SmoothedRoll=SmoothedLift=0;
@@ -146,7 +146,8 @@ void USoraViewmodelComponent::Present(float DeltaSeconds,float LifeTime,float Mo
 {
     const auto* Contract=SoraViewmodelPresentation::Get();
     const auto& Entry=Contract->Weapons.FindChecked(PresentationWeapon);
-    const auto& Pose=Contract->Poses.FindChecked(bDrawn?TEXT("bow.drawn"):Entry.Pose);
+    const auto Pose=bFallbackBowPresentation?SoraViewmodelPresentation::FallbackBowPose(bDrawn):
+        Contract->Poses.FindChecked(bDrawn?TEXT("bow.drawn"):Entry.Pose);
     ActivePose=Pose.Name;
     const float Alpha=SoraViewmodelPresentation::BlendAlpha(DeltaSeconds,Contract->BlendPerSecond);
     SmoothedAnchor=FMath::Lerp(SmoothedAnchor,Pose.Location,Alpha);
@@ -172,7 +173,8 @@ void USoraViewmodelComponent::Sway(float DeltaSeconds,float LifeTime,float Movin
     if(bFirstPersonMode&&bPresentationReady)
     {
         const auto* Contract=SoraViewmodelPresentation::Get();
-        const auto& Pose=Contract->Poses.FindChecked(Contract->Weapons.FindChecked(PresentationWeapon).Pose);
+        const auto Pose=bFallbackBowPresentation?SoraViewmodelPresentation::FallbackBowPose(false):
+            Contract->Poses.FindChecked(Contract->Weapons.FindChecked(PresentationWeapon).Pose);
         Present(DeltaSeconds,LifeTime,Moving,bReloading?Pose.ReloadPitch:bStrike?Contract->StrikePitch:0.f,
             bSprint?Contract->SprintRoll:0.f,0.f,PresentationWeapon==18&&bBowDrawing,&View,GameplayRay);
         return;
@@ -191,7 +193,8 @@ void USoraViewmodelComponent::KernelPose(float Windup,bool bReloading)
     if(bFirstPersonMode&&bPresentationReady)
     {
         const auto* Contract=SoraViewmodelPresentation::Get();
-        const auto& Pose=Contract->Poses.FindChecked(Contract->Weapons.FindChecked(PresentationWeapon).Pose);
+        const auto Pose=bFallbackBowPresentation?SoraViewmodelPresentation::FallbackBowPose(false):
+            Contract->Poses.FindChecked(Contract->Weapons.FindChecked(PresentationWeapon).Pose);
         Present(GetWorld()?GetWorld()->GetDeltaSeconds():0.f,0,0,bReloading?Pose.ReloadPitch:Contract->WindupPitch*Windup,
             0,Contract->WindupLift*Windup,false,nullptr,FVector::ForwardVector);
         return;
@@ -205,4 +208,31 @@ bool USoraViewmodelComponent::PresentationSocketWorld(FName Socket,FTransform& T
     if(!bAuthoredPresentation||!PrimaryMesh||!PrimaryMesh->DoesSocketExist(Socket)) return false;
     Transform=PrimaryMesh->GetSocketTransform(Socket,RTS_World);
     return !Transform.ContainsNaN();
+}
+bool USoraViewmodelComponent::FallbackBowBounds(TArray<SoraViewmodelPresentation::FPartBounds>& Bounds) const
+{
+    Bounds.Reset();
+    if(!bFallbackBowPresentation||bAuthoredPresentation||Parts.Num()!=7) return false;
+    TSet<FString> Seen;
+    for(const auto& Part:Parts)
+    {
+        if(!Part||!Part->GetStaticMesh()) return false;
+        const FBox Box=Part->GetStaticMesh()->GetBoundingBox();
+        if(!Box.IsValid||Box.Min.ContainsNaN()||Box.Max.ContainsNaN()) return false;
+        SoraViewmodelPresentation::FPartBounds Row;
+        for(const TCHAR* Name:{TEXT("YumiLower"),TEXT("YumiUpper"),TEXT("YumiGrip"),TEXT("YumiString"),
+            TEXT("NockedArrow"),TEXT("Arrowhead"),TEXT("FurPaw")})
+            if(Part->GetName()==Name||Part->GetName().StartsWith(FString(Name)+TEXT("_"))) { Row.Name=Name; break; }
+        if(Row.Name.IsEmpty()||Seen.Contains(Row.Name)) return false;
+        Seen.Add(Row.Name); Row.bArrow=Row.Name==TEXT("NockedArrow")||Row.Name==TEXT("Arrowhead");
+        for(int32 Corner=0;Corner<8;++Corner)
+        {
+            const FVector Local(Corner&1?Box.Max.X:Box.Min.X,Corner&2?Box.Max.Y:Box.Min.Y,Corner&4?Box.Max.Z:Box.Min.Z);
+            const FVector World=Part->GetComponentTransform().TransformPosition(Local);
+            if(World.ContainsNaN()) return false;
+            Row.WorldCorners.Add(World);
+        }
+        Bounds.Add(MoveTemp(Row));
+    }
+    return Bounds.Num()==7;
 }

@@ -51,6 +51,8 @@ struct FFrame
     FString PresentationPose;
     float WorldFOV=0,FirstPersonFOV=0;
     bool FallbackBow=false;
+    TArray<TSharedPtr<FJsonValue>> Bounds;
+    float NearClip=0,AimClearancePixels=0;
     uint64 Number=0;
     double Age=0,Wall=0,World=0;
     bool Drawing=false,Held=false;
@@ -202,12 +204,50 @@ private:
             !Last.Camera.Equals(FixedCamera,.1)||!Last.Rotation.Equals(FixedRotation,.001)||
             !Camera->GetComponentRotation().Equals(FixedRotation,.001)||
             !Last.FallbackBow||Last.Bow.ContainsNaN()||
-            Last.PresentationPose!=(Last.Drawing?TEXT("bow.drawn"):TEXT("bow"))||
+            Last.PresentationPose!=(Last.Drawing?TEXT("fallback.bow.drawn"):TEXT("fallback.bow"))||
             (Last.Drawing&&!Last.PresentationRay.Equals(Last.Ray,1e-5))||
             FVector2D::Distance(Center,Last.Projected)>.25||M->GetWorld()->IsPaused()||
             !FMath::IsNearlyEqual(M->GetWorld()->GetWorldSettings()->GetEffectiveTimeDilation(),1.f)||
             !FMath::IsNearlyEqual(Hero()->CustomTimeDilation,1.f))
         { Fail(TEXT("Live reticle/presentation direction, fixed camera or ordinary world-clock invariant failed")); return; }
+        // Actual component volumes after native FP projection, independently
+        // projected through this viewport. Socket points alone miss the bulky
+        // fallback grip/paw. Narrow arrow pieces have their own size checks;
+        // these observations do not admit the authored 20 m arrow package.
+        TArray<SoraViewmodelPresentation::FPartBounds> Parts;
+        if(!Hero()->GetViewmodel()->FallbackBowBounds(Parts)) { Fail(TEXT("Missing actual fallback bow bounds")); return; }
+        Last.Bounds.Reset(); Last.NearClip=View.GetFinalPerspectiveNearClipPlane();
+        Last.AimClearancePixels=Viewport.X*.07f;
+        bool GripVisible=false,StaveVisible=false;
+        for(const auto& Part:Parts)
+        {
+            FBox2D Screen(ForceInit); double Depth=TNumericLimits<double>::Max();
+            for(const FVector& Corner:Part.WorldCorners)
+            {
+                const FVector Native=View.TransformWorldToFirstPerson(Corner,false);
+                FVector2D Pixel;
+                if(!PC()->ProjectWorldLocationToScreen(Native,Pixel)) { Fail(TEXT("Fallback geometry is behind the projection plane")); return; }
+                Screen+=Pixel;
+                Depth=FMath::Min(Depth,View.Rotation.UnrotateVector(Native-View.Location).X);
+            }
+            if(Depth<Last.NearClip+2.f-.01f||(!Part.bArrow&&Screen.Max.X>Center.X-Last.AimClearancePixels+.25f)||
+                (Part.bArrow&&Screen.GetSize().Y>Viewport.Y*.04f))
+            { Fail(TEXT("Fallback bow volume obstructs aim, clips the near plane or enlarges its narrow arrow")); return; }
+            if(Part.Name==TEXT("YumiGrip"))
+                GripVisible=Screen.Min.X>=Viewport.X*.05f&&Screen.Max.X<=Viewport.X*.95f&&
+                    Screen.Min.Y>=Viewport.Y*.05f&&Screen.Max.Y<=Viewport.Y*.95f&&
+                    Screen.GetSize().X>=Viewport.X*.035f&&Screen.GetSize().Y>=Viewport.Y*.15f;
+            if(Part.Name==TEXT("YumiLower")||Part.Name==TEXT("YumiUpper"))
+                StaveVisible|=FMath::Min(Screen.Max.Y,Viewport.Y)-FMath::Max(Screen.Min.Y,0.)>=Viewport.Y*.25f&&
+                    FMath::Min(Screen.Max.X,Viewport.X)-FMath::Max(Screen.Min.X,0.)>=2.;
+            auto Row=MakeShared<FJsonObject>(); Row->SetStringField(TEXT("part"),Part.Name);
+            Row->SetBoolField(TEXT("narrow_arrow"),Part.bArrow); Row->SetNumberField(TEXT("corner_count"),Part.WorldCorners.Num());
+            Row->SetNumberField(TEXT("min_fp_depth_cm"),Depth);
+            Row->SetArrayField(TEXT("projected_rect"),{MakeShared<FJsonValueNumber>(Screen.Min.X),MakeShared<FJsonValueNumber>(Screen.Min.Y),
+                MakeShared<FJsonValueNumber>(Screen.Max.X),MakeShared<FJsonValueNumber>(Screen.Max.Y)});
+            Last.Bounds.Add(MakeShared<FJsonValueObject>(Row));
+        }
+        if(!GripVisible||!StaveVisible) { Fail(TEXT("Fallback framing hides the readable grip/stave")); return; }
         if(!PendingFile.IsEmpty()) return;
         const bool Ready=Phase==0?(Last.Age>=1&&Last.Age<4.65&&Last.Drawing&&Last.Held&&Last.Offset.IsZero()):
             Phase==1?(Last.Drawing&&Last.Held&&Last.Offset.Pitch>.10&&Last.Offset.Yaw>.20):
@@ -248,8 +288,11 @@ private:
         Array(TEXT("offset_degrees"),{Sample.Offset.Pitch,Sample.Offset.Yaw}); Array(TEXT("ray"),{Sample.Ray.X,Sample.Ray.Y,Sample.Ray.Z});
         Array(TEXT("bow_quat"),{Sample.Bow.X,Sample.Bow.Y,Sample.Bow.Z,Sample.Bow.W});
         Json->SetStringField(TEXT("presentation_pose"),Sample.PresentationPose);
-        Json->SetNumberField(TEXT("presentation_schema_version"),1);
-        Json->SetStringField(TEXT("presentation_admission"),TEXT("existing primitive fallback; direction invariant only, authored framing/arrow pixels unqualified"));
+        Json->SetNumberField(TEXT("presentation_schema_version"),2);
+        Json->SetStringField(TEXT("presentation_admission"),TEXT("explicit fixed primitive fallback framing; actual projected bounds checked; authored 20m arrow/paw package and visual quality unqualified"));
+        Json->SetArrayField(TEXT("fallback_component_bounds"),Sample.Bounds);
+        Json->SetNumberField(TEXT("fallback_near_clip_cm"),Sample.NearClip);
+        Json->SetNumberField(TEXT("fallback_aim_clearance_pixels"),Sample.AimClearancePixels);
         Json->SetBoolField(TEXT("fallback_bow"),Sample.FallbackBow);
         Array(TEXT("presentation_projected_direction"),{Sample.PresentationRay.X,Sample.PresentationRay.Y,Sample.PresentationRay.Z});
         Json->SetNumberField(TEXT("world_fov"),Sample.WorldFOV); Json->SetNumberField(TEXT("first_person_fov"),Sample.FirstPersonFOV);

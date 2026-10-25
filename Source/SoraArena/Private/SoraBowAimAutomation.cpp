@@ -88,7 +88,7 @@ bool FSoraBowAimSwayTest::RunTest(const FString& Parameters)
             const FVector BowDirection=Hero->GetViewmodel()->GetForwardVector();
             const FVector ProjectedDirection=(View.TransformWorldToFirstPerson(View.Location+BowDirection*10000.f,true)-View.Location).GetSafeNormal();
             if(!TestTrue(TEXT("Fallback draw uses the drawn pose and native FP direction follows the current gameplay ray without lag"),
-                Hero->GetViewmodel()->UsesFallbackBowPresentation()&&Hero->GetViewmodel()->PresentationPose()==TEXT("bow.drawn")&&
+                Hero->GetViewmodel()->UsesFallbackBowPresentation()&&Hero->GetViewmodel()->PresentationPose()==TEXT("fallback.bow.drawn")&&
                 ProjectedDirection.Equals(Kit->BowAimDirection(),1e-5))) return false;
         }
         UE_LOG(LogTemp,Display,TEXT("Bow actual hold difficulty=%d full_at=%.6f sway_at=%.6f offset=%s input=%d ammo=%d"),
