@@ -290,5 +290,29 @@ record, raises its text tint and pulls the close-up camera back to leave room
 above bilingual subtitles. The runtime fixture now performs a Slate prepass
 with the shipped font and compares the complete desired layout with the
 actual render-target size. This guards against the observed clipping, rather
-than estimating text height from point sizes. These source corrections remain
-uncompiled and unrendered pending the next coordinated engine window.
+than estimating text height from point sizes.
+
+At signed `602b862f`, both ArchiveFamilyPage and ArchiveRevealReset pass,
+including the measured layout assertion. The editor and wrapper exit naturally
+with zero status; all twenty evidence files and unchanged source, native,
+Config and Generated inputs verify. Runtime review:
+`108448e535fa69172976348b83d2620621f8a4eeaa894a7941e7baa83d461f41`.
+
+All six matching 1920×1080 SM6 originals were inspected. The two close-ups now
+show the complete arithmetic, purchase price 30 and koku unit with readable
+contrast and clear space above the bilingual subtitles. The rival clears the
+record before speech and the gameplay HUD remains absent. The capture exits
+naturally 0/0, all 34 evidence files verify, and inputs remain unchanged.
+Review: `f328ecbd467e666b499b22c4f6ce01a0f13b64067aef7a5e16f3518b35741952`.
+Originals: `Saved/Screenshots/SoraArtReview/1920x1080/ArchiveReveal_5ECD6476264527544F26BDAD25DE906E/`.
+
+This closes the observed record clipping, contrast and subtitle-overlap defects
+at this capture size. Final scene art remains rejected: broad cyan wash,
+clipped practical lights, flat rack blocks, unfinished walls/floor, rigid
+character poses and a floating weapon. Paused stills do not qualify continuous
+animation, ordinary duel play or packaged performance. Claude has the next
+archive lighting/rack and third-person weapon grip direction pass.
+
+Source CI `40243327875` passes all 110 checks. The tested merge has the same
+tree as `602b862f`; all five artifact digests and raw logs are authenticated.
+Review: `74f106652c47ed243b86034f0d84a25b11ffc16bbae7c694336c75179d9d4f5a`.

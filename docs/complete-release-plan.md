@@ -51,9 +51,23 @@ lights are too broad/bright and the art remains visibly provisional. Review:
 `be39e888ec88eee9d82bd9c1171d89735fc10b43c5e4a7f0df1772c75061b076`.
 The follow-up source reduces type and spacing, increases text contrast and
 pulls the camera back. A runtime regression measures the real Slate desired
-size against the world widget's render target. These corrections are not yet
-compiled or rendered. Final character animation, sound, art, ordinary duel
-play and package qualification remain unfinished.
+size against the world widget's render target. Signed `602b862f` builds and
+passes both archive fixtures, including the measured layout assertion; review
+`108448e535fa69172976348b83d2620621f8a4eeaa894a7941e7baa83d461f41`.
+All six new 1920×1080 SM6 originals were inspected. The entire record is
+readable, including purchase price 30 and units, with subtitle clearance in
+both close-ups. Natural exits, all 34 evidence files and unchanged inputs
+verify; review
+`f328ecbd467e666b499b22c4f6ce01a0f13b64067aef7a5e16f3518b35741952`.
+The broad lighting, flat racks, character materials and floating weapon remain
+visually rejected. Final character animation, sound, art, ordinary duel play
+and package qualification remain unfinished.
+
+Source CI at `602b862f` passes all 110 checks in run `40243327875`, with the
+same tested/source tree, five authenticated artifacts and raw logs; review
+`74f106652c47ed243b86034f0d84a25b11ffc16bbae7c694336c75179d9d4f5a`.
+The previous `4f3fe61f` also passes all 110 in run `40242427537`; review
+`aae45319016365ab86d2c8011a3dee96b0c635ebb94149c9ea17083d0e53dd41`.
 
 Source CI at `714f490e` passes all 110 checks in run `40240662670`; its tested
 merge tree matches the candidate. Independent review:
@@ -64,10 +78,29 @@ run `40239701072` (review
 `b765735022eff671e9f1172ac4776effdbdf2a096470e2d7d58db28c4c08323d`).
 The previous `26ae342` source CI also passes all 110, review
 `6098c0560b72d57c18a3a03d9d7475770d6eeab576d5a98b8b2a98c5844b30c2`.
-Claude again owns the engine/Blender lane for v8 fur and measured material
-cost. Its CPU diagnosis finds v7's grey bands mostly follow the tabby-to-white
+Claude again owns the engine/Blender lane for further art production and
+archive direction. Its CPU diagnosis finds v7's grey bands mostly follow the tabby-to-white
 colour field, with a smaller coat-height contribution; the earlier shell-edge
 interpretation below was an unconfirmed visual hypothesis.
+
+The rebuilt `b9ef0365` v8 source has 31 independently verified source/ledger
+files and four inspected Blender views. The actual SM6 capture has 22 verified
+evidence files, 33 imported assets matching both freezes, unchanged rig assets
+and no material-slot changes; all 22 asset differences are within the paw
+namespace. Both original 1080p views were inspected. Contour bands are gone,
+but the eye view remains glove-like and the close-up clumps look feathered or
+scaled; cloth and cords still look synthetic. No photoreal acceptance. Capture
+review: `c2633bee0e4a9a1b3975a25165047424553ea022afc688280c1a17410ba8dd06`.
+
+The separate GPU measurement uses a 969×545 editor viewport and 120 numeric
+samples per state. Translucency medians are 2.108/2.527 ms for eye/close-up,
+versus 0.085/0.049 ms with the clear control. That control changes opacity,
+lighting and shader together, so it does not isolate overdraw. Whole-frame
+GPUTime differs by only 0.35/0.34 ms with overlapping spreads. Fifteen original
+files and 882 median/quartile statistics independently verify; review
+`338595e2fd281277f097cdc51e0443b3d2f704b2dfd1d3d07486c9b98b9d7861`.
+The original JSON counts a repeated header as frame 121; valid samples are 120.
+This is neither a 1080p timing nor platform/package performance acceptance.
 
 ## October 26 archive exit and shell-fur checkpoint
 
@@ -1631,7 +1664,7 @@ history below. The release remains incomplete.
 | A1 | Unique timber kit and golden-hour Estate/dojo slice | Claude | Nine baseline meshes/31 packages pass import and reopen at `97c08a0`. At `0c7961d`, 36 SM6 and 18 SM5 captures pass readiness checks on M2 Ultra, with original-image review; this closes capture readiness only. The separate six-member v2.1 pilot remains visually rejected for smooth bands, blister dents, glossy ridges and repeated adze marks. The separate v2.2 pilot also fails review of all 15 originals for smooth striped surfaces and repeated adze tiling. Claude owns the engine lane for the corrected bow; a focused timber patch is next. Unique per-placement binaries, dressing, full provenance and photoreal acceptance remain open. M2 SM5 does not qualify M1. |
 | A2 | Complete character and first-person presentation | Claude | Nyaakoto, paws, sword/saya, clothing, fur and motion must pass [photoreal acceptance](art-direction/photoreal-acceptance.md) in actual gameplay and cinematics. Generated references and Blender images are source evidence only. |
 | A3 | Complete campaign/arena art, animation, audio and effects | Claude + Codex integration | Extend approved visual direction across every environment, character and encounter; complete dialogue presentation, cinematics, sound, music and effects. Review every asset's rights and ledger records. Missing original references remain explicit, rather than being claimed as matched. |
-| Q1 | Repeatable source validation and CI | Codex validation lane | Authenticated CI `40201884816` passes all 107 gates in five jobs at exact `d3f19bf`; 279 Rust tests pass and five are explicitly ignored. Tested/source trees match; all five artifact digests and raw logs are verified. The unchanged Fern02 buffer now uses LFS: ledger zero errors/warnings; ten raw Node20 warning lines remain. CI `025cb32` fails one stale chapter binding, corrected without layout changes; `4fa637f` CI is pending review. Private assets, rendered art and full native execution remain separate gates. |
+| Q1 | Repeatable source validation and CI | Codex validation lane | Authenticated CI `40243327875` passes all 110 gates in five jobs at exact `602b862f`. Tested/source trees match; all five artifact digests and raw logs are verified. This closes the selected source checks only; private assets, Unreal behavior, rendered art, packages and full native execution remain separate gates. Historical failures and ignored proof cases retain their original scope. |
 | N1 | Matching native kernel and Connect integration | Codex | Kernel ABI4 stages and passes 94 parity cases/99,043 ticks. Signed clean native `10ad7daddf` passes29/29 directed tests and has a fresh frozen ABI30 release build with its original sidecar. All29 frozen files and six consumer hashes were checked before staging; actual UE NativeLoader passes in the `56b95f3` editor and the `b4a02d1` packaged Metal client, with the exact staged library path. Strict package/artifact hashes verify before and after execution. These tests cover loading, binding, canonical JSON and hashing; signing, submission and finality are not tested. Earlier producer records remain preserved. Windows loading remains unverified. |
 | N2 | Complete native execution proof and real settlement | Codex | Bounded native `01d4e46` completes actual crate compilation/31 CPU tests and a 3,005,248-byte proof with separate verification and 55 negative cases, but its proof attempt fails the unchanged disk reserve. Signed `6fd03be8` adds Katana fallback, and `cd9263628d` adds final-tick death/account/FFA completion with independently authenticated standalone source evidence. Fresh `cd9263628d` passes 18 provenance tests, 70 standalone constraints, exact regeneration of four final-death fixture files, and 46 actual-crate CPU tests with four ignored proofs. The actual adapter covers 254 layouts, at most 3,803,712 bytes; independent CPU review and the unchanged retained binary are sealed into the completed proof plan. Two earlier runner failures and the successful observer retry remain preserved. Fresh native proof cohort completes: one separately verified 3,666,144-byte proof, 92 verifier rejections and eleven actual-prover Constraint rejections, natural EOF zero and 116 files independently verified. This remains an unregistered two-player/two-tick relation. Historical outputs are partly missing, with no cause inferred. No registered full Arena execution profile, full World/death/ability/terminal composition, full-size proof or settlement acceptance is established. Four-validator admission/dispute/settlement, market recovery and Connect signing/finality remain open; live funding/trading stay disabled. |
 | R1 | Windows and Mac release candidates | Codex | Latest completed Mac Development package `c655b6b`, native bridge `10ad7dad`, passes Game build, cook of 1,323 packages with zero cook errors/warnings, staging/signature checks, smoke, all 164 client tests and a fresh rendered Title check. Newer gameplay and art source remains uncooked. Earlier rejected packages and warning/failure records remain preserved in the dated checkpoints. Clean-machine install, normal campaign play, controller/accessibility, multiplayer recovery, Windows and actual M1 performance remain open; M2 results do not qualify M1. |
