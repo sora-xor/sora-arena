@@ -27,8 +27,10 @@ bool FSoraCacheArrowsTest::RunTest(const FString& Parameters)
     // Every target cache: actually issued reward, stowed bow, full quiver,
     // and a restored already-collected cache. Placement and frozen threats
     // isolate reward delivery; this is not ordinary campaign traversal.
-    struct FCase { int32 Chapter,Cache,Amount; bool Refill; };
-    const FCase Caches[]={{1,13,12,true},{3,8,6,false},{4,12,12,false},{5,6,6,false},{6,4,12,false}};
+    struct FCase { int32 Chapter,Cache,Checkpoint,Amount; bool Refill; };
+    // ch05.b14 is a non-checkpoint cinematic. Exercise its preceding cache
+    // from the next real checkpoint, ch05.b15, without relaxing save admission.
+    const FCase Caches[]={{1,13,14,12,true},{3,8,9,6,false},{4,12,14,12,false},{5,6,7,6,false},{6,4,5,12,false}};
     for(const auto& Row:Caches) for(int32 Case=0;Case<4;++Case)
     {
         const auto& Chapter=FSoraCatalog::Get().Chapter(Row.Chapter);
@@ -40,7 +42,8 @@ bool FSoraCacheArrowsTest::RunTest(const FString& Parameters)
         for(const int32 Item:Cache.Rewards)
             Finds|=SoraCampaignRules::CollectibleBit(Row.Chapter,Chapter.Collectibles[Item].MaskBit);
         if(!TestTrue(TEXT("The cache has exclusive durable finds"),Finds!=0)) return false;
-        SoraFieldcraftAutomation::FBeatWorld W(*this,TEXT("CacheArrows"),Row.Chapter,Row.Cache+1);
+        if(!TestTrue(TEXT("Cache fixture uses an authored checkpoint"),Chapter.Rules[Row.Checkpoint].Checkpoint)) return false;
+        SoraFieldcraftAutomation::FBeatWorld W(*this,TEXT("CacheArrows"),Row.Chapter,Row.Checkpoint);
         ControlSlots.Add(FSoraAutomationWorld::ControlSlot(W.Slot));
         if(!W.Start(Case==3?static_cast<int64>(Finds):0)) return false;
         const auto Settle=[&]()
