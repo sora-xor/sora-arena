@@ -171,4 +171,111 @@ bool FSoraCampaignForeclosureTest::RunTest(const FString& Parameters)
         W.Campaign()->ActiveBeat()==13&&Saved&&Saved->CheckpointBeat==13&&Saved->CheckpointPhase==2);
     return !HasAnyErrors();
 }
+// Separate from the tutorial/memory fixture: the real strike must distinguish
+// a drawn blade, an unfinished sheathe and the completed empty-hand stance.
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraCampaignCollectorSheathingTest,"SoraArena.Campaign.CollectorSheathing",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraCampaignCollectorSheathingTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;
+    if(!TestTrue(TEXT("Catalog loads"),FSoraCatalog::Get().Load())) return false;
+    for(int32 InputMode=0;InputMode<3;++InputMode) // keyboard, rebound keyboard, pad
+    {
+        SoraFieldcraftAutomation::FBeatWorld W(*this,TEXT("CollectorSheathing"),7,13);
+        if(!W.Start(0,INDEX_NONE,2)) return false;
+        W.Harden();
+        auto* Hero=W.Hero(); auto* Kit=Hero->GetEquipment();
+        auto* Boss=const_cast<ASoraBoss*>(W.Campaign()->CampaignBoss());
+        if(!TestNotNull(TEXT("The actual cane-phase Collector is present"),Boss)) return false;
+        Boss->Hold(120000);
+        if(!W.World->TakeUpArm(0)) return false;
+        if(!TestEqual(TEXT("The Normal capture window remains 180 ms"),Boss->MutoWindowMs(),180)) return false;
+        const auto Key=[&](const TCHAR* Action)
+        {
+            for(const FKey& Bound:Hero->GetActionKeys(Action))
+                if(Bound.IsGamepadKey()==(InputMode==2)) return Bound;
+            return FKey();
+        };
+        FKey Sheathe=Key(TEXT("Sheathe")),Guard=Key(TEXT("Block"));
+        if(InputMode==1)
+        {
+            const FKey OldSheathe=Sheathe,OldGuard=Guard;
+            if(!W.Press(EKeys::Escape)||!Hero->RemapCombatAction(TEXT("Sheathe"),EKeys::H)||
+                !Hero->RemapCombatAction(TEXT("Block"),EKeys::G)) return false;
+            W.Mode()->ResumePlay();
+            if(!W.Tick(2)||!W.Press(OldSheathe)||!W.Press(OldGuard)) return false;
+            TestFalse(TEXT("Replaced controls cannot sheathe or guard"),Kit->IsSheathing()||Kit->IsGuardHeld());
+            Sheathe=Key(TEXT("Sheathe")); Guard=Key(TEXT("Block"));
+            if(!TestTrue(TEXT("The new keys are the active gameplay bindings"),Sheathe==EKeys::H&&Guard==EKeys::G)) return false;
+        }
+        if(!TestTrue(TEXT("Both mapped controls exist"),Sheathe.IsValid()&&Guard.IsValid())) return false;
+        if(!W.Press(EKeys::Escape)||!W.Press(Sheathe)||!W.Press(Guard)) return false;
+        TestFalse(TEXT("Pause continues to block both combat actions"),Kit->IsSheathing()||Kit->IsGuardHeld());
+        W.Mode()->ResumePlay(); if(!W.Tick(2)) return false;
+        auto* Bus=USoraGameEvents::Get(W.World->GetTestWorld());
+        if(!TestNotNull(TEXT("Actual hit and parry events are observable"),Bus)) return false;
+        float Damage=0.f; int32 Parries=0; bool DamagedWhileSheathing=false;
+        const auto Damaged=Bus->OnDamaged.AddLambda([&](const FSoraDamagedEvent& Event)
+        {
+            if(Event.Victim==Hero&&Event.Causer==Boss)
+            {
+                Damage+=Event.Amount;
+                DamagedWhileSheathing=Kit->IsSheathing()&&!Kit->IsSheathed();
+            }
+        });
+        const auto Parried=Bus->OnParried.AddLambda([&](const FSoraDefenseEvent& Event)
+        { if(Event.Defender==Hero&&Event.Attacker==Boss) ++Parries; });
+        ON_SCOPE_EXIT
+        {
+            W.World->InjectKey(Guard,IE_Released);
+            Bus->OnDamaged.Remove(Damaged); Bus->OnParried.Remove(Parried);
+        };
+        const auto Until=[&](const auto& Predicate,int32 Frames=600)
+        {
+            for(int32 Frame=0;Frame<Frames&&!Predicate();++Frame) if(!W.Tick(1)) return false;
+            return TestTrue(TEXT("The bounded real attack reaches its requested state"),Predicate());
+        };
+        for(int32 State=0;State<3;++State) // drawn, transition, fully sheathed
+        {
+            if(!Until([&]() { return Boss->BossAttackIndex()==INDEX_NONE&&!Boss->IsStaggered(); })||
+                !W.World->TakeUpArm(0)) return false;
+            if(Kit->IsSheathing()&&!W.Press(Sheathe)) return false;
+            if(!TestTrue(TEXT("Each case starts with a drawn katana"),Hero->WeaponId==0&&!Kit->IsSheathing())) return false;
+            const FVector At=Boss->GetActorLocation();
+            const float Floor=At.Z-Boss->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+            Hero->SetBase(static_cast<FMovementBaseInterfaceData*>(nullptr));
+            Hero->GetCharacterMovement()->StopMovementImmediately();
+            Hero->SetActorLocation(FVector(At.X+220,At.Y,Floor+Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2),
+                false,nullptr,ETeleportType::TeleportPhysics);
+            W.LookAt(Boss->GetActorLocation()); if(!W.Tick(2)) return false;
+            if(State==2&&(!W.Press(Sheathe)||!Until([&]() { return Kit->IsSheathed(); },120))) return false;
+            const float BeforeDamage=Damage; const int32 BeforeParries=Parries;
+            if(!TestTrue(TEXT("The real foreclosure starts"),Boss->ForceAttack(TEXT("amort_final_foreclosure")))||
+                !Until([&]() { return Boss->IsBossTelegraphing(); },180)) return false;
+            if(State==1)
+            {
+                if(!Until([&]() { return Boss->BossWarningSeconds()<=.20f; },180)||!W.Press(Sheathe)) return false;
+                if(!TestTrue(TEXT("Late sheathing has begun but has not completed"),Kit->IsSheathing()&&!Kit->IsSheathed())) return false;
+            }
+            if(!Until([&]() { return Boss->BossWarningSeconds()<=.10f; },180)||
+                !TestTrue(TEXT("Guard is pressed in the live final tenth-second"),Boss->IsBossTelegraphing()&&Boss->BossWarningSeconds()>0)||
+                !W.World->InjectKey(Guard,IE_Pressed)||
+                !Until([&]() { return !Boss->IsAlive()||Boss->IsRecovering(); },180)||
+                !W.World->InjectKey(Guard,IE_Released)) return false;
+            AddInfo(FString::Printf(TEXT("Collector sheath boundary: input=%d state=%d damage=%.1f parries=%d transition_hit=%d captured=%d"),
+                InputMode,State,Damage-BeforeDamage,Parries-BeforeParries,DamagedWhileSheathing,W.Campaign()->AwaitingCapture()));
+            if(State==0)
+                TestTrue(TEXT("A drawn-blade awase still avoids damage and staggers without capture"),
+                    Damage==BeforeDamage&&Parries==BeforeParries+1&&Boss->IsAlive()&&Boss->IsStaggered()&&!W.Campaign()->AwaitingCapture());
+            else if(State==1)
+                TestTrue(TEXT("An unfinished sheathe takes the full 45, cannot parry, and cannot capture"),
+                    DamagedWhileSheathing&&Damage-BeforeDamage==45.f&&Parries==BeforeParries&&Boss->IsAlive()&&!Boss->IsStaggered()&&!W.Campaign()->AwaitingCapture());
+            else
+                TestTrue(TEXT("The completed sheathe permits damage-free Muto and still waits for the spine cut"),
+                    Damage==BeforeDamage&&Parries==BeforeParries&&!Boss->IsAlive()&&W.Campaign()->AwaitingCapture()&&W.Campaign()->ActiveBeat()==13);
+            if(HasAnyErrors()) return false;
+        }
+    }
+    return !HasAnyErrors();
+}
 #endif

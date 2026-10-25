@@ -10,10 +10,12 @@ import subprocess
 import unittest
 from PIL import ImageFont
 import test_caption_layout as c
+import native_japanese_localization as localization
 
 BOSSES=json.loads((c.R/'Content/Data/bosses.json').read_text())['bosses']
-MUTO=('［納刀］で納め、斬撃の寸前に［防御］で無刀取り',
-      '[Sheathe], then [Guard] just before the cut lands for mutō-dori')
+MUTO_ENTRIES=localization.parse_po(localization.TRANSLATIONS.read_text())
+MUTO_HINTS=tuple((MUTO_ENTRIES[("SoraArena.HUD",key)].source,MUTO_ENTRIES[("SoraArena.HUD",key)].english)
+                 for key in ("Boss.MutoDrawn","Boss.MutoSheathing","Boss.MutoReady"))
 MAROBASHI=('転 ― 着く寸前に 左右＋［跳躍］で脇へ',
            'Marobashi: Left/Right + [Jump] just before it lands to reach the flank')
 
@@ -117,7 +119,7 @@ class BossHUDLayoutTests(unittest.TestCase):
                     (w*.5-10.75,h*.5-10.75,21.5,21.5)]
             regions=self.regions(w,h,blocks)
             for boss in BOSSES:
-                for attack,hint in [(None,None)]+[(a,None) for a in boss['attacks']]+[(boss['attacks'][0],hint) for hint in (MUTO,MAROBASHI)]:
+                for attack,hint in [(None,None)]+[(a,None) for a in boss['attacks']]+[(boss['attacks'][0],hint) for hint in (*MUTO_HINTS,MAROBASHI)]:
                     rows=text_rows(boss,s,en,attack,hint)
                     self.assertTrue(self.placements(rows,regions,blocks,attack is not None),(px,w,en,boss['id'],attack and attack['id'],hint))
                     scenarios+=1

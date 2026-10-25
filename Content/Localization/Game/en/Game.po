@@ -1097,6 +1097,24 @@ msgctxt "SoraArena.HUD,Ammo.Swordplay"
 msgid "剣術　{Melee}"
 msgstr "Swordplay: {Melee}"
 
+#. Key:	Boss.MutoDrawn
+#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+msgctxt "SoraArena.HUD,Boss.MutoDrawn"
+msgid "［納刀］で納め、斬撃の寸前に［防御］で無刀取り"
+msgstr "[Sheathe], then [Guard] just before the cut lands for mutō-dori"
+
+#. Key:	Boss.MutoReady
+#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+msgctxt "SoraArena.HUD,Boss.MutoReady"
+msgid "納刀済 ― 斬撃の寸前に［防御］で無刀取り"
+msgstr "Sheathed: [Guard] just before the cut lands for mutō-dori"
+
+#. Key:	Boss.MutoSheathing
+#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+msgctxt "SoraArena.HUD,Boss.MutoSheathing"
+msgid "納刀中……まだ無刀取りはできない"
+msgstr "Sheathing… mutō-dori is not ready"
+
 #. Key:	ContentError
 #: Source/SoraArena/Private/HUD/SoraHUD.cpp
 msgctxt "SoraArena.HUD,ContentError"
