@@ -144,10 +144,27 @@ bool FSoraBridgePropsTest::RunTest(const FString& Parameters)
     auto* Front=Arena->BridgeLooseProps()[0].Get(); auto* Rear=Arena->BridgeLooseProps()[1].Get();
     const FVector Before=Front->GetActorLocation(); const float Health=W.Hero()->Health;
     const int32 Attack=Boss->Data()->AttackIndex(TEXT("slide_props"));
+    const double WarningStartedSeconds=W.World->GetTestWorld()->GetTimeSeconds();
     if(!TestTrue(TEXT("Production slide admission accepts phase two"),Arena->BeginBridgeSlide(*Boss,Attack,7001))) return false;
     const int32 Windup=Boss->WindupFor(Attack);
-    if(!W.Tick(1,(Windup-1)/1000.f)) return false;
+    const double BeforeDeadline=WarningStartedSeconds+(Windup-2)/1000.0;
+    // A single .699 s world tick is clamped to .4 s by the default settings.
+    // Reach the real boundary in small steps, observing both world and prop time.
+    for(int32 Step=0;W.World->GetTestWorld()->GetTimeSeconds()<BeforeDeadline&&Step<512;++Step)
+    {
+        const double ClockBefore=W.World->GetTestWorld()->GetTimeSeconds();
+        if(!W.Tick(1,static_cast<float>(FMath::Clamp(BeforeDeadline-ClockBefore,.001,.05)))) return false;
+        if(!TestTrue(TEXT("The bridge warning's game clock advances"),W.World->GetTestWorld()->GetTimeSeconds()>ClockBefore)) return false;
+    }
+    const double ObservedMs=(W.World->GetTestWorld()->GetTimeSeconds()-WarningStartedSeconds)*1000.0;
+    // One microsecond permits only floating-point subtraction noise.
+    if(!TestTrue(TEXT("Actual world and prop clocks reach within two milliseconds before the warning ends"),
+        ObservedMs>=Windup-2-.001&&ObservedMs<Windup&&
+        Front->WarningElapsedMs()>=Windup-2-.001&&Front->WarningElapsedMs()<Windup)) return false;
     TestTrue(TEXT("Warning moves visuals only and deals no early damage"),Front->GetActorLocation().Equals(Before,.01)&&W.Hero()->Health==Health);
+    if(!W.Tick(1,.019f)) return false;
+    TestTrue(TEXT("A bounded world tick crosses the actual prop warning"),Front->WarningElapsedMs()>Windup&&
+        (W.World->GetTestWorld()->GetTimeSeconds()-WarningStartedSeconds)*1000.0>Windup);
     for(int32 Frame=0;Frame<600&&W.Hero()->Health==Health;++Frame) if(!W.Tick(1,1.f/120)) return false;
     TestEqual(TEXT("Swept body contact deals thirty damage"),Health-W.Hero()->Health,30.f);
     TestTrue(TEXT("A real contact blocks the body and knocks down the hero"),Front->IsBlocked()&&W.Hero()->GetEquipment()->IsStaggered());
