@@ -26,6 +26,17 @@
 **Test counts** are reported as unittest gives them: run, passed, expected
 failures and skipped. Never a run total called "passed".
 
+**Exit codes** are evidence, reported as they were:
+- **An Unreal step:** the editor's own exit, from the wrapper's
+  `EDITOR_EXIT=<n>` line and `<log>.editor-exit`, beside the wrapper's own
+  exit. A full editor that quits itself exits 1, and the wrapper accepts it;
+  it is reported as **editor exit 1, wrapper exit 0**, never as 0/0.
+- **A Blender step:** Blender's own exit. EOF is the last line its log wrote.
+
+**Provenance is not admission.** An OWN ledger or record states authorship
+and the exact bytes of files. Whether the geometry or the look is accepted is
+root's review of the originals, never a ledger's.
+
 ## The steps
 
 1. **Timber patch study** (Blender, CPU).
@@ -33,8 +44,11 @@ failures and skipped. Never a run total called "passed".
    - Marker `PATCH_STUDY_READY`. It writes `Local/ArtCache/NyaagyuDojoTimbersV23Patch/attempt<N>/`, created exclusively, so no archive is needed.
    - **Check:** view both contact sheets and every panel. `study.json` must hold both variants' measurements beside the scans'. The EXR normal-map read must pass its unit-normal check, or the study stops (that is a result, not a retry).
 2. **W18 static rebuild** (Blender).
+   - **The raw CC0 inputs.** The weapon library reads them only at `Local/ThirdPartyRaw/cc0` (`create_runtime_weapon_lib.cc0`), which this worktree lacks. Link root's cache read-only for this step only: `ln -s /Users/mtakemiya/.codex/worktrees/complete-game/sora-arena/Local/ThirdPartyRaw Local/ThirdPartyRaw`.
+   - Then `PY scripts/art/record_runtime_weapon.py --weapon 18 --preflight` must print `RECORD_PREFLIGHT_OK`: all 16 derived inputs present and as the ledger records them. They were all as recorded, read-only, on 2026-10-25.
+   - Remove the link after this step's two jobs.
    - **Archive** `Content/SourceArt/Weapons/Runtime/W18_Yumi/{*.fbx,*.blend,T_Weapon_18_*.png,build_record.json}` and `Runtime/Renders/SM_Weapon_18*.png`.
-   - `B scripts/art/create_runtime_weapon_yumi.py -- --only 18`, then `B scripts/art/create_runtime_weapon_validation.py -- --only 18`. These are the two Blender jobs `create_runtime_weapon_build_all.py --only 18` runs, without its manifest rewrite (see the open decision).
+   - `B scripts/art/create_runtime_weapon_yumi.py -- --only 18`, then `B scripts/art/create_runtime_weapon_validation.py -- --only 18`. These are the two Blender jobs `create_runtime_weapon_build_all.py --only 18` runs, without its manifest rewrite, which would re-record every weapon (root's decision B, below).
    - **Check:**
      - LOD0 under the 80,000-triangle budget (it was 61,556; the new strip adds about 7,000);
      - the spec checks pass (length, grip ratio, brace, arrow length), and `Nigiri` still names the grip part;
@@ -52,10 +66,14 @@ failures and skipped. Never a run total called "passed".
    - **Remove the two STALE markers:** `test_yumi_nigiri_ya.Rebuild` and `test_nyaakoto_fp_paws`'s nigiri-envelope test.
    - Run `PY -m unittest` on `test_yumi_draw`, `test_yumi_nigiri_ya`, `test_nyaakoto_fp_paws`, `test_yumi_fp_holds`, `test_fp_material_bindings` and `test_analyse_yumi_fp_review`. Every count must show 0 expected failures.
    - **If the envelope test fails,** the rebuilt wrap is not the design envelope within the carve gap. Investigate before the paw; never widen the gap.
-   - **Ledgers:**
-     - regenerate `W18_Yumi/Rig/manifest.ledger.json` (`scripts/assets/write_own_ledger.py`, its original arguments, after the rebuilt files are staged);
-     - record the W18 static per the open decision;
-     - `scripts/assets/validate_asset_ledger.py` must show no new errors and none on W18 paths.
+   - **Ledgers** (decision B: W18 only):
+     - **The W18 static:** `PY scripts/art/record_runtime_weapon.py --weapon 18 --generator scripts/art/yumi_nigiri.py --generator scripts/art/yumi_ya.py`, then the same with `--check`, which must exit 0.
+       - It replaces only W18's scope in the runtime-weapons manifest: its static outputs (not `Rig/`, which keeps its own ledger, nor `*.blend1`) and its renders.
+       - Every other weapon's entry is kept exactly, stale or not (`test_record_runtime_weapon`).
+       - It records W18's generators and derived inputs by SHA-256, as OWN provenance, not admission.
+     - **The rig:** regenerate `W18_Yumi/Rig/manifest.ledger.json` (`scripts/assets/write_own_ledger.py`, its original arguments, after the rebuilt files are staged).
+     - **Never** run `create_runtime_weapon_build_all.py` or `--manifests-only`. They re-record every weapon.
+     - **Validate:** `scripts/assets/validate_asset_ledger.py` before and after. The only errors that may go are W18's; none may be added.
 6. **Bow paw v3** (Blender).
    - **Archive** `Content/SourceArt/Characters/NyaakotoFirstPersonPaws/Production/` (the uncommitted v2, about 88 MB).
    - `B scripts/art/create_nyaakoto_fp_paws.py`
@@ -80,10 +98,17 @@ failures and skipped. Never a run total called "passed".
     - It fails closed on any missing, empty, mismatched or malformed input.
     - **Then** view every original, and post the analysis beside the manifest's socket math: root's boxes, the clear line, the 20 m miss, the near plane.
 
-## Open decision for root, before step 5's static ledger
+## Root's decision: W18 only (Codex, 2026-10-25)
 
-- **The question:** `create_runtime_weapon_build_all.py` records W18 only by rewriting the whole runtime-weapons manifest (`Content/SourceArt/Weapons/Runtime/manifest.json`) from the files on disk.
-- **On this branch** that manifest is stale for every weapon since `f4e8a16` (October 18): 228 validator errors before any W18 change.
-- **Option A: re-record all.** A full rewrite would clear them by re-recording files nobody has reviewed per weapon.
-- **Option B: W18 only.** Record W18 alone, with a narrowly scoped update, leaving the other weapons' errors as they are for their own review.
-- **Either way:** the 63 tracked renders of the blockout weapons (03, 11, 13, 16) stay unrecorded, by the manifest's own rule.
+- **Decision B.** Record the exact new W18 static outputs, their generators
+  and their derived inputs, plus the separate rig and paw ledgers. Never
+  re-record all weapons, or clear unrelated errors by refreshing their
+  hashes.
+- **Tool:** `scripts/art/record_runtime_weapon.py`. Its fixtures prove
+  every unrelated entry is kept exactly.
+- **At integration:** root keeps root56's independently validated ledger
+  baseline and merges only the reviewed W18 records and files. This
+  branch's 228-error baseline, stale since `f4e8a16` (before this work),
+  is not a replacement for it.
+- **Either way:** the blockout weapons' tracked renders (03, 11, 13, 16)
+  stay unrecorded here, by the manifest's own rule.

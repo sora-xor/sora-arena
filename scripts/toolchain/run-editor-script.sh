@@ -55,6 +55,11 @@ set +e
   -unattended -nopause "$RHI" -nosplash -nosound -stdout -FullStdOutLogOutput \
   "${EDITOR_CONFIG_ARGS[@]}" "${THROTTLE[@]}" >"$LOG" 2>&1
 STATUS=$?
+# The editor's own exit status, kept as evidence even where the check below
+# accepts it (a full editor that quits itself exits 1): on stderr, and beside
+# the log.
+echo "EDITOR_EXIT=$STATUS" >&2
+echo "$STATUS" >"$LOG.editor-exit"
 set -e
 python3 - "$LOG" "$STATUS" "$MARKER" <<'PY'
 import sys
