@@ -35,3 +35,19 @@ def place_bridge(beats, records, zones, fail):
                                 downhill_permille=1100, every_ms=6000, warning_ms=700,
                                 damage=30, stagger_ms=600, chairs=6, pods=4,
                                 port=[0, -1])
+
+        margins = [a for a in p2.get('attacks', []) if a.get('id') == 'margin_call']
+        if len(margins) != 1 or not all(exact(margins[0].get(k), v) for k, v in
+                [('every_s', 7), ('windup_ms', 1500), ('targets', 3), ('damage', 60),
+                 ('cover_hits_to_destroy', 2), ('max_cover_destroyed', 6)]) or (
+                margins[0].get('telegraph') != 'amber_ring_250cm' or
+                margins[0].get('targeting') != "cover nearest the player, else the player's position"):
+            fail(beat['id'], 'Collatera requires the authored margin-call cover contract')
+        # Functional console bodies in the current flat hall. This is not the
+        # authored tiered amphitheatre. Preserve the centre traversal, outer
+        # sliding lanes, entry, exit, and helm footprint.
+        zone['cover'][:] = [[center[0]+x, center[1]+y, 80, 300, 110]
+                            for x in (-1000, 0, 1000) for y in (-1550, -900, -300, 400, 1400)]
+        record['bridge']['margin'] = dict(consoles=15, hits_to_destroy=2, max_destroyed=6,
+                                          targets=3, every_ms=7000, warning_ms=1500,
+                                          radius_cm=250, damage=60, linger_ms=6000)

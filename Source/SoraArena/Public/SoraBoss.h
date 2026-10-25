@@ -74,6 +74,8 @@ public:
     // An arena anchor of Kind (heat_slot, wet_slot, channel, cover, slide,
     // beam_fall) from the level; zone attacks that need anchors wait for them.
     void AddAnchor(FName Kind, const FVector& Location);
+    // Same visibility ray as a live pistol round, used for actual cover occupancy.
+    FHitResult RangedAimTrace(const ASoraCharacterBase& Target) const;
     // A points duel's score: the hero's lead picks the rival's habits.
     void SetDuelScore(int32 HeroPoints, int32 RivalPoints);
     // The arena strikes the boss (a crane's cargo net): stunned for

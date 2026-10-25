@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "SoraMarginRules.h"
 #include "SoraWorldBuilder.generated.h"
 class ASoraFoundryFurnace;
 class ADirectionalLight;
@@ -117,6 +118,15 @@ public:
     // The active beat's task kit (SoraWorldBuilderLayoutTasks.cpp): built as
     // the beat starts, shown as its task goes on, cleared with the beat.
     bool HasBridgeDeck() const { return bBridgeActive&&BridgeRoot!=nullptr&&BridgeProps.Num()==10; }
+    bool BeginBridgeMargin(ASoraBoss& Boss,int32 Attack,int32 Serial);
+    bool BridgeMarginPoints(const ASoraPlayerCharacter& Hero,TArray<FVector>& Points) const;
+    const TArray<TObjectPtr<UStaticMeshComponent>>& BridgeConsoles() const { return MarginConsoles; }
+    const TArray<int32>& MarginTargetIds() const { return MarginIds; }
+    int32 MarginDestroyedCount() const { return MarginState.Destroyed; }
+    int32 MarginConsoleHits(int32 Id) const { return Id>=0&&Id<SoraMarginRules::Consoles?MarginState.Hits[Id]:-1; }
+    int32 MarginLingerMs() const { return MarginState.HeldMs; }
+    int32 MarginPinnedConsole() const { return MarginState.Pinned; }
+    bool MarginIsPending() const { return MarginElapsedMs>=0; }
     bool BeginBridgeSlide(ASoraBoss& Boss,int32 Attack,int32 Serial);
     float BridgeMoveScale(const ACharacter& Body,const FVector& Intent) const;
     float BridgeListDegrees() const { return BridgeDegrees; }
@@ -239,6 +249,21 @@ private:
     void StageBridge(bool Active);
     void TickBridge(float DeltaSeconds);
     void ClearBridge();
+    void StageMargin(bool Restore);
+    void CancelMargin();
+    void TickMargin(float DeltaSeconds,const ASoraBoss* Boss);
+    void SelectMarginTargets(const ASoraPlayerCharacter& Hero,TArray<int32>& Ids,TArray<FVector>& LocalPoints) const;
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> MarginConsoles;
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> MarginMarks;
+    SoraMarginRules::FState MarginState;
+    TWeakObjectPtr<ASoraBoss> MarginBoss;
+    TArray<int32> MarginIds;
+    TArray<FVector> MarginPoints;
+    int32 MarginAttack=INDEX_NONE,MarginSerial=0,MarginWarningMs=1500;
+    double MarginElapsedMs=-1,MarginClockCarry=0;
+    bool bMarginReleased=false;
+    float BridgeCeilingCm=700;
+
     UPROPERTY() TObjectPtr<USceneComponent> BridgeRoot;
     UPROPERTY() TArray<TObjectPtr<ASoraBridgeProp>> BridgeProps;
     TArray<TWeakObjectPtr<ACharacter>> BridgeRiders;
