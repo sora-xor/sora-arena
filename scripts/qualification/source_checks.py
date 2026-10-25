@@ -151,6 +151,7 @@ def checks(python: str = sys.executable) -> list[Check]:
     script("assets", "asset-notices", "scripts/assets/generate_asset_notices.py", "--check")
     unit("assets", "dojo-timber-binding", "scripts/art/test_bind_dojo_timbers.py")
     script("assets", "dojo-timber-binding-current", "scripts/art/bind_dojo_timbers.py", "--check")
+    unit("assets", "capture-luminance", "scripts/art/test_analyze_capture_luminance.py")
     for name in ("asset_ledger", "fetch_cc0", "fetch_cat_base_v6_sources", "lane_records"):
         unit("assets", name.replace("_", "-") + "-tests", f"scripts/assets/tests/test_{name}.py")
     script("audio", "audio-data", "scripts/audio/validate_audio_data.py")
