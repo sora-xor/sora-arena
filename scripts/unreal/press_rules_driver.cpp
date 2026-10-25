@@ -1,5 +1,6 @@
 #include "SoraPressRules.h"
 #include "SoraStealthRules.h"
+#include "SoraPatrolRules.h"
 #include <cassert>
 #include <cstdint>
 #include <iostream>
@@ -62,5 +63,40 @@ int main()
         const auto After=S::Disturbed(Prior,Vigil);
         assert(After.State==Prior.State&&After.Awareness==Prior.Awareness&&After.StateMs==Prior.StateMs);
     }
-    std::cout<<"Press rules: exact stamp boundaries, long intervals, 30/60/144 Hz partitions, independent master jams and delayed lamp suspicion passed\n";
+    namespace T=SoraPatrolRules;
+    assert(T::Valid(8,45000,700)&&T::Valid(4,30000,0));
+    assert(!T::Valid(0,45000,700)&&!T::Valid(33,45000,0)&&!T::Valid(8,45000,5625)&&!T::Valid(8,0,0));
+    // Physical non-arrival for longer than a full circuit never visits a
+    // station or advances a leg. Removing the obstruction still requires
+    // each separate arrival; it cannot catch up by skipping stations.
+    T::FLoop Blocked;
+    T::Step(Blocked,8,45000,100000,false);
+    assert(Blocked.Cycles==0&&Blocked.Legs==0&&Blocked.Visited==0&&Blocked.Overdue);
+    for(int Leg=1;Leg<=8;++Leg)
+    {
+        T::Step(Blocked,8,45000,16,true);
+        assert(Blocked.Cycles==(Leg==8?1:0));
+        assert(Blocked.Legs==Leg%8);
+    }
+    assert(Blocked.LastCycleMs==100128&&Blocked.Visited==255&&Blocked.Overdue);
+    // Independent arrival schedule: reaching each station 700 ms before
+    // its deadline gives one circuit at 30/60/144 Hz, within one frame.
+    for(int Hz:{30,60,144}) for(int Count:{4,8})
+    {
+        const int Period=Count==8?45000:30000;
+        T::FLoop Loop; int Previous=0;
+        for(int Frame=1;Loop.Cycles==0&&Frame<Hz*100;++Frame)
+        {
+            const int Now=1000*Frame/Hz,Dt=Now-Previous; Previous=Now;
+            const long long Arrival=(static_cast<long long>(Loop.Legs)+1)*Period/Count-700;
+            T::Step(Loop,Count,Period,Dt,Now>=Arrival);
+        }
+        assert(Loop.Cycles==1&&Loop.Visited==((1u<<Count)-1)&&!Loop.Overdue);
+        assert(Loop.LastCycleMs>=Period&&Loop.LastCycleMs<=Period+1000/Hz+1);
+    }
+    T::FLoop Early;
+    T::Step(Early,8,45000,5000,true); assert(Early.Legs==0&&Early.Visited==2);
+    T::Step(Early,8,45000,0,true); assert(Early.ElapsedMs==5000&&Early.Legs==0);
+    T::Step(Early,8,45000,625,true); assert(Early.Legs==1&&!Early.Overdue);
+    std::cout<<"Press rules: stamp boundaries, interval partitions, jams, lamp suspicion and arrival-gated 30/45-second patrol schedules passed\n";
 }

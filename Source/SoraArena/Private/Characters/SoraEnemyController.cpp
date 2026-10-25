@@ -239,6 +239,7 @@ int32 ASoraEnemyController::MeterPermille() const
 void ASoraEnemyController::Prepare(bool bHunt)
 {
     ThinkClock.Reset();
+    PatrolClock.Reset(); PatrolLoop={};
     const ASoraEnemy* Enemy = GetPawn<ASoraEnemy>();
     bHunting = bHunt;
     Mind = bHunt ? Stealth::Hunting() : Stealth::Calm();
@@ -624,12 +625,14 @@ void ASoraEnemyController::Act(ASoraEnemy& Enemy, ASoraCharacterBase& Target, bo
 
 void ASoraEnemyController::Patrol(ASoraEnemy& Enemy, float Dt, int32 NowMs)
 {
+    if(SoraPatrolRules::Valid(Route.Points.Num(),Route.PeriodMs,Route.PauseMs))
+    { ScheduledPatrol(Enemy,Dt,NowMs); return; }
     if (Route.Points.Num() <= 1)
     {
         // A guard post: return to it, then watch its arc: the sweep the
         // chapter authors for it, turning about as often as it says, or the
         // brain's own look about.
-        if (WalkTo(Enemy, Post, SoraEnemyBrain::PatrolSpeed, 60.f, NowMs) == EMove::Moving)
+        if (WalkTo(Enemy, Post, SoraEnemyBrain::PatrolSpeed, 60.f, NowMs,Route.bThreeDimensional) == EMove::Moving)
             Face(Enemy, Heading, Dt, 5.f);
         else if (Enemy.PostTurnMs() > 0)
             Face(Enemy, FRotator(0.f, PostYaw + (NowMs / Enemy.PostTurnMs() % 2) * 180.f, 0.f).Vector(), Dt, 3.f);
@@ -654,7 +657,7 @@ void ASoraEnemyController::Patrol(ASoraEnemy& Enemy, float Dt, int32 NowMs)
         else
             RouteIndex = (RouteIndex + 1) % Route.Points.Num();
     }
-    if (WalkTo(Enemy, Route.Points[RouteIndex], SoraEnemyBrain::PatrolSpeed, 70.f, NowMs) != EMove::Moving)
+    if (WalkTo(Enemy, Route.Points[RouteIndex], SoraEnemyBrain::PatrolSpeed, 70.f, NowMs,Route.bThreeDimensional) != EMove::Moving)
     {
         bPaused = true;
         PauseUntilMs = NowMs + Route.PauseMs;
@@ -662,6 +665,33 @@ void ASoraEnemyController::Patrol(ASoraEnemy& Enemy, float Dt, int32 NowMs)
         return;
     }
     Face(Enemy, Heading, Dt, 5.f);
+}
+
+void ASoraEnemyController::ScheduledPatrol(ASoraEnemy& Enemy,float Dt,int32 NowMs)
+{
+    const int32 Count=Route.Points.Num();
+    const FVector Goal=Route.Points[SoraPatrolRules::Target(PatrolLoop,Count)];
+    const FVector Here=Enemy.GetActorLocation();
+    float Distance=FVector::Dist(Here,Goal);
+    // Follow the remaining navigation path, not a straight-line estimate
+    // through machinery. A newly selected goal gets its path in WalkTo.
+    if(!Enemy.IsFlying()&&bPathValid&&PathGoal.Equals(Goal,1.f)&&Path.IsValidIndex(PathIndex))
+    {
+        Distance=FVector::Dist(Here,Path[PathIndex]);
+        for(int I=PathIndex+1;I<Path.Num();++I) Distance+=FVector::Dist(Path[I-1],Path[I]);
+    }
+    const long long Until=SoraPatrolRules::Deadline(PatrolLoop,Count,Route.PeriodMs)-PatrolLoop.ElapsedMs-Route.PauseMs;
+    const float Seconds=FMath::Max(.1f,float(Until)/1000.f);
+    const float FullSpeed=FMath::Max(1.f,float(Enemy.Archetype()->SpeedCmPerSecond));
+    const float Pace=FMath::Clamp(Distance/(Seconds*FullSpeed),.1f,1.f);
+    const EMove Move=WalkTo(Enemy,Goal,Pace,70.f,NowMs,Route.bThreeDimensional);
+    if(Move==EMove::Arrived&&!PatrolLoop.Arrived)
+        PauseYaw=Route.PauseFacing.IsNearlyZero()?Enemy.GetActorRotation().Yaw:Route.PauseFacing.Rotation().Yaw;
+    // Actual arrival is required at the scheduled release. Blocked does not
+    // advance; the late flag survives even if the obstruction clears later.
+    SoraPatrolRules::Step(PatrolLoop,Count,Route.PeriodMs,PatrolClock.Advance(Dt),Move==EMove::Arrived);
+    if(Move==EMove::Arrived) LookAround(Enemy,PauseYaw,20.f,Dt,NowMs);
+    else Face(Enemy,Heading,Dt,5.f);
 }
 
 void ASoraEnemyController::Search(ASoraEnemy& Enemy, float Dt, int32 NowMs)
@@ -1010,10 +1040,11 @@ bool ASoraEnemyController::Claimed(const FVector& Spot) const
     return false;
 }
 
-ASoraEnemyController::EMove ASoraEnemyController::WalkTo(ASoraEnemy& Enemy, const FVector& Goal, float Speed, float Acceptance, int32 NowMs)
+ASoraEnemyController::EMove ASoraEnemyController::WalkTo(ASoraEnemy& Enemy, const FVector& Goal, float Speed, float Acceptance, int32 NowMs,bool bStrict3D)
 {
     const FVector Here = Enemy.GetActorLocation();
-    if ((bErrand&&bErrand3D?FVector::Dist(Here,Goal):FVector::Dist2D(Here,Goal)) <= Acceptance &&
+    const bool bVolume=bStrict3D||(bErrand&&bErrand3D);
+    if ((bVolume?FVector::Dist(Here,Goal):FVector::Dist2D(Here,Goal)) <= Acceptance &&
         (Enemy.IsFlying()||FMath::Abs(Here.Z-Goal.Z)<180.f))
     {
         ClearPath();
@@ -1023,7 +1054,7 @@ ASoraEnemyController::EMove ASoraEnemyController::WalkTo(ASoraEnemy& Enemy, cons
     if (Enemy.Archetype() && Enemy.Archetype()->bStatic)
         return EMove::Blocked;
     if (Enemy.IsFlying())
-        return FlyTo(Enemy, Goal, Speed, Acceptance, NowMs);
+        return FlyTo(Enemy, Goal, Speed, Acceptance, NowMs,bVolume);
     if (!bPathValid || FVector::Dist2D(Goal, PathGoal) > 100.f || FMath::Abs(Goal.Z-PathGoal.Z)>100.f || NowMs >= RepathAtMs)
     {
         const USoraNavigation* Nav = USoraNavigation::Get(this);
@@ -1057,7 +1088,7 @@ ASoraEnemyController::EMove ASoraEnemyController::WalkTo(ASoraEnemy& Enemy, cons
             Direction = FVector(-Direction.Y, Direction.X, 0.f) * (Slot % 2 ? 1.f : -1.f);
     }
     // No progress for two seconds of moving means the goal cannot be reached.
-    if (Stuck(Here, NowMs))
+    if (Stuck(Here, NowMs,bVolume))
     {
         ClearPath();
         return EMove::Blocked;
@@ -1067,12 +1098,11 @@ ASoraEnemyController::EMove ASoraEnemyController::WalkTo(ASoraEnemy& Enemy, cons
     return EMove::Moving;
 }
 
-ASoraEnemyController::EMove ASoraEnemyController::FlyTo(ASoraEnemy& Enemy, const FVector& Goal, float Speed, float Acceptance, int32 NowMs)
+ASoraEnemyController::EMove ASoraEnemyController::FlyTo(ASoraEnemy& Enemy, const FVector& Goal, float Speed, float Acceptance, int32 NowMs,bool bVolume)
 {
     // Straight at the goal at its hover height over the ground below, stepping
     // aside from what is ahead; no path is needed in the air.
     const FVector Here = Enemy.GetActorLocation();
-    const bool bVolume=bErrand&&bErrand3D;
     FVector Direction = bVolume?(Goal-Here).GetSafeNormal():(Goal - Here).GetSafeNormal2D();
     FCollisionQueryParams Query(SCENE_QUERY_STAT(BotNavigation), false, &Enemy);
     FCollisionObjectQueryParams Solid;
@@ -1089,16 +1119,16 @@ ASoraEnemyController::EMove ASoraEnemyController::FlyTo(ASoraEnemy& Enemy, const
         Climb = FMath::Clamp((Ground.ImpactPoint.Z + Height - Here.Z) / 100.f, -1.f, 1.f);
     }
     // No progress for two seconds of flying means the goal cannot be reached.
-    if (Stuck(Here, NowMs))
+    if (Stuck(Here, NowMs,bVolume))
         return EMove::Blocked;
     Heading = Direction;
     Enemy.AddMovementInput((Direction + FVector(0.f, 0.f, Climb)).GetClampedToMaxSize(1.f), Speed);
     return EMove::Moving;
 }
 
-bool ASoraEnemyController::Stuck(const FVector& Here, int32 NowMs)
+bool ASoraEnemyController::Stuck(const FVector& Here, int32 NowMs,bool bThreeDimensional)
 {
-    const int32 Moved = FMath::RoundToInt32(bErrand&&bErrand3D?FVector::Dist(Here,StuckFrom):FVector::Dist2D(Here, StuckFrom));
+    const int32 Moved = FMath::RoundToInt32(bThreeDimensional?FVector::Dist(Here,StuckFrom):FVector::Dist2D(Here, StuckFrom));
     switch (Stealth::Progress(Walked, NowMs, Moved))
     {
     case Stealth::EProgress::Restarted:

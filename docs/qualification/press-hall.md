@@ -54,6 +54,26 @@ The source fixtures cover these assertions, including retry during a climb
 and a living enforcer following all four sides with senses isolated. None of
 these traversal or navigation results has yet been observed in Unreal.
 
+The two auditors now have offset eight-station inspection circuits, scheduled
+for 45 seconds. The drone has a four-corner circuit over the rows, scheduled
+for 30 seconds at a fixed 450 cm floor-relative height. The two floor rifle
+guards use separate aisles between A–B and B–C; the third retains its catwalk
+route. Scheduled travel uses the remaining real navigation path to choose a
+pace within the archetype's speed limit. It requires actual arrival, faces
+the machine during the reserved inspection pause, and records missed
+deadlines instead of skipping blocked stations. Menus, investigation,
+combat and explicit errands do not count as uninterrupted patrol time.
+The late flag remains visible after a delayed arrival. The generic untimed
+patrol remains the default outside these scheduled routes.
+
+`PressPatrolCadence` and `PressPatrolBlocked` are prepared to exercise actual
+movement of both auditors and the drone, the 45/30-second periods, every
+station, pause/inspection priority and a fifty-second physical obstruction.
+Their senses are isolated; ordinary encounter behavior still needs its own
+execution evidence. Neither fixture has run yet. The portable schedule tests
+cover early and late arrivals, a full-period obstruction, and 30/60/144 Hz
+partitions; local compilation remains queued behind the native proof run.
+
 Floor chatter and the lift exit now carry an explicit floor-height bound.
 The exit cannot be pre-credited while a master is still running, or activated
 from the catwalk above it after the jams. A prepared `PressExit` fixture uses
@@ -62,7 +82,7 @@ elevated attempt, and requires returning to the floor to finish. Its positions
 are assisted; it has not run in Unreal.
 
 The source includes integer rule tests for exact window boundaries, long
-intervals, 30/60/144 Hz partitions and independent master state. Nine Python
+intervals, 30/60/144 Hz partitions and independent master state. Ten Python
 contract tests pass, including malformed numbers, reordered or missing
 machines, altered authored rules and footprint clearance at work/patrol
 points. Campaign generation and the existing schema validator pass all 133
@@ -73,8 +93,9 @@ later zones and failing the existing climb/flood baseline. The correction
 extends the hall six metres into its existing thirty-metre gap, preserving
 all other zone coordinates. Four host-only moat checks (including the
 unchanged baseline) and the six press contract checks pass on the corrected
-data. Eight engine fixtures (`PressHall`, `PressInspection`, `PressNoiseEmission`,
-`PressDieLamps`, `PressCheckpointReload`, `PressCatwalk`, `PressCatwalkPatrol`, `PressExit`)
+data. Ten engine fixtures (`PressHall`, `PressInspection`, `PressNoiseEmission`,
+`PressDieLamps`, `PressCheckpointReload`, `PressCatwalk`, `PressCatwalkPatrol`,
+`PressExit`, `PressPatrolCadence`, `PressPatrolBlocked`)
 are prepared and remain unrun.
 The reload fixture saves after an actual held jam and a swept arrow impact,
 destroys the test world, and resumes the same save in a new world. It requires
@@ -83,7 +104,7 @@ and exactly one encounter clock advancing. These are pending assertions, not
 observed runtime results.
 
 This is still a functional blockout. Actual catwalk/ladder and elevated
-enforcer execution, authored 45/30-second patrol loops, die-lamp suspicion after
+enforcer execution, actual 45/30-second patrol timing, die-lamp suspicion after
 five seconds in actual play, synchronized stamp audio/music, final machines and dressing,
 ordinary stealth difficulty, fresh-world save reload execution, full campaign regression
 and current packages remain open. The archive-to-catwalk stair connection is

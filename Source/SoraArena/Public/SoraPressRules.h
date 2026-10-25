@@ -17,6 +17,24 @@ constexpr FPoint CatwalkRoute[4]={{4140,2340},{4140,60},{60,60},{60,2340}};
 constexpr FPoint Centers[Count]={{800,500},{1800,500},{2800,500},
     {800,1200},{1800,1200},{2800,1200},{1200,1900},{2400,1900}};
 constexpr int Master[3]={1,4,6};
+constexpr int AuditorOrder[8]={0,1,2,5,7,6,3,4};
+constexpr FPoint FloorA[4]={{500,800},{3200,800},{3200,980},{500,980}};
+constexpr FPoint FloorB[4]={{500,1480},{3200,1480},{3200,1660},{500,1660}};
+constexpr FPoint DroneRoute[4]={{500,500},{3200,500},{3200,1900},{500,1900}};
+constexpr int PatrolCount(int Guard) { return Guard>=0&&Guard<6?(Guard<2?8:4):0; }
+constexpr int PatrolPeriod(int Guard) { return Guard<2?45000:Guard==5?30000:0; }
+constexpr int PatrolDwell(int Guard) { return Guard<2?700:Guard==5?0:1500; }
+constexpr int PatrolFloor(int Guard) { return Guard==4?CatwalkHeightCm:Guard==5?450:0; }
+constexpr FPoint PatrolPoint(int Guard,int Index)
+{
+    if(Index<0||Index>=PatrolCount(Guard)) return {0,0};
+    if(Guard<2)
+    {
+        const auto P=Centers[AuditorOrder[(Index+(Guard==1?4:0))%8]];
+        return {P.X,P.Y-240};
+    }
+    return Guard==2?FloorA[Index]:Guard==3?FloorB[Index]:Guard==4?CatwalkRoute[Index]:DroneRoute[Index];
+}
 constexpr int Objective(int Press)
 {
     for(int I=0;I<3;++I) if(Master[I]==Press) return I;

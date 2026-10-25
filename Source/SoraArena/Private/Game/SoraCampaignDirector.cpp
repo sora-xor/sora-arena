@@ -13,6 +13,7 @@
 #include "SoraCombatRules.h"
 #include "SoraEnemy.h"
 #include "SoraEnemyController.h"
+#include "Components/CapsuleComponent.h"
 #include "SoraEquipmentComponent.h"
 #include "SoraFieldcraft.h"
 #include "SoraPressRules.h"
@@ -1057,11 +1058,18 @@ ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int
     }
     if(Space->Climb.bEnabled&&GuardIndex==Space->Climb.GuardIndex)
     { Post=FVector(Space->Climb.Origin,0)+FVector(360,-300,1690);Route.Points={Post}; }
-    if(Space->PressHall.bEnabled&&GuardIndex==SoraPressRules::CatwalkGuard)
+    if(Space->PressHall.bEnabled&&SoraPressRules::PatrolCount(GuardIndex)>0)
     {
         Route.Points.Reset();
-        for(const auto& Point:SoraPressRules::CatwalkRoute)
-            Route.Points.Add(FVector(Space->PressHall.Origin+FVector2D(Point.X,Point.Y),SoraPressRules::CatwalkHeightCm+90.f));
+        for(int I=0;I<SoraPressRules::PatrolCount(GuardIndex);++I)
+        {
+            const auto Point=SoraPressRules::PatrolPoint(GuardIndex,I);
+            Route.Points.Add(FVector(Space->PressHall.Origin+FVector2D(Point.X,Point.Y),SoraPressRules::PatrolFloor(GuardIndex)+90.f));
+        }
+        Route.PeriodMs=SoraPressRules::PatrolPeriod(GuardIndex);
+        Route.PauseMs=SoraPressRules::PatrolDwell(GuardIndex);
+        Route.bThreeDimensional=true;
+        if(GuardIndex<2) Route.PauseFacing=FVector(0,1,0);
         Post=Route.Points[0]+FVector(0,0,30);
     }
     if(Route.Points.IsEmpty()) Route.Points.Add(FVector(Post.X,Post.Y,90.f));
@@ -1085,6 +1093,15 @@ ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int
     Senses.HearingCm=Guard.HearingCm; Senses.SuspicionPermille=Guard.SuspicionPermille;
     Senses.ScanDegrees=Guard.ScanDegrees; Senses.ScanMs=Guard.ScanMs; Senses.TurnMs=Guard.TurnMs;
     auto* GuardActor=ASoraEnemy::SpawnArchetype(*GetWorld(),Guard.Type,Slot,Post,FRotator(0,180,0),&Route,&Senses);
+    if(GuardActor&&Space->PressHall.bEnabled&&SoraPressRules::PatrolCount(GuardIndex)>0)
+    {
+        // Resolve the spawned body's actual scaled capsule (the drone is
+        // smaller), so scheduled flight follows the recorded floor height.
+        for(auto& Point:Route.Points)
+            Point.Z=SoraPressRules::PatrolFloor(GuardIndex)+GuardActor->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2.f;
+        GuardActor->SetActorLocation(Route.Points[0]);
+        if(auto* Brain=Cast<ASoraEnemyController>(GuardActor->GetController())) Brain->BeginPatrol(Route);
+    }
     if(GuardActor&&Space->Moat.bEnabled)
         if(auto* Craft=USoraFieldcraft::Get(this))Craft->AssignMoatGuard(*GuardActor,GuardIndex);
     if(GuardActor&&Space->Climb.bEnabled&&GuardIndex==Space->Climb.GuardIndex)

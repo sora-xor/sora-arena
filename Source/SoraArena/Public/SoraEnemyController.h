@@ -3,6 +3,7 @@
 #include "AIController.h"
 #include "SoraStealthRules.h"
 #include "SoraMillisecondClock.h"
+#include "SoraPatrolRules.h"
 #include "SoraEnemyController.generated.h"
 class ASoraBoss;
 class ASoraCharacterBase;
@@ -23,6 +24,11 @@ struct FSoraPatrolRoute
     UPROPERTY() TArray<FVector> Points;
     UPROPERTY() bool bPingPong = false;
     UPROPERTY() int32 PauseMs = 1500;
+    // Optional scheduled circuit, in active patrol time. Distractions and
+    // combat take priority; a blocked station never counts as visited.
+    UPROPERTY() int32 PeriodMs = 0;
+    UPROPERTY() bool bThreeDimensional = false;
+    UPROPERTY() FVector PauseFacing=FVector::ZeroVector;
 };
 
 // The campaign opponents' brain, run from its own tick before its pawn moves.
@@ -111,6 +117,7 @@ public:
     bool HasErrand() const { return bErrand; }
     // Within its acceptance of the errand's goal (2D).
     bool ErrandReached() const { return bErrand && bErrandReached; }
+    const SoraPatrolRules::FLoop& PatrolTiming() const { return PatrolLoop; }
 protected:
     virtual void OnPossess(APawn* InPawn) override;
     virtual void OnUnPossess() override;
@@ -145,14 +152,17 @@ private:
     void Fight(ASoraEnemy& Enemy, ASoraCharacterBase& Target, bool bSees, float DeltaSeconds, int32 NowMs);
     bool DriveHorseShell(ASoraEnemy& Enemy,float DeltaSeconds,int32 NowMs);
     void Patrol(ASoraEnemy& Enemy, float DeltaSeconds, int32 NowMs);
+    void ScheduledPatrol(ASoraEnemy& Enemy,float DeltaSeconds,int32 NowMs);
+    FSoraMillisecondClock PatrolClock;
+    SoraPatrolRules::FLoop PatrolLoop;
     void Search(ASoraEnemy& Enemy, float DeltaSeconds, int32 NowMs);
     bool ChoosePosition(const ASoraEnemy& Enemy, const FVector& Threat, bool bRetreat);
     bool Claimed(const FVector& Spot) const;
-    EMove WalkTo(ASoraEnemy& Enemy, const FVector& Goal, float Speed, float Acceptance, int32 NowMs);
-    EMove FlyTo(ASoraEnemy& Enemy, const FVector& Goal, float Speed, float Acceptance, int32 NowMs);
+    EMove WalkTo(ASoraEnemy& Enemy, const FVector& Goal, float Speed, float Acceptance, int32 NowMs,bool bStrict3D=false);
+    EMove FlyTo(ASoraEnemy& Enemy, const FVector& Goal, float Speed, float Acceptance, int32 NowMs,bool bVolume=false);
     // One move request at Here: true once the walk has made no progress for
     // SoraStealthRules::StuckMs; the next request starts a fresh clock.
-    bool Stuck(const FVector& Here, int32 NowMs);
+    bool Stuck(const FVector& Here, int32 NowMs,bool bThreeDimensional=false);
     void ClearPath();
     void Face(ASoraEnemy& Enemy, const FVector& Direction, float DeltaSeconds, float Rate) const;
     void LookAround(ASoraEnemy& Enemy, float BaseYaw, float Amplitude, float DeltaSeconds, int32 NowMs, int32 PeriodMs = 6000) const;

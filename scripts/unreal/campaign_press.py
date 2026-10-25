@@ -11,6 +11,10 @@ CENTERS = ((800, 500), (1800, 500), (2800, 500), (800, 1200),
 IDS = ('press_a1', 'press_a2', 'press_a3', 'press_b1', 'press_b2', 'press_b3', 'press_c1', 'press_c2')
 MASTERS = (1, 4, 6)
 CATWALK_ROUTE = ((4140, 2340), (4140, 60), (60, 60), (60, 2340))
+AUDITOR_ORDER = (0,1,2,5,7,6,3,4)
+FLOOR_A = ((500,800),(3200,800),(3200,980),(500,980))
+FLOOR_B = ((500,1480),(3200,1480),(3200,1660),(500,1660))
+DRONE_ROUTE = ((500,500),(3200,500),(3200,1900),(500,1900))
 LAMP_IDS = tuple('l_die_lamp_'+IDS[i].removeprefix('press_') for i in MASTERS)
 MASK = {'source': 'press_stamp', 'period_ms': 1600, 'window_ms': 500,
         'radius_cm': 800, 'player_noise_mult': 0.2}
@@ -20,6 +24,16 @@ def same(a, b):
     return json.dumps(a, sort_keys=True, allow_nan=False) == json.dumps(b, sort_keys=True, allow_nan=False)
 
 
+def patrols(origin):
+    x,y=origin
+    auditors=tuple((CENTERS[i][0],CENTERS[i][1]-240) for i in AUDITOR_ORDER)
+    paths=(auditors,auditors[4:]+auditors[:4],FLOOR_A,FLOOR_B,CATWALK_ROUTE,DRONE_ROUTE)
+    return [{'guard_index':i,'period_ms':45000 if i<2 else 30000 if i==5 else 0,
+             'dwell_ms':700 if i<2 else 0 if i==5 else 1500,
+             'floor_cm':400 if i==4 else 450 if i==5 else 0,
+             'points_cm':[[x+dx,y+dy] for dx,dy in path]} for i,path in enumerate(paths)]
+
+
 def contract(beat, origin):
     if (beat['id'] != 'ch06.b11' or beat['type'] != 'stealth_zone' or beat['place'] != 'pl_press_hall'
             or not same(beat['ext']['noise_mask'], MASK)
@@ -27,6 +41,8 @@ def contract(beat, origin):
             or not same(beat['params']['light_sources'],
                         [{'id': name, 'extinguishable': 'arrow', 'suspicion_delay_s': 5} for name in LAMP_IDS])
             or beat['task']['objectives'] != ['press_a2', 'press_b2', 'press_c1', 'exit']
+            or [g['type'] for g in beat['task']['guards']] != ['auditor','auditor','enforcer_rifle','enforcer_rifle','enforcer_rifle','drone']
+            or any(g['post'] for g in beat['task']['guards'])
             or not same(beat['task']['objective_hold_ms'], [4000, 4000, 4000, 0])):
         raise ValueError('press hall must retain its authored masters, holds, stamp mask and inspection deadline')
     if len(origin) != 2 or any(type(v) is not int for v in origin):
@@ -34,6 +50,7 @@ def contract(beat, origin):
     x, y = origin
     return {'origin_cm': list(origin), 'period_ms': 1600, 'window_ms': 500, 'radius_cm': 800,
             'noise_permille': 200, 'inspection_ms': 20000, 'lamp_suspicion_ms': 5000,
+            'patrols':patrols(origin),
             'catwalk': {'height_cm': 400, 'width_cm': 120, 'guard_index': 4,
                         'ladder_foot_cm': [x+300,y+2140], 'ladder_top_cm': [x+300,y+2340],
                         'guard_route_cm': [[x+dx,y+dy] for dx,dy in CATWALK_ROUTE]},
@@ -70,9 +87,7 @@ def place_press_hall(beats, records, zones, pickups, fail):
         zone.props = []
         record['spawns'] = [[x+500,y+260], [x+3000,y+1660], [x+1000,y+850],
                             [x+2600,y+1550], [x+4000,y+2000], [x+3300,y+1200]]
-        record['patrols'] = [[[x+500,y+260],[x+3000,y+260],[x+3000,y+960],
-                              [x+500,y+960],[x+500,y+1660],[x+3000,y+1660]],
-                             [[x+500,y+850],[x+3200,y+850],[x+3200,y+1550],[x+500,y+1550]]]
+        record['patrols'] = [hall['patrols'][i]['points_cm'] for i in (2,3)]
         record['fieldcraft']['lamps'] = die_lamps(hall)
         for volume in record['volumes']:
             if volume['event'] == 'volume_enter:vol_press_floor':

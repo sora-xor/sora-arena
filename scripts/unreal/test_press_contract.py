@@ -115,5 +115,22 @@ class PressContract(unittest.TestCase):
             self.assertFalse(press_hall_valid(self.chapter))
             volume['floor_cm']=0
 
+    def test_patrols_visit_every_press_at_the_authored_periods_and_layers(self):
+        rows=self.hall['patrols']
+        self.assertEqual([r['period_ms'] for r in rows],[45000,45000,0,0,0,30000])
+        self.assertEqual([r['floor_cm'] for r in rows],[0,0,0,0,400,450])
+        work={tuple(p['work_cm']) for p in self.hall['presses']}
+        for row in rows[:2]:
+            self.assertEqual(len(row['points_cm']),8)
+            self.assertEqual(set(map(tuple,row['points_cm'])),work)
+        self.assertNotEqual(rows[0]['points_cm'][0],rows[1]['points_cm'][0])
+        self.assertEqual(rows[4]['points_cm'],self.hall['catwalk']['guard_route_cm'])
+        for field,value in [('guard_index',True),('period_ms',44999),('dwell_ms',0),
+                            ('floor_cm',400),('points_cm',rows[0]['points_cm'][:-1])]:
+            saved=rows[0][field];rows[0][field]=value
+            self.assertFalse(press_hall_valid(self.chapter),(field,value));rows[0][field]=saved
+        self.beat['task']['guards'][0]['post']=True
+        self.assertFalse(press_hall_valid(self.chapter))
+
 
 if __name__=='__main__':unittest.main()

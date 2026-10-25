@@ -22,11 +22,13 @@ gives the three hanging die lamps arrow-only impacts and a five-second delay
 before the nearest guard becomes suspicious. The source now adds the four-metre
 catwalk, an elevated enforcer route and a swept, interruptible ladder from its
 north-west entry. Exit credit requires all three jams and the actual lift
-floor, and floor dialogue volumes exclude the catwalk. Nine host contract
-tests and four unchanged moat/layout checks pass. Eight Unreal fixtures are prepared; their compilation and
+floor, and floor dialogue volumes exclude the catwalk. The auditors and drone
+now have scheduled 45/30-second circuits that require actual arrival and retain
+missed deadlines. Ten host contract tests and four unchanged moat/layout
+checks pass. Ten Unreal fixtures are prepared; their compilation and
 execution remain pending. The [press-hall record](qualification/press-hall.md)
 separates this blockout from unfinished runtime validation, the archive stair
-connection, patrol cadence, sound, art and ordinary encounter checks.
+connection, actual patrol cadence, sound, art and ordinary encounter checks.
 
 ## October 25 separate desk copies and actual crate CPU evidence
 

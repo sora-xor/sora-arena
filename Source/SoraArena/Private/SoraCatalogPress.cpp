@@ -34,7 +34,7 @@ bool SoraCatalogPress::Read(const FJsonObject& O,FSoraBeat& Beat,const FSoraSpac
         !Beat.Is(SoraBeatRules::EType::StealthZone)||Beat.Place!=TEXT("pl_press_hall")||
         B.Objectives.Num()!=4||Beat.Objectives.Num()!=4||Beat.ObjectiveHoldMs.Num()!=4||Beat.ObjectiveHoldMs[3]!=0) return false;
     const auto H=V->AsObject(); const auto& Zone=Space.Zones[B.Zone]; const FVector2D Origin=Zone.Rect.Min;
-    if(H->Values.Num()!=9||Zone.Rect.GetSize()!=FVector2D(4200,2400)||!Zone.Cover.IsEmpty()||
+    if(H->Values.Num()!=10||Zone.Rect.GetSize()!=FVector2D(4200,2400)||!Zone.Cover.IsEmpty()||
         !Point(*H,TEXT("origin_cm"),Origin)||!Number(*H,TEXT("period_ms"),Press::PeriodMs)||
         !Number(*H,TEXT("window_ms"),Press::WindowMs)||!Number(*H,TEXT("radius_cm"),Press::RadiusCm)||
         !Number(*H,TEXT("noise_permille"),Press::NoisePermille)||!Number(*H,TEXT("inspection_ms"),Press::InspectionMs)||
@@ -54,6 +54,22 @@ bool SoraCatalogPress::Read(const FJsonObject& O,FSoraBeat& Beat,const FSoraSpac
         // Reuse the strict two-coordinate decoder for the route's array rows.
         FJsonObject P; P.SetField(TEXT("at"),(*Route)[I]);
         if(!Point(P,TEXT("at"),Origin+FVector2D(Press::CatwalkRoute[I].X,Press::CatwalkRoute[I].Y))) return false;
+    }
+    const auto Patrols=Rows(*H,TEXT("patrols"));
+    if(!Patrols||Patrols->Num()!=6||Beat.Guards.Num()!=6) return false;
+    for(int Guard=0;Guard<6;++Guard)
+    {
+        if(Beat.Guards[Guard].Type!=(Guard<2?TEXT("auditor"):Guard==5?TEXT("drone"):TEXT("enforcer_rifle"))||Beat.Guards[Guard].bPost) return false;
+        const auto Row=(*Patrols)[Guard]; if(!Row||Row->Type!=EJson::Object) return false;
+        const auto P=Row->AsObject(); const auto Points=Rows(*P,TEXT("points_cm"));
+        if(P->Values.Num()!=5||!Number(*P,TEXT("guard_index"),Guard)||
+            !Number(*P,TEXT("period_ms"),Press::PatrolPeriod(Guard))||!Number(*P,TEXT("dwell_ms"),Press::PatrolDwell(Guard))||
+            !Number(*P,TEXT("floor_cm"),Press::PatrolFloor(Guard))||!Points||Points->Num()!=Press::PatrolCount(Guard)) return false;
+        for(int I=0;I<Points->Num();++I)
+        {
+            FJsonObject At; At.SetField(TEXT("at"),(*Points)[I]); const auto Expected=Press::PatrolPoint(Guard,I);
+            if(!Point(At,TEXT("at"),Origin+FVector2D(Expected.X,Expected.Y))) return false;
+        }
     }
     const auto Items=Rows(*H,TEXT("presses")); if(!Items||Items->Num()!=Press::Count) return false;
     static const TCHAR* Names[]={TEXT("press_a1"),TEXT("press_a2"),TEXT("press_a3"),TEXT("press_b1"),

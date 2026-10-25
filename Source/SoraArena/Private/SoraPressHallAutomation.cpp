@@ -29,6 +29,28 @@ bool WaitForPressDialogue(FBeatWorld& W)
         if(!W.Tick(1)) return false;
     return W.Test.TestFalse(TEXT("Authored press dialogue releases control without being skipped"),W.Campaign()->IsDialogueBlocking());
 }
+ASoraEnemy* SpawnPatrolFixture(FBeatWorld& W,int GuardIndex)
+{
+    namespace Press=SoraPressRules;
+    const FVector Origin(W.BeatData().Space.PressHall.Origin,0);
+    FSoraPatrolRoute Route;
+    for(int I=0;I<Press::PatrolCount(GuardIndex);++I)
+    {
+        const auto P=Press::PatrolPoint(GuardIndex,I);
+        Route.Points.Add(Origin+FVector(P.X,P.Y,Press::PatrolFloor(GuardIndex)+90));
+    }
+    Route.PeriodMs=Press::PatrolPeriod(GuardIndex); Route.PauseMs=Press::PatrolDwell(GuardIndex);
+    Route.bThreeDimensional=true; if(GuardIndex<2) Route.PauseFacing=FVector(0,1,0);
+    FSoraEnemyTuning Tune; Tune.SightCm=1; Tune.DarkSightCm=0; Tune.HearingCm=0;
+    auto* Guard=ASoraEnemy::SpawnArchetype(*W.World->GetTestWorld(),GuardIndex<2?TEXT("auditor"):TEXT("drone"),GuardIndex,
+        Route.Points[0],FRotator::ZeroRotator,&Route,&Tune);
+    if(!Guard) return nullptr;
+    for(auto& Point:Route.Points)
+        Point.Z=Press::PatrolFloor(GuardIndex)+Guard->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2.f;
+    Guard->SetActorLocation(Route.Points[0]);
+    if(auto* Brain=Cast<ASoraEnemyController>(Guard->GetController())) Brain->BeginPatrol(Route);
+    return Guard;
+}
 void FreezeGuards(FBeatWorld& W)
 {
     for(TActorIterator<ASoraEnemy> It(W.World->GetTestWorld());It;++It)
@@ -482,6 +504,92 @@ bool FSoraPressExitTest::RunTest(const FString& Parameters)
     if(!W.Tick(5)||!WaitForPressDialogue(W)||!W.Press(EKeys::G)||!W.Tick(2)) return false;
     TestTrue(TEXT("Returning to the actual floor lift completes the beat"),C->ActiveBeat()!=10||W.Mode()->bChapterComplete);
     AddInfo(TEXT("Directed real input for early-exit refusal, three holds, elevated refusal and floor exit. Positioning is assisted and guards frozen; not ordinary traversal or difficulty acceptance."));
+    return !HasAnyErrors();
+}
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraPressPatrolTest,"SoraArena.Campaign.PressPatrolCadence",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraPressPatrolTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;
+    using namespace SoraPressAutomation;
+    if(!FSoraCatalog::Get().Load()) return false;
+    FBeatWorld W(*this,TEXT("PressPatrolCadence"),5,10);
+    if(!W.Start()) return false;
+    W.Harden(); FreezeGuards(W);
+    FloorFixture(W,FVector(W.BeatData().Space.PressHall.Origin+FVector2D(3900,250),0));
+    if(!W.Tick(120)||!WaitForPressDialogue(W)) return false;
+    ASoraEnemy* Guards[3]={}; ASoraEnemyController* Brains[3]={};
+    const int Indices[]={0,1,5};
+    for(int I=0;I<3;++I)
+    {
+        Guards[I]=SpawnPatrolFixture(W,Indices[I]);
+        if(!TestNotNull(TEXT("The scheduled patrol fixture spawns"),Guards[I])) return false;
+        Brains[I]=Cast<ASoraEnemyController>(Guards[I]->GetController());
+        if(!TestNotNull(TEXT("The scheduled patrol has its production brain"),Brains[I])) return false;
+    }
+    if(!W.Tick(600)||!W.Press(EKeys::Escape)) return false;
+    SoraPatrolRules::FLoop Paused[3];
+    for(int I=0;I<3;++I) Paused[I]=Brains[I]->PatrolTiming();
+    if(!W.Tick(180)) return false;
+    for(int I=0;I<3;++I)
+        TestTrue(TEXT("Pause does not advance a patrol's clock or physical visits"),
+            Brains[I]->PatrolTiming().ElapsedMs==Paused[I].ElapsedMs&&Brains[I]->PatrolTiming().Visited==Paused[I].Visited);
+    if(!W.Press(EKeys::Escape)) return false;
+    bool Height=true;
+    for(int Frame=0;Frame<3600;++Frame)
+    {
+        if(!W.Tick(1)) return false;
+        Height&=FMath::Abs(Feet(*Guards[0]).Z)<15.f&&FMath::Abs(Feet(*Guards[1]).Z)<15.f&&
+            FMath::Abs(Feet(*Guards[2]).Z-450.f)<15.f;
+    }
+    for(int I=0;I<3;++I)
+    {
+        const auto& Loop=Brains[I]->PatrolTiming(); const int Period=I==2?30000:45000;
+        TestTrue(TEXT("A real circuit completes at its authored period"),Loop.Cycles>0&&Loop.LastCycleMs>=Period&&Loop.LastCycleMs<=Period+34);
+        TestEqual(TEXT("Every required station was physically visited"),Loop.Visited,I==2?15u:255u);
+        TestFalse(TEXT("No missed station deadline is hidden"),Loop.Overdue);
+    }
+    TestTrue(TEXT("Auditors remain on the floor and the drone stays over the presses"),Height);
+    // A jam-inspection errand has priority. Its time is not quietly counted
+    // as uninterrupted patrol time, and normal perception remains enabled.
+    const auto Before=Brains[0]->PatrolTiming();
+    Brains[0]->SetErrand(Guards[0]->GetActorLocation(),FVector(0,1,0),1,0,true,true,70);
+    if(!W.Tick(120)) return false;
+    TestEqual(TEXT("A competing inspection pauses the regular patrol clock"),Brains[0]->PatrolTiming().ElapsedMs,Before.ElapsedMs);
+    Brains[0]->ClearErrand();
+    if(!W.Tick(2)) return false;
+    TestTrue(TEXT("Regular patrol resumes after the inspection"),Brains[0]->PatrolTiming().ElapsedMs>Before.ElapsedMs);
+    AddInfo(TEXT("Actual collision/navigation for two auditors and one drone, with sight/hearing isolated. Periods measure uninterrupted active patrol time; ordinary stealth remains unqualified."));
+    return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraPressPatrolBlockedTest,"SoraArena.Campaign.PressPatrolBlocked",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraPressPatrolBlockedTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;
+    using namespace SoraPressAutomation;
+    if(!FSoraCatalog::Get().Load()) return false;
+    FBeatWorld W(*this,TEXT("PressPatrolBlocked"),5,10);
+    if(!W.Start()) return false;
+    W.Harden(); FreezeGuards(W);
+    FloorFixture(W,FVector(W.BeatData().Space.PressHall.Origin+FVector2D(3900,250),0));
+    if(!W.Tick(120)||!WaitForPressDialogue(W)) return false;
+    auto* Guard=SpawnPatrolFixture(W,0);
+    if(!TestNotNull(TEXT("The obstructed auditor spawns"),Guard)) return false;
+    auto* Brain=Cast<ASoraEnemyController>(Guard->GetController());
+    if(!TestNotNull(TEXT("The obstructed auditor has its production brain"),Brain)) return false;
+    const FVector Goal(W.BeatData().Space.PressHall.Origin+FVector2D(1800,260),0);
+    auto* Barrier=Block(W,Goal+FVector(0,0,150),FVector(100,100,150));
+    if(!TestNotNull(TEXT("The scheduled station is physically blocked"),Barrier)||!W.Tick(3000)) return false;
+    const auto Stopped=Brain->PatrolTiming();
+    TestTrue(TEXT("Fifty seconds cannot turn a blocked first leg into a lap"),Stopped.Cycles==0&&Stopped.Legs==0&&Stopped.Visited==0&&Stopped.Overdue);
+    Barrier->Destroy();
+    for(int Frame=0;Frame<900&&Brain->PatrolTiming().Legs==0;++Frame) if(!W.Tick(1)) return false;
+    TestTrue(TEXT("Clearing the obstacle permits exactly the next physical visit"),
+        Brain->PatrolTiming().Legs==1&&Brain->PatrolTiming().Visited==2&&FVector::Dist(Feet(*Guard),Goal)<75.f);
+    TestTrue(TEXT("A delayed arrival retains the missed-deadline evidence"),Brain->PatrolTiming().Overdue&&Brain->PatrolTiming().Cycles==0);
+    AddInfo(TEXT("Directed actual-navigation obstruction; sight/hearing isolated. A clock alone cannot report a completed patrol."));
     return !HasAnyErrors();
 }
 #endif
