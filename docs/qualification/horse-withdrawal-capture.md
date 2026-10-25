@@ -7,6 +7,21 @@ with zero selected errors/warnings and natural editor/wrapper exit zero.
 All three original images were reviewed. The earlier thirteen-test NullRHI
 result at `0adc081` remains separate evidence.
 
+The later four-frame attempt at `2f85881` builds in 72.69 seconds but fails
+its 158.89-second test with one selected error and zero warnings. The first
+three HUD originals match their observed frames and show the corrected
+“Pack horses defended” tracker. The extra original exists, but fails its
+combined frame/clock/file check and has no accepted frame observation. All
+four originals were viewed; the overhead detail also hides middle bodies
+behind the torii's top beam. Actual editor/wrapper exits are 3/1 with natural
+EOF. All 33 archive files and five original/archive pairs rehash; source,
+native, Config and Generated remain unchanged. This failure is preserved.
+The source correction requests that frame during the viewport's `OnDrawn`
+callback and moves to an oblique view through the gate. It also reports
+requested and processed frame numbers separately on mismatch. The initial
+failure did not log that pair, so callback timing is a source-based diagnosis.
+The corrected capture has not yet run in Unreal.
+
 The fixture loads an isolated `ch02.b06` checkpoint and uses a fixed overview
 camera. It freezes enemy combat through the real 150-second defense timer,
 retains six actual pod arrivals, then releases their ordinary movement when
@@ -24,15 +39,15 @@ including originals from a failed semantic check.
 
 The subsequent source candidate adds an `arrival-detail` original immediately
 after the gate-clear overview, while the same call and ordinary clock continue.
-Only this fourth frame hides the HUD. Its fixed camera at `(-2220, 0, 1200)` cm
-looks at `(-2300, 0, 90)` with a 45-degree horizontal field of view. It waits
+Only this fourth frame hides the HUD. Its current camera at `(-1600, 900, 500)` cm
+looks at `(-2280, 0, 90)` with a 50-degree horizontal field of view. It waits
 two frames for the view change and requires the actual player-camera cache
 to match the prepared position, rotation and field of view. All six identities,
 grounded arrivals, matching screenshot frames and cleanup remain required.
 The current-only `sora-arena.withdrawal-capture.v2` contract requires all four
 originals and their explicit HUD states. Historical v1 evidence remains intact.
-This new camera and the tracker correction have not yet run in Unreal; the
-extra detail cannot establish ordinary HUD visibility or finished art.
+This corrected camera and callback have not yet run in Unreal; the extra
+detail cannot establish ordinary HUD visibility or finished art.
 
 Run the existing guarded capture launcher with the exact filter at 1280×720
 and Metal SM6 first. Review all four current original PNGs before considering a
@@ -60,8 +75,9 @@ Retreat movement and bilingual dialogue are readable in these images. At the
 gate, bodies overlap each other and the torii posts, so the six arrivals are
 not individually distinguishable from this camera. The tracker also retained
 “Hold out: 0 s left” after the defense ended. A subsequent source correction
-shows “Pack horses defended” during withdrawal; that correction has not yet
-run in Unreal. Better arrival framing, ordinary play and final art remain open.
+shows “Pack horses defended” during withdrawal; that label is readable in the
+three matched originals from the later failed attempt. Better arrival framing,
+ordinary play and final art remain open.
 
 This functional capture allowed recorded background CPU compilation, with an
 exclusive Unreal/Blender slot, at least 24 GiB free physical memory at launch
@@ -70,3 +86,7 @@ The original preparation requiring all compilers to be idle is preserved.
 Evidence: `Saved/Qualification/2026-10-25/withdrawal-sm6-c63af6f/1280x720-20261025T074606Z-305577ad/`;
 the independent `root-review.json` SHA-256 is
 `0a9ea8a51855ad969dcc0be10f7880c10a0c971cfdfaec9573343ad800e4254a`.
+The failed detail attempt is retained under
+`withdrawal-detail-sm6-2f85881/1280x720-20261025T081757Z-17bac555/`
+in the same qualification directory; its independent review SHA-256 is
+`b81e9c899a1e29a20b050a2ff12635715880c9a21665be04358638b4dde9e0df`.

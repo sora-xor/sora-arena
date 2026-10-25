@@ -61,7 +61,8 @@ def verify_sequence(data, filenames, width, height):
         camera = vector(row.get('camera'), 3)
         rotation = vector(row.get('camera_rotation'), 3)
         eye, pitch, yaw, fov = (([-500,-3400,1900],math.degrees(math.atan2(-1800,3400)),90,75) if index < 3
-                               else ([-2220,0,1200],math.degrees(math.atan2(-1110,80)),180,45))
+                               else ([-1600,900,500],math.degrees(math.atan2(-410,math.hypot(680,900))),
+                                     math.degrees(math.atan2(-900,-680)),50))
         angle_errors = [abs((actual-wanted+180)%360-180) for actual,wanted in zip(rotation,[pitch,yaw,0])]
         if math.dist(camera,eye) > .01 or max(angle_errors) > .001 or abs(number(row,'camera_fov')-fov) > .001:
             raise ValueError('withdrawal rendered camera differs from its required view')

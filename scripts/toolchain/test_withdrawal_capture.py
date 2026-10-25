@@ -29,9 +29,10 @@ def observations():
         data['frames'].append(dict(phase=phase,file=phase+'.png',request_frame=9100+i*120,processed_frame=9100+i*120,
             world_s=[151.2,153.2,160.2,160.3][i],wall_s=[151.3,153.31,160.31,160.41][i],walked_cm=[0,2400,12000,12000][i],
             defense_ms=150003,paused=False,hud_drawn=(i<3),english=True,
-            camera=[-500,-3400,1900] if i<3 else [-2220,0,1200],
-            camera_rotation=[math.degrees(math.atan2(-1800,3400)),90,0] if i<3 else [math.degrees(math.atan2(-1110,80)),180,0],
-            camera_fov=75 if i<3 else 45,survivors=people,
+            camera=[-500,-3400,1900] if i<3 else [-1600,900,500],
+            camera_rotation=[math.degrees(math.atan2(-1800,3400)),90,0] if i<3 else
+                            [math.degrees(math.atan2(-410,math.hypot(680,900))),math.degrees(math.atan2(-900,-680)),0],
+            camera_fov=75 if i<3 else 50,survivors=people,
             cue='ch02.b02.enforcer.009' if i<2 else 'ch02.b06.kohagi.006'))
     return data
 

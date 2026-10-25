@@ -109,11 +109,9 @@ public:
             {
                 // The three overview originals retain the ordinary HUD. Only
                 // this extra detail hides it; no survivor or clock is changed.
-                SetCamera(FVector(-2220,0,1200),FVector(-2300,0,90),45.f);
+                SetCamera(FVector(-1600,900,500),FVector(-2280,0,90),50.f);
                 HUD->bShowHUD=false; DetailCameraApplied=true; DetailCameraFrame=GFrameCounter;
             }
-            // Let the player camera cache and renderer observe the new view.
-            if(GFrameCounter>DetailCameraFrame+1) CaptureFrame();
         }
         return false;
     }
@@ -123,6 +121,7 @@ private:
     TWeakObjectPtr<ASoraHUD> HUD;
     TWeakObjectPtr<USoraGameEvents> Events;
     TWeakObjectPtr<ACameraActor> Camera;
+    TWeakObjectPtr<UGameViewportClient> GameViewport;
     TArray<TWeakObjectPtr<ASoraEnemy>> Survivors;
     TArray<FVector> Previous;
     TArray<TSharedPtr<FJsonValue>> Frames;
@@ -131,7 +130,7 @@ private:
     TArray<uint8> CampaignBytes,ControlBytes,SettingsBytes;
     TArray<FInputActionKeyMapping> Actions;
     TArray<FInputAxisKeyMapping> Axes;
-    FDelegateHandle DrawHandle,ScreenshotHandle,CompleteHandle,ShotHandle;
+    FDelegateHandle DrawHandle,DetailDrawHandle,ScreenshotHandle,CompleteHandle,ShotHandle;
     FVector2D Viewport;
     bool Started=false,Failed=false,Cleaned=false,Released=false,Completed=false,ShowHUD=true;
     bool DetailCameraApplied=false;
@@ -197,6 +196,8 @@ private:
         if(!Camera.IsValid()) { Fail(TEXT("Could not create withdrawal review camera")); return; }
         SetCamera(FVector(-500,-3400,1900),FVector(-500,0,100),75.f); PC()->SetViewTarget(Camera.Get());
         DrawHandle=HUD->OnReticleDrawn.AddRaw(this,&FRun::Drawn);
+        GameViewport=M->GetWorld()->GetGameViewport();
+        DetailDrawHandle=GameViewport->OnDrawn().AddRaw(this,&FRun::DetailDrawn);
         ScreenshotHandle=FScreenshotRequest::OnScreenshotRequestProcessed().AddRaw(this,&FRun::Captured);
         Events=USoraGameEvents::Get(M.Get()); if(!Events.IsValid()) { Fail(TEXT("Withdrawal event bus is unavailable")); return; }
         ShotHandle=Events->OnWeaponFired.AddLambda([this](const FSoraWeaponFiredEvent& E) {
@@ -218,6 +219,12 @@ private:
         (void)Center;
         if(Phase<3) CaptureFrame();
     }
+    void DetailDrawn()
+    {
+        // This viewport event runs even with the HUD hidden, inside the same
+        // draw that ProcessScreenShots saves. Latent Update runs outside it.
+        if(Phase==3&&DetailCameraApplied&&GFrameCounter>DetailCameraFrame+1) CaptureFrame();
+    }
     void CaptureFrame()
     {
         if(Failed||!Released||Phase>=PhaseCount||!PendingFile.IsEmpty()) return;
@@ -233,9 +240,12 @@ private:
             !View->GetCameraRotation().Equals(Camera->GetActorRotation(),.001)||
             !FMath::IsNearlyEqual(View->GetFOVAngle(),Camera->GetCameraComponent()->FieldOfView,.001f))
         { Fail(TEXT("Withdrawal rendered camera has not reached the prepared view")); return; }
-        int32 W=0,H=0; PC()->GetViewportSize(W,H); const FSoraHUDFrame Layout(*HUD.Get(),*M.Get(),W,H); FString Why;
-        if(!SoraHUDPanels::BottomHUDLayoutFits(Layout,*Hero(),Why)||!SoraHUDPanels::StoryTrackerLayoutFits(Layout,Why)||
-            !SoraHUDPanels::CaptionStoryLayoutFits(Layout,Why)) { Fail(*(TEXT("Withdrawal HUD: ")+Why)); return; }
+        if(WithHUD)
+        {
+            int32 W=0,H=0; PC()->GetViewportSize(W,H); const FSoraHUDFrame Layout(*HUD.Get(),*M.Get(),W,H); FString Why;
+            if(!SoraHUDPanels::BottomHUDLayoutFits(Layout,*Hero(),Why)||!SoraHUDPanels::StoryTrackerLayoutFits(Layout,Why)||
+                !SoraHUDPanels::CaptionStoryLayoutFits(Layout,Why)) { Fail(*(TEXT("Withdrawal HUD: ")+Why)); return; }
+        }
         Last=MakeShared<FJsonObject>(); Last->SetStringField(TEXT("phase"),Phases[Phase]);
         Last->SetStringField(TEXT("file"),FString(Phases[Phase])+TEXT(".png"));
         Last->SetStringField(TEXT("cue"),Cue?Cue->Id:TEXT(""));
@@ -267,8 +277,10 @@ private:
     void Captured()
     {
         if(Failed||PendingFile.IsEmpty()) return;
-        if(RequestFrame!=GFrameCounter||!OrdinaryClock()||IFileManager::Get().FileSize(*PendingFile)<=0)
-        { Fail(TEXT("Withdrawal original PNG does not match its observed live HUD frame")); return; }
+        if(RequestFrame!=GFrameCounter)
+        { Fail(*FString::Printf(TEXT("Withdrawal %s frame mismatch: request %llu, processed %llu"),Phases[Phase],RequestFrame,GFrameCounter)); return; }
+        if(!OrdinaryClock()||IFileManager::Get().FileSize(*PendingFile)<=0)
+        { Fail(TEXT("Withdrawal original PNG lost its ordinary clock or saved bytes")); return; }
         Last->SetNumberField(TEXT("processed_frame"),double(GFrameCounter)); Frames.Add(MakeShared<FJsonValueObject>(Last));
         UE_LOG(LogTemp,Display,TEXT("SORA_WITHDRAWAL_FRAME %s"),*PendingFile); PendingFile.Reset(); ++Phase;
         if(Phase==PhaseCount) HUD->bShowHUD=true;
@@ -278,6 +290,7 @@ private:
         if(Cleaned) return; Cleaned=true;
         if(!PendingFile.IsEmpty()) FScreenshotRequest::Reset();
         if(HUD.IsValid()) { HUD->OnReticleDrawn.Remove(DrawHandle); HUD->bShowHUD=ShowHUD; }
+        if(GameViewport.IsValid()) GameViewport->OnDrawn().Remove(DetailDrawHandle);
         FScreenshotRequest::OnScreenshotRequestProcessed().Remove(ScreenshotHandle);
         if(Events.IsValid()) { Events->OnBeatCompleted.Remove(CompleteHandle); Events->OnWeaponFired.Remove(ShotHandle); }
         bool Profiles=true,Mappings=true;
