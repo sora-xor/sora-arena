@@ -19,3 +19,4 @@ Source/SoraArena/Private/ThirdParty/QrCodeGen/* whitespace=-blank-at-eol
 
 Content/SourceArt/Environment/PolyHaven/TreeSmall02/Upstream/*.bin filter=lfs diff=lfs merge=lfs -text
 Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/Upstream/*.bin filter=lfs diff=lfs merge=lfs -text
+Content/SourceArt/Environment/PolyHaven/Fern02/Upstream/*.bin filter=lfs diff=lfs merge=lfs -text
