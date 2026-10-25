@@ -14,7 +14,7 @@ schema validation pass all 133 beats and reject the existing 65 malformed
 fixtures. The climb/flood integration baseline remains unchanged. A prepared
 Unreal fixture counts the four real posts and commits a mapped katana strike
 through one post, followed by a clear-line damage control beside it. It freezes
-opponent AI and is not a duel-balance test. It has not compiled or run yet.
+opponent AI and is not a duel-balance test. The initial fixture failure and corrected runtime results are recorded below.
 
 This is collision and placement work, not final art. Posts, racks, doors and
 ceiling use proxies. The north stair connection to the press catwalk remains
@@ -35,3 +35,15 @@ All 20 evidence files rehashed; editor/wrapper exited naturally with 3/1;
 source, native, config and generated inputs were unchanged. Failed-run review:
 `e6858f5a78f3d24e6acf9b922f939c011d6894e37706b5fafc3cd08d523e28a4`.
 The next run includes ToranosukeSteel, the boss specific to this archive.
+
+The corrected `e638cd6` builds in 21.62 seconds and passes ArchivePosts,
+Campaign.Spaces and Boss.ToranosukeSteel. The katana commits both swings:
+the real post prevents damage, while the same target is damaged beside it.
+The boss fixture separately verifies its phase behavior and sheathed mutō-dori
+finish; it is not an ordinary duel played in the archive. Editor/wrapper exit
+naturally at 0/0, all twenty evidence files rehash and guarded inputs remain
+unchanged. Review:
+`7469d1d4798f839b47cc4f527f6eb4683837f020e0417b79c9b1901bfbe4caa8`.
+Source CI at `1248987` passes all 110 checks; the later two fixture-only commits
+are not covered by that run. Review:
+`990d2e768b4cf027d64edb385e079254d32011e26c4efcaa2eb7600739950204`.

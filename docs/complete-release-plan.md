@@ -11,36 +11,51 @@ production. Work runs in isolated worktrees, with a single coordinated Unreal
 and GPU rendering lane. The shared checkout is not a build or render workspace.
 The local coordination mailboxes record current ownership, commits and lane use.
 
-## October 26 relay movement, saved state and capture status
+## October 26 relay aftermath, archive collision and fur review
 
-The complete release remains unfinished. The assisted 133-beat campaign,
-all eleven press fixtures, relay controls/scan/gallery/lookout, lamp notices
-and a fresh-world reload of the actual completed relay save pass at
-`63651ce`. The inspector's return failure is repaired by `2a791a4`, which
-uses the actual capsule's floor support at the stair foot. The inspector
-climbs, waits at an obstruction, inspects after removal and returns to its
-floor post; four related movement regressions also pass.
+The complete release remains unfinished. Exact `4ba5ab7` passes fifteen
+NullRHI fixtures, including the assisted 133-beat campaign, online drone
+radio marks, actual completed-relay save reload, later flood lighting, five
+flood fixtures, searchlights, relay controls/scan/notices and acoustic/stealth
+regressions. Online marks reach an ally outside twenty metres even with
+hearing disabled; offline marks reach the twenty-metre boundary but not
+20.0025 metres. The flood escape now contains the two original moat towers
+as well as its three handlamps. Its saved relay flag freezes the towers'
+horizontal headings and blocks later searchlight retargeting, while the
+handlamps still detect. All fifteen pass with natural editor/wrapper exits
+zero, unchanged inputs, and twenty independently rehashed evidence files.
+Review: `41acc2a73eb7931a6e54477776adb1029739e8c578bed19f7542d570a96f719c`.
+Source CI `40232668064` independently passes all 109 checks at that source.
+The prior real stair, inspector and 50/40/30-second patrol results remain in
+the [relay record](qualification/relay-room.md).
 
-Actual staged patrols exposed two further route defects. At `c3bb27a` the
-gallery guard completes its alternating stair circuits at 40 seconds, the
-ground guard at 50 seconds and the drone at 30 seconds. A smaller orbit and
-shortened unused maintenance-platform tip preserve the drone's five-metre
-height while clearing the column and railings. Real collision blocks its
-progress, and removing an obstacle resumes the next physical visit without
-hiding the missed deadline. All ten selected movement/control regressions
-pass with natural editor/wrapper exits zero and unchanged inputs. Source CI
-at `14fc6fa` independently passes all 109 checks. Exact commits, failures and
-limits are in the [relay record](qualification/relay-room.md). Drone marking
-and later moat lighting after relay completion still need runtime checks.
+The archive is now a 26 by 18 metre collision blockout with a six-metre
+ceiling, four solid posts in its duel ring, wall racks and relocated duel
+anchors. Its first engine run retained two fixture failures: selecting the
+needle gun instead of the katana, and expecting the relay's removed generic
+pedestal. The assisted campaign passed on that exact `1248987` production
+source, whose separate source CI passes 110 checks. After fixture corrections,
+`e638cd6` passes ArchivePosts, all-eight-chapter Spaces and ToranosukeSteel.
+Mapped katana input commits a swing blocked by a real post and a clear-line
+swing that damages the target beside it. The boss regression includes the
+sheathed mutō-dori finish. Natural exits are zero; all twenty evidence files
+and unchanged inputs verify. Review:
+`7469d1d4798f839b47cc4f527f6eb4683837f020e0417b79c9b1901bfbe4caa8`.
+The [archive record](qualification/archive-room.md) retains failures and
+limits. The north stair connection, ordinary duel play and final art remain
+unfinished.
 
-Claude's two v4 bow/paw captures at `e56651a` both complete and exit naturally
-at editor 0/wrapper 0 on METAL_SM6. Root independently verifies the original
-files, material readback, unchanged rig/paw assets and ID pixels. The new
-review pose clears the fixed reticle disc; the runtime pose is unchanged.
-The 32-frame versus four-frame capture warm-up changes fur residual by only
-about 1–2% on common image regions and does not resolve its coarse, noisy
-appearance. Fur geometry, cloth, wrapping and arrow finish remain WIP.
-These diagnostics do not admit final art, animation or performance.
+Claude's `d6021af` v5 fur capture exits naturally on METAL_SM6. Root verifies
+thirty archived files, all nine material slots, 33 unchanged protected inputs
+and the three ID classes' zero pixels in the fixed reticle disc. On shared
+fur regions, v5 residual is 39.7% lower in the eye view and 46.8% lower in the
+close-up than v4. Camera/exposure agree; tiny solved-pose differences and two
+study-text edits are retained. This is a descriptive comparison of single
+captures and changed assets, not causal or photoreal acceptance. Original
+images still show broad angular strips, pale gaps and flat bright white fur;
+cloth and craft finish remain WIP. Review:
+`659ade7b10c90336291b219cd9f7c96c384c4ba1e5ead1597ca23e330e064a1e`.
+Claude has the Unreal/Blender lane for the next bounded fur/kote iteration.
 
 The latest completed Mac package remains `c655b6b` and the production native
 bridge remains `10ad7dad`. Current-source packages, M1 and Windows behavior,

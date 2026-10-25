@@ -122,8 +122,8 @@ through an obstructed station. These routes now have the directed runtime eviden
 
 After all nodes and the floor-level east exit are completed, saved chapter
 progress limits drone callouts to twenty metres and fixes moat searchlight
-headings on later visits. The actual completion save reloads with the offline flag; the resulting
-drone communication and moat lighting effects still need runtime checks. The assisted full playthrough now explicitly places
+headings on later visits. The actual completion save reloads with the offline flag; its communication
+and later moat lighting effects now pass the dedicated checks below. The assisted full playthrough now explicitly places
 the hero on the upper control's floor and waits for a real safe scan window;
 it is not an ordinary-input playthrough. At integration, the fixture also
 clears attacking guards through its existing assisted combat path and waits
@@ -167,5 +167,23 @@ placeholder for the authored prone lookout pose. The opening, support, facing an
 Known unfinished work: the room remains primitive blockout geometry, the
 turret/annex materials and openings are not authored final art, Kohagi's prone
 animation is missing, and there is no rendered, ordinary-play, Mac/Windows package or performance
-qualification. Restored-checkpoint communication/lighting effects and the
-complete ordinary encounter still need dedicated runtime evidence.
+qualification. The complete ordinary encounter still needs dedicated runtime evidence.
+
+## Saved aftermath runtime at 4ba5ab7
+
+All fifteen selected NullRHI fixtures pass, including online and restored-save
+offline drone marks, the complete assisted campaign, searchlights, stealth,
+hearing, relay scan/controls/notices and five flood fixtures. The radio test
+uses disabled hearing, receives the actual known position, and distinguishes
+1999, 2000 and 2000.25 cm recipients. Two moat towers were absent from the old
+flood escape; they now accompany its three existing handlamps. After the actual
+relay save is reloaded and the campaign reaches the flood, both tower headings
+stay fixed through time and an explicit lock request; handlamp detection still
+works. This does not establish ordinary stealth difficulty or visual lighting.
+
+Build, editor and wrapper succeed; editor/wrapper natural exits are zero.
+Twenty archived files rehash and source/native/config/generated inputs remain
+unchanged. Review `41acc2a73eb7931a6e54477776adb1029739e8c578bed19f7542d570a96f719c`.
+Source CI run `40232668064` independently passes all 109 checks; its tested PR
+merge tree matches the signed source, and artifact/raw-log digests verify.
+Review `f1b5d83f0be145951f4eb865949062469e5aaa6fb671c394b5a4de7d4b2851a3`.
