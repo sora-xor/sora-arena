@@ -7,11 +7,17 @@ import_nyaakoto_fp_paws.py, and before any first-person capture:
       YUMI_RIG_MATERIALS_OK Saved/YumiRig/material_check.log
 
 The first lit capture drew the bow in /Engine/EngineMaterials/WorldGridMaterial
-(Saved/YumiFP/v2). Its importer had written the transient Materials array
-while the mesh's async build ran. The importer's own checks run inside the
-importing process. The bytes of its saved package are supporting evidence
-only. This is the proof: a new editor loads each asset from disk and reads
-two things.
+(Saved/YumiFP/v2). Its importer edited copies: an unreal.Array hands out a
+copy of each struct element (PyWrapperArray.cpp:409-426,
+EPyConversionMethod::Copy), so the slots it changed were never the mesh's,
+and it wrote the unchanged array back. The W18 rebuild's step 7 attempt 1
+reproduced this through SetMaterials (Saved/W18Rebuild/
+ue_rig_import_attempt1.log). The async build, blamed at first, is not needed
+to explain it. The importer now writes the edited copies back (131ad94).
+
+The importer's own checks run inside the importing process. The bytes of
+its saved package are supporting evidence only. This is the proof: a new
+editor loads each asset from disk and reads two things.
 
 - **The rows:** each asset's slots as ordered rows (index, slot name,
   material path), and what a component given that asset draws, as ordered
