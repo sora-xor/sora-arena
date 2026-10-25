@@ -2,7 +2,9 @@
 
 Run (Blender 5.2.2; the pinned CPU path, since Cycles' Metal compile hangs on macOS 27):
   blender -b --factory-startup --python-exit-code 1 --python scripts/art/create_nyaagyu_dojo_timbers_pilot.py -- --cpu
-      [--samples 96] [--bake-res 2048] [--no-renders] [--verify]
+      [--samples 96] [--bake-res 2048] [--no-renders]
+  blender -b --factory-startup --python-exit-code 1 --python scripts/art/create_nyaagyu_dojo_timbers_pilot.py -- --cpu
+      --verify [--archive-receipt Local/ArtCache/Archive/<namespace>/run1/receipt.json]
 
 The six members are dojo_timber_pilot.pilot_members(): the first chapter-1
 wall column, open column, nageshi, cornice, koshi and nuki. They have v1's
@@ -27,15 +29,32 @@ its baseline cache (Local/ArtCache/NyaagyuDojoTimbers):
 before exporting anything if a mesh fails: not closed, inconsistently wound,
 folded, crossed, needled, degenerate, or missing its feature relief.
 
-``--verify`` rebuilds and compares digests with the pilot manifest, writing
-only evidence.json.
+A generation never writes into a namespace that already holds a run: a later
+generation gets a new namespace, so an archived run is never overwritten.
+
+``--verify`` only reads the run (dojo_timber_pilot_verify.py). It rebuilds
+every member, and compares:
+
+* the canonical digests with the manifest and the original evidence;
+* the check reports with the original checks.json;
+* the FBX SHA-256 and bytes on disk with the original evidence;
+* the Shared textures, rebuilt in a temporary directory, with the manifest and
+  the files on disk;
+* the inputs with the manifest;
+* optionally, every file with its archive receipt.
+
+Its only output is a new receipt under
+``Local/ArtCache/Verification/<namespace>/``, created exclusively. It exits 1
+unless everything matches.
 """
 from __future__ import annotations
 
 import json
 import math
 import platform
+import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -48,6 +67,7 @@ import create_nyaagyu_dojo_rails as RG  # noqa: E402
 import create_nyaagyu_dojo_timbers as TG  # noqa: E402
 import create_runtime_weapon_lib as L  # noqa: E402
 import dojo_timber_pilot as PILOT  # noqa: E402
+import dojo_timber_pilot_verify as VF  # noqa: E402
 import sora_prop_lib as PL  # noqa: E402
 import sora_timber_bake as TB  # noqa: E402
 import sora_timber_lib as T  # noqa: E402
@@ -68,10 +88,12 @@ guard = PILOT.guard
 def parse():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     o = {"cpu": "--cpu" in argv, "renders": "--no-renders" not in argv, "verify": "--verify" in argv,
-         "samples": 96, "bake_res": 2048}
+         "samples": 96, "bake_res": 2048, "archive_receipt": None}
     for key in ("--samples", "--bake-res"):
         if key in argv:
             o[key[2:].replace("-", "_")] = int(argv[argv.index(key) + 1])
+    if "--archive-receipt" in argv:
+        o["archive_receipt"] = Path(argv[argv.index("--archive-receipt") + 1])
     return o
 
 
@@ -157,18 +179,86 @@ def lookdev(o, built, shared):
     return files
 
 
+def _git(*args):
+    try:
+        return subprocess.run(["git", "-C", str(L.ROOT), *args], capture_output=True, text=True, check=True).stdout.strip()
+    except (OSError, subprocess.CalledProcessError):
+        return None
+
+
+def rebuild(arrays, on_member=None):
+    """Every pilot member rebuilt: ({asset: (dense digest, fallback digest)},
+    {entry: check report}), with no export, bake or render."""
+    digests, checks = {}, {}
+    for m, fam, kind, rec in PILOT.pilot_members():
+        B = V.build(m, arrays)
+        mf = V.fallback(m)
+        Bf = V.build(mf, arrays)
+        checks[f"{m.name}:dense"] = V.check_mesh(B, m)
+        checks[f"{m.name}:fallback"] = V.check_mesh(Bf, mf)
+        checks[f"{m.name}:visibility"] = V.relief_visibility(B, m, face=2 if kind == "Koshi" else 3)
+        obj = T.to_blender(m.name, B, m)
+        objf = T.to_blender(mf.name, Bf, mf)
+        if fam == "rail":
+            RG.lay_down(obj, m, kind)
+            RG.lay_down(objf, m, kind)
+        digests[m.name] = (V.canonical_digest(obj), V.canonical_digest(objf))
+        TG.drop(obj, objf)
+        if on_member:
+            on_member(m.name)
+    return digests, checks
+
+
+def verify(o):
+    """Read the run, rebuild it, compare, and write only a new receipt outside the run."""
+    started = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    manifest, evidence, original_checks = VF.load_run(OUT)
+    arrays = V.shared_arrays()
+    with tempfile.TemporaryDirectory(prefix="pilot_verify_shared_") as tmp:
+        T.shared_textures(Path(tmp))
+        shared = VF.compare_shared(L.ROOT, manifest, Path(tmp))
+    digests, checks = rebuild(arrays, lambda name: print("PILOT_VERIFY_MEMBER", name, flush=True))
+    fbx = VF.compare_fbx(L.ROOT, evidence)
+    digest_cmp = VF.compare_digests(manifest, evidence, digests)
+    check_cmp = VF.compare_checks(original_checks, checks)
+    inputs = VF.compare_inputs(L.ROOT, manifest)
+    archive = VF.compare_archive(OUT, o["archive_receipt"]) if o["archive_receipt"] else None
+    status, problems = VF.verdict(fbx, digest_cmp, check_cmp, shared, inputs, archive)
+    data = {
+        "schema_version": 1, "kind": "art-run-verification", "status": status, "problems": problems,
+        "run": L.rel(OUT), "run_manifest_sha256": L.sha256(OUT / "manifest.json"),
+        "run_evidence_sha256": L.sha256(OUT / "evidence.json"), "run_checks_sha256": L.sha256(OUT / "checks.json"),
+        "verifier": {"generator": GEN, "generator_sha256": L.sha256(L.ROOT / GEN), "head": _git("rev-parse", "HEAD"),
+                     "uncommitted": _git("status", "--porcelain", "--", GEN, *INPUTS, "scripts/art/dojo_timber_pilot_verify.py")},
+        "versions": {"blender": bpy.app.version_string, "numpy": np.__version__, "python": platform.python_version()},
+        "started_utc": started, "finished_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "digests": digest_cmp, "fbx": fbx, "checks": check_cmp, "shared_textures": shared, "inputs": inputs,
+        "archive": archive,
+    }
+    path = VF.write_receipt(VF.receipt_path(manifest["kit"]), OUT, data, frozen=PILOT.FROZEN)
+    print("PILOT_VERIFY_RECEIPT", L.rel(path), flush=True)
+    if status != "VERIFIED":
+        print(f"PILOT_VERIFY_{status}", "; ".join(problems), flush=True)
+        sys.exit(1)
+    print("PILOT_VERIFIED_ALL", len(digests), flush=True)
+
+
 def main():
     o = parse()
     scene = L.reset_scene()
     if o["cpu"]:
         scene.cycles.device = "CPU"
+    if o["verify"]:
+        verify(o)
+        return
+    if OUT.exists() and any(OUT.iterdir()):
+        raise SystemExit(f"pilot: {OUT} already holds a run; a new generation needs a new namespace")
     arrays = V.shared_arrays()
     shared_files = T.shared_textures(guard(OUT / "Shared"))
     shared = {k: p for k, (p, _) in shared_files.items()}
-    committed = json.loads((OUT / "manifest.json").read_text()) if o["verify"] else None
     evidence = {"generator": GEN, "blender": bpy.app.version_string,
                 "run_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "fbx": {}}
-    checks, records, built, mismatches = {}, [], {}, []
+    checks, records, built = {}, [], {}
     for m, fam, kind, rec in PILOT.pilot_members():
         t0 = time.time()
         B = V.build(m, arrays)
@@ -178,7 +268,7 @@ def main():
             report = V.check_mesh(mesh, mm)
             checks[f"{m.name}:{label}"] = report
             if not report["ok"]:
-                (OUT / "checks.json").write_text(json.dumps(checks, indent=1) + "\n")
+                guard(OUT / "checks.json").write_text(json.dumps(checks, indent=1) + "\n")
                 raise SystemExit(f"pilot: {m.name} {label} fails its mesh checks: {report['failures']}")
         checks[f"{m.name}:visibility"] = V.relief_visibility(B, m, face=2 if kind == "Koshi" else 3)
         obj = T.to_blender(m.name, B, m)
@@ -187,15 +277,6 @@ def main():
             RG.lay_down(obj, m, kind)
             RG.lay_down(objf, m, kind)
         digest, fb_digest = V.canonical_digest(obj), V.canonical_digest(objf)
-        if committed is not None:
-            want = next((r for r in committed["members"] if r["asset"] == m.name), {})
-            if want.get("digest") != digest or want.get("fallback_digest") != fb_digest:
-                mismatches.append(m.name)
-            for path in (OUT / "Dense" / f"{m.name}.fbx", OUT / "Fallback" / f"{mf.name}.fbx"):
-                evidence["fbx"][L.rel(path)] = {"sha256": L.sha256(path), "bytes": path.stat().st_size}
-            TG.drop(obj, objf)
-            print("PILOT_VERIFIED" if m.name not in mismatches else "PILOT_MISMATCH", m.name, flush=True)
-            continue
         dense = export(obj, OUT / "Dense" / f"{m.name}.fbx")
         coarse = export(objf, OUT / "Fallback" / f"{mf.name}.fbx")
         maps = TB.bake_fallback(obj, objf, guard(OUT / "Maps"), m.name.removeprefix("SM_"), res=o["bake_res"])
@@ -216,14 +297,8 @@ def main():
         objf.hide_set(True)
         print("PILOT_MEMBER", m.name, records[-1]["triangles"], records[-1]["fallback_triangles"], records[-1]["seconds"],
               flush=True)
-    evidence["digest_mismatches"] = mismatches
+    evidence["digest_mismatches"] = []
     guard(OUT / "evidence.json").write_text(json.dumps(evidence, indent=1) + "\n")
-    if o["verify"]:
-        if mismatches:
-            print("PILOT_VERIFY_FAILED", ", ".join(mismatches), flush=True)
-            sys.exit(1)
-        print("PILOT_VERIFIED_ALL", len(PILOT.pilot_members()), flush=True)
-        return
     guard(OUT / "checks.json").write_text(json.dumps(checks, indent=1) + "\n")
     renders = lookdev(o, built, shared) if o["renders"] else []
     guard(OUT / "Renders").mkdir(parents=True, exist_ok=True)
