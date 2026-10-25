@@ -68,27 +68,39 @@ class Measure(unittest.TestCase):
         self.assertGreater(r["fur"]["pixels"], 0)
 
 
+SETUP = {"fov": 70.0, "mesh_scale": 0.75, "holds": {"rest": {"anchor": [45, -15, -12]}, "paw": {"camera": {}}},
+         "sockets_cm": {}, "poses_component_cm": {}, "materials": {"bow": "MI"}, "materials_after_id_pass": {},
+         "solved": {}, "id_colours": {}, "control": {"source_sha256": "c"}, "study": {"sha256": "s"},
+         "requested_holds": ["rest", "paw"], "ids_enabled": True, "eye_view_holds": ["rest"],
+         "resolution": [80, 60], "cameras": {}, "assessment_camera": {"reticle_clear_radius": 0.12},
+         "set_materials": {}, "sun": {"lux": 20000.0}, "ev100": 12.97, "exposure_bias": -11.97}
+
+
+def write_run(root, name="run", runup=4, speckled=True, tamper=False, **override):
+    """A capture directory like render_yumi_fp_review's: rest (eye view, with its ID image) and paw (camera)."""
+    from PIL import Image
+
+    run = Path(root) / name
+    run.mkdir()
+    img, ids = frame()
+    lit = speckle(img, np.random.default_rng(1)) if speckled else img
+    files = {}
+    for fname, a in (("rest.png", lit), ("rest_ids.png", ids), ("paw.png", lit)):
+        Image.fromarray((np.clip(a, 0, 1) * 255).round().astype(np.uint8)).save(run / fname)
+        files[fname] = hashlib.sha256((run / fname).read_bytes()).hexdigest()
+    if tamper:
+        files["paw.png"] = "0" * 64
+    manifest = dict(SETUP, files=files, id_files={"rest": "rest_ids.png"},
+                    highres_runup={"r.HighResScreenshotDelay": runup}, level=f"/Game/L_{name}")
+    manifest.update(override)
+    (run / "manifest.json").write_text(json.dumps(manifest))
+    return run
+
+
 class Run(unittest.TestCase):
-    def write_run(self, tmp, tamper=False):
-        from PIL import Image
-
-        run = Path(tmp)
-        img, ids = frame()
-        files = {}
-        for name, a in (("rest.png", speckle(img, np.random.default_rng(1))), ("rest_ids.png", ids),
-                        ("paw.png", img)):
-            Image.fromarray((np.clip(a, 0, 1) * 255).round().astype(np.uint8)).save(run / name)
-            files[name] = hashlib.sha256((run / name).read_bytes()).hexdigest()
-        if tamper:
-            files["paw.png"] = "0" * 64
-        (run / "manifest.json").write_text(json.dumps({"requested_holds": ["rest", "paw"], "files": files,
-                                                        "id_files": {"rest": "rest_ids.png"},
-                                                        "highres_runup": {"r.HighResScreenshotDelay": 4}}))
-        return run
-
     def test_a_run_is_measured_per_hold(self):
         with tempfile.TemporaryDirectory() as tmp:
-            r = F.run_noise(self.write_run(tmp))
+            r = F.run_noise(write_run(tmp))
             self.assertEqual(sorted(r["holds"]), ["paw", "rest"])
             self.assertIn("fur_over_bow", r["holds"]["rest"])
             self.assertEqual(r["highres_runup"], {"r.HighResScreenshotDelay": 4})
@@ -96,14 +108,76 @@ class Run(unittest.TestCase):
     def test_a_file_unlike_its_manifest_hash_fails(self):
         with tempfile.TemporaryDirectory() as tmp:
             with self.assertRaises(F.NoiseError):
-                F.run_noise(self.write_run(tmp, tamper=True))
+                F.run_noise(write_run(tmp, tamper=True))
+
+    def test_empty_or_invalid_requested_holds_fail_rather_than_measure_nothing(self):
+        for bad in ([], None, "rest", ["rest", "rest"], ["rest", 3], [""]):
+            with self.subTest(requested_holds=bad), tempfile.TemporaryDirectory() as tmp:
+                with self.assertRaises(F.NoiseError) as cm:
+                    F.run_noise(write_run(tmp, requested_holds=bad))
+                self.assertIn("requested_holds", str(cm.exception))
+
+    def test_eye_view_holds_must_be_requested(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(F.NoiseError):
+                F.run_noise(write_run(tmp, eye_view_holds=["rest", "root"]))
+
+    def test_an_eye_view_hold_without_its_id_image_fails(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(F.NoiseError) as cm:
+                F.run_noise(write_run(tmp, id_files={}))
+            self.assertIn("rest: an eye-view hold with no ID image", str(cm.exception))
+
+    def test_eye_view_holds_need_the_id_pass(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(F.NoiseError) as cm:
+                F.run_noise(write_run(tmp, ids_enabled=False))
+            self.assertIn("ids_enabled", str(cm.exception))
 
     def test_the_command_never_overwrites_its_result(self):
         with tempfile.TemporaryDirectory() as tmp:
-            run = self.write_run(tmp)
+            run = write_run(tmp)
             out = Path(tmp) / "noise.json"
             self.assertEqual(F.main([str(run), "--out", str(out)]), 0)
             self.assertEqual(F.main([str(run), "--out", str(out)]), 1)
+
+    def test_the_command_takes_one_mode(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            run = write_run(tmp)
+            out = Path(tmp) / "noise.json"
+            self.assertEqual(F.main(["--out", str(out)]), 1)
+            self.assertEqual(F.main([str(run), "--compare", str(run), str(run), "--out", str(out)]), 1)
+
+
+class Compare(unittest.TestCase):
+    def test_both_runs_are_measured_on_their_common_region(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            raw = write_run(tmp, "runup4", runup=4, speckled=True)
+            smooth = write_run(tmp, "auto", runup=32, speckled=False)
+            r = F.compare_runs(raw, smooth)
+            self.assertFalse(r["same_runup"])
+            h = r["holds"]["rest"]
+            self.assertGreater(h["common_pixels"], 0)
+            self.assertEqual(h["a_on_common"]["pixels"], h["b_on_common"]["pixels"])        # one region for both
+            self.assertGreater(h["a_on_common"]["residual_mean"], h["b_on_common"]["residual_mean"])
+            for side in ("a", "b"):                                    # and each run's own selection, reported apart
+                self.assertIn("pixels", h[side]["fur"])
+
+    def test_runs_set_up_differently_are_refused(self):
+        for key, value in (("ev100", 12.0), ("cameras", {"rest": {"fov": 60}}), ("holds", {"rest": {}})):
+            with self.subTest(key=key), tempfile.TemporaryDirectory() as tmp:
+                a = write_run(tmp, "a", runup=4)
+                b = write_run(tmp, "b", runup=32, **{key: value})
+                with self.assertRaises(F.NoiseError) as cm:
+                    F.compare_runs(a, b)
+                self.assertIn(key, str(cm.exception))
+
+    def test_the_command_compares(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            a, b = write_run(tmp, "a", runup=4), write_run(tmp, "b", runup=32, speckled=False)
+            out = Path(tmp) / "compare.json"
+            self.assertEqual(F.main(["--compare", str(a), str(b), "--out", str(out)]), 0)
+            self.assertTrue(json.loads(out.read_text())["compare"])
 
 
 if __name__ == "__main__":
