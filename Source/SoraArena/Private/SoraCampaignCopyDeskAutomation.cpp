@@ -59,7 +59,8 @@ bool FSoraCopyDesksTest::RunTest(const FString& Parameters)
     C->Interact(*W.Hero());
     if(!W.Tick(120)) return false;
     TestEqual(TEXT("Standing or a direct unheld interaction copies nothing"),C->TaskProgress().Progress,0);
-    if(!W.Hero()->RemapCombatAction(TEXT("Interact"),EKeys::G)||!W.Press(EKeys::E)||!W.Tick(2)) return false;
+    if(!W.Press(EKeys::Escape)||!TestTrue(TEXT("The controls menu rebinds Interact"),W.Hero()->RemapCombatAction(TEXT("Interact"),EKeys::G))||
+        !W.Press(EKeys::Escape)||!W.Press(EKeys::E)||!W.Tick(2)) return false;
     TestFalse(TEXT("The old binding cannot start copying"),C->IsCopying());
     if(!W.World->InjectKey(EKeys::G,IE_Pressed)||!W.Tick(120)) return false;
     const int32 Partial=C->TaskProgress().Progress;
