@@ -28,8 +28,13 @@ The three earlier fixture failures are retained and explained in the
 [desk qualification record](qualification/copy-desks.md). Proxy desks do not
 establish the authored hall's real layout, ordinary stealth difficulty or final
 visuals. CI `025cb32` separately fails a stale chapter-six timber-binding hash;
-that hash alone is refreshed with passing binder tests. CI at `4fa637f` is
-running, not yet independently qualified.
+that hash alone is refreshed with passing binder tests. CI `40205927830` at exact `4fa637f` now independently passes all 107 gates
+in five jobs, including 279 Rust tests and five ignores. All five artifact
+digests, raw logs and matching tested/source trees are verified; the ledger has
+zero errors or warnings. Ten raw warning lines repeat one Node20 deprecation.
+The review digest is `64801dd64a8f2ce4928b19093f72f465958381e4186193407c09545cf6e1aa7e`.
+A later source correction checks actual visibility to the ledger before and
+during copying; its obstruction fixture is added but has not run in Unreal.
 
 Fresh signed native `cd9263628d` completes its actual privacy-crate build and
 CPU tests: 45 relation tests pass with four ignored proofs, and the packed

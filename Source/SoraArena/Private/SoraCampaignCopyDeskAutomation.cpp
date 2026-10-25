@@ -7,6 +7,7 @@
 #include "SoraFieldcraftTestWorld.h"
 #include "SoraViewmodelComponent.h"
 #include "SoraWorldBuilder.h"
+#include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
 
 namespace
@@ -82,12 +83,36 @@ bool FSoraCopyDesksTest::RunTest(const FString& Parameters)
         !C->IsCopying()&&!W.Hero()->GetViewmodel()->bHiddenInGame&&C->TaskProgress().Progress==Partial);
     if(!W.Tick(120)) return false;
     TestEqual(TEXT("Released work remains paused"),C->TaskProgress().Progress,Partial);
+    auto* Barrier=W.World->GetTestWorld()->SpawnActor<AActor>();
+    if(!TestNotNull(TEXT("The desk obstruction fixture spawns"),Barrier)) return false;
+    auto* Wall=NewObject<UBoxComponent>(Barrier);
+    Barrier->SetRootComponent(Wall); Barrier->AddInstanceComponent(Wall);
+    Wall->SetBoxExtent(FVector(90,5,150));
+    Wall->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+    Wall->SetCollisionResponseToAllChannels(ECR_Ignore);
+    Wall->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);
+    Wall->SetCanEverAffectNavigation(false); Wall->RegisterComponent();
+    Barrier->SetActorLocation(Desk+FVector(0,55,150));
+    if(!W.World->InjectKey(EKeys::G,IE_Pressed)||!W.Tick(60)) return false;
+    TestTrue(TEXT("A nearby obstructed ledger cannot start copying"),!C->IsCopying()&&C->TaskProgress().Progress==Partial);
+    Wall->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    if(!W.Tick(60)) return false;
+    TestTrue(TEXT("Clearing the obstruction requires a new press"),!C->IsCopying()&&C->TaskProgress().Progress==Partial);
+    if(!W.World->InjectKey(EKeys::G,IE_Released)||!W.World->InjectKey(EKeys::G,IE_Pressed)||!W.Tick(60)) return false;
+    const int32 BeforeBlock=C->TaskProgress().Progress;
+    TestTrue(TEXT("A clear ledger resumes the retained partial copy"),C->IsCopying()&&BeforeBlock>Partial);
+    Wall->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+    if(!W.Tick(60)) return false;
+    TestTrue(TEXT("An obstruction cancels active work and frees the hands without losing progress"),
+        !C->IsCopying()&&!W.Hero()->GetViewmodel()->bHiddenInGame&&C->TaskProgress().Progress==BeforeBlock);
+    Barrier->Destroy();
+    if(!W.World->InjectKey(EKeys::G,IE_Released)) return false;
     Guard->SetActorLocation(Desk+FVector(0,-180,90));
     if(!W.World->InjectKey(EKeys::G,IE_Pressed)||!W.Tick(120)) return false;
-    TestTrue(TEXT("A guard at this desk pauses and preserves the copy"),C->IsCopying()&&C->IsHeldWorkWatched()&&C->TaskProgress().Progress==Partial);
+    TestTrue(TEXT("A guard at this desk pauses and preserves the copy"),C->IsCopying()&&C->IsHeldWorkWatched()&&C->TaskProgress().Progress==BeforeBlock);
     FreezeGuards(W);
     if(!W.Tick(120)) return false;
-    TestTrue(TEXT("The copy resumes when the desk clears"),C->TaskProgress().Progress>Partial&&!C->IsHeldWorkWatched());
+    TestTrue(TEXT("The copy resumes when the desk clears"),C->TaskProgress().Progress>BeforeBlock&&!C->IsHeldWorkWatched());
     const int32 Weapon=W.Hero()->WeaponId,Ammo=W.Hero()->GetEquipment()->Ammo;
     for(const TCHAR* Name:{TEXT("Fire"),TEXT("Melee"),TEXT("Reload"),TEXT("WeaponThree")})
         for(const FKey& Key:W.Hero()->GetActionKeys(Name)) if(!Key.IsGamepadKey()) { if(!W.Press(Key)) return false;break; }

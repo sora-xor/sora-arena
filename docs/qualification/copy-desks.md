@@ -62,7 +62,23 @@ Local evidence is under `Saved/Qualification/2026-10-25/`, with one immutable
 CI `40204853855` at `025cb32` separately fails the stale timber campaign
 binding. Regenerating it changes only the chapter-six content hash; timber
 geometry, placement, manifests and coverage are identical. Binding checks and
-tests pass. The new `4fa637f` CI run remains pending independent review.
+tests pass. CI `40205927830` at exact `4fa637f` independently passes all 107
+source gates in five jobs, including 279 Rust tests with five ignores. Tested
+merge `6b5fb2ef567c8432bc385b6d1d3eb94e13cd010a` has the same source tree;
+all five artifact digests and raw job logs are verified. The ledger has zero
+errors or warnings. Ten raw workflow warning lines repeat one Node20
+deprecation. The independent review digest is
+`64801dd64a8f2ce4928b19093f72f465958381e4186193407c09545cf6e1aa7e`.
+
+## Unqualified obstruction correction
+
+The later source checks a visibility ray from the eye to just above the actual
+ledger before starting and on every working tick. A wall or closed door refuses
+admission; an obstruction appearing during copying frees the hands and retains
+partial work. Removing it requires a new mapped press. The directed fixture
+now checks both admission and interruption with a physical visibility blocker.
+This correction has not yet been built or run in Unreal and is not covered by
+the earlier `4fa637f` pass.
 
 ## Remaining work
 

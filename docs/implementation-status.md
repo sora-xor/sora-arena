@@ -32,10 +32,13 @@ dead-code warning remains. Its separate proof cohort has now launched from the
 same retained binary, with the sealed CPU prerequisites and unchanged resource
 guards. No proof result is claimed yet; production bridge `10ad7dad` is unchanged.
 
-Authenticated CI at `d3f19bf` passes 107 gates in five jobs, including 279 Rust
-passes and five ignores. Moving the unchanged Fern02 buffer to LFS clears the
-last ledger warning: zero ledger errors or warnings. Ten raw workflow warning
-lines repeat one Node20 deprecation message. This CI predates the desk changes.
+Authenticated CI `40205927830` at exact `4fa637f` passes 107 gates in five
+jobs, including 279 Rust passes and five ignores. Five artifact digests, raw
+logs and matching source/tested trees are verified. The ledger has zero errors
+or warnings; ten raw workflow warning lines repeat one Node20 deprecation.
+A later source correction refuses copying through an obstruction and cancels
+active copying if its ledger becomes blocked. Its new fixture awaits Unreal
+execution; the earlier results do not qualify this change.
 Claude's four revised paw originals improve the silhouette but still show fur
 card edges and glossy cloth/arrow materials. Canonical raw bow rotation still
 fails its original bound on eight samples; the separate snap model passes,

@@ -7,16 +7,24 @@
 #include "SoraPlayerCharacter.h"
 #include "SoraViewmodelComponent.h"
 #include "SoraWorldBuilder.h"
+#include "Camera/CameraComponent.h"
+#include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 bool USoraCampaignDirector::AtCopyDesk(int32 Index) const
 {
     const auto* Space=ActiveSpace();
     const auto* Hero=Mode().Hero();
-    return Space&&Hero&&Index>=0&&Index<Task.HoldPointCount&&Space->Objectives.IsValidIndex(Index)&&
-        Hero->GetCharacterMovement()->IsMovingOnGround()&&
-        FMath::Abs(Hero->GetActorLocation().Z-Space->HeightCm)<180.f&&
-        Near(ASoraWorldBuilder::Floor(Space->Objectives[Index],Space->HeightCm),SoraCampaignReach::Interact);
+    if(!Space||!Hero||Index<0||Index>=Task.HoldPointCount||!Space->Objectives.IsValidIndex(Index)||
+        !Hero->GetCharacterMovement()->IsMovingOnGround()||
+        FMath::Abs(Hero->GetActorLocation().Z-Space->HeightCm)>=180.f||
+        !Near(ASoraWorldBuilder::Floor(Space->Objectives[Index],Space->HeightCm),SoraCampaignReach::Interact)) return false;
+    // End just above the ledger, not inside the writing desk's collision.
+    // A wall or closed door must block both admission and ongoing copying.
+    const FVector Page=ASoraWorldBuilder::Floor(Space->Objectives[Index],Space->HeightCm)+FVector(0,102,80);
+    FCollisionQueryParams Query(SCENE_QUERY_STAT(CopyDesk),false,Hero);
+    FHitResult Hit;
+    return !GetWorld()->LineTraceSingleByChannel(Hit,Hero->GetEye()->GetComponentLocation(),Page,ECC_Visibility,Query);
 }
 void USoraCampaignDirector::CancelCopying()
 {
