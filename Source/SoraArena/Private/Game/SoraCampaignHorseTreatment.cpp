@@ -17,15 +17,15 @@ ASoraHorse* USoraCampaignDirector::TreatmentHorse(int32 Index) const
 { return IsHorseTreatment()&&Mode().Arena()?Mode().Arena()->DefendedHorse(Index):nullptr; }
 bool USoraCampaignDirector::HorseTreatmentEligible(int32 Index) const
 {
-    const auto* Hero=Mode().Hero(); const auto* Horse=TreatmentHorse(Index);
+    const auto* Hero=Mode().Hero(); const auto* TreatmentTarget=TreatmentHorse(Index);
     const auto* Kit=Hero?Hero->GetEquipment():nullptr;
-    if(!IsValid(Horse)||Horse->IsHidden()||!Hero||!Hero->CanPlay()||!Kit||
+    if(!IsValid(TreatmentTarget)||TreatmentTarget->IsHidden()||!Hero||!Hero->CanPlay()||!Kit||
         !Hero->GetCharacterMovement()->IsMovingOnGround()||Kit->IsStaggered()||Kit->IsCommittedStrike()||Kit->IsStepping()||Kit->bReloading||
         Index<0||Index>=TreatmentRules::Horses||!TreatmentRules::Eligible(Treatment,Index,TaskState.TargetHp[Index])) return false;
-    const FVector At=Horse->GetActorLocation(),Here=Hero->GetActorLocation();
+    const FVector At=TreatmentTarget->GetActorLocation(),Here=Hero->GetActorLocation();
     if(FVector::Dist2D(Here,At)>SoraCampaignReach::Interact||FMath::Abs(Here.Z-At.Z)>60) return false;
     FCollisionQueryParams Query(SCENE_QUERY_STAT(SoraHorseTreatment),false,Hero);
-    Query.AddIgnoredActor(Horse); // The target's own body is the destination, never an obstruction.
+    Query.AddIgnoredActor(TreatmentTarget); // The target's own body is the destination, never an obstruction.
     FHitResult Hit;
     return !GetWorld()->LineTraceSingleByChannel(Hit,Hero->GetEye()->GetComponentLocation(),At,ECC_Visibility,Query);
 }

@@ -51,7 +51,7 @@ FHitResult TraceCover(FBeatWorld& W,const TCHAR* Stage)
     const FVector Feet=Hero->GetActorLocation()-FVector(0,0,Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
     W.Test.AddInfo(FString::Printf(TEXT("MarginLinger %s: input=%d playing=%d crouched=%d wants_crouch=%d grounded=%d base=%s hero_world=(%s) hero_local=(%s) feet_local=(%s) half_height=%.3f boss_world=(%s) boss_local=(%s)"),
         Stage,int32(W.Mode()->InputState()),W.Mode()->IsPlaying(),Hero->IsCrouched(),Hero->GetCharacterMovement()->bWantsToCrouch,
-        Hero->GetCharacterMovement()->IsMovingOnGround(),*GetNameSafe(Hero->GetMovementBase()),*Hero->GetActorLocation().ToString(),
+        Hero->GetCharacterMovement()->IsMovingOnGround(),*GetNameSafe(Hero->GetMovementBaseObject()),*Hero->GetActorLocation().ToString(),
         *Deck.InverseTransformPosition(Hero->GetActorLocation()).ToString(),*Deck.InverseTransformPosition(Feet).ToString(),
         Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight(),*Body->GetActorLocation().ToString(),
         *Deck.InverseTransformPosition(Body->GetActorLocation()).ToString()));

@@ -44,7 +44,7 @@ float ASoraFuelCanister::TakeDamage(float Amount,const FDamageEvent& Event,ACont
     const auto* Mode=Cast<ASoraGameMode>(GetWorld()->GetAuthGameMode());
     const auto& Shot=static_cast<const FSoraDamageEvent&>(Event).Hit;
     if(!State.Shot(Shot.Kind,Amount,Mode&&Mode->IsPlaying()&&!GetWorld()->IsPaused())) return 0;
-    APawn* Shooter=EventInstigator?EventInstigator->GetPawn():Cast<APawn>(Causer);
+    APawn* Shooter=EventInstigator?EventInstigator->GetPawn().Get():Cast<APawn>(Causer);
     if(!Shooter&&Causer) Shooter=Causer->GetInstigator();
     SetInstigator(Shooter);
     Collision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
