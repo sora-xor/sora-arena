@@ -38,8 +38,14 @@ contract tests pass, including malformed numbers, reordered or missing
 machines, altered authored rules and footprint clearance at work/patrol
 points. Campaign generation and the existing schema validator pass all 133
 beats and reject its 65 malformed fixtures. The timber binding changes only
-the chapter-six digest. The C++ rule driver and three new engine fixtures
-(`PressHall`, `PressInspection`, `PressNoiseEmission`) are prepared but unrun.
+the chapter-six digest. The C++ rule driver passed on Linux in CI run
+40211292915 at `f9a4545`; that run also exposed the press enlargement moving
+later zones and failing the existing climb/flood baseline. The correction
+extends the hall six metres into its existing thirty-metre gap, preserving
+all other zone coordinates. Four host-only moat checks (including the
+unchanged baseline) and the six press contract checks pass on the corrected
+data. The three new engine fixtures (`PressHall`, `PressInspection`,
+`PressNoiseEmission`) remain unrun.
 
 This is still a functional blockout. The north-west catwalk/ladder entry,
 elevated enforcer, authored 45/30-second patrol loops, die-lamp suspicion after

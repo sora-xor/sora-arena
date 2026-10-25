@@ -506,6 +506,7 @@ def derive_space(chapter, beats, places, collectibles, triggers, layout, fail):
             continue
         form = place_form(place_id)
         width, height, wall = FORMS[form]
+        zone_gap = ZONE_GAP
         if prefix == "ch01" and place_id == "pl_issoseki_wood":
             width, height = 11000, 8500
         if prefix == "ch07" and place_id == "pl_hull_ridge":
@@ -513,6 +514,9 @@ def derive_space(chapter, beats, places, collectibles, triggers, layout, fail):
         if prefix == "ch07" and place_id == "pl_hangar":
             width, height = 8000, 4500
         if prefix == "ch06" and place_id == "pl_press_hall":
+            # Extend into the existing gap, preserving every later zone and
+            # marker, including the accepted flood encounter.
+            zone_gap -= 4200 - width
             width, height, wall = 4200, 2400, 900
         if place_id in hosts_boss:
             width, height = max(width, BOSS_SIZE[0]), max(height, BOSS_SIZE[1])
@@ -520,7 +524,7 @@ def derive_space(chapter, beats, places, collectibles, triggers, layout, fail):
         zone = Zone(place_id, place_id, place_style(places[place_id], chapter_map), form, rect, wall)
         zone_of[place_id] = len(zones)
         zones.append(zone)
-        x += width + ZONE_GAP
+        x += width + zone_gap
     route_of = {}
     for number, beat in enumerate(routed):
         length = _authored_spline_length(beat, layout) or _ride_length(beat)
