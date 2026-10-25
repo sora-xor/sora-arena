@@ -58,32 +58,54 @@ by the running fixture; the archiver checks that they have not changed and
 records SHA256 identities as well. A packaged/IoStore asset run needs separate
 package-byte binding and is not supported by this uncooked fixture.
 
-The v2 inventory includes both `/Game/Generated/Environment/DojoKit/` and
+The v3 inventory includes both `/Game/Generated/Environment/DojoKit/` and
 `/Game/Generated/Environment/DojoTimbers/`, with an explicit family on every
 component. Each package and optional sidecar must belong to an observed mesh
 in that exact family. Unique column/rail asset names may appear once with one
-instance; MAC pools and floor tiles remain classified as reusable assets.
-Observed component, instance and asset counts do not prove expected coverage.
+instance. Runtime records the active chapter, its declared estate halls, and
+world location, pitch/yaw/roll and scale for each timber instance. Counts and
+bounds alone do not prove placement coverage.
 
-Timber placement admission is deliberately **incomplete** until Claude freezes
-the manifest contract and it can be checked against the current chapter-derived
-placement set. The capture records all eight chapter JSON identities, the
-column/rail/floor manifest identities, and four placement/generator source
-identities, including absent files. The archiver verifies their current bytes
-or continued absence and adds SHA256 identities; these appear in `asset_files`
-with role `unqualified_placement_coverage_input`. This binds the observed inputs
-but does not invent or validate an expected placement list. The only accepted
-`timber_placement_coverage` state is `unqualified_manifest_contract_pending`
-with `qualified: false`; a claimed completed list is rejected as unsupported.
+The archive checks the frozen `sora-dojo-timber-campaign-binding-v1` contract
+introduced by Claude at `5d4308d`. All eight chapters, both column/rail manifests,
+the binding, binder, generator scripts and manifest inputs must match runtime
+size/MD5 observations, current bytes, and the archive's exact source commit.
+Binding SHA256 values must agree with those sources. The independent layout
+model is pinned to the reviewed binder/helper/rail-generator hashes; a changed
+layout algorithm requires a new source review. It does not execute the binder.
+Manifest placements must have unique names and the chapter-derived rectangle,
+side, bay, kind and deterministic seed. The binding's hall and estate totals
+are recomputed; observed meshes never supply the expected set.
 
-If any timber component or timber input exists, the originals and observations
-are retained but the archive reports a failed coverage gate, including on SM5.
-One visible timber, or old-kit pixels while timbers failed to load, cannot pass
-this admission check. An old-kit-only run retains its existing draw diagnostic
-without claiming timber coverage. The eventual manifest extension must reject
-missing, duplicate, unexpected and stale expected placements and establish the
-actual Nanite-versus-MAC selection. No v2 runtime result is established by the
-synthetic transport tests.
+The fixed camera scope is **chapter_01.json / pl_tsumagizaka_dojo**, rectangle
+`[8000,-1300,11600,1300]`. In SM6, all 65 unique columns and 235 unique rails
+must be present in the source manifests and actual inventory, at their expected
+world transforms, with enabled Nanite resources. Any missing, duplicate,
+unexpected, stale or misplaced unique row fails. The inventory includes all
+chapter-one halls, including the moved smithy at `[38800,-1300,42400,1300]`;
+any additional observed unique rows must belong to that chapter's bound set.
+The checker requires every manifest-backed unique row of that chapter to load.
+
+`qualified: true` under `timber_placement_coverage` means only the named scope's
+source, placement and resource binding passed. It does not mean every timber
+was visible in either camera or that its appearance is accepted. The report
+lists exact expected/observed names and current source hashes. For the current
+art, estate source coverage remains **65/260 columns and 235/940 rails**; the
+smithy and two other halls have no own-log coverage. `estate_qualified`,
+`pool_placement_qualified`, `floor_placement_qualified`, `photoreal_qualified`,
+platform and release qualification remain false. SM5 can pass binding as
+`bound_sources_sm5_inventory_only`, but does not qualify unique placements,
+MAC pool placement coverage, floors, Nanite drawing or actual M1 hardware.
+Pool/floor transforms are recorded for inspection, not matched to an expected
+placement set by this contract.
+
+The runtime's `timber_placement_coverage` marker is always
+`requires_archive_source_binding` with `qualified: false`; it cannot assert its
+own acceptance. Missing or stale binding retains genuine complete originals
+with a failed coverage report. One visible timber, or old-kit pixels while
+timbers failed to load, cannot pass. An old-kit-only run with no timber sources
+retains its existing diagnostic. The earlier v2 fail-closed checkpoint and its
+receipts remain historical evidence; they are not v3 runtime proof.
 
 The archive collector requires the exact original `LogTemp: Display:
 SORA_NANITE_DRAW_FRAME` acknowledgements, complete ordered sequence, matching

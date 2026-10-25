@@ -382,9 +382,12 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
         if any(device.get("renderMode", "").lower() != actual_model for device in report.get("devices", [])):
             raise ValueError("Nanite metadata differs from actual automation device shader model")
         asset_identities = nanite_capture_validation.asset_identities(metadata, project)
+        source_commit = output / "source-commit.txt"
+        placement = nanite_capture_validation.placement_coverage(metadata, project,
+            source_commit.read_text().strip() if source_commit.is_file() else None)
         result = nanite_capture_validation.inspect(metadata,
             {path.name: destination.read_bytes() for path, destination, _ in sequence},
-            width, height, bow_capture_validation.rgb8)
+            width, height, bow_capture_validation.rgb8, placement)
         result["asset_files"] = asset_identities
         review = target.with_name("pixel-review.json")
         with review.open("x") as stream:

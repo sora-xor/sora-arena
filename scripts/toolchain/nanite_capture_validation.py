@@ -8,10 +8,12 @@ It is not an exact visibility-buffer count, triangle count or performance test.
 """
 import math
 import hashlib
+import json
 from pathlib import Path
 import re
+import subprocess
 
-SCHEMA = "sora-arena.nanite-draw.v2"
+SCHEMA = "sora-arena.nanite-draw.v3"
 SCOPE = "production dojo renderer diagnostic; unadmitted art; not gameplay or platform release acceptance"
 CAMERAS = ("entry", "ceiling")
 MODES = ("Lit", "Mask", "Triangles")
@@ -20,13 +22,29 @@ ROTATIONS = ([4, 0, 0], [52, 20, 0])
 # Central interior geometry, excluding engine labels and most exterior windows.
 # These are fixed normalized rectangles, not edited or cropped output images.
 REGION = (.2, .2, .8, .8)
-COVERAGE_PENDING = {"status": "unqualified_manifest_contract_pending", "qualified": False}
+COVERAGE_PENDING = {"status": "requires_archive_source_binding", "qualified": False}
+CAPTURE_SCOPE = {"chapter_file": "Content/Data/campaign/chapter_01.json", "zone": "pl_tsumagizaka_dojo",
+                 "rect": [8000, -1300, 11600, 1300]}
+TIMBER_ROOT = "Content/SourceArt/Environment/NyaagyuDojoTimbers/"
+BINDING = TIMBER_ROOT + "campaign_binding.json"
+BINDER = "scripts/art/bind_dojo_timbers.py"
+MANIFESTS = (TIMBER_ROOT + "manifest.json", TIMBER_ROOT + "Rails/manifest.json")
+# The independent layout model below is reviewed against this immutable binder,
+# its placement helper and rail layout. A changed algorithm needs a new review.
+LAYOUT_SOURCES = {
+    BINDER: "e7d46d8dc356c1e428ae8d175e50bd162d9f42a19c058a4b7fd193c89535efd3",
+    "scripts/art/dojo_hall_placements.py": "63b345dec4a31e9549a094fffbd5df6207ba5920c68c54192e412aaccf905773",
+    "scripts/art/create_nyaagyu_dojo_rails.py": "d1246e47bf9c74961a18b26d7687b86425173a120f117e3068eef88ecbe63192"}
+MANIFEST_INPUTS = ("scripts/art/sora_timber_lib.py", "scripts/art/sora_timber_lookdev.py",
+    "scripts/art/sora_timber_bake.py", "scripts/art/dojo_hall_placements.py",
+    "scripts/art/sora_prop_lib.py", "scripts/art/create_runtime_weapon_lib.py")
 COVERAGE_INPUTS = tuple(f"Content/Data/campaign/chapter_{i:02}.json" for i in range(1, 9)) + (
     "Content/SourceArt/Environment/NyaagyuDojoTimbers/manifest.json",
     "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/manifest.json",
     "Content/SourceArt/Environment/NyaagyuDojoTimbers/Floor/manifest.json",
     "scripts/art/dojo_hall_placements.py", "scripts/art/create_nyaagyu_dojo_timbers.py",
-    "scripts/art/create_nyaagyu_dojo_rails.py", "scripts/art/create_nyaagyu_dojo_floor.py")
+    "scripts/art/create_nyaagyu_dojo_rails.py", "scripts/art/create_nyaagyu_dojo_floor.py",
+    BINDING, BINDER) + tuple(p for p in MANIFEST_INPUTS if p != "scripts/art/dojo_hall_placements.py")
 
 
 def mesh_identity(mesh):
@@ -51,9 +69,8 @@ def timber_kind(name):
 
 
 def coverage_inputs(meta):
-    # There is deliberately no provisional expected-placement list. Until the
-    # art manifest is immutable and bound to the current chapter-derived layout,
-    # even one fully drawn timber cannot qualify placement completeness.
+    # Runtime records observations only. The archive derives expectations from
+    # authenticated chapter/manifest/binder bytes, never from loaded meshes.
     coverage = meta.get("timber_placement_coverage")
     if coverage != COVERAGE_PENDING or coverage.get("qualified") is not False:
         raise ValueError("unsupported or missing timber placement coverage contract")
@@ -73,6 +90,191 @@ def coverage_inputs(meta):
         elif set(record) != {"path", "exists"} or record["path"] in COVERAGE_INPUTS[:8]:
             raise ValueError("missing chapter data or invalid absent timber coverage input")
     return records
+
+
+def hall_layout(rect):
+    """Independent model of the reviewed 5d4308d column/rail naming contract."""
+    x0, y0, x1, y1 = rect
+    counts = [max(1, math.floor(((x1-x0) if s % 2 == 0 else (y1-y0)) / 180 + .5)) for s in range(4)]
+    def bay(side, index):
+        count = counts[side]
+        if side == 0: return 4 if index % 4 == 2 else 3
+        if side == 1: return 5 if count >= 8 and count//2-2 <= index < count//2+2 else (1 if index % 2 else 0)
+        if side == 2: return 2 if index % 2 else 0
+        return 4 if index == count-1 else (2 if index % 3 == 1 else 0)
+    tag = "_".join(f"m{-v}" if v < 0 else str(v) for v in rect)
+    out = {}
+    for side in range(4):
+        index = 0
+        while index < counts[side]:
+            kind = bay(side, index)
+            before = bay(side, index-1) if index else bay((side+3)%4, counts[(side+3)%4]-1)
+            names = [(f"SM_DojoTimberColumn_{tag}_S{side}_B{index:02d}", "open" if 4 in (kind, before) else "wall", "columns")]
+            if kind != 5:
+                names += [(f"SM_DojoTimberRail_{rail}_{tag}_S{side}_B{index:02d}", rail, "rails")
+                          for rail in ("Nageshi", "Cornice", "Koshi", "Nuki") if rail != "Koshi" or kind in (0, 1, 2)]
+            for name, wood, group in names:
+                out[name] = {"rect": list(rect), "side": side, "bay": index, "kind": wood, "group": group,
+                             "seed": int(hashlib.sha256(name.encode()).hexdigest()[:8], 16)}
+            index += 4 if kind == 5 else 1
+    return out
+
+
+def placement_transform(row, wall_cm):
+    x0, y0, x1, y1 = row["rect"]
+    side = row["side"]
+    length = (x1-x0) if side % 2 == 0 else (y1-y0)
+    width = length / max(1, math.floor(length / 180 + .5))
+    distance = (row["bay"] + (.5 if row["group"] == "rails" else 0)) * width
+    start, along = ((x0, y0), (x1, y0), (x1, y1), (x0, y1))[side], ((1, 0), (0, 1), (-1, 0), (0, -1))[side]
+    return {"location": [start[0]+along[0]*distance, start[1]+along[1]*distance, 0],
+            "rotation": [0, (0, 90, 180, -90)[side], 0], "scale": [1, 1, wall_cm/700 if wall_cm > 0 else 1]}
+
+
+def placement_coverage(meta, project, commit=None):
+    """Fail closed while retaining a report for genuine, complete originals.
+
+    Only the named first dojo's unique logs can qualify. Pool/floor instance
+    counts remain inventory; estate source coverage is not runtime coverage.
+    """
+    result = {"status": "rejected_source_binding", "qualified": False, "errors": [],
+              "scope": CAPTURE_SCOPE, "estate_qualified": False, "pool_placement_qualified": False,
+              "floor_placement_qualified": False, "photoreal_qualified": False}
+    active = any(mesh_identity(m)[0] == "DojoTimbers" for m in meta.get("meshes", [])) or any(
+        r["exists"] for r in coverage_inputs(meta) if r["path"] in COVERAGE_INPUTS[8:])
+    if not active:
+        return {**result, "status": "no_timber_inputs_or_instances", "errors": []}
+    try:
+        if not re.fullmatch(r"[0-9a-f]{40}", str(commit)):
+            raise ValueError("timber binding requires the archive's exact source commit")
+        project = project.resolve()
+        observed = {r["path"]: r for r in coverage_inputs(meta)}
+        raw = {}
+        def read(path):
+            if path not in raw:
+                if path not in observed or not observed[path]["exists"]:
+                    raise ValueError(f"missing runtime binding source: {path}")
+                data = (project / path).read_bytes()
+                r = observed[path]
+                if len(data) != r["bytes"] or hashlib.md5(data).hexdigest() != r["md5"].lower():
+                    raise ValueError(f"stale runtime binding source: {path}")
+                blob = subprocess.run(["git", "show", f"{commit}:{path}"], cwd=project, capture_output=True)
+                if blob.returncode or blob.stdout != data:
+                    raise ValueError(f"binding source differs from archive commit: {path}")
+                raw[path] = data
+            return raw[path]
+        def sha(path): return hashlib.sha256(read(path)).hexdigest()
+        def unique_object(pairs):
+            value = {}
+            for key, item in pairs:
+                if key in value: raise ValueError(f"duplicate binding JSON key: {key}")
+                value[key] = item
+            return value
+        def doc(path): return json.loads(read(path), object_pairs_hook=unique_object)
+        for path, digest in LAYOUT_SOURCES.items():
+            if sha(path) != digest: raise ValueError(f"unreviewed timber layout source: {path}")
+        binding = doc(BINDING)
+        if (binding.get("schema") != "sora-dojo-timber-campaign-binding-v1" or binding.get("binder") != BINDER
+                or binding.get("binder_sha256") != sha(BINDER)):
+            raise ValueError("stale/unsupported timber binder identity")
+        if binding.get("campaign") != {path: sha(path) for path in COVERAGE_INPUTS[:8]}:
+            raise ValueError("stale or incomplete chapter binding")
+        if binding.get("manifests") != {path: sha(path) for path in MANIFESTS}:
+            raise ValueError("stale or incomplete timber manifest binding")
+        halls, chapters, expected = {}, {}, {}
+        for path in COVERAGE_INPUTS[:8]:
+            chapter = doc(path); chapters[path] = chapter
+            ids = set()
+            for zone in chapter["space"]["zones"]:
+                if zone["id"] in ids: raise ValueError("duplicate chapter zone identity")
+                ids.add(zone["id"])
+                if zone.get("style") != "estate" or zone.get("form") != "hall": continue
+                rect = tuple(vector(zone, "rect", 4))
+                if any(v != int(v) for v in rect) or rect[0] >= rect[2] or rect[1] >= rect[3]:
+                    raise ValueError("unsupported nonintegral/empty estate hall rectangle")
+                rect = tuple(int(v) for v in rect)
+                halls.setdefault(rect, []).append(f"{Path(path).name}:{zone['id']}")
+                expected.update(hall_layout(rect))
+        built = {}
+        for path, kit, generator, inputs in (
+            (MANIFESTS[0], "NyaagyuDojoTimbers", "scripts/art/create_nyaagyu_dojo_timbers.py", set(MANIFEST_INPUTS)),
+            (MANIFESTS[1], "NyaagyuDojoRails", "scripts/art/create_nyaagyu_dojo_rails.py",
+             set(MANIFEST_INPUTS)-{"scripts/art/sora_timber_lookdev.py", "scripts/art/sora_prop_lib.py"})):
+            manifest = doc(path)
+            if (manifest.get("schema_version") != 1 or manifest.get("kit") != kit or manifest.get("generator") != generator
+                    or manifest.get("generator_sha256") != sha(generator)
+                    or manifest.get("inputs") != {p: sha(p) for p in inputs}):
+                raise ValueError(f"stale timber generator/input binding: {path}")
+            for row in manifest["placements"]:
+                name = row["asset"]
+                if name in built: raise ValueError(f"duplicate timber manifest placement: {name}")
+                if name not in expected: raise ValueError(f"unexpected/stale timber manifest placement: {name}")
+                ref = expected[name]
+                if (ref["group"] != ("columns" if kit == "NyaagyuDojoTimbers" else "rails") or
+                        any(row.get(k) != ref[k] for k in ("rect", "side", "bay", "kind", "seed")) or
+                        ("name" in row and row["name"] != name)):
+                    raise ValueError(f"timber manifest placement differs from chapter layout: {name}")
+                built[name] = ref
+        rows = []
+        for rect, uses in sorted(halls.items()):
+            layout = hall_layout(rect)
+            row = {"rect": list(rect), "zones": uses}
+            for group in ("columns", "rails"):
+                names = {n for n, r in layout.items() if r["group"] == group}
+                own = names & built.keys()
+                if group == "rails" and own and own != names: raise ValueError("partial rail hall violates binder contract")
+                row[group], row[group+"_with_own_log"] = len(names), len(own)
+            rows.append(row)
+        totals = {k: sum(r[k] for r in rows) for k in ("columns", "columns_with_own_log", "rails", "rails_with_own_log")}
+        if binding.get("halls") != rows or binding.get("coverage") != totals:
+            raise ValueError("binding hall/estate counts differ from current chapter-derived placement sets")
+        chapter = chapters[CAPTURE_SCOPE["chapter_file"]]
+        zones = [z for z in chapter["space"]["zones"] if z.get("style") == "estate" and z.get("form") == "hall"]
+        declared = [{"zone": z["id"], "rect": z["rect"], "wall_cm": z.get("wall_cm", 0)} for z in zones]
+        if meta.get("capture_scope") != CAPTURE_SCOPE or meta.get("chapter_id") != chapter["id"] or meta.get("chapter_estate_halls") != declared:
+            raise ValueError("runtime chapter/scope differs from current chapter source")
+        scope = [z for z in zones if z["id"] == CAPTURE_SCOPE["zone"] and z["rect"] == CAPTURE_SCOPE["rect"]]
+        if len(scope) != 1: raise ValueError("named capture scope is absent/ambiguous")
+        chapter_expected = {}
+        for zone in zones:
+            for name, row in hall_layout(zone["rect"]).items():
+                if name in chapter_expected: raise ValueError("chapter repeats a unique timber placement")
+                chapter_expected[name] = (row, zone.get("wall_cm", 0))
+        scope_names = set(hall_layout(scope[0]["rect"]))
+        if not scope_names <= built.keys(): raise ValueError("named dojo lacks complete column/rail manifests")
+        observed_names = set()
+        for mesh in meta["meshes"]:
+            family, name = mesh_identity(mesh)
+            if family != "DojoTimbers" or not timber_kind(name).endswith("_placement"): continue
+            if name in observed_names or mesh["instances"] != 1: raise ValueError("duplicate runtime timber placement")
+            observed_names.add(name)
+            if name not in chapter_expected or name not in built: raise ValueError(f"unexpected runtime timber placement: {name}")
+            row, wall = chapter_expected[name]
+            transforms = mesh.get("instance_transforms")
+            if not isinstance(transforms, list) or len(transforms) != 1: raise ValueError("unique timber lacks its instance transform")
+            transform = transforms[0]
+            for key, reference in placement_transform(row, wall).items():
+                actual = vector(transform, key, 3)
+                delta = [((a-b+180)%360-180) if key == "rotation" else a-b for a, b in zip(actual, reference)]
+                if math.sqrt(sum(d*d for d in delta)) > (.05 if key == "location" else .001):
+                    raise ValueError(f"timber {key} differs from chapter placement: {name}")
+            if meta["sm6_requested"] and (not mesh["has_nanite_data"] or mesh["disallow_nanite"] or mesh["force_disable_nanite"]):
+                raise ValueError(f"unique timber lacks enabled Nanite resources: {name}")
+        required = set(chapter_expected) & built.keys()
+        if not meta["sm6_requested"] and observed_names:
+            raise ValueError("SM5 unexpectedly selected unique Nanite timber placements")
+        if meta["sm6_requested"] and observed_names != required:
+            raise ValueError(f"missing runtime timber placements: {len(required-observed_names)}")
+        result.update(status="bound_unique_scope" if meta["sm6_requested"] else "bound_sources_sm5_inventory_only",
+            qualified=bool(meta["sm6_requested"]), source_commit=commit,
+            expected_scope_assets=sorted(scope_names), observed_unique_assets=sorted(observed_names),
+            chapter_halls=[r for r in rows if any(z.startswith("chapter_01.json:") for z in r["zones"])],
+            estate={"coverage": totals, "halls": rows, "complete_source_logs": all(r[g] == r[g+"_with_own_log"] for r in rows for g in ("columns", "rails"))},
+            source_sha256={p: hashlib.sha256(data).hexdigest() for p, data in sorted(raw.items())},
+            qualification="source/placement/resource binding only; draw candidates and human geometry review are separate")
+    except (ValueError, OSError, KeyError, TypeError) as error:
+        result["errors"].append(f"timber placement coverage: {error}")
+    return result
 
 
 def number(obj, key):
@@ -203,7 +405,7 @@ def pixel_evidence(lit, mask, triangles):
             "triangle_color_bins_at_green": len(colors), "nonzero_candidate_coverage": valid}
 
 
-def inspect(meta, images, width, height, decode):
+def inspect(meta, images, width, height, decode, placement=None):
     """Return an archivable result even when genuine SM6 draw evidence is absent."""
     sm6 = validate_metadata(meta, list(images), width, height)
     result = {"schema": "sora-arena.nanite-pixel-review.v1", "actual_shader_platform": meta["shader_platform"],
@@ -222,9 +424,10 @@ def inspect(meta, images, width, height, decode):
     for family in families.values():
         family["assets"] = sorted(family["assets"])
     result["observed_families"] = families
-    result["timber_placement_coverage"] = {**COVERAGE_PENDING, "observed_kinds": kinds,
-        "reason": "No frozen current-chapter-bound expected placement manifest; observed counts are inventory only"}
-    if kinds or any(record["exists"] for record in meta["coverage_inputs"] if record["path"] in COVERAGE_INPUTS[8:]):
+    result["timber_placement_coverage"] = {**(placement or COVERAGE_PENDING), "observed_kinds": kinds}
+    if placement is not None:
+        result["errors"].extend(placement["errors"])
+    elif kinds or any(record["exists"] for record in meta["coverage_inputs"] if record["path"] in COVERAGE_INPUTS[8:]):
         result["errors"].append("timber placement coverage is incomplete: frozen current-chapter-bound manifest contract required")
     if not sm6:
         result.update(evidence="SM5 conventional fallback originals only; not M1 hardware proof", nanite_draw_evidence=False)
