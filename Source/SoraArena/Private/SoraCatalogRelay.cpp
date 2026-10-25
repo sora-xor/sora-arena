@@ -34,8 +34,10 @@ bool SoraCatalogRelay::Read(const FJsonObject& O,FSoraBeat& Beat,const FSoraSpac
         Beat.Place!=TEXT("pl_relay_room")||!Beat.Is(SoraBeatRules::EType::StealthZone)||
         B.Objectives.Num()!=4||Beat.Objectives.Num()!=4||Beat.ObjectiveHoldMs.Num()!=4||Beat.Guards.Num()!=4) return false;
     const auto H=V->AsObject(); const auto& Zone=Space.Zones[B.Zone]; const FVector Origin(Zone.Rect.Min,0);
-    if(H->Values.Num()!=15||Zone.Rect.GetSize()!=FVector2D(2000,1000)||!Zone.Cover.IsEmpty()||
+    if(H->Values.Num()!=17||Zone.Rect.GetSize()!=FVector2D(2000,1000)||!Zone.Cover.IsEmpty()||
         !Point(H->TryGetField(TEXT("origin_cm")),Origin,2)||
+        !Point(H->TryGetField(TEXT("window_cm")),Origin+FVector(R::Window.X,R::Window.Y,R::Window.Z),3)||
+        !Point(H->TryGetField(TEXT("lookout_cm")),Origin+FVector(R::Lookout.X,R::Lookout.Y,R::Lookout.Z),3)||
         !Number(*H,TEXT("period_ms"),R::PeriodMs)||!Number(*H,TEXT("exposed_ms"),R::ExposedMs)||
         !Number(*H,TEXT("gap_ms"),R::GapMs)||!Number(*H,TEXT("pull_ms"),R::PullMs)||
         !Number(*H,TEXT("caught_suspicion_permille"),R::CaughtSuspicionPermille)||
@@ -71,6 +73,11 @@ bool SoraCatalogRelay::Read(const FJsonObject& O,FSoraBeat& Beat,const FSoraSpac
             L.At!=Zone.Rect.Min+(I==0?FVector2D(1900,100):FVector2D(100,900))||
             L.RadiusCm!=700||L.Snuff!=FSoraLamp::ESnuff::Hold||L.HoldMs!=1000||L.RelightMs!=0) return false;
     }
+    if(B.Fieldcraft.Allies.Num()!=1) return false;
+    const auto& Lookout=B.Fieldcraft.Allies[0];
+    if(Lookout.Id!=TEXT("npc_kohagi")||Lookout.Role!=TEXT("bystander")||Lookout.WeaponId!=INDEX_NONE||
+        Lookout.bDetectable||Lookout.Rules.Downable||!Lookout.Joins.IsEmpty()||
+        Lookout.At!=Zone.Rect.Min+FVector2D(R::Lookout.X,R::Lookout.Y)) return false;
     B.RelayRoom.bEnabled=true;B.RelayRoom.Origin=Zone.Rect.Min;
     return true;
 }

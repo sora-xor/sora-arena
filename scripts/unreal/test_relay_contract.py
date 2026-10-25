@@ -73,12 +73,30 @@ class RelayContract(unittest.TestCase):
             lamp=self.record['fieldcraft']['lamps'][0];old=lamp[field];lamp[field]=value
             self.assertFalse(relay_valid(self.chapter));lamp[field]=old
 
+    def test_lookout_cannot_fall_back_to_ground_or_join_combat(self):
+        x,y=self.room['origin_cm']
+        self.assertEqual(self.room['window_cm'],[x+1000,y+1000,550])
+        self.assertEqual(self.room['lookout_cm'],[x+1000,y+1100,550])
+        ally=self.record['fieldcraft']['allies'][0]
+        self.assertEqual(ally['at'],self.room['lookout_cm'][:2])
+        for key in ('window_cm','lookout_cm'):
+            for axis in range(3):
+                self.room[key][axis]+=1
+                self.assertFalse(relay_valid(self.chapter));self.room[key][axis]-=1
+        for key,value in (('id','npc_iota'),('at',self.record['entry'][:2]),('role','fighter'),
+                          ('detectable',True),('downable',True),('weapon',0),('joins','wave_start:0')):
+            old=ally[key];ally[key]=value
+            self.assertFalse(relay_valid(self.chapter));ally[key]=old
+        self.record['fieldcraft']['allies'].append(copy.deepcopy(ally))
+        self.assertFalse(relay_valid(self.chapter))
+
     def test_authored_sensor_wave_patrol_and_effects_cannot_be_ignored(self):
         changes=(lambda b:b['ext']['sensors'][0].update(gap_s=5),
                  lambda b:b['params']['waves'][0]['enemies'][0].update(delay_s=0),
                  lambda b:b['params']['waves'][0]['enemies'][0].update(count=3),
                  lambda b:b['params']['guards'][1].update(patrol='spl_relay_2f_loop_50s'),
                  lambda b:b['params']['guards'][2].update(investigates='none'),
+                 lambda b:b['params']['allies'][0].update(role='guide'),
                  lambda b:b['params']['noise_surfaces'].clear(),
                  lambda b:b['params']['light_sources'][0].update(suspicion_delay_s=4),
                  lambda b:b['ext']['on_complete_effects'].clear(),

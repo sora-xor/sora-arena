@@ -12,6 +12,10 @@ constexpr int LampNoticeMs=5000, GalleryHeightCm=400, GalleryWidthCm=180;
 struct FPoint { int X,Y,Z; };
 constexpr FPoint Nodes[NodeCount]={{920,500,120},{1080,500,120},{1000,580,520}};
 constexpr FPoint Work[NodeCount]={{800,500,0},{1200,500,0},{1000,690,400}};
+constexpr FPoint Window={1000,1000,550};
+// The body stands outside the slats; the window itself keeps the authored
+// (10, 10, 5.5) m anchor. A final prone lookout animation is still needed.
+constexpr FPoint Lookout={1000,1100,550};
 // Positive rotation starts at east. Each node has the same eight-second
 // exposure and four-second gap, offset by its angle around the column.
 constexpr int NodePhaseMs[NodeCount]={6000,0,3000};

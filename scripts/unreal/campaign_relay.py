@@ -3,6 +3,8 @@ import json
 
 NODES = ((920, 500, 120), (1080, 500, 120), (1000, 580, 520))
 WORK = ((800, 500, 0), (1200, 500, 0), (1000, 690, 400))
+WINDOW = (1000, 1000, 550)
+LOOKOUT = (1000, 1100, 550)
 SENSOR = {'id': 's_relay_fan', 'kind': 'rotating_scan', 'period_s': 12,
           'exposed_s': 8, 'gap_s': 4,
           'on_interact_exposed': {'suspicion_add': 0.6, 'fan_lock_s': 2}}
@@ -31,6 +33,7 @@ def contract(beat, origin):
             or [g.get('patrol',g.get('post')) for g in p['guards']] !=
                 ['spl_relay_1f_loop_50s','spl_relay_2f_loop_40s','post_relay_mitai','spl_relay_orbit_30s']
             or p['guards'][2].get('investigates') != 'dark_node'
+            or not same(p['allies'], [{'npc':'npc_kohagi', 'role':'lookout_roof', 'detectable':False}])
             or not same(p['noise_surfaces'],[{'kind':'gravel','volume':'vol_bell_clappers_'+str(i)} for i in (1,2)])
             or beat['ext']['on_complete_effects'] != ['drone_marks_local_only_20m','moat_searchlights_fixed']):
         raise ValueError('relay room must retain its authored nodes, scan, detection, lamps and completion effects')
@@ -42,7 +45,8 @@ def contract(beat, origin):
             'pull_ms':3000, 'caught_suspicion_permille':600, 'fan_lock_ms':2000,
             'nodes_lock_ms':30000, 'reinforcement_delay_ms':8000, 'reinforcement_count':2,
             'lamp_notice_ms':5000, 'gallery_height_cm':400, 'gallery_width_cm':180,
-            'nodes_cm':[xyz(n) for n in NODES], 'work_cm':[xyz(n) for n in WORK]}
+            'nodes_cm':[xyz(n) for n in NODES], 'work_cm':[xyz(n) for n in WORK],
+            'window_cm':xyz(WINDOW), 'lookout_cm':xyz(LOOKOUT)}
 
 
 def lamps(origin):
@@ -78,6 +82,7 @@ def place_relay(beats, records, zones, pickups, fail):
         record['spawns']=spawn_points(x,y)
         record['patrols']=[[[x+dx,y+dy] for dx,dy in ((650,200),(1350,200),(1350,800),(650,800))]]
         record['fieldcraft']['lamps']=lamps([x,y])
+        record['fieldcraft']['allies'][0]['at']=room['lookout_cm'][:2]
         zone.cover=[];zone.props=[] # Runtime column, gallery, stair and cover own collision.
         for pickup in pickups:
             if pickup['collectible']=='ch06.c02':pickup['at']=[x+1650,y+850]
@@ -97,6 +102,14 @@ def relay_valid(chapter):
                     or not same(record['objectives'],[p[:2] for p in room['work_cm']]+[[x+1850,y+500]])
                     or not same(record['exit'],{'center':[x+1850,y+500],'size':[300,300],'floor_cm':0})
                     or not same(record['fieldcraft']['lamps'],lamps([x,y]))
+                    or len(record['fieldcraft']['allies'])!=1
+                    or record['fieldcraft']['allies'][0]['id']!='npc_kohagi'
+                    or record['fieldcraft']['allies'][0]['role']!='bystander'
+                    or record['fieldcraft']['allies'][0]['weapon']!=-1
+                    or record['fieldcraft']['allies'][0]['detectable'] is not False
+                    or record['fieldcraft']['allies'][0]['downable'] is not False
+                    or record['fieldcraft']['allies'][0]['joins'] is not None
+                    or not same(record['fieldcraft']['allies'][0]['at'],room['lookout_cm'][:2])
                     or not same(record['volumes'],entry_volumes(x,y))
                     or not same(record['spawns'],spawn_points(x,y))
                     or not same(record['anchor'],[x+400,y+500])

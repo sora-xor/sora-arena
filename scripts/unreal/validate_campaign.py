@@ -636,7 +636,10 @@ def check_fieldcraft(beat, record, index, zones, zone_of, on_floor):
                 (ally["rank"] >= 0) == (ally["role"] == "rank") and ally["rank"] < 4 and
                 (ally["joins"] is None or re.fullmatch(r"wave_start:\d+", ally["joins"]) and
                  int(ally["joins"].split(":")[1]) <= len(beat["task"]["waves"])), f"{what}: ally {ally['id']}")
-        on_floor(index, ally["at"], f"{what} ally {ally['id']}")
+        # The relay's sole lookout has a separately validated upper outside
+        # perch. Its exact location/role is pinned by relay_valid above.
+        if not (record.get("relay_room") and ally["id"] == "npc_kohagi"):
+            on_floor(index, ally["at"], f"{what} ally {ally['id']}")
     # SoraFieldcraftRules::FVolleyRules: up to four ranks, each a full row of gunners with the volley's arm.
     volley = craft["volley"]
     gunners = [ally for ally in craft["allies"] if ally["role"] == "rank"]

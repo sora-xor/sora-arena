@@ -234,4 +234,40 @@ bool FSoraRelayExitTest::RunTest(const FString& Parameters)
     AddInfo(TEXT("Directed completion and save fixture with explicit node placement and frozen guards. Stair movement is exercised separately."));
     return true;
 }
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraRelayLookoutTest,"SoraArena.Campaign.RelayLookout",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraRelayLookoutTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;using namespace SoraRelayAutomation;
+    if(!FSoraCatalog::Get().Load()) return false;
+    FBeatWorld W(*this,TEXT("RelayLookout"),5,3);if(!W.Start()) return false;
+    W.Harden();FreezeGuards(W);
+    ASoraCompanion* Lookout=nullptr;int Count=0;
+    for(TActorIterator<ASoraCompanion> It(W.World->GetTestWorld());It;++It)
+        if(It->CompanionId()==TEXT("npc_kohagi")) { Lookout=*It;++Count; }
+    TestEqual(TEXT("Exactly one Kohagi is staged"),Count,1);
+    if(!TestNotNull(TEXT("Kohagi exists at the relay"),Lookout)) return false;
+    const FVector O(W.BeatData().Space.RelayRoom.Origin,0);
+    if(!Dialogue(W)||!W.Tick(120)) return false;
+    TestTrue(TEXT("The lookout settles on the upper outside perch"),
+        Lookout->GetActorLocation().Equals(O+FVector(1000,1100,550),5.f)&&
+        Lookout->GetCharacterMovement()->IsMovingOnGround());
+    TestTrue(TEXT("Kohagi faces the room from the north window"),
+        FVector::DotProduct(Lookout->GetActorForwardVector(),FVector(0,-1,0))>.99f);
+    TestTrue(TEXT("The lookout cannot be detected or fight"),
+        !Lookout->IsExposed(1)&&!Lookout->Rules().Downable&&Lookout->Role()==ASoraCompanion::ERole::Bystander&&
+        Lookout->Strikes()==0&&Lookout->Rounds()==0);
+    FCollisionQueryParams Q(SCENE_QUERY_STAT(RelayWindowFixture),false,W.Hero());Q.AddIgnoredActor(Lookout);
+    const auto Blocked=[&](const FVector& From,const FVector& To)
+    { FHitResult Hit;return W.World->GetTestWorld()->LineTraceSingleByChannel(Hit,O+From,O+To,ECC_Visibility,Q); };
+    TestFalse(TEXT("The window has a real sight opening"),Blocked(FVector(1000,980,550),FVector(1000,1120,550)));
+    TestTrue(TEXT("The window slats retain physical collision"),Blocked(FVector(1006,980,550),FVector(1006,1120,550)));
+    TestTrue(TEXT("The wall below the window remains solid"),Blocked(FVector(1000,980,430),FVector(1000,1120,430)));
+    TestTrue(TEXT("The lookout has solid support"),Blocked(FVector(1000,1100,500),FVector(1000,1100,420)));
+    TestFalse(TEXT("The west crawl aperture is open"),Blocked(FVector(100,500,30),FVector(-100,500,30)));
+    TestTrue(TEXT("The crawl lintel keeps its low clearance"),Blocked(FVector(100,500,80),FVector(-100,500,80)));
+    TestFalse(TEXT("The east doorway is open at standing height"),Blocked(FVector(1950,500,120),FVector(2100,500,120)));
+    AddInfo(TEXT("Collision and stationary lookout fixture only. The model still uses its standing animation; final prone pose and shell art are pending."));
+    return true;
+}
 #endif

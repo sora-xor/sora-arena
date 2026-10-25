@@ -1,7 +1,7 @@
 # Relay room source candidate
 
 This is a work-in-progress implementation of chapter 6 L3 / beat 4. The
-runtime changes and five Unreal fixtures have **not been compiled or run**.
+runtime changes and six Unreal fixtures have **not been compiled or run**.
 The separate complete-game worktree stays frozen at `c3fcf8e` for the queued
 press regression. Claude owns the Unreal and Blender lane during the art
 rebuild. This candidate does not qualify gameplay, art or a release.
@@ -47,7 +47,7 @@ it is not an ordinary-input playthrough.
 Host validation performed during implementation:
 
 - Generated campaign data is current; all 133 beats and 65 rejection fixtures pass.
-- Seven new relay-contract tests and ten existing press-contract tests pass.
+- Eight relay-contract tests and ten existing press-contract tests pass.
 - Fieldcraft, press and relay C++ host drivers pass with undefined-behavior
   traps. Relay coverage includes all 36,000 node/start phases, completion
   versus catch boundaries, input cancellation, frozen scan, frame partitions
@@ -55,16 +55,28 @@ Host validation performed during implementation:
 - The source-check runner's fifteen tests pass. CI now includes the new relay
   data contract, increasing its inventory from 108 to 109 checks.
 
+Source CI run `40224399111` for `6bf19b4` passed 108 of 109 checks. Its one
+failure was `dojo-timber-binding-current`: the chapter-six data edit left
+that binding's chapter hash stale. The binding has now been regenerated;
+only that hash changed, and `--check` passes. No timber geometry or coverage
+changed. A subsequent CI run must verify this correction.
+
 Prepared Unreal fixtures: `RelayControls`, `RelayScan`, `RelayGallery`,
-`RelayInspection` and `RelayExit`, under `SoraArena.Campaign`. They isolate
+`RelayInspection`, `RelayExit` and `RelayLookout`, under `SoraArena.Campaign`. They isolate
 control mapping, obstruction, height, scan penalties, delayed reinforcement,
 stair movement, auditor arrival, completion and checkpoint reset. Most freeze
 guard AI or use an inspector with isolated senses; they do not establish
 ordinary encounter difficulty. Their assertions are prospective until run.
 
+The shell now has a physical west crawl aperture, east doorway and upper
+north slatted window at the authored 5.5 metre height. Kohagi is staged on a
+solid outside perch facing into that window, with her existing undetectable,
+noncombat role. The generated contract rejects changing her role or returning
+her to the generic entry position. Her current standing animation is a
+placeholder for the authored prone lookout pose. These changes are unrun.
+
 Known unfinished work: the room remains primitive blockout geometry, the
-turret/annex materials and openings are not authored final art, Kohagi still
-uses the generic ally placement rather than the upper outside window, and
-there is no rendered, ordinary-play, Mac/Windows package or performance
+turret/annex materials and openings are not authored final art, Kohagi's prone
+animation is missing, and there is no rendered, ordinary-play, Mac/Windows package or performance
 qualification. Lamp notices, alternating patrol cadence, restored-checkpoint
 effects and the complete encounter still need dedicated runtime evidence.
