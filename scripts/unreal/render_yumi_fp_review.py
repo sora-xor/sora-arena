@@ -3,7 +3,7 @@
 Run in the pinned editor with a renderer, after import_runtime_weapon_yumi_rig.py
 (and import_nyaakoto_fp_paws.py, unless paws=0):
   scripts/toolchain/run-editor-script.sh --editor scripts/unreal/render_yumi_fp_review.py \
-      YUMI_FP_REVIEW_COMPLETE -- holds=rest,root,kai res=1920x1080 out=YumiFP
+      YUMI_FP_REVIEW_COMPLETE -- holds=rest,root,right_cheek,paw res=1920x1080 out=YumiFP [ids=0]
 
 It builds a fresh uncooked level, /Game/ArtReview/YumiFP/L_YumiFP_<time>.
 - **The camera:** at the origin, looking down +X, the eye of the first-person
@@ -17,11 +17,19 @@ It builds a fresh uncooked level, /Game/ArtReview/YumiFP/L_YumiFP_<time>.
 - **The arrow:** SM_Weapon_18_Ya, nocked at the posed Grip_R and laid
   through the posed Muzzle (the arrow pass).
 - **The paw:** SM_NyaakotoFP_PawL_Yumi, attached to the posed Grip_L.
-- **The holds:**
+- **The holds** (docs/art-direction/data/yumi_fp_hold_study.json; root's
+  viewmodels.json is unchanged):
   - rest: the bow rest pose, braced;
-  - root: root's bow.drawn hold (60, -3, -9.5), at full draw;
-  - kai: the proposed kai hold (60, -6, -14), at full draw;
+  - root: root's bow.drawn hold (60, -3, -9.5), at full draw: the control;
+  - right_cheek: Codex's construction (yumi_fp_holds.right_cheek), solved
+    here from the full-draw Grip_R and Muzzle this mesh actually poses, so
+    rebuilt sockets get their own hold. It keeps the control's nock X and Z,
+    mirrors its Y, and turns the bow so the arrow line passes through
+    (2000, 0, 0). The manifest records the solve and its difference from
+    Codex's candidate.
   - paw: a closer three-quarter view of the paw on the grip.
+  (The earlier proposed "kai", Y -6, moves farther left: it is not a
+  right-cheek fix, and is dropped.)
 - **The setting:** a plain review set (a dark polished floor slab and a
   plaster far wall in constant albedo, the timber look-dev stage's, open to
   the sky) under a physically based SkyAtmosphere sun 50 degrees up behind
@@ -40,9 +48,27 @@ It builds a fresh uncooked level, /Game/ArtReview/YumiFP/L_YumiFP_<time>.
   (W18_rig_review_arrow.json) within test_yumi_draw's compressed head bound,
   plus Grip_R's own offset from String_Nock and the review's rounding;
   otherwise the run fails before any capture.
+- **The solve gate** (right_cheek): the posed nock must sit on its target and
+  the posed arrow line pass through the aim point, within SOLVE_TOL_CM.
+- **Socket assessment**, recorded per eye-view hold and never a gate:
+  - each socket's screen point against root's left-side boxes (which the
+    candidate's grip is not expected to satisfy; they are not relaxed);
+  - the clear line's distance from the reticle;
+  - the posed arrow's miss at 20 m;
+  - how much of the arrow lies nearer than the 10 cm near plane;
+  - each part's nearest extent.
+- **The ID pass** (unless ids=0), after each eye-view shot:
+  - each part is drawn in an unlit colour (bow red, arrow green, paw blue),
+    the fur cards and W18 islands keeping their alpha masks;
+  - the set, sky and lights are hidden, the exposure is 1, with no bloom;
+  - this is <hold>_ids.png, so analyse_yumi_fp_review.py can count each
+    part's real pixels and reticle occlusion;
+  - then each part returns to its own slots, and the material gate runs
+    again before the next hold.
 
-Captures go to Saved/YumiFP/<out>/<hold>.png, with a manifest.json of every
-file's SHA-256 and the socket positions read from the posed mesh.
+Captures go to Saved/YumiFP/<out>/<hold>.png (and <hold>_ids.png), with a
+manifest.json of every file's SHA-256, the socket positions read from the
+posed mesh, the solves and the assessments.
 
 Editor review originals: not the native first-person renderer (no
 first-person FOV/scale split, no gameplay aim), and not an admission.
@@ -64,6 +90,9 @@ from sora_engine_pin import require_running_engine  # noqa: E402
 
 require_running_engine("Yumi first-person review")
 import fp_material_bindings as B  # noqa: E402
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "art"))
+import yumi_fp_holds as H  # noqa: E402
 ROOT = Path(unreal.Paths.project_dir()).resolve()
 ACTORS = unreal.get_editor_subsystem(unreal.EditorActorSubsystem)
 LEVELS = unreal.get_editor_subsystem(unreal.LevelEditorSubsystem)
@@ -73,6 +102,10 @@ RIG_REVIEW = ROOT / "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review"
 PAWS = "/Game/Generated/Qualification/NyaakotoFPPaws"
 LEVEL = f"/Game/ArtReview/YumiFP/L_YumiFP_{int(time.time())}"
 VIEWMODELS = json.loads((ROOT / "Content/Data/viewmodels.json").read_text(encoding="utf-8"))
+# Root's control hold and Codex's right_cheek candidate, with their sources' hashes
+# (root's viewmodels.json stays unchanged; yumi_fp_holds solves right_cheek here).
+STUDY = json.loads((ROOT / "docs/art-direction/data/yumi_fp_hold_study.json").read_text(encoding="utf-8"))
+CONTROL = STUDY["root_control"]
 MESH_SCALE = VIEWMODELS["mesh_scale"]
 FOV = VIEWMODELS["camera"]["first_person_fov_deg"]
 # The sun: 20,000 lux at 50 degrees up, behind thin haze (the look-development
@@ -88,15 +121,23 @@ REVIEW_ROUNDING_CM = math.sqrt(3.0) * 0.5e-5
 HOLDS = {
     "rest": {"anchor": VIEWMODELS["poses"]["bow"]["rest"]["anchor_cm"],
              "rot": VIEWMODELS["poses"]["bow"]["rest"]["rotation_deg"], "draw": 0.0},
-    "root": {"anchor": [60.0, -3.0, -9.5], "rot": [0.25, 0.1, 0.0], "draw": 1.0},
-    "kai": {"anchor": [60.0, -6.0, -14.0], "rot": [0.25, 0.1, 0.0], "draw": 1.0},
-    "paw": {"anchor": [60.0, -3.0, -9.5], "rot": [0.25, 0.1, 0.0], "draw": 1.0,
-            "camera": {"loc": [36.0, -10.0, -2.0], "look_at": [60.0, -3.0, -9.5], "fov": 32.0}},
+    # Root's bow.drawn hold, the control (root viewmodels.json, pinned in the study).
+    "root": {"anchor": list(CONTROL["anchor_cm"]), "rot": list(CONTROL["rotation_deg"]), "draw": 1.0},
+    # Solved from the posed full-draw sockets at capture time (yumi_fp_holds.right_cheek).
+    "right_cheek": {"solve": "right_cheek", "draw": 1.0},
+    "paw": {"anchor": list(CONTROL["anchor_cm"]), "rot": list(CONTROL["rotation_deg"]), "draw": 1.0,
+            "camera": {"loc": [36.0, -10.0, -2.0], "look_at": list(CONTROL["anchor_cm"]), "fov": 32.0}},
 }
+# The ID-colour pass after each eye-view shot: unlit, so it counts each part's real pixels.
+ID_COLOURS = {"bow": (1.0, 0.0, 0.0), "arrow": (0.0, 1.0, 0.0), "paw": (0.0, 0.0, 1.0)}
+# The solved hold must put the nock on its target and the arrow through the aim point within
+# this (cm): float32 transforms over the 20 m line, with margin.
+SOLVE_TOL_CM = 1e-2
 
 
 def parse_args():
-    opts = {"holds": "rest,root,kai,paw", "res": "1920x1080", "out": "YumiFP", "paws": "1", "ev": ""}
+    opts = {"holds": "rest,root,right_cheek,paw", "res": "1920x1080", "out": "YumiFP", "paws": "1", "ev": "",
+            "ids": "1"}
     for arg in sys.argv[1:]:
         if "=" in arg:
             k, v = arg.split("=", 1)
@@ -153,6 +194,36 @@ def plain_material(name, colour, rough):
     return m
 
 
+def id_material(name, colour, mask=None, clip=0.5, two_sided=False, dither=False):
+    """An unlit review material of one emissive colour; masked by ``mask``'s alpha, as the part it stands in for."""
+    folder = LEVEL.rsplit("/", 1)[0]
+    path = f"{folder}/{name}"
+    lib = unreal.MaterialEditingLibrary
+    if ASSETS.does_asset_exist(path):
+        m = unreal.load_asset(path)
+        for e in list(lib.get_material_expressions(m)):
+            lib.delete_material_expression(m, e)
+    else:
+        m = unreal.AssetToolsHelpers.get_asset_tools().create_asset(name, folder, unreal.Material,
+                                                                    unreal.MaterialFactoryNew())
+    m.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_UNLIT)
+    m.set_editor_property("two_sided", two_sided)
+    m.set_editor_property("used_with_skeletal_mesh", True)
+    c = lib.create_material_expression(m, unreal.MaterialExpressionConstant3Vector, -300, 0)
+    c.set_editor_property("constant", unreal.LinearColor(*colour, 1.0))
+    lib.connect_material_property(c, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    if mask is not None:
+        m.set_editor_property("blend_mode", unreal.BlendMode.BLEND_MASKED)
+        m.set_editor_property("opacity_mask_clip_value", clip)
+        m.set_editor_property("dither_opacity_mask", dither)
+        t = lib.create_material_expression(m, unreal.MaterialExpressionTextureSample, -600, 200)
+        t.set_editor_property("texture", load(mask))
+        lib.connect_material_property(t, "A", unreal.MaterialProperty.MP_OPACITY_MASK)
+    lib.recompile_material(m)
+    ASSETS.save_loaded_asset(m)
+    return m
+
+
 # The timber look-dev stage's floor and plaster (sora_timber_lookdev.stage), so
 # the backdrop is plain and not BasicShapeMaterial's grid (root's review of
 # Saved/YumiFP/v2: "background/surfaces also show grain").
@@ -169,9 +240,11 @@ def build_level():
     # face at x = 1,190 cm, filling the frame behind the bow.
     cube = load("/Engine/BasicShapes/Cube.Cube")
     mats = {k: plain_material(*v) for k, v in SET_MATERIALS.items()}
+    env = []
     for part, loc, scale in (("floor", (500.0, 0.0, -165.0), (24.0, 24.0, 0.1)),
                              ("wall", (1200.0, 0.0, 340.0), (0.2, 30.0, 10.0))):
         a = spawn(unreal.StaticMeshActor, loc)
+        env.append(a)
         a.static_mesh_component.set_static_mesh(cube)
         a.static_mesh_component.set_material(0, mats[part])
         a.set_actor_scale3d(unreal.Vector(*scale))
@@ -193,6 +266,7 @@ def build_level():
     fog = spawn(unreal.ExponentialHeightFog)
     fog.component.set_fog_density(SUN["fog"])
     unreal.SystemLibrary.execute_console_command(world(), "r.TextureStreaming 0")
+    return env + [atmosphere, sun, sky, fog]
 
 
 def metered_ev100():
@@ -200,16 +274,22 @@ def metered_ev100():
     return math.log2(SUN["lux"] / 2.5)
 
 
-def exposure(ev100):
-    volume = spawn(unreal.PostProcessVolume)
-    volume.set_editor_property("unbound", True)
+def exposure(ev100, volume=None, ids=False):
+    """The fixed manual exposure (bias 1 - EV100). For the ID pass: bias 0, so an emissive of 1 is 1, and
+    no bloom or vignette to bleed one part's colour into another's pixels."""
+    if volume is None:
+        volume = spawn(unreal.PostProcessVolume)
+        volume.set_editor_property("unbound", True)
     s = volume.get_editor_property("settings")
     for key, value in (("auto_exposure_method", unreal.AutoExposureMethod.AEM_MANUAL),
                        ("auto_exposure_apply_physical_camera_exposure", False),
-                       ("auto_exposure_bias", -ev100 + 1.0)):
+                       ("auto_exposure_bias", 0.0 if ids else -ev100 + 1.0),
+                       ("bloom_intensity", 0.0 if ids else 0.675),
+                       ("vignette_intensity", 0.0 if ids else 0.4)):
         s.set_editor_property(f"override_{key}", True)
         s.set_editor_property(key, value)
     volume.set_editor_property("settings", s)
+    return volume
 
 
 class Viewmodel:
@@ -256,34 +336,79 @@ class Viewmodel:
         # imported slot (import_runtime_weapon_yumi_rig.py: SetMaterials). The rows
         # and their check are verify_yumi_rig_materials.py's, against the same
         # serialized expectations (fp_material_bindings).
-        expectations = B.load()
+        self.expectations = expectations = B.load()
+        self.solved = {}
         parts = [(f"{RIG}/SK_Weapon_18", self.mesh, comp),
                  (f"{RIG}/SM_Weapon_18_Ya", self.arrow.static_mesh_component.get_editor_property("static_mesh"),
                   self.arrow.static_mesh_component)]
         if self.paw is not None:
             parts.append((f"{PAWS}/SM_NyaakotoFP_PawL_Yumi", self.paw.static_mesh_component.get_editor_property("static_mesh"),
                           self.paw.static_mesh_component))
-        self.materials, problems = {}, []
-        for asset_path, mesh, component in parts:
+        self.parts = parts
+        self.materials = self.check_materials("before any shot")
+
+    def check_materials(self, when):
+        """The material gate: each part's ordered rows against the serialized expectations."""
+        rows, problems = {}, []
+        for asset_path, mesh, component in self.parts:
             slots, drawn = B.asset_rows(mesh), B.component_rows(component)
-            self.materials[asset_path] = B.as_json(slots, drawn)
-            problems += B.check(asset_path, slots, drawn, expectations[asset_path])
+            rows[asset_path] = B.as_json(slots, drawn)
+            problems += B.check(asset_path, slots, drawn, self.expectations[asset_path])
         if problems:
-            raise RuntimeError("yumi FP review: material gate: " + "; ".join(problems))
+            raise RuntimeError(f"yumi FP review: material gate ({when}): " + "; ".join(problems))
+        return rows
+
+    def apply_ids(self, ids):
+        """Each part drawn in its unlit ID material: the fur cards and the W18 islands keep their alpha masks."""
+        for asset_path, mesh, component in self.parts:
+            part = "bow" if asset_path.endswith("SK_Weapon_18") else "arrow" if asset_path.endswith("_Ya") else "paw"
+            for index, name, _path in B.asset_rows(mesh):
+                component.set_material(index, ids["paw_fur"] if name == "M_NyaakotoFP_FurCards" else ids[part])
+
+    def clear_ids(self):
+        """Back to the assets' own slots. EmptyOverrideMaterials is no UFUNCTION, so each override is set to
+        None: a null override draws the mesh's own slot (MeshComponent.cpp GetMaterial). The material gate
+        then proves it."""
+        for _asset_path, mesh, component in self.parts:
+            for index, _name, _path in B.asset_rows(mesh):
+                component.set_material(index, None)
+
+    def component_socket(self, name):
+        t = self.comp.get_socket_transform(name, unreal.RelativeTransformSpace.RTS_COMPONENT).translation
+        return (t.x, t.y, t.z)
+
+    def evaluate(self, draw):
+        """Hold the take at ``draw`` and refresh the bones on the game thread."""
+        # The mode is single-node now, so OverrideAnimationData no longer
+        # reinitializes: set the instance's time, then let it tick and refresh
+        # the bones at that time.
+        self.comp.set_position(draw, False)
+        self.comp.override_animation_data(self.anim, False, False, draw, 0.0)
+
+    def solve(self, hold):
+        """right_cheek from the sockets this mesh actually poses at full draw (rebuilt ones after a rebuild)."""
+        self.evaluate(1.0)
+        grip_r, muzzle = self.component_socket("Grip_R"), self.component_socket("Muzzle")
+        rc = H.right_cheek(tuple(CONTROL["anchor_cm"]), tuple(CONTROL["rotation_deg"]), MESH_SCALE, grip_r, muzzle)
+        cand = STUDY["right_cheek"]["codex_candidate"]
+        rc["component_cm"] = {"Grip_R": grip_r, "Muzzle": muzzle}
+        rc["vs_codex_candidate"] = {
+            "anchor_cm": [a - b for a, b in zip(rc["anchor"], cand["anchor_cm"])],
+            "rotation_deg": [a - b for a, b in zip(rc["rot"], cand["rotation_deg"])]}
+        HOLDS[hold].update(anchor=list(rc["anchor"]), rot=list(rc["rot"]))
+        self.solved[hold] = rc
 
     def pose(self, hold):
         """Hang the bow from Grip_L at the anchor, and hold the take at the draw fraction."""
         h = HOLDS[hold]
+        if h.get("solve") == "right_cheek":
+            self.solve(hold)
         self.bow.set_actor_scale3d(unreal.Vector(MESH_SCALE, MESH_SCALE, MESH_SCALE))
         self.bow.set_actor_rotation(frotator(h["rot"]), False)
         # Grip_L sits at the mesh origin on the identity Grip root, so the actor
         # origin is the anchor (the runtime recentres on the socket the same way).
         self.bow.set_actor_location(unreal.Vector(*h["anchor"]), False, False)
-        # The mode is single-node now, so OverrideAnimationData no longer
-        # reinitializes: set the instance's time, then let it tick and refresh
-        # the bones on the game thread at that time.
-        self.comp.set_position(h["draw"], False)
-        self.comp.override_animation_data(self.anim, False, False, h["draw"], 0.0)
+        self.evaluate(h["draw"])
         if self.paw is not None:
             self.paw.set_actor_scale3d(unreal.Vector(MESH_SCALE, MESH_SCALE, MESH_SCALE))
 
@@ -310,7 +435,47 @@ class Viewmodel:
             if rows["paw_to_Grip_L_cm"] > 1e-3:
                 raise RuntimeError(f"yumi FP review: the paw is {rows['paw_to_Grip_L_cm']:.4f} cm off Grip_L")
         rows["bound_cm"] = self.tol_cm
+        if hold in self.solved:
+            rc = self.solved[hold]
+            n = self.comp.get_socket_location("Grip_R")
+            m = self.comp.get_socket_location("Muzzle")
+            off = math.dist((n.x, n.y, n.z), rc["target_nock"])
+            miss = math.hypot(*H.aim_miss((n.x, n.y, n.z), (m.x, m.y, m.z)))
+            rows["solve"] = {"nock_off_target_cm": off, "aim_miss_cm": miss, "bound_cm": SOLVE_TOL_CM}
+            if off > SOLVE_TOL_CM or miss > SOLVE_TOL_CM:
+                raise RuntimeError(f"yumi FP review: {hold} posed its nock {off:.4f} cm off target and its arrow "
+                                   f"{miss:.4f} cm off the aim point (bound {SOLVE_TOL_CM} cm)")
         return rows
+
+    def assess(self, hold):
+        """Socket math on the posed parts, for an eye-view hold: screen points against root's boxes, the
+        reticle's clear line, the aim and the near plane. Recorded, never a gate: originals decide."""
+        cam = CONTROL["camera"]
+        aspect = cam["aspect"][0] / cam["aspect"][1]
+        near = cam["near_plane_cm"]
+        pts = {n: (lambda v: (v.x, v.y, v.z))(self.comp.get_socket_location(n)) for n in ("Grip_L", "Grip_R", "Muzzle")}
+        ac = self.arrow.static_mesh_component
+        pts["Nock"] = (lambda v: (v.x, v.y, v.z))(ac.get_socket_location("Nock"))
+        pts["Tip"] = (lambda v: (v.x, v.y, v.z))(ac.get_socket_location("Tip"))
+        out = {"eye_cm": pts, "near_plane_cm": near}
+        out["screen_uv"] = {n: H.screen_uv(p, FOV, aspect) for n, p in pts.items() if p[0] > 1e-6}
+        out["root_boxes"] = {n: H.in_box(out["screen_uv"][n], box) if n in out["screen_uv"] else False
+                             for n, box in CONTROL["screen"].items()}
+        out["aim_miss_cm"] = H.aim_miss(pts["Grip_R"], pts["Muzzle"])
+        out["arrow_behind_near_plane"] = H.segment_behind(pts["Nock"], pts["Tip"], near)
+        bounds = {}
+        for name, actor in (("bow", self.bow), ("arrow", self.arrow), ("paw", self.paw)):
+            if actor is None:
+                continue
+            o, e = actor.get_actor_bounds(False)
+            bounds[name] = {"min_x_cm": o.x - e.x, "max_x_cm": o.x + e.x, "crosses_near_plane": o.x - e.x < near}
+        out["bounds"] = bounds
+        # The clear line (Grip_L to Muzzle) and the reticle, in half-heights from the screen centre.
+        if "Grip_L" in out["screen_uv"] and "Muzzle" in out["screen_uv"]:
+            (u0, v0), (u1, v1) = out["screen_uv"]["Grip_L"], out["screen_uv"]["Muzzle"]
+            best = min(math.hypot((u0 + (u1 - u0) * t) * aspect, v0 + (v1 - v0) * t) for t in [k / 200 for k in range(201)])
+            out["clear_line_to_reticle"] = {"half_heights": best, "reticle_clear_radius": cam["reticle_clear_radius"]}
+        return out
 
     def nock_arrow(self):
         nock = self.comp.get_socket_location("Grip_R")
@@ -339,17 +504,37 @@ def camera_for(hold, width, height):
     return cam
 
 
+def hide(actors, hidden):
+    """The set, its sky and its lights, out of (or back into) the ID pass: as actors, in the editor, and
+    each component's visibility, since a sky or light component need not follow its actor's flag."""
+    for a in actors:
+        a.set_actor_hidden_in_game(hidden)
+        a.set_is_temporarily_hidden_in_editor(hidden)
+        for c in a.get_components_by_class(unreal.SceneComponent):
+            c.set_visibility(not hidden, True)
+
+
 def main():
     opts = parse_args()
     holds = [h for h in opts["holds"].split(",") if h]
     width, height = (int(x) for x in opts["res"].split("x"))
     out = ROOT / "Saved/YumiFP" / opts["out"]
     out.mkdir(parents=True, exist_ok=True)
-    build_level()
+    env = build_level()
     ev100 = float(opts["ev"]) if opts["ev"] else metered_ev100()
-    exposure(ev100)
+    volume = exposure(ev100)
     vm = Viewmodel(opts["paws"] != "0")
-    status = {"frames": 0, "queue": list(holds), "phase": "pose", "wait": 0, "written": [], "sockets": {}, "poses": {}}
+    ids = None
+    if opts["ids"] != "0":
+        w18 = f"{RIG}/Textures/T_Weapon_18_BaseColor"
+        fur = f"{PAWS}/Textures/T_NyaakotoFP_FurCards_Albedo"
+        ids = {"bow": id_material("M_YumiFP_ID_Bow", ID_COLOURS["bow"], mask=w18, clip=0.5),
+               "arrow": id_material("M_YumiFP_ID_Arrow", ID_COLOURS["arrow"], mask=w18, clip=0.5, two_sided=True),
+               "paw": id_material("M_YumiFP_ID_Paw", ID_COLOURS["paw"]),
+               "paw_fur": id_material("M_YumiFP_ID_PawFur", ID_COLOURS["paw"], mask=fur, clip=0.33, two_sided=True,
+                                      dither=True)}
+    status = {"frames": 0, "queue": list(holds), "phase": "pose", "wait": 0, "written": [], "sockets": {}, "poses": {},
+              "assess": {}, "id_files": {}, "regates": {}}
 
     def finish(message, error=False):
         unreal.unregister_slate_post_tick_callback(handle)
@@ -363,19 +548,25 @@ def main():
         except Exception as exc:  # never spin on a failing callback
             finish(f"YUMI_FP_REVIEW_FAILED: {exc!r}", error=True)
 
+    def shoot(path, next_phase):
+        status.update(phase="shot", current=path, started=time.time(), count=0, after=next_phase)
+        unreal.SystemLibrary.execute_console_command(world(), f'HighResShot {width}x{height} filename="{path}"')
+
     def step():
         status["frames"] += 1
         LEVELS.editor_invalidate_viewports()
         if status["frames"] < 30:
             return
+        hold = status.get("hold")
         if status["phase"] == "pose":
             if not status["queue"]:
                 manifest = {"level": LEVEL, "fov": FOV, "mesh_scale": MESH_SCALE, "holds": {h: HOLDS[h] for h in holds},
                             "files": {p: sha256(out / p) for p in status["written"]}, "sockets_cm": status["sockets"],
                             "poses_component_cm": status["poses"], "materials": vm.materials,
-                            "set_materials": SET_MATERIALS, "sun": SUN,
-                            "ev100": ev100,
-                            "exposure_bias": 1.0 - ev100,
+                            "materials_after_id_pass": status["regates"], "solved": vm.solved,
+                            "assess": status["assess"], "id_files": status["id_files"], "id_colours": ID_COLOURS,
+                            "control": {k: CONTROL[k] for k in ("source", "source_sha256")},
+                            "set_materials": SET_MATERIALS, "sun": SUN, "ev100": ev100, "exposure_bias": 1.0 - ev100,
                             "scope": "editor review originals: not the native first-person renderer or an admission"}
                 (out / "manifest.json").write_text(json.dumps(manifest, indent=1) + "\n")
                 finish(f"YUMI_FP_REVIEW_COMPLETE: {len(status['written'])} captures in {out}")
@@ -388,20 +579,21 @@ def main():
             status["count"] += 1
             if status["count"] < 20:
                 return
-            status["poses"][status["hold"]] = vm.check_pose(status["hold"])
-            status["sockets"][status["hold"]] = vm.nock_arrow()
-            cam = camera_for(status["hold"], width, height)
+            status["poses"][hold] = vm.check_pose(hold)
+            status["sockets"][hold] = vm.nock_arrow()
+            eye_view = "camera" not in HOLDS[hold]
+            if eye_view:
+                status["assess"][hold] = vm.assess(hold)
+            cam = camera_for(hold, width, height)
             LEVELS.pilot_level_actor(cam)
             LEVELS.editor_set_game_view(True)
-            status.update(phase="light", count=0, cam=cam)
+            status.update(phase="light", count=0, cam=cam, eye_view=eye_view)
             return
         if status["phase"] == "light":
             status["count"] += 1
             if status["count"] < 150:                                  # Lumen, TSR and exposure settle
                 return
-            path = out / f"{status['hold']}.png"
-            status.update(phase="shot", current=path, started=time.time(), count=0)
-            unreal.SystemLibrary.execute_console_command(world(), f'HighResShot {width}x{height} filename="{path}"')
+            shoot(out / f"{hold}.png", "ids" if (ids and status["eye_view"]) else "next")
             return
         if status["phase"] == "shot":
             p = status["current"]
@@ -411,9 +603,28 @@ def main():
                     finish(f"YUMI_FP_REVIEW_FAILED: {p} was not written", error=True)
                 return
             status["written"].append(p.name)
+            if status["after"] == "ids":
+                # The ID pass: each part in its unlit colour, the set and its lights hidden, no bloom.
+                vm.apply_ids(ids)
+                hide(env, True)
+                exposure(ev100, volume, ids=True)
+                status.update(phase="id_settle", count=0)
+                return
+            if status["after"] == "restore":
+                status["id_files"][hold] = p.name
+                vm.clear_ids()
+                hide(env, False)
+                exposure(ev100, volume)
+                status["regates"][hold] = vm.check_materials(f"after the {hold} ID pass")
             ACTORS.destroy_actor(status["cam"])
             status["queue"].pop(0)
             status["phase"] = "pose"
+            return
+        if status["phase"] == "id_settle":
+            status["count"] += 1
+            if status["count"] < 60:                                   # TSR settles on the unlit frame
+                return
+            shoot(out / f"{hold}_ids.png", "restore")
 
     handle = unreal.register_slate_post_tick_callback(tick)
     unreal.EditorPythonScripting.set_keep_python_script_alive(True)

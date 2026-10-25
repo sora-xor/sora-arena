@@ -304,6 +304,38 @@ rest/drawn mesh swap.
       override fails, though its sorted paths would pass (Codex);
     - no engine default anywhere.
     `test_fp_material_bindings.py` tests the check on the host.
+- **The right-cheek comparison** (prepared for the next originals; not run):
+  - The next capture shoots root's `bow.drawn` control (60, −3, −9.5)
+    beside a named `right_cheek` hold. Both are pinned with their sources'
+    hashes in `data/yumi_fp_hold_study.json`; root's viewmodels.json stays
+    unchanged.
+  - `right_cheek` is Codex's construction (`scripts/art/yumi_fp_holds.py`):
+    - keep the control's full-draw nock X and Z, mirror its Y to +3.115 cm;
+    - roll 0, with the posed nock-to-Muzzle line through (2000, 0, 0);
+    - the anchor puts the nock on its target.
+  - The closed-form solve reproduces Codex's candidate from the signed
+    sockets to machine precision.
+  - The capture **re-solves it from the sockets it actually poses**, so
+    rebuilt sockets get their own hold. It gates the nock on its target and
+    the arrow through the aim point.
+  - `test_yumi_fp_holds` requires a candidate for the current sockets
+    file's hash, so a rebuilt sockets file forces a recomputed entry.
+  - Root's left-side screen boxes do not admit the candidate's grip
+    (u > 0). That is recorded and not relaxed.
+  - **What the capture records**, socket math only, never a gate:
+    - screen points against those boxes;
+    - the clear line's distance from the reticle;
+    - the arrow's miss at 20 m;
+    - how much of the arrow lies nearer than the 10 cm near plane (the
+      full-draw nock is 5.8 cm behind the eye);
+    - each part's nearest extent.
+  - **The ID pass:** after each eye-view shot, each part is drawn unlit in its
+    own colour, alpha masks kept, with the set hidden. Then the material gate
+    runs again. `scripts/art/analyse_yumi_fp_review.py` counts the real
+    pixels:
+    - each part's share and screen extent;
+    - its frame-edge contact;
+    - its pixels inside the reticle's clear disc (0.12 half-heights).
 - **W18 source corrections** (Codex-assigned; source only, **not rebuilt**):
   - **The nigiri** (`scripts/art/yumi_nigiri.py`):
     - **The fault:** the grip wraps read as stepped plates. The first
