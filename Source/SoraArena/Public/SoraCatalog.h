@@ -606,9 +606,15 @@ struct FSoraFuelCanister
     FName Id;
     FVector Floor=FVector::ZeroVector;
 };
+struct FSoraPodArrival
+{
+    FName Id;
+    FVector Floor=FVector::ZeroVector;
+};
 struct FSoraBeatSpace
 {
     TArray<FSoraFuelCanister> FuelCanisters;
+    TArray<FSoraPodArrival> PodArrivals;
     FSoraMoltenSpace Molten;
     FSoraFoundryDefenseSpace FoundryDefense;
     bool bHorseTreatment=false;

@@ -105,6 +105,7 @@ def checks(python: str = sys.executable) -> list[Check]:
     unit("gameplay", "climb-routes", "scripts/unreal/test_climb_rules.py")
     unit("gameplay", "foundry-defense", "scripts/unreal/test_foundry_defense.py")
     unit("gameplay", "horse-treatment", "scripts/unreal/test_horse_treatment.py")
+    unit("gameplay", "pod-arrivals", "scripts/unreal/test_pod_arrivals.py")
     unit("gameplay", "molten-channels", "scripts/unreal/test_molten_channels.py")
     unit("gameplay", "hangar-canisters", "scripts/unreal/test_hangar_canisters.py")
     unit("gameplay", "moat-depth", "scripts/unreal/test_moat_rules.py")

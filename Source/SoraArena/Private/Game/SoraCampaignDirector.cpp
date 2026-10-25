@@ -733,6 +733,8 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
     Step.CrankDecayMultiplier=LiftDecayMultiplier();
     if(!TickHelm(Step)) SoraBeatRules::Tick(TaskState,Task,Step);
     if(M.bDefeated) return;
+    TickPods(DeltaSeconds);
+    if(ActiveBeatData()!=&Beat||M.bDefeated) return;
     TickHorseTreatment(DeltaMs);
     TickFoundry(DeltaMs);
     if(ActiveBeatData()!=&Beat||M.bDefeated) return;
@@ -932,9 +934,14 @@ void USoraCampaignDirector::QueueWaves(unsigned Waves)
 {
     const FSoraBeat* Beat=ActiveBeatData();
     if(!Beat||Waves==0u) return;
+    const uint64 Generation=PodGeneration;
     for(int32 Wave=0;Wave<Beat->Waves.Num();++Wave)
     {
         if((Waves&(1u<<Wave))==0u) continue;
+        const bool Pod=Beat->Space.PodArrivals.IsValidIndex(Wave);
+        if(Pod&&(PodQueued&(1u<<Wave))) continue;
+        if(Pod) PodQueued|=1u<<Wave;
+        int32 PodMember=0;
         // Debt-bound conscripts fight beside the wave but never count toward
         // it: a lethal blow only knocks one down, and cutting its seal frees it.
         if(!IsArcheryLesson())
@@ -943,7 +950,7 @@ void USoraCampaignDirector::QueueWaves(unsigned Waves)
             {
                 if(Group.bLethal)
                 {
-                    for(int32 Member=0;Member<Group.Count;++Member) Pending.Add({Wave,Group.Type,Group.bInvulnerable});
+                    for(int32 Member=0;Member<Group.Count;++Member) Pending.Add({Wave,Group.Type,Group.bInvulnerable,Pod?PodMember++:INDEX_NONE});
                 }
                 else if(!Beat->bSparring&&GetWorld())
                 {
@@ -953,11 +960,14 @@ void USoraCampaignDirector::QueueWaves(unsigned Waves)
                 }
             }
         }
+        if(Pod) ActivatePod(Wave);
+        if(PodGeneration!=Generation||ActiveBeatData()!=Beat||Mode().bDefeated) return;
         Fire(FString::Printf(TEXT("wave_start:%d"),Wave+1));
         Fire(FString::Printf(TEXT("event:wave_start_%d"),Wave+1));
         Fire(TEXT("wave_spawned"));
         Fire(FString::Printf(TEXT("wave_spawned:%d"),Wave+1));
         if(!Beat->Waves[Wave].Id.IsEmpty()) Fire(TEXT("wave_spawned:")+Beat->Waves[Wave].Id);
+        if(PodGeneration!=Generation||ActiveBeatData()!=Beat||Mode().bDefeated) return;
     }
     SpawnPending();
     UpdateObjective();
@@ -1008,7 +1018,7 @@ void USoraCampaignDirector::SkipCinematic()
     Telemetry(TEXT("skip"));
     CompleteActiveBeat();
 }
-ASoraEnemy* USoraCampaignDirector::SpawnWaveOpponent(FName Type,bool bSparring,int32 Slot,bool bInvulnerable)
+ASoraEnemy* USoraCampaignDirector::SpawnWaveOpponent(FName Type,bool bSparring,int32 Slot,bool bInvulnerable,const FVector* Position)
 {
     // Sparring beats (bokuto bouts, the matoba's targets) keep the chapter-one
     // pupil; every other opponent is its enemies.json archetype, hunting the hero.
@@ -1018,7 +1028,7 @@ ASoraEnemy* USoraCampaignDirector::SpawnWaveOpponent(FName Type,bool bSparring,i
     FSoraEnemyTuning Tuning;
     Tuning.bInvulnerable=bInvulnerable;
     if(const auto* Space=ActiveSpace();Space&&Space->Wind.Ridge()) Tuning.NetRootMs=SoraRidgeRules::NetRootMs;
-    return ASoraEnemy::SpawnArchetype(*World,Type,Slot,SpawnLocation(Slot),FRotator(0,180,0),nullptr,&Tuning);
+    return ASoraEnemy::SpawnArchetype(*World,Type,Slot,Position?*Position:SpawnLocation(Slot),FRotator(0,180,0),nullptr,&Tuning);
 }
 ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int32 GuardIndex,int32 Slot)
 {
@@ -1132,9 +1142,18 @@ void USoraCampaignDirector::SpawnPending()
     for(int32 Alive=LiveWaveOpponents();!Pending.IsEmpty()&&Alive<Task.MaxAlive;)
     {
         const FPendingSpawn Next=Pending[0];
+        const bool Pod=Beat->Space.PodArrivals.IsValidIndex(Next.Wave);
+        if(Pod&&!PodState[Next.Wave].Impacted) break;
+        FVector PodPosition=FVector::ZeroVector;
+        if(Pod)
+        {
+            check(Next.PodMember>=0&&Next.PodMember<SoraPodRules::Members);
+            const auto& Offset=SoraPodRules::Offsets[Next.PodMember];
+            PodPosition=Beat->Space.PodArrivals[Next.Wave].Floor+FVector(Offset[0],Offset[1],120);
+        }
         Pending.RemoveAt(0);
         ASoraEnemy* Enemy=Beat->Space.Lift.bEnabled?SpawnLiftOpponent(Next.Type,Next.Wave,Spawned):
-            SpawnWaveOpponent(Next.Type,Beat->bSparring,Spawned,Next.bInvulnerable);
+            SpawnWaveOpponent(Next.Type,Beat->bSparring,Spawned,Next.bInvulnerable,Pod?&PodPosition:nullptr);
         if(Enemy) { AddOpponent(Enemy,Next.Wave); ++Alive; }
         else
         {
@@ -1168,6 +1187,7 @@ int32 USoraCampaignDirector::LiveWaveOpponents() const
 }
 void USoraCampaignDirector::ClearOpponents()
 {
+    ResetPods();
     ClearArchery();
     // A falling opponent removes itself after its lifespan. Everyone else
     // leaves now: the living, a captive the hero has bound, a knocked-down
@@ -1382,6 +1402,7 @@ void USoraCampaignDirector::HandleFailure(SoraBeatRules::ERetry Outcome,const FS
     case ERetry::Checkpoint:
         break;
     }
+    ResetPods();
     CancelFoundryWork();
     CancelHorseTreatment();
     CancelBulkheadHold();

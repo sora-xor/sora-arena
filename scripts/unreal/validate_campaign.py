@@ -59,6 +59,7 @@ from campaign_flood import flood_valid
 from campaign_climb import climb_valid
 from campaign_foundry_defense import foundry_valid, CREW
 from campaign_horse_treatment import horse_treatment_valid
+from campaign_pods import pods_valid
 from campaign_molten import molten_valid
 from campaign_canisters import canisters_valid
 from campaign_moat import moat_valid
@@ -405,6 +406,7 @@ def check_space(chapter, beats, rewards, labels, where):
     require(climb_valid(chapter), f"{where}: authored corner/extrusion climb contract")
     require(foundry_valid(chapter), "foundry defense contract")
     require(horse_treatment_valid(chapter), "horse treatment contract")
+    require(pods_valid(chapter), "pod arrival contract")
     require(molten_valid(chapter), "casting channel contract")
     require(canisters_valid(chapter), "hangar fuel canister contract")
     require(moat_valid(chapter), f"{where}: authored physical moat/depth contract")

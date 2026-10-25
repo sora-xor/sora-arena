@@ -11574,12 +11574,12 @@
     "dropoffs": [],
     "targets": [
      [
-      0,
-      220
+      800,
+      -1050
      ],
      [
-      850,
-      220
+      1200,
+      -1050
      ]
     ],
     "volumes": [],
@@ -11710,6 +11710,63 @@
      "heal_hp": 60,
      "cooldown_ms": 20000,
      "cooldown_scope": "per_horse"
+    },
+    "pod_arrivals": {
+     "windup_ms": 2500,
+     "radius_cm": 350,
+     "damage": 60,
+     "hits_allies": true,
+     "contact": "foot_center_cylinder",
+     "floor_band_cm": [
+      -20,
+      80
+     ],
+     "spawn_offsets_cm": [
+      [
+       -110,
+       -60
+      ],
+      [
+       110,
+       -60
+      ],
+      [
+       0,
+       120
+      ]
+     ],
+     "arrivals": [
+      {
+       "id": "sp_pod_a_road",
+       "wave": 0,
+       "floor_cm": [
+        -200,
+        200,
+        0
+       ],
+       "release_ms": 0
+      },
+      {
+       "id": "sp_pod_b_north",
+       "wave": 1,
+       "floor_cm": [
+        -600,
+        1100,
+        0
+       ],
+       "release_ms": 45000
+      },
+      {
+       "id": "sp_pod_c_west",
+       "wave": 2,
+       "floor_cm": [
+        -1900,
+        -300,
+        0
+       ],
+       "release_ms": 95000
+      }
+     ]
     }
    },
    {
