@@ -415,9 +415,9 @@ def card_normal_readback(sample_every=8):
 
 
 cards = card_normal_readback()
-built = record["checks"].get("fbx_round_trip_fur_corner_normal_from_face_deg")
+built = record["checks"].get("fbx_fur_corner_normal_from_face_deg")
 if built is None:
-    fail("build_record.json has no FBX round trip of the card normals (a pre-v4 build)")
+    fail("build_record.json has no FBX measure of the card normals (a pre-v4 build)")
 if abs(cards["mean"] - built["mean"]) > 1.0:
     fail(f"the imported card normals sit {cards['mean']:.2f} deg off their faces on average, the FBX's "
          f"{built['mean']:.2f}: the import did not keep them")
@@ -441,7 +441,7 @@ readback = {
     "slots": bound, "bounds_cm": {"origin": [b.origin.x, b.origin.y, b.origin.z],
                                   "extent": [b.box_extent.x, b.box_extent.y, b.box_extent.z]},
     "bounds_error_cm": round(bounds_error, 6), "materials": stats,
-    "fur_card_normals": {"unreal": cards, "fbx_round_trip": built},
+    "fur_card_normals": {"unreal": cards, "fbx": built},
     "custom_data": "engine defaults: UE 5.8 hides CustomData0/1 from Python, so the silk's cloth fuzz is 1.0 "
                    "(asked 0.4; v3 lowers its fuzz colour instead). The kote's lacquer no longer uses clear coat: "
                    "one default-lit lobe at roughness 0.25, as the Blender source has it",

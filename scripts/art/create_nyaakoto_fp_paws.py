@@ -343,40 +343,44 @@ def checks(m, fur, parts):
     return out
 
 
-def fbx_card_normals(path, slot="M_NyaakotoFP_FurCards"):
-    """The exported FBX's fur-card corners, re-imported with their custom normals: each corner normal's angle from
-    its triangle's face, as checks() measured it on the built arrays and the Unreal readback measures it."""
-    before = set(bpy.data.objects)
-    bpy.ops.import_scene.fbx(filepath=str(path), use_custom_normals=True, use_image_search=False)
-    new = [o for o in bpy.data.objects if o not in before]
-    try:
-        obj = next(o for o in new if o.type == "MESH")
-        me = obj.data
-        fur = [i for i, s in enumerate(obj.material_slots) if s.material and s.material.name.split(".")[0] == slot]
-        if len(fur) != 1:
-            raise SystemExit(f"fp paws: the re-imported FBX has {len(fur)} {slot} slots")
-        n_poly, n_loop = len(me.polygons), len(me.loops)
-        mat = np.empty(n_poly, np.int32)
-        me.polygons.foreach_get("material_index", mat)
-        total = np.empty(n_poly, np.int32)
-        me.polygons.foreach_get("loop_total", total)
-        if (total != 3).any():
-            raise SystemExit("fp paws: the re-imported FBX is not all triangles")
-        pn = np.empty(n_poly * 3)
-        me.polygon_normals.foreach_get("vector", pn)
-        cn = np.empty(n_loop * 3)
-        me.corner_normals.foreach_get("vector", cn)
-        sel = mat == fur[0]
-        pn, cn = pn.reshape(-1, 3)[sel], cn.reshape(-1, 3, 3)[sel]
-        live = np.linalg.norm(pn, axis=1) > 0.5
-        cos = np.einsum("ij,ikj->ik", pn[live], cn[live]).ravel()
-        return angle_stats(np.degrees(np.arccos(np.clip(cos, -1.0, 1.0))))
-    finally:
-        for o in new:
-            data = o.data if o.type == "MESH" else None
-            bpy.data.objects.remove(o, do_unlink=True)
-            if data is not None and data.users == 0:
-                bpy.data.meshes.remove(data)
+def fbx_card_normals(path, slot_index):
+    """The exported FBX's own bytes, read with Blender's bundled parser (io_scene_fbx.parse_fbx): each corner of
+    material slot_index (the fur cards), its normal against its triangle's face, as checks() measures the built
+    arrays and the Unreal readback measures the import.
+
+    It reads the file, not a re-import. v4's attempt 0 re-imported it through Blender's FBX importer
+    (use_custom_normals), which read the cards' corners at 0.45 deg off their faces where the file holds 8.46
+    (Saved/NyaakotoFPPaws/Archive/v4_attempt0): that measured the importer, not the export."""
+    from io_scene_fbx import parse_fbx
+
+    root, _version = parse_fbx.parse(str(path))
+
+    def child(e, name):
+        return next((c for c in e.elems if c.id == name), None)
+
+    geoms = [o for o in child(root, b"Objects").elems if o.id == b"Geometry"]
+    if len(geoms) != 1:
+        raise SystemExit(f"fp paws: the FBX has {len(geoms)} geometries, not the one joined mesh")
+    g = geoms[0]
+    V = np.asarray(child(g, b"Vertices").props[0], np.float64).reshape(-1, 3)
+    pvi = np.asarray(child(g, b"PolygonVertexIndex").props[0], np.int64)
+    if not (pvi.reshape(-1, 3)[:, 2] < 0).all():
+        raise SystemExit("fp paws: the FBX is not all triangles")
+    tri = np.where(pvi < 0, -pvi - 1, pvi).reshape(-1, 3)
+    layer = child(g, b"LayerElementNormal")
+    if child(layer, b"MappingInformationType").props[0] != b"ByPolygonVertex":
+        raise SystemExit("fp paws: the FBX's normals are not per corner")
+    N = np.asarray(child(layer, b"Normals").props[0], np.float64).reshape(-1, 3)
+    index = child(layer, b"NormalsIndex")
+    if index is not None:
+        N = N[np.asarray(index.props[0], np.int64)]
+    mats = np.asarray(child(child(g, b"LayerElementMaterial"), b"Materials").props[0], np.int64)
+    P3 = V[tri]
+    face = np.cross(P3[:, 1] - P3[:, 0], P3[:, 2] - P3[:, 0])
+    area = np.linalg.norm(face, axis=1)
+    sel = (mats == slot_index) & (area > 1e-14)
+    cos = np.einsum("ij,ikj->ik", face[sel] / area[sel, None], N.reshape(-1, 3, 3)[sel]).ravel()
+    return angle_stats(np.degrees(np.arccos(np.clip(cos, -1.0, 1.0))))
 
 
 def export(objs, path):
@@ -551,10 +555,10 @@ def main():
     fbx = OUT / f"{NAME}.fbx"
     slots, tris, bounds = export(objs, fbx)
     print("FP_PAWS_EXPORTED", rel(fbx), tris, "triangles", slots, flush=True)
-    # The FBX carries the built normals: re-imported, the card corners sit off their faces as the arrays do.
-    trip = fbx_card_normals(fbx)
+    # The FBX carries the built normals: in its own bytes, the card corners sit off their faces as the arrays do.
+    trip = fbx_card_normals(fbx, slots.index("M_NyaakotoFP_FurCards"))
     built = chk["fur_corner_normal_from_face_deg"]
-    chk["fbx_round_trip_fur_corner_normal_from_face_deg"] = trip
+    chk["fbx_fur_corner_normal_from_face_deg"] = trip
     print("FP_PAWS_FBX_NORMALS", json.dumps({"built": built, "fbx": trip}), flush=True)
     if abs(trip["mean"] - built["mean"]) > 0.5:
         raise SystemExit(f"fp paws: the FBX's card normals ({trip}) are not the built ones ({built})")
