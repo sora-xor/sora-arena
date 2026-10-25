@@ -1,5 +1,20 @@
 # Rendered horse-defense withdrawal
 
+The corrected capture at exact `5d02f3b` passes on M2 Ultra, Metal SM6,
+1280×720: build 30.49 seconds, test 162.00 seconds, zero selected errors and
+warnings, natural editor/wrapper EOF zero. All four originals were reviewed.
+The lower oblique detail makes all six survivors individually distinguishable;
+some bodies overlap and one arm is partly behind a post. The overview dialogue
+and corrected defended tracker are readable. The four requests match their
+processed frames, defense lasts 150.011 world/152.417 wall seconds, and the
+complete gate-clear call precedes one completion without shots or defeat credit.
+Profile/mapping/save cleanup passes. All 34 archive files and five original
+pairs rehash; source/native/Config/Generated remain unchanged. These results
+qualify the prepared capture, not final art, animation or ordinary combat.
+Its archive is `Saved/Qualification/2026-10-25/withdrawal-detail-sm6-5d02f3b/1280x720-20261025T135133Z-e1ad90a7/`;
+the independent review SHA-256 is
+`f66650661aa21b38867e94af2f57fe0deeb7c4d9a6c5d9c192241eb9b7a2d5fe`.
+
 `SoraCapture.HorseWithdrawal.Live` is a prepared scene review for the
 chapter-two defense ending. At exact `c63af6f`, its editor build passes in
 21.60 seconds and the Metal SM6 1280×720 test passes in 158.90 seconds,
@@ -20,7 +35,7 @@ The source correction requests that frame during the viewport's `OnDrawn`
 callback and moves to an oblique view through the gate. It also reports
 requested and processed frame numbers separately on mismatch. The initial
 failure did not log that pair, so callback timing is a source-based diagnosis.
-The corrected capture has not yet run in Unreal.
+The corrected capture's subsequent result is recorded above.
 
 The fixture loads an isolated `ch02.b06` checkpoint and uses a fixed overview
 camera. It freezes enemy combat through the real 150-second defense timer,
@@ -46,7 +61,7 @@ to match the prepared position, rotation and field of view. All six identities,
 grounded arrivals, matching screenshot frames and cleanup remain required.
 The current-only `sora-arena.withdrawal-capture.v2` contract requires all four
 originals and their explicit HUD states. Historical v1 evidence remains intact.
-This corrected camera and callback have not yet run in Unreal; the extra
+The corrected camera and callback pass the subsequent run above; the extra
 detail cannot establish ordinary HUD visibility or finished art.
 
 Run the existing guarded capture launcher with the exact filter at 1280×720

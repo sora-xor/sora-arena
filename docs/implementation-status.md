@@ -8,6 +8,27 @@ remains a historical recovery record. This is a progress record, not a claim
 that the release is complete. Backward compatibility,
 legacy formats, aliases, and fallback decoders are prohibited.
 
+## 2026-10-25 rendered withdrawal and fresh native constraints
+
+Exact `5d02f3b` passes its Metal SM6 720p live withdrawal capture after a
+30.49-second build. The 162.00-second test has zero selected errors/warnings
+and natural editor/wrapper exit zero. All four original images were viewed:
+the defended tracker and bilingual calls are readable, and the additional
+HUD-hidden detail distinguishes all six survivors. Frame identity, real
+clocks and cleanup pass; all 34 archive files and five original pairs rehash.
+The earlier failed detail remains preserved. This is prepared-scene evidence,
+not ordinary combat, animation or final-art acceptance. Authenticated CI at
+the same source passes 107 gates, including 279 Rust tests with five ignores.
+
+Fresh native `cd9263628d` passes 18 provenance and 70 standalone CPU constraint
+tests. The separate canonical observer reproduces all four pinned final-death
+fixture files after a retained dependency-path failure and isolated retry.
+All 62 retained files and the dependency closure rehash. The actual crate
+build/tests are running separately; no native proof or production bridge
+update is claimed. Claude's signed bow `bfaded4` resolves import scale, but
+its snap-aware error model and inferred codec defaults remain under review.
+See the [current checkpoint](complete-release-plan.md#october-25-withdrawal-detail-and-fresh-native-cpu-evidence).
+
 ## 2026-10-25 visible withdrawal source candidate
 
 The horse defense now has source for a visible retreat to the navigable
