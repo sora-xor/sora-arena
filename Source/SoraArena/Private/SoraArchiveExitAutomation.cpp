@@ -7,11 +7,30 @@
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Engine/DirectionalLight.h"
+#include "Engine/PostProcessVolume.h"
+#include "Engine/SkyLight.h"
 
 namespace
 {
 FVector ArchiveFeet(const ASoraPlayerCharacter& Hero)
 { return Hero.GetActorLocation()-FVector(0,0,Hero.GetCapsuleComponent()->GetScaledCapsuleHalfHeight()); }
+bool ArchiveLightState(SoraFieldcraftAutomation::FBeatWorld& W,bool Active)
+{
+    int32 Grades=0;bool Good=true;
+    for(TActorIterator<APostProcessVolume> It(W.World->GetTestWorld());It;++It)
+        if(It->ActorHasTag(TEXT("ArchiveExposure")))
+        {
+            ++Grades;
+            Good&=W.Test.TestEqual(TEXT("Archive exposure applies only while its encounter is active"),It->BlendWeight,Active?1.f:0.f);
+        }
+    Good&=W.Test.TestEqual(TEXT("Exactly one archive exposure volume exists"),Grades,1);
+    for(TActorIterator<ADirectionalLight> It(W.World->GetTestWorld());It;++It)
+        Good&=W.Test.TestEqual(TEXT("The chapter's sun is restored outside the archive"),It->IsHidden(),Active);
+    for(TActorIterator<ASkyLight> It(W.World->GetTestWorld());It;++It)
+        Good&=W.Test.TestEqual(TEXT("The chapter's sky is restored outside the archive"),It->IsHidden(),Active);
+    return Good;
+}
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraArchiveExitTest,"SoraArena.Campaign.ArchiveExit",
@@ -23,7 +42,7 @@ bool FSoraArchiveExitTest::RunTest(const FString&)
     if(!FSoraCatalog::Get().Load()) return false;
     // The duel's actual door blocks the capsule-sized opening.
     {
-        FBeatWorld Duel(*this,TEXT("ArchiveLockedExit"),5,8);if(!Duel.Start()) return false;
+        FBeatWorld Duel(*this,TEXT("ArchiveLockedExit"),5,8);if(!Duel.Start()||!ArchiveLightState(Duel,true)) return false;
         const auto& Z=Duel.Campaign()->ActiveChapter()->Space.Zones[Duel.BeatData().Space.Zone];
         const FVector A(Z.Rect.Min.X+1300,Z.Rect.Max.Y-120,R::FloorCm+90),B=A+FVector(0,260,0);
         FHitResult Hit;FCollisionQueryParams Q(SCENE_QUERY_STAT(ArchiveLockedExit),false,Duel.Hero());
@@ -31,7 +50,7 @@ bool FSoraArchiveExitTest::RunTest(const FString&)
             Duel.World->GetTestWorld()->SweepSingleByChannel(Hit,A,B,FQuat::Identity,ECC_Pawn,FCollisionShape::MakeCapsule(34,88),Q)&&
             Hit.GetComponent()&&Hit.GetComponent()->ComponentHasTag(TEXT("ArchiveNorthGate")));
     }
-    FBeatWorld W(*this,TEXT("ArchiveExit"),5,9);if(!W.Start()) return false;
+    FBeatWorld W(*this,TEXT("ArchiveExit"),5,9);if(!W.Start()||!ArchiveLightState(W,true)) return false;
     W.Harden();auto* Hero=W.Hero();
     const auto& Chapter=*W.Campaign()->ActiveChapter();
     const auto& Z=Chapter.Space.Zones[W.BeatData().Space.Zone];
@@ -95,6 +114,7 @@ bool FSoraArchiveExitTest::RunTest(const FString&)
         !TestEqual(TEXT("The hall does not start before the press landing"),W.Campaign()->ActiveBeat(),9)||
         !TestTrue(TEXT("The north press doorway reaches the actual NW catwalk"),Walk(Press.Entry))) return false;
     TestEqual(TEXT("Physical arrival after the pledge starts the press hall"),W.Campaign()->ActiveBeat(),10);
+    if(!ArchiveLightState(W,false)) return false;
     TestTrue(TEXT("The transition retains a grounded capsule on the catwalk"),Hero->GetCharacterMovement()->IsMovingOnGround()&&FMath::Abs(ArchiveFeet(*Hero).Z-400)<4.f);
     TestTrue(TEXT("Walking and the beat transition never teleport the capsule"),LargestMove<30.f);
     const auto* Save=Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(W.Slot,0));

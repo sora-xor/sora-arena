@@ -316,3 +316,26 @@ archive lighting/rack and third-person weapon grip direction pass.
 Source CI `40243327875` passes all 110 checks. The tested merge has the same
 tree as `602b862f`; all five artifact digests and raw logs are authenticated.
 Review: `74f106652c47ed243b86034f0d84a25b11ffc16bbae7c694336c75179d9d4f5a`.
+
+## Shelf and local-light candidate
+
+Claude's signed `76a371ad` direction is integrated with its plan and rack-bay
+diagrams. The next source candidate retains the rack collision but replaces
+its visible solid walls with nine shelf bays per side, instanced edge-out
+slates, varied edge brightness and sparse dark records. A niche preserves the
+tested 75×100 cm family record. Its purchase-price row is amber; its measured
+type layout and camera remain unchanged.
+
+Plain plaster, exposed framing, darker boards and a small latticed north
+window replace the masonry/wash presentation. Eighteen short-range rectangular
+rack lights, a window rim and a page-sized key replace the broad point lights.
+Only five lights cast shadows. A manual exposure override applies to the two
+archive beats and restores the chapter's sun, sky and exposure on leaving.
+The existing physical-exit fixture now checks that restoration during actual
+travel into the press hall.
+
+These are initial integration shapes and light values, not accepted production
+art. The source is uncompiled and unrendered. Slate slide/fade, rack dimming,
+dust, organic materials, weapon grip/animation and revised establishing shots
+remain open. The next runtime and six-shot capture must check collision,
+exposure restoration, record readability and the direction's tonal targets.

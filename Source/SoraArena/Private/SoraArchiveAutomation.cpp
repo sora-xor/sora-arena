@@ -3,8 +3,8 @@
 #include "SoraFieldcraftTestWorld.h"
 #include "SoraEnemy.h"
 #include "SoraBoss.h"
-#include "Engine/PointLight.h"
-#include "Components/PointLightComponent.h"
+#include "Engine/RectLight.h"
+#include "Components/RectLightComponent.h"
 #include "GameFramework/DamageType.h"
 #include "SoraEnemyController.h"
 #include "SoraEquipmentComponent.h"
@@ -72,17 +72,17 @@ bool FSoraArchivePostsTest::RunTest(const FString&)
 
 namespace
 {
-APointLight* FamilyPageLight(SoraFieldcraftAutomation::FBeatWorld& W)
+ARectLight* FamilyPageLight(SoraFieldcraftAutomation::FBeatWorld& W)
 {
-    APointLight* Found=nullptr;int32 Count=0;
-    for(TActorIterator<APointLight> It(W.World->GetTestWorld());It;++It)
+    ARectLight* Found=nullptr;int32 Count=0;
+    for(TActorIterator<ARectLight> It(W.World->GetTestWorld());It;++It)
         if(It->ActorHasTag(TEXT("ArchiveFamilyPageLight"))) { Found=*It;++Count; }
     return W.Test.TestEqual(TEXT("Exactly one physical family-page light exists"),Count,1)?Found:nullptr;
 }
 bool PageIsLit(SoraFieldcraftAutomation::FBeatWorld& W,bool Expected)
 {
     auto* Page=FamilyPageLight(W);if(!Page) return false;
-    auto* Light=Page->PointLightComponent.Get();
+    auto* Light=Page->RectLightComponent.Get();
     TArray<UWidgetComponent*> Widgets;W.Mode()->Arena()->GetComponents(Widgets);
     UWidgetComponent* Record=nullptr;int32 Count=0;
     for(auto* Widget:Widgets) if(Widget->ComponentHasTag(TEXT("ArchiveFamilyRecord"))) { Record=Widget;++Count; }

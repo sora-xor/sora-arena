@@ -8,6 +8,8 @@ class ADirectionalLight;
 class AExponentialHeightFog;
 class ASkyLight;
 class APointLight;
+class ARectLight;
+class APostProcessVolume;
 class ASoraHorse;
 class ASoraCampaignLift;
 class ASoraBoss;
@@ -295,7 +297,8 @@ private:
     UPROPERTY() TObjectPtr<UFont> ArchivePageFont;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> ArchiveEastRack;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> ArchiveNorthGate;
-    UPROPERTY() TObjectPtr<APointLight> ArchivePageLight;
+    UPROPERTY() TObjectPtr<ARectLight> ArchivePageLight;
+    UPROPERTY() TObjectPtr<APostProcessVolume> ArchiveExposure;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> ToranosukePlaque;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> NyaakotoPlaque;
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> WashioSword;

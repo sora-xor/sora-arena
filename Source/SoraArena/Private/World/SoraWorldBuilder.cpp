@@ -190,7 +190,7 @@ void ASoraWorldBuilder::ClearArena()
     WoodTargets.Reset(); WoodFloors.Reset(); WoodClapper=nullptr;
     if(IsValid(ArchivePageText)) ArchivePageText->DestroyComponent();
     ArchivePageText=nullptr; ArchivePageFont=nullptr;
-    ArchivePage=nullptr; ArchivePageLight=nullptr; ArchiveNorthGate=nullptr; ArchiveEastRack=nullptr;
+    ArchivePage=nullptr; ArchivePageLight=nullptr; ArchiveNorthGate=nullptr; ArchiveEastRack=nullptr; ArchiveExposure=nullptr;
     RidgeAnchors.Reset(); RidgeOrigin=FVector2D::ZeroVector;
     SummitSpine=nullptr; SummitSeam=nullptr;
     SpireShutter=nullptr; SpirePanels.Reset(); SpirePanelGoals.Reset();

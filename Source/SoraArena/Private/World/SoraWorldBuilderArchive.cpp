@@ -2,13 +2,17 @@
 #include "SoraCatalog.h"
 #include "SoraArchiveRules.h"
 #include "Components/StaticMeshComponent.h"
-#include "Components/PointLightComponent.h"
-#include "Components/SpotLightComponent.h"
+#include "Components/InstancedStaticMeshComponent.h"
+#include "Components/RectLightComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Engine/Font.h"
-#include "Engine/PointLight.h"
-#include "Engine/SpotLight.h"
+#include "Engine/DirectionalLight.h"
+#include "Engine/PostProcessVolume.h"
+#include "Engine/RectLight.h"
+#include "Engine/SkyLight.h"
+#include "Engine/StaticMesh.h"
 #include "Engine/World.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "UI/SoraUIFont.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/SBoxPanel.h"
@@ -29,12 +33,13 @@ TSharedRef<SWidget> FamilyRecord(UFont* Font)
         [SNew(STextBlock).Text(FText::FromString(TEXT("武家方記録"))).Font(Face(24)).ColorAndOpacity(Muted)];
     Rows->AddSlot().AutoHeight().Padding(0,0,0,30)
         [SNew(STextBlock).Text(FText::FromString(TEXT("鷲尾家"))).Font(Face(58)).ColorAndOpacity(Cyan)];
-    const auto Row=[&](const TCHAR* Label,const TCHAR* Value,int32 Size,float Bottom)
+    const auto Row=[&](const TCHAR* Label,const TCHAR* Value,int32 Size,float Bottom,bool Purchase=false)
     {
+        const FLinearColor Ink=Purchase?FLinearColor(1.f,.62f,.30f):Cyan;
         Rows->AddSlot().AutoHeight().Padding(0,0,0,Bottom)
         [SNew(SHorizontalBox)
-            +SHorizontalBox::Slot().FillWidth(1)[SNew(STextBlock).Text(FText::FromString(Label)).Font(Face(Size)).ColorAndOpacity(Cyan)]
-            +SHorizontalBox::Slot().AutoWidth()[SNew(STextBlock).Text(FText::FromString(Value)).Font(Face(Size)).ColorAndOpacity(Cyan)]];
+            +SHorizontalBox::Slot().FillWidth(1)[SNew(STextBlock).Text(FText::FromString(Label)).Font(Face(Size)).ColorAndOpacity(Ink)]
+            +SHorizontalBox::Slot().AutoWidth()[SNew(STextBlock).Text(FText::FromString(Value)).Font(Face(Size)).ColorAndOpacity(Ink)]];
     };
     Row(TEXT("元本"),TEXT("120"),36,8);
     Row(TEXT("利息"),TEXT("22"),36,8);
@@ -42,24 +47,24 @@ TSharedRef<SWidget> FamilyRecord(UFont* Font)
     Row(TEXT("手数料"),TEXT("52"),36,8);
     Row(TEXT("返済"),TEXT("△40"),36,24);
     Row(TEXT("残高"),TEXT("190"),60,18);
-    Row(TEXT("買取価格"),TEXT("30"),36,10);
+    Row(TEXT("買取価格"),TEXT("30"),36,10,true);
     Rows->AddSlot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(TEXT("単位：石"))).Font(Face(22)).ColorAndOpacity(Muted)];
     return SNew(SBorder).Padding(40).BorderBackgroundColor(FLinearColor(.004f,.012f,.016f,1.f))[Rows];
 }
-constexpr float FamilyPageLumens=45.f;
+constexpr float FamilyPageLumens=55.f;
 }
 
 void ASoraWorldBuilder::BuildArchive(const FSoraZone& Zone,const FSoraZone& Press)
 {
     namespace R=SoraArchiveRules;
     const FVector O(Zone.Rect.Min,R::FloorCm);
-    const FLinearColor Timber(.28f,.20f,.12f),Plaster(.43f,.41f,.35f),Slate(.09f,.14f,.16f);
+    const FLinearColor Timber(.16f,.11f,.065f),Plaster(.58f,.55f,.49f),Slate(.025f,.032f,.035f);
     const auto Part=[&](const TCHAR* Name,FVector At,FVector Size,FLinearColor Color,const TCHAR* Role,bool Solid=true)
     { return Box(Name,O+At,Size,Color,Solid,FRotator::ZeroRotator,Role); };
     Part(TEXT("ArchiveBoardFloor"),FVector(1300,900,-40),FVector(2760,1960,80),Timber,TEXT("Timber"));
     Part(TEXT("ArchiveRoof"),FVector(1300,900,620),FVector(2760,1960,40),Timber,TEXT("Timber"));
     for(const FSoraBox& Wall:Zone.Walls)
-        Box(TEXT("ArchiveWall"),FVector(Wall.Center,R::FloorCm+Wall.Height*.5f),FVector(Wall.Size,Wall.Height),Plaster,true,FRotator::ZeroRotator,TEXT("Stone"));
+        Box(TEXT("ArchiveWall"),FVector(Wall.Center,R::FloorCm+Wall.Height*.5f),FVector(Wall.Size,Wall.Height),Plaster,true,FRotator::ZeroRotator,TEXT(""));
     for(int I=0;I<Zone.Cover.Num();++I)
     {
         const auto& Post=Zone.Cover[I];
@@ -67,28 +72,100 @@ void ASoraWorldBuilder::BuildArchive(const FSoraZone& Zone,const FSoraZone& Pres
             FVector(Post.Size,Post.Height),Timber,true,FRotator::ZeroRotator,TEXT("Timber"));
         P->ComponentTags.Add(TEXT("ArchiveDuelPost"));
     }
-    // Physical racks occupy the authored 1.2 m strips; the four duel posts
-    // alone occupy the ring. These are collision proxies pending final art.
+    // Preserve the tested rack collision. The visible shelves/slates live
+    // inside that footprint and do not add hundreds of navigation obstacles.
+    // These simple shapes establish Claude's bay/light direction; authored
+    // timber and glass production assets still need their separate art pass.
     for(int Side:{0,1})
     {
-        auto* Rack=Part(TEXT("ArchiveSlateRack"),FVector(Side?2540:60,900,180),FVector(120,1800,360),Slate,TEXT(""));
-        if(Side) { ArchiveEastRack=Rack; Rack->ComponentTags.Add(TEXT("ArchiveEastRack")); }
-        // The racks supply the authored ambient cyan light before the
-        // family page wakes. Lights sit above the duel's heads, not inside
-        // the staged rival's head as the old page point light did.
-        for(float Y:{250.f,900.f,1550.f})
+        const float X=Side?2540.f:60.f,Front=Side?2480.f:120.f;
+        auto* Rack=Part(TEXT("ArchiveSlateRackCollision"),FVector(X,900,180),FVector(120,1800,360),Slate,TEXT(""));
+        Rack->SetVisibility(false);
+        if(Side) { ArchiveEastRack=Rack;Rack->ComponentTags.Add(TEXT("ArchiveEastRack")); }
+        const auto RackPart=[&](const TCHAR* Name,FVector At,FVector Size,FLinearColor Color,const TCHAR* Role)
         {
-            const float X=Side?2425.f:175.f;
-            Part(TEXT("ArchiveRackLamp"),FVector(Side?2477:123,Y,300),FVector(4,75,30),FLinearColor(.06f,.24f,.27f),TEXT(""),false);
-            if(auto* Lamp=GetWorld()->SpawnActor<APointLight>(O+FVector(X,Y,300),FRotator::ZeroRotator))
+            auto* Piece=Part(Name,At,Size,Color,Role,false);
+            Piece->AttachToComponent(Rack,FAttachmentTransformRules::KeepWorldTransform);
+            return Piece;
+        };
+        const auto Batch=[&](const TCHAR* Name,FLinearColor Color,bool Glow)
+        {
+            auto* Mesh=NewObject<UInstancedStaticMeshComponent>(this,MakeUniqueObjectName(this,UInstancedStaticMeshComponent::StaticClass(),FName(Name)));
+            Mesh->SetupAttachment(Rack);Mesh->SetAbsolute(false,false,true);
+            Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);Mesh->SetCanEverAffectNavigation(false);
+            Mesh->SetStaticMesh(LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube")));
+            Mesh->SetCastShadow(!Glow);Mesh->RegisterComponent();AddInstanceComponent(Mesh);Pieces.Add(Mesh);
+            Tint(Mesh,Color);
+            if(Glow)
+                if(auto* Base=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Generated/Materials/M_ArenaGlow.M_ArenaGlow")))
+                {
+                    auto* Material=UMaterialInstanceDynamic::Create(Base,Mesh);
+                    Material->SetVectorParameterValue(TEXT("Color"),Color);Mesh->SetMaterial(0,Material);
+                }
+            Mesh->ComponentTags.Add(Glow?TEXT("ArchiveSlateEdges"):TEXT("ArchiveSlateBodies"));
+            return Mesh;
+        };
+        auto* Bodies=Batch(TEXT("ArchiveStoredSlates"),Slate,false);
+        UInstancedStaticMeshComponent* Edges[4];
+        for(int Level=0;Level<4;++Level) Edges[Level]=Batch(TEXT("ArchiveSlateEdgeGlow"),FLinearColor(.7f,2.5f,3.f)*(.35f+.65f*Level/3.f),true);
+        RackPart(TEXT("ArchiveRackBack"),FVector(Side?2592:8,900,160),FVector(8,1680,320),Timber,TEXT("Timber"));
+        RackPart(TEXT("ArchiveRackPlinth"),FVector(X,900,15),FVector(116,1680,30),Timber,TEXT("Timber"));
+        for(int Bay=0;Bay<9;++Bay)
+        {
+            const float Y=172.f+182.f*Bay;
+            for(int Shelf=0;Shelf<6;++Shelf)
             {
-                auto* Light=Lamp->PointLightComponent.Get();
-                Light->SetIntensityUnits(ELightUnits::Lumens);Light->SetIntensity(450.f);
-                Light->SetLightColor(FLinearColor(.25f,.66f,.78f));Light->SetAttenuationRadius(1100.f);
-                Light->SetSourceRadius(45.f);Light->SetCastShadows(false);
+                const float Z=30.f+44.f*Shelf;
+                if(Side&&Bay==4&&Z>100.f&&Z<200.f)
+                    for(float Offset:{-64.f,64.f})
+                        RackPart(TEXT("ArchiveShelfNiche"),FVector(X,Y+Offset,Z),FVector(112,42,5),Timber,TEXT("Timber"));
+                else RackPart(TEXT("ArchiveShelf"),FVector(X,Y,Z),FVector(112,170,5),Timber,TEXT("Timber"));
+                for(int Book=0;Book<29;++Book)
+                {
+                    const int Seed=Side*1723+Bay*191+Shelf*43+Book*13;
+                    const float BY=Y-76.f+Book*5.4f,Height=27.f+(Seed%5);
+                    // Leave the readable 75x100 cm household plate's own bay
+                    // clear. Its physical size/camera are unchanged this pass.
+                    if(Side&&FMath::Abs(BY-900.f)<43.f&&Z+Height>98.f&&Z<202.f) continue;
+                    const FVector At(Front+(Side?1.f:-1.f)*13.f,BY,Z+3.f+Height*.5f);
+                    Bodies->AddInstance(FTransform(FQuat::Identity,O+At,FVector(.22f,.025f,Height/100.f)),true);
+                    if(Seed%17==0) continue; // stable, sparse unlit records
+                    const FVector Edge(Front+(Side?-1.f:1.f)*.3f,BY,At.Z);
+                    Edges[Seed%4]->AddInstance(FTransform(FQuat::Identity,O+Edge,FVector(.004f,.010f,(Height-3.f)/100.f)),true);
+                }
+            }
+            if(auto* Lamp=GetWorld()->SpawnActor<ARectLight>(O+FVector(Front+(Side?-1.f:1.f)*3.f,Y,190),FRotator(0,Side?180:0,0)))
+            {
+                Lamp->SetMobility(EComponentMobility::Movable);
+                auto* Light=Lamp->RectLightComponent.Get();
+                Light->SetIntensityUnits(ELightUnits::Lumens);Light->SetIntensity(20.f);
+                Light->SetLightColor(FLinearColor(.25f,.66f,.78f));Light->SetAttenuationRadius(250.f);
+                Light->SetSourceWidth(150.f);Light->SetSourceHeight(70.f);
+                Light->SetCastShadows(Side&&Bay>=3&&Bay<=5);
                 Lamp->Tags.Add(TEXT("ArchiveRackLight"));DecorActors.Add(Lamp);
             }
         }
+        for(int Post=0;Post<=9;++Post)
+            RackPart(TEXT("ArchiveRackUpright"),FVector(Front+(Side?6.f:-6.f),81.f+182.f*Post,160),FVector(12,12,320),Timber,TEXT("Timber"));
+    }
+    // Exposed framing and plain plaster replace the archive's masonry look.
+    for(float Y:{300.f,600.f,900.f,1200.f,1500.f})
+        Part(TEXT("ArchiveCeilingBeam"),FVector(1300,Y,570),FVector(2600,24,40),Timber,TEXT("Timber"),false);
+    for(int Side:{0,1})
+    {
+        for(float Y:{300.f,600.f,900.f,1200.f,1500.f})
+            Part(TEXT("ArchiveWallPost"),FVector(Side?2592:8,Y,300),FVector(16,20,600),Timber,TEXT("Timber"),false);
+        Part(TEXT("ArchiveWallTie"),FVector(Side?2590:10,900,370),FVector(16,1800,18),Timber,TEXT("Timber"),false);
+    }
+    ArchiveExposure=GetWorld()->SpawnActor<APostProcessVolume>();
+    if(ArchiveExposure)
+    {
+        ArchiveExposure->bUnbound=true;ArchiveExposure->Priority=100.f;ArchiveExposure->BlendWeight=0.f;
+        ArchiveExposure->Tags.Add(TEXT("ArchiveExposure"));DecorActors.Add(ArchiveExposure);
+        auto& Grade=ArchiveExposure->Settings;
+        Grade.bOverride_AutoExposureMethod=true;Grade.AutoExposureMethod=AEM_Manual;
+        Grade.bOverride_AutoExposureApplyPhysicalCameraExposure=true;Grade.AutoExposureApplyPhysicalCameraExposure=false;
+        Grade.bOverride_AutoExposureBias=true;Grade.AutoExposureBias=-2.f;
     }
     ArchivePage=Part(TEXT("ArchiveWashioSlate"),FVector(2477,900,150),FVector(4,75,100),FLinearColor(.015f,.025f,.03f),TEXT(""),false);
     ArchivePage->ComponentTags.Add(TEXT("ArchiveFamilyPage"));
@@ -108,30 +185,35 @@ void ASoraWorldBuilder::BuildArchive(const FSoraZone& Zone,const FSoraZone& Pres
     ArchivePageText->SetVisibility(false);ArchivePageText->SetRedrawTime(1.f);
     ArchivePageText->RegisterComponent();AddInstanceComponent(ArchivePageText);
     ArchivePageText->ComponentTags.Add(TEXT("ArchiveFamilyRecord"));
-    ArchivePageLight=GetWorld()->SpawnActor<APointLight>(O+FVector(2415,855,205),FRotator::ZeroRotator);
+    ArchivePageLight=GetWorld()->SpawnActor<ARectLight>(O+FVector(2470,900,150),FRotator(0,180,0));
     if(ArchivePageLight)
     {
+        ArchivePageLight->SetMobility(EComponentMobility::Movable);
         ArchivePageLight->Tags.Add(TEXT("ArchiveFamilyPageLight"));
-        auto* Light=ArchivePageLight->PointLightComponent.Get();
+        auto* Light=ArchivePageLight->RectLightComponent.Get();
         Light->SetIntensityUnits(ELightUnits::Lumens);
         Light->SetIntensity(0.f); Light->SetVisibility(false);
-        Light->SetLightColor(FLinearColor(.18f,.85f,1.f));
-        Light->SetAttenuationRadius(700.f); Light->SetSourceRadius(15.f);
-        Light->SetCastShadows(false);
+        Light->SetLightColor(FLinearColor(.85f,.96f,1.f));
+        Light->SetUseTemperature(true);Light->SetTemperature(6500.f);
+        Light->SetAttenuationRadius(700.f);Light->SetSourceWidth(75.f);Light->SetSourceHeight(100.f);
+        Light->SetCastShadows(true);
         DecorActors.Add(ArchivePageLight);
     }
     Part(TEXT("ArchiveSouthDoor"),FVector(1300,-1,130),FVector(200,4,260),Timber,TEXT("Timber"),false);
     Part(TEXT("ArchiveNorthLintel"),FVector(1300,1830,430),FVector(240,60,340),Plaster,TEXT("Stone"));
     ArchiveNorthGate=Part(TEXT("ArchiveNorthDoor"),FVector(1300,1830,130),FVector(240,20,260),Timber,TEXT("Timber"));
     ArchiveNorthGate->ComponentTags.Add(TEXT("ArchiveNorthGate"));
-    Part(TEXT("ArchiveHighWindow"),FVector(2100,1798,470),FVector(160,4,110),FLinearColor(.015f,.02f,.025f),TEXT("Timber"),false);
-    const FVector RimAt(2100,1750,470),RimLook(1400,900,130);
-    if(auto* Rim=GetWorld()->SpawnActor<ASpotLight>(O+RimAt,(RimLook-RimAt).Rotation()))
+    Part(TEXT("ArchiveHighWindow"),FVector(1950,1798,450),FVector(90,4,60),FLinearColor(.008f,.016f,.03f),TEXT(""),false);
+    for(int Bar=-1;Bar<=1;++Bar)
+        Part(TEXT("ArchiveWindowLattice"),FVector(1950+Bar*24,1794,450),FVector(3,5,60),Timber,TEXT("Timber"),false);
+    const FVector RimAt(1950,1745,450),RimLook(1400,900,130);
+    if(auto* Rim=GetWorld()->SpawnActor<ARectLight>(O+RimAt,(RimLook-RimAt).Rotation()))
     {
-        auto* Light=Rim->SpotLightComponent.Get();
-        Light->SetIntensityUnits(ELightUnits::Lumens);Light->SetIntensity(240.f);
-        Light->SetLightColor(FLinearColor(.56f,.67f,.82f));Light->SetAttenuationRadius(1900.f);
-        Light->SetInnerConeAngle(20.f);Light->SetOuterConeAngle(50.f);Light->SetCastShadows(true);
+        Rim->SetMobility(EComponentMobility::Movable);
+        auto* Light=Rim->RectLightComponent.Get();
+        Light->SetIntensityUnits(ELightUnits::Lumens);Light->SetIntensity(400.f);
+        Light->SetUseTemperature(true);Light->SetTemperature(10000.f);Light->SetAttenuationRadius(1900.f);
+        Light->SetSourceWidth(90.f);Light->SetSourceHeight(60.f);Light->SetCastShadows(true);
         Rim->Tags.Add(TEXT("ArchiveWindowRim"));DecorActors.Add(Rim);
     }
 
@@ -171,6 +253,15 @@ void ASoraWorldBuilder::ShowArchivePage(const FSoraBeat& Beat,int32 Phase)
 {
     // Derived from the existing phase/checkpoint, so retrying P1 hides it and
     // restoring P2 or entering the pledge lights the same physical slate.
+    const bool InArchive=Beat.Id==TEXT("ch06.b09")||Beat.Id==TEXT("ch06.b10");
+    if(IsValid(ArchiveExposure))
+    {
+        // This chapter builds several places together. Restore its ordinary
+        // sun/sky and exposure when leaving the archive, including retry.
+        ArchiveExposure->BlendWeight=InArchive?1.f:0.f;
+        if(IsValid(RigSun)) RigSun->SetActorHiddenInGame(InArchive);
+        if(IsValid(RigSky)) RigSky->SetActorHiddenInGame(InArchive);
+    }
     const bool Lit=(Beat.Id==TEXT("ch06.b09")&&Phase>=1)||Beat.Id==TEXT("ch06.b10");
     if(IsValid(ArchiveNorthGate))
     {
@@ -185,7 +276,7 @@ void ASoraWorldBuilder::ShowArchivePage(const FSoraBeat& Beat,int32 Phase)
     }
     if(IsValid(ArchivePageLight))
     {
-        auto* Light=ArchivePageLight->PointLightComponent.Get();
+        auto* Light=ArchivePageLight->RectLightComponent.Get();
         Light->SetIntensity(Lit?FamilyPageLumens:0.f); Light->SetVisibility(Lit);
     }
 }
@@ -205,7 +296,7 @@ void ASoraWorldBuilder::StageArchiveReveal(float Seconds)
     }
     if(IsValid(ArchivePageLight))
     {
-        auto* Light=ArchivePageLight->PointLightComponent.Get();
+        auto* Light=ArchivePageLight->RectLightComponent.Get();
         Light->SetIntensity(Lit?FamilyPageLumens:0.f);Light->SetVisibility(Lit);
     }
 }
