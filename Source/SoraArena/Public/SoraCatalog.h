@@ -542,6 +542,11 @@ struct FSoraSummitSpace
     TArray<FVector> Stairs;
     bool Enabled() const { return Stairs.Num()==6; }
 };
+struct FSoraBridgeSpace
+{
+    bool bEnabled=false;
+    FVector2D Center=FVector2D::ZeroVector;
+};
 struct FSoraHelmSpace
 {
     bool bEnabled=false;
@@ -595,6 +600,7 @@ struct FSoraBeatSpace
 {
     FSoraFoundryDefenseSpace FoundryDefense;
     FSoraHelmSpace Helm;
+    FSoraBridgeSpace Bridge;
     FSoraWindSpace Wind;
     FSoraFloodSpace Flood;
     FSoraMoatSpace Moat;

@@ -9,6 +9,7 @@
 #include "SoraWorldBuilder.h"
 #include "SoraSummitRules.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SceneComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -1520,6 +1521,13 @@ void ASoraBoss::AdvanceSides()
 bool ASoraBoss::ZonePoints(int32 Index, int32 Serial, TArray<FVector>& Points) const
 {
     const FSoraBossAttack& Attack = AttackAt(Index);
+    if(Attack.Id==TEXT("slide_props"))
+    {
+        const auto* Mode=GetWorld()->GetAuthGameMode<ASoraGameMode>();
+        if(PhaseNow!=1||!Mode||!Mode->Arena()||!Mode->Arena()->HasBridgeDeck()) return false;
+        Points.Add(Mode->Arena()->BridgeDeckRoot()->GetComponentLocation());
+        return true;
+    }
     const ASoraCharacterBase* Target = Hero();
     if (!Target)
         return false;
@@ -1567,6 +1575,12 @@ bool ASoraBoss::ZonePoints(int32 Index, int32 Serial, TArray<FVector>& Points) c
 void ASoraBoss::PlaceZones(int32 Index, int32 Serial, int32 WindupMs)
 {
     const FSoraBossAttack& Attack = AttackAt(Index);
+    if(Attack.Id==TEXT("slide_props"))
+    {
+        if(auto* Mode=GetWorld()->GetAuthGameMode<ASoraGameMode>();Mode&&Mode->Arena())
+            Mode->Arena()->BeginBridgeSlide(*this,Index,Serial);
+        return; // Never substitute an invisible stationary damage circle.
+    }
     if(Attack.Id==TEXT("amort_seizure_field"))
         if(auto* Mode=GetWorld()->GetAuthGameMode<ASoraGameMode>();Mode&&Mode->Arena()&&Mode->Arena()->BeginSeizure(*this,Index,Serial,WindupMs)) return;
     TArray<FVector> Points;

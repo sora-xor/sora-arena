@@ -9,6 +9,7 @@ class ASkyLight;
 class ASoraHorse;
 class ASoraCampaignLift;
 class ASoraBoss;
+class ASoraBridgeProp;
 class ASoraEnemy;
 class UProceduralMeshComponent;
 class ASoraPlayerCharacter;
@@ -115,6 +116,12 @@ public:
     float PlayerStartYaw() const { return bCampaignSpace ? CampaignStartYaw : 0.f; }
     // The active beat's task kit (SoraWorldBuilderLayoutTasks.cpp): built as
     // the beat starts, shown as its task goes on, cleared with the beat.
+    bool HasBridgeDeck() const { return bBridgeActive&&BridgeRoot!=nullptr&&BridgeProps.Num()==10; }
+    bool BeginBridgeSlide(ASoraBoss& Boss,int32 Attack,int32 Serial);
+    float BridgeMoveScale(const ACharacter& Body,const FVector& Intent) const;
+    float BridgeListDegrees() const { return BridgeDegrees; }
+    USceneComponent* BridgeDeckRoot() const { return BridgeRoot; }
+    const TArray<TObjectPtr<ASoraBridgeProp>>& BridgeLooseProps() const { return BridgeProps; }
     void StageHelm(const FSoraBeat& Beat);
     void ShowHelm(bool NeedsTrim,float HeldFraction);
     bool CanReachHelm(const ASoraPlayerCharacter& Hero) const;
@@ -228,6 +235,15 @@ private:
     int32 SummitPattern=-1,SummitFieldStarted=-1,SummitWarningMs=1500,SummitFieldSerial=0;
     int32 SummitAttackIndex=INDEX_NONE;
     bool bSummitActive=false,bSummitStrikeAnnounced=false;
+    void BuildBridge(const FSoraZone& Zone,int32 Index,const FSoraBeat& Beat);
+    void StageBridge(bool Active);
+    void TickBridge(float DeltaSeconds);
+    void ClearBridge();
+    UPROPERTY() TObjectPtr<USceneComponent> BridgeRoot;
+    UPROPERTY() TArray<TObjectPtr<ASoraBridgeProp>> BridgeProps;
+    TArray<TWeakObjectPtr<ACharacter>> BridgeRiders;
+    bool bBridgeActive=false;
+    float BridgeDegrees=0.f;
     void BuildZone(const FSoraZone& Zone, int32 Index, const FSoraBeat* Recovery = nullptr);
     void ZoneProp(const FSoraZone& Zone, const FSoraProp& Prop, int32 Index);
     void ZoneLantern(FVector Location, bool bLit);
