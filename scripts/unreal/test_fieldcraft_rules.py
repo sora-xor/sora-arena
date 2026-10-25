@@ -21,7 +21,7 @@ if platform.system() == "Darwin":
     sdk_flags = ["-isysroot", sdk]
 assert compiler, "A C++ compiler is required to test the fieldcraft rules"
 with tempfile.TemporaryDirectory(prefix="sora-fieldcraft-rules-") as temp:
-    for name in ("fieldcraft", "press"):
+    for name in ("fieldcraft", "press", "relay"):
         binary = Path(temp) / (name + "-rules")
         # Assertions stay live; undefined behavior traps on both rule drivers.
         subprocess.run([compiler, "-std=c++20", "-UNDEBUG", "-O2", "-fsanitize=undefined", "-fsanitize-trap=undefined",
