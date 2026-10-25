@@ -24,7 +24,7 @@ bool Read(const FJsonObject& O,FSoraBeat& Beat)
        !Text(TEXT("muster"),TEXT("ps_gate_yard_start"))||
        !Text(TEXT("event"),TEXT("event:horse_defense_withdrawal"))||
        !Text(TEXT("bark"),TEXT("ch02.b02.enforcer.009"))||
-       !Text(TEXT("completion"),TEXT("arrived_survivors_and_finished_bark"))||
+       !Text(TEXT("completion"),TEXT("arrived_survivors_then_finished_gate_clear"))||
        !Floor||Floor->Num()!=3||!Number((*Floor)[0],R::GoalX)||!Number((*Floor)[1],R::GoalY)||
        !Number((*Floor)[2],R::GoalZ)||!Beat.Space.bHorseShell||Beat.Space.Zone!=-1||Beat.Space.HeightCm!=0||
        Beat.Task.Goal!=SoraBeatRules::EGoal::Survive||Beat.Task.DurationMs!=150000) return false;

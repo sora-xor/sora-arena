@@ -19,11 +19,12 @@ the existing collision wall; no exterior-gate passage is claimed. At the
 existing 150-second task boundary, pending pod members and horse shells retire
 and survivors receive normal navigation errands at 75% movement input.
 Completion waits for grounded feet within 220 cm of the approach and the
-authored retreat bark, then raises Kohagi's back-gate-clear line. No timeout,
+authored retreat bark, then plays Kohagi's full back-gate-clear line before
+starting the following cinematic. No timeout,
 partial-path stop, teleport or manufactured kill credit can finish it. Six
 separate stations inside that approach prevent a shared stopping circle from
 forming a queue; each has 30 cm navigation acceptance. With
-no survivors, the existing immediate transition remains. Menus hold movement;
+no survivors, only Kohagi's call plays before the transition. Menus hold movement;
 ordinary damage/retry and held horse treatment remain available.
 
 The current-only authoring/normalizer/runtime contract and generated chapter
@@ -31,12 +32,24 @@ are updated, including the chapter-bound timber manifest. Ten selected host
 groups pass on the initial candidate, with a later cleanup ordering review
 detaching old pod/shot state before destruction callbacks and preserving held
 treatment during the outro. Six affected groups pass after those changes.
-New Unreal cases cover a real obstruction,
-movement, pause, bark ordering, unchanged kill credit, damage and checkpoint
-retry. The production change and these new fixtures are **not yet built or
-run in Unreal**. Claude retains the engine/Blender lane; its new bow rig rebuild
-has exited zero and exported playback review is in progress. No new art,
-package or release acceptance is claimed.
+At exact `ac54ab8`, the editor builds in 48.76 seconds. Ten of twelve directed
+tests pass, with two selected errors and zero warnings. Actual obstruction,
+movement, pause and arrival pass. The following cinematic masks Kohagi's
+completion line, and the retry fixture mistakes a dead noncolliding body
+within its normal two-second lifetime for a surviving enemy. Both failures
+remain preserved, with natural editor/wrapper exits 3/1 and unchanged inputs.
+The correction holds the cinematic until the full gate-clear call finishes,
+including when no enemies survive, and verifies both immediate body
+deactivation and eventual removal. Its thirteen-test engine rerun is pending.
+CI at `ac54ab8` passes all 106 source gates in five jobs, independently
+authenticated; later source does not inherit that result.
+
+Claude handed back the engine lane after the v2.2 pilot's natural zero exit.
+All 15 timber originals were reviewed and all 46 files rehashed; wood still
+fails photoreal review. All nine current bow originals were reviewed and show
+stretched faces between the upper stave and string. Claude identified incorrect
+cross-island bone weights and is fixing them in source. No new art, package or
+release acceptance is claimed.
 
 ## October 25 pod arrivals and horse-defense shells
 

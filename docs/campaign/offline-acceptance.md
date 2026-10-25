@@ -1223,7 +1223,9 @@ wall; this does not claim passage through the exterior gate. Six separate
 arrival stations inside the approach keep the front rank from blocking
 later survivors. Each errand has a 30 cm acceptance radius. No timer,
 blocked-path flag, teleport or artificial kill credit completes withdrawal.
-With no survivors, the original immediate transition remains. Menus pause
+Kohagi's complete 2.6-second call finishes before the next cinematic takes
+over subtitles. With no survivors, only that call plays; no retreat bark is
+invented. Menus pause
 the outro; ordinary damage can still defeat a survivor or the hero, and
 checkpoint retry cancels and resets it.
 
@@ -1232,7 +1234,13 @@ The strict source contract and generated chapter validation pass locally.
 combat frozen, then releases actual controllers against a physical blocking
 wall and along the real route; it checks pause, completion, bark ordering and
 no manufactured kill credit. `HorseWithdrawalRetry` checks ordinary defeat,
-no replacement spawn and real checkpoint restart. These new Unreal fixtures
-and the production change have **not yet been built or run**. They do not
-inherit the earlier pod/horse-shell runtime results. Final retreat animation,
+no replacement spawn and real checkpoint restart. At `ac54ab8`, the build
+passes and ten of twelve directed tests pass, with two errors and no selected
+warnings. Movement, obstruction, pause and arrival pass, but the following
+cinematic masks Kohagi's call. The retry fixture also expects a defeated body
+to disappear before its ordinary two-second lifetime. The source correction
+holds the cinematic until the actual call finishes, and the fixture verifies
+that any remaining body is dead, noncolliding and then expires. A third case
+checks the call when all enemies are already defeated. The corrected source
+and fixtures await their engine rerun. Final retreat animation,
 ordinary defense pacing and rendered acceptance remain open.

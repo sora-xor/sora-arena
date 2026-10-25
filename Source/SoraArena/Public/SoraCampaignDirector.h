@@ -419,8 +419,8 @@ private:
     uint64 HorseShellGeneration=0;
     TWeakObjectPtr<ASoraEnemy> HorseGrenadier;
     TArray<TWeakObjectPtr<ASoraProjectile>> HorseShells;
-    bool bHorseWithdrawal=false,bHorseWithdrawalReady=false;
-    int32 HorseWithdrawalBark=INDEX_NONE;
+    bool bHorseWithdrawal=false,bHorseWithdrawalReady=false,bHorseGateClearQueued=false;
+    int32 HorseWithdrawalBark=INDEX_NONE,HorseGateClearBark=INDEX_NONE;
     TArray<TWeakObjectPtr<ASoraEnemy>> HorseWithdrawalEnemies;
     bool HorseWithdrawalReady();
     bool TickHorseWithdrawal(float DeltaSeconds);

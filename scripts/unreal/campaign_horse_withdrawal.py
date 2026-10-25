@@ -3,6 +3,7 @@ from campaign_pods import same
 
 EVENT = 'event:horse_defense_withdrawal'
 BARK = 'ch02.b02.enforcer.009'
+GATE_CLEAR = 'ch02.b06.kohagi.006'
 AUTHORING = dict(muster='ps_gate_yard_start', arrival_cm=220, pace_permille=750,
                  event=EVENT, bark=BARK)
 GOAL = [-2300, 0, 0]
@@ -21,7 +22,7 @@ def contract(beat, record, layout):
         raise ValueError('horse withdrawal must use the navigable named gate approach')
     return dict(**AUTHORING, floor_cm=GOAL, floor_tolerance_cm=30,
                 slots_cm=SLOTS, slot_acceptance_cm=30,
-                completion='arrived_survivors_and_finished_bark')
+                completion='arrived_survivors_then_finished_gate_clear')
 
 
 def place_horse_withdrawal(beats, records, layout, fail):
@@ -43,10 +44,11 @@ def horse_withdrawal_valid(chapter):
             if beat['id'] == 'ch02.b06':
                 if not same(record['horse_withdrawal'], contract(beat, record, chapter['layout'])):
                     return False
-                triggers = [t for t in chapter['triggers'] if t['beat'] == beat['id'] and t['on'] == EVENT]
-                if (len(triggers) != 1 or triggers[0]['lines'] != [BARK] or
-                        triggers[0]['mode'] != 'ambient' or triggers[0]['repeatable'] is not False):
-                    return False
+                for event, line in ((EVENT, BARK), ('beat_complete', GATE_CLEAR)):
+                    triggers = [t for t in chapter['triggers'] if t['beat'] == beat['id'] and t['on'] == event]
+                    if (len(triggers) != 1 or triggers[0]['lines'] != [line] or
+                            triggers[0]['mode'] != 'ambient' or triggers[0]['repeatable'] is not False):
+                        return False
             elif 'horse_withdrawal' in record or 'withdrawal' in beat['ext']:
                 return False
         return True

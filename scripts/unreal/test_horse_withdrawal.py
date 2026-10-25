@@ -45,7 +45,9 @@ class HorseWithdrawalTests(unittest.TestCase):
                        lambda c:c['triggers'].extend([next(t for t in c['triggers'] if t['on']==EVENT)]),
                        lambda c:next(t for t in c['triggers'] if t['on']==EVENT).update(lines=[]),
                        lambda c:next(t for t in c['triggers'] if t['on']==EVENT).update(mode='blocking'),
-                       lambda c:next(t for t in c['triggers'] if t['on']==EVENT).update(repeatable=True)):
+                       lambda c:next(t for t in c['triggers'] if t['on']==EVENT).update(repeatable=True),
+                       lambda c:next(t for t in c['triggers'] if t['beat']=='ch02.b06' and t['on']=='beat_complete').update(lines=[]),
+                       lambda c:next(t for t in c['triggers'] if t['beat']=='ch02.b06' and t['on']=='beat_complete').update(repeatable=True)):
             c=copy.deepcopy(self.chapter);mutate(c);self.assertFalse(horse_withdrawal_valid(c))
 
 if __name__=='__main__':unittest.main()

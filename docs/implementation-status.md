@@ -18,9 +18,16 @@ Pending arrivals/shells are cancelled with state detached before destruction
 callbacks. Held treatment remains available during the outro, while the won
 defense clock stays fixed. Ten selected host-check groups pass on the initial
 candidate, and six affected groups pass after the cleanup/treatment changes;
-the new Unreal movement/pause/obstruction/retry tests remain unrun
-while Claude owns the engine lane. Earlier runtime passes below do not
-qualify this production change.
+exact `ac54ab8` then builds and passes ten of twelve directed Unreal tests.
+Actual movement/obstruction/pause/arrival pass. Two failures expose the next
+cinematic hiding Kohagi's gate-clear call and a fixture expecting a dead body
+to vanish before its normal two-second expiry. The source now lets the full
+call finish before the cinematic, even with no surviving enemies; the cleanup
+fixture checks immediate deactivation and eventual expiry. The corrected
+thirteen-test rerun is pending. The failed run remains preserved. CI at
+`ac54ab8` passes all 106 source gates; this is not runtime acceptance of the
+later correction. Root owns the engine lane; Claude fixes visually rejected
+wood and bow weights in source.
 
 ## 2026-10-25 pod arrivals and horse-defense shells
 
