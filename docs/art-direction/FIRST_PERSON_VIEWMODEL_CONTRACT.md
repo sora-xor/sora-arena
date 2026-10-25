@@ -259,9 +259,14 @@ rest/drawn mesh swap.
     declares it `transient`; `SetMaterials` waits for the build,
     SkeletalMesh.cpp:733-740).
     - **The fix, not yet run:** finish compilation, bind through
-      `set_materials`, and check the binding in memory before and after the
+      `SetMaterials`, and check the binding in memory before and after the
       save. The saved package must name the instance and not the default.
       That byte check is supporting evidence only.
+    - **Python has no `set_materials`.** A property's `BlueprintSetter` is
+      bound to its attribute, never a method, so the importer assigns
+      `mesh.materials`, whose setter is `SetMaterials` (`dcb99b1`). The W18
+      rebuild's step 7 attempt 0 (2026-10-25) stopped on the missing method,
+      after the import and before any binding or readback.
     - **The proof:** `scripts/unreal/verify_yumi_rig_materials.py`, in a
       fresh editor before any capture. It reads back every slot of the bow,
       the arrow and the paw from disk, and what spawned components draw. None
