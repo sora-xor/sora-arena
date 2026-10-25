@@ -348,32 +348,39 @@ if imported_anims[0].split(".")[0] != anim_target:
 anim = assets.load_asset(anim_target)
 
 # The bow's slots go through SetMaterials (SkeletalMesh.h:951-952), once the
-# mesh's async build has finished. The Materials array is transient and
+# mesh's async build has finished: the Materials array is transient and
 # serialized by hand (SkeletalMesh.cpp:2058), and its setter first waits for
-# the async build to release it (SkeletalMesh.cpp:733-740). The first imports
-# wrote it with set_editor_property while the build ran, and the saved package
-# bound the slot to /Engine/EngineMaterials/WorldGridMaterial and never
-# referenced MI_W18_Weapon. First-person capture attempt 2 (Saved/YumiFP/v2)
-# drew the bow in that grey grid.
+# the async build to release it (SkeletalMesh.cpp:733-740). The first imports'
+# saved package bound the slot to /Engine/EngineMaterials/WorldGridMaterial
+# and never referenced MI_W18_Weapon, and first-person capture attempt 2
+# (Saved/YumiFP/v2) drew the bow in that grey grid.
 #
-# Python reaches SetMaterials only through the materials attribute: the type
-# registry binds a property's BlueprintGetter and BlueprintSetter to its
-# attribute (PyWrapperTypeRegistry.cpp:1444-1445), and keeps those functions
-# out of the methods (PyGenUtil.cpp:1616-1621), so there is no set_materials.
-# set_editor_property writes the raw member (PyGenUtil::SetPropertyValue), the
-# path that bound WorldGridMaterial. The W18 rebuild's step 7 attempt 0
-# (Saved/W18Rebuild/ue_rig_import.log) stopped here on "lacks ['set_materials']".
+# Two Python facts, each found by a W18 rebuild step 7 attempt
+# (Saved/W18Rebuild/ue_rig_import*.log):
+# - There is no set_materials. The type registry binds a property's
+#   BlueprintGetter and BlueprintSetter to its attribute
+#   (PyWrapperTypeRegistry.cpp:1444-1445) and keeps them out of the methods
+#   (PyGenUtil.cpp:1616-1621). set_editor_property writes the raw member
+#   (PyGenUtil::SetPropertyValue). Attempt 0 stopped on the missing method.
+# - An unreal.Array hands out copies. Indexing and iterating Pythonize each
+#   element with EPyConversionMethod::Copy (PyWrapperArray.cpp:409-426,
+#   PyConversion.h:226), so editing the slot the loop yields leaves the array
+#   as it was. Attempt 1 wrote the unchanged array back, and read
+#   WorldGridMaterial after SetMaterials. The first imports' loop did the
+#   same, which alone accounts for their package.
+# So each edited copy is kept, and the edited copies are written back through
+# the attribute, whose setter is SetMaterials.
 require_api(unreal.SkeletalMesh, "materials")
 finish_compilation()
-slots = mesh.get_editor_property("materials")
-slot_names = []
-for slot in slots:
+slot_names, bound = [], []
+for slot in mesh.get_editor_property("materials"):     # each a copy of its element
     name = str(slot.get_editor_property("material_slot_name"))
     if name not in BOW_SLOTS:
         fail(f"unexpected bow material slot {name}")
     slot.set_editor_property("material_interface", instance_for(name))
+    bound.append(slot)
     slot_names.append(name)
-mesh.materials = slots                  # the attribute's setter is USkeletalMesh::SetMaterials
+mesh.materials = bound                  # the edited copies, through USkeletalMesh::SetMaterials
 if set(slot_names) != BOW_SLOTS:
     fail(f"bow slots {sorted(slot_names)} differ from {sorted(BOW_SLOTS)}")
 WANT_BOW_MATERIALS = {name: instance_for(name).get_path_name() for name in BOW_SLOTS}

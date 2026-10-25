@@ -267,6 +267,16 @@ rest/drawn mesh swap.
       `mesh.materials`, whose setter is `SetMaterials` (`dcb99b1`). The W18
       rebuild's step 7 attempt 0 (2026-10-25) stopped on the missing method,
       after the import and before any binding or readback.
+    - **An `unreal.Array` hands out copies.** Indexing and iterating
+      Pythonize each struct element as a copy (`PyWrapperArray.cpp:409-426`,
+      `EPyConversionMethod::Copy`). So editing the slot a loop yields leaves
+      the array unchanged.
+      - Attempt 1 wrote the unchanged array back through `SetMaterials`, and
+        its binding check read `WorldGridMaterial`.
+      - The first imports' loop did the same. That alone accounts for their
+        grey package; the async build was not needed to explain it.
+      - The importer now keeps each edited copy and writes the copies back
+        (not yet run).
     - **The proof:** `scripts/unreal/verify_yumi_rig_materials.py`, in a
       fresh editor before any capture. It reads back every slot of the bow,
       the arrow and the paw from disk, and what spawned components draw. None
