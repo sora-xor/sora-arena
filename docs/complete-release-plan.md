@@ -13,6 +13,33 @@ The local coordination mailboxes record current ownership, commits and lane use.
 
 ## October 26 relay aftermath, archive collision and fur review
 
+The archive family-page light and reveal/save ordering pass six NullRHI
+fixtures at signed `6eb0df6`, including ArchiveFamilyPage, ArchivePosts,
+Spaces, ToranosukeSteel, CombatAndPlaque and the assisted 133-beat campaign.
+The two reveal cases cover an empty dialogue queue and a preceding combat
+bark. The actual save remains in phase one until the final family line ends,
+then restores phase two and the lit slate in a fresh world. Editor/wrapper
+exit naturally at zero; twenty evidence files and unchanged inputs verify.
+Review: `5b64a75daf3a80b63aa88cc75f2d192791dabac77b82b57cb1b4cde4359a320d`.
+The prior `f3de9c2` build failed before tests because a copying test helper
+lacked its direct catalog include; its failed log is retained. Source CI at
+`f3de9c2` passes all 110 checks, independently authenticated in run
+`40235477188`. This remains directed gameplay validation, not the unfinished
+twenty-second cinematic, north stair, ordinary duel play or final art.
+
+Claude's later `c928d90` v6 capture also exits naturally on METAL_SM6.
+Thirty archived files, 33 protected inputs and reticle clearance verify.
+Sleeve folds are more visible; the paw still has bright angular flakes and
+weak coherent volume. Shared-region residual rises 18.9005% in the eye view
+and 9.8516% in the close-up against v5 with identical recorded setup/poses.
+Review: `69d00d5523ce513adb51e733ad3d27adda183d5753a312f666d0fc1c0dd8f690`.
+Neither the number nor this single changed-asset capture is art acceptance.
+The comparator's four missing-metadata cases now reject at `a036f59`, with
+24 host tests and the unchanged positive control passing independently.
+Material paths alone still cannot establish identical asset bytes. Claude
+owns the engine/Blender lane for content binding and a different fur approach;
+root continues source work on archive traversal.
+
 The complete release remains unfinished. Exact `4ba5ab7` passes fifteen
 NullRHI fixtures, including the assisted 133-beat campaign, online drone
 radio marks, actual completed-relay save reload, later flood lighting, five

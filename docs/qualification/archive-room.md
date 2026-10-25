@@ -25,7 +25,7 @@ The first engine run at `1248987` exposed a fixture error: it equipped weapon
 3 (the needle gun) while labelling it a katana. Both required swing-count
 assertions failed, so the post check was not accepted. The correction equips
 weapon 0, asserts its identity, and waits through the real equip recovery
-before mapped attack input. Runtime rerun remains pending.
+before mapped attack input. Its successful runtime rerun is recorded below.
 
 The same run passed the assisted 133-beat campaign and ValAmort boss fixture,
 but `Campaign.Spaces` still required the removed generic relay pedestal.
@@ -75,4 +75,27 @@ The pending save requires the final family-page line to have actually
 finished, including when a prior nonblocking combat bark precedes the reveal.
 The prepared fixture covers both queue states. The campaign regression lets
 the real queued lines finish before checking the new save; it does not clear
-or skip dialogue. Both paths remain unrun at this source checkpoint.
+or skip dialogue.
+
+These candidates now pass engine execution at signed `6eb0df6`. All six
+selected fixtures pass: ArchiveFamilyPage, ArchivePosts, Spaces,
+ToranosukeSteel, CombatAndPlaque and the assisted 133-beat Playthrough.
+Both reveal queue states retain the phase-one disk checkpoint until the
+final family line finishes, then save phase two; a fresh world loads the
+actual save with the physical slate lit. The family exchange precedes the
+remembered lesson. The assisted campaign finishes in 69.32 seconds of test
+execution; this does not claim ordinary play duration or difficulty.
+Natural editor/wrapper exits are 0/0, all twenty evidence files rehash,
+and source, native, config and generated inputs remain unchanged. Review:
+`5b64a75daf3a80b63aa88cc75f2d192791dabac77b82b57cb1b4cde4359a320d`.
+
+The first `f3de9c2` attempt failed before editor launch: Unity grouping
+exposed a missing direct `SoraCatalog.h` include in the older copying test
+helper. No runtime tests ran. Its fourteen preserved files and unchanged
+inputs verify, review
+`2667b337bfebe5d3f1ffe3215fd980bdfe36a9932865ea11983bbd341470e546`.
+The sole correction in `6eb0df6` adds that include. Source CI at `f3de9c2`
+independently passes all 110 checks in run `40235477188`, review
+`42268d2688b863f5c15922eff30758d655e8ca778a8b7e64990324b3bf609755`.
+The authored cinematic, rack impact, slate artwork and north stair remain
+unfinished.
