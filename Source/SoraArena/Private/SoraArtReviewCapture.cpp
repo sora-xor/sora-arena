@@ -22,6 +22,24 @@
 #include "UObject/UObjectIterator.h"
 #include "Tests/AutomationCommon.h"
 #include "UnrealClient.h"
+#include "SceneViewExtension.h"
+#include "SceneView.h"
+#include "SceneManagement.h"
+#include "RenderGraphBuilder.h"
+#include "RenderGraphUtils.h"
+#include "RHIGPUReadback.h"
+#include "HAL/IConsoleManager.h"
+#include "Misc/ScopeLock.h"
+#include "Misc/FileHelper.h"
+#include "Misc/EngineVersion.h"
+#include "Dom/JsonObject.h"
+#include "RenderingThread.h"
+#include "Tasks/Task.h"
+#include "Policies/CondensedJsonPrintPolicy.h"
+#include "Serialization/JsonSerializer.h"
+#include "Serialization/JsonWriter.h"
+#include <atomic>
+#include <limits>
 #if WITH_EDITOR
 #include "AssetCompilingManager.h"
 #include "ShaderCompiler.h"
@@ -39,6 +57,339 @@
 // Frames: Saved/Screenshots/SoraArtReview/<width>x<height>/<Shot>.png.
 namespace SoraArtReview
 {
+// Opt-in through SORA_EXEC_PREFIX='sora.ArtExposureDiagnostic 1,'. This never
+// changes exposure, show flags, camera cuts or the ordinary capture schedule.
+static TAutoConsoleVariable<int32> CVarArtExposureDiagnostic(TEXT("sora.ArtExposureDiagnostic"), 0,
+    TEXT("Record ArtReview exposure GPU observations (0 off, 1 on; automation only)."), ECVF_Default);
+
+class FExposureDiagnostic final : public FSceneViewExtensionBase
+{
+    struct FFrame
+    {
+        uint64 Counter = 0;
+        uint32 Number = 0, ViewKey = 0, Shot = 0;
+        FString Name, File, Error;
+        bool bScreenshot = false, bPaused = false;
+        TMap<FString, double> Values;
+        TMap<FString, bool> Flags;
+    };
+    struct FSlot
+    {
+        TUniquePtr<FRHIGPUBufferReadback> Buffer;
+        TOptional<FFrame> Frame;
+    };
+    struct FShotResult
+    {
+        FString Name, File;
+        int32 Observations = 0, Requests = 0, Pairs = 0, Failures = 0;
+    };
+    static constexpr int32 MaxObservations = 2048;
+    FViewport* const Viewport;
+    FSceneInterface* const Scene;
+    FAutomationTestBase* const Test; // Only used on the game thread.
+    FString Folder;
+    const FString Session;
+    const int32 EnabledValue;
+    std::atomic<bool> bActive{true}, bRetiring{false}, bRetired{false};
+    uint32 ActiveShot = 0, NextShot = 0;
+    bool bAborted = false;
+    TMap<uint32, FShotResult> Shots; // Game thread only.
+    TSet<FString> ReportedErrors;
+    FCriticalSection Mutex;
+    TMap<uint64, FFrame> TaggedFrames;
+    TMap<uint32, int32> Outstanding;
+    TArray<FFrame> Completed;
+    FSlot Slots[4]; // Render thread only; slot 3 is reserved for the screenshot.
+
+    void Error(const FString& Message)
+    {
+        if (!ReportedErrors.Contains(Message))
+        {
+            ReportedErrors.Add(Message);
+            Test->AddError(TEXT("Art exposure diagnostic: ") + Message);
+        }
+    }
+    void Publish(FFrame&& Frame)
+    {
+        FScopeLock Lock(&Mutex);
+        --Outstanding.FindChecked(Frame.Shot);
+        Completed.Add(MoveTemp(Frame));
+    }
+    static double CVar(const TCHAR* Name)
+    {
+        const IConsoleVariable* V = IConsoleManager::Get().FindConsoleVariable(Name);
+        return V ? V->GetFloat() : std::numeric_limits<double>::quiet_NaN();
+    }
+    void Poll_RenderThread(uint64 CompletedAt)
+    {
+        for (FSlot& Slot : Slots)
+        {
+            if (!Slot.Frame.IsSet() || Slot.Frame->Counter >= CompletedAt || !Slot.Buffer->IsReady()) continue;
+            FFrame Frame = MoveTemp(Slot.Frame.GetValue());
+            Slot.Frame.Reset();
+            const void* Data = Slot.Buffer->Lock(sizeof(FVector4f));
+            if (Data)
+            {
+                const FVector4f Value = *static_cast<const FVector4f*>(Data);
+                Slot.Buffer->Unlock();
+                // Audited UE5.8.3 CL58210709 PostProcessEyeAdaptation.usf,
+                // EyeAdaptationCommon: current, target, metered luminance, compensation.
+                Frame.Values.Add(TEXT("current_exposure_scale"), Value.X);
+                Frame.Values.Add(TEXT("target_exposure_scale"), Value.Y);
+                Frame.Values.Add(TEXT("metered_average_scene_luminance"), Value.Z);
+                Frame.Values.Add(TEXT("exposure_compensation_multiplier"), Value.W);
+                if (!FMath::IsFinite(Value.X) || !FMath::IsFinite(Value.Y) ||
+                    !FMath::IsFinite(Value.Z) || !FMath::IsFinite(Value.W) ||
+                    Value.X <= 0 || Value.Y <= 0 || Value.Z < 0 || Value.W <= 0)
+                    Frame.Error = TEXT("Invalid eye-adaptation GPU payload");
+            }
+            else Frame.Error = TEXT("Eye-adaptation GPU readback lock failed");
+            Frame.Values.Add(TEXT("readback_completed_frame_counter"), static_cast<double>(CompletedAt));
+            Publish(MoveTemp(Frame));
+        }
+    }
+    void Retire_RenderThread()
+    {
+        // Retire() chains this command after RDG's async execution task, so no
+        // queued graph pass still owns a raw readback pointer here.
+        for (FSlot& Slot : Slots)
+        {
+            if (Slot.Frame.IsSet())
+            {
+                FFrame Frame = MoveTemp(Slot.Frame.GetValue());
+                Slot.Frame.Reset();
+                Frame.Error = TEXT("Readback remained pending at bounded teardown");
+                Publish(MoveTemp(Frame));
+            }
+            Slot.Buffer.Reset(); // RHI references use normal deferred resource release.
+        }
+        TMap<uint64, FFrame> Missing;
+        {
+            FScopeLock Lock(&Mutex);
+            Missing = MoveTemp(TaggedFrames);
+        }
+        for (auto& Entry : Missing)
+        {
+            Entry.Value.Error = TEXT("Tagged view never reached the render callback");
+            Publish(MoveTemp(Entry.Value));
+        }
+        bRetired = true;
+    }
+protected:
+    virtual bool IsActiveThisFrame_Internal(const FSceneViewExtensionContext& Context) const override
+    {
+        return bActive && Context.Viewport == Viewport;
+    }
+public:
+    FExposureDiagnostic(const FAutoRegister& AutoRegister, FViewport* InViewport, FSceneInterface* InScene,
+        FAutomationTestBase* InTest, FString InFolder, int32 InValue)
+        : FSceneViewExtensionBase(AutoRegister), Viewport(InViewport), Scene(InScene), Test(InTest),
+          Folder(MoveTemp(InFolder)), Session(FGuid::NewGuid().ToString(EGuidFormats::Digits)), EnabledValue(InValue)
+    {
+        // The runner does not yet archive these sidecars. Keep each diagnostic
+        // session distinct so another capture cannot overwrite its evidence.
+        Folder = Folder / TEXT("Exposure") / Session;
+        if (!IFileManager::Get().MakeDirectory(*Folder, true)) Error(TEXT("Cannot create exposure evidence directory"));
+    }
+
+    void BeginShot(const FString& Name)
+    {
+        if (bAborted) return;
+        Pump();
+        ActiveShot = ++NextShot;
+        FShotResult& Shot = Shots.Add(ActiveShot);
+        Shot.Name = Name;
+        const FString Sidecar = Folder / (Name + TEXT(".exposure.jsonl"));
+        const FString Header = FString::Printf(TEXT("{\"type\":\"session\",\"session\":\"%s\",\"diagnostic_cvar\":%d,\"engine\":\"5.8.3-58210709\",\"layout\":\"EyeAdaptationCommon.float4.v1\",\"cached_values\":\"asynchronous; source GPU frame unavailable\"}\n"), *Session, EnabledValue);
+        if (!FFileHelper::SaveStringToFile(Header, *Sidecar, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM))
+            Error(TEXT("Cannot initialize exposure sidecar ") + Sidecar);
+        else UE_LOG(LogTemp, Display, TEXT("SORA_ART_EXPOSURE_SIDECAR %s"), *Sidecar);
+    }
+    void StopShot() { ActiveShot = 0; }
+    void ArmScreenshot(const FString& File)
+    {
+        if (ActiveShot) Shots.FindChecked(ActiveShot).File = FPaths::ConvertRelativePathToFull(File);
+    }
+    void Pump()
+    {
+        TArray<FFrame> Ready;
+        {
+            FScopeLock Lock(&Mutex);
+            Ready = MoveTemp(Completed);
+        }
+        for (FFrame& Frame : Ready)
+        {
+            FShotResult& Shot = Shots.FindChecked(Frame.Shot);
+            if (!Frame.Error.IsEmpty()) { ++Shot.Failures; Error(Frame.Name + TEXT(": ") + Frame.Error); }
+            else if (Frame.bScreenshot) ++Shot.Pairs;
+            auto Json = MakeShared<FJsonObject>();
+            Json->SetStringField(TEXT("type"), TEXT("frame"));
+            Json->SetStringField(TEXT("session"), Session);
+            Json->SetStringField(TEXT("shot"), Frame.Name);
+            Json->SetStringField(TEXT("screenshot_file"), Frame.File);
+            Json->SetNumberField(TEXT("shot_id"), Frame.Shot);
+            Json->SetNumberField(TEXT("family_frame_counter"), static_cast<double>(Frame.Counter));
+            Json->SetNumberField(TEXT("family_frame_number"), Frame.Number);
+            Json->SetNumberField(TEXT("view_key"), Frame.ViewKey);
+            Json->SetBoolField(TEXT("screenshot_frame"), Frame.bScreenshot);
+            Json->SetBoolField(TEXT("world_paused_game_thread"), Frame.bPaused);
+            Json->SetStringField(TEXT("error"), Frame.Error);
+            for (const auto& Value : Frame.Values)
+                if (FMath::IsFinite(Value.Value)) Json->SetNumberField(Value.Key, Value.Value);
+                else Json->SetField(Value.Key, MakeShared<FJsonValueNull>());
+            for (const auto& Flag : Frame.Flags) Json->SetBoolField(Flag.Key, Flag.Value);
+            // FViewInfo::bPrevTransformsReset is private. Absence of a public
+            // forcing condition does not establish ForceTarget=false.
+            if (Frame.Flags.FindRef(TEXT("force_target_proven_true"))) Json->SetBoolField(TEXT("force_target"), true);
+            else Json->SetField(TEXT("force_target"), MakeShared<FJsonValueNull>());
+            Json->SetStringField(TEXT("previous_transforms_reset"), TEXT("unavailable_public_api"));
+            FString Text;
+            if (!FJsonSerializer::Serialize(Json, TJsonWriterFactory<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>::Create(&Text)))
+            { ++Shot.Failures; Error(TEXT("Cannot serialize exposure observation")); continue; }
+            if (!FFileHelper::SaveStringToFile(Text + TEXT("\n"), *(Folder / (Frame.Name + TEXT(".exposure.jsonl"))),
+                FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM, &IFileManager::Get(), FILEWRITE_Append))
+                Error(TEXT("Cannot append exposure sidecar for ") + Frame.Name);
+        }
+    }
+    bool Drained()
+    {
+        Pump();
+        FScopeLock Lock(&Mutex);
+        for (const auto& Entry : Outstanding) if (Entry.Value != 0) return false;
+        return true;
+    }
+    void ValidateShot(const FString& Name)
+    {
+        if (bAborted) return;
+        if (!Shots.Contains(NextShot) || Shots.FindChecked(NextShot).Name != Name)
+        { Error(Name + TEXT(": no diagnostic shot was armed")); return; }
+        if (!Drained())
+        {
+            Error(TEXT("Five-second GPU observation drain timed out"));
+            bAborted = true;
+            Retire();
+        }
+        const FShotResult& Shot = Shots.FindChecked(NextShot);
+        if (Shot.Requests != 1 || Shot.Pairs != 1 || Shot.Failures != 0 || Shot.Observations == 0)
+            Error(FString::Printf(TEXT("%s: expected one valid screenshot pair; requests=%d pairs=%d failed_frames=%d observations=%d"),
+                *Shot.Name, Shot.Requests, Shot.Pairs, Shot.Failures, Shot.Observations));
+        const FString Summary = FString::Printf(TEXT("{\"type\":\"summary\",\"requests\":%d,\"valid_screenshot_pairs\":%d,\"failed_frames\":%d,\"observations\":%d,\"drained\":%s}\n"),
+            Shot.Requests, Shot.Pairs, Shot.Failures, Shot.Observations, Drained() ? TEXT("true") : TEXT("false"));
+        if (!FFileHelper::SaveStringToFile(Summary, *(Folder / (Shot.Name + TEXT(".exposure.jsonl"))),
+            FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM, &IFileManager::Get(), FILEWRITE_Append))
+            Error(TEXT("Cannot write exposure summary for ") + Shot.Name);
+    }
+    void Retire()
+    {
+        if (bRetiring.exchange(true)) return;
+        StopShot(); bActive = false;
+        auto Self = StaticCastSharedRef<FExposureDiagnostic>(AsShared());
+        ENQUEUE_RENDER_COMMAND(SoraArtExposureRetireAfterGraphs)([Self](FRHICommandListImmediate&)
+        {
+            // RDG passes may execute asynchronously after their render command.
+            // Keep the owner alive through that task; never wait on the GPU.
+            auto GraphExecution = FRDGBuilder::GetAsyncExecuteTask();
+            UE::Tasks::Launch(UE_SOURCE_LOCATION, [Self]()
+            {
+                ENQUEUE_RENDER_COMMAND(SoraArtExposureRetire)([Self](FRHICommandListImmediate&) { Self->Retire_RenderThread(); });
+            }, UE::Tasks::Prerequisites(GraphExecution));
+        });
+    }
+    bool Retired() { Pump(); return bRetired; }
+
+    virtual void BeginRenderViewFamily(FSceneViewFamily& Family) override
+    {
+        Pump();
+        if (!ActiveShot || Family.Scene != Scene || Family.RenderTarget != Viewport) return;
+        const FSceneView* PlayerView = nullptr;
+        int32 Count = 0;
+        for (const FSceneView* View : Family.Views)
+            if (View && View->bIsGameView && !View->bIsSceneCapture && !View->bIsReflectionCapture && View->IsPrimarySceneView())
+            { PlayerView = View; ++Count; }
+        if (Count != 1 || !PlayerView->State)
+        { Error(TEXT("Expected exactly one persistent player view")); return; }
+        FShotResult& Shot = Shots.FindChecked(ActiveShot);
+        const bool bScreenshot = !Shot.File.IsEmpty() && FScreenshotRequest::IsScreenshotRequested() &&
+            FPaths::ConvertRelativePathToFull(FScreenshotRequest::GetFilename()) == Shot.File;
+        if (!bScreenshot && Shot.Observations >= MaxObservations)
+        { Error(Shot.Name + TEXT(": observation cap reached")); return; }
+        if (bScreenshot && ++Shot.Requests != 1)
+        { Error(Shot.Name + TEXT(": ambiguous screenshot frame")); return; }
+        ++Shot.Observations;
+        FFrame Frame;
+        Frame.Shot = ActiveShot; Frame.Name = Shot.Name; Frame.File = bScreenshot ? Shot.File : FString();
+        Frame.Counter = Family.FrameCounter; Frame.Number = Family.FrameNumber; Frame.ViewKey = PlayerView->GetViewKey();
+        Frame.bScreenshot = bScreenshot;
+        UWorld* World = Viewport->GetClient() ? Viewport->GetClient()->GetWorld() : nullptr;
+        if (!World) { Error(Shot.Name + TEXT(": game viewport lost its world")); return; }
+        Frame.bPaused = World->IsPaused();
+        FScopeLock Lock(&Mutex);
+        if (TaggedFrames.Num() >= 64 || TaggedFrames.Contains(Frame.Counter))
+        { Error(Shot.Name + TEXT(": missing or ambiguous frame metadata capacity")); return; }
+        ++Outstanding.FindOrAdd(ActiveShot);
+        TaggedFrames.Add(Frame.Counter, MoveTemp(Frame));
+    }
+    virtual void PostRenderView_RenderThread(FRDGBuilder& GraphBuilder, FSceneView& View) override
+    {
+        if (bRetiring) return;
+        if (View.Family->Scene != Scene || View.Family->RenderTarget != Viewport || View.bIsSceneCapture || View.bIsReflectionCapture) return;
+        Poll_RenderThread(View.Family->FrameCounter);
+        FFrame Frame;
+        {
+            FScopeLock Lock(&Mutex);
+            FFrame* Found = TaggedFrames.Find(View.Family->FrameCounter);
+            if (!Found || Found->ViewKey != View.GetViewKey() || Found->Number != View.Family->FrameNumber) return;
+            Frame = MoveTemp(*Found);
+            TaggedFrames.Remove(View.Family->FrameCounter);
+        }
+        const auto& Time = View.Family->Time;
+        Frame.Values.Add(TEXT("delta_world_seconds"), Time.GetDeltaWorldTimeSeconds());
+        Frame.Values.Add(TEXT("delta_real_seconds"), Time.GetDeltaRealTimeSeconds());
+        Frame.Values.Add(TEXT("world_seconds"), Time.GetWorldTimeSeconds());
+        Frame.Values.Add(TEXT("real_seconds"), Time.GetRealTimeSeconds());
+        Frame.Values.Add(TEXT("camera_x"), View.ViewLocation.X); Frame.Values.Add(TEXT("camera_y"), View.ViewLocation.Y); Frame.Values.Add(TEXT("camera_z"), View.ViewLocation.Z);
+        Frame.Values.Add(TEXT("camera_pitch"), View.ViewRotation.Pitch); Frame.Values.Add(TEXT("camera_yaw"), View.ViewRotation.Yaw); Frame.Values.Add(TEXT("camera_roll"), View.ViewRotation.Roll);
+        Frame.Values.Add(TEXT("view_width"), View.UnscaledViewRect.Width()); Frame.Values.Add(TEXT("view_height"), View.UnscaledViewRect.Height());
+        Frame.Flags.Add(TEXT("camera_cut"), View.bCameraCut);
+        Frame.Flags.Add(TEXT("force_camera_visibility_reset"), View.bForceCameraVisibilityReset);
+        Frame.Flags.Add(TEXT("eye_adaptation_showflag"), View.Family->EngineShowFlags.EyeAdaptation);
+        Frame.Flags.Add(TEXT("fixed_exposure"), View.Family->ExposureSettings.bFixed);
+        Frame.Values.Add(TEXT("fixed_exposure_ev100"), View.Family->ExposureSettings.FixedEV100);
+        const auto& P = View.FinalPostProcessSettings;
+#define ART_EXPOSURE_SETTING(Name) Frame.Values.Add(TEXT(#Name), P.Name)
+        ART_EXPOSURE_SETTING(AutoExposureMethod); ART_EXPOSURE_SETTING(AutoExposureMinBrightness); ART_EXPOSURE_SETTING(AutoExposureMaxBrightness);
+        ART_EXPOSURE_SETTING(HistogramLogMin); ART_EXPOSURE_SETTING(HistogramLogMax);
+        ART_EXPOSURE_SETTING(AutoExposureLowPercent); ART_EXPOSURE_SETTING(AutoExposureHighPercent);
+        ART_EXPOSURE_SETTING(AutoExposureSpeedUp); ART_EXPOSURE_SETTING(AutoExposureSpeedDown); ART_EXPOSURE_SETTING(AutoExposureBias);
+#undef ART_EXPOSURE_SETTING
+        Frame.Flags.Add(TEXT("force_target_proven_true"), View.bCameraCut ||
+            !(P.AutoExposureMinBrightness < P.AutoExposureMaxBrightness) || P.AutoExposureSpeedUp < 0 || P.AutoExposureSpeedDown < 0);
+        for (const TCHAR* Name : {TEXT("r.DefaultFeature.AutoExposure.ExtendDefaultLuminanceRange"), TEXT("r.EyeAdaptation.MethodOverride"),
+            TEXT("r.EyeAdaptationQuality"), TEXT("r.EyeAdaptation.LensAttenuation"), TEXT("r.EyeAdaptation.PreExposureOverride")})
+            Frame.Values.Add(Name, CVar(Name));
+        Frame.Values.Add(TEXT("cached_async_last_exposure_scale"), View.GetLastEyeAdaptationExposure());
+        Frame.Values.Add(TEXT("cached_async_last_average_scene_luminance"), View.GetLastAverageSceneLuminance());
+        if (View.State) Frame.Values.Add(TEXT("cached_async_state_pre_exposure"), View.State->GetPreExposure());
+        for (const auto& Value : Frame.Values)
+            if (!FMath::IsFinite(Value.Value))
+            { Frame.Error = TEXT("Nonfinite or unavailable view exposure metadata: ") + Value.Key; Publish(MoveTemp(Frame)); return; }
+        FRDGPooledBuffer* Buffer = View.GetEyeAdaptationBuffer();
+        if (!View.HasValidEyeAdaptationBuffer() || !Buffer || Buffer->Desc.BytesPerElement != sizeof(FVector4f) || Buffer->Desc.NumElements != 2)
+        { Frame.Error = TEXT("Missing or unexpected UE5.8.3 exposure buffer"); Publish(MoveTemp(Frame)); return; }
+        FSlot* Available = nullptr;
+        const int32 Start = Frame.bScreenshot ? 3 : 0, End = Frame.bScreenshot ? 4 : 3;
+        for (int32 Index = Start; Index < End; ++Index)
+            if (!Slots[Index].Frame.IsSet()) { Available = &Slots[Index]; break; }
+        if (!Available)
+        { Frame.Error = TEXT("GPU readback ring full; frame missing"); Publish(MoveTemp(Frame)); return; }
+        if (!Available->Buffer) Available->Buffer = MakeUnique<FRHIGPUBufferReadback>(FName(TEXT("SoraArtExposure")));
+        Available->Buffer->ResetReady();
+        Available->Frame = MoveTemp(Frame);
+        TRefCountPtr<FRDGPooledBuffer> OwnedBuffer(Buffer);
+        AddEnqueueCopyPass(GraphBuilder, Available->Buffer.Get(), GraphBuilder.RegisterExternalBuffer(OwnedBuffer, ERDGBufferFlags::MultiFrame), sizeof(FVector4f));
+    }
+};
+
 struct FShot
 {
     const TCHAR* Name;
@@ -76,8 +427,10 @@ struct FSession
     FString Folder, Slot, PlayerSlot, File;
     FDateTime Previous;
     bool bLive = false;
+    TSharedPtr<FExposureDiagnostic, ESPMode::ThreadSafe> Exposure;
     ~FSession()
     {
+        if (Exposure) Exposure->Retire();
         if (!Slot.IsEmpty() && UGameplayStatics::DoesSaveGameExist(Slot, 0))
             UGameplayStatics::DeleteGameInSlot(Slot, 0);
     }
@@ -115,6 +468,17 @@ bool Open(FAutomationTestBase& Test, FSession& Session)
     Session.PlayerSlot = Mode->SaveSlotName;
     Session.Slot = FString::Printf(TEXT("SoraArtReview_%s"), *FGuid::NewGuid().ToString(EGuidFormats::Digits));
     IFileManager::Get().MakeDirectory(*Session.Folder, true);
+    const int32 ExposureDiagnostic = CVarArtExposureDiagnostic.GetValueOnGameThread();
+    if (ExposureDiagnostic != 0)
+    {
+        const FEngineVersion& Version = FEngineVersion::Current();
+        if (!Test.TestTrue(TEXT("Exposure diagnostic requires value 1 and audited UE5.8.3 CL58210709"),
+            ExposureDiagnostic == 1 && Version.GetMajor() == 5 && Version.GetMinor() == 8 &&
+            Version.GetPatch() == 3 && Version.GetChangelist() == 58210709)) return false;
+        if (!Test.TestNotNull(TEXT("Exposure diagnostic has a game viewport"), Viewport->Viewport)) return false;
+        Session.Exposure = FSceneViewExtensions::NewExtension<FExposureDiagnostic>(Viewport->Viewport,
+            World->Scene, &Test, Session.Folder, ExposureDiagnostic);
+    }
     return true;
 }
 
@@ -149,6 +513,7 @@ void Frame(FAutomationTestBase* Test, FSessionRef Session, const FShot& Shot)
         ASoraPlayerCharacter* Hero = Session->Hero();
         if (!Session->bLive || !M || !Hero)
             return;
+        if (Session->Exposure) Session->Exposure->BeginShot(Shot.Name);
         UGameplayStatics::SetGamePaused(M, false);
         Stand(*Hero, Shot);
     });
@@ -165,12 +530,19 @@ void Frame(FAutomationTestBase* Test, FSessionRef Session, const FShot& Shot)
     {
         Session->File = Session->Folder / (Name + TEXT(".png"));
         Session->Previous = IFileManager::Get().GetTimeStamp(*Session->File);
+        if (Session->Exposure) Session->Exposure->ArmScreenshot(Session->File);
         FScreenshotRequest::RequestScreenshot(Session->File, false, false);
     });
     ADD_LATENT_AUTOMATION_COMMAND(FUntil(15.0, [Session](double)
     {
         return IFileManager::Get().FileSize(*Session->File) > 0 && IFileManager::Get().GetTimeStamp(*Session->File) != Session->Previous;
     }));
+    if (Session->Exposure)
+    {
+        Queue([Session]() { Session->Exposure->StopShot(); });
+        ADD_LATENT_AUTOMATION_COMMAND(FUntil(5.0, [Session](double) { return Session->Exposure->Drained(); }));
+        Queue([Session, Name]() { Session->Exposure->ValidateShot(Name); });
+    }
     Queue([Test, Session, Name]()
     {
         if (IFileManager::Get().FileSize(*Session->File) <= 0 || IFileManager::Get().GetTimeStamp(*Session->File) == Session->Previous)
@@ -230,6 +602,15 @@ void Run(FAutomationTestBase* Test, int32 Chapter, int32 Beat, const TArray<FSho
     Wait(6.0);
     for (const FShot& Shot : Shots)
         Frame(Test, Session, Shot);
+    if (Session->Exposure)
+    {
+        Queue([Session]() { Session->Exposure->Retire(); });
+        ADD_LATENT_AUTOMATION_COMMAND(FUntil(5.0, [Session](double) { return Session->Exposure->Retired(); }));
+        Queue([Test, Session]()
+        {
+            Test->TestTrue(TEXT("Art exposure diagnostic render-thread teardown completed"), Session->Exposure->Retired());
+        });
+    }
     Queue([Session]()
     {
         ASoraGameMode* M = Session->M();
