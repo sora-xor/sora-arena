@@ -551,6 +551,9 @@ def review(objs, samples):
     scene.cycles.device = "CPU"
     scene.cycles.samples = samples
     scene.cycles.use_denoising = True
+    # v6: ten stacked shells. At Cycles' default of 8 transparent bounces, a ray through them at a grazing angle
+    # ended black (attempt 0's fur macro).
+    scene.cycles.transparent_max_bounces = 64
     scene.render.film_transparent = False
     scene.view_settings.view_transform = "AgX"
     scene.view_settings.look = "AgX - Base Contrast"

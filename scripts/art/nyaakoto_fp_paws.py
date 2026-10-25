@@ -587,7 +587,8 @@ TABBY = {"white": (0.742, 0.693, 0.617), "grey": (0.50, 0.50, 0.50), "stripe": (
 #   from deep_shade at the skin to 1 at the top. Alpha is the shell's height
 #   share, which the material uses to pick the strand texture's channels.
 # - **The UVs:** a box projection of the base skin, one texture tile per
-#   uv_tile_m, shared by every shell, so a strand stays one column.
+#   uv_tile_m, shared by every shell, so a strand stays one column. Each
+#   triangle takes its face's axis; vertices where axes meet are split.
 # Fins for silhouettes are not built: shells' layered edges are the known
 # limit of the method, to judge in the capture.
 FUR_MODE = "shells"                      # v6: the coat as shells; "cards" builds v5's fur cards instead
@@ -711,10 +712,17 @@ def fur_shells(skel, field, keep_out=grip_sdf, cfg=SHELLS, fur=FUR, base=None):
     s = (V - skel["wrist"]) @ (-FOREARM_DIR)
     furred = np.array([c is not None for c in cls]) & (keep_out(V) > fur["contact_clear_m"]) & (s > fur["sleeve_from_m"])
     keep_tri = furred[T].all(1)
-    used = np.unique(T[keep_tri])
-    remap = -np.ones(len(V), np.int64)
-    remap[used] = np.arange(len(used))
-    Vb, Nb, Tb, kind, sb = V[used], N[used], remap[T[keep_tri]], cls[used], s[used]
+    # Each triangle takes one box-projection axis, its face's dominant one; a vertex shared by triangles of two axes
+    # is split, one copy per axis. Fur v6's attempt 0 projected per vertex, so a triangle whose corners took
+    # different axes stretched its UVs, and the strands averaged away into smooth bands
+    # (Saved/NyaakotoFPPaws/Archive/v6_attempt0_production).
+    Tk = T[keep_tri]
+    fn = np.cross(V[Tk[:, 1]] - V[Tk[:, 0]], V[Tk[:, 2]] - V[Tk[:, 0]])
+    tri_axis = np.argmax(np.abs(fn), 1)
+    keys, Tb = np.unique((Tk * 3 + tri_axis[:, None]).ravel(), return_inverse=True)
+    Tb = Tb.reshape(-1, 3)
+    used, axis = keys // 3, keys % 3
+    Vb, Nb, kind, sb = V[used], N[used], cls[used], s[used]
     ruff = (sb > -fur["ruff_m"][1]) & (sb < fur["ruff_m"][0] + 0.012) & (kind == "dorsal")
     H = np.array([cfg["height_m"]["ruff" if r else str(k)] for r, k in zip(ruff, kind)])
     H = np.minimum(H, np.maximum(keep_out(Vb) - cfg["clear_m"], 0.0))
@@ -726,7 +734,6 @@ def fur_shells(skel, field, keep_out=grip_sdf, cfg=SHELLS, fur=FUR, base=None):
     turn = np.radians(coat_flow(Vb, fur))
     tang = tang * np.cos(turn)[:, None] + side * np.sin(turn)[:, None]
     lean = math.tan(math.radians(cfg["lean_deg"]))
-    axis = np.argmax(np.abs(Nb), 1)
     uv = np.stack([np.where(axis == 0, Vb[:, 1], Vb[:, 0]), np.where(axis == 2, Vb[:, 1], Vb[:, 2])], 1) / cfg["uv_tile_m"]
     both = lambda p: np.minimum(field(p), keep_out(p))
     colour = tabby_colour(Vb, skel) * occlusion_shade(form_occlusion(Vb, Nb, both, fur["occlusion"]), fur["occlusion"])[:, None]

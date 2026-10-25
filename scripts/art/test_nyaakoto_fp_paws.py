@@ -281,6 +281,13 @@ class Shells(unittest.TestCase):
             (P.SHELLS["deep_shade"] + (1 - P.SHELLS["deep_shade"]) * (self.L - 0.5) / self.L)
         self.assertAlmostEqual(ratio, want, places=6)
 
+    def test_no_triangle_stretches_its_strands(self):
+        # One projection axis per triangle (attempt 0 mixed them and stretched its UVs into smooth bands): a
+        # triangle's UV extent is its own size in tiles, about step_m / uv_tile_m.
+        T = self.sh["tris"][: len(self.sh["tris"]) // self.L]
+        span = np.ptp(self.sh["uv"][: self.n][T], axis=1).max(1)
+        self.assertLess(float(span.max()), 2.0 * P.SHELLS["step_m"] / P.SHELLS["uv_tile_m"])
+
     def test_the_comb_leans_each_shell_along_the_skin(self):
         # Where nothing slid a shell back off the bow, its offset's share along the skin is tan(lean) of its height.
         top = self.V[-1] - self.V[0]
