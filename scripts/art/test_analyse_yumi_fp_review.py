@@ -1,14 +1,29 @@
-"""Tests for the first-person ID-pixel analysis (analyse_yumi_fp_review), on synthetic images.
+"""Tests for the first-person ID-pixel analysis (analyse_yumi_fp_review), on synthetic images and runs.
 
 Run: python3 -m unittest scripts/art/test_analyse_yumi_fp_review.py
+
+Run fixtures are throwaway capture directories (a manifest and PNGs), so no
+original is touched. Codex's review of ad18895: the analysis must fail
+clearly, never print an empty analysis, when:
+- a requested eye-view ID file is missing or empty;
+- dimensions are inconsistent;
+- bytes disagree with the manifest's hashes.
+It must read the capture's own recorded settings, and keep custom hold
+subsets.
 """
 from __future__ import annotations
 
+import contextlib
+import hashlib
+import io
+import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
 import numpy as np
+from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import analyse_yumi_fp_review as A  # noqa: E402
@@ -59,6 +74,156 @@ class Analyse(unittest.TestCase):
         # 0.12 half-heights at 1080p is 64.8 px, so about pi x 64.8^2 pixels.
         res = A.analyse(np.zeros((1080, 1920, 3)), 0.12)
         self.assertAlmostEqual(res["reticle_disc_pixels"] / (np.pi * 64.8 ** 2), 1.0, delta=0.01)
+
+
+def write_run(root: Path, holds=("rest", "root", "right_cheek", "paw"), eye=("rest", "root", "right_cheek"),
+              ids_enabled=True, size=(W, H)):
+    """A capture directory as render_yumi_fp_review.py writes one: lit shots, ID shots and the manifest."""
+    w, h = size
+    files, id_files, cameras = {}, {}, {}
+    for hold in holds:
+        lit = root / f"{hold}.png"
+        Image.fromarray(np.full((h, w, 3), 90, np.uint8)).save(lit)
+        files[lit.name] = hashlib.sha256(lit.read_bytes()).hexdigest()
+        cameras[hold] = {"field_of_view_deg": 70.0 if hold in eye else 32.0, "aspect_ratio": w / h,
+                         "constrain_aspect_ratio": True, "location_cm": [0.0, 0.0, 0.0],
+                         "rotation_deg": [0.0, 0.0, 0.0], "resolution": [w, h]}
+        if hold in eye and ids_enabled:
+            idf = root / f"{hold}_ids.png"
+            img = np.zeros((h, w, 3), np.uint8)
+            img[h * 2 // 3:, : w // 5] = (204, 0, 0)          # the bow, low left
+            img[h // 2 - 2: h // 2 + 2, w // 2 - 6: w // 2 + 6] = (0, 204, 0)   # the arrow at the centre
+            Image.fromarray(img).save(idf)
+            files[idf.name] = hashlib.sha256(idf.read_bytes()).hexdigest()
+            id_files[hold] = idf.name
+    manifest = {"requested_holds": list(holds), "eye_view_holds": list(eye), "ids_enabled": ids_enabled,
+                "resolution": [w, h], "cameras": cameras, "files": files, "id_files": id_files,
+                "assessment_camera": {"first_person_fov_deg": 70.0, "aspect": [16, 9], "near_plane_cm": 10.0,
+                                      "reticle_clear_radius": 0.12},
+                "study": {"path": "docs/art-direction/data/yumi_fp_hold_study.json", "sha256": "0" * 64},
+                "id_colours": {"bow": [1, 0, 0], "arrow": [0, 1, 0], "paw": [0, 0, 1]}}
+    (root / "manifest.json").write_text(json.dumps(manifest))
+    return manifest
+
+
+def snapshot(root: Path):
+    return {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(root.iterdir())}
+
+
+class Run(unittest.TestCase):
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+
+    def tearDown(self):
+        self._tmp.cleanup()
+
+    def edit(self, **changes):
+        m = json.loads((self.root / "manifest.json").read_text())
+        m.update(changes)
+        (self.root / "manifest.json").write_text(json.dumps(m))
+        return m
+
+    def fails(self, *phrases):
+        before = snapshot(self.root)
+        with self.assertRaises(A.AnalysisError) as ctx:
+            A.analyse_run(self.root)
+        for phrase in phrases:
+            self.assertIn(phrase, str(ctx.exception))
+        err = io.StringIO()
+        with contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(A.main(["analyse", str(self.root)]), 1)
+        self.assertIn("YUMI_FP_ANALYSIS_FAILED", err.getvalue())
+        self.assertFalse((self.root / "analysis.json").exists())             # never an empty analysis
+        self.assertEqual(snapshot(self.root), before)                        # the originals are untouched
+
+    def test_a_complete_run_analyses_exactly_its_eye_view_holds(self):
+        write_run(self.root)
+        rec = A.analyse_run(self.root)
+        self.assertEqual(list(rec["holds"]), ["rest", "root", "right_cheek"])
+        self.assertEqual(rec["reticle_clear_radius"], 0.12)
+        self.assertTrue(rec["holds"]["root"]["reticle_occluded"])
+        self.assertEqual(rec["holds"]["root"]["camera"]["field_of_view_deg"], 70.0)
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(A.main(["analyse", str(self.root)]), 0)
+        self.assertTrue((self.root / "analysis.json").is_file())
+
+    def test_a_custom_subset_is_analysed_as_requested(self):
+        write_run(self.root, holds=("root", "paw"), eye=("root",))
+        self.assertEqual(list(A.analyse_run(self.root)["holds"]), ["root"])
+
+    def test_a_requested_id_file_absent_from_the_manifest_fails(self):
+        m = write_run(self.root)
+        del m["id_files"]["right_cheek"]
+        self.edit(id_files=m["id_files"])
+        self.fails("right_cheek: no ID file recorded")
+
+    def test_no_id_files_at_all_fails(self):
+        write_run(self.root)
+        self.edit(id_files={})
+        self.fails("rest: no ID file recorded", "root: no ID file recorded")
+
+    def test_a_missing_id_file_fails(self):
+        write_run(self.root)
+        (self.root / "root_ids.png").unlink()
+        self.fails("root: root_ids.png is missing")
+
+    def test_an_empty_id_file_fails(self):
+        write_run(self.root)
+        (self.root / "rest_ids.png").write_bytes(b"")
+        self.fails("rest: rest_ids.png is empty")
+
+    def test_bytes_that_disagree_with_the_manifest_fail(self):
+        write_run(self.root)
+        Image.fromarray(np.zeros((H, W, 3), np.uint8)).save(self.root / "root_ids.png")
+        self.fails("root: root_ids.png is", "the manifest records")
+
+    def test_an_id_file_without_a_hash_fails(self):
+        m = write_run(self.root)
+        del m["files"]["rest_ids.png"]
+        self.edit(files=m["files"])
+        self.fails("rest: rest_ids.png has no hash")
+
+    def test_dimensions_that_are_not_the_capture_resolution_fail(self):
+        write_run(self.root)
+        self.edit(resolution=[W * 2, H * 2])
+        self.fails("the capture's resolution")
+
+    def test_a_camera_aspect_off_the_resolution_fails(self):
+        m = write_run(self.root)
+        m["cameras"]["root"]["aspect_ratio"] = 4 / 3
+        self.edit(cameras=m["cameras"])
+        self.fails("root: camera aspect")
+
+    def test_an_id_file_for_a_hold_not_in_view_fails(self):
+        m = write_run(self.root)
+        m["id_files"]["paw"] = "root_ids.png"
+        self.edit(id_files=m["id_files"])
+        self.fails("not eye-view holds: ['paw']")
+
+    def test_the_id_pass_off_fails_as_nothing_to_analyse(self):
+        write_run(self.root, ids_enabled=False)
+        self.fails("the ID pass was off")
+
+    def test_no_eye_view_hold_fails_as_nothing_to_analyse(self):
+        write_run(self.root, holds=("paw",), eye=())
+        self.fails("no eye-view hold was requested")
+
+    def test_a_manifest_from_before_the_contract_fails(self):
+        write_run(self.root)
+        m = json.loads((self.root / "manifest.json").read_text())
+        for key in ("requested_holds", "eye_view_holds", "ids_enabled", "assessment_camera", "study"):
+            del m[key]
+        (self.root / "manifest.json").write_text(json.dumps(m))
+        self.fails("predates the ID analysis contract")
+
+    def test_a_bad_reticle_radius_fails(self):
+        write_run(self.root)
+        self.edit(assessment_camera={"reticle_clear_radius": None})
+        self.fails("reticle_clear_radius is None")
+
+    def test_no_manifest_fails(self):
+        self.fails("no manifest.json")
 
 
 if __name__ == "__main__":

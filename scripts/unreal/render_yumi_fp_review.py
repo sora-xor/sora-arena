@@ -104,7 +104,9 @@ LEVEL = f"/Game/ArtReview/YumiFP/L_YumiFP_{int(time.time())}"
 VIEWMODELS = json.loads((ROOT / "Content/Data/viewmodels.json").read_text(encoding="utf-8"))
 # Root's control hold and Codex's right_cheek candidate, with their sources' hashes
 # (root's viewmodels.json stays unchanged; yumi_fp_holds solves right_cheek here).
-STUDY = json.loads((ROOT / "docs/art-direction/data/yumi_fp_hold_study.json").read_text(encoding="utf-8"))
+STUDY_PATH = "docs/art-direction/data/yumi_fp_hold_study.json"
+STUDY_BYTES = (ROOT / STUDY_PATH).read_bytes()          # hashed as read: the manifest pins exactly these
+STUDY = json.loads(STUDY_BYTES.decode("utf-8"))
 CONTROL = STUDY["root_control"]
 MESH_SCALE = VIEWMODELS["mesh_scale"]
 FOV = VIEWMODELS["camera"]["first_person_fov_deg"]
@@ -504,6 +506,17 @@ def camera_for(hold, width, height):
     return cam
 
 
+def camera_record(cam, width, height):
+    """The camera a hold was shot with, read back from the spawned actor."""
+    cc = cam.camera_component
+    loc, rot = cam.get_actor_location(), cam.get_actor_rotation()
+    return {"field_of_view_deg": cc.get_editor_property("field_of_view"),
+            "aspect_ratio": cc.get_editor_property("aspect_ratio"),
+            "constrain_aspect_ratio": cc.get_editor_property("constrain_aspect_ratio"),
+            "location_cm": [loc.x, loc.y, loc.z], "rotation_deg": [rot.pitch, rot.yaw, rot.roll],
+            "resolution": [width, height]}
+
+
 def hide(actors, hidden):
     """The set, its sky and its lights, out of (or back into) the ID pass: as actors, in the editor, and
     each component's visibility, since a sky or light component need not follow its actor's flag."""
@@ -517,6 +530,9 @@ def hide(actors, hidden):
 def main():
     opts = parse_args()
     holds = [h for h in opts["holds"].split(",") if h]
+    unknown = [h for h in holds if h not in HOLDS]
+    if unknown:
+        raise RuntimeError(f"yumi FP review: unknown holds {unknown}; known: {sorted(HOLDS)}")
     width, height = (int(x) for x in opts["res"].split("x"))
     out = ROOT / "Saved/YumiFP" / opts["out"]
     out.mkdir(parents=True, exist_ok=True)
@@ -534,7 +550,7 @@ def main():
                "paw_fur": id_material("M_YumiFP_ID_PawFur", ID_COLOURS["paw"], mask=fur, clip=0.33, two_sided=True,
                                       dither=True)}
     status = {"frames": 0, "queue": list(holds), "phase": "pose", "wait": 0, "written": [], "sockets": {}, "poses": {},
-              "assess": {}, "id_files": {}, "regates": {}}
+              "assess": {}, "id_files": {}, "regates": {}, "cameras": {}}
 
     def finish(message, error=False):
         unreal.unregister_slate_post_tick_callback(handle)
@@ -566,6 +582,13 @@ def main():
                             "materials_after_id_pass": status["regates"], "solved": vm.solved,
                             "assess": status["assess"], "id_files": status["id_files"], "id_colours": ID_COLOURS,
                             "control": {k: CONTROL[k] for k in ("source", "source_sha256")},
+                            # What the analysis reads, as this run used it (never the study file as it is later).
+                            "study": {"path": STUDY_PATH, "sha256": hashlib.sha256(STUDY_BYTES).hexdigest()},
+                            "requested_holds": holds, "ids_enabled": ids is not None,
+                            "eye_view_holds": [h for h in holds if "camera" not in HOLDS[h]],
+                            "resolution": [width, height], "cameras": status["cameras"],
+                            "assessment_camera": {k: CONTROL["camera"][k] for k in (
+                                "first_person_fov_deg", "aspect", "near_plane_cm", "reticle_clear_radius")},
                             "set_materials": SET_MATERIALS, "sun": SUN, "ev100": ev100, "exposure_bias": 1.0 - ev100,
                             "scope": "editor review originals: not the native first-person renderer or an admission"}
                 (out / "manifest.json").write_text(json.dumps(manifest, indent=1) + "\n")
@@ -585,6 +608,7 @@ def main():
             if eye_view:
                 status["assess"][hold] = vm.assess(hold)
             cam = camera_for(hold, width, height)
+            status["cameras"][hold] = camera_record(cam, width, height)
             LEVELS.pilot_level_actor(cam)
             LEVELS.editor_set_game_view(True)
             status.update(phase="light", count=0, cam=cam, eye_view=eye_view)
