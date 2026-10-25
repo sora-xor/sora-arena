@@ -1,0 +1,136 @@
+{
+ "schema_version": 1,
+ "kind": "sora-first-person-viewmodels",
+ "status": "A4 proposal: no runtime code reads this yet. Framing is checked by scripts/art/check_viewmodel_framing.py and unvalidated in Unreal; see docs/art-direction/FIRST_PERSON_VIEWMODEL_CONTRACT.md",
+ "frame": "Rest transforms are in the eye space of ASoraCharacterBase::Eye (the WeaponRoot parent): X forward, Y right, Z up, centimetres; rotations are FRotator degrees [pitch, yaw, roll]. anchor_cm is where the pose's anchor socket sits; the mesh hangs from that socket.",
+ "camera": {
+  "first_person_fov_deg": 70.0,
+  "aspect": [16, 9],
+  "first_person_scale": 0.6,
+  "near_plane_cm": 10.0,
+  "reticle_clear_radius": 0.12
+ },
+ "mesh_scale": 0.75,
+ "socket_frame": "Weapon sockets are in Blender metres of the weapon mesh: +X the line of action, +Z up, +Y the wielder's left (UE's FBX import flips Y). Grip_R is the right paw's hold, Grip_L the left paw's, Muzzle the business end (tip, point, bore, arrow rest).",
+ "motion": {
+  "note": "Today's magnitudes in USoraViewmodelComponent, unchanged, applied about each weapon's rest instead of the fixed (40,18,-18).",
+  "bob_cm": {"y": 0.7, "y_rad_per_s": 8.0, "z": 0.6, "z_rad_per_s": 16.0},
+  "pitch_deg": {"reload": -30.0, "committed_strike": 25.0, "bow_drawing": -15.0},
+  "sprint_roll_deg": -15.0,
+  "kernel_windup": {"lift_cm": 8.0, "pitch_deg": 28.0},
+  "blend_per_s": 12.0
+ },
+ "poses": {
+  "sword": {
+   "anchor": "Grip_R",
+   "rest": {"anchor_cm": [40.0, 10.0, -10.0], "rotation_deg": [3.0, -6.0, 0.0]},
+   "screen": {"Grip_R": {"u": [0.25, 0.6], "v": [-0.9, -0.45]}, "Muzzle": {"u": [-0.15, 0.25], "v": [-0.4, -0.05]}},
+   "clear_line": ["Grip_R", "Muzzle"],
+   "paws": {"Grip_R": "SM_NyaakotoFP_PawR_Tsuka", "Grip_L": "SM_NyaakotoFP_PawL_Tsuka"},
+   "look": "chudan: the right paw low right behind the tsuba, the tip just under and right of the reticle"
+  },
+  "dagger": {
+   "anchor": "Grip_R",
+   "rest": {"anchor_cm": [38.0, 10.0, -11.0], "rotation_deg": [10.0, -10.0, 0.0]},
+   "screen": {"Grip_R": {"u": [0.25, 0.6], "v": [-0.95, -0.5]}, "Muzzle": {"u": [0.0, 0.35], "v": [-0.45, -0.1]}},
+   "clear_line": ["Grip_R", "Muzzle"],
+   "paws": {"Grip_R": "SM_NyaakotoFP_PawR_Tanto"},
+   "look": "one paw, point forward and up, well clear of the reticle"
+  },
+  "gun": {
+   "anchor": "Grip_R",
+   "rest": {"anchor_cm": [32.0, 11.0, -12.0], "rotation_deg": [1.0, -3.0, 0.0]},
+   "screen": {"Grip_R": {"u": [0.35, 0.75], "v": [-1.1, -0.75]}, "Muzzle": {"u": [0.08, 0.4], "v": [-0.45, 0.0]}},
+   "clear_line": ["Grip_R", "Muzzle"],
+   "paws": {"Grip_R": "SM_NyaakotoFP_PawR_Stock", "Grip_L": "SM_NyaakotoFP_PawL_Fore"},
+   "look": "hip carry: the trigger paw at the bottom edge, the bore converging on the reticle"
+  },
+  "polearm": {
+   "anchor": "Grip_R",
+   "rest": {"anchor_cm": [28.0, 13.0, -19.0], "rotation_deg": [0.0, -3.0, 0.0]},
+   "screen": {"Grip_L": {"u": [0.05, 0.35], "v": [-0.75, -0.35]}, "Muzzle": {"u": [-0.1, 0.2], "v": [-0.4, -0.05]}},
+   "clear_line": ["Grip_L", "Muzzle"],
+   "paws": {"Grip_R": "SM_NyaakotoFP_PawR_Shaft", "Grip_L": "SM_NyaakotoFP_PawL_Shaft"},
+   "look": "the rear paw below the frame, the forward paw low right, the point under the reticle"
+  },
+  "heavy": {
+   "anchor": "Grip_R",
+   "rest": {"anchor_cm": [36.0, 13.0, -15.0], "rotation_deg": [26.0, 4.0, 0.0]},
+   "screen": {"Grip_R": {"u": [0.35, 0.75], "v": [-1.2, -0.8]}, "Muzzle": {"u": [0.15, 0.5], "v": [-0.1, 0.7]}},
+   "clear_line": ["Grip_R", "Muzzle"],
+   "paws": {"Grip_R": "SM_NyaakotoFP_PawR_Shaft", "Grip_L": "SM_NyaakotoFP_PawL_Shaft"},
+   "look": "head raised on the right, off the reticle"
+  },
+  "kama": {
+   "anchor": "Grip_R",
+   "rest": {"anchor_cm": [36.0, 12.0, -13.0], "rotation_deg": [20.0, -8.0, 0.0]},
+   "screen": {"Grip_R": {"u": [0.3, 0.65], "v": [-1.0, -0.7]}, "Grip_L": {"u": [-0.4, 0.0], "v": [-1.0, -0.7]}},
+   "clear_line": ["Grip_R", "Muzzle"],
+   "paws": {"Grip_R": "SM_NyaakotoFP_PawR_Tanto", "Grip_L": "SM_NyaakotoFP_PawL_Chain"},
+   "look": "sickle low right, the chain paw low left"
+  },
+  "bow": {
+   "anchor": "Grip_L",
+   "rest": {"anchor_cm": [45.0, -15.0, -12.0], "rotation_deg": [0.0, 6.0, -8.0]},
+   "screen": {"Grip_L": {"u": [-0.65, -0.3], "v": [-0.85, -0.5]}, "Muzzle": {"u": [-0.6, -0.25], "v": [-0.5, -0.2]}},
+   "clear_line": ["Grip_L", "Muzzle"],
+   "paws": {"Grip_L": "SM_NyaakotoFP_PawL_Yumi"},
+   "look": "bow paw low left, the stave crossing the left of the frame; the draw paw stays out of view"
+  },
+  "bow.drawn": {
+   "anchor": "Grip_L",
+   "rest": {"anchor_cm": [60.0, -3.0, -9.5], "rotation_deg": [0.25, 0.1, 0.0]},
+   "screen": {"Muzzle": {"u": [-0.12, 0.0], "v": [-0.25, -0.1]}},
+   "aim_line": {"from": "Muzzle", "distance_cm": 2000.0, "tolerance": 0.02},
+   "paws": {"Grip_L": "SM_NyaakotoFP_PawL_Yumi", "Grip_R": "SM_NyaakotoFP_PawR_Yugake"},
+   "look": "full draw: the bow arm extended, the stave just left of the reticle, the arrow under it converging at 20 m"
+  }
+ },
+ "weapons": [
+  {"id": 0, "key": "W00_Katana", "en": "Katana", "pose": "sword", "first_person_mesh": "/Game/Generated/Meshes/SM_Nyaagyu_HeroKatana",
+   "sockets_m": {"Grip_R": [-0.04, 0.0, 0.0], "Grip_L": [-0.22, 0.0, 0.0], "Muzzle": [0.84, 0.0, 0.018]},
+   "socket_source": "approximate, from create_hero_katana.py (origin on the guard line); the mesh needs authored SOCKET_ empties"},
+  {"id": "bokken", "key": "DojoBokken", "en": "Dojo bokken", "pose": "sword", "first_person_mesh": "/Game/Generated/Meshes/SM_Nyaagyu_DojoBokken",
+   "sockets_m": {"Grip_R": [-0.05, 0.0, 0.0], "Grip_L": [-0.27, 0.0, 0.0], "Muzzle": [0.757, 0.0, 0.022]},
+   "socket_source": "approximate, from create_dojo_bokken.py (the hero katana's grip origin); the mesh needs authored SOCKET_ empties"},
+  {"id": 1, "key": "W01_ArcCarbine", "en": "Arc carbine", "pose": "gun", "first_person_mesh": "/Game/Generated/Meshes/SM_Nyaagyu_ArcCarbine",
+   "sockets_m": {"Grip_R": [-0.10, 0.0, -0.10], "Grip_L": [0.25, 0.0, 0.0], "Muzzle": [0.526, 0.0, 0.026]},
+   "socket_source": "approximate, from create_arc_carbine.py (pistol grip, handguard, muzzle_center_m); the mesh needs authored SOCKET_ empties"},
+  {"id": 2, "key": "W02_Kusarigama", "en": "Kusarigama", "pose": "kama", "first_person_mesh": "/Game/Generated/Meshes/SM_Weapon_02", "sockets_from": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/build_record.json"},
+  {"id": 3, "key": "W03_NeedleSMG", "en": "Needle SMG", "pose": "gun", "first_person_mesh": "/Game/Generated/Meshes/SM_Weapon_03", "sockets_from": "Content/SourceArt/Weapons/Runtime/W03_NeedleSMG/build_record.json", "note": "listed as not built in the runtime weapon manifest"},
+  {"id": 4, "key": "W04_Wakizashi", "en": "Wakizashi", "pose": "sword", "first_person_mesh": "/Game/Generated/Meshes/SM_Weapon_04", "sockets_from": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/build_record.json"},
+  {"id": 5, "key": "W05_CoilMatchlock", "en": "Coil matchlock", "pose": "gun", "first_person_mesh": "/Game/Generated/Meshes/SM_Weapon_05", "sockets_from": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/build_record.json"},
+  {"id": 6, "key": "W06_Kanabo", "en": "Kanabo", "pose": "heavy", "first_person_mesh": "/Game/Generated/Meshes/SM_Weapon_06", "sockets_from": "Content/SourceArt/Weapons/Runtime/W06_Kanabo/build_record.json"},
+  {"id": 7, "key": "W07_GrenadeLauncher", "en": "Grenade launcher", "pose": "gun", "first_person_mesh": "/Game/Generated/Meshes/SM_Weapon_07", "sockets_from": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/build_record.json"},
+  {"id": 8, "key": "W08_ForgeHammer", "en": "Forge hammer", "pose": "heavy", "first_person_mesh": "/Game/Generated/Meshes/SM_Weapon_08", "sockets_from": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/build_record.json"},
+  {"id": 9, "key": "W09_Repeater", "en": "Repeater", "pose": "gun", "first_person_mesh": "/Game/Generated/Meshes/SM_Weapon_09", "sockets_from": "Content/SourceArt/Weapons/Runtime/W09_Repeater/build_record.json"},
+  {"id": 10, "key": "W10_Tanto", "en": "Tanto", "pose": "dagger", "first_person_mesh": "/Game/Generated/Meshes/SM_Weapon_10", "sockets_from": "Content/SourceArt/Weapons/Runtime/W10_Tanto/build_record.json"},
+  {"id": 11, "key": "W11_PulseCarbine", "en": "Pulse carbine", "pose": "gun", "first_person_mesh": "/Game/Generated/Meshes/SM_Weapon_11", "sockets_from": "Content/SourceArt/Weapons/Runtime/W11_PulseCarbine/build_record.json", "note": "listed as not built in the runtime weapon manifest"},
+  {"id": 12, "key": "W12_MonofilamentNaginata", "en": "Monofilament naginata", "pose": "polearm", "first_person_mesh": "/Game/Generated/Meshes/SM_Weapon_12", "sockets_from": "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/build_record.json"},
+  {"id": 13, "key": "W13_PhantomSMG", "en": "Phantom SMG", "pose": "gun", "first_person_mesh": "/Game/Generated/Meshes/SM_Weapon_13", "sockets_from": "Content/SourceArt/Weapons/Runtime/W13_PhantomSMG/build_record.json", "note": "listed as not built in the runtime weapon manifest"},
+  {"id": 14, "key": "W14_PlasmaMatchlock", "en": "Plasma matchlock", "pose": "gun", "first_person_mesh": "/Game/Generated/Meshes/SM_Weapon_14", "sockets_from": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/build_record.json"},
+  {"id": 15, "key": "W15_MicroMortar", "en": "Micro mortar", "pose": "gun", "first_person_mesh": "/Game/Generated/Meshes/SM_Weapon_15", "sockets_from": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/build_record.json"},
+  {"id": 16, "key": "W16_ShockEmitter", "en": "Shock emitter", "pose": "gun", "first_person_mesh": "/Game/Generated/Meshes/SM_Weapon_16", "sockets_from": "Content/SourceArt/Weapons/Runtime/W16_ShockEmitter/build_record.json", "note": "listed as not built in the runtime weapon manifest"},
+  {"id": 17, "key": "W17_HealingLance", "en": "Healing lance", "pose": "polearm", "first_person_mesh": "/Game/Generated/Meshes/SM_Weapon_17", "sockets_from": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/build_record.json"},
+  {"id": 18, "key": "W18_Yumi", "en": "Yumi", "pose": "bow", "states": ["rest", "drawn"], "first_person_mesh": "/Game/Generated/Meshes/SM_Weapon_18", "sockets_from": "Content/SourceArt/Weapons/Runtime/W18_Yumi/build_record.json", "note": "Build() draws primitives for 18-20 today; the static yumi cannot show a drawn string (needs a string bone or drawn variant)"},
+  {"id": 19, "key": "W19_Yari", "en": "Yari", "pose": "polearm", "first_person_mesh": "/Game/Generated/Meshes/SM_Weapon_19", "sockets_from": "Content/SourceArt/Weapons/Runtime/W19_Yari/build_record.json"},
+  {"id": 20, "key": "W20_Naginata", "en": "Naginata", "pose": "polearm", "first_person_mesh": "/Game/Generated/Meshes/SM_Weapon_20", "sockets_from": "Content/SourceArt/Weapons/Runtime/W20_Naginata/build_record.json"}
+ ],
+ "hero_gear": {
+  "rule": "Each carried item is its own component, created only while the campaign state grants it and destroyed when it is lost, so chapter 1's lost-gear opening has no gear geometry at all, hidden or otherwise. The body mesh carries none of it.",
+  "body": "SK_NyaagyuSamurai rebuilt without its built-in saya, katana, ebira, ya and yumi (rig_nyaakoto_runtime.py today merges them into the body)",
+  "sockets": {
+   "gear_saya_l": {"bone": "pelvis", "use": "saya at the left hip, koiguchi forward, tip trailing"},
+   "gear_ebira": {"bone": "spine_01", "use": "ebira on the right back, fletching up behind the right shoulder"},
+   "gear_yumi_slung": {"bone": "spine_03", "use": "yumi slung diagonally across the back while another weapon is held"}
+  },
+  "meshes": {
+   "SM_NyaakotoGear_Saya": "empty saya, while the katana is drawn",
+   "SM_NyaakotoGear_SayaKatana": "saya with the sheathed katana",
+   "SM_NyaakotoGear_Ebira": "the quiver alone",
+   "SM_NyaakotoGear_EbiraArrows": "one arrow, instanced per remaining arrow up to quiver_arrows",
+   "SM_NyaakotoGear_YumiSlung": "the slung yumi"
+  },
+  "first_person": "Gear is owner-no-see; first person shows only the held weapon and its paws"
+ }
+}
