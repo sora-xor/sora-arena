@@ -245,6 +245,8 @@ const FSoraEnemyAttack* ASoraEnemy::CurrentAttack() const
 }
 float ASoraEnemy::WindupProgress() const
 {
+    if(bHorseShellBound&&HorseShellClock.Winding)
+        return FMath::Clamp(float(HorseShellClock.ClockMs-HorseShellClock.WarningStartedMs)/SoraHorseShellRules::WarningMs,0.f,1.f);
     if(Phase!=EPhase::Windup||PhaseEndsAt<=PhaseStartedAt) return 0.f;
     return FMath::Clamp((Now()-PhaseStartedAt)/(PhaseEndsAt-PhaseStartedAt),0.f,1.f);
 }
@@ -277,7 +279,7 @@ void ASoraEnemy::Tick(float Dt)
 }
 void ASoraEnemy::TickPlay(float Dt)
 {
-    AdvanceAttack();
+    if(bHorseShellBound) TickHorseShell(); else AdvanceAttack();
     if(BarrierMaxMilli>0&&VariantData)
     {
         const Rules::FBarrier Next=Rules::RegeneratedBarrier({BarrierAtLastHitMilli,BarrierMaxMilli},
@@ -289,6 +291,11 @@ void ASoraEnemy::TickPlay(float Dt)
 }
 void ASoraEnemy::HaltActions()
 {
+    // This encounter owns an active-play warning. Pausing holds it; death or
+    // teardown cancels it. The normal archetype attack path is unchanged.
+    if(bHorseShellBound&&IsAlive()&&HorseShellDirector.IsValid()&&
+       HorseShellDirector->HorseShellSession(HorseShellGeneration))
+    { HorseShellLastWorldSeconds=GetWorld()->GetTimeSeconds(); return; }
     CancelAttack();
 }
 void ASoraEnemy::DisruptWindAim(int32 Milliseconds)
@@ -298,6 +305,7 @@ void ASoraEnemy::DisruptWindAim(int32 Milliseconds)
 }
 bool ASoraEnemy::TryAttack(ASoraCharacterBase& Target,float Distance)
 {
+    if(bHorseShellBound) return false;
     if(!Kind||Phase!=EPhase::Idle||IsStaggered()||IsTurnLocked()||!Target.IsAlive()||Now()<NextAttackAt) return false;
     const int32 Facing=SoraDamage::FacingMilli(*this,Target.GetActorLocation());
     for(int32 Index=0;Index<AttackSet().Num();++Index)
@@ -447,8 +455,11 @@ void ASoraEnemy::Recover(const FSoraEnemyAttack& Attack)
 }
 void ASoraEnemy::CancelAttack()
 {
+    SoraHorseShellRules::Cancel(HorseShellClock); HorseShellTarget.Reset();
+    const auto Warning=ShellWarning; ShellWarning.Reset();
     Phase=EPhase::Idle; AttackIndex=INDEX_NONE; AttackTarget=nullptr; RoundsLeft=0;
     bConstructSlamReleased=false;
+    if(Warning.IsValid()) Warning->Destroy();
 }
 void ASoraEnemy::StrikeMelee(const FSoraEnemyAttack& Attack,ASoraCharacterBase& Target)
 {
@@ -510,20 +521,30 @@ void ASoraEnemy::FireRound(const FSoraEnemyAttack& Attack,ASoraCharacterBase& Ta
 }
 void ASoraEnemy::Lob(const FSoraEnemyAttack& Attack,ASoraCharacterBase& Target)
 {
+    LaunchShell(Attack,Feet(Target));
+}
+ASoraProjectile* ASoraEnemy::LaunchShell(const FSoraEnemyAttack& Attack,const FVector& Landing,
+    USoraCampaignDirector* Director,uint64 Generation,AActor* Warning)
+{
     const FVector Origin=Eye()+GetActorForwardVector()*60.f*GetActorScale3D().X;
-    const FVector Landing=Feet(Target);
     const float Flight=Attack.FlightMs/1000.f;
     // The launch that lands on the ring after exactly its flight time.
     FVector Velocity=(Landing-Origin)/Flight;
     Velocity.Z+=.5f*SoraEnemyBody::ShellGravity*Flight;
     auto* Shell=GetWorld()->SpawnActorDeferred<ASoraProjectile>(ASoraProjectile::StaticClass(),
         FTransform(Velocity.Rotation(),Origin),this,this,ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
-    if(!Shell) return;
+    if(!Shell) return nullptr;
     Shell->Velocity=Velocity; Shell->Gravity=SoraEnemyBody::ShellGravity;
     Shell->Damage=Attack.Damage; Shell->Radius=Attack.RadiusCm; Shell->ArmingCm=Attack.ArmingCm;
+    if(Director)
+    {
+        Shell->BindHorseShell(*Director,Generation,Warning);
+        if(!Director->RegisterHorseShell(*Shell,Generation)) { Shell->Destroy(); return nullptr; }
+    }
     UGameplayStatics::FinishSpawningActor(Shell,Shell->GetActorTransform());
+    if(!IsValid(Shell)||Shell->IsActorBeingDestroyed()||(Director&&!Shell->HorseShellCurrent())) return nullptr;
     ++ShotsSinceRelocation;
-    SoraDamage::Ring(GetWorld(),Landing+FVector(0.f,0.f,3.f),Attack.RadiusCm,SoraAccessibility::TelegraphColor(this,SoraAccessibility::ETelegraph::Cleave),Flight);
+    if(!Director) SoraDamage::Ring(GetWorld(),Landing+FVector(0.f,0.f,3.f),Attack.RadiusCm,SoraAccessibility::TelegraphColor(this,SoraAccessibility::ETelegraph::Cleave),Flight);
     if(USoraGameEvents* Events=USoraGameEvents::Get(this))
     {
         FSoraWeaponFiredEvent Fired;
@@ -531,6 +552,7 @@ void ASoraEnemy::Lob(const FSoraEnemyAttack& Attack,ASoraCharacterBase& Target)
         Fired.Origin=Origin; Fired.Direction=Velocity.GetSafeNormal(); Fired.End=Landing;
         Events->OnWeaponFired.Broadcast(Fired);
     }
+    return IsValid(Shell)&&!Shell->IsActorBeingDestroyed()?Shell:nullptr;
 }
 void ASoraEnemy::FireBeam(const FSoraEnemyAttack& Attack,ASoraCharacterBase& Target)
 {

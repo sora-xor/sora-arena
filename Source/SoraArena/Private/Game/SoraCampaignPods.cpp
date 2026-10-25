@@ -18,6 +18,7 @@ void USoraCampaignDirector::EndPlay(const EEndPlayReason::Type Reason)
 }
 void USoraCampaignDirector::ResetPods()
 {
+    ResetHorseShells();
     ++PodGeneration; PodQueued=0;
     for(auto& Warning:PodWarnings) if(IsValid(Warning)) Warning->Destroy();
     PodWarnings.Reset();

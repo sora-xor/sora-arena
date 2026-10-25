@@ -422,6 +422,7 @@ void ASoraEnemyController::Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, 
                 Fight(Enemy,*Furnace,CanSee(*Furnace),Dt,NowMs);
                 return;
             }
+    if(DriveHorseShell(Enemy,Dt,NowMs)) return;
     // In a fight it may turn on someone beside the hero: the nearest companion
     // it can see that stands clearly nearer than he does.
     if (Mind.State == Stealth::EState::Combat)
@@ -662,6 +663,37 @@ void ASoraEnemyController::Search(ASoraEnemy& Enemy, float Dt, int32 NowMs)
         return;
     }
     Face(Enemy, Heading, Dt, 5.f);
+}
+
+bool ASoraEnemyController::DriveHorseShell(ASoraEnemy& Enemy,float Dt,int32 NowMs)
+{
+    if(!Enemy.HasHorseShellAssignment()) return false;
+    const auto* M=Cast<ASoraGameMode>(GetWorld()->GetAuthGameMode());
+    FVector Landing;
+    auto* Target=M&&M->Campaign()?M->Campaign()->HorseShellQuarry(Enemy,Landing):nullptr;
+    if(!Target||Enemy.IsWindingUp()||Enemy.IsTurnLocked())
+    { ClearPath(); Enemy.GetCharacterMovement()->StopMovementImmediately(); return true; }
+    const FVector Here=Enemy.GetActorLocation();
+    auto* Hero=M->Hero();
+    // The existing companion-quarry thresholds also make this shell baitable.
+    if(Hero&&Hero->IsAlive()&&CanSee(*Hero)&&FVector::Dist2D(Here,Hero->GetActorLocation())<
+       FMath::Min(SoraEnemyBrain::QuarryCm,FVector::Dist2D(Here,Landing)*SoraEnemyBrain::QuarryShare))
+    {
+        Target=Hero;
+        Landing=Hero->GetActorLocation()-FVector(0,0,Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+    }
+    const FVector Delta=(Landing-Here)*FVector(1,1,0);
+    const float Distance=Delta.Size();
+    Face(Enemy,Delta,Dt,4.f);
+    const float Standoff=Enemy.Archetype()->KeepDistanceCm;
+    const bool Clear=!Occluded(Here+FVector(0,0,SoraEnemyBrain::EyeHeight-30),Target->GetActorLocation(),Target);
+    if(Distance>=Standoff&&Clear&&Enemy.TryHorseShell(*Target,Landing))
+    { ClearPath(); Enemy.GetCharacterMovement()->StopMovementImmediately(); return true; }
+    if(Distance<Standoff||Distance>SoraHorseShellRules::MaxRangeCm||!Clear)
+        WalkTo(Enemy,Landing-Delta.GetSafeNormal()*Standoff,SoraEnemyBrain::CombatSpeed,60.f,NowMs);
+    else
+    { ClearPath(); Enemy.GetCharacterMovement()->StopMovementImmediately(); }
+    return true;
 }
 
 void ASoraEnemyController::Fight(ASoraEnemy& Enemy, ASoraCharacterBase& Target, bool bSees, float Dt, int32 NowMs)

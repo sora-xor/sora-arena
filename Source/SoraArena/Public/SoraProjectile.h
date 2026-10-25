@@ -3,6 +3,7 @@
 #include "GameFramework/Actor.h"
 #include "SoraProjectile.generated.h"
 class USphereComponent;
+class USoraCampaignDirector;
 
 // A yumi arrow or an explosive shell in flight. An arrow strikes what it hits.
 // A shell detonates where it stops, but only once it has travelled its arming
@@ -30,9 +31,16 @@ public:
     unsigned long long ArcheryShotId=0;
     unsigned long long WoodShotId=0;
     float TraveledCm() const { return Traveled; }
+    void BindHorseShell(USoraCampaignDirector& Director,uint64 Generation,AActor* Warning);
+    bool HorseShellCurrent() const;
 private:
     UPROPERTY() TObjectPtr<USphereComponent> Collision;
     float Age = 0.f;
     float Traveled = 0.f;
+    bool bDetonated=false;
+    bool bHorseShell=false;
+    uint64 HorseShellGeneration=0;
+    TWeakObjectPtr<USoraCampaignDirector> HorseShellDirector;
+    TWeakObjectPtr<AActor> HorseShellWarning;
     void Detonate();
 };

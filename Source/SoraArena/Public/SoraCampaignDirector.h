@@ -241,6 +241,11 @@ public:
     const SoraPodRules::FArrival& PodArrival(int32 Wave) const { check(Wave>=0&&Wave<SoraPodRules::Count); return PodState[Wave]; }
     AActor* PodWarning(int32 Wave) const { return PodWarnings.IsValidIndex(Wave)?PodWarnings[Wave].Get():nullptr; }
     bool IsHorseTreatment() const;
+    bool IsHorseShellDefense() const;
+    bool HorseShellSession(uint64 Generation) const;
+    AActor* HorseShellQuarry(const ASoraEnemy& Enemy,FVector& Landing) const;
+    bool RegisterHorseShell(ASoraProjectile& Projectile,uint64 Generation);
+    void ResolveHorseShell(ASoraProjectile& Projectile,uint64 Generation);
     ASoraHorse* TreatmentHorse(int32 Index) const;
     bool InteractHorseTreatment(ASoraPlayerCharacter& Hero);
     void CancelHorseTreatment();
@@ -410,6 +415,11 @@ private:
     FSoraMillisecondClock PodClocks[SoraPodRules::Count];
     UPROPERTY() TArray<TObjectPtr<AActor>> PodWarnings;
     uint64 PodGeneration=0;
+    uint64 HorseShellGeneration=0;
+    TWeakObjectPtr<ASoraEnemy> HorseGrenadier;
+    TArray<TWeakObjectPtr<ASoraProjectile>> HorseShells;
+    void ResetHorseShells();
+    void BindHorseGrenadier(ASoraEnemy& Enemy,int32 Wave);
     unsigned PodQueued=0;
     void ResetPods();
     void ActivatePod(int32 Wave);

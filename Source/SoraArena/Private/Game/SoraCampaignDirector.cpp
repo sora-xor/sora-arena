@@ -1168,6 +1168,7 @@ void USoraCampaignDirector::AddOpponent(ASoraEnemy* Enemy,int32 Wave)
     if(ActiveSpace()&&ActiveSpace()->Spire.Enabled()&&Enemy&&Enemy->IsFlying())
         if(auto* Brain=Cast<ASoraEnemyController>(Enemy->GetController())) Brain->AssignSpireFlight();
     Enemies.Add(Enemy); EnemyWaves.Add(TWeakObjectPtr<const ASoraEnemy>(Enemy),Wave); ++Spawned;
+    if(Enemy) BindHorseGrenadier(*Enemy,Wave);
     // A wave's drones may be the beat's seizure drones or its scouts.
     if(USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this); Fieldcraft&&Enemy&&Wave!=INDEX_NONE) Fieldcraft->OpponentJoined(*Enemy,Wave);
 }

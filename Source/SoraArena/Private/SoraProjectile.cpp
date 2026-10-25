@@ -38,9 +38,11 @@ void ASoraProjectile::BeginPlay()
 void ASoraProjectile::Tick(float Dt)
 {
     Super::Tick(Dt);
+    if(bDetonated) return;
+    if(bHorseShell&&!HorseShellCurrent()) { Destroy(); return; }
     const auto* Mode=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this));
     if(Mode&&Mode->InputState()==SoraInput::Dialogue) return;
-    if((ArcheryShotId||WoodShotId)&&Mode&&!Mode->IsPlaying()) return;
+    if((ArcheryShotId||WoodShotId||bHorseShell)&&Mode&&!Mode->IsPlaying()) return;
     if(Mode&&Mode->Campaign()) Velocity+=Mode->Campaign()->ProjectileWind(GetActorLocation(),bArrow,WeaponId)*Dt;
     Age+=Dt; Velocity.Z-=(bArrow?980.f:Gravity)*Dt;
     if(bArrow) SetActorRotation(Velocity.Rotation());
@@ -67,6 +69,8 @@ void ASoraProjectile::Tick(float Dt)
 }
 void ASoraProjectile::EndPlay(const EEndPlayReason::Type Reason)
 {
+    const auto Warning=HorseShellWarning; HorseShellWarning.Reset();
+    if(Warning.IsValid()) Warning->Destroy();
     // Unexpected projectile removal is a miss, not an eternally pending
     // sixth arrow. Session teardown invalidates its identities first.
     if((ArcheryShotId||WoodShotId)&&Reason==EEndPlayReason::Destroyed)
@@ -74,8 +78,23 @@ void ASoraProjectile::EndPlay(const EEndPlayReason::Type Reason)
             Mode->Campaign()->ResolveArcheryArrow(*this,nullptr);
     Super::EndPlay(Reason);
 }
+void ASoraProjectile::BindHorseShell(USoraCampaignDirector& Director,uint64 Generation,AActor* Warning)
+{
+    bHorseShell=true; HorseShellDirector=&Director; HorseShellGeneration=Generation; HorseShellWarning=Warning;
+}
+bool ASoraProjectile::HorseShellCurrent() const
+{
+    return bHorseShell&&!IsActorBeingDestroyed()&&HorseShellDirector.IsValid()&&
+        HorseShellDirector->HorseShellSession(HorseShellGeneration);
+}
 void ASoraProjectile::Detonate()
 {
+    if(bDetonated) return;
+    bDetonated=true;
+    if(bHorseShell&&!HorseShellCurrent()) { Destroy(); return; }
+    const TWeakObjectPtr<ASoraProjectile> Weak=this;
+    const auto Current=[Weak] { return Weak.IsValid()&&!Weak->IsActorBeingDestroyed()&&
+        (!Weak->bHorseShell||Weak->HorseShellCurrent()); };
     const FVector At=GetActorLocation();
     // Stopped short of its arming distance: a dud. It neither bursts nor hurts.
     if(!SoraCombatRules::Armed(FMath::FloorToInt32(Traveled),ArmingCm))
@@ -92,7 +111,13 @@ void ASoraProjectile::Detonate()
         Detonated.Instigator=GetInstigator(); Detonated.Location=At; Detonated.Radius=Radius; Detonated.Damage=Damage;
         Events->OnDetonated.Broadcast(Detonated);
     }
-    SoraDamage::Blast(*GetWorld(),Damage,Radius,FSoraHit::Blast(At,WeaponId),GetInstigatorController(),this);
+    if(!Current()) { if(!IsActorBeingDestroyed()) Destroy(); return; }
+    auto Hit=FSoraHit::Blast(At,WeaponId);
+    if(bHorseShell) { Hit.SourceEnemy=true; Hit.AttackId=TEXT("arcing_shell"); }
+    SoraDamage::Blast(*GetWorld(),Damage,Radius,Hit,GetInstigatorController(),this,Current);
+    if(!Current()) { if(!IsActorBeingDestroyed()) Destroy(); return; }
+    if(bHorseShell) HorseShellDirector->ResolveHorseShell(*this,HorseShellGeneration);
+    if(!Current()) { if(!IsActorBeingDestroyed()) Destroy(); return; }
     auto* Effect=GetWorld()->SpawnActor<AActor>(At,FRotator::ZeroRotator);
     auto* Sphere=ASoraWorldBuilder::Shape(Effect,nullptr,TEXT("Blast"),TEXT("/Engine/BasicShapes/Sphere.Sphere"),FVector::ZeroVector,FVector(Radius/110.f),FLinearColor(1,.22,.025));
     Effect->SetRootComponent(Sphere); Effect->SetActorLocation(At); Effect->SetLifeSpan(.12f);

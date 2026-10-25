@@ -11767,6 +11767,26 @@
        "release_ms": 95000
       }
      ]
+    },
+    "horse_shell": {
+     "wave": 1,
+     "archetype": "grenadier",
+     "attack": "arcing_shell",
+     "targets": [
+      "pack_horse_a",
+      "pack_horse_b"
+     ],
+     "warning_ms": 1400,
+     "release_interval_ms": 6000,
+     "flight_ms": 1400,
+     "arming_cm": 200,
+     "damage": 35,
+     "radius_cm": 300,
+     "range_cm": [
+      600,
+      2500
+     ],
+     "contact": "armed_sphere_with_cover"
     }
    },
    {

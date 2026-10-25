@@ -624,6 +624,8 @@ def derive_space(chapter, beats, places, collectibles, triggers, layout, fail):
     place_horse_treatment(beats, records, fail)
     from campaign_pods import place_pods
     place_pods(beats, records, layout, fail)
+    from campaign_horse_shell import place_horse_shell
+    place_horse_shell(beats, records, fail)
     from campaign_foundry_defense import place_foundry_defense
     place_foundry_defense(beats, records, fail)
     from campaign_molten import place_molten

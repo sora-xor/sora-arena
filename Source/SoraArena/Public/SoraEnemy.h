@@ -5,9 +5,13 @@
 #include "SoraDojoRules.h"
 #include "SoraFieldcraftRules.h"
 #include "SoraStealthRules.h"
+#include "SoraHorseShellRules.h"
+#include "SoraMillisecondClock.h"
 #include "SoraEnemy.generated.h"
 enum class ESoraEnemyCue : uint8;
 class ASoraBoss;
+class ASoraProjectile;
+class USoraCampaignDirector;
 struct FSoraEnemyArchetype;
 struct FSoraEnemyAttack;
 struct FSoraEnemyVariant;
@@ -54,6 +58,7 @@ class SORAARENA_API ASoraEnemy : public ASoraCharacterBase
 public:
     ASoraEnemy(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
     virtual void Tick(float DeltaSeconds) override;
+    virtual void EndPlay(const EEndPlayReason::Type Reason) override;
     // Makes this pawn an opponent of Archetype. Slot is its place in the spawn
     // order; fixed patterns (misses, peeks, flank sides) are offset by it so a
     // group never acts in unison. Without a patrol it belongs to a combat wave
@@ -104,6 +109,13 @@ public:
     // way; the pawn's own tick then winds it up, strikes and recovers.
     void DisruptWindAim(int32 Milliseconds);
     bool TryAttack(ASoraCharacterBase& Target, float Distance);
+    // Only the registered pod-B grenadier receives this encounter binding.
+    void BindHorseShell(USoraCampaignDirector& Director,uint64 Generation);
+    bool HasHorseShellAssignment() const { return bHorseShellBound; }
+    bool TryHorseShell(AActor& Target,const FVector& Landing);
+    void CancelHorseShell() { CancelAttack(); }
+    const SoraHorseShellRules::FState& HorseShellState() const { return HorseShellClock; }
+    AActor* HorseShellWarning() const { return ShellWarning.Get(); }
     bool IsAttacking() const { return Phase != EPhase::Idle; }
     bool IsWindingUp() const { return Phase == EPhase::Windup; }
     // Winding up or firing; collateral also holds still during its exposed
@@ -212,6 +224,18 @@ private:
     void StrikeMelee(const FSoraEnemyAttack& Attack, ASoraCharacterBase& Target);
     void FireRound(const FSoraEnemyAttack& Attack, ASoraCharacterBase& Target, bool bPattern);
     void Lob(const FSoraEnemyAttack& Attack, ASoraCharacterBase& Target);
+    ASoraProjectile* LaunchShell(const FSoraEnemyAttack& Attack,const FVector& Landing,
+        USoraCampaignDirector* Director=nullptr,uint64 Generation=0,AActor* Warning=nullptr);
+    void TickHorseShell();
+    void AdvanceHorseShellClock();
+    bool bHorseShellBound=false;
+    TWeakObjectPtr<USoraCampaignDirector> HorseShellDirector;
+    uint64 HorseShellGeneration=0;
+    SoraHorseShellRules::FState HorseShellClock;
+    FSoraMillisecondClock HorseShellMilliseconds;
+    double HorseShellLastWorldSeconds=0;
+    TWeakObjectPtr<AActor> HorseShellTarget;
+    TWeakObjectPtr<AActor> ShellWarning;
     void FireBeam(const FSoraEnemyAttack& Attack, ASoraCharacterBase& Target);
     void CastNet(const FSoraEnemyAttack& Attack, ASoraCharacterBase& Target);
     void Telegraph(const FSoraEnemyAttack& Attack, float Life);

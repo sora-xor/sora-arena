@@ -140,6 +140,7 @@ private:
     void AnnounceState(const ASoraEnemy& Enemy) const;
     void Act(ASoraEnemy& Enemy, ASoraCharacterBase& Target, bool bSees, float DeltaSeconds, int32 NowMs);
     void Fight(ASoraEnemy& Enemy, ASoraCharacterBase& Target, bool bSees, float DeltaSeconds, int32 NowMs);
+    bool DriveHorseShell(ASoraEnemy& Enemy,float DeltaSeconds,int32 NowMs);
     void Patrol(ASoraEnemy& Enemy, float DeltaSeconds, int32 NowMs);
     void Search(ASoraEnemy& Enemy, float DeltaSeconds, int32 NowMs);
     bool ChoosePosition(const ASoraEnemy& Enemy, const FVector& Threat, bool bRetreat);

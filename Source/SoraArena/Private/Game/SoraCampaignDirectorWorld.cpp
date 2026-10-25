@@ -467,7 +467,7 @@ void USoraCampaignDirector::TickHorses()
 }
 void USoraCampaignDirector::TickSiege(int32 DeltaMs)
 {
-    if(IsFoundryDefense()) return; // Actual grenades and netted bellows own this encounter's pressure.
+    if(IsFoundryDefense()||IsHorseShellDefense()) return; // Actual projectiles and arrivals own these encounters' pressure.
     const FSoraBeatSpace* Space=ActiveSpace();
     if(!Space||Task.Task!=SoraBeatRules::ETask::Defend) return;
     for(int32 Target=0;Target<Task.TargetCount&&Target<Space->Targets.Num();++Target)
