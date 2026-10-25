@@ -47,6 +47,17 @@ with different paw assets, as v4 against v5 (NYAAKOTO_FP_FUR_V4.md).
   holds.
 - It reports the same per-hold figures as --compare.
 
+**Before either comparison measures anything** (root's review of 148c5c1,
+whose --assets accepted four malformed copies of v5):
+- every setup key must be present in both manifests with a valid value
+  (VALID). An absent key no longer matches an absent key.
+- each compared hold's camera, hold, posed sockets and pose must be present,
+  the camera with a positive FOV and finite location and rotation;
+- a hold must be an eye-view hold, with its ID image, in both runs or in
+  neither;
+- each eye-view hold's post-ID material readback must be intact and equal to
+  its run's readback before any shot.
+
 **It fails** (exit 1, naming each problem), and never returns an empty
 measurement, when:
 - the manifest is missing or unreadable;
@@ -62,6 +73,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -94,6 +106,83 @@ ASSET_TOL_CM = 1e-9
 
 class NoiseError(Exception):
     pass
+
+
+def _finite(x):
+    return isinstance(x, (int, float)) and not isinstance(x, bool) and math.isfinite(x)
+
+
+def _positive(x):
+    return _finite(x) and x > 0
+
+
+def _vec3(x):
+    return isinstance(x, list) and len(x) == 3 and all(_finite(c) for c in x)
+
+
+def _filled(x):
+    return isinstance(x, dict) and len(x) > 0
+
+
+def _readback(x):
+    """A materials readback: per asset, its slot rows and the rows its component draws, none empty."""
+    return _filled(x) and all(isinstance(r, dict) and isinstance(r.get("slots"), list) and r["slots"]
+                              and isinstance(r.get("component"), list) and r["component"] for r in x.values())
+
+
+def _positive_int(x):
+    return isinstance(x, int) and not isinstance(x, bool) and x > 0
+
+
+# Each recorded setup value's own test: present is not enough, and an absent key is no match for another.
+VALID = {
+    "fov": _positive, "mesh_scale": _positive, "materials": _readback, "id_colours": _filled, "control": _filled,
+    "ids_enabled": lambda v: isinstance(v, bool),
+    "resolution": lambda v: isinstance(v, list) and len(v) == 2 and all(_positive_int(c) for c in v),
+    "assessment_camera": lambda v: isinstance(v, dict) and _positive(v.get("reticle_clear_radius")),
+    "set_materials": _filled, "sun": lambda v: _filled(v) and all(_finite(x) for x in v.values()),
+    "ev100": _finite, "exposure_bias": _finite,
+    "highres_runup": lambda v: isinstance(v, dict) and _positive_int(v.get("r.HighResScreenshotDelay")),
+    "holds": _filled, "sockets_cm": _filled, "poses_component_cm": _filled, "cameras": _filled,
+    "solved": lambda v: isinstance(v, dict), "materials_after_id_pass": lambda v: isinstance(v, dict),
+    "study": lambda v: isinstance(v, dict) and isinstance(v.get("sha256"), str) and bool(v["sha256"]),
+    "requested_holds": lambda v: _names(v) and bool(v), "eye_view_holds": lambda v: _names(v),
+}
+
+
+def _setup_problems(m, keys, label):
+    """Each key present in the manifest with a valid value (VALID)."""
+    out = []
+    for k in keys:
+        if k not in m:
+            out.append(f"{label} has no {k}")
+        elif not VALID[k](m[k]):
+            out.append(f"{label}'s {k} is not a valid record ({str(m[k])[:60]})")
+    return out
+
+
+def _camera(c):
+    return isinstance(c, dict) and _positive(c.get("field_of_view_deg")) and _vec3(c.get("location_cm")) \
+        and _vec3(c.get("rotation_deg"))
+
+
+def _hold_problems(m, hold, label):
+    """A compared hold's own records: its camera (valid), hold, posed sockets and pose present; for an eye-view hold,
+    its post-ID material readback intact and equal to the run's own readback before any shot."""
+    out = []
+    for k in ASSET_HOLD_KEYS:
+        rec = m.get(k)
+        if not (isinstance(rec, dict) and _filled(rec.get(hold))):
+            out.append(f"{label} has no {k}[{hold}]")
+    cams = m.get("cameras")
+    if isinstance(cams, dict) and _filled(cams.get(hold)) and not _camera(cams[hold]):
+        out.append(f"{label}'s cameras[{hold}] is not a valid camera")
+    if hold in (m.get("eye_view_holds") or []):
+        after = m.get("materials_after_id_pass")
+        after = after.get(hold) if isinstance(after, dict) else None
+        if not (_readback(after) and after == m.get("materials")):
+            out.append(f"{label}'s materials_after_id_pass[{hold}] is not its own readback before any shot")
+    return out
 
 
 def _close(x, y, tol):
@@ -254,6 +343,13 @@ def compare_assets(run_a: Path, run_b: Path) -> dict:
     common = [h for h in ma["requested_holds"] if h in mb["requested_holds"]]
     if not common:
         raise NoiseError(f"{run_a} and {run_b} have no hold in common")
+    problems = _setup_problems(ma, ASSET_SETUP_KEYS, "A") + _setup_problems(mb, ASSET_SETUP_KEYS, "B")
+    for hold in common:
+        problems += _hold_problems(ma, hold, "A") + _hold_problems(mb, hold, "B")
+        if (hold in ma["eye_view_holds"]) != (hold in mb["eye_view_holds"]):
+            problems.append(f"{hold} is an eye-view hold (with IDs) in one run only: its ID policy differs")
+    if problems:
+        raise NoiseError(f"{run_a} and {run_b} cannot be compared: " + "; ".join(problems))
     differ = [k for k in ASSET_SETUP_KEYS if ma.get(k) != mb.get(k)]
     for hold in common:
         for k in ASSET_HOLD_KEYS:
@@ -273,9 +369,15 @@ def compare_assets(run_a: Path, run_b: Path) -> dict:
 def compare_runs(run_a: Path, run_b: Path) -> dict:
     """Two runs identical but for their run-up: per hold, each run's own selection, and both on their intersection."""
     (ma, da, ia), (mb, db, ib) = load_run(run_a), load_run(run_b)
+    problems = _setup_problems(ma, SETUP_KEYS, "A") + _setup_problems(mb, SETUP_KEYS, "B")
+    if problems:
+        raise NoiseError(f"{run_a} and {run_b} cannot be compared: " + "; ".join(problems))
     differ = [k for k in SETUP_KEYS if ma.get(k) != mb.get(k)]
     if differ:
         raise NoiseError(f"{run_a} and {run_b} differ in {differ}, not only in their run-up")
+    problems = [p for h in ma["requested_holds"] for p in _hold_problems(ma, h, "A") + _hold_problems(mb, h, "B")]
+    if problems:
+        raise NoiseError(f"{run_a} and {run_b} cannot be compared: " + "; ".join(problems))
     holds = _pair(ia, ib, ma["requested_holds"])
     return {"schema_version": 2, "generator": "scripts/art/fur_capture_noise.py", "compare": True,
             "a": {"run": str(run_a), "manifest_sha256": hashlib.sha256(da).hexdigest(),

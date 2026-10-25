@@ -12,8 +12,14 @@ What remains is a flatter, whiter coat with angular card gaps (below).
 
 **The comparator, reviewed:** root's probe of `fur_capture_noise --assets`
 (148c5c1) found four malformed copies of v5 that it accepted. The v4 and v5
-figures here stand on root's separate checks of the originals. The fix
-follows the v6 capture.
+figures here stand on root's separate checks of the originals.
+- **The fix:** both comparison modes now require every setup key present and
+  valid, each compared hold's records present, the same eye-view and ID
+  policy per hold, and an intact post-ID material readback.
+- Root's four mutations, rerun on copies of v5, are all refused, and an
+  unmutated control is accepted (`Saved/W18Rebuild/s31_comparator_probe_rerun.json`).
+- Rechecked with the fixed tool, the v4 run-up pair and v4 against v5 give
+  identical figures (`s31_*_recheck.json`).
 
 ## The defect
 
