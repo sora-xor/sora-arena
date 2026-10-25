@@ -2,6 +2,7 @@
 #if WITH_DEV_AUTOMATION_TESTS
 #include "SoraCopyDeskAutomation.h"
 #include "SoraEnemy.h"
+#include "SoraEnemyController.h"
 #include "SoraEquipmentComponent.h"
 #include "SoraFieldcraftTestWorld.h"
 #include "SoraViewmodelComponent.h"
@@ -20,8 +21,14 @@ ASoraEnemy* FreezeGuards(FBeatWorld& W)
         It->SetActorTickEnabled(false); It->SetActorEnableCollision(false);
         It->GetCharacterMovement()->StopMovementImmediately();
         It->GetCharacterMovement()->SetComponentTickEnabled(false);
-        if(It->GetController()) It->GetController()->SetActorTickEnabled(false);
         It->SetActorLocation(FVector(W.BeatData().Space.Entry+FVector2D(0,8000),90));
+        if(auto* Brain=Cast<ASoraEnemyController>(It->GetController()))
+        {
+            // Freezing a controller otherwise retains its last sight sample.
+            // This fixture isolates physical contest, so reset its patrol first.
+            Brain->BeginPatrol(FSoraPatrolRoute{});
+            Brain->SetActorTickEnabled(false);
+        }
     }
     return First;
 }

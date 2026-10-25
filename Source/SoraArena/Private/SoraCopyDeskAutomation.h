@@ -14,9 +14,13 @@ inline bool Copy(FSoraAutomationWorld& World,int32 Point)
     const FVector From=World.Player()->GetActorLocation();
     // Walk along the clear front aisle, then step up to the chosen desk.
     const double AisleX=FMath::Min(From.X,Target.X-350.);
-    if(!SoraRecoveryAutomation::WalkTo(World,FVector(AisleX,From.Y,Target.Z))||
-        !SoraRecoveryAutomation::WalkTo(World,FVector(AisleX,Target.Y,Target.Z))||
-        !SoraRecoveryAutomation::WalkTo(World,Target))
+    const auto Walk=[&](const FVector& To)
+    {
+        // FindPath requires a route with two points; there is no route to
+        // request when this intermediate waypoint is already under the hero.
+        return FVector::Dist2D(World.Player()->GetActorLocation(),To)<=30.f||SoraRecoveryAutomation::WalkTo(World,To);
+    };
+    if(!Walk(FVector(AisleX,From.Y,Target.Z))||!Walk(FVector(AisleX,Target.Y,Target.Z))||!Walk(Target))
     {
         UE_LOG(LogTemp,Error,TEXT("Copy desk %d approach failed: from=%s at=%s target=%s input=%d movement=%d"),Point,
             *From.ToString(),*World.Player()->GetActorLocation().ToString(),*Target.ToString(),int32(World.Mode()->InputState()),
