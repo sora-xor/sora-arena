@@ -1720,6 +1720,32 @@ bool ForgetFallenGuard(FAutomationTestBase& Test, FState& State)
     return true;
 }
 
+// Reach the exfiltration checkpoint through the real campaign, then observe
+// the earlier relay sabotage after that checkpoint is restored in a new world.
+bool ExpectRelayAftermath(FAutomationTestBase& Test, FState& State)
+{
+    if (Campaign(State)->ChapterId != 5 || Campaign(State)->ActiveBeat() != 13) return true;
+    if (!WaitForDialogue(Test, State)) return false;
+    USoraFieldcraft* Craft = USoraFieldcraft::Get(Player(State));
+    if (!Test.TestTrue(TEXT("The later moat checkpoint restores the completed relay"),
+        Campaign(State)->RelayOffline() && (Campaign(State)->Progress().CompletedMask & (1u << 3)) != 0) ||
+        !Test.TestNotNull(TEXT("The exfiltration fieldcraft is staged"), Craft) ||
+        !Test.TestEqual(TEXT("Both moat searchlights remain staged after sabotage"), Craft->LightCount(), 2))
+        return false;
+    const FVector Spots[] = {Craft->SpotOf(0), Craft->SpotOf(1)};
+    const float Started = Mode(State)->RoundTime;
+    if (!Advance(Test, State, 180)) return false;
+    bool Good = Test.TestTrue(TEXT("The frozen-light observation spans active gameplay"), Mode(State)->RoundTime > Started + 2.f);
+    for (int32 I = 0; I < 2; ++I)
+        Good &= Test.TestTrue(TEXT("Relay sabotage leaves the moat light on but stops its sweep"),
+            Craft->IsLightOn(I) && Craft->SpotOf(I).Equals(Spots[I], .01f));
+    Craft->LockSearchlights(Spots[0] + FVector(500.f, 700.f, 0.f));
+    if (!Advance(Test, State, 60)) return false;
+    for (int32 I = 0; I < 2; ++I)
+        Good &= Test.TestTrue(TEXT("A later detection cannot retarget the offline searchlights"), Craft->SpotOf(I).Equals(Spots[I], .01f));
+    return Good;
+}
+
 // Plays beats until StopBeat is active (INDEX_NONE: until the chapter ends).
 bool PlayUntil(FAutomationTestBase& Test, FState& State, int32 StopBeat = INDEX_NONE)
 {
@@ -1741,6 +1767,7 @@ bool PlayUntil(FAutomationTestBase& Test, FState& State, int32 StopBeat = INDEX_
         if (Chapter.Rules.IsValidIndex(Beat) && Chapter.Rules[Beat].Checkpoint && Campaign(State)->ActivePhase() == 0 &&
             (!ExpectCheckpoint(Test, State) || !CheckpointReload(Test, State)))
             return false;
+        if (!ExpectRelayAftermath(Test, State)) return false;
         // Until Sequencer lands, a boss's intro plays its lines as the fight opens.
         const FSoraBeat* Active = Campaign(State)->ActiveBeatData();
         if (Active && Active->Is(SoraBeatRules::EType::Boss) && Campaign(State)->ActivePhase() == 0 &&

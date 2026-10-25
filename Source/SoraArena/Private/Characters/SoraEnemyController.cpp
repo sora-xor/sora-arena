@@ -587,15 +587,24 @@ void ASoraEnemyController::CallOut(const ASoraEnemy& Enemy) const
     const bool bLecterns = Zone && Zone->IsZoneActive() && !Zone->AlarmPoints().IsEmpty();
     const int32 Alarm = Enemy.Archetype() && !bLecterns ? Enemy.Archetype()->AlarmRadiusCm : 0;
     const auto* Mode=Cast<ASoraGameMode>(GetWorld()->GetAuthGameMode());
-    const bool bLocalDrone=Enemy.ArchetypeId()==TEXT("drone")&&Mode&&Mode->bCampaign&&
-        Mode->Campaign()&&Mode->Campaign()->RelayOffline();
+    const bool bRelayDrone = Enemy.ArchetypeId() == TEXT("drone") && Mode && Mode->bCampaign &&
+        Mode->Campaign() && Mode->Campaign()->ChapterId == 5;
+    const bool bLocalDrone = bRelayDrone && Mode->Campaign()->RelayOffline();
     for (TActorIterator<ASoraEnemyController> It(GetWorld()); It; ++It)
     {
         const APawn* Ally = It->GetPawn();
         if (*It == this || !Ally)
             continue;
+        if (bRelayDrone)
+        {
+            // The chapter relay carries a radio mark, independent of hearing
+            // and walls. Once disabled, only allies within twenty metres can
+            // receive the drone's last observation directly.
+            if (!bLocalDrone || FVector::DistSquared(Ally->GetActorLocation(), Enemy.GetActorLocation()) <= FMath::Square(2000.f))
+                It->HearCallout(Enemy.GetActorLocation(), LastKnown, true);
+            continue;
+        }
         const int32 Distance = FMath::RoundToInt32(FVector::Dist(Ally->GetActorLocation(), Enemy.GetActorLocation()));
-        if(bLocalDrone&&Distance>2000) continue;
         if (Distance > FMath::Max(Alarm, Stealth::NoiseRadiusCm(Stealth::ENoise::Callout)))
             continue;
         const bool bMuffled = Alarm <= 0 && Occluded(Enemy.GetActorLocation(), Ally->GetActorLocation(), Ally);

@@ -78,6 +78,40 @@ bool Walk(FBeatWorld& W,float Yaw,TFunctionRef<bool()> Arrived,int Limit=600)
     W.World->InjectKey(EKeys::W,IE_Released);
     return Good&&W.Test.TestTrue(TEXT("Ordinary mapped movement reaches the relay waypoint"),Arrived())&&W.Tick(3);
 }
+bool CheckDroneMarks(FBeatWorld& W,bool Offline)
+{
+    if(!Dialogue(W)) return false;
+    FreezeGuards(W);W.Stealth()->EndZone();
+    const FVector At(W.BeatData().Space.RelayRoom.Origin,5000);
+    Place(W,At+FVector(20000,0,0));W.Hero()->GetCharacterMovement()->DisableMovement();
+    FSoraPatrolRoute Route;FSoraEnemyTuning Tune;Tune.SightCm=1;Tune.DarkSightCm=0;Tune.HearingCm=0;
+    // Receivers are separated by more than ordinary shout range, so one
+    // receiver's response cannot relay this mark to a second receiver.
+    const FVector Offsets[]={FVector::ZeroVector,FVector(-1999,0,0),FVector(0,2000,0),FVector(2001,0,0)};
+    ASoraEnemy* Bodies[4]={};ASoraEnemyController* Brains[4]={};
+    for(int I=0;I<4;++I)
+    {
+        Bodies[I]=ASoraEnemy::SpawnArchetype(*W.World->GetTestWorld(),I==0?TEXT("drone"):TEXT("enforcer_rifle"),
+            100+I,At+Offsets[I],FRotator::ZeroRotator,&Route,&Tune);
+        Brains[I]=Bodies[I]?Cast<ASoraEnemyController>(Bodies[I]->GetController()):nullptr;
+        if(!W.Test.TestNotNull(TEXT("The isolated mark participant spawns"),Brains[I])) return false;
+        Bodies[I]->GetCharacterMovement()->SetComponentTickEnabled(false);Brains[I]->SetActorTickEnabled(false);
+    }
+    const FVector Known=At+FVector(320,456,0);
+    Brains[0]->Rouse(Known); // The actual alert transition emits the drone mark.
+    for(int I=1;I<4;++I) Brains[I]->Tick(1.f/60.f);
+    bool Good=W.Test.TestTrue(TEXT("The mark reaches a receiver just inside twenty metres"),
+        Brains[1]->State()!=SoraStealthRules::EState::Unaware&&Brains[1]->LastKnownLocation().Equals(Known,.01f));
+    Good&=W.Test.TestTrue(TEXT("The mark includes the twenty-metre boundary and preserves its evidence"),
+        Brains[2]->State()!=SoraStealthRules::EState::Unaware&&Brains[2]->LastKnownLocation().Equals(Known,.01f));
+    Good&=W.Test.TestTrue(Offline?TEXT("A restored offline relay cannot mark beyond twenty metres"):
+        TEXT("An online chapter relay carries the mark beyond twenty metres"),
+        Offline?Brains[3]->State()==SoraStealthRules::EState::Unaware:
+        Brains[3]->State()!=SoraStealthRules::EState::Unaware&&Brains[3]->LastKnownLocation().Equals(Known,.01f));
+    for(auto* Body:Bodies) Body->Destroy();
+    W.Test.AddInfo(TEXT("Radio delivery uses the production alert/callout/receiver path with isolated sight, hearing and zone consequences. This is not a visual detection or ordinary encounter test."));
+    return Good;
+}
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraRelayControlsTest,"SoraArena.Campaign.RelayControls",
@@ -287,7 +321,7 @@ bool FSoraRelayExitTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("Loading the actual completion save restores the relay's offline chapter state"),
         C->ChapterId==5&&C->ActiveBeat()>3&&C->RelayOffline()&&(C->Progress().CompletedMask&(1u<<3))!=0);
     AddInfo(TEXT("Directed completion and save fixture with explicit node placement and frozen guards. Stair movement is exercised separately."));
-    return true;
+    return CheckDroneMarks(W,true)&&!HasAnyErrors();
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraRelayLampNoticeTest,"SoraArena.Campaign.RelayLampNotice",
@@ -339,6 +373,18 @@ bool FSoraRelayLampNoticeTest::RunTest(const FString& Parameters)
         W.Fieldcraft()->Lamps()[0]->IsLit()&&W.Fieldcraft()->Lamps()[1]->IsLit());
     AddInfo(TEXT("Directed mapped-switch, height and delayed-notice fixture with isolated witness senses. Ordinary detection and light art remain separate."));
     return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraRelayDroneMarkOnlineTest,"SoraArena.Campaign.RelayDroneMarkOnline",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraRelayDroneMarkOnlineTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;using namespace SoraRelayAutomation;
+    if(!FSoraCatalog::Get().Load()) return false;
+    FBeatWorld W(*this,TEXT("RelayDroneMarkOnline"),5,3);if(!W.Start()) return false;
+    W.Harden();
+    if(!TestFalse(TEXT("The chapter relay starts online"),W.Campaign()->RelayOffline())) return false;
+    return CheckDroneMarks(W,false)&&!HasAnyErrors();
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraRelayPatrolCadenceTest,"SoraArena.Campaign.RelayPatrolCadence",

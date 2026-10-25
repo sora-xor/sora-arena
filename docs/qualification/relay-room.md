@@ -69,6 +69,16 @@ retaining the missed-deadline flag. Menu pause preserves patrol time. Inputs
 and all 20 evidence files verify, with natural editor/wrapper exits zero.
 The hero is held outside detection range: this is movement qualification,
 not ordinary stealth difficulty. The eight host relay-contract tests also pass.
+Review SHA-256: `1e40192590b01403645c4c87f4e08c9a158b7b01fd9286ce87ce9566f48a655a`.
+
+The next source correction separates chapter-six drone radio marks from the
+ordinary eighteen-metre acoustic callout. While the relay is online, a mark
+reaches allies in the current world; after sabotage its direct recipients are
+limited to twenty metres, inclusive, independent of hearing or walls. It carries
+the last observed location. New fixtures exercise the online path and the
+offline path after an actual completion save is loaded. The assisted full
+campaign also checks frozen, non-retargeting moat lights at its later exfiltration
+checkpoint. These new tests are not compiled or run yet.
 
 The previous room credited three generic held points. This candidate binds
 the portable relay reducer to mapped Interact input, grounded floor height,
