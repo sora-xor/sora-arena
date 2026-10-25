@@ -3,9 +3,9 @@
  "engine": "5.8.3-58210709+++UE5+Release-5.8",
  "namespace": "/Game/Generated/Qualification/W18YumiRig",
  "sources": {
-  "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/SK_Weapon_18.fbx": "23f73efce9a2115ae7546a5941796645cd7a53a40300da59a29ba569a360e1ab",
-  "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_Ya.fbx": "3fbec542158e1aa6a7fd20b36a4cb12ed749a2a4296a96c59637476560604b40",
-  "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/rig_record.json": "e6d4987a9344d1a77cd284413f04ebd10a94ddf1637945fd26a2106ddb53c27e"
+  "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/SK_Weapon_18.fbx": "dd19ee99651d25f5fe4faa8ab296cf330ed0e2bcdfefc4292dbf9c824d84f181",
+  "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_Ya.fbx": "78d0334bf0d460a5de3b2be5e2b7d7cedc33e6f2d25273eddb58b9a501ef5de7",
+  "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/rig_record.json": "1966ea6c52c1bcc30ae336c7cec6b59e16335fee2bed1b8395faf436ef3b3e2a"
  },
  "axes": "Unreal = 100 x (x, -y, z) cm from Blender metres (viewmodels.json socket_frame); verified on the bone heads' x and z, which all have y = 0, so the y sign is the contract's",
  "reference_head_error_cm": 7.9e-06,
@@ -414,6 +414,14 @@
  "bow_slots": [
   "M_Weapon_18"
  ],
+ "bow_materials": {
+  "M_Weapon_18": "/Game/Generated/Qualification/W18YumiRig/MI_W18_Weapon.MI_W18_Weapon"
+ },
+ "bow_package_binds": {
+  "package": "Content/Generated/Qualification/W18YumiRig/SK_Weapon_18.uasset",
+  "names_instance": true,
+  "names_world_grid": false
+ },
  "arrow_slots": [
   "M_Weapon_18"
  ],
@@ -425,7 +433,7 @@
     0.0,
     0.0
    ],
-   "relative_rotation": "<Struct 'Rotator' (0x407819a4020) {pitch: 0.000000, yaw: 0.000007, roll: 0.000000}>",
+   "relative_rotation": "<Struct 'Rotator' (0xbbc189ac720) {pitch: 0.000000, yaw: 0.000007, roll: 0.000000}>",
    "component_cm": [
     0.0,
     0.0,
@@ -444,7 +452,7 @@
     1.975,
     7.0
    ],
-   "relative_rotation": "<Struct 'Rotator' (0x407819a28e0) {pitch: 0.000000, yaw: 0.000007, roll: 0.000000}>",
+   "relative_rotation": "<Struct 'Rotator' (0xbbc189ab6a0) {pitch: 0.000000, yaw: 0.000007, roll: 0.000000}>",
    "component_cm": [
     1.475,
     1.975,
@@ -463,7 +471,7 @@
     -1e-05,
     -2e-06
    ],
-   "relative_rotation": "<Struct 'Rotator' (0x407819a13e0) {pitch: 0.193874, yaw: 0.193870, roll: -89.999341}>",
+   "relative_rotation": "<Struct 'Rotator' (0xbbc189a0960) {pitch: 0.193874, yaw: 0.193870, roll: -89.999341}>",
    "component_cm": [
     -16.64606,
     0.0,
@@ -482,7 +490,7 @@
     1e-06,
     -2e-06
    ],
-   "relative_rotation": "<Struct 'Rotator' (0x407819aeca0) {pitch: 0.193874, yaw: 0.193870, roll: -89.999341}>",
+   "relative_rotation": "<Struct 'Rotator' (0xbbc189a86a0) {pitch: 0.193874, yaw: 0.193870, roll: -89.999341}>",
    "component_cm": [
     -17.10988,
     0.0,
@@ -501,7 +509,7 @@
     -2e-06,
     -2e-06
    ],
-   "relative_rotation": "<Struct 'Rotator' (0x407819a10e0) {pitch: 0.193874, yaw: 0.193869, roll: -89.999341}>",
+   "relative_rotation": "<Struct 'Rotator' (0xbbc189a4f20) {pitch: 0.193874, yaw: 0.193869, roll: -89.999341}>",
    "component_cm": [
     -16.38746,
     0.0,
