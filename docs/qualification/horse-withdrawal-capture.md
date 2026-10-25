@@ -1,9 +1,11 @@
 # Rendered horse-defense withdrawal
 
 `SoraCapture.HorseWithdrawal.Live` is a prepared scene review for the
-chapter-two defense ending. Its engine build and first rendered run are
-pending. The earlier thirteen-test NullRHI result at `0adc081` does not
-qualify this new fixture or its images.
+chapter-two defense ending. At exact `c63af6f`, its editor build passes in
+21.60 seconds and the Metal SM6 1280×720 test passes in 158.90 seconds,
+with zero selected errors/warnings and natural editor/wrapper exit zero.
+All three original images were reviewed. The earlier thirteen-test NullRHI
+result at `0adc081` remains separate evidence.
 
 The fixture loads an isolated `ch02.b06` checkpoint and uses a fixed review
 camera. It freezes enemy combat through the real 150-second defense timer,
@@ -28,4 +30,27 @@ enemies, readable subtitles, proper materials or finished animation.
 Four affected host groups pass on the source candidate: withdrawal evidence,
 cargo evidence, capture reports and frame contracts. They reject shortened
 clocks, false arrivals, swapped actors, missing/replayed images and failed
-cleanup. No Unreal execution has occurred for this fixture yet.
+cleanup. Exact `c63af6f` also passes all 107 CI source gates in five jobs;
+the tested tree, artifact digests and raw logs were independently verified.
+
+The actual defense lasted 150.000 world seconds and 150.176 wall seconds.
+The three screenshot requests matched their processed frames exactly. Six
+living survivors reached the approach without firing or receiving defeat
+credit. Kohagi's complete call preceded completion, and profile/mapping/save
+cleanup passed. All 32 archived files and four original/archive pairs were
+rehashed; source, native inputs, Config and Generated remained unchanged.
+
+Retreat movement and bilingual dialogue are readable in these images. At the
+gate, bodies overlap each other and the torii posts, so the six arrivals are
+not individually distinguishable from this camera. The tracker also retained
+“Hold out: 0 s left” after the defense ended. A subsequent source correction
+shows “Pack horses defended” during withdrawal; that correction has not yet
+run in Unreal. Better arrival framing, ordinary play and final art remain open.
+
+This functional capture allowed recorded background CPU compilation, with an
+exclusive Unreal/Blender slot, at least 24 GiB free physical memory at launch
+and the unchanged 30 GiB disk reserve. It is not performance qualification.
+The original preparation requiring all compilers to be idle is preserved.
+Evidence: `Saved/Qualification/2026-10-25/withdrawal-sm6-c63af6f/1280x720-20261025T074606Z-305577ad/`;
+the independent `root-review.json` SHA-256 is
+`0a9ea8a51855ad969dcc0be10f7880c10a0c971cfdfaec9573343ad800e4254a`.

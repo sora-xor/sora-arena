@@ -31,8 +31,24 @@ are zero; source/native/Config/Generated are unchanged. The failed run remains
 preserved. Rendered readability and ordinary play are still unqualified. CI at
 exact `0adc081` passes all 106 source gates in five jobs, independently verified
 against artifact digests and raw logs; 279 Rust tests pass and five are ignored.
-The existing asset-ledger and workflow warnings are retained. The engine lane has returned to Claude for the corrected
-bow rebuild; the revised wood still fails visual review.
+The existing asset-ledger and workflow warnings are retained.
+
+At exact `c63af6f`, the new prepared withdrawal capture builds in 21.60 seconds
+and passes in Metal SM6 at 1280×720 with zero selected errors/warnings and
+natural editor/wrapper EOF. All three originals were reviewed: real retreat
+motion and bilingual dialogue are readable, but the arrival group overlaps
+itself and the torii posts. All 32 archived files rehash; source/native/Config/
+Generated remain unchanged. The tracker still showing zero seconds receives
+a subsequent source-only “Pack horses defended” correction. Better arrival
+framing and final art remain open. Background CPU load was recorded; no
+performance acceptance is claimed. Exact `c63af6f` CI passes 107 gates in five
+jobs with authenticated artifacts and raw logs. See the
+[capture evidence and limits](qualification/horse-withdrawal-capture.md).
+
+Claude again owns the engine/Blender lane. Signed bow rig `6f3875b` passes all
+32 host tests independently, and its 30 reviewed originals correct the gross
+stretching defects. Its Unreal import still fails on bone scale; a centimetre
+export correction is underway. The revised wood still fails visual review.
 
 ## 2026-10-25 pod arrivals and horse-defense shells
 

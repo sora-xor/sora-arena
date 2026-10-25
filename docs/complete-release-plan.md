@@ -55,15 +55,30 @@ source trees match; all five artifact digests and raw job logs are verified.
 The existing Fern02 plain-Git-blob ledger warning and ten Node20 workflow
 warning lines remain recorded.
 
-The engine lane returned to Claude after that run's natural EOF.
-All 15 timber originals were reviewed and all 46 files rehashed; wood still
-fails photoreal review. All nine current bow originals were reviewed and show
-stretched faces between the upper stave and string. Claude identified incorrect
-cross-island bone weights. The next rebuild stops at its deformation gate
-before export: 32 triangles exceed both 25% edge growth and 1 mm at full draw.
-That failure remains open with Claude. The fresh
-native minimal-CPU plan passes read-only preflight but has not executed.
-No new art, package or release acceptance is claimed.
+The subsequent prepared withdrawal capture at exact `c63af6f` builds in
+21.60 seconds and passes its 158.90-second Metal SM6 1280×720 test, with zero
+selected errors/warnings and natural editor/wrapper exit zero. Its actual
+150-second defense, six living arrivals, complete gate-clear call and cleanup
+pass; all 32 archive files rehash and source/native/Config/Generated are
+unchanged. All three originals were reviewed: movement and bilingual dialogue
+are readable, but the arrival group overlaps the torii posts and itself.
+The stale zero-second countdown receives a subsequent source-only correction
+to “Pack horses defended.” Better arrival framing and final visuals remain
+open. The [capture record](qualification/horse-withdrawal-capture.md) states
+the assisted setup and recorded background CPU load; this is not performance
+or ordinary combat acceptance. Exact `c63af6f` CI `40172328160` independently
+passes all 107 source gates in five jobs, with 279 Rust passes and five ignores.
+
+The engine lane returned to Claude after the capture's natural EOF. All 15
+timber originals still fail photoreal review. Signed bow rig `6f3875b` fixes
+the gross tip web and detached serving in all 30 independently reviewed gray
+geometry images; its signed 32-test host suite passes independently. Unreal
+import attempts 0–6 fail and are retained. Root traced the remaining root-bone
+scale issue through the installed engine source and actual FBX properties;
+Claude is correcting the export units before new Blender/Unreal playback
+verification. Final materials, arrow attachment, paws and runtime integration
+remain open. The fresh native minimal-CPU plan passes read-only preflight but
+has not executed. No new package or release acceptance is claimed.
 
 ## October 25 pod arrivals and horse-defense shells
 
@@ -1289,7 +1304,7 @@ history below. The release remains incomplete.
 | A1 | Unique timber kit and golden-hour Estate/dojo slice | Claude | Nine baseline meshes/31 packages pass import and reopen at `97c08a0`. At `0c7961d`, 36 SM6 and 18 SM5 captures pass readiness checks on M2 Ultra, with original-image review; this closes capture readiness only. The separate six-member v2.1 pilot remains visually rejected for smooth bands, blister dents, glossy ridges and repeated adze marks. The separate v2.2 pilot also fails review of all 15 originals for smooth striped surfaces and repeated adze tiling. Claude owns the engine lane for the corrected bow; a focused timber patch is next. Unique per-placement binaries, dressing, full provenance and photoreal acceptance remain open. M2 SM5 does not qualify M1. |
 | A2 | Complete character and first-person presentation | Claude | Nyaakoto, paws, sword/saya, clothing, fur and motion must pass [photoreal acceptance](art-direction/photoreal-acceptance.md) in actual gameplay and cinematics. Generated references and Blender images are source evidence only. |
 | A3 | Complete campaign/arena art, animation, audio and effects | Claude + Codex integration | Extend approved visual direction across every environment, character and encounter; complete dialogue presentation, cinematics, sound, music and effects. Review every asset's rights and ledger records. Missing original references remain explicit, rather than being claimed as matched. |
-| Q1 | Repeatable source validation and CI | Codex validation lane | Authenticated CI `40170994760` passes all 106 gates in five jobs at exact `0adc081`; 279 Rust tests pass and five are explicitly ignored. Tested/source trees match; all five artifact digests and raw logs are verified. Existing asset-ledger and workflow warnings are retained. Private assets, rendered art and full native execution remain separate gates. |
+| Q1 | Repeatable source validation and CI | Codex validation lane | Authenticated CI `40172328160` passes all 107 gates in five jobs at exact `c63af6f`; 279 Rust tests pass and five are explicitly ignored. Tested/source trees match; all five artifact digests and raw logs are verified. Existing asset-ledger and workflow warnings are retained. Private assets, rendered art and full native execution remain separate gates. |
 | N1 | Matching native kernel and Connect integration | Codex | Kernel ABI4 stages and passes 94 parity cases/99,043 ticks. Signed clean native `10ad7daddf` passes29/29 directed tests and has a fresh frozen ABI30 release build with its original sidecar. All29 frozen files and six consumer hashes were checked before staging; actual UE NativeLoader passes in the `56b95f3` editor and the `b4a02d1` packaged Metal client, with the exact staged library path. Strict package/artifact hashes verify before and after execution. These tests cover loading, binding, canonical JSON and hashing; signing, submission and finality are not tested. Earlier producer records remain preserved. Windows loading remains unverified. |
 | N2 | Complete native execution proof and real settlement | Codex | Bounded native `01d4e46` completes actual crate compilation/31 CPU tests and a 3,005,248-byte proof with separate verification and 55 negative cases, but its proof attempt fails the unchanged disk reserve. Signed `6fd03be8` adds Katana fallback, and `cd9263628d` adds final-tick death/account/FFA completion with independently authenticated standalone source evidence. Their actual crate/proofs remain unrun. Historical native outputs are partly missing; a fresh bounded qualification plan from surviving signed `cd9263628d` is prepared but has not run, and no cause of the missing files is inferred. No registered full Arena execution profile, full World/death/ability/terminal composition, full-size proof or settlement acceptance is established. Four-validator admission/dispute/settlement, market recovery and Connect signing/finality remain open; live funding/trading stay disabled. |
 | R1 | Windows and Mac release candidates | Codex | Latest completed Mac Development package `c655b6b`, native bridge `10ad7dad`, passes Game build, cook of 1,323 packages with zero cook errors/warnings, staging/signature checks, smoke, all 164 client tests and a fresh rendered Title check. Newer gameplay and art source remains uncooked. Earlier rejected packages and warning/failure records remain preserved in the dated checkpoints. Clean-machine install, normal campaign play, controller/accessibility, multiplayer recovery, Windows and actual M1 performance remain open; M2 results do not qualify M1. |

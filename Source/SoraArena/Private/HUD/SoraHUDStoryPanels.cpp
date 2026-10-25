@@ -68,6 +68,10 @@ TArray<FTrackerRow> TrackerRows(const FSoraHUDFrame& Frame)
         if(P.FetchSeconds>0) Rows.Add({FString::Printf(TEXT("矢取り：残り %d 秒"),P.FetchSeconds),
             FString::Printf(TEXT("Fetching arrows: %d s remaining"),P.FetchSeconds),-1.f,Frame.Teal});
     }
+    else if(Campaign->HorseWithdrawalActive())
+    {
+        Rows.Add({TEXT("荷馬を守りきった"),TEXT("Pack horses defended"),-1.f,Frame.Teal});
+    }
     else switch(Task.Goal)
     {
     case EGoal::WavesCleared:
