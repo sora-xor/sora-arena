@@ -9,15 +9,19 @@
 # captures) and quit the editor themselves. Without either the editor runs
 # -nullrhi (imports). The run fails if
 # the editor exits non-zero, logs a Python error, never prints the marker, or
-# changes any file under Config/.
+# changes any file under Config/. The one exception is exit 1 from a full
+# editor (--editor) that quit itself from Python with the marker and no
+# error: a commandlet (UnrealEditor-Cmd, the default and --rhi) that exits 1
+# has failed.
 set -euo pipefail
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd -- "$SCRIPT_DIR/../.." && pwd)"
 RHI="-nullrhi"
 BINARY="UnrealEditor-Cmd"
+MODE="nullrhi"
 THROTTLE=()
-if [[ "${1:-}" == --rhi ]]; then RHI="-RenderOffscreen"; shift;
-elif [[ "${1:-}" == --editor ]]; then RHI="-RenderOffscreen"; BINARY="UnrealEditor.app/Contents/MacOS/UnrealEditor"; shift; fi
+if [[ "${1:-}" == --rhi ]]; then RHI="-RenderOffscreen"; MODE="rhi"; shift;
+elif [[ "${1:-}" == --editor ]]; then RHI="-RenderOffscreen"; BINARY="UnrealEditor.app/Contents/MacOS/UnrealEditor"; MODE="editor"; shift; fi
 # An offscreen editor is never the foreground app; without this it throttles
 # its tick rate and tick-driven captures crawl.
 THROTTLE=('-ini:EditorPerProjectUserSettings:[/Script/UnrealEd.EditorPerformanceSettings]:bThrottleCPUWhenNotForeground=False')
@@ -61,11 +65,11 @@ STATUS=$?
 echo "EDITOR_EXIT=$STATUS" >&2
 echo "$STATUS" >"$LOG.editor-exit"
 set -e
-python3 - "$LOG" "$STATUS" "$MARKER" <<'PY'
+python3 - "$LOG" "$STATUS" "$MARKER" "$MODE" <<'PY'
 import sys
 from pathlib import Path
 
-log_path, status, marker = Path(sys.argv[1]), int(sys.argv[2]), sys.argv[3]
+log_path, status, marker, mode = Path(sys.argv[1]), int(sys.argv[2]), sys.argv[3], sys.argv[4]
 lines = log_path.read_text(errors='replace').splitlines()
 errors = [line for line in lines if 'LogPython: Error' in line or 'Traceback (most recent call last)' in line]
 for line in errors[:30]:
@@ -73,8 +77,9 @@ for line in errors[:30]:
 hits = [line.split('LogPython: ', 1)[1] for line in lines if 'LogPython: ' in line
         and line.split('LogPython: ', 1)[1].startswith(marker)]
 problems = []
-# A full editor that quits itself from Python (--editor) exits 1 without error.
-if status != 0 and not (status == 1 and hits and not errors):
+# Only a full editor that quits itself from Python (--editor) exits 1 without
+# error. A commandlet's exit 1 (the default and --rhi) is a failure.
+if status != 0 and not (mode == 'editor' and status == 1 and hits and not errors):
     problems.append(f'editor exited {status}')
 if errors:
     problems.append(f'{len(errors)} Python error lines')

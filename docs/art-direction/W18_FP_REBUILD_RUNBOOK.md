@@ -18,7 +18,7 @@
 | --- | --- |
 | `B` | `/Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup --python-exit-code 1 --python` |
 | `PY` | `env OPENBLAS_NUM_THREADS=2 VECLIB_MAXIMUM_THREADS=2 /Users/mtakemiya/.codex/worktrees/complete-game/sora-arena/Local/Python311/bin/python` |
-| `UE` | `scripts/toolchain/run-editor-script.sh`. The default is `-nullrhi` in UnrealEditor-Cmd. `--rhi` renders offscreen in UnrealEditor-Cmd; `--editor` uses the full UnrealEditor. It passes with the completion marker and no Python error lines, and exit 0, or exit 1 from a full editor that quit itself |
+| `UE` | `scripts/toolchain/run-editor-script.sh`. The default is `-nullrhi` in UnrealEditor-Cmd. `--rhi` renders offscreen in UnrealEditor-Cmd; `--editor` uses the full UnrealEditor. It passes with the completion marker and no Python error lines, and exit 0. The one exception is exit 1 from a full editor (`--editor`) that quit itself; a commandlet's exit 1 fails (`scripts/toolchain/test_run_editor_script.py`) |
 | PIDs | `pgrep -x Blender`, `pgrep -x UnrealEditor-Cmd` (default and `--rhi`) or `pgrep -x UnrealEditor` (`--editor`). Never `pgrep -f`, which matches the launching shell |
 | Archive | `Saved/W18Rebuild/Archive/<step>/`: a copy of everything the step will overwrite, with SHA256SUMS, made read-only before it runs |
 | Times | `date -u` at start and end, in `Saved/W18Rebuild/<step>.times` |
