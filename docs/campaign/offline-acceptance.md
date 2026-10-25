@@ -1,5 +1,13 @@
 # Offline campaign progression acceptance
 
+At exact `4fa637f`, CopyDesks, Candle and the full assisted campaign pass
+together, with zero selected errors/warnings and natural editor/wrapper EOF
+zero. Chapter six requires separate held 30-second copies at all three desks;
+release, guard interruption, occupied hands, candle rate and retry have directed
+coverage. The three earlier fixture failures remain preserved. The hall's
+authored layout, ordinary stealth difficulty and final art remain open. See
+the [desk qualification record](../qualification/copy-desks.md).
+
 At exact `97c08a0`, all15 combined campaign/presentation tests and six defense
 regressions pass with zero selected errors/warnings and actual editor EOF.
 This includes the corrected chapter-six fixtures, twenty cache cases, nine
