@@ -618,7 +618,7 @@ def run_probe(spec_path):
             finally:
                 row["import_seconds"] = time.perf_counter() - tick
         require(assets.save_directory(DEST, only_if_is_dirty=False, recursive=True), "probe directory save failed")
-        PROBE_REPORT["packages"] = assets.list_assets(DEST, recursive=True, include_folder=False)
+        PROBE_REPORT["packages"] = list(assets.list_assets(DEST, recursive=True, include_folder=False))
         PROBE_REPORT["status"] = "passed"
     except Exception as error:
         PROBE_REPORT["error"] = str(error)
