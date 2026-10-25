@@ -133,6 +133,64 @@ class ValidatorRepo(RepoCase):
         self.assertEqual(report.errors, [])
         self.assertEqual(report.stats.get("schema2_covered"), 1)
 
+    def test_lfs_pointer_detection_reads_the_complete_header(self):
+        rel = "Content/SourceArt/Env/Foo/tex.png"
+        payload = self.good_repo()
+        path = self.tmp / rel
+        pointer = (f"version https://git-lfs.github.com/spec/v1\n"
+                   f"oid sha256:{sha(payload)}\nsize {len(payload)}\n").encode()
+        self.assertFalse(L.is_lfs_pointer(path))
+        path.write_bytes(pointer)
+        self.assertTrue(L.is_lfs_pointer(path))
+        # Without the LFS index identity, pointer text is not the asset content.
+        self.assertIsNone(L.tracked_content_sha256(self.tmp, rel, {}))
+        self.assertEqual(L.tracked_content_sha256(self.tmp, rel, {rel: sha(payload)}), sha(payload))
+        path.write_bytes(pointer[:40])
+        self.assertFalse(L.is_lfs_pointer(path))
+        self.assertFalse(L.is_lfs_pointer(self.tmp / "missing.png"))
+
+    def test_real_lfs_pointer_fails_validation_until_materialized(self):
+        rel = "Content/SourceArt/Env/Foo/tex.png"
+        payload = self.good_repo()
+        subprocess.run(["git", "-C", str(self.tmp), "lfs", "install", "--local", "--skip-smudge"],
+                       check=True, capture_output=True)
+        self.write(".gitattributes", b"*.png filter=lfs diff=lfs merge=lfs -text\n")
+        self.add(".gitattributes", rel)
+        subprocess.run(["git", "-C", str(self.tmp), "add", "--renormalize", rel], check=True)
+        subprocess.run(["git", "-C", str(self.tmp), "-c", "user.name=Ledger Test",
+                        "-c", "user.email=ledger-test@example.test", "commit", "--no-gpg-sign",
+                        "-qm", "LFS fixture"], check=True, capture_output=True)
+        pointer = subprocess.check_output(["git", "-C", str(self.tmp), "show", f":{rel}"])
+        self.assertIn(f"oid sha256:{sha(payload)}\n".encode(), pointer)
+        self.assertIn(f"size {len(payload)}\n".encode(), pointer)
+        self.write(rel, pointer)
+        for with_size in (True, False):
+            with self.subTest(with_size=with_size):
+                entry = {"path": rel, "sha256": sha(payload)}
+                if with_size:
+                    entry["bytes"] = len(payload)
+                self.ledger("foo", [record("tex", [entry])])
+                out = io.StringIO()
+                with redirect_stdout(out):
+                    code = validate_asset_ledger.main(["--root", str(self.tmp), "--json"])
+                report = json.loads(out.getvalue())
+                self.assertEqual(code, 1)
+                self.assertEqual(len(report["errors"]), 1, report)
+                self.assertIn(rel, report["errors"][0])
+                self.assertIn("unmaterialized Git LFS pointer", report["errors"][0])
+                self.assertIn("git lfs checkout", report["errors"][0])
+                self.assertEqual(report["stats"].get("verified_files", 0), 0)
+        subprocess.run(["git", "-C", str(self.tmp), "lfs", "checkout", "--", rel],
+                       check=True, capture_output=True)
+        self.assertEqual((self.tmp / rel).read_bytes(), payload)
+        out = io.StringIO()
+        with redirect_stdout(out):
+            code = validate_asset_ledger.main(["--root", str(self.tmp), "--json"])
+        report = json.loads(out.getvalue())
+        self.assertEqual(code, 0, report)
+        self.assertEqual(report["errors"], [])
+        self.assertEqual(report["stats"].get("verified_files"), 1)
+
     def test_planted_restricted_file_in_tracked_path_fails(self):
         self.good_repo()
         self.write("Content/ThirdPartyRestricted/Fab/Sample.uasset", b"restricted")
