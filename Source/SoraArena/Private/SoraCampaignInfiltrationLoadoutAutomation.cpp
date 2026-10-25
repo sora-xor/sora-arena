@@ -63,8 +63,23 @@ bool FSoraInfiltrationLoadoutTest::RunTest(const FString& Parameters)
             };
             if(!Settle()||!TestTrue(TEXT("The skipped b07 cache remains reachable"),C->AvailableCaches().Contains(6))) return false;
             W.Stand(C->CacheLocation(6)+FVector(180,0,0));
-            if(!W.Tick(4)||!W.Press(EKeys::E)) return false;
+            if(!W.Tick(4)||!TestTrue(TEXT("The bow can be selected beside the cache"),Kit->EquipCampaignWeapon(18))) return false;
+            // CanPlay only releases modal input. Selecting a weapon still
+            // starts the real .25 s cooldown, during which a finite arrow
+            // reward (and therefore this cache's unlock) must be refused.
+            Kit->Ammo=1;
+            const int32 BeforeArrows=Kit->Ammo;
+            const auto BeforeFinds=C->CollectedMask();
+            if(!W.Press(EKeys::E)) return false;
+            TestEqual(TEXT("Equip cooldown cannot complete the optional cache"),C->Progress().CompletedMask&SoraBeatRules::BeatBit(6),0u);
+            TestFalse(TEXT("Equip cooldown cannot grant the Phantom"),C->IsWeaponUnlocked(13));
+            TestEqual(TEXT("Equip cooldown cannot grant cache arrows"),Kit->Ammo,BeforeArrows);
+            TestEqual(TEXT("Equip cooldown cannot collect the cache's finds"),C->CollectedMask(),BeforeFinds);
+            // Thirty ordinary 60 Hz world ticks exceed that cooldown without
+            // changing or bypassing any equipment state.
+            if(!W.Tick(30)||!W.Press(EKeys::E)) return false;
             TestTrue(TEXT("Ordinary Interact completes the optional cache"),(C->Progress().CompletedMask&SoraBeatRules::BeatBit(6))!=0u);
+            TestEqual(TEXT("Ready Interact grants the authored six cache arrows"),Kit->Ammo,BeforeArrows+6);
             TestTrue(TEXT("Opening the cache unlocks and permits its Phantom"),C->IsWeaponUnlocked(13)&&Kit->EquipCampaignWeapon(13));
             TestTrue(TEXT("Replay chapter selection is available"),C->SelectChapter(5));
             W.Mode()->ResetRound();
