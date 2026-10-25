@@ -183,7 +183,7 @@ bool CheckChapter(FAutomationTestBase& Test, int32 Chapter)
             const FSoraBeatSpace& Space = Beat.Space;
             const FString What = Beat.Id;
             if(Space.Spire.Enabled()) World.Mode()->Arena()->StageKit(Data,9);
-            if(Space.HeightCm>0&&!Space.Summit.Enabled()&&!World.Mode()->Arena()->CampaignLift()) World.Mode()->Arena()->StageKit(Data,10);
+            if(Space.Lift.bEnabled&&!World.Mode()->Arena()->CampaignLift()) World.Mode()->Arena()->StageKit(Data,10);
             if(Space.HeightCm==0&&World.Mode()->Arena()->CampaignLift()) World.Mode()->Arena()->ClearKit();
             if(Space.Summit.Enabled()) World.Mode()->Arena()->ClearKit();
             Probe.HeightCm=Space.HeightCm;
@@ -234,7 +234,12 @@ bool CheckChapter(FAutomationTestBase& Test, int32 Chapter)
             Probe.Floor(Space.Exit.Center, What + TEXT(" exit"));
             Probe.HeightCm=Space.HeightCm;
             if (Space.bClosing)
+            {
+                const auto* Closing=Space.Volumes.FindByPredicate([&](const FSoraVolume& V){return V.Event==Beat.ClosingEvent;});
+                Probe.HeightCm=Closing&&Closing->bHeight?Closing->FloorCm:Space.HeightCm;
                 Probe.Floor(Space.Closing, What + TEXT(" closing anchor"));
+                Probe.HeightCm=Space.HeightCm;
+            }
             if (Space.bCache)
                 Probe.Stand(Space.Cache, What + TEXT(" cache"));
             if (Space.bMount)

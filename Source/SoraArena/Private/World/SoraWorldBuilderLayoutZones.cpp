@@ -94,6 +94,13 @@ void ASoraWorldBuilder::BuildZone(const FSoraZone& Zone,int32 Index,const FSoraB
         }
         if(bComplete) Mesh->SetVisibility(false);
     }
+    if(Zone.Id==TEXT("pl_press_hall"))
+    {
+        // The split north wall admits the archive bridge at catwalk height.
+        const double X=Zone.Rect.Min.X+300,Y=Zone.Rect.Max.Y+30;
+        Box(TEXT("PressNorthDoorSill"),FVector(X,Y,200),FVector(240,60,400),FLinearColor(.2f,.23f,.23f),true,FRotator::ZeroRotator,TEXT("Metal"));
+        Box(TEXT("PressNorthDoorLintel"),FVector(X,Y,780),FVector(240,60,240),FLinearColor(.2f,.23f,.23f),true,FRotator::ZeroRotator,TEXT("Metal"));
+    }
     if(bEstate&&bHall&&HallInterior(Zone,Index))
         for(UStaticMeshComponent* Proxy:HallProxies) Proxy->SetVisibility(false);
     if(bRoute)

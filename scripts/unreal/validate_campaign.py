@@ -383,6 +383,7 @@ def check_space(chapter, beats, rewards, labels, where):
                 zone["form"] in ("hall", "yard", "field", "route"), f"{where}: zone {zone['id']} style or form")
         wood_counts = {"pl_matoba": 5, "pl_issoseki_wood": 0, "pl_dojo_smithy": 5} if chapter["id"].startswith("ch01_") else {}
         if chapter["id"].startswith("ch07_"): wood_counts.update(pl_hull_ridge=0,pl_hangar=0)
+        if chapter["id"].startswith("ch06_"): wood_counts.update(pl_archive=5,pl_press_hall=5)
         require(len(zone["walls"]) == wood_counts.get(zone["place"], 4) and zone["wall_cm"] >= 200,
                 f"{where}: zone {zone['id']} wall/door contract")
         for piece in cover:
@@ -439,7 +440,7 @@ def check_space(chapter, beats, rewards, labels, where):
         elevated_rect = None
         if what == "ch08.b12":
             elevated_rect = next(row["lift"]["gallery_rect"] for row in records if row["beat"] == "ch08.b11")
-        require(record["height_cm"] == (2700 if what == "ch08.b11" else 14200 if what == "ch08.b12" else 16000 if record.get("summit") else 0),
+        require(record["height_cm"] == (600 if what in ("ch06.b09","ch06.b10") else 2700 if what == "ch08.b11" else 14200 if what == "ch08.b12" else 16000 if record.get("summit") else 0),
                 f"{what}: authored floor height")
         routed = beat["type"] == "horseback_ride" or task["goal"] == "escort"
         require(routed == (record["route"] is not None) and
@@ -491,12 +492,20 @@ def check_space(chapter, beats, rewards, labels, where):
         require(placed == named, f"{what}: volumes {sorted(placed)} differ from its events {sorted(named)}")
         for volume in record["volumes"] + [record["exit"]]:
             volume_rect = zones[next(r["zone"] for r in records if r["beat"]=="ch08.b13")]["rect"] if what=="ch08.b12" and volume.get("floor_cm")==16000 else rect
-            require(_inside(volume_rect, volume["center"], 0) and min(volume["size"]) >= (150 if what=="ch06.b14" else 300), f"{what}: volume {volume}")
+            if what=="ch06.b10" and volume.get("event")=="volume_enter:vol_archive_press_landing":
+                volume_rect=zones[next(r["zone"] for r in records if r["beat"]=="ch06.b11")]["rect"]
+            require(_inside(volume_rect, volume["center"], 0) and min(volume["size"]) >= (120 if what=="ch06.b10" and volume.get("event")=="volume_enter:vol_archive_press_landing" else 150 if what=="ch06.b14" else 300), f"{what}: volume {volume}")
         # Match SoraCatalogSpace's presence checks in both directions: a
         # cinematic cannot acquire an interaction anchor just for set dressing.
         require((record["closing"] is not None) == task["anchor_after_lines"], f"{what}: closing anchor must match its task")
         if task["anchor_after_lines"]:
-            on_floor(index, record["closing"], f"{what} closing anchor", 0)
+            if what=="ch06.b10":
+                press=next(r for r in records if r['beat']=='ch06.b11')
+                require(record['closing']==press['press_hall']['catwalk']['ladder_top_cm']
+                        and _inside(zones[press['zone']]['rect'],record['closing'],42),
+                        f'{what}: closing anchor must be on the supported press catwalk')
+            else:
+                on_floor(index, record["closing"], f"{what} closing anchor", 0)
         require((record["cache"] is not None) == (task["goal"] == "cache"), f"{what}: optional cache must match its task")
         if task["goal"] == "cache":
             on_floor(index, record["cache"], f"{what} cache")

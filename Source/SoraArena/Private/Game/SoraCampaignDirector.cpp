@@ -768,7 +768,8 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
     const FSoraBeatSpace& Space=Beat.Space;
     const FVector Hero=M.Hero()?M.Hero()->GetActorLocation():FVector::ZeroVector;
     const FSoraVolume* Closing=Space.Volumes.FindByPredicate([&](const FSoraVolume& Volume) { return Volume.Event==Beat.ClosingEvent; });
-    const bool bAtClosing=IsToriiEpilogue()?HasRehungPlaques():Near(ASoraWorldBuilder::Floor(Space.Closing),SoraCampaignReach::Arrive)||(Closing&&Closing->Contains(Hero));
+    const bool bAtClosing=IsToriiEpilogue()?HasRehungPlaques():Closing?Closing->Contains(Hero):
+        Near(ASoraWorldBuilder::Floor(Space.Closing,Space.HeightCm),SoraCampaignReach::Arrive);
     // A closing volume raised its own event as the hero entered it; an
     // "event:" closing is raised here.
     if(Task.AnchorAfterLines&&TaskState.LinesDone&&!TaskState.Reached&&bAtClosing&&SoraBeatRules::Reach(TaskState,Task)&&!Closing&&!BeatEvents.Contains(Beat.ClosingEvent))

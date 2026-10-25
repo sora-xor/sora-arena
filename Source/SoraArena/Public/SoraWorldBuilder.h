@@ -141,7 +141,7 @@ public:
     void BuildMoat(const FSoraBeat& Beat);
     void BuildClimb(const FSoraBeat& Beat);
     void BuildRelayRoom(const FSoraBeat& Beat);
-    void BuildArchive(const FSoraZone& Zone);
+    void BuildArchive(const FSoraZone& Zone,const FSoraZone& Press);
     void ShowArchivePage(const FSoraBeat& Beat,int32 Phase);
     void StageKit(const FSoraChapter& Chapter, int32 Beat);
     void ShowKit(const FSoraKitView& View);
@@ -288,6 +288,7 @@ private:
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> KitPieces;
     void StageEpilogue(const FSoraBeat& Beat);
     UPROPERTY() TObjectPtr<UStaticMeshComponent> ArchivePage;
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> ArchiveNorthGate;
     UPROPERTY() TObjectPtr<APointLight> ArchivePageLight;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> ToranosukePlaque;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> NyaakotoPlaque;

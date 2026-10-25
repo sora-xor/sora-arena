@@ -27,5 +27,15 @@ class ArchiveTests(unittest.TestCase):
         c=copy.deepcopy(self.chapter);c['space']['beats'][9]['anchor'][0]+=100
         self.assertFalse(archive_valid(c))
 
+    def test_pledge_waits_for_the_elevated_press_landing(self):
+        self.assertTrue(archive_valid(self.chapter))
+        for mutate in (lambda c:c['space']['beats'][9].update(height_cm=0),
+                       lambda c:c['beats'][9]['task'].update(anchor_after_lines=False),
+                       lambda c:c['space']['beats'][9]['volumes'][0].update(floor_cm=0),
+                       lambda c:c['space']['beats'][9]['closing'].__setitem__(1,0),
+                       lambda c:c['space']['zones'][c['space']['beats'][8]['zone']]['walls'].pop(),
+                       lambda c:c['space']['zones'][c['space']['beats'][10]['zone']]['walls'][3].__setitem__(2,1000)):
+            c=copy.deepcopy(self.chapter);mutate(c);self.assertFalse(archive_valid(c))
+
 
 if __name__=='__main__': unittest.main()

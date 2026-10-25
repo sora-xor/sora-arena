@@ -99,3 +99,20 @@ independently passes all 110 checks in run `40235477188`, review
 `42268d2688b863f5c15922eff30758d655e8ca778a8b7e64990324b3bf609755`.
 The authored cinematic, rack impact, slate artwork and north stair remain
 unfinished.
+
+The next source candidate raises the archive floor to six metres, places
+ten 20 cm steps outside its north door, and connects their four-metre landing
+to the press hall's NW catwalk across the current layout's gap. The wall
+openings, steps, landings and guard rails have real collision. The door stays
+locked during the duel; the pledge now requires its dialogue and arrival at
+the press landing. Ordinary arrival keeps the actual capsule position;
+checkpoint entry still restores the supported catwalk start.
+
+The long connector and six-metre placement are provisional architecture
+chosen to connect the existing separated zones without moving later areas.
+The south entry still uses the existing travel cut. Three archive host
+checks and the 133-beat/65-malformed-fixture validator pass. The prepared
+ArchiveExit fixture uses forward input through the door and ten treads,
+checks pause and a blocking obstacle, and verifies the press checkpoint and
+continuous position at arrival. None of this new geometry or movement has
+compiled or run in Unreal yet.

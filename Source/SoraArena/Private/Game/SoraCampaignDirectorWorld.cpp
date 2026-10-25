@@ -19,6 +19,7 @@
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
 #include "Camera/PlayerCameraManager.h"
+#include "Components/CapsuleComponent.h"
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerController.h"
@@ -88,7 +89,13 @@ bool USoraCampaignDirector::ObjectivePoint(FVector& Location,bool& bInteract) co
         if(!bLinesStarted&&Beat->LinesEvent.StartsWith(TEXT("interact:"))) return At(Space.Anchor,true);
         if(!bLinesStarted&&Beat->LinesEvent.StartsWith(TEXT("volume_enter:")))
             if(const FSoraVolume* Volume=VolumeOf(Beat->LinesEvent)) return At(Volume->Center,false);
-        return Task.AnchorAfterLines&&TaskState.LinesDone&&!TaskState.Reached&&At(Space.Closing,false);
+        if(Task.AnchorAfterLines&&TaskState.LinesDone&&!TaskState.Reached)
+        {
+            const auto* Closing=VolumeOf(Beat->ClosingEvent);
+            Location=ASoraWorldBuilder::Floor(Space.Closing,Closing&&Closing->bHeight?Closing->FloorCm:Space.HeightCm);
+            bInteract=false;return true;
+        }
+        return false;
     case SoraBeatRules::EGoal::WavesCleared:
         // Once the field is clear, the volume that brings the next wave.
         if(LiveWaveOpponents()>0||!Pending.IsEmpty()) return false;
@@ -252,14 +259,16 @@ void USoraCampaignDirector::EnterBeatSpace(bool bResumed)
     // reaches the same landing on foot and continues onto the lift.
     const bool NeedsLiftEntry=Space.Lift.bEnabled&&Hero&&FMath::Abs(Hero->GetActorLocation().Z-Space.HeightCm)>180.f;
     const bool NeedsSummitEntry=Space.Summit.Enabled()&&Beat->Is(SoraBeatRules::EType::Boss);
-    const bool NeedsPressEntry=Space.PressHall.bEnabled;
+    const FVector Feet=Hero?Hero->GetActorLocation()-FVector(0,0,Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()):FVector::ZeroVector;
+    const bool NeedsPressEntry=Space.PressHall.bEnabled&&(bResumed||
+        FVector2D::Distance(FVector2D(Feet),Space.Entry)>180.f||FMath::Abs(Feet.Z-SoraPressRules::CatwalkHeightCm)>20.f);
     if(Hero&&(NeedsLiftEntry||NeedsSummitEntry||NeedsPressEntry||Chapter->Space.ZoneAt(Hero->GetActorLocation())!=Space.Zone))
     {
         ClearHorses();
         Hero->SetBase(static_cast<FMovementBaseInterfaceData*>(nullptr));
         Hero->GetCharacterMovement()->StopMovementImmediately();
         const FRotator Facing(0,Space.EntryYaw,0);
-        const float EntryHeight=NeedsPressEntry?float(SoraPressRules::CatwalkHeightCm):float(Space.HeightCm);
+        const float EntryHeight=Space.PressHall.bEnabled?float(SoraPressRules::CatwalkHeightCm):float(Space.HeightCm);
         Hero->SetActorLocationAndRotation(ASoraWorldBuilder::Floor(Space.Entry,EntryHeight+120.f),Facing,false,nullptr,ETeleportType::TeleportPhysics);
         if(AController* Controller=Hero->GetController()) Controller->SetControlRotation(Facing);
         if(APlayerController* Player=Cast<APlayerController>(Hero->GetController()))

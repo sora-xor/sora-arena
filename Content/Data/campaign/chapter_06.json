@@ -2442,6 +2442,10 @@
     "trigger": "beat_start",
     "mode": "ambient",
     "camera": "soft_lookat",
+    "complete": {
+     "kind": "volume_enter",
+     "volume": "vol_archive_press_landing"
+    },
     "lines": [
      "ch06.b10.toranosuke.001",
      "ch06.b10.toranosuke.002",
@@ -2462,7 +2466,7 @@
     "count": 10,
     "duration_ms": 0,
     "skippable": false,
-    "anchor_after_lines": false,
+    "anchor_after_lines": true,
     "pause_when_seen": false,
     "max_alive": 6,
     "waves": [],
@@ -2515,7 +2519,7 @@
     },
     "objectives": [],
     "lines_event": "beat_start",
-    "closing_event": null,
+    "closing_event": "volume_enter:vol_archive_press_landing",
     "exit_event": null,
     "guards": [],
     "stealth": null,
@@ -9131,9 +9135,16 @@
       600
      ],
      [
-      36500,
+      35790,
       930,
-      2600,
+      1180,
+      60,
+      600
+     ],
+     [
+      37210,
+      930,
+      1180,
       60,
       600
      ]
@@ -9211,9 +9222,16 @@
       900
      ],
      [
-      43900,
+      41890,
       1230,
-      4200,
+      180,
+      60,
+      900
+     ],
+     [
+      44110,
+      1230,
+      3780,
       60,
       900
      ]
@@ -11577,7 +11595,7 @@
      "ladders": [],
      "charge": null
     },
-    "height_cm": 0,
+    "height_cm": 600,
     "lift": null
    },
    {
@@ -11596,7 +11614,20 @@
     "pickups": [],
     "dropoffs": [],
     "targets": [],
-    "volumes": [],
+    "volumes": [
+     {
+      "event": "volume_enter:vol_archive_press_landing",
+      "center": [
+       42100,
+       1140
+      ],
+      "size": [
+       300,
+       120
+      ],
+      "floor_cm": 400
+     }
+    ],
     "exit": {
      "center": [
       36500,
@@ -11607,7 +11638,10 @@
       300
      ]
     },
-    "closing": null,
+    "closing": [
+     42100,
+     1140
+    ],
     "spawns": [
      [
       36500,
@@ -11673,7 +11707,7 @@
      "ladders": [],
      "charge": null
     },
-    "height_cm": 0,
+    "height_cm": 600,
     "lift": null
    },
    {

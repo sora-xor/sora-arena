@@ -35,7 +35,7 @@ bool FSoraArchivePostsTest::RunTest(const FString&)
     TArray<UStaticMeshComponent*> Parts;W.Mode()->Arena()->GetComponents(Parts);
     for(auto* Part:Parts) if(Part->ComponentHasTag(TEXT("ArchiveDuelPost"))) ++PostCount;
     if(!TestEqual(TEXT("All four physical duel posts are present"),PostCount,4)) return false;
-    const FVector Post(Zone.Rect.Min+FVector2D(900,600),0);
+    const FVector Post(Zone.Rect.Min+FVector2D(900,600),W.BeatData().Space.HeightCm);
     FSoraPatrolRoute Route;FSoraEnemyTuning Tune;Tune.SightCm=1;Tune.HearingCm=0;
     auto* Target=ASoraEnemy::SpawnArchetype(*W.World->GetTestWorld(),TEXT("enforcer_rifle"),100,Post+FVector(85,0,100),FRotator(0,180,0),&Route,&Tune);
     if(!TestNotNull(TEXT("The isolated sword target spawns"),Target)) return false;
