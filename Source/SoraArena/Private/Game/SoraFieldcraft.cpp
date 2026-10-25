@@ -1,4 +1,5 @@
 #include "SoraFieldcraft.h"
+#include "SoraFuelCanister.h"
 #include "Game/SoraFieldcraftLayout.h"
 #include "Combat/SoraDamage.h"
 #include "Combat/SoraStealth.h"
@@ -295,6 +296,8 @@ UStaticMeshComponent* USoraFieldcraft::Piece(const FString& Name, const TCHAR* M
 void USoraFieldcraft::Clear()
 {
     ClearMolten();
+    for(const auto& Canister:FuelCanisters) if(IsValid(Canister)) Canister->Destroy();
+    FuelCanisters.Reset();
     ClearClimbRoutes();
     ClearFlood();
     ClearMoat();
@@ -342,7 +345,7 @@ void USoraFieldcraft::Stage(const FSoraBeat& Beat)
 {
     Clear();
     ClimbSpace=Beat.Space.Climb.bEnabled?&Beat.Space.Climb:nullptr;
-    if ((Beat.Space.Fieldcraft.IsEmpty() && !Beat.Space.Molten.bEnabled) || !GetWorld()) return;
+    if ((Beat.Space.Fieldcraft.IsEmpty() && !Beat.Space.Molten.bEnabled && Beat.Space.FuelCanisters.IsEmpty()) || !GetWorld()) return;
     Staged = &Beat.Space.Fieldcraft;
     BeatId = Beat.Id;
     FActorSpawnParameters Params;
@@ -356,6 +359,7 @@ void USoraFieldcraft::Stage(const FSoraBeat& Beat)
     MoatSpace=Beat.Space.Moat.bEnabled?&Beat.Space.Moat:nullptr;
     StageWorld(Beat);
     StageMolten(Beat);
+    StageCanisters(Beat);
     StageCompanions(Beat);
     StageFlood(Beat);
     StageMoat();

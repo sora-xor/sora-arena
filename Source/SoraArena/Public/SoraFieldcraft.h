@@ -15,6 +15,7 @@ class ASoraCompanion;
 class ASoraCharacterBase;
 class ASoraEnemy;
 class ASoraHorse;
+class ASoraFuelCanister;
 class ASoraPlayerCharacter;
 class UPointLightComponent;
 class USphereComponent;
@@ -367,6 +368,7 @@ private:
     int32 StepMs(float DeltaTime);
     void StageWorld(const FSoraBeat& Beat);
     void StageMolten(const FSoraBeat& Beat);
+    void StageCanisters(const FSoraBeat& Beat);
     void ClearMolten();
     void TickMolten(int32 DtMs);
     void StageCompanions(const FSoraBeat& Beat);
@@ -445,6 +447,7 @@ private:
     UPROPERTY() TArray<TObjectPtr<UPointLightComponent>> MoltenLights;
     FString BeatId;
     UPROPERTY() TObjectPtr<AActor> Props;
+    UPROPERTY() TArray<TObjectPtr<ASoraFuelCanister>> FuelCanisters;
     UPROPERTY() TArray<TObjectPtr<ASoraLamp>> LampActors;
     UPROPERTY() TArray<TObjectPtr<ASoraCompanion>> Party;
     UPROPERTY() TArray<TObjectPtr<ASoraCompanion>> Allies;
