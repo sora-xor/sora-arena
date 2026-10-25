@@ -2,14 +2,19 @@
 
 #if WITH_DEV_AUTOMATION_TESTS
 #include "SoraCampaignDirector.h"
+#include "SoraBoss.h"
 #include "SoraCatalog.h"
 #include "SoraPlayerCharacter.h"
 #include "SoraSaveGame.h"
 #include "Camera/CameraComponent.h"
+#include "Camera/CameraActor.h"
+#include "Camera/PlayerCameraManager.h"
 #include "Components/CapsuleComponent.h"
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
 #include "Engine/World.h"
+#include "EngineUtils.h"
+#include "GameFramework/DamageType.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/HUD.h"
 #include "GameFramework/PlayerController.h"
@@ -626,6 +631,170 @@ void Run(FAutomationTestBase* Test, int32 Chapter, int32 Beat, const TArray<FSho
         M->ResetRound();
     });
 }
+
+// A directed phase setup followed by the production reveal clock and camera.
+// Unlike the fixed dojo views, this fixture never positions either character
+// or a camera. Each still pauses a naturally reached mark, retaining the HUD
+// and authored subtitle, and records the actual player-camera cache.
+struct FArchiveSession : FSession
+{
+    TWeakObjectPtr<ASoraBoss> Rival;
+    double Seconds = 0;
+    FTransform Camera, HeroPose, RivalPose;
+    FMinimalViewInfo View;
+    FString Cue;
+    bool bAtMark = false;
+};
+
+void RunArchiveReveal(FAutomationTestBase* Test)
+{
+    const TSharedRef<FArchiveSession> Session = MakeShared<FArchiveSession>();
+    if (!Open(*Test, *Session)) return;
+    if (!Test->TestFalse(TEXT("Archive review does not use the dojo exposure diagnostic"), Session->Exposure.IsValid())) return;
+    Session->Folder /= TEXT("ArchiveReveal_") + FGuid::NewGuid().ToString(EGuidFormats::Digits);
+    IFileManager::Get().MakeDirectory(*Session->Folder, true);
+    Queue([Test, Session]()
+    {
+        ASoraGameMode* M = Session->M();
+        USoraSaveGame* Save = Cast<USoraSaveGame>(UGameplayStatics::CreateSaveGameObject(USoraSaveGame::StaticClass()));
+        if (!M || !Save || !USoraCampaignDirector::SeedCheckpoint(*Save, 5, 8) ||
+            !UGameplayStatics::SaveGameToSlot(Save, Session->Slot, 0))
+        { Test->AddError(TEXT("Archive review checkpoint could not be seeded")); return; }
+        if (!M->bMenu) M->SetMenuOpen(true);
+        M->SaveSlotName = Session->Slot;
+        M->bDeterministicPractice = false;
+        M->bCampaign = true;
+        if (!M->Campaign()->LoadSave())
+        { Test->AddError(TEXT("Archive review checkpoint could not be loaded")); return; }
+        M->ResetRound(); M->BeginRound();
+        M->Notice.Reset(); M->NoticeEnglish.Reset(); M->NoticeTime = 0.f;
+        for (TActorIterator<ASoraBoss> It(M->GetWorld()); It; ++It)
+            if (It->IsAlive()) Session->Rival = *It;
+        if (!Test->TestNotNull(TEXT("Archive review has its real duel opponent"), Session->Rival.Get()) ||
+            !Test->TestNotNull(TEXT("Archive review has its real hero"), Session->Hero())) return;
+        // The fixture isolates staging; damage and AI holds are explicitly
+        // directed, so these images are not ordinary duel-play evidence.
+        Session->Rival->Hold(600000);
+        Session->Hero()->Health = Session->Hero()->MaxHealth = 1000000.f;
+        ShowHUD(*M, true);
+        Session->bLive = true;
+#if WITH_EDITOR
+        FAssetCompilingManager::Get().FinishAllCompilation();
+        if (GShaderCompilingManager) GShaderCompilingManager->FinishAllCompilation();
+#endif
+        for (TObjectIterator<UTexture2D> It; It; ++It) It->SetForceMipLevelsToBeResident(600.f);
+        IStreamingManager::Get().StreamAllResources(8.f);
+    });
+    ADD_LATENT_AUTOMATION_COMMAND(FUntil(45.0, [Session](double)
+    { return !Session->bLive || !Session->M() || Session->M()->Campaign()->LinesQueued() == 0; }));
+    Queue([Test, Session]()
+    {
+        if (!Session->bLive || !Session->M() || !Session->Rival.IsValid()) return;
+        if (!Test->TestEqual(TEXT("Opening speech finishes before directed phase damage"), Session->M()->Campaign()->LinesQueued(), 0))
+        { Session->bLive = false; return; }
+        UGameplayStatics::ApplyDamage(Session->Rival.Get(), Session->Rival->MaxHealth * .5f,
+            nullptr, Session->Hero(), UDamageType::StaticClass());
+    });
+    struct FMark { const TCHAR* Name; double Seconds; };
+    const FMark Marks[] = {
+        {TEXT("01_Wide"), .20}, {TEXT("02_RackImpact"), 1.45},
+        {TEXT("03_FirstLine"), 4.80}, {TEXT("04_FamilyPage"), 10.0},
+        {TEXT("05_Reaction"), 18.20}, {TEXT("06_Return"), 19.70}
+    };
+    for (const FMark& Mark : Marks)
+    {
+        Queue([Session]() { Session->bAtMark = false; });
+        ADD_LATENT_AUTOMATION_COMMAND(FUntil(30.0, [Test, Session, Mark](double)
+        {
+            if (!Session->bLive || !Session->M()) return true;
+            auto* C = Session->M()->Campaign();
+            if (!C->IsArchiveRevealActive() || C->ArchiveRevealTime() < Mark.Seconds) return false;
+            Session->Seconds = C->ArchiveRevealTime();
+            if (!Test->TestTrue(TEXT("The natural reveal reaches the requested mark without skipping it"), Session->Seconds < Mark.Seconds + .15))
+            { Session->bLive = false; return true; }
+            UGameplayStatics::SetGamePaused(Session->M(), true);
+            auto* Shot = C->CinematicCamera();
+            auto* PC = UGameplayStatics::GetPlayerController(Session->M(), 0);
+            if (!Test->TestTrue(TEXT("The production reveal camera owns the actual local view"),
+                Shot && PC && PC->PlayerCameraManager && PC->GetViewTarget() == Shot))
+            { Session->bLive = false; return true; }
+            Session->Camera = Shot->GetActorTransform();
+            Session->HeroPose = Session->Hero()->GetActorTransform();
+            Session->RivalPose = Session->Rival->GetActorTransform();
+            Session->View = PC->PlayerCameraManager->GetCameraCacheView();
+            const auto* Cue = C->CurrentDialogueCue();
+            Session->Cue = Cue ? Cue->Id : FString();
+            Session->bAtMark = true;
+            return true;
+        }));
+        // Settle rendering without advancing the production scene clock.
+        Wait(3.0);
+        Queue([Test, Session, Mark]()
+        {
+            if (!Session->bLive || !Session->M()) return;
+            if (!Test->TestTrue(TEXT("The reveal reached its capture mark"), Session->bAtMark))
+            { Session->bLive = false; return; }
+            Session->File = Session->Folder / (FString(Mark.Name) + TEXT(".png"));
+            Session->Previous = IFileManager::Get().GetTimeStamp(*Session->File);
+            FScreenshotRequest::RequestScreenshot(Session->File, false, false);
+        });
+        ADD_LATENT_AUTOMATION_COMMAND(FUntil(15.0, [Session](double)
+        { return !Session->bLive || (IFileManager::Get().FileSize(*Session->File) > 0 && IFileManager::Get().GetTimeStamp(*Session->File) != Session->Previous); }));
+        Queue([Test, Session, Mark]()
+        {
+            if (!Session->bLive || !Session->M()) return;
+            auto* C = Session->M()->Campaign();
+            auto* PC = UGameplayStatics::GetPlayerController(Session->M(), 0);
+            auto* Shot = C->CinematicCamera();
+            const bool Written = IFileManager::Get().FileSize(*Session->File) > 0 &&
+                IFileManager::Get().GetTimeStamp(*Session->File) != Session->Previous;
+            const auto* Cue = C->CurrentDialogueCue();
+            const bool Frozen = C->IsArchiveRevealActive() && C->ArchiveRevealTime() == Session->Seconds &&
+                UGameplayStatics::IsGamePaused(Session->M()) && Shot && PC && PC->PlayerCameraManager && PC->GetViewTarget() == Shot &&
+                Session->Camera.Equals(Shot->GetActorTransform(), .001f) &&
+                Session->HeroPose.Equals(Session->Hero()->GetActorTransform(), .001f) &&
+                Session->RivalPose.Equals(Session->Rival->GetActorTransform(), .001f) &&
+                Session->Cue == (Cue ? Cue->Id : FString());
+            if (!Test->TestTrue(TEXT("A new original archive frame was written"), Written) ||
+                !Test->TestTrue(TEXT("The scene and dialogue remained frozen through the screenshot"), Frozen))
+            { Session->bLive = false; return; }
+            const FMinimalViewInfo& View = PC->PlayerCameraManager->GetCameraCacheView();
+            if (!Test->TestTrue(TEXT("The actual camera cache remains stable during capture"),
+                View.Location.Equals(Session->View.Location, .001) && View.Rotation.Equals(Session->View.Rotation, .001) &&
+                FMath::IsNearlyEqual(View.FOV, Session->View.FOV, .001f)))
+            { Session->bLive = false; return; }
+            // This observation is archived in the raw capture log alongside
+            // the PNG acknowledgement; it describes the view actually drawn,
+            // without substituting a separately posed review camera.
+            UE_LOG(LogTemp, Display, TEXT("SORA_ARCHIVE_REVEAL_VIEW name=%s seconds=%.9f cue=%s target=%s camera=(%s) view=(%s) rotation=(%s) fov=%.6f hero=(%s) rival=(%s) hud=1 directed_damage=1 held_ai=1"),
+                Mark.Name, Session->Seconds, *Session->Cue, *Shot->GetName(), *Session->Camera.GetLocation().ToString(),
+                *View.Location.ToString(), *View.Rotation.ToString(), View.FOV,
+                *Session->HeroPose.GetLocation().ToString(), *Session->RivalPose.GetLocation().ToString());
+            UE_LOG(LogTemp, Display, TEXT("SORA_ART_REVIEW_FRAME %s"), *Session->File);
+            UGameplayStatics::SetGamePaused(Session->M(), false);
+        });
+    }
+    ADD_LATENT_AUTOMATION_COMMAND(FUntil(10.0, [Session](double)
+    { return !Session->bLive || !Session->M() || !Session->M()->Campaign()->IsArchiveRevealActive(); }));
+    Wait(.5);
+    Queue([Test, Session]()
+    {
+        ASoraGameMode* M = Session->M();
+        if (!M) return;
+        if (Session->bLive)
+        {
+            auto* PC = UGameplayStatics::GetPlayerController(M, 0);
+            Test->TestTrue(TEXT("The captured reveal naturally releases to the player"),
+                !M->Campaign()->IsArchiveRevealActive() && PC && PC->GetViewTarget() == Session->Hero());
+        }
+        UGameplayStatics::SetGamePaused(M, false);
+        ShowHUD(*M, true);
+        if (!M->bMenu) M->SetMenuOpen(true);
+        M->SaveSlotName = Session->PlayerSlot;
+        M->bCampaign = true;
+        M->Campaign()->LoadSave(); M->ResetRound();
+    });
+}
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraArtReviewDojoTest, "SoraCapture.ArtReview.Dojo",
@@ -634,6 +803,14 @@ bool FSoraArtReviewDojoTest::RunTest(const FString& Parameters)
 {
     // Chapter 1, beat 2 (the first lesson in the hall), from its checkpoint.
     SoraArtReview::Run(this, 0, 1, TArray<SoraArtReview::FShot>(SoraArtReview::DojoShots, UE_ARRAY_COUNT(SoraArtReview::DojoShots)));
+    return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraArtReviewArchiveRevealTest, "SoraCapture.ArtReview.ArchiveReveal",
+    EAutomationTestFlags::ClientContext | EAutomationTestFlags::ProductFilter)
+bool FSoraArtReviewArchiveRevealTest::RunTest(const FString& Parameters)
+{
+    SoraArtReview::RunArchiveReveal(this);
     return true;
 }
 #endif

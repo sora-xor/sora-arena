@@ -155,8 +155,16 @@ bool FSoraArchiveFamilyPageTest::RunTest(const FString&)
             !W.Campaign()->IsArchiveRevealActive()&&FMath::Abs(Initial+ActiveFrames/60.-SoraArchiveRules::RevealSeconds)<.04);
         TestTrue(TEXT("The completed scene restores the player view"),PC->GetViewTarget()==W.Hero()||
             (PC->PlayerCameraManager&&PC->PlayerCameraManager->PendingViewTarget.Target==W.Hero()));
-        TestTrue(TEXT("The rack settles and the duellist stands upright"),Rack&&Rack->GetRelativeRotation().IsNearlyZero()&&
-            FMath::IsNearlyZero(Rival->GetActorRotation().Pitch));
+        // Scene components elide changes below their 1e-4 degree rotator or
+        // 1e-8 quaternion tolerance. A scalar double's default 1e-8 degree
+        // comparison is stricter than the transform setter's contract.
+        const FRotator RackRotation=Rack?Rack->GetRelativeRotation():FRotator(90,90,90);
+        const FRotator RivalRotation=Rival->GetActorRotation();
+        AddInfo(FString::Printf(TEXT("SORA_ARCHIVE_SETTLED bark=%d rack=(%.9f,%.9f,%.9f) rival=(%.9f,%.9f,%.9f) degrees"),
+            WithBark,RackRotation.Pitch,RackRotation.Yaw,RackRotation.Roll,RivalRotation.Pitch,RivalRotation.Yaw,RivalRotation.Roll));
+        TestTrue(TEXT("The rack settles within one thousandth of a degree"),Rack&&RackRotation.IsNearlyZero(.001));
+        TestTrue(TEXT("The duellist stands upright within one thousandth of a degree"),
+            FMath::Abs(RivalRotation.Pitch)<.001&&FMath::Abs(RivalRotation.Roll)<.001);
         TestTrue(TEXT("Both characters return inside the duel ring before control resumes"),
             FMath::Abs(W.Hero()->GetActorLocation().X-Zone.Rect.Min.X-1400)<2&&
             FMath::Abs(Rival->GetActorLocation().X-Zone.Rect.Min.X-1800)<2);

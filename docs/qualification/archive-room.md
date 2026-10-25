@@ -173,4 +173,35 @@ physical rack response, pause, held movement/fire, the twenty-second duration,
 late pre-completion save state and completed reload. ArchiveRevealReset adds
 mid-scene checkpoint reset coverage. The assisted campaign permits a silent
 visual prologue only while that named scene is active. These fixtures have
-not yet compiled or run; Claude still owns the engine/Blender lane.
+not yet compiled or run at that checkpoint.
+
+## First cinematic runtime result and capture preparation
+
+Signed `956a43ef` builds and completes all fourteen requested NullRHI fixtures.
+Thirteen pass, including ArchiveRevealReset, the physical ArchiveExit and the
+assisted 133-beat campaign. ArchiveFamilyPage fails its combined final rack/
+rival upright assertion in both queue cases. Its other assertions pass:
+camera ownership, physical impact, held input, paused transforms and clock,
+twenty active seconds, speech order, late save state and fresh-world phase-two
+reload. The failed run is retained; natural editor/wrapper exits are 3/1.
+All twenty evidence files and unchanged source/native/Config/Generated inputs
+verify in review
+`fbcd26a7e41dd5a47ede646f894dd32d5c3488aeb473a952fe2917119ccefbeb`.
+Exact-source CI run `40239701072` passes all 110 checks, independently reviewed
+as `b765735022eff671e9f1172ac4776effdbdf2a096470e2d7d58db28c4c08323d`.
+
+The follow-up fixture records rack and rival Euler angles separately and
+checks upright within 0.001 degrees. The original scalar comparison used
+1e-8 degrees, below the engine setters' 1e-4 degree rotator / 1e-8 quaternion
+change thresholds. This is a proposed fixture correction, not a passed rerun;
+the actual final angles still need inspection. Production staging is unchanged.
+
+`SoraCapture.ArtReview.ArchiveReveal` now prepares six rendered stills at
+0.20, 1.45, 4.80, 10.0, 18.20 and 19.70 active seconds. It seeds a throwaway
+archive checkpoint, holds opponent AI and applies directed phase damage, then
+observes the production scene clock and camera without positioning actors or
+camera itself. Each still pauses the reached mark, keeps normal HUD/subtitles,
+checks frozen scene/view state and records the actual player-camera cache in
+the raw log. Unique per-run folders preserve every original. This capture
+fixture is uncompiled and unrun; it is staging review, not ordinary combat,
+continuous animation quality, final art or packaged release evidence.

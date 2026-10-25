@@ -11,6 +11,35 @@ production. Work runs in isolated worktrees, with a single coordinated Unreal
 and GPU rendering lane. The shared checkout is not a build or render workspace.
 The local coordination mailboxes record current ownership, commits and lane use.
 
+## October 26 archive reveal validation
+
+The archive's procedural rack-impact reveal now runs on a twenty-second active
+clock: a 4.6-second visual prologue followed by the existing 15.4 seconds of
+family dialogue. It owns the real camera, blocks actions, pauses with the
+game and defers the mid-duel checkpoint until the exchange finishes.
+
+Exact signed `956a43ef` builds and passes thirteen of fourteen directed runtime
+fixtures, including reset, exit and the assisted complete campaign. One
+combined final rack/rival rotation assertion fails in both queue cases; the
+remaining scene timing, camera, input and save assertions pass. The failed
+evidence is preserved and independently authenticated as
+`fbcd26a7e41dd5a47ede646f894dd32d5c3488aeb473a952fe2917119ccefbeb`.
+The fixture now records final angles and uses an explicit 0.001-degree limit
+consistent with engine transform precision. That correction and a six-frame
+capture of the actual scene camera await Unreal validation. Production scene
+code is unchanged by this follow-up. Final character animation, readable slate
+art, sound, rendered composition and ordinary duel play remain unfinished.
+
+Source CI at `956a43ef` passes all 110 checks, independently authenticated in
+run `40239701072` (review
+`b765735022eff671e9f1172ac4776effdbdf2a096470e2d7d58db28c4c08323d`).
+The previous `26ae342` source CI also passes all 110, review
+`6098c0560b72d57c18a3a03d9d7475770d6eeab576d5a98b8b2a98c5844b30c2`.
+Claude again owns the engine/Blender lane for v8 fur and measured material
+cost. Its CPU diagnosis finds v7's grey bands mostly follow the tabby-to-white
+colour field, with a smaller coat-height contribution; the earlier shell-edge
+interpretation below was an unconfirmed visual hypothesis.
+
 ## October 26 archive exit and shell-fur checkpoint
 
 The archive now has a physical north doorway, ten 20 cm descending treads,
@@ -34,7 +63,9 @@ The earlier failed-run review is
 
 Source CI at `17fe866` retains 108 passes and two failures: the campaign's
 updated timber-binding hash and a lift test's ground-floor assumption. Both
-are corrected at `dc32d81` and pass locally. Its full source CI is pending.
+are corrected at `dc32d81` and pass locally. Its full source CI passes all 110,
+independently authenticated in run `40238069513`, review
+`fa4250f2fbc539bf799c08e024a449d8a68412a11f0c625b2239f5b651292989`.
 The prior `a5388b5` source CI is independently authenticated at 110 passes.
 These results do not establish ordinary encounter difficulty or release quality.
 
