@@ -70,7 +70,24 @@ class Measure(unittest.TestCase):
 
 # A manifest's records as render_yumi_fp_review writes them, cut down: every value the comparisons test is real.
 MATERIALS = {"/Game/Bow": {"slots": [{"index": 0, "slot": "M_Bow", "material": "/Game/MI_Bow"}],
-                           "component": [{"index": 0, "material": "/Game/MI_Bow"}]}}
+                           "component": [{"index": 0, "material": "/Game/MI_Bow"}]},
+             "/Game/Generated/Qualification/NyaakotoFPPaws/SM_Paw": {
+                 "slots": [{"index": 0, "slot": "M_NyaakotoFP_FurSkin",
+                            "material": "/Game/Generated/Qualification/NyaakotoFPPaws/M_NyaakotoFP_FurSkin.M_NyaakotoFP_FurSkin"},
+                           {"index": 1, "slot": "M_NyaakotoFP_FurCards",
+                            "material": "/Game/Generated/Qualification/NyaakotoFPPaws/M_NyaakotoFP_FurCards.M_NyaakotoFP_FurCards"}],
+                 "component": [{"index": 0, "material": "/Game/Generated/Qualification/NyaakotoFPPaws/M_NyaakotoFP_FurSkin.M_NyaakotoFP_FurSkin"},
+                               {"index": 1, "material": "/Game/Generated/Qualification/NyaakotoFPPaws/M_NyaakotoFP_FurCards.M_NyaakotoFP_FurCards"}]}}
+
+
+def paw_materials(slot1="M_NyaakotoFP_FurShells", material1=None, slot0="M_NyaakotoFP_FurSkin"):
+    """MATERIALS with the paw's two slots as given (slot 1 bound to its own material unless material1)."""
+    ns = "/Game/Generated/Qualification/NyaakotoFPPaws/"
+    m1 = material1 or f"{ns}{slot1}.{slot1}"
+    m0 = f"{ns}{slot0}.{slot0}"
+    paw = {"slots": [{"index": 0, "slot": slot0, "material": m0}, {"index": 1, "slot": slot1, "material": m1}],
+           "component": [{"index": 0, "material": m0}, {"index": 1, "material": m1}]}
+    return dict(MATERIALS, **{f"{ns}SM_Paw": paw})
 CAMERA = {"field_of_view_deg": 70.0, "aspect_ratio": 1.3333, "constrain_aspect_ratio": True,
           "location_cm": [0.0, 0.0, 0.0], "rotation_deg": [0.0, 0.0, 0.0], "resolution": [80, 60]}
 SETUP = {"fov": 70.0, "mesh_scale": 0.75,
@@ -326,6 +343,42 @@ class Assets(unittest.TestCase):
             self.assertEqual(F.compare_assets(a, b)["assets"], {"bound": True, "differ": [paw]})
             c = write_run(tmp, "c", speckled=False, base=setup(assets_sha256=None))
             self.assertFalse(F.compare_assets(a, c)["assets"]["bound"])
+
+    def test_only_the_enumerated_paw_slot_change_is_permitted(self):
+        # Fur v6 replaced the cards' slot with the shells' (PERMITTED_PAW_SLOTS); nothing else may differ.
+        def run(tmp, name, mats):
+            return write_run(tmp, name, speckled=False, materials=mats, materials_after_id_pass={"rest": mats})
+
+        with tempfile.TemporaryDirectory() as tmp:
+            a = write_run(tmp, "a")
+            r = F.compare_assets(a, run(tmp, "shells", paw_materials()))
+            self.assertEqual(r["paw_material_changes"], [{"asset": "/Game/Generated/Qualification/NyaakotoFPPaws/SM_Paw",
+                                                          "index": 1, "a": "M_NyaakotoFP_FurCards",
+                                                          "b": "M_NyaakotoFP_FurShells"}])
+            refused = {
+                "another slot name": paw_materials(slot1="M_NyaakotoFP_Fins"),
+                "the shells' slot on another material": paw_materials(material1="/Engine/WorldGridMaterial"),
+                "a second paw slot changed": paw_materials(slot0="M_NyaakotoFP_SkinB"),
+            }
+            for case, mats in refused.items():
+                with self.subTest(case=case):
+                    with self.assertRaises(F.NoiseError) as cm:
+                        F.compare_assets(a, run(tmp, case.replace(" ", "_").replace("'", ""), mats))
+                    self.assertIn("not a permitted change", str(cm.exception))
+            bow = {"slots": [{"index": 0, "slot": "M_Bow", "material": "/Game/MI_Other"}],
+                   "component": [{"index": 0, "material": "/Game/MI_Other"}]}
+            with self.assertRaises(F.NoiseError) as cm:
+                F.compare_assets(a, run(tmp, "bow", dict(MATERIALS, **{"/Game/Bow": bow})))
+            self.assertIn("other than the paw's", str(cm.exception))
+
+    def test_the_controlled_mode_permits_no_slot_change(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            a = write_run(tmp, "a", runup=4)
+            mats = paw_materials()
+            b = write_run(tmp, "b", runup=32, speckled=False, materials=mats, materials_after_id_pass={"rest": mats})
+            with self.assertRaises(F.NoiseError) as cm:
+                F.compare_runs(a, b)
+            self.assertIn("materials", str(cm.exception))
 
     def test_the_command_compares_assets_and_takes_one_mode(self):
         with tempfile.TemporaryDirectory() as tmp:

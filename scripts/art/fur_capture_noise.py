@@ -57,6 +57,13 @@ with different paw assets, as v4 against v5 (NYAAKOTO_FP_FUR_V4.md).
 - It reports the same per-hold figures as --compare.
 - Where both runs bind their assets (assets_sha256), it lists which imported
   files differ. Otherwise it says that this is not recorded.
+- **One paw slot change is permitted, exactly** (PERMITTED_PAW_SLOTS): the
+  cards' slot in A becoming the shells' in B, at the same index, each run's
+  row bound to and drawing that slot's own material. Fur v6 made that
+  change. Every other paw slot, and every other part's materials, must be
+  equal and present. The changes found are recorded.
+- --compare (the controlled run-up mode) stays strict: every material
+  readback, like every setup key and content hash, must be equal.
 
 **Before either comparison measures anything** (root's review of 148c5c1,
 whose --assets accepted four malformed copies of v5):
@@ -112,6 +119,12 @@ SETUP_KEYS = ("fov", "mesh_scale", "holds", "sockets_cm", "poses_component_cm", 
 # camera, hold, posed sockets and pose, numbers within ASSET_TOL_CM.
 ASSET_SETUP_KEYS = ("fov", "mesh_scale", "materials", "id_colours", "control", "ids_enabled", "resolution",
                     "assessment_camera", "set_materials", "sun", "ev100", "exposure_bias", "highres_runup")
+# The paw assets an --assets comparison compares, and the only slot changes it permits between their readbacks,
+# exactly: (slot in A, slot in B) at the same index, each bound to its own material in the paws' namespace. Fur v6
+# replaced the cards' slot with the shells' (root, 2026-10-25: "enumerate exactly which changed slots are
+# permitted"). Every other slot, and every other part's readback, must be equal.
+PAW_ASSETS = "/Game/Generated/Qualification/NyaakotoFPPaws/"
+PERMITTED_PAW_SLOTS = (("M_NyaakotoFP_FurCards", "M_NyaakotoFP_FurShells"),)
 ASSET_HOLD_KEYS = ("cameras", "holds", "sockets_cm", "poses_component_cm")
 ASSET_TOL_CM = 1e-9
 
@@ -162,6 +175,39 @@ VALID = {
     "assets_sha256": lambda v: _filled(v) and all(isinstance(k, str) and isinstance(h, str) and len(h) == 64
                                                   for k, h in v.items()),
 }
+
+
+def _own_material(slot):
+    return f"{PAW_ASSETS}{slot}.{slot}"
+
+
+def _paw_material_changes(ma, mb):
+    """The paws' material readbacks, A against B: (the permitted changes found, the problems). Rows must be equal
+    except a row whose (A, B) slot names are in PERMITTED_PAW_SLOTS, at the same index, each run's row bound to and
+    drawing that slot's own material."""
+    pa = {a: r for a, r in ma["materials"].items() if a.startswith(PAW_ASSETS)}
+    pb = {a: r for a, r in mb["materials"].items() if a.startswith(PAW_ASSETS)}
+    changes, problems = [], []
+    if sorted(pa) != sorted(pb):
+        return changes, [f"the paw assets differ: {sorted(pa)} against {sorted(pb)}"]
+    for asset in sorted(pa):
+        (sa, ca), (sb, cb) = (pa[asset]["slots"], pa[asset]["component"]), (pb[asset]["slots"], pb[asset]["component"])
+        if len(sa) != len(sb) or len(ca) != len(cb):
+            problems.append(f"{asset}: {len(sa)} slots against {len(sb)}")
+            continue
+        for x, y, dx, dy in zip(sa, sb, ca, cb):
+            if x == y and dx == dy:
+                continue
+            permitted = (x.get("index") == y.get("index") == dx.get("index") == dy.get("index")
+                         and (x.get("slot"), y.get("slot")) in PERMITTED_PAW_SLOTS
+                         and x.get("material") == dx.get("material") == _own_material(x["slot"])
+                         and y.get("material") == dy.get("material") == _own_material(y["slot"]))
+            if permitted:
+                changes.append({"asset": asset, "index": x["index"], "a": x["slot"], "b": y["slot"]})
+            else:
+                problems.append(f"{asset} slot {x.get('index')}: {x.get('slot')} -> {y.get('slot')} is not a permitted "
+                                f"change (PERMITTED_PAW_SLOTS {list(PERMITTED_PAW_SLOTS)})")
+    return changes, problems
 
 
 def _setup_problems(m, keys, label):
@@ -364,7 +410,12 @@ def compare_assets(run_a: Path, run_b: Path) -> dict:
             problems.append(f"{hold} is an eye-view hold (with IDs) in one run only: its ID policy differs")
     if problems:
         raise NoiseError(f"{run_a} and {run_b} cannot be compared: " + "; ".join(problems))
-    differ = [k for k in ASSET_SETUP_KEYS if ma.get(k) != mb.get(k)]
+    differ = [k for k in ASSET_SETUP_KEYS if k != "materials" and ma.get(k) != mb.get(k)]
+    fixed = lambda m: {a: r for a, r in m["materials"].items() if not a.startswith(PAW_ASSETS)}
+    if fixed(ma) != fixed(mb) or not fixed(ma):
+        differ.append("materials (other than the paw's)")
+    paw_changes, paw_problems = _paw_material_changes(ma, mb)
+    differ += paw_problems
     for hold in common:
         for k in ASSET_HOLD_KEYS:
             a, b = ma.get(k), mb.get(k)
@@ -383,6 +434,7 @@ def compare_assets(run_a: Path, run_b: Path) -> dict:
             "a": {"run": str(run_a), "manifest_sha256": hashlib.sha256(da).hexdigest()},
             "b": {"run": str(run_b), "manifest_sha256": hashlib.sha256(db).hexdigest()},
             "tolerance_cm": ASSET_TOL_CM, "study_same": ma.get("study") == mb.get("study"), "assets": assets,
+            "paw_material_changes": paw_changes, "permitted_paw_slots": [list(p) for p in PERMITTED_PAW_SLOTS],
             "holds": _pair(ia, ib, common),
             "scope": "two paw assets under one setup: a measurement of capture noise in the fur, not a gate"}
 
