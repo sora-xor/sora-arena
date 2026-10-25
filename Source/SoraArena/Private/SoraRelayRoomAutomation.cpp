@@ -403,6 +403,43 @@ bool FSoraRelayPatrolCadenceTest::RunTest(const FString& Parameters)
     return !HasAnyErrors();
 }
 
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraRelayPatrolBlockedTest,"SoraArena.Campaign.RelayPatrolBlocked",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraRelayPatrolBlockedTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;using namespace SoraRelayAutomation;
+    if(!FSoraCatalog::Get().Load()) return false;
+    FBeatWorld W(*this,TEXT("RelayPatrolBlocked"),5,3);if(!W.Start()) return false;
+    W.Harden();const FVector O(W.BeatData().Space.RelayRoom.Origin,0);
+    Place(W,O+FVector(20000,0,100));W.Hero()->GetCharacterMovement()->DisableMovement();
+    ASoraEnemy* Drone=nullptr;
+    for(TActorIterator<ASoraEnemy> It(W.World->GetTestWorld());It;++It)
+        if(It->EnemySlot()==3) Drone=*It;
+        else
+        {
+            It->SetActorTickEnabled(false);It->SetActorEnableCollision(false);
+            It->GetCharacterMovement()->SetComponentTickEnabled(false);
+            if(auto* Other=Cast<ASoraEnemyController>(It->GetController())) Other->SetActorTickEnabled(false);
+        }
+    if(!TestNotNull(TEXT("The actual relay drone spawns"),Drone)) return false;
+    auto* Brain=Cast<ASoraEnemyController>(Drone->GetController());
+    if(!TestNotNull(TEXT("The relay drone has its production brain"),Brain)) return false;
+    const FVector Goal=O+FVector(1000+120*FMath::Cos(PI/4),500+120*FMath::Sin(PI/4),500);
+    auto* Barrier=Block(W,Goal,FVector(60,60,80));
+    if(!Barrier||!Dialogue(W)||!W.Tick(2100)) return false;
+    const auto Stopped=Brain->PatrolTiming();
+    TestTrue(TEXT("A blocked flight segment cannot gain a station or a circuit from elapsed time"),
+        Stopped.Cycles==0&&Stopped.Legs==0&&Stopped.Visited==0&&Stopped.Overdue);
+    Barrier->Destroy();
+    for(int I=0;I<900&&Brain->PatrolTiming().Legs==0;++I) if(!W.Tick(1)) return false;
+    TestTrue(TEXT("Removing the obstacle permits the next actual airborne visit"),
+        Brain->PatrolTiming().Legs==1&&Brain->PatrolTiming().Visited==2&&
+        FVector::Dist(Drone->GetActorLocation(),Goal)<25.f);
+    TestTrue(TEXT("The resumed drone retains its missed deadline"),Brain->PatrolTiming().Overdue&&Brain->PatrolTiming().Cycles==0);
+    AddInfo(TEXT("The staged drone uses real swept movement against a physical barrier; other guards and player detection are isolated."));
+    return !HasAnyErrors();
+}
+
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraRelayLookoutTest,"SoraArena.Campaign.RelayLookout",
     EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
 bool FSoraRelayLookoutTest::RunTest(const FString& Parameters)

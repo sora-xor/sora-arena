@@ -1076,6 +1076,7 @@ ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int
         }
         else if(GuardIndex==1)
         {
+            Route.bSupportedSegments=true;Route.bSupportedSteps=true;
             for(const FVector2D P:{FVector2D(510,840),FVector2D(510,160),FVector2D(1490,160),FVector2D(1490,840)})
                 Route.Points.Add(Origin+FVector(P,490));
             Route.PeriodMs=40000;
@@ -1095,8 +1096,11 @@ ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int
         { Route.Points.Add(Origin+FVector(300,500,90));Route.PauseFacing=FVector(1,0,0); }
         else
         {
+            // A 1.2 m orbit leaves the 0.8 m column and the north control's
+            // approach clear at the authored five-metre flight height.
+            Route.bDirectFlightSegments=true;
             for(int I=0;I<8;++I)
-                Route.Points.Add(Origin+FVector(1000+250*FMath::Cos(I*PI/4),500+250*FMath::Sin(I*PI/4),500));
+                Route.Points.Add(Origin+FVector(1000+120*FMath::Cos(I*PI/4),500+120*FMath::Sin(I*PI/4),500));
             Route.PeriodMs=30000;
         }
         Post=Route.Points[0];

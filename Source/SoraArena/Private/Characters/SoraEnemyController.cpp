@@ -677,7 +677,7 @@ void ASoraEnemyController::Patrol(ASoraEnemy& Enemy, float Dt, int32 NowMs)
             RouteIndex = (RouteIndex + 1) % Route.Points.Num();
     }
     const EMove Move=Route.bSupportedSegments
-        ?WalkSupportedSegment(Enemy,Route.Points[RouteIndex],SoraEnemyBrain::PatrolSpeed)
+        ?WalkSupportedSegment(Enemy,Route.Points[RouteIndex],SoraEnemyBrain::PatrolSpeed,20.f,Route.bSupportedSteps)
         :WalkTo(Enemy,Route.Points[RouteIndex],SoraEnemyBrain::PatrolSpeed,70.f,NowMs,Route.bThreeDimensional);
     if(Move==EMove::Blocked&&Route.bSupportedSegments) return;
     if (Move != EMove::Moving)
@@ -746,7 +746,7 @@ void ASoraEnemyController::ScheduledPatrol(ASoraEnemy& Enemy,float Dt,int32 NowM
     float Distance=FVector::Dist(Here,Goal);
     // Follow the remaining navigation path, not a straight-line estimate
     // through machinery. A newly selected goal gets its path in WalkTo.
-    if(!Enemy.IsFlying()&&bPathValid&&PathGoal.Equals(Goal,1.f)&&Path.IsValidIndex(PathIndex))
+    if(!Enemy.IsFlying()&&!Route.bSupportedSegments&&bPathValid&&PathGoal.Equals(Goal,1.f)&&Path.IsValidIndex(PathIndex))
     {
         Distance=FVector::Dist(Here,Path[PathIndex]);
         for(int I=PathIndex+1;I<Path.Num();++I) Distance+=FVector::Dist(Path[I-1],Path[I]);
@@ -755,7 +755,20 @@ void ASoraEnemyController::ScheduledPatrol(ASoraEnemy& Enemy,float Dt,int32 NowM
     const float Seconds=FMath::Max(.1f,float(Until)/1000.f);
     const float FullSpeed=FMath::Max(1.f,float(Enemy.Archetype()->SpeedCmPerSecond));
     const float Pace=FMath::Clamp(Distance/(Seconds*FullSpeed),.1f,1.f);
-    const EMove Move=WalkTo(Enemy,Goal,Pace,70.f,NowMs,Route.bThreeDimensional);
+    EMove Move;
+    if(Route.bDirectFlightSegments&&Enemy.IsFlying())
+    {
+        // The authored corridor already avoids the room's structure. Native
+        // character movement still sweeps the body, so an added obstruction
+        // holds the patrol here instead of advancing a visit on the clock.
+        if(Distance<=20.f)
+        { Enemy.GetCharacterMovement()->StopMovementImmediately();Move=EMove::Arrived; }
+        else
+        { Heading=(Goal-Here).GetSafeNormal();Enemy.AddMovementInput(Heading,Pace);Move=EMove::Moving; }
+    }
+    else if(Route.bSupportedSegments)
+        Move=WalkSupportedSegment(Enemy,Goal,Pace,20.f,Route.bSupportedSteps);
+    else Move=WalkTo(Enemy,Goal,Pace,70.f,NowMs,Route.bThreeDimensional);
     if(Move==EMove::Arrived&&!PatrolLoop.Arrived)
         PauseYaw=Route.PauseFacing.IsNearlyZero()?Enemy.GetActorRotation().Yaw:Route.PauseFacing.Rotation().Yaw;
     // Actual arrival is required at the scheduled release. Blocked does not

@@ -43,14 +43,16 @@ void USoraFieldcraft::StageRelayRoom(const FSoraBeat& Beat)
     Box(TEXT("RelayEastGallery"),FVector(1490,500,390),FVector(180,500,20));
     // A short maintenance approach from the north gallery reaches the
     // authored node inside the void without increasing the player's reach.
-    Box(TEXT("RelayNodeApproach"),FVector(1000,700,390),FVector(120,220,20));
+    // End beyond the grounded work position (y=690), leaving the drone's
+    // five-metre orbit clear of the approach and its side railings.
+    Box(TEXT("RelayNodeApproach"),FVector(1000,730,390),FVector(120,160,20));
     for(int I=0;I<25;++I)
         Box(*FString::Printf(TEXT("RelayStair%d"),I),FVector(108+16*I,850,8*(I+1)),FVector(16,120,16*(I+1)));
     const auto Rail=[&](const FVector& Center,const FVector& Size) { Box(TEXT("RelayRail"),Center,Size); };
     Rail(FVector(1000,250,450),FVector(800,10,100));
     Rail(FVector(600,500,450),FVector(10,500,100));Rail(FVector(1400,500,450),FVector(10,500,100));
     Rail(FVector(770,750,450),FVector(340,10,100));Rail(FVector(1230,750,450),FVector(340,10,100));
-    Rail(FVector(940,675,450),FVector(10,150,100));Rail(FVector(1060,675,450),FVector(10,150,100));
+    Rail(FVector(940,700,450),FVector(10,100,100));Rail(FVector(1060,700,450),FVector(10,100,100));
     Rail(FVector(1000,70,450),FVector(1160,10,100));Rail(FVector(1000,930,450),FVector(1160,10,100));
     Rail(FVector(420,430,450),FVector(10,720,100));Rail(FVector(1580,500,450),FVector(10,860,100));
     for(const FVector2D At:{FVector2D(440,90),FVector2D(1000,90),FVector2D(1560,90),

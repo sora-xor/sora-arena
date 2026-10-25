@@ -34,6 +34,11 @@ struct FSoraPatrolRoute
     // Authored flat catwalk segments: validate capsule clearance and floor
     // support locally when the rasterized navmesh disconnects a narrow strip.
     UPROPERTY() bool bSupportedSegments = false;
+    // Authored stair legs use the walking capsule's step-up and floor support.
+    UPROPERTY() bool bSupportedSteps = false;
+    // A verified flight corridor follows each segment with ordinary swept
+    // movement, without the free-roaming drone's long sidestep look-ahead.
+    UPROPERTY() bool bDirectFlightSegments = false;
     UPROPERTY() FVector PauseFacing=FVector::ZeroVector;
 };
 
