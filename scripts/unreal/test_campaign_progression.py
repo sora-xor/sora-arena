@@ -64,8 +64,16 @@ for gate in ("CompleteBeat", "NextBeat", "FinishChapter", "ProgressValid", "Chec
              "FinishLines", "Reach", "Travel", "RecordDefeat", "ScorePoint", "RecordForms", "OpponentHealth", "WorkObjective",
              "Pickup", "Deliver", "DropCarried", "Stroke", "DamageTarget", "RepairTarget", "OpenCache",
              "Fail", "RetryTask", "ProgressPermille", "CrankSlipping", "PhaseStartPermille", "RepeatForm", "RecordFlank",
-             "AwaitsCapture", "Capture", "InPlayWeapons", "InPlayMechanics"):
+             "AwaitsCapture", "InPlayWeapons", "InPlayMechanics"):
     assert re.search(rf"SoraBeatRules::{gate}\b", director), f"The campaign director no longer uses tested beat {gate} rule"
+# Both explicit held endings must use the same tested Capture rule. The
+# monolithic director must not regain its old instant body-interaction path.
+for name, tick in (("Spine", "TickSpineCut"), ("Bulkhead", "TickBulkhead")):
+    capture_source = (ROOT / f"Source/SoraArena/Private/Game/SoraCampaign{name}.cpp").read_text()
+    for gate in ("SoraBeatRules::Capture", "SoraSummitRules::TickCut", "AwaitingCapture"):
+        assert re.search(rf"{gate}\s*\(", capture_source), f"The {name} ending no longer uses tested {gate}"
+    assert f"Interact{name}()" in director and f"{tick}(" in director, f"The director no longer dispatches {name} capture"
+assert "SoraBeatRules::Capture(" not in director, "The director must not bypass the authored held capture paths"
 for gate in ("AdvanceChapter", "CampaignLiberated", "CollectibleBit", "CollectiblesValid", "RecordArenaDefeat",
              "RestoreArenaSite", "FinishArena"):
     assert f"SoraCampaignRules::{gate}" in director, f"The campaign director no longer uses tested campaign {gate} gate"

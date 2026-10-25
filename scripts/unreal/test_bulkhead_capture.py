@@ -12,7 +12,7 @@ import subprocess
 import tempfile
 import unittest
 
-from build_campaign_data import BuildError, normalize_task
+from build_campaign_data import BuildError, build_chapter, load_places, normalize_task
 from validate_campaign import CampaignError, check_capture_hold
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -27,7 +27,12 @@ class BulkheadCaptureTests(unittest.TestCase):
     def test_authored_hold_and_entry_relation(self):
         self.assertEqual(self.beat["ext"]["defeat_interact"], {"id": "bulkhead_lever", "hold_s": 2})
         self.assertEqual(self.beat["task"]["capture_hold_ms"], 2000)
-        self.assertEqual(self.beat["task"], normalize_task(self.beat))
+        # The chapter pass applies carried mission arms after normalize_task.
+        # Check the complete pipeline so neither the hold nor its equipment
+        # restriction can disappear when these independent contracts compose.
+        rebuilt = build_chapter(6, load_places())
+        self.assertEqual(self.beat["task"], rebuilt["beats"][12]["task"])
+        self.assertEqual(self.beat["task"]["equipment_weapons"], [0, 3, 4, 10, 13, 18])
         self.assertEqual(self.space["bulkhead"], [self.space["entry"][0], self.space["entry"][1] + 180])
         self.assertEqual(self.chapter["space"]["zones"][self.space["zone"]]["place"], "pl_vault_core")
         check_capture_hold(self.beat, self.space)
