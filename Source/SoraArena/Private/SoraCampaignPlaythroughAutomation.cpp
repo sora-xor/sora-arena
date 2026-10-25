@@ -8,6 +8,7 @@
 #include "SoraAutomationWorld.h"
 #include "SoraArmsRules.h"
 #include "Combat/SoraStealth.h"
+#include "Combat/SoraCombatEffects.h"
 #include "SoraBoss.h"
 #include "SoraCampaignDirector.h"
 #include "SoraCampaignRules.h"
@@ -1262,6 +1263,19 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
         {
             if(!ClearField(Test,State,Index)||!FreeConscripts(Test,State)||
                 !Test.TestTrue(TEXT("Granary seal is pried through real movement and held input"),SoraCarryAutomation::PrySeal(*State.World))) return false;
+        }
+        if(Beat.Space.PressHall.bEnabled)
+        {
+            // This assisted campaign checks progression, not surviving a
+            // stationary hold under fire. A seizure net correctly cancels
+            // grounded work. Defeat the patrol first, then let any net expire
+            // through the combat effect's clock before approaching a handle.
+            if(!ClearField(Test,State,Index)||!FreeConscripts(Test,State)) return false;
+            auto* Effects=USoraCombatEffects::Get(Player(State));
+            for(int32 Frame=0;Frame<600&&Effects&&Effects->IsRooted(Player(State));++Frame)
+                if(!Advance(Test,State,1,FrameSeconds)) return false;
+            if(!Test.TestTrue(TEXT("The press patrol is cleared and any seizure net expires naturally"),
+                LiveEnemies(State).IsEmpty()&&(!Effects||!Effects->IsRooted(Player(State))))) return false;
         }
         bool bSlipTested = false, bMissTested = false, bLoadTested = false;
         // A crank is turned, not fought over: it is done once full, whoever stands.

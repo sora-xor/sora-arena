@@ -6,6 +6,7 @@
 #include "SoraEnemyController.h"
 #include "SoraProjectile.h"
 #include "Combat/SoraEnemyCatalog.h"
+#include "Combat/SoraCombatEffects.h"
 #include "World/SoraNavigation.h"
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -159,6 +160,39 @@ bool FSoraPressHallTest::RunTest(const FString& Parameters)
     W.Harden(); FreezeGuards(W);
     TestTrue(TEXT("Checkpoint retry restarts the machine and objective state"),C->ActiveBeat()==10&&C->TaskProgress().Done==0&&Craft->PressRunning(1)&&!Craft->PressInspectionArrived(0));
     AddInfo(TEXT("Directed input/obstruction and stamp fixture. Guards frozen; ordinary encounter difficulty, catwalk, timing of authored patrols, art and audio remain unqualified."));
+    return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraPressNetInterruptionTest,"SoraArena.Campaign.PressNetInterruption",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraPressNetInterruptionTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;
+    using namespace SoraPressAutomation;
+    if(!FSoraCatalog::Get().Load()) return false;
+    FBeatWorld W(*this,TEXT("PressNetInterruption"),5,10);
+    if(!W.Start()) return false;
+    W.Harden(); FreezeGuards(W);
+    auto* C=W.Campaign(); auto* Craft=W.Fieldcraft();
+    auto* Effects=USoraCombatEffects::Get(W.Hero());
+    if(!TestNotNull(TEXT("The combat effect subsystem is present"),Effects)) return false;
+    FloorFixture(W,FVector(W.BeatData().Space.Objectives[0],0),90);
+    if(!W.Tick(2)||!WaitForPressDialogue(W)||!W.World->InjectKey(EKeys::E,IE_Pressed)||!W.Tick(90)) return false;
+    if(!TestTrue(TEXT("The grounded press hold is in progress before the net"),C->HeldWorkProgress()>0.f&&C->TaskProgress().Done==0)) return false;
+    // Apply the same timed effect as CastNet after its hit has been resolved.
+    // Net aiming and impact are outside this isolated interruption fixture.
+    Effects->Root(*W.Hero(),2000);
+    if(!W.Tick(1)) return false;
+    TestTrue(TEXT("The live net disables movement and cancels work while Interact stays held"),
+        Effects->IsRooted(W.Hero())&&!Craft->CanWorkPress(0)&&W.Hero()->IsActionHeld(TEXT("Interact"))&&C->HeldWorkProgress()<0.f);
+    if(!W.Tick(360)) return false;
+    TestTrue(TEXT("The net expires naturally and the handle is usable again"),
+        !Effects->IsRooted(W.Hero())&&W.Hero()->GetCharacterMovement()->IsMovingOnGround()&&Craft->CanWorkPress(0));
+    TestTrue(TEXT("Keeping Interact held after the net expires cannot resume cancelled work"),
+        W.Hero()->IsActionHeld(TEXT("Interact"))&&C->HeldWorkProgress()<0.f&&C->TaskProgress().Done==0&&Craft->PressRunning(1));
+    if(!W.World->InjectKey(EKeys::E,IE_Released)||!W.Hold(EKeys::E,270)) return false;
+    TestTrue(TEXT("A fresh uninterrupted four-second hold jams the master"),C->TaskProgress().Done==1&&!Craft->PressRunning(1));
+    AddInfo(TEXT("Directed timed combat-effect interruption with guards isolated; net targeting and ordinary encounter difficulty are not covered."));
     return true;
 }
 

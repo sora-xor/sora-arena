@@ -51,9 +51,29 @@ The campaign fixture now faces the handle, finds an unobstructed work position
 without body-drag priority, and presses the actual mapped interaction instead
 of starting the press through GameMode directly. Press holds use 60 Hz ticks
 so their physical state is observed at the same cadence as the focused tests.
-These changes are not yet compiled or run; no successful fix is claimed yet.
+The signed `e63d707` follow-up passed PressCatwalkPatrol, PressPatrolCadence
+and PressPatrolBlocked: the guard waited at the physical barrier, resumed
+after removal and reached all four corners. Playthrough still failed.
 The diagnostic run's review SHA-256 is
 `14a3227e1e31e83824fbd1ddb4f7c2dcfe8de4636ebfe54a6e861442616435ac`.
+
+The `e63d707` run exited naturally (editor 3, wrapper 1); review SHA-256:
+`ab43f1031b05aa54f0c296705cf657ae362e63c6a8b6a80c07fd81e9ff7f9ec3`.
+A temporary trace at signed `7380382` found the first press hold cancelled
+at 1,433 ms with Interact held, clear reach and movement mode MOVE_None.
+The combat net disables movement this way, and the fixture had left the
+patrol attacking during the hold. This is consistent with a legitimate net
+interruption; the trace did not record the effect identity. Its failed run
+and natural exits are retained, with review SHA-256:
+`a9e1838383bc853d389afb2cd69a7b313ad12d522ba67272b06958752656440a`.
+
+The next campaign fixture clears the patrol through its existing assisted
+combat path and waits for any net effect to expire naturally. A separate
+PressNetInterruption fixture applies the real timed root effect, checks
+cancellation, natural release and refusal to resume until a fresh press.
+It isolates net impact from targeting; neither fixture establishes ordinary
+stealth difficulty. The temporary gameplay traces are removed. These latest
+fixture changes are not yet compiled or run.
 
 The implementation description below records intended behavior; where it
 says execution is pending, these dated results take precedence. Prior Linux

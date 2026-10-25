@@ -874,15 +874,6 @@ void USoraCampaignDirector::TickHeldWork(int32 DeltaMs,float DeltaSeconds)
         (HeldWork==EHeldWork::Objective&&Space->PressHall.bEnabled&&
             (!USoraFieldcraft::Get(this)||!USoraFieldcraft::Get(this)->CanWorkPress(HeldPoint))))
     {
-#if WITH_DEV_AUTOMATION_TESTS
-        if(Space->PressHall.bEnabled)
-            UE_LOG(LogTemp,Display,TEXT("Press hold cancellation: point=%d ms=%d key=%d valid=%d near=%d can_work=%d feet=%.3f mode=%d"),
-                HeldPoint,HeldMs,Hero->IsActionHeld(TEXT("Interact")),Points.IsValidIndex(HeldPoint),
-                Points.IsValidIndex(HeldPoint)&&Near(ASoraWorldBuilder::Floor(Points[HeldPoint]),Reach+60.f),
-                USoraFieldcraft::Get(this)&&USoraFieldcraft::Get(this)->CanWorkPress(HeldPoint),
-                Hero->GetActorLocation().Z-Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight(),
-                int32(Hero->GetCharacterMovement()->MovementMode));
-#endif
         HeldWork=EHeldWork::None; HeldPoint=INDEX_NONE; HeldMs=0; bHeldWatched=false;
         CargoClock.Reset();
         return;
@@ -901,11 +892,6 @@ void USoraCampaignDirector::TickHeldWork(int32 DeltaMs,float DeltaSeconds)
     const int32 DoneBefore=TaskState.Done;
     const int32 Point=HeldPoint;
     const int32 Duration=HeldMs;
-#if WITH_DEV_AUTOMATION_TESTS
-    if(Space->PressHall.bEnabled)
-        UE_LOG(LogTemp,Display,TEXT("Press hold finished: point=%d duration=%d need=%d task=%d count=%d mask=%u"),
-            Point,Duration,Need,int32(Task.Goal),Task.Count,TaskState.PointsMask);
-#endif
     HeldWork=EHeldWork::None; HeldPoint=INDEX_NONE; HeldMs=0; bHeldWatched=false;
     CargoClock.Reset();
     if(bHoist?TakeLoad(Point):bCargo?DeliverLoad(Point,Duration):WorkObjectiveAt(Point))
