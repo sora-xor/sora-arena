@@ -553,10 +553,20 @@ def main():
               "assess": {}, "id_files": {}, "regates": {}, "cameras": {}}
 
     def finish(message, error=False):
+        # The exit belongs to -ExecutePythonScript's own executor (EditorPythonExecuter.cpp:58-128, RequestExit at 119-126). Releasing the
+        # keep-alive makes its next tick complete its "Executing Python Script..." notification while the engine
+        # still ticks, then defer QUIT_EDITOR a frame, so the notification's one-frame UpdateNotificationDeferred
+        # ticker runs (SlateAsyncTaskNotificationImpl.cpp:262-304).
+        #
+        # Captures v2 and v3 instead called quit_editor here. QUIT_EDITOR closes the editor at once
+        # (EditorServer.cpp:5990-5996: "Don't call quit_editor directly with slate"), so the executor's next tick
+        # returned on the exit request. The plugin then completed the notification only at module shutdown
+        # (OnShutdownModule, EditorPythonExecuter.cpp:214-218), after the last ticker tick. Its deferred update, holding the notification widget,
+        # outlived Slate into FTSTicker's static destructor, the widget's destruction faulted, and the Mac error
+        # handler's cursor loop (HandleErrorRestoreUI) spun until SIGKILL (Saved/YumiFP/capture_v*.exit_hang_sample.txt).
         unreal.unregister_slate_post_tick_callback(handle)
         (unreal.log_error if error else unreal.log)(message)
         unreal.EditorPythonScripting.set_keep_python_script_alive(False)
-        unreal.SystemLibrary.quit_editor()
 
     def tick(delta):
         try:
