@@ -22,7 +22,8 @@ It builds a fresh uncooked level, /Game/ArtReview/YumiFP/L_YumiFP_<time>.
   - root: root's bow.drawn hold (60, -3, -9.5), at full draw;
   - kai: the proposed kai hold (60, -6, -14), at full draw;
   - paw: a closer three-quarter view of the paw on the grip.
-- **The setting:** a plain review set (a floor slab and a far wall, open to
+- **The setting:** a plain review set (a dark polished floor slab and a
+  plaster far wall in constant albedo, the timber look-dev stage's, open to
   the sky) under a physically based SkyAtmosphere sun 50 degrees up behind
   thin haze, over the left shoulder, with its real-time sky light. Exposure is
   fixed and manual, metered from the sun: EV100 = log2(E / 2.5), the
@@ -126,6 +127,36 @@ def sha256(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
+def plain_material(name, colour, rough):
+    """A constant-albedo review material in the level's folder, rebuilt each run."""
+    folder = LEVEL.rsplit("/", 1)[0]
+    path = f"{folder}/{name}"
+    lib = unreal.MaterialEditingLibrary
+    if ASSETS.does_asset_exist(path):
+        m = unreal.load_asset(path)
+        for e in list(lib.get_material_expressions(m)):
+            lib.delete_material_expression(m, e)
+    else:
+        m = unreal.AssetToolsHelpers.get_asset_tools().create_asset(name, folder, unreal.Material,
+                                                                    unreal.MaterialFactoryNew())
+    c = lib.create_material_expression(m, unreal.MaterialExpressionConstant3Vector, -300, 0)
+    c.set_editor_property("constant", unreal.LinearColor(*colour, 1.0))
+    lib.connect_material_property(c, "", unreal.MaterialProperty.MP_BASE_COLOR)
+    r = lib.create_material_expression(m, unreal.MaterialExpressionConstant, -300, 200)
+    r.set_editor_property("r", rough)
+    lib.connect_material_property(r, "", unreal.MaterialProperty.MP_ROUGHNESS)
+    lib.recompile_material(m)
+    ASSETS.save_loaded_asset(m)
+    return m
+
+
+# The timber look-dev stage's floor and plaster (sora_timber_lookdev.stage), so
+# the backdrop is plain and not BasicShapeMaterial's grid (root's review of
+# Saved/YumiFP/v2: "background/surfaces also show grain").
+SET_MATERIALS = {"floor": ("M_YumiFP_Floor", (0.09, 0.055, 0.035), 0.22),
+                 "wall": ("M_YumiFP_Plaster", (0.50, 0.44, 0.35), 0.85)}
+
+
 def build_level():
     ASSETS.make_directory(LEVEL.rsplit("/", 1)[0])
     if not LEVELS.new_level(LEVEL):
@@ -134,10 +165,12 @@ def build_level():
     # camera: the floor's top at -160 cm (the eye 1.6 m up), the far wall's
     # face at x = 1,190 cm, filling the frame behind the bow.
     cube = load("/Engine/BasicShapes/Cube.Cube")
-    for loc, scale in (((500.0, 0.0, -165.0), (24.0, 24.0, 0.1)),                 # floor
-                       ((1200.0, 0.0, 340.0), (0.2, 30.0, 10.0))):                # far wall
+    mats = {k: plain_material(*v) for k, v in SET_MATERIALS.items()}
+    for part, loc, scale in (("floor", (500.0, 0.0, -165.0), (24.0, 24.0, 0.1)),
+                             ("wall", (1200.0, 0.0, 340.0), (0.2, 30.0, 10.0))):
         a = spawn(unreal.StaticMeshActor, loc)
         a.static_mesh_component.set_static_mesh(cube)
+        a.static_mesh_component.set_material(0, mats[part])
         a.set_actor_scale3d(unreal.Vector(*scale))
     atmosphere = spawn(unreal.SkyAtmosphere)
     atmosphere.get_component_by_class(unreal.SkyAtmosphereComponent).set_editor_property(
@@ -330,7 +363,8 @@ def main():
             if not status["queue"]:
                 manifest = {"level": LEVEL, "fov": FOV, "mesh_scale": MESH_SCALE, "holds": {h: HOLDS[h] for h in holds},
                             "files": {p: sha256(out / p) for p in status["written"]}, "sockets_cm": status["sockets"],
-                            "poses_component_cm": status["poses"], "materials": vm.materials, "sun": SUN,
+                            "poses_component_cm": status["poses"], "materials": vm.materials,
+                            "set_materials": SET_MATERIALS, "sun": SUN,
                             "ev100": ev100,
                             "exposure_bias": 1.0 - ev100,
                             "scope": "editor review originals: not the native first-person renderer or an admission"}
