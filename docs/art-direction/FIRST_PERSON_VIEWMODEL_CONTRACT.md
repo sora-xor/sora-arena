@@ -291,9 +291,70 @@ rest/drawn mesh swap.
       cloth and splints, and a plastic-looking arrow (root's review agrees).
       None of it is accepted.
   - **Gates the capture now applies:** the take is evaluated on the game
-    thread, and the posed Grip_R and Muzzle must match the review. Each part
-    must draw its own materials. Exposure is metered from the sun (the
-    incident-meter equation).
+    thread, and the posed Grip_R and Muzzle must match the review. Exposure
+    is metered from the sun (the incident-meter equation).
+  - **Its material gate** is `fp_material_bindings`, shared with
+    `verify_yumi_rig_materials.py`. It reads ordered rows: (index, slot,
+    path) for each asset, (index, path) for each component. These are checked
+    against the serialized expectations
+    (`data/fp_material_bindings.json`):
+    - each asset has exactly its expected slot count and names, each bound to
+      its own material;
+    - each component index draws its asset's slot at that index, so a swapped
+      override fails, though its sorted paths would pass (Codex);
+    - no engine default anywhere.
+    `test_fp_material_bindings.py` tests the check on the host.
+- **W18 source corrections** (Codex-assigned; source only, **not rebuilt**):
+  - **The nigiri** (`scripts/art/yumi_nigiri.py`):
+    - **The fault:** the grip wraps read as stepped plates. The first
+      generator lapped a 19 mm, 1.1 mm strip by shearing its whole section
+      (tilt 0.29), so every turn sat about 16° askew: a plate stepping up to
+      3.8 mm at each seam.
+    - **Now:** a 2.8 mm built-up underlay wound with one 13 mm, 0.6 mm
+      skived deerskin strip at 30% overlap. Its section spans one 9.1 mm
+      pitch, so the turns butt into one surface. The seam steps only the
+      skived edge (0.22 mm), the lap crests at 0.45 mm and drapes flat. The
+      strip runs on over the shoulders and covers ±40.4 mm at every angle.
+    - **Girth:** the outer leather stands 3.85 mm off the stave, inside the
+      4 mm first-person envelope and at the girth the paw is carved to.
+    - `wound_strip` now refuses laps.
+  - **The ya** (`scripts/art/yumi_ya.py`, `mat_bamboo`):
+    - **The fault:** the shaft was lacquered (roughness about 0.25), without
+      node bands, its mottling barely varying along its length: uniformly
+      yellow plastic.
+    - **Now:** polished bare yadake at roughness about 0.42. Four nodes are
+      each placed within 12 mm of their kyūdō positions, raised 0.30–0.50 mm,
+      with sharper nock-side ridges, finely sampled. The node bands and
+      sheath scars sit at the nodes' own places. There is fire-straightening
+      scorch (heavier at the nodes, a little rougher) and a tone of its own
+      for each internode.
+    - The new `mat_bamboo` options are off by default, so the four other
+      bamboo weapons bake as before.
+  - **Contracts, on the host now:**
+    - `test_yumi_nigiri_ya.py`: the seam step and flat turns; both
+      envelopes; the paw's girth within its carve gap and its digits inside
+      the covered span; the nodes, envelope and ridge sampling; the hash is
+      the generator's.
+    - `test_nyaakoto_fp_paws.Grip`: the rig's emitted leather (99th
+      percentile) within CARVE_GAP of `GRIP_WRAP`. It passes on the current
+      rig, and the rebuilt rig must pass it too, or the paw's grip is updated
+      and the paw rebuilt.
+    - `Rebuild.test_the_rig_was_built_from_the_current_w18_sources` is an
+      **expected failure** on purpose. The committed static bow, LODs, atlas
+      and rig predate the change. The rig record now pins every W18 source,
+      and the rebuild's commit must remove the marker.
+  - **The rebuild chain**, in the engine lane, each step's originals archived
+    with hashes before it runs:
+    1. the static W18 (FBX, LOD1/2, atlas, build record, renders);
+    2. the rig (`create_runtime_weapon_yumi_rig.py`, its check geometry and
+       record);
+    3. its grey review;
+    4. the host tests (rig sockets, scale and playback; the grip contract;
+       the rebuild marker removed);
+    5. the Unreal rig import;
+    6. the paws (their grip re-measured if the contract fails);
+    7. the fresh-editor material proof;
+    8. new first-person originals.
 - **Check geometry:** only `sora-yumi-rig-check-v3` (bind and per-key pose
   matrices of the 28-bone rig) is accepted. Earlier rigs are archived
   evidence, never admitted:
