@@ -62,7 +62,7 @@ half-heights, against a clear radius of 0.12.
 | heavy | (36, 13, −12.5) | (24, 4, 0) | kanabō, forge hammer | u 0.52, v −0.88, was −1.06 (below the frame) | strike, windup, sprint |
 | kama | (36, 12, −13) | (20, −8, 0) | kusarigama | u 0.48, v −0.92; chain paw u −0.21 | strike, windup, sprint |
 | bow | (45, −15, −12) | (0, 6, −8) | yumi | bow paw u −0.48, v −0.68 | reload (at −10°), sprint |
-| bow.drawn | (60, −3, −9.5) | (0.25, 0.1, 0) | yumi while drawing | arrow rest u −0.04, v −0.18 | aim (below) |
+| bow.drawn | (60, −5, −9.5) | (0.25, 0.1, 0) | yumi while drawing | arrow rest u −0.08, v −0.18 | aim (below) |
 
 Each pose sorts its grips three ways:
 
@@ -85,12 +85,69 @@ the screen point (u, v) where the HUD ray lands: the direction
 
 | BowAimOffset (yaw, pitch) | Same angle on both cameras | Corrected |
 | --- | --- | --- |
-| (2°, 0°) | 0.031 | 0.006 |
-| (0°, 2°) | 0.034 | 0.007 |
-| (4°, −3°) | 0.069 | 0.006 |
-| (6°, 4°) | 0.107 | 0.011 |
+| (2°, 0°) | 0.029 | 0.008 |
+| (0°, 2°) | 0.034 | 0.008 |
+| (4°, −3°) | 0.067 | 0.008 |
+| (6°, 4°) | 0.105 | 0.013 |
 
-Errors are in half-heights; the tolerance is 0.02.
+Errors are in half-heights; the tolerance is 0.02. At rest the drawn arrow
+lands 0.006 from the reticle at 20 m.
+
+**The bow's volumes, not only its sockets.** Codex's BowAim originals (720p,
+`e237b9f`) showed that the socket checks did not represent the proxy
+volumes: a 22 cm grip box and a 13 cm paw cube covered the target.
+`scripts/art/yumi_draw.py` checks the authored parts as volumes, through this
+contract's own placement and projection (first-person depth × 0.6 beyond the
+near plane):
+
+- the stave, its full section along the solved shape;
+- the string;
+- the nocked arrow;
+- the bow paw round the nigiri, with its forearm;
+- the draw paw in the yugake at the nock.
+
+It simulates them frame by frame (60 fps) through the draw (0.65 s), the
+hold, the release and the return, in rest and both bobs.
+
+- **At the old anchor (60, −3, −9.5)**, the stave's volume sits 0.054
+  half-heights from the reticle all through the hold, inside the 0.12 radius.
+  The Grip_L socket alone (0.127) hid it.
+- **The authored anchor is (60, −5, −9.5).** Every volume clears 0.12 in
+  every phase, provided the presentation follows the draw
+  (`motion.bow_draw_presentation`): while drawing, the target is
+  lerp(bow rest, bow.drawn rest, draw fraction), then blended at 12/s.
+  Targeting bow.drawn at once lets the nocked, not-yet-drawn arrow reach
+  forward to 0.084 for 0.47 s.
+
+  | Part | Nearest approach (half-heights) |
+  | --- | --- |
+  | Stave | 0.139 (hold, in the bob) |
+  | Arrow | 0.127 (draw), 0.157 (hold) |
+  | Bow paw | 0.193 |
+  | Draw paw | 0.132 (release) |
+  | String | more than 0.45 |
+
+  This is presentation only. The temporary proxy keeps its own fixed poses.
+
+**The continuous draw rig.** Production W18 is a skeletal yumi, not a
+rest/drawn mesh swap.
+
+- **Bones:**
+  - one Grip root;
+  - 12 bones along the upper limb and 8 along the lower;
+  - Tip_U and Tip_L in the horn hazu;
+  - String_Nock.
+- **Draw:** one draw value, 0 to 1, poses them. The limbs follow the solved
+  shape at each draw (`yumi_draw.drawn`), the string's unstretched 2.1346 m
+  reaching the nock 0.88 m behind the grip. The skinned stave stays within
+  1.8 mm of that shape through the draw.
+- **The string:** two straight segments skinned between String_Nock and the
+  tips.
+- **Release:** the string returns in 0.03 s with a damped overshoot past
+  brace.
+- **Sockets:** they keep their committed positions at brace (`Grip_L`,
+  `Grip_R`, `Muzzle`, `String_*`, checked to 5 decimals). Grip_R rides
+  String_Nock.
 
 ## Sockets
 
@@ -228,7 +285,7 @@ committed contract, plus every reproduced gap:
   Koiguchi socket on the hero saya;
 - the body rebuilt without gear, and the four gear sockets;
 - `SM_NyaakotoGear_Ebira`;
-- the yumi string/draw representation, and the yugake paw.
+- the yumi's continuous skeletal draw rig (above), and the yugake paw.
 
 ## Validation after integration (your lane)
 
