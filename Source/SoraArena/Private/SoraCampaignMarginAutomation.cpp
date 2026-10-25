@@ -43,7 +43,7 @@ bool Seconds(FBeatWorld& W,double Time) { return Until(W,W.World->GetTestWorld()
 FHitResult TraceCover(FBeatWorld& W,const TCHAR* Stage)
 {
     auto* Arena=W.Mode()->Arena(); auto* Hero=W.Hero(); auto* Body=Boss(W);
-    auto* Cover=Arena->BridgeConsoles()[2].Get();
+    auto* Cover=Arena->BridgeConsoles()[6].Get();
     const FTransform Deck=Arena->BridgeDeckRoot()->GetComponentTransform();
     const FHitResult Hit=Body->RangedAimTrace(*Hero);
     const int32 HitId=Arena->BridgeConsoles().IndexOfByPredicate(
@@ -167,19 +167,20 @@ bool FSoraMarginLingerTest::RunTest(const FString& Parameters)
     if(!SoraMarginTest::Start(W)) return false;
     auto* Arena=W.Mode()->Arena(); auto* Boss=SoraMarginTest::Boss(W);
     const auto Local=[&](FVector Point) { return Arena->BridgeDeckRoot()->GetComponentTransform().TransformPosition(Point); };
-    // Approach the middle of console 2 through clear floor, using mapped W.
-    // Walk allows a 30 cm stopping band. The old (-1154,-394) destination
-    // put the nominal deck-plane ray only about 12 cm inside its corner;
-    // the measured three-dimensional pistol trace remains the assertion.
-    for(FVector Point:{FVector(-1300,0,0),FVector(-1300,-300,0),FVector(-1120,-300,0)})
+    // The measured 6750 trace towards console 2 first hit console 6 farther
+    // forward. Approach console 6 itself: the standing ray clears its top,
+    // crouching blocks it, and the hero is within the marked impact radius.
+    // No boss, console or collision is repositioned for this fixture.
+    constexpr int32 Shelter=6;
+    for(FVector Point:{FVector(-1300,0,0),FVector(-120,0,0),FVector(-120,-900,0)})
         if(!TestTrue(TEXT("Mapped movement reaches real cover"),SoraLiftAutomation::Walk(*W.World,Local(Point)))) return false;
     SoraMarginTest::TraceCover(W,TEXT("standing"));
     TestEqual(TEXT("Standing outside the pistol's blocked line earns no cover time"),Arena->MarginLingerMs(),0);
     if(!W.Press(EKeys::C)||!W.Tick(5)) return false;
-    auto* Cover=Arena->BridgeConsoles()[2].Get();
+    auto* Cover=Arena->BridgeConsoles()[Shelter].Get();
     const FHitResult CrouchedTrace=SoraMarginTest::TraceCover(W,TEXT("after mapped C"));
     const bool Crouched=TestTrue(TEXT("Mapped C reaches the actual crouched stance"),W.Hero()->IsCrouched());
-    const bool Blocked=TestTrue(TEXT("Real console 2 physically blocks Collatera's actual pistol trace"),
+    const bool Blocked=TestTrue(TEXT("Real console 6 physically blocks Collatera's actual pistol trace"),
         CrouchedTrace.bBlockingHit&&CrouchedTrace.GetComponent()==Cover);
     if(!Crouched||!Blocked) return false;
     if(!SoraMarginTest::Seconds(W,2)||!W.Press(EKeys::Escape)) return false;
@@ -188,27 +189,27 @@ bool FSoraMarginLingerTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("Pause does not advance continuous cover time"),Arena->MarginLingerMs(),Paused);
     W.Mode()->ResumePlay();
     for(int Frame=0;Frame<500&&Arena->MarginPinnedConsole()==INDEX_NONE;++Frame) if(!W.Tick(1)) return false;
-    TestEqual(TEXT("Six seconds of actual blocking cover pins that console"),Arena->MarginPinnedConsole(),2);
+    TestEqual(TEXT("Six seconds of actual blocking cover pins that console"),Arena->MarginPinnedConsole(),Shelter);
     TestTrue(TEXT("The existing authored cover bark enters the dialogue queue"),W.Campaign()->QueuedSubtitles().ContainsByPredicate(
         [](const FSoraSubtitle& Line) { return Line.LineId==TEXT("ch07.b13.collatera.009"); }));
     const int32 Attack=Boss->Data()->AttackIndex(TEXT("margin_call"));
     const float InsideHealth=W.Hero()->Health;
     if(!Arena->BeginBridgeMargin(*Boss,Attack,9100)||!SoraMarginTest::Seconds(W,Boss->WindupFor(Attack)/1000.0+.25)) return false;
     TestEqual(TEXT("Staying under one real marked strike deals sixty damage"),InsideHealth-W.Hero()->Health,60.f);
-    TestTrue(TEXT("The first strike damages but does not destroy the console"),Arena->MarginConsoleHits(2)==1&&Cover->IsCollisionEnabled());
+    TestTrue(TEXT("The first strike damages but does not destroy the console"),Arena->MarginConsoleHits(Shelter)==1&&Cover->IsCollisionEnabled());
     for(int Frame=0;Frame<500&&Arena->MarginPinnedConsole()==INDEX_NONE;++Frame) if(!W.Tick(1)) return false;
-    TestEqual(TEXT("Remaining behind the same blocker can pin the following call"),Arena->MarginPinnedConsole(),2);
+    TestEqual(TEXT("Remaining behind the same blocker can pin the following call"),Arena->MarginPinnedConsole(),Shelter);
     if(!W.Press(EKeys::C)||!W.Tick(5)) return false;
-    for(FVector Point:{FVector(-1300,0,0),FVector(1800,0,0),FVector(1800,1500,0)})
+    for(FVector Point:{FVector(-120,0,0),FVector(1800,0,0),FVector(1800,1500,0)})
         if(!SoraLiftAutomation::Walk(*W.World,Local(Point))) return false;
     TestEqual(TEXT("Leaving the blocker resets continuous occupancy"),Arena->MarginLingerMs(),0);
-    TestEqual(TEXT("Leaving does not erase the announced next target"),Arena->MarginPinnedConsole(),2);
+    TestEqual(TEXT("Leaving does not erase the announced next target"),Arena->MarginPinnedConsole(),Shelter);
     if(!Arena->BeginBridgeMargin(*Boss,Attack,9101)) return false;
-    TestTrue(TEXT("The next call prioritizes the pinned console even after the hero leaves"),Arena->MarginTargetIds().Num()==3&&Arena->MarginTargetIds()[0]==2);
+    TestTrue(TEXT("The next call prioritizes the pinned console even after the hero leaves"),Arena->MarginTargetIds().Num()==3&&Arena->MarginTargetIds()[0]==Shelter);
     TestEqual(TEXT("Starting the next call consumes the pin"),Arena->MarginPinnedConsole(),INDEX_NONE);
     const float Health=W.Hero()->Health;
     if(!SoraMarginTest::Seconds(W,Boss->WindupFor(Attack)/1000.0+.25)) return false;
-    TestTrue(TEXT("The departed console takes its second hit and loses real collision"),Arena->MarginConsoleHits(2)==2&&!Cover->IsCollisionEnabled());
+    TestTrue(TEXT("The departed console takes its second hit and loses real collision"),Arena->MarginConsoleHits(Shelter)==2&&!Cover->IsCollisionEnabled());
     TestEqual(TEXT("The escaped hero is not chased by the snapshotted warning"),W.Hero()->Health,Health);
     return !HasAnyErrors();
 }
