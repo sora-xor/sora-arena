@@ -27,7 +27,7 @@ TSharedRef<SWidget> FamilyRecord(UFont* Font)
 {
     const auto Face=[Font](int32 Size)
     { auto F=Font->GetLegacySlateFontInfo();F.Size=Size;return F; };
-    const FLinearColor Cyan(.30f,.82f,.88f),Muted(.22f,.50f,.54f);
+    const FLinearColor Cyan(.78f,.93f,1.f),Muted(.48f,.65f,.70f);
     auto Rows=SNew(SVerticalBox);
     Rows->AddSlot().AutoHeight().Padding(0,0,0,8)
         [SNew(STextBlock).Text(FText::FromString(TEXT("武家方記録"))).Font(Face(24)).ColorAndOpacity(Muted)];
@@ -49,9 +49,9 @@ TSharedRef<SWidget> FamilyRecord(UFont* Font)
     Row(TEXT("残高"),TEXT("190"),60,18);
     Row(TEXT("買取価格"),TEXT("30"),36,10,true);
     Rows->AddSlot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(TEXT("単位：石"))).Font(Face(22)).ColorAndOpacity(Muted)];
-    return SNew(SBorder).Padding(40).BorderBackgroundColor(FLinearColor(.004f,.012f,.016f,1.f))[Rows];
+    return SNew(SBorder).Padding(40).BorderBackgroundColor(FLinearColor(.0003f,.0008f,.001f,1.f))[Rows];
 }
-constexpr float FamilyPageLumens=55.f;
+constexpr float FamilyPageLumens=220.f;
 }
 
 void ASoraWorldBuilder::BuildArchive(const FSoraZone& Zone,const FSoraZone& Press)
@@ -107,7 +107,7 @@ void ASoraWorldBuilder::BuildArchive(const FSoraZone& Zone,const FSoraZone& Pres
         };
         auto* Bodies=Batch(TEXT("ArchiveStoredSlates"),Slate,false);
         UInstancedStaticMeshComponent* Edges[4];
-        for(int Level=0;Level<4;++Level) Edges[Level]=Batch(TEXT("ArchiveSlateEdgeGlow"),FLinearColor(.7f,2.5f,3.f)*(.35f+.65f*Level/3.f),true);
+        for(int Level=0;Level<4;++Level) Edges[Level]=Batch(TEXT("ArchiveSlateEdgeGlow"),FLinearColor(.14f,.50f,.60f)*(.35f+.65f*Level/3.f),true);
         RackPart(TEXT("ArchiveRackBack"),FVector(Side?2592:8,900,160),FVector(8,1680,320),Timber,TEXT("Timber"));
         RackPart(TEXT("ArchiveRackPlinth"),FVector(X,900,15),FVector(116,1680,30),Timber,TEXT("Timber"));
         for(int Bay=0;Bay<9;++Bay)
@@ -123,22 +123,32 @@ void ASoraWorldBuilder::BuildArchive(const FSoraZone& Zone,const FSoraZone& Pres
                 for(int Book=0;Book<29;++Book)
                 {
                     const int Seed=Side*1723+Bay*191+Shelf*43+Book*13;
-                    const float BY=Y-76.f+Book*5.4f,Height=27.f+(Seed%5);
+                    FRandomStream Variation(Seed*7919+37);
+                    const float BY=Y-76.f+Book*5.4f+Variation.FRandRange(-.7f,.7f);
+                    const float Height=Variation.FRandRange(24.f,32.f),Thickness=Variation.FRandRange(1.8f,3.2f);
                     // Leave the readable 75x100 cm household plate's own bay
                     // clear. Its physical size/camera are unchanged this pass.
                     if(Side&&FMath::Abs(BY-900.f)<43.f&&Z+Height>98.f&&Z<202.f) continue;
                     const FVector At(Front+(Side?1.f:-1.f)*13.f,BY,Z+3.f+Height*.5f);
-                    Bodies->AddInstance(FTransform(FQuat::Identity,O+At,FVector(.22f,.025f,Height/100.f)),true);
+                    Bodies->AddInstance(FTransform(FQuat::Identity,O+At,FVector(.22f,Thickness/100.f,Height/100.f)),true);
                     if(Seed%17==0) continue; // stable, sparse unlit records
-                    const FVector Edge(Front+(Side?-1.f:1.f)*.3f,BY,At.Z);
-                    Edges[Seed%4]->AddInstance(FTransform(FQuat::Identity,O+Edge,FVector(.004f,.010f,(Height-3.f)/100.f)),true);
+                    // Interrupted, uneven edge inscriptions avoid the former
+                    // full-height repeated bars. Each record retains one body.
+                    const int Level=Variation.RandRange(0,3);
+                    const float Lower=Variation.FRandRange(4.f,7.f),Gap=Variation.FRandRange(2.f,5.f),Bottom=Z+5.f;
+                    const float Upper=FMath::Min(Variation.FRandRange(8.f,14.f),Height-Lower-Gap-4.f);
+                    for(const FVector2D Segment:{FVector2D(Bottom+Lower*.5f,Lower),FVector2D(Bottom+Lower+Gap+Upper*.5f,Upper)})
+                    {
+                        const FVector Edge(Front+(Side?-1.f:1.f)*.3f,BY,Segment.X);
+                        Edges[Level]->AddInstance(FTransform(FQuat::Identity,O+Edge,FVector(.004f,.007f,Segment.Y/100.f)),true);
+                    }
                 }
             }
             if(auto* Lamp=GetWorld()->SpawnActor<ARectLight>(O+FVector(Front+(Side?-1.f:1.f)*3.f,Y,190),FRotator(0,Side?180:0,0)))
             {
                 Lamp->SetMobility(EComponentMobility::Movable);
                 auto* Light=Lamp->RectLightComponent.Get();
-                Light->SetIntensityUnits(ELightUnits::Lumens);Light->SetIntensity(20.f);
+                Light->SetIntensityUnits(ELightUnits::Lumens);Light->SetIntensity(36.f);
                 Light->SetLightColor(FLinearColor(.25f,.66f,.78f));Light->SetAttenuationRadius(250.f);
                 Light->SetSourceWidth(150.f);Light->SetSourceHeight(70.f);
                 Light->SetCastShadows(Side&&Bay>=3&&Bay<=5);
@@ -175,8 +185,10 @@ void ASoraWorldBuilder::BuildArchive(const FSoraZone& Zone,const FSoraZone& Pres
     ArchivePageText->SetWidgetSpace(EWidgetSpace::World);
     ArchivePageText->SetDrawSize(FVector2D(750,1000));ArchivePageText->SetPivot(FVector2D(.5f,.5f));
     ArchivePageText->SetBlendMode(EWidgetBlendMode::Opaque);
-    ArchivePageText->SetBackgroundColor(FLinearColor(.004f,.012f,.016f,1.f));
-    ArchivePageText->SetTintColorAndOpacity(FLinearColor(.65f,.65f,.65f,1.f));
+    ArchivePageText->SetBackgroundColor(FLinearColor(.0003f,.0008f,.001f,1.f));
+    // The world widget shares the room's fixed exposure. Its independent
+    // radiance restores the text hierarchy without lifting every shelf/wall.
+    ArchivePageText->SetTintColorAndOpacity(FLinearColor(8.f,8.f,8.f,1.f));
     ArchivePageText->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     ArchivePageText->SetCanEverAffectNavigation(false);
     ArchivePageText->SetRelativeLocation(O+FVector(2474,900,150));
@@ -206,14 +218,15 @@ void ASoraWorldBuilder::BuildArchive(const FSoraZone& Zone,const FSoraZone& Pres
     Part(TEXT("ArchiveHighWindow"),FVector(1950,1798,450),FVector(90,4,60),FLinearColor(.008f,.016f,.03f),TEXT(""),false);
     for(int Bar=-1;Bar<=1;++Bar)
         Part(TEXT("ArchiveWindowLattice"),FVector(1950+Bar*24,1794,450),FVector(3,5,60),Timber,TEXT("Timber"),false);
-    const FVector RimAt(1950,1745,450),RimLook(1400,900,130);
+    const FVector RimAt(1950,1745,450),RimLook(1750,1000,150);
     if(auto* Rim=GetWorld()->SpawnActor<ARectLight>(O+RimAt,(RimLook-RimAt).Rotation()))
     {
         Rim->SetMobility(EComponentMobility::Movable);
         auto* Light=Rim->RectLightComponent.Get();
-        Light->SetIntensityUnits(ELightUnits::Lumens);Light->SetIntensity(400.f);
+        Light->SetIntensityUnits(ELightUnits::Lumens);Light->SetIntensity(650.f);
         Light->SetUseTemperature(true);Light->SetTemperature(10000.f);Light->SetAttenuationRadius(1900.f);
         Light->SetSourceWidth(90.f);Light->SetSourceHeight(60.f);Light->SetCastShadows(true);
+        Light->SetBarnDoorAngle(35.f);Light->SetBarnDoorLength(80.f);
         Rim->Tags.Add(TEXT("ArchiveWindowRim"));DecorActors.Add(Rim);
     }
 

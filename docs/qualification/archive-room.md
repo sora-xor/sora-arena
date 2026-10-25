@@ -339,3 +339,36 @@ art. The source is uncompiled and unrendered. Slate slide/fade, rack dimming,
 dust, organic materials, weapon grip/animation and revised establishing shots
 remain open. The next runtime and six-shot capture must check collision,
 exposure restoration, record readability and the direction's tonal targets.
+
+At signed `cc4ed0fa`, all four selected runtime fixtures pass: ArchiveFamilyPage,
+ArchiveRevealReset, ArchiveExit and ArchivePosts. This includes collision and
+restoration of ordinary sun/sky/exposure after physical departure. The editor
+and wrapper exit naturally 0/0, and all twenty files and unchanged inputs
+verify. Review:
+`d934a608fa90abad46db393895b0282df9d8debf4f85978d80b5f0bc5aebce1d`.
+
+The matching six-view SM6 capture also completes naturally 0/0; all 34 files
+and original hashes verify. Final art is rejected. Shelf geometry now renders,
+but the repeated bright edges overpower the dim family record and characters.
+All record rows remain above subtitles. The return shot lights a broad wall
+while leaving the rival largely silhouetted. Whole-frame weighted sRGB-code
+means range 0.064–0.100, with zero channels at or above 250; that absence of
+clipping does not establish readability or suitable local contrast. Review:
+`9982382d2789535c279717491a5bae21a6661c727cd53ae3db09640fa8e468e0`.
+Originals: `Saved/Screenshots/SoraArtReview/1920x1080/ArchiveReveal_DBEEF4445042DA6F52782AB2CD4896DB/`.
+
+The next correction keeps manual exposure fixed while balancing the record,
+rack emissions and character lighting independently. These results remain
+directed uncooked stills and fixtures, not ordinary duel play, continuous
+animation, packaged performance or final visual acceptance.
+
+Source CI `40245293826` passes all 110 checks at a tested merge whose tree
+matches `cc4ed0fa`. Five artifacts and raw logs verify in review
+`bdd9c4a0e4f7db32a0713b7f3704800c82259e658ebcb0a7c7073d1a330cd970`.
+
+The corrective source gives the world-space record a separate HDR tint and
+near-white cyan ink, with a lower background. Rack emission falls to one fifth;
+individual records gain varied thickness, height and spacing, with interrupted
+edge markings. Local rack/page light increases while the window rim aims
+through the characters with barn doors limiting spill. Exposure remains -2.
+These values need a new original capture; they are not a visual pass.
