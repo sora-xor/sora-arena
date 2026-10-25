@@ -211,6 +211,8 @@ bool FSoraRelayInspectionTest::RunTest(const FString& Parameters)
     auto* Wall=Block(W,O+FVector(1000,690,500),FVector(50,50,100));
     if(!Wall||!W.Tick(1800)) return false;
     TestFalse(TEXT("A blocked node cannot be marked inspected by elapsed time"),Craft->RelayInspectionArrived(2));
+    TestTrue(TEXT("The inspector reaches the upper approach and waits behind the blocking wall"),
+        FMath::Abs(Feet(*Auditor).Z-402.f)<5.f&&FVector::Dist2D(Feet(*Auditor),C->RelayWorkLocation(2))<200.f);
     TestTrue(TEXT("The actual auditor is assigned to the upper node"),Craft->RelayInspector()==Auditor);
     Wall->Destroy();
     for(int I=0;I<2400&&!Craft->RelayInspectionArrived(2);++I) if(!W.Tick(1)) return false;
