@@ -7,6 +7,7 @@ class ASoraFoundryFurnace;
 class ADirectionalLight;
 class AExponentialHeightFog;
 class ASkyLight;
+class APointLight;
 class ASoraHorse;
 class ASoraCampaignLift;
 class ASoraBoss;
@@ -141,6 +142,7 @@ public:
     void BuildClimb(const FSoraBeat& Beat);
     void BuildRelayRoom(const FSoraBeat& Beat);
     void BuildArchive(const FSoraZone& Zone);
+    void ShowArchivePage(const FSoraBeat& Beat,int32 Phase);
     void StageKit(const FSoraChapter& Chapter, int32 Beat);
     void ShowKit(const FSoraKitView& View);
     void ClearKit();
@@ -285,6 +287,8 @@ private:
     // Task kit, pickups and the carried load (SoraWorldBuilderLayoutTasks.cpp).
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> KitPieces;
     void StageEpilogue(const FSoraBeat& Beat);
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> ArchivePage;
+    UPROPERTY() TObjectPtr<APointLight> ArchivePageLight;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> ToranosukePlaque;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> NyaakotoPlaque;
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> WashioSword;

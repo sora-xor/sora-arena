@@ -47,3 +47,12 @@ unchanged. Review:
 Source CI at `1248987` passes all 110 checks; the later two fixture-only commits
 are not covered by that run. Review:
 `990d2e768b4cf027d64edb385e079254d32011e26c4efcaa2eb7600739950204`.
+
+A subsequent source candidate links the physical family slate's cyan light to
+the duel's existing second phase and the pledge. The page begins dark, lights
+when the actual phase changes, and derives the same state from a loaded phase
+checkpoint. It adds no new save fields. A prepared ArchiveFamilyPage fixture
+uses directed story damage, checks the real light and blocking dialogue,
+reloads the actual mid-duel save, and checks the pledge. It has not compiled
+or run. This does not implement the authored rack impact, character animation,
+readable slate artwork or the final cinematic camera.

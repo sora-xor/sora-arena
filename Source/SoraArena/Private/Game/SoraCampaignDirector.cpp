@@ -1011,6 +1011,7 @@ void USoraCampaignDirector::EnterPhases(int32 Before,bool bSave)
     for(int32 Phase=Before+1;Phase<=TaskState.Phase;++Phase)
     {
         BeatPhase=Phase;
+        if(Mode().Arena()) Mode().Arena()->ShowArchivePage(Beat,BeatPhase);
         Fire(FString::Printf(TEXT("%s_phase:%d"),bDuel?TEXT("duel"):TEXT("boss"),Phase+1));
         if(bDuel&&Beat.PhaseEvents.IsValidIndex(Phase-1)) Fire(TEXT("duel_event:")+Beat.PhaseEvents[Phase-1]);
         Telemetry(TEXT("phase"));

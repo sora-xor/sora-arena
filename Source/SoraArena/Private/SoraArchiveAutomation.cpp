@@ -2,6 +2,10 @@
 #if WITH_DEV_AUTOMATION_TESTS
 #include "SoraFieldcraftTestWorld.h"
 #include "SoraEnemy.h"
+#include "SoraBoss.h"
+#include "Engine/PointLight.h"
+#include "Components/PointLightComponent.h"
+#include "GameFramework/DamageType.h"
 #include "SoraEnemyController.h"
 #include "SoraEquipmentComponent.h"
 #include "SoraGameEvents.h"
@@ -58,5 +62,61 @@ bool FSoraArchivePostsTest::RunTest(const FString&)
     Bus->OnMeleeCommitted.Remove(Handle);Target->Destroy();
     AddInfo(TEXT("Isolated collision and mapped sword input; opponent AI is frozen. This is not ordinary duel balance or final archive art acceptance."));
     return Good&&!HasAnyErrors();
+}
+
+namespace
+{
+APointLight* FamilyPageLight(SoraFieldcraftAutomation::FBeatWorld& W)
+{
+    APointLight* Found=nullptr;int32 Count=0;
+    for(TActorIterator<APointLight> It(W.World->GetTestWorld());It;++It)
+        if(It->ActorHasTag(TEXT("ArchiveFamilyPageLight"))) { Found=*It;++Count; }
+    return W.Test.TestEqual(TEXT("Exactly one physical family-page light exists"),Count,1)?Found:nullptr;
+}
+bool PageIsLit(SoraFieldcraftAutomation::FBeatWorld& W,bool Expected)
+{
+    auto* Page=FamilyPageLight(W);if(!Page) return false;
+    auto* Light=Page->PointLightComponent.Get();
+    return W.Test.TestEqual(TEXT("The actual light visibility follows discovery"),Light->IsVisible(),Expected)&&
+        W.Test.TestEqual(TEXT("The actual light power follows discovery"),Light->Intensity,Expected?450.f:0.f);
+}
+}
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraArchiveFamilyPageTest,"SoraArena.Campaign.ArchiveFamilyPage",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraArchiveFamilyPageTest::RunTest(const FString&)
+{
+    using SoraFieldcraftAutomation::FBeatWorld;
+    if(!FSoraCatalog::Get().Load()) return false;
+    {
+        FBeatWorld W(*this,TEXT("ArchiveFamilyPage"),5,8);
+        if(!W.Start()||!PageIsLit(W,false)) return false;
+        W.Harden();
+        ASoraBoss* Rival=nullptr;
+        for(TActorIterator<ASoraBoss> It(W.World->GetTestWorld());It;++It) Rival=*It;
+        if(!TestNotNull(TEXT("The actual archive duellist exists"),Rival)) return false;
+        Rival->Hold(600000);
+        for(int I=0;I<1800&&W.Campaign()->LinesQueued()>0;++I) if(!W.Tick(1)) return false;
+        if(!TestTrue(TEXT("The opening lines finish before the phase fixture"),W.Campaign()->LinesQueued()==0)) return false;
+        // Directed phase setup using the same generic story-damage path as
+        // Boss.ToranosukeSteel. This is not a player combat/difficulty claim.
+        UGameplayStatics::ApplyDamage(Rival,Rival->MaxHealth*.5f,nullptr,W.Hero(),UDamageType::StaticClass());
+        if(!W.Tick(2)||!TestEqual(TEXT("Actual opponent health enters the family-page phase"),W.Campaign()->ActivePhase(),1)||
+            !PageIsLit(W,true)) return false;
+        TestTrue(TEXT("The family-page dialogue holds combat"),W.Campaign()->IsDialogueBlocking()&&!W.Hero()->CanPlay());
+        const auto* Saved=Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(W.Slot,0));
+        if(!TestTrue(TEXT("The actual mid-duel checkpoint was saved"),Saved&&Saved->CheckpointChapter==5&&Saved->CheckpointBeat==8&&Saved->CheckpointPhase==1)) return false;
+        W.Fieldcraft()->OnEvent.Remove(W.EventsHandle);
+        W.World->DestroyTestWorld(true);W.World->ForwardErrorMessages(this);W.World.Reset();
+        W.World=MakeUnique<FSoraAutomationWorld>();
+        if(!W.World->Start(W.Slot)||!W.World->Tick(1)||!W.World->EnableKeyInput()||
+            !W.Press(EKeys::Enter)||!W.Press(EKeys::Enter)||!W.Press(EKeys::Enter)) return false;
+        W.Events.Reset();W.EventsHandle=W.Fieldcraft()->OnEvent.AddLambda([&W](FName Event){W.Events.Add(Event.ToString());});
+        if(!TestTrue(TEXT("The saved duel resumes in phase two"),W.Campaign()->ActiveBeat()==8&&W.Campaign()->ActivePhase()==1)||
+            !PageIsLit(W,true)) return false;
+    }
+    FBeatWorld Pledge(*this,TEXT("ArchivePledgePage"),5,9);
+    if(!Pledge.Start()||!PageIsLit(Pledge,true)) return false;
+    AddInfo(TEXT("Actual phase/light state and actual save reload; directed story damage. Slate text, character staging, cinematic animation and rendered lighting remain unqualified."));
+    return !HasAnyErrors();
 }
 #endif
