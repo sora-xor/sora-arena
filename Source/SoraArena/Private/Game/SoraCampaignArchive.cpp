@@ -93,7 +93,8 @@ bool USoraCampaignDirector::TickArchiveReveal(float DeltaSeconds)
         else if(T<18.)
         {
             const double Dolly=FMath::SmoothStep(0.,1.,(T-3.2)/(18.-3.2));
-            At=FMath::Lerp(FVector(2240,810,156),FVector(2270,825,153),Dolly);Look=FVector(2474,900,150);
+            // Leave the full slate above the bilingual subtitle safe area.
+            At=FMath::Lerp(FVector(2150,810,156),FVector(2170,825,153),Dolly);Look=FVector(2474,900,150);
         }
         else { At=FVector(2200,640,160);Look=FVector(X,Y,145); }
         ShotCamera->SetActorLocationAndRotation(ArchiveRevealOrigin+At,(Look-At).Rotation());

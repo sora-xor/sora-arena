@@ -35,12 +35,25 @@ but all six originals were reviewed and the presentation is rejected. The
 opening is nearly black, the lit slate clips to white without readable text,
 the rival and equipment obscure it, and combat HUD covers the scene. Review:
 `116878f4f6db7c487beff1dd9cd86ba876bd15655d2b3af60d5df0d9d07aabf7`.
-The next source candidate adds the authored Japanese household record to the
+The `4f3fe61f` source candidate adds the authored Japanese household record to the
 physical slate, cyan rack lights and a high-window rim, moves the rival aside
 before the close-up, and retains only subtitles/captions during the scene.
-It also removes the capture's artificial million-health readout. These new
-presentation changes are uncompiled and unrendered. Final character animation,
-sound, art, ordinary duel play and package qualification remain unfinished.
+It also removes the capture's artificial million-health readout. It builds
+and passes ArchiveFamilyPage, ArchiveRevealReset and the assisted 133-beat
+campaign; review
+`10b61453c182b01d1158c6e794058cf1754e11b11905adad144e6f81edcb2203`.
+
+Its six new SM6 originals show the room and characters, clear the rival from
+the page close-ups and retain only dialogue. Presentation still fails: the
+font's actual line metrics overflow the plate, cutting off purchase price 30
+and the unit row; text is too dim, and subtitles overlap the bottom. The
+lights are too broad/bright and the art remains visibly provisional. Review:
+`be39e888ec88eee9d82bd9c1171d89735fc10b43c5e4a7f0df1772c75061b076`.
+The follow-up source reduces type and spacing, increases text contrast and
+pulls the camera back. A runtime regression measures the real Slate desired
+size against the world widget's render target. These corrections are not yet
+compiled or rendered. Final character animation, sound, art, ordinary duel
+play and package qualification remain unfinished.
 
 Source CI at `714f490e` passes all 110 checks in run `40240662670`; its tested
 merge tree matches the candidate. Independent review:

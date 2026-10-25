@@ -261,3 +261,34 @@ composition and material response require a fresh original-image review;
 these source edits do not establish visual acceptance. The scene remains
 procedural staging with proxy characters, no final strike/recoil animation,
 and unfinished audio. SM5, packages and ordinary duel play remain unqualified.
+
+## First record presentation result and layout correction
+
+`4f3fe61f` builds in 24.60 seconds and passes ArchiveFamilyPage,
+ArchiveRevealReset and the assisted 133-beat Playthrough. The new world-space
+record follows discovery, reset and fresh-world saved-phase reload. Rival
+recoil clears its mark before speech, and both characters return to the
+central aisle. Natural exits 0/0, twenty files and unchanged inputs verify:
+`10b61453c182b01d1158c6e794058cf1754e11b11905adad144e6f81edcb2203`.
+
+The matching six-frame SM6 capture also passes its functional checks with
+natural exits 0/0, all 34 evidence files rehashed and unchanged inputs. All
+six originals were inspected. The opening now shows the room and characters;
+the combat HUD is absent, bilingual dialogue remains, and the rival clears
+the record close-ups. However, the actual Slate text layout exceeds its
+750×1000 render target: purchase price 30 and the unit row are missing even
+in the reaction view where no subtitle overlaps the plate. The close-ups
+also place its bottom under the subtitle panel, and text is too dim. Room
+lighting is broad and bright, with clipped practical panels; flat rack blocks,
+brick-like walls and the character/weapon proxies still need art work.
+Visual acceptance is rejected, review:
+`be39e888ec88eee9d82bd9c1171d89735fc10b43c5e4a7f0df1772c75061b076`.
+Originals: `Saved/Screenshots/SoraArtReview/1920x1080/ArchiveReveal_5662A814754E0CE5C52D8A942E8533A4/`.
+
+The follow-up candidate reduces the type sizes and spacing to fit the complete
+record, raises its text tint and pulls the close-up camera back to leave room
+above bilingual subtitles. The runtime fixture now performs a Slate prepass
+with the shipped font and compares the complete desired layout with the
+actual render-target size. This guards against the observed clipping, rather
+than estimating text height from point sizes. These source corrections remain
+uncompiled and unrendered pending the next coordinated engine window.

@@ -26,9 +26,9 @@ TSharedRef<SWidget> FamilyRecord(UFont* Font)
     const FLinearColor Cyan(.30f,.82f,.88f),Muted(.22f,.50f,.54f);
     auto Rows=SNew(SVerticalBox);
     Rows->AddSlot().AutoHeight().Padding(0,0,0,8)
-        [SNew(STextBlock).Text(FText::FromString(TEXT("武家方記録"))).Font(Face(30)).ColorAndOpacity(Muted)];
-    Rows->AddSlot().AutoHeight().Padding(0,0,0,38)
-        [SNew(STextBlock).Text(FText::FromString(TEXT("鷲尾家"))).Font(Face(76)).ColorAndOpacity(Cyan)];
+        [SNew(STextBlock).Text(FText::FromString(TEXT("武家方記録"))).Font(Face(24)).ColorAndOpacity(Muted)];
+    Rows->AddSlot().AutoHeight().Padding(0,0,0,30)
+        [SNew(STextBlock).Text(FText::FromString(TEXT("鷲尾家"))).Font(Face(58)).ColorAndOpacity(Cyan)];
     const auto Row=[&](const TCHAR* Label,const TCHAR* Value,int32 Size,float Bottom)
     {
         Rows->AddSlot().AutoHeight().Padding(0,0,0,Bottom)
@@ -36,15 +36,15 @@ TSharedRef<SWidget> FamilyRecord(UFont* Font)
             +SHorizontalBox::Slot().FillWidth(1)[SNew(STextBlock).Text(FText::FromString(Label)).Font(Face(Size)).ColorAndOpacity(Cyan)]
             +SHorizontalBox::Slot().AutoWidth()[SNew(STextBlock).Text(FText::FromString(Value)).Font(Face(Size)).ColorAndOpacity(Cyan)]];
     };
-    Row(TEXT("元本"),TEXT("120"),48,10);
-    Row(TEXT("利息"),TEXT("22"),48,10);
-    Row(TEXT("延滞金"),TEXT("36"),48,10);
-    Row(TEXT("手数料"),TEXT("52"),48,10);
-    Row(TEXT("返済"),TEXT("△40"),48,30);
-    Row(TEXT("残高"),TEXT("190"),76,24);
-    Row(TEXT("買取価格"),TEXT("30"),48,12);
-    Rows->AddSlot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(TEXT("単位：石"))).Font(Face(28)).ColorAndOpacity(Muted)];
-    return SNew(SBorder).Padding(50).BorderBackgroundColor(FLinearColor(.004f,.012f,.016f,1.f))[Rows];
+    Row(TEXT("元本"),TEXT("120"),36,8);
+    Row(TEXT("利息"),TEXT("22"),36,8);
+    Row(TEXT("延滞金"),TEXT("36"),36,8);
+    Row(TEXT("手数料"),TEXT("52"),36,8);
+    Row(TEXT("返済"),TEXT("△40"),36,24);
+    Row(TEXT("残高"),TEXT("190"),60,18);
+    Row(TEXT("買取価格"),TEXT("30"),36,10);
+    Rows->AddSlot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(TEXT("単位：石"))).Font(Face(22)).ColorAndOpacity(Muted)];
+    return SNew(SBorder).Padding(40).BorderBackgroundColor(FLinearColor(.004f,.012f,.016f,1.f))[Rows];
 }
 constexpr float FamilyPageLumens=45.f;
 }
@@ -99,7 +99,7 @@ void ASoraWorldBuilder::BuildArchive(const FSoraZone& Zone,const FSoraZone& Pres
     ArchivePageText->SetDrawSize(FVector2D(750,1000));ArchivePageText->SetPivot(FVector2D(.5f,.5f));
     ArchivePageText->SetBlendMode(EWidgetBlendMode::Opaque);
     ArchivePageText->SetBackgroundColor(FLinearColor(.004f,.012f,.016f,1.f));
-    ArchivePageText->SetTintColorAndOpacity(FLinearColor(.12f,.12f,.12f,1.f));
+    ArchivePageText->SetTintColorAndOpacity(FLinearColor(.65f,.65f,.65f,1.f));
     ArchivePageText->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     ArchivePageText->SetCanEverAffectNavigation(false);
     ArchivePageText->SetRelativeLocation(O+FVector(2474,900,150));

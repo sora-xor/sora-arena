@@ -17,6 +17,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/WidgetComponent.h"
+#include "Widgets/SWidget.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraArchivePostsTest,"SoraArena.Campaign.ArchivePosts",
     EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
@@ -91,6 +92,18 @@ bool PageIsLit(SoraFieldcraftAutomation::FBeatWorld& W,bool Expected)
         Good&=W.Test.TestEqual(TEXT("The actual record visibility follows discovery"),Record->IsVisible(),Expected);
         Good&=W.Test.TestTrue(TEXT("The record is world-space and cannot obstruct the duel"),
             Record->GetWidgetSpace()==EWidgetSpace::World&&Record->GetCollisionEnabled()==ECollisionEnabled::NoCollision);
+        const auto& Slate=Record->GetSlateWidget();
+        Good&=W.Test.TestTrue(TEXT("The actual household record has its Slate content"),Slate.IsValid());
+        if(Slate.IsValid())
+        {
+            // Measure the shipped font's real line metrics. The first render
+            // clipped the purchase-price and unit rows despite fitting the
+            // nominal point sizes into the texture.
+            Slate->SlatePrepass(1.f);
+            const FVector2D Desired=Slate->GetDesiredSize(),Draw=Record->GetDrawSize();
+            Good&=W.Test.TestTrue(FString::Printf(TEXT("The complete household record fits its texture: desired %.1fx%.1f, draw %.1fx%.1f"),
+                Desired.X,Desired.Y,Draw.X,Draw.Y),Desired.X>0&&Desired.Y>0&&Desired.X<=Draw.X&&Desired.Y<=Draw.Y);
+        }
     }
     Good&=W.Test.TestEqual(TEXT("The actual light visibility follows discovery"),Light->IsVisible(),Expected);
     Good&=W.Test.TestTrue(TEXT("The page supplies light only after discovery"),Expected?Light->Intensity>0.f:Light->Intensity==0.f);
