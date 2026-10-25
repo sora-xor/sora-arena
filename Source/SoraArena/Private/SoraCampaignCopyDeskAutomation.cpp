@@ -64,6 +64,10 @@ bool FSoraCopyDesksTest::RunTest(const FString& Parameters)
     TestFalse(TEXT("The old binding cannot start copying"),C->IsCopying());
     if(!W.World->InjectKey(EKeys::G,IE_Pressed)||!W.Tick(120)) return false;
     const int32 Partial=C->TaskProgress().Progress;
+    AddInfo(FString::Printf(TEXT("Mapped desk state: copying=%d hidden=%d held=%d watched=%d progress=%d desks=%d,%d,%d pos=%s move=%d play=%d"),
+        C->IsCopying(),W.Hero()->GetViewmodel()->bHiddenInGame,W.Hero()->IsActionHeld(TEXT("Interact")),C->IsHeldWorkWatched(),Partial,
+        C->TaskProgress().HoldProgress[0],C->TaskProgress().HoldProgress[1],C->TaskProgress().HoldProgress[2],
+        *W.Hero()->GetActorLocation().ToString(),int32(W.Hero()->GetCharacterMovement()->MovementMode),W.Hero()->CanPlay()));
     if(!TestTrue(TEXT("A mapped held press copies the chosen third desk only"),C->IsCopying()&&W.Hero()->GetViewmodel()->bHiddenInGame&&Partial>0&&Partial<3000&&
         C->TaskProgress().HoldProgress[2]==Partial&&C->TaskProgress().HoldProgress[0]==0&&C->TaskProgress().HoldProgress[1]==0)) return false;
     if(!W.World->InjectKey(EKeys::G,IE_Released)) return false;

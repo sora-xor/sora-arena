@@ -16,7 +16,13 @@ inline bool Copy(FSoraAutomationWorld& World,int32 Point)
     const double AisleX=FMath::Min(From.X,Target.X-350.);
     if(!SoraRecoveryAutomation::WalkTo(World,FVector(AisleX,From.Y,Target.Z))||
         !SoraRecoveryAutomation::WalkTo(World,FVector(AisleX,Target.Y,Target.Z))||
-        !SoraRecoveryAutomation::WalkTo(World,Target)) return false;
+        !SoraRecoveryAutomation::WalkTo(World,Target))
+    {
+        UE_LOG(LogTemp,Error,TEXT("Copy desk %d approach failed: from=%s at=%s target=%s input=%d movement=%d"),Point,
+            *From.ToString(),*World.Player()->GetActorLocation().ToString(),*Target.ToString(),int32(World.Mode()->InputState()),
+            int32(World.Player()->GetCharacterMovement()->MovementMode));
+        return false;
+    }
     FKey Use;
     for(const FKey& Key:World.Player()->GetActionKeys(TEXT("Interact"))) if(!Key.IsGamepadKey()) { Use=Key;break; }
     if(!Use.IsValid()||!World.InjectKey(Use,IE_Pressed)) return false;
@@ -26,6 +32,11 @@ inline bool Copy(FSoraAutomationWorld& World,int32 Point)
         if(!World.Tick(1)) { Ok=false;break; }
     const bool Finished=Campaign->ActiveBeat()!=Beat||
         Campaign->TaskProgress().HoldProgress[Point]==Campaign->ActiveTask().HoldPointMs;
+    if(!Finished)
+        UE_LOG(LogTemp,Error,TEXT("Copy desk %d hold unfinished: progress=%d need=%d copying=%d held=%d watched=%d at=%s input=%d movement=%d"),
+            Point,Campaign->TaskProgress().HoldProgress[Point],Campaign->ActiveTask().HoldPointMs,Campaign->IsCopying(),
+            World.Player()->IsActionHeld(TEXT("Interact")),Campaign->IsHeldWorkWatched(),*World.Player()->GetActorLocation().ToString(),
+            int32(World.Mode()->InputState()),int32(World.Player()->GetCharacterMovement()->MovementMode));
     return World.InjectKey(Use,IE_Released)&&World.Tick(1)&&Ok&&Finished;
 }
 }
