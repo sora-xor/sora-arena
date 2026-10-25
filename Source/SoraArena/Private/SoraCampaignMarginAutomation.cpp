@@ -40,6 +40,29 @@ bool Until(FBeatWorld& W,double Time)
     return W.World->GetTestWorld()->GetTimeSeconds()>=Time;
 }
 bool Seconds(FBeatWorld& W,double Time) { return Until(W,W.World->GetTestWorld()->GetTimeSeconds()+Time); }
+FHitResult TraceCover(FBeatWorld& W,const TCHAR* Stage)
+{
+    auto* Arena=W.Mode()->Arena(); auto* Hero=W.Hero(); auto* Body=Boss(W);
+    auto* Cover=Arena->BridgeConsoles()[2].Get();
+    const FTransform Deck=Arena->BridgeDeckRoot()->GetComponentTransform();
+    const FHitResult Hit=Body->RangedAimTrace(*Hero);
+    const int32 HitId=Arena->BridgeConsoles().IndexOfByPredicate(
+        [&](const auto& Console) { return Console.Get()==Hit.GetComponent(); });
+    const FVector Feet=Hero->GetActorLocation()-FVector(0,0,Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+    W.Test.AddInfo(FString::Printf(TEXT("MarginLinger %s: input=%d playing=%d crouched=%d wants_crouch=%d grounded=%d base=%s hero_world=(%s) hero_local=(%s) feet_local=(%s) half_height=%.3f boss_world=(%s) boss_local=(%s)"),
+        Stage,int32(W.Mode()->InputState()),W.Mode()->IsPlaying(),Hero->IsCrouched(),Hero->GetCharacterMovement()->bWantsToCrouch,
+        Hero->GetCharacterMovement()->IsMovingOnGround(),*GetNameSafe(Hero->GetMovementBase()),*Hero->GetActorLocation().ToString(),
+        *Deck.InverseTransformPosition(Hero->GetActorLocation()).ToString(),*Deck.InverseTransformPosition(Feet).ToString(),
+        Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight(),*Body->GetActorLocation().ToString(),
+        *Deck.InverseTransformPosition(Body->GetActorLocation()).ToString()));
+    W.Test.AddInfo(FString::Printf(TEXT("MarginLinger %s trace: start=(%s) end=(%s) start_local=(%s) end_local=(%s) blocking=%d penetrating=%d actor=%s component=%s console_id=%d impact_local=(%s) cover=%s cover_local=(%s) cover_bounds_origin=(%s) cover_bounds_extent=(%s) cover_transform=(%s) deck_transform=(%s)"),
+        Stage,*Hit.TraceStart.ToString(),*Hit.TraceEnd.ToString(),*Deck.InverseTransformPosition(Hit.TraceStart).ToString(),
+        *Deck.InverseTransformPosition(Hit.TraceEnd).ToString(),Hit.bBlockingHit,Hit.bStartPenetrating,*GetNameSafe(Hit.GetActor()),
+        *GetNameSafe(Hit.GetComponent()),HitId,*Deck.InverseTransformPosition(Hit.ImpactPoint).ToString(),*Cover->GetName(),
+        *Cover->GetRelativeLocation().ToString(),*Cover->Bounds.Origin.ToString(),*Cover->Bounds.BoxExtent.ToString(),
+        *Cover->GetComponentTransform().ToString(),*Deck.ToString()));
+    return Hit;
+}
 bool Reload(FBeatWorld& W)
 {
     W.Fieldcraft()->OnEvent.Remove(W.EventsHandle);
@@ -144,13 +167,21 @@ bool FSoraMarginLingerTest::RunTest(const FString& Parameters)
     if(!SoraMarginTest::Start(W)) return false;
     auto* Arena=W.Mode()->Arena(); auto* Boss=SoraMarginTest::Boss(W);
     const auto Local=[&](FVector Point) { return Arena->BridgeDeckRoot()->GetComponentTransform().TransformPosition(Point); };
-    // Approach the rear of console 2 through clear floor, using mapped W.
-    for(FVector Point:{FVector(-1300,0,0),FVector(-1300,-394,0),FVector(-1154,-394,0)})
+    // Approach the middle of console 2 through clear floor, using mapped W.
+    // Walk allows a 30 cm stopping band. The old (-1154,-394) destination
+    // put the nominal deck-plane ray only about 12 cm inside its corner;
+    // the measured three-dimensional pistol trace remains the assertion.
+    for(FVector Point:{FVector(-1300,0,0),FVector(-1300,-300,0),FVector(-1120,-300,0)})
         if(!TestTrue(TEXT("Mapped movement reaches real cover"),SoraLiftAutomation::Walk(*W.World,Local(Point)))) return false;
+    SoraMarginTest::TraceCover(W,TEXT("standing"));
     TestEqual(TEXT("Standing outside the pistol's blocked line earns no cover time"),Arena->MarginLingerMs(),0);
     if(!W.Press(EKeys::C)||!W.Tick(5)) return false;
     auto* Cover=Arena->BridgeConsoles()[2].Get();
-    if(!TestTrue(TEXT("Mapped crouch physically blocks Collatera's actual pistol trace at the console"),W.Hero()->IsCrouched()&&Boss->RangedAimTrace(*W.Hero()).GetComponent()==Cover)) return false;
+    const FHitResult CrouchedTrace=SoraMarginTest::TraceCover(W,TEXT("after mapped C"));
+    const bool Crouched=TestTrue(TEXT("Mapped C reaches the actual crouched stance"),W.Hero()->IsCrouched());
+    const bool Blocked=TestTrue(TEXT("Real console 2 physically blocks Collatera's actual pistol trace"),
+        CrouchedTrace.bBlockingHit&&CrouchedTrace.GetComponent()==Cover);
+    if(!Crouched||!Blocked) return false;
     if(!SoraMarginTest::Seconds(W,2)||!W.Press(EKeys::Escape)) return false;
     const int32 Paused=Arena->MarginLingerMs();
     if(!W.Tick(120)) return false;
