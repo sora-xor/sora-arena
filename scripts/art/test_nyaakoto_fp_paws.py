@@ -190,6 +190,51 @@ class Fur(unittest.TestCase):
         cos = np.einsum("ij,ij->i", nrm, skin)
         self.assertGreater(float(cos.min()), math.cos(math.radians(20.0)))
 
+    def test_cards_narrow_to_their_tips(self):
+        # v5: a clump ends in a point. Cards whose edges slid back off the bow are narrower still.
+        K = P.FUR["segments"]
+        V = self.fur["verts"].reshape(self.fur["cards"], K + 1, 2, 3)
+        ratio = np.linalg.norm(V[:, -1, 1] - V[:, -1, 0], axis=1) / np.linalg.norm(V[:, 0, 1] - V[:, 0, 0], axis=1)
+        self.assertAlmostEqual(float(np.median(ratio)), P.FUR["tip_width"], delta=0.005)
+        # Wider than tip_width only where a root's edge slid back toward its strand, off the bow (within 1 mm of it).
+        wide = ratio > P.FUR["tip_width"] + 0.005
+        self.assertLess(float(wide.mean()), 0.001)
+        if wide.any():
+            near = P.grip_sdf(V[wide, 0].reshape(-1, 3)).reshape(-1, 2).min(1)
+            self.assertLess(float(near.max()), 0.001)
+
+    def test_form_occlusion_darkens_where_the_paw_closes(self):
+        # Against the leather the paw is closed; well away from the grip it is open. Every card's colour is its
+        # tabby colour times the occlusion's shade, between the floor and 1.
+        sk = self.m["skeleton"]
+        both = lambda p: np.minimum(P.paw_sdf(p, sk)[0], P.grip_sdf(p))
+        V = self.m["verts"]
+        ao = P.form_occlusion(V, P.vertex_normals(V, self.m["tris"]), both)
+        self.assertTrue(((ao >= 0) & (ao <= 1)).all())
+        g = P.grip_sdf(V)
+        self.assertLess(float(ao[g < 0.002].mean()), 0.5)
+        self.assertGreater(float(ao[g > 0.015].mean()), 0.9)
+        occ = self.fur["occlusion"]
+        self.assertEqual(occ.shape, (self.fur["cards"], P.FUR["segments"] + 1))
+        self.assertTrue(((occ >= 0) & (occ <= 1)).all())
+
+    def test_the_skin_sits_below_the_coat(self):
+        # The skin is the coat's bottom: under each card's root it is darker than that root, where both see the same
+        # form (TABBY undercoat).
+        sk = self.m["skeleton"]
+        both = lambda p: np.minimum(P.paw_sdf(p, sk)[0], P.grip_sdf(p))
+        V = self.m["verts"]
+        skin = P.skin_colour(self.m, both)[:, 1] / np.maximum(P.tabby_colour(V, sk)[:, 1], 1e-9)
+        K = P.FUR["segments"]
+        root_col = self.fur["colour"].reshape(self.fur["cards"], K + 1, 2, 3)[:, 0, 0, 1]
+        roots = self.fur["roots"]
+        card = root_col / np.maximum(P.tabby_colour(roots, sk)[:, 1], 1e-9)
+        pick = np.random.default_rng(0).choice(len(roots), 400, replace=False)
+        near = np.argmin(np.linalg.norm(roots[pick, None, :] - V[None, :, :], axis=2), axis=1)
+        below = skin[near] <= card[pick] * (P.TABBY["undercoat"] + 0.05)
+        self.assertGreater(float(below.mean()), 0.95)
+        self.assertLessEqual(float(skin.max()), P.TABBY["undercoat"] + 1e-9)
+
     def test_odd_atlas_rows_run_root_at_the_top(self):
         # create_nyaakoto_fp_fur_textures v4 flips its odd rows, so every card's tip meets the atlas's middle.
         K = P.FUR["segments"]
@@ -223,6 +268,17 @@ class Kote(unittest.TestCase):
                                                                  K.splint_base_r(s, th) + K.KOTE["splints"]["thick"], 0.0))
             gap = r - surface
             self.assertLess(float(gap.max()), 0.0045, p["name"])      # within a cord's width of what it binds
+
+    def test_the_cloth_puffs_between_cords_and_not_under_the_splints(self):
+        # v5: tight at each binding, swelling between, flat under the splints.
+        cords = sorted(K.KOTE["cords"]["at_s"], reverse=True)
+        off = np.radians(K.KOTE["splints"]["centre_deg"] + 180.0)          # the sleeve's inner side
+        on = np.radians(K.KOTE["splints"]["centre_deg"])
+        for c in cords:
+            self.assertAlmostEqual(float(K.puff(c, off)), 0.0, places=9)
+        for c0, c1 in zip(cords[:-1], cords[1:]):
+            self.assertGreater(float(K.puff(0.5 * (c0 + c1), off)), 0.8 * K.KOTE["puff"]["depth"])
+            self.assertAlmostEqual(float(K.puff(0.5 * (c0 + c1), on)), 0.0, places=9)
 
     def test_the_kote_never_touches_the_grip(self):
         for p in self.parts:

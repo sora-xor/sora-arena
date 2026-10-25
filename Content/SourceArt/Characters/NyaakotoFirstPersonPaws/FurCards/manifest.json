@@ -26,7 +26,18 @@
   "hairs_per_strand": [
    4,
    9
-  ]
+  ],
+  "version": 5,
+  "fringe_length": [
+   0.62,
+   1.0
+  ],
+  "fringe_jitter": 0.4,
+  "fringe_width": [
+   0.75,
+   1.5
+  ],
+  "edge": 0.04
  },
  "provenance": "original and procedural: every strand drawn by this script from its seed; no external image, scan or third-party texture",
  "maps": {
@@ -38,7 +49,7 @@
    ],
    "mode": "RGBA",
    "note": "sRGB colour; A = hair coverage (opacity mask)",
-   "sha256": "c264421907db224cada2987943480c548b24369dc67e29c99e3bd1cf4ed1200e"
+   "sha256": "8b47b4805f467896a948142102a7ed56b0a51b591ff5776dd8c21a3a038832ac"
   },
   "NormalDX": {
    "file": "T_NyaakotoFP_FurCards_NormalDX.png",
@@ -48,7 +59,7 @@
    ],
    "mode": "RGB",
    "note": "tangent space, DirectX (green down): each strand's and hair's cylinder across its width",
-   "sha256": "c7a1ffd9a6358a7c7f35e63e8d44cfe85876467b2c2ea21b780db8ab32d0cfb0"
+   "sha256": "4b1bd4e8733b39beecb8850ea85677cd1e8186d36278da4e34efd3c95d368210"
   },
   "Masks": {
    "file": "T_NyaakotoFP_FurCards_Masks.png",
@@ -58,7 +69,7 @@
    ],
    "mode": "RGB",
    "note": "linear: R root-to-tip, G per-strand random, B depth in the clump (1 front)",
-   "sha256": "c33d649cbbcbfd939234bca7285b00f27ff3c15d643635eb23ce250cf015d0c0"
+   "sha256": "897de43557a34fcf901882487ad70dd86944ee2ce55b31dc63a68869e17d2784"
   }
  },
  "dither_measure": {
@@ -82,8 +93,8 @@
    ]
   },
   "base_level": {
-   "partial_share": 0.10906527825331101,
-   "mean_alpha": 0.6543176464006012
+   "partial_share": 0.11189996384457856,
+   "mean_alpha": 0.6261487904716947
   },
   "at": {
    "eye_view/digit": {
@@ -91,14 +102,14 @@
      "along": 91.73897551116575,
      "across": 144.16124723183185
     },
-    "dithered_share": 0.48815902859970195,
-    "solid_share": 0.511840971400298,
-    "speckle_variance": 0.07094697342086453,
-    "expected_coverage": 0.7460958664338929,
+    "dithered_share": 0.46830205075443004,
+    "solid_share": 0.5316979492455699,
+    "speckle_variance": 0.06508909564135257,
+    "expected_coverage": 0.7395641167148344,
     "alpha_quartiles": [
-     0.39051414345931557,
-     0.8430010893246217,
-     0.990930928530833
+     0.3596080355451322,
+     0.8520365634176414,
+     0.9288671023965295
     ]
    },
    "eye_view/dorsal": {
@@ -106,14 +117,14 @@
      "along": 48.43817906989551,
      "across": 144.16124723183185
     },
-    "dithered_share": 0.46845687441625333,
-    "solid_share": 0.5315431255837466,
-    "speckle_variance": 0.06937368545189142,
-    "expected_coverage": 0.762557130532381,
+    "dithered_share": 0.448419250864179,
+    "solid_share": 0.551580749135821,
+    "speckle_variance": 0.06217586848314043,
+    "expected_coverage": 0.750356196525591,
     "alpha_quartiles": [
-     0.427950396014894,
-     0.8640312953885154,
-     0.9967876270878433
+     0.38536900871459967,
+     0.8648029003267884,
+     0.9328431372548914
     ]
    },
    "paw_close_up/digit": {
@@ -121,13 +132,13 @@
      "along": 16.189045886881118,
      "across": 25.43992925081318
     },
-    "dithered_share": 0.3690306099518548,
-    "solid_share": 0.6309693900481452,
-    "speckle_variance": 0.060459687913314006,
-    "expected_coverage": 0.7956331640982944,
+    "dithered_share": 0.3906516971214484,
+    "solid_share": 0.6093483028785516,
+    "speckle_variance": 0.0614081603416644,
+    "expected_coverage": 0.777020938054923,
     "alpha_quartiles": [
-     0.4969803921566927,
-     0.9999999999999818,
+     0.45948529411771233,
+     0.9984901960784236,
      1.0
     ]
    },
@@ -136,13 +147,13 @@
      "along": 8.547816228273229,
      "across": 25.43992925081318
     },
-    "dithered_share": 0.3682605266957671,
-    "solid_share": 0.6317394733042329,
-    "speckle_variance": 0.060429121016356224,
-    "expected_coverage": 0.7961511144542606,
+    "dithered_share": 0.38967896884671444,
+    "solid_share": 0.6103210311532855,
+    "speckle_variance": 0.06129255947664676,
+    "expected_coverage": 0.7775703575984337,
     "alpha_quartiles": [
-     0.49763834422674136,
-     1.0,
+     0.4611067538120066,
+     0.9993725490196246,
      1.0
     ]
    }

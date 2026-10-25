@@ -33,6 +33,12 @@ KOTE = {
     "ellipse": 0.07,           # flattened across the forearm's breadth
     "thickness": 0.0012,
     "folds": {"count": 9, "depth": 0.0011, "twist": 2.6, "ripple_m": 0.026},
+    # v5 (root's reviews of capture v5 and the v4 originals: "smooth sleeve", "glossy sleeve"). One regular
+    # nine-lobed corrugation read as a smooth tube. A second family of other count, twist and ripple, with its own
+    # slow swell, breaks the pattern. The cloth puffs between its cord bindings, tight at each cord and held flat
+    # under the splints.
+    "folds2": {"count": 5, "depth": 0.0008, "twist": 4.1, "ripple_m": 0.041, "phase": 1.3, "swell_m": 0.057},
+    "puff": {"depth": 0.0012, "beyond": 0.7, "beyond_m": 0.02},
     "hem_r": 0.0019,
     "splints": {"count": 7, "span_deg": 196.0, "centre_deg": 72.0, "width": 0.0112, "thick": 0.0016,
                 "from_s": -0.024, "to_s": -0.185, "lift": 0.0006},
@@ -66,6 +72,21 @@ def _grid_tris(rows, cols, closed_cols=True, flip=False):
     return np.array(tris, np.int64)
 
 
+def puff(s, theta, cfg=KOTE):
+    """How far the cloth puffs between its cord bindings (v5): a swell in each span between two cords, zero at each
+    cord, easing up past the last cord toward the elbow, and none under the splints, which hold it flat."""
+    p, cords = cfg["puff"], sorted(cfg["cords"]["at_s"], reverse=True)          # the cuff's end first
+    s = np.asarray(s, np.float64)
+    out = np.zeros(np.broadcast(s, theta).shape)
+    for c0, c1 in zip(cords[:-1], cords[1:]):
+        x = (s - c0) / (c1 - c0)
+        inside = (x > 0) & (x < 1)
+        out = np.where(inside, p["depth"] * np.sin(math.pi * np.clip(x, 0, 1)) ** 1.5, out)
+    past = s < cords[-1]
+    out = np.where(past, p["depth"] * p["beyond"] * (1 - np.exp(-(cords[-1] - s) / p["beyond_m"])), out)
+    return out * (1.0 - splint_arc(theta, cfg))
+
+
 def sleeve_radius(s, theta, cfg=KOTE):
     """The sleeve's outer radius at s (metres from the carpus, negative toward the elbow) and theta."""
     r0, r1 = cfg["radius"]
@@ -74,7 +95,10 @@ def sleeve_radius(s, theta, cfg=KOTE):
     f = cfg["folds"]
     fold = f["depth"] * np.sin(f["count"] * theta + f["twist"] * np.sin(2 * math.pi * s / f["ripple_m"]))
     fold *= 0.55 + 0.45 * np.sin(2 * math.pi * s / (f["ripple_m"] * 1.7)) ** 2
-    return base * (1.0 + cfg["ellipse"] * np.cos(2 * theta)) + fold
+    g = cfg["folds2"]
+    fold2 = g["depth"] * np.sin(g["count"] * theta + g["phase"] + g["twist"] * np.sin(2 * math.pi * s / g["ripple_m"]))
+    fold2 *= 0.6 + 0.4 * np.sin(2 * math.pi * s / g["swell_m"] + 2 * theta)
+    return base * (1.0 + cfg["ellipse"] * np.cos(2 * theta)) + fold + fold2 + puff(s, theta, cfg)
 
 
 def sleeve(skel, cfg=KOTE, n_s=140, n_t=96):
@@ -133,11 +157,12 @@ def cuff_hem(skel, cfg=KOTE, n_t=96, n_c=12):
 def splint_base_r(s, theta, cfg=KOTE):
     """The radius the splints sit at, angle by angle: the sleeve's elliptical
     section plus its fold crests and the splints' lift, so they lie on the
-    cloth all the way round instead of standing off it at the narrow sides."""
+    cloth all the way round instead of standing off it at the narrow sides. Both fold families' crests count (v5);
+    the cloth does not puff under the splints (puff)."""
     sp = cfg["splints"]
     w = np.clip((s - cfg["cuff_s"]) / (cfg["end_s"] - cfg["cuff_s"]), 0, 1) ** 0.8
     return (cfg["radius"][0] + (cfg["radius"][1] - cfg["radius"][0]) * w) * (1 + cfg["ellipse"] * np.cos(2 * theta)) + \
-        cfg["folds"]["depth"] + sp["lift"]
+        cfg["folds"]["depth"] + cfg["folds2"]["depth"] + sp["lift"]
 
 
 def splint_arc(theta, cfg=KOTE, ramp_deg=9.0):

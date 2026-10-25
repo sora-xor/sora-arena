@@ -63,6 +63,19 @@ coarse, blade-like, noisy"):
     eye view and 37 % in the close-up. The speckle variance is 42 % and
     45 % of v3's.
 - The v3 atlas is archived at Saved/NyaakotoFPPaws/Archive/v3_furcards.
+
+v5 (capture v5, Saved/YumiFP/v5_fur, and root's review: "angular overlapping
+strips", "comb-like edges"):
+- **Irregular fringes:** each fringe hair's length is 62 % to 100 % of its
+  strand's longest (FRINGE_LENGTH), its place is jittered by up to 40 % of
+  its spacing (FRINGE_JITTER), and its width scales by 0.75 to 1.5
+  (FRINGE_WIDTH). v4's fringes were evenly spaced and nearly even in length,
+  so a card's end read as a comb.
+- **Soft card edges:** each tile's alpha fades over its outer 4 % (EDGE), so
+  a clump's side is not a hard opaque line.
+- Measured: dithered 45-47 % (eye view) and 39 % (close-up). The speckle
+  variance is 0.062-0.065 and 0.061, against v4's 0.069-0.071 and 0.060.
+- The v4 atlas is archived at Saved/NyaakotoFPPaws/Archive/v4_furcards.
 """
 from __future__ import annotations
 
@@ -95,6 +108,10 @@ TAPER = (2.8, 0.6)                    # a strand's width: w_root x (1 - along^p)
 FRINGE = (0.62, 0.82)                 # where a strand's body closes and its hairs run on, as a share of its length
 HAIR_WIDTH = 1.3                      # a fringe hair's start, in even shares of the body's width there
 HAIR_FADE = 0.2                       # the share of a fringe hair's length over which it fades in
+FRINGE_LENGTH = (0.62, 1.0)           # a fringe hair's length, as a share of its strand's longest (v5; v4 0.86-1.0)
+FRINGE_JITTER = 0.4                   # a fringe hair's place across its strand, jittered by this share of its spacing (v5)
+FRINGE_WIDTH = (0.75, 1.5)            # its start's width, scaling HAIR_WIDTH (v5)
+EDGE = 0.04                           # the card's lateral edges fade over this share of its width (v5)
 CLIP = 0.33                           # the fur material's opacity_mask_clip_value (import_nyaakoto_fp_paws.py)
 
 
@@ -217,15 +234,15 @@ def tile(rng, index):
         start_v = 0.45 * body_end
         s = (start_v + 0.02) / (body_end + 0.02)
         w_at = w_root * (1.0 - s ** TAPER[0]) ** TAPER[1]
-        lengths = rng.uniform(0.86, 1.0, hairs)
+        lengths = rng.uniform(*FRINGE_LENGTH, hairs)
         lengths *= tip / lengths.max()                           # the longest reaches the strand's tip
         for h in range(hairs):
-            offset = ((h + 0.5) / hairs - 0.5) * w_at * 0.9 / TW
+            offset = ((h + 0.5 + rng.uniform(-FRINGE_JITTER, FRINGE_JITTER)) / hairs - 0.5) * w_at * 0.9 / TW
             u0 = root_u + (end_u - root_u) * s + offset
             u1 = end_u + offset * 0.6 + rng.normal(0.0, 0.01)
-            hp = centreline(u0, start_v, u1, float(lengths[h]), rng.normal(0.0, 0.02), rng.normal(0.0, 0.008),
+            hp = centreline(u0, start_v, u1, float(lengths[h]), rng.normal(0.0, 0.035), rng.normal(0.0, 0.008),
                             rng.random() * 2 * math.pi)
-            w0 = w_at / hairs * HAIR_WIDTH
+            w0 = w_at / hairs * HAIR_WIDTH * rng.uniform(*FRINGE_WIDTH)
             hbox = box_of(hp, w0)
             if hbox is None:
                 continue
@@ -235,6 +252,10 @@ def tile(rng, index):
             over(hbox, hc, np.stack([hv + warm, hv, hv - warm], -1), np.clip(0.55 * ha, -0.8, 0.8),
                  np.stack([np.clip(vv, 0, 1), np.full_like(vv, grain), np.full_like(vv, depth)], -1))
     alpha, colour, normal, masks = buf["alpha"], buf["colour"], buf["normal"], buf["masks"]
+    # v5: the card's own lateral edges fade (EDGE), so a clump's side is not a hard opaque line.
+    u = (np.arange(TW) + 0.5) / TW
+    ramp = np.clip(np.minimum(u, 1.0 - u) / EDGE, 0.0, 1.0)
+    alpha = alpha * (ramp * ramp * (3 - 2 * ramp))[None, :]
     # Straight alpha: the composite above is premultiplied ("over" from black),
     # so divide the coverage back out wherever any strand is.
     colour = np.where(alpha[..., None] > 1e-4, colour / np.maximum(alpha[..., None], 1e-4), 0.0)
@@ -304,7 +325,9 @@ def main(argv=None):
               "atlas": {"columns": COLS, "rows": ROWS, "tile_px": [TW, TH],
                         "uv": "even rows root at the tile's bottom (v up), odd rows root at its top: tips abut tips",
                         "strands_per_tile": list(STRANDS), "root_overlap": list(OVERLAP), "tip_v": list(TIP_V),
-                        "clump": CLUMP, "hairs_per_strand": list(HAIRS)},
+                        "clump": CLUMP, "hairs_per_strand": list(HAIRS), "version": 5,
+                        "fringe_length": list(FRINGE_LENGTH), "fringe_jitter": FRINGE_JITTER,
+                        "fringe_width": list(FRINGE_WIDTH), "edge": EDGE},
               "provenance": "original and procedural: every strand drawn by this script from its seed; no external "
                             "image, scan or third-party texture",
               "maps": {}}

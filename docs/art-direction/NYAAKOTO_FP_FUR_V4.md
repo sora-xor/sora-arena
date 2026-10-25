@@ -4,9 +4,16 @@
 root's bounded fur and paw lane. It is a fur diagnostic and candidate: not
 art acceptance, an admission or a photoreal claim.
 
-**Result:** the dither speckle is down by 40 % to 47 %, measured in
-Unreal. What remains is a flatter, whiter coat with angular card gaps
-(below).
+**Result, qualified (root's review of v5):** this compares two asset
+versions, one capture each, with the atlas, the card normals and the winding
+all changed together. The fur's measured high-frequency residual fell by
+40 % to 47 %. How that splits among the three changes is not established.
+What remains is a flatter, whiter coat with angular card gaps (below).
+
+**The comparator, reviewed:** root's probe of `fur_capture_noise --assets`
+(148c5c1) found four malformed copies of v5 that it accepted. The v4 and v5
+figures here stand on root's separate checks of the originals. The fix
+follows the v6 capture.
 
 ## The defect
 

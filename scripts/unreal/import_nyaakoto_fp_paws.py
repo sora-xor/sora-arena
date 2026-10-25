@@ -280,11 +280,17 @@ def mat_silk():
     tint = mul(m, alb, "RGB", node(m, unreal.MaterialExpressionConstant3Vector, -650, -450,
                                    constant=unreal.LinearColor(0.016, 0.023, 0.045, 1.0)), "", -450, -300)
     out(tint, "", MP.MP_BASE_COLOR)
-    out(nrm, "RGB", MP.MP_NORMAL)
+    # v5 (root: "smooth sleeve", "glossy sleeve"): the weave's relief half again as strong (its tangent-space x and y
+    # scaled, then renormalised), and rougher, 1.15 -> 1.35 of the map, as the Blender source.
+    relief = mul(m, nrm, "RGB", node(m, unreal.MaterialExpressionConstant3Vector, -650, 250,
+                                     constant=unreal.LinearColor(1.5, 1.5, 1.0, 1.0)), "", -450, 200)
+    unit = node(m, unreal.MaterialExpressionNormalize, -300, 200)
+    link(relief, "", unit, "")
+    out(unit, "", MP.MP_NORMAL)
     # v3 (root: "broad glossy blue cloth"): a little rougher, and a fuzz colour
     # about twice the dyed base (it was six times), since the fuzz amount is
     # pinned at 1.0.
-    rough = mul(m, orm, "G", node(m, unreal.MaterialExpressionConstant, -650, 380, r=1.15), "", -450, 400)
+    rough = mul(m, orm, "G", node(m, unreal.MaterialExpressionConstant, -650, 380, r=1.35), "", -450, 400)
     sat = node(m, unreal.MaterialExpressionSaturate, -300, 400)
     link(rough, "", sat, "")
     out(sat, "", MP.MP_ROUGHNESS)

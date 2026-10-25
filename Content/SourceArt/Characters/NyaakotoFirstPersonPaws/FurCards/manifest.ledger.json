@@ -3,12 +3,12 @@
   "kind": "asset-ledger",
   "ledger_id": "own-NyaakotoFP_FurCards",
   "source": "project",
-  "purpose": "OWN record for the bow paw's fur-card atlas (v4): albedo with strand coverage as alpha, DirectX normal and linear masks. Each clump is opaque strand groups with fringed hair tips, odd rows root at the top; every strand is drawn by the seeded generator; no external image, scan or third-party texture. The Unreal uses are the isolated qualification import (import_nyaakoto_fp_paws.py), not the game. The schema-4 manifest.json beside them is the build record and holds the atlas's dither measure (fur_atlas_coverage.py); it is not this ledger.",
+  "purpose": "OWN record for the bow paw's fur-card atlas (v5): albedo with strand coverage as alpha, DirectX normal and linear masks. Each clump is opaque strand groups with fringed hair tips, irregular in length, spacing and width, its lateral edges faded; odd rows root at the top. Every strand is drawn by the seeded generator; no external image, scan or third-party texture. The Unreal uses are the isolated qualification import (import_nyaakoto_fp_paws.py), not the game. The schema-4 manifest.json beside them is the build record and holds the atlas's dither measure (fur_atlas_coverage.py); it is not this ledger.",
   "generator": "scripts/assets/write_own_ledger.py",
   "records": [
     {
       "asset_id": "NyaakotoFP_FurCards",
-      "name": "Nyaakoto first-person bow paw: fur-card atlas (v4)",
+      "name": "Nyaakoto first-person bow paw: fur-card atlas (v5)",
       "kind": "generated-art",
       "tier": "OWN",
       "license": "project-owned",
@@ -24,7 +24,7 @@
       "attribution_text": null,
       "changes": null,
       "access": "generated",
-      "acquired_at_utc": "2026-10-25T20:43:17Z",
+      "acquired_at_utc": "2026-10-25T21:18:02Z",
       "acquired_by": "agent",
       "storage": "repo-lfs",
       "used_by": [
@@ -42,18 +42,18 @@
       "files": [
         {
           "path": "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/FurCards/T_NyaakotoFP_FurCards_Albedo.png",
-          "bytes": 993482,
-          "sha256": "c264421907db224cada2987943480c548b24369dc67e29c99e3bd1cf4ed1200e"
+          "bytes": 933972,
+          "sha256": "8b47b4805f467896a948142102a7ed56b0a51b591ff5776dd8c21a3a038832ac"
         },
         {
           "path": "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/FurCards/T_NyaakotoFP_FurCards_Masks.png",
-          "bytes": 697318,
-          "sha256": "c33d649cbbcbfd939234bca7285b00f27ff3c15d643635eb23ce250cf015d0c0"
+          "bytes": 641476,
+          "sha256": "897de43557a34fcf901882487ad70dd86944ee2ce55b31dc63a68869e17d2784"
         },
         {
           "path": "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/FurCards/T_NyaakotoFP_FurCards_NormalDX.png",
-          "bytes": 934626,
-          "sha256": "c7a1ffd9a6358a7c7f35e63e8d44cfe85876467b2c2ea21b780db8ab32d0cfb0"
+          "bytes": 942801,
+          "sha256": "4b1bd4e8733b39beecb8850ea85677cd1e8186d36278da4e34efd3c95d368210"
         }
       ]
     }

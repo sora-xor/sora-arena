@@ -520,6 +520,25 @@ def mesh_bow_paw(step=0.0006, smooth=6):
 # - **Odd atlas rows run root at the top** (create_nyaakoto_fp_fur_textures.py
 #   v4), so their v is reversed here: tips abut tips in the atlas, and a mip
 #   never pulls a neighbour's opaque root into a tip.
+# v5 (capture v5, Saved/YumiFP/v5_fur, and root's review: "flat bright white",
+# "angular overlapping strips and pale gaps", "brush-like wrist"). The coat is
+# a thin sheet (its strands lie 0.2-1.2 mm off the skin), so its volume has to
+# come from shading the paw's form and from each clump's shape. Lift, density,
+# lengths and the seeds' layout are v4's.
+# - **The hero's white:** TABBY white is the hero fur texture's mean over the
+#   atlas's, so the cards' mean colour is the hero's body fur, not a brighter,
+#   cooler one.
+# - **Form occlusion** (form_occlusion): a distance-field ambient occlusion over
+#   the paw with the grip, baked into every card's and the skin's vertex
+#   colour. The gaps between the digits and the paw's edge against the leather
+#   darken; the knuckles' tops stay open.
+# - **The undercoat:** the skin is the coat's bottom, so it sits darker than
+#   any card above it (TABBY undercoat), rather than reading as pale gaps.
+# - **Clump taper:** a card narrows to tip_width of its root's width, so each
+#   clump ends in a point rather than a strip.
+# - **Curl:** each strand turns a little in the skin's plane toward its tip,
+#   more in the wrist's ruff (curl_deg), so the ruff stops reading as a brush.
+#   It is drawn from its own seeded stream, so no v4 card moves for it.
 FUR = {
     "seed": 20261025,
     "per_cm2": 80,                       # clumps per square centimetre of furred skin
@@ -539,9 +558,17 @@ FUR = {
     "sleeve_from_m": -0.026,             # roots stop this far behind the carpus, under the kote's cuff
     "tiles": (8, 2),                     # atlas columns, rows
     "skin_normal": 0.75,                 # how far each card vertex's shading normal is bent to the skin's (v4)
+    "tip_width": 0.20,                   # a card's width at its tip, as a share of its root's (v5; v4 0.55)
+    "taper_power": 1.3,                  # how that width closes along the strand
+    "curl_deg": {"ruff": 16.0, "other": 5.0},   # one standard deviation of a strand's turn by its tip (v5)
+    "occlusion": {"steps_m": (0.003, 0.006, 0.012, 0.024), "falloff": 0.6, "floor": 0.45},   # form_occlusion (v5)
 }
-TABBY = {"white": (0.86, 0.85, 0.82), "grey": (0.50, 0.50, 0.50), "stripe": (0.20, 0.20, 0.21),
-         "period_m": 0.015, "white_from_knuckles_m": -0.010}
+# white (v5): the hero's fur white, T_Nyaakoto_fur_white_Albedo's mean (0.692, 0.646, 0.574) linear, over the
+# fur atlas's coverage-weighted mean hair value (0.933), so a card's mean is the hero's. v4: (0.86, 0.85, 0.82).
+# undercoat (v5): the skin under the cards as a share of the coat's colour, the coat's bottom; the skin materials'
+# own 0.82 multiplies it again (about 0.59 in all).
+TABBY = {"white": (0.742, 0.693, 0.617), "grey": (0.50, 0.50, 0.50), "stripe": (0.20, 0.20, 0.21),
+         "period_m": 0.015, "white_from_knuckles_m": -0.010, "undercoat": 0.72}
 
 
 def vertex_normals(V, T):
@@ -609,14 +636,45 @@ def tabby_colour(p, skel):
     return grey * (1 - w[:, None]) + np.array(TABBY["white"])[None] * w[:, None]
 
 
+def form_occlusion(points, normals, occluder, cfg=FUR["occlusion"]):
+    """How open each point is above itself, 1 open to 0 closed: Quilez's distance-field ambient occlusion.
+
+    At each step h along the normal, the occluder's distance falls short of h wherever the form closes in. The
+    shortfalls, weighted by falloff^i, are summed and normalised. With the paw and the grip as the occluder, the gaps
+    between the digits and the paw's edge against the leather darken, and the knuckles' tops stay open."""
+    occ = np.zeros(len(points))
+    total, w = 0.0, 1.0
+    for h in cfg["steps_m"]:
+        d = occluder(points + normals * h)
+        occ += w * np.clip(h - d, 0.0, None) / h
+        total += w
+        w *= cfg["falloff"]
+    return np.clip(1.0 - occ / total, 0.0, 1.0)
+
+
+def occlusion_shade(ao, cfg=FUR["occlusion"]):
+    """The colour factor for an occlusion: floor where closed, 1 where open."""
+    return cfg["floor"] + (1.0 - cfg["floor"]) * ao
+
+
+def skin_colour(mesh, occluder, cfg=FUR):
+    """The skin's vertex colour, the coat's bottom: the tabby colour at TABBY undercoat, darkened by the form's
+    occlusion (the pads' material does not read it)."""
+    V, T = mesh["verts"], mesh["tris"]
+    ao = form_occlusion(V, vertex_normals(V, T), occluder, cfg["occlusion"])
+    return tabby_colour(V, mesh["skeleton"]) * (TABBY["undercoat"] * occlusion_shade(ao, cfg["occlusion"]))[:, None]
+
+
 def fur_cards(mesh, field, keep_out=grip_sdf, cfg=FUR):
     """Fur cards on a skin mesh: verts, tris (front faces out), uvs, colours, shading normals and the card count.
 
     Roots are area-sampled on furred triangles away from contact. Each strand
     starts along its nearest bone's distal direction in the skin's tangent
     plane, swirled and lifted, then droops back toward the skin. Tips pull
-    toward their clump. Strand points that would enter the bow (keep_out) end
-    the strand; points that dip into the skin are pushed back out of it."""
+    toward their clump, and each turns by its own curl. Strand points that would enter the bow (keep_out) end
+    the strand; points that dip into the skin are pushed back out of it. Each card narrows to tip_width, and its
+    colour is the tabby colour shaded by the form's occlusion at each strand point (form_occlusion, over the skin
+    and keep_out together)."""
     rng = np.random.default_rng(cfg["seed"])
     V, T = mesh["verts"], mesh["tris"]
     skel = mesh["skeleton"]
@@ -685,11 +743,16 @@ def fur_cards(mesh, field, keep_out=grip_sdf, cfg=FUR):
     pts = np.zeros((count, K + 1, 3))
     pts[:, 0] = root
     dirs0 = tang * np.cos(lift)[:, None] + n * np.sin(lift)[:, None]
+    # v5: each strand's curl, from its own stream so the cards drawn below are v4's.
+    curl = np.radians(np.random.default_rng(cfg["seed"] + 2).normal(0.0, 1.0, count)
+                      * np.where(ruff, cfg["curl_deg"]["ruff"], cfg["curl_deg"]["other"]))
     for k in range(1, K + 1):
         u = k / K
-        # droop: the lift fades toward the tip, and the clump pulls the tip.
+        # droop: the lift fades toward the tip, and the clump pulls the tip; curl turns it in the skin's plane.
         a = lift * (1.0 - cfg["droop"] * u)
-        d = tang * np.cos(a)[:, None] + n * np.sin(a)[:, None]
+        c = curl * u ** 1.5
+        turned = tang * np.cos(c)[:, None] + side * np.sin(c)[:, None]
+        d = turned * np.cos(a)[:, None] + n * np.sin(a)[:, None]
         d = d * (1 - cfg["clump"] * u) + dirs0[lead] * (cfg["clump"] * u)
         d /= np.linalg.norm(d, axis=1, keepdims=True)
         pts[:, k] = pts[:, k - 1] + d * (length / K)[:, None]
@@ -729,7 +792,7 @@ def fur_cards(mesh, field, keep_out=grip_sdf, cfg=FUR):
         nb = np.cross(b, t)                                  # the untwisted card's normal, out from the skin
         b = b * np.cos(twist)[:, None] + nb * np.sin(twist)[:, None]
         face = np.cross(b, t)                                # the twisted card's: its front, outward
-        w = width * (1.0 - 0.45 * k / K) * 0.5
+        w = width * (1.0 - (1.0 - cfg["tip_width"]) * (k / K) ** cfg["taper_power"]) * 0.5
         verts[:, k, 0] = pts[:, k] - b * w[:, None]
         verts[:, k, 1] = pts[:, k] + b * w[:, None]
         frac = np.where(flip, 1.0 - k / K, k / K)
@@ -757,7 +820,10 @@ def fur_cards(mesh, field, keep_out=grip_sdf, cfg=FUR):
     quads = np.stack(quads, 1).reshape(-1, 4)
     tris = np.concatenate([quads[:, [0, 1, 2]], quads[:, [0, 2, 3]]])
     colour = tabby_colour(pts[:, 0], skel)
-    vcol = np.repeat(colour[:, None, :], 2 * (K + 1), 1).reshape(-1, 3)
+    ao = form_occlusion(pts.reshape(-1, 3), np.repeat(n, K + 1, axis=0),
+                        lambda p: np.minimum(field(p), keep_out(p)), cfg["occlusion"]).reshape(m, K + 1)
+    shade = occlusion_shade(ao, cfg["occlusion"])
+    vcol = np.repeat(colour[:, None, None, :] * shade[:, :, None, None], 2, axis=2).reshape(-1, 3)
     return {"verts": verts.reshape(-1, 3), "tris": tris, "uv": uvs.reshape(-1, 2), "colour": vcol, "cards": m,
             "normals": normals.reshape(-1, 3), "root_normals": n, "roots": pts[:, 0], "tips": pts[:, -1],
-            "attempted": count}
+            "occlusion": ao, "attempted": count}

@@ -98,10 +98,52 @@ class CommittedAtlas(unittest.TestCase):
         self.assertLess(float(rows[G.TH - n:G.TH + n].mean()), 0.3)        # both rows' tips meet in the middle
 
 
+class Coat(unittest.TestCase):
+    """v5: the coat's colour and each card's edges, against the committed atlas."""
+
+    @classmethod
+    def setUpClass(cls):
+        from PIL import Image
+
+        with Image.open(ATLAS / "T_NyaakotoFP_FurCards_Albedo.png") as im:
+            a = np.asarray(im, np.float64) / 255.0
+        cls.alpha = a[..., 3]
+        rgb = a[..., :3]
+        cls.lin = np.where(rgb <= 0.04045, rgb / 12.92, ((rgb + 0.055) / 1.055) ** 2.4)
+
+    def test_the_coats_white_is_the_heros(self):
+        # nyaakoto_fp_paws.TABBY white times the atlas's coverage-weighted mean is the hero fur texture's mean.
+        from PIL import Image
+
+        import nyaakoto_fp_paws as P
+
+        mean = (self.lin * self.alpha[..., None]).reshape(-1, 3).sum(0) / self.alpha.sum()
+        hero_path = G.ROOT / "Content/SourceArt/Characters/Hero/PBR/T_Nyaakoto_fur_white_Albedo.png"
+        with Image.open(hero_path) as im:
+            h = np.asarray(im.convert("RGB"), np.float64) / 255.0
+        hero = np.where(h <= 0.04045, h / 12.92, ((h + 0.055) / 1.055) ** 2.4).reshape(-1, 3).mean(0)
+        self.assertTrue(np.allclose(np.array(P.TABBY["white"]) * mean, hero, rtol=0.015), (mean, hero))
+
+    def test_each_cards_lateral_edges_fade(self):
+        # The outermost texel column of every tile is nearly clear; a little way in, the body is as solid as its middle.
+        # C.tiles runs from the image's top: its first row of tiles is atlas row 1, which runs root at the top.
+        tiles = C.tiles(self.alpha, G.COLS, G.ROWS)
+        lower = [t[: G.TH // 2] if i < G.COLS else t[G.TH // 2:] for i, t in enumerate(tiles)]
+        edge = np.mean([np.r_[t[:, 0], t[:, -1]].mean() for t in lower])
+        inner = int(round(2 * G.EDGE * G.TW))
+        body = np.mean([np.r_[t[:, inner], t[:, -1 - inner]].mean() for t in lower])
+        middle = np.mean([t[:, G.TW // 2].mean() for t in lower])
+        self.assertLess(edge, 0.05)
+        self.assertGreater(body, 0.9 * middle)
+
+
 class Tile(unittest.TestCase):
     def test_the_clumps_lower_half_is_covered(self):
+        # Inside its faded lateral edges (v5: EDGE, twice over for the ramp's reach).
         alpha, _c, _n, _m = G.tile(np.random.default_rng(G.SEED), 0)
-        lower = alpha[G.TH // 2:]                                           # root at the tile's bottom
+        u = (np.arange(G.TW) + 0.5) / G.TW
+        inner = (u > 2 * G.EDGE) & (u < 1 - 2 * G.EDGE)
+        lower = alpha[G.TH // 2:, inner]                                    # root at the tile's bottom
         self.assertGreater(float((lower >= 0.99).mean()), 0.97)
 
 

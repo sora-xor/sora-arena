@@ -184,8 +184,10 @@ def mat_silk():
     # the undyed weave. v1's (0.42, 0.48, 0.80) and its pale sheen read white.
     nb.feed(nb.bsdf.inputs["Base Color"], nb.mulc(alb.outputs["Color"], SILK_INDIGO))
     # v3 (root: "broad glossy blue cloth"): a little rougher, and a weaker sheen.
-    nb.feed(nb.bsdf.inputs["Roughness"], nb.m("MINIMUM", nb.mul(nb.sep(orm.outputs["Color"])[1], 1.15), 1.0))
-    nb.feed(nb.bsdf.inputs["Normal"], nb.nmap_dx(nrm.outputs["Color"], 0.8, uv_map="UV0"))
+    # v5 (root: "glossy sleeve", "smooth sleeve"): rougher again (1.15 -> 1.35) and the weave stronger (0.8 -> 1.2),
+    # as the Unreal material.
+    nb.feed(nb.bsdf.inputs["Roughness"], nb.m("MINIMUM", nb.mul(nb.sep(orm.outputs["Color"])[1], 1.35), 1.0))
+    nb.feed(nb.bsdf.inputs["Normal"], nb.nmap_dx(nrm.outputs["Color"], 1.2, uv_map="UV0"))
     nb.feed(nb.bsdf.inputs["Sheen Weight"], 0.25)
     nb.feed(nb.bsdf.inputs["Sheen Tint"], (0.35, 0.42, 0.70, 1.0))
     return nb.mat
@@ -261,7 +263,8 @@ def build(step):
             "M_NyaakotoFP_KoteUrushi": mat_urushi(), "M_NyaakotoFP_CordVermilion": mat_cord(), "gold": mat_gold()}
     is_pad = np.array([str(r).startswith("pad") for r in m["region"]])
     tri_pad = is_pad[m["tris"]].sum(1) >= 2
-    skin_col = P.tabby_colour(m["verts"], skel)
+    # v5: the skin is the coat's bottom, darkened by the form's occlusion over the paw and the grip.
+    skin_col = P.skin_colour(m, lambda p: np.minimum(field(p), P.grip_sdf(p)))
     skin = make_mesh("PawL_Skin", m["verts"], m["tris"], colour=skin_col, mat_index=tri_pad.astype(np.int32))
     skin.data.materials.append(mats["skin"])
     skin.data.materials.append(mats["pad"])
@@ -286,7 +289,11 @@ def build(step):
     info = {"skin_triangles": int(len(m["tris"])), "fur_cards": int(fur["cards"]), "fur_card_triangles": int(len(fur["tris"])),
             "kote_parts": len(parts), "kote_triangles": int(sum(len(p["tris"]) for p in parts)),
             "mon_triangles": len(mon_obj.data.polygons), "build_s": round(t1 - t0, 1),
-            "fur_skin_normal_weight": P.FUR["skin_normal"]}
+            "fur_skin_normal_weight": P.FUR["skin_normal"], "fur_tip_width": P.FUR["tip_width"],
+            "fur_occlusion": {"p5": round(float(np.percentile(fur["occlusion"], 5)), 4),
+                              "median": round(float(np.median(fur["occlusion"])), 4),
+                              "share_below_0.8": round(float((fur["occlusion"] < 0.8).mean()), 4)},
+            "coat_white": list(P.TABBY["white"]), "undercoat": P.TABBY["undercoat"]}
     return m, fur, parts, objs, info
 
 
