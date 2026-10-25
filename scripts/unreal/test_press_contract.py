@@ -84,5 +84,25 @@ class PressContract(unittest.TestCase):
             r['fieldcraft']['lamps'][0][field]=value
             self.assertFalse(press_hall_valid(c),(field,value))
 
+    def test_elevated_entry_ladder_and_perimeter_contract_cannot_drift(self):
+        walk=self.hall['catwalk']
+        x,y=self.hall['origin_cm']
+        self.assertEqual(self.record['entry'],[x+300,y+2340,-90])
+        self.assertEqual((walk['width_cm'],walk['height_cm'],walk['guard_index']),(120,400,4))
+        self.assertEqual(walk['ladder_foot_cm'],[x+300,y+2140])
+        self.assertEqual(walk['ladder_top_cm'],[x+300,y+2340])
+        # The capsule centre follows the perimeter, safely within each 120 cm deck.
+        for a,b in walk['guard_route_cm']:
+            self.assertTrue(a-x in (60,4140) and b-y in (60,2340))
+        for key in tuple(walk):
+            saved=walk.pop(key);self.assertFalse(press_hall_valid(self.chapter));walk[key]=saved
+        for field,value in [('width_cm',119),('height_cm',0),('guard_index',True),
+                            ('ladder_foot_cm',[x+300,y+2340]),('ladder_top_cm',[x+300,y+2140]),
+                            ('guard_route_cm',[[x+2100,y+1200]])]:
+            saved=walk[field];walk[field]=value
+            self.assertFalse(press_hall_valid(self.chapter),(field,value));walk[field]=saved
+        self.record['entry'][2]=90
+        self.assertFalse(press_hall_valid(self.chapter))
+
 
 if __name__=='__main__':unittest.main()

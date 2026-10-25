@@ -12,6 +12,17 @@
 namespace SoraPressAutomation
 {
 using SoraFieldcraftAutomation::FBeatWorld;
+FVector Feet(const ASoraCharacterBase& Body)
+{ return Body.GetActorLocation()-FVector(0,0,Body.GetCapsuleComponent()->GetScaledCapsuleHalfHeight()); }
+void FloorFixture(FBeatWorld& W,const FVector& At,float Yaw=0)
+{
+    // Deliberate placement for isolated handle/inspection tests. Traversal
+    // from the actual elevated entry is exercised by PressCatwalk below.
+    W.Hero()->GetCharacterMovement()->StopMovementImmediately();
+    W.Hero()->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+    W.Hero()->SetActorLocation(FVector(At.X,At.Y,W.Hero()->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2),false,nullptr,ETeleportType::TeleportPhysics);
+    W.Look(FRotator(0,Yaw,0));
+}
 void FreezeGuards(FBeatWorld& W)
 {
     for(TActorIterator<ASoraEnemy> It(W.World->GetTestWorld());It;++It)
@@ -92,7 +103,7 @@ bool FSoraPressHallTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("Pause freezes the stamp clock"),Craft->PressClock(),Paused);
     if(!TestTrue(TEXT("Interact can be rebound in the menu"),W.Hero()->RemapCombatAction(TEXT("Interact"),EKeys::G))||
         !W.Press(EKeys::Escape)) return false;
-    const FVector Work(Space.Objectives[0],0); W.Stand(Work,90);
+    const FVector Work(Space.Objectives[0],0); FloorFixture(W,Work,90);
     if(!W.Tick(2)||!TestTrue(TEXT("The master handle is unobstructed and grounded"),Craft->CanWorkPress(0))) return false;
     if(!W.Hold(EKeys::E,270)) return false;
     TestEqual(TEXT("The old binding cannot jam a press"),C->TaskProgress().Done,0);
@@ -140,7 +151,7 @@ bool FSoraPressInspectionTest::RunTest(const FString& Parameters)
     if(!TestNotNull(TEXT("The inspector fixture spawns a living auditor"),Auditor)) return false;
     auto* Brain=Cast<ASoraEnemyController>(Auditor->GetController());
     if(!TestNotNull(TEXT("The inspector has its real navigation controller"),Brain)) return false;
-    W.Stand(FVector(W.BeatData().Space.Entry,0));
+    FloorFixture(W,FVector(W.BeatData().Space.Entry,0));
     AActor* Barrier=Block(W,Work+FVector(0,0,150),FVector(150,150,150));
     if(!TestNotNull(TEXT("The inspection path obstruction spawns"),Barrier)) return false;
     Craft->JamPress(0);
@@ -278,7 +289,7 @@ bool FSoraPressReloadTest::RunTest(const FString& Parameters)
     if(!W.Start()) return false;
     W.Harden(); FreezeGuards(W);
     if(!TestTrue(TEXT("Mapped Interact is available"),W.Hero()->RemapCombatAction(TEXT("Interact"),EKeys::G))) return false;
-    W.Stand(FVector(W.BeatData().Space.Objectives[0],0),90);
+    FloorFixture(W,FVector(W.BeatData().Space.Objectives[0],0),90);
     if(!W.Tick(2)||!W.Hold(EKeys::G,270)) return false;
     if(!TestTrue(TEXT("The original world has one jam and an unfinished inspection"),
         W.Campaign()->TaskProgress().Done==1&&!W.Fieldcraft()->PressRunning(1)&&
@@ -304,6 +315,124 @@ bool FSoraPressReloadTest::RunTest(const FString& Parameters)
             TestTrue(TEXT("No old-world lamp notice reaches fresh guards"),Brain->State()==SoraStealthRules::EState::Unaware);
     TestFalse(TEXT("No old silent-machine errand survives world destruction"),W.Events.Contains(TEXT("ai_event:press_silent")));
     AddInfo(TEXT("Actual save and world recreation; checkpoint semantics restart this beat. Directed fixture, with guards frozen."));
+    return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraPressCatwalkTest,"SoraArena.Campaign.PressCatwalk",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraPressCatwalkTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;
+    using namespace SoraPressAutomation;
+    namespace Press=SoraPressRules;
+    if(!FSoraCatalog::Get().Load()) return false;
+    FBeatWorld W(*this,TEXT("PressCatwalk"),5,10);
+    if(!W.Start()) return false;
+    W.Harden();
+    int Elevated=0;
+    for(TActorIterator<ASoraEnemy> It(W.World->GetTestWorld());It;++It)
+        if(It->ArchetypeId()==TEXT("enforcer_rifle")&&Feet(**It).Z>350) ++Elevated;
+    TestEqual(TEXT("Exactly one authored rifle enforcer starts above the floor"),Elevated,1);
+    FreezeGuards(W);
+    auto* Craft=W.Fieldcraft(); auto* Player=W.Hero();
+    const FVector Origin(W.BeatData().Space.PressHall.Origin,0);
+    const FVector Foot=Origin+FVector(Press::LadderFoot.X,Press::LadderFoot.Y,0);
+    const FVector Top=Origin+FVector(Press::LadderTop.X,Press::LadderTop.Y,Press::CatwalkHeightCm);
+    if(!W.Tick(60)||!TestTrue(TEXT("Checkpoint entry settles onto the NW catwalk"),FVector::Dist(Feet(*Player),Top)<5.f)) return false;
+    for(const auto& Point:Press::CatwalkRoute)
+    {
+        FHitResult Hit; const FVector Above=Origin+FVector(Point.X,Point.Y,450);
+        FCollisionQueryParams Q(SCENE_QUERY_STAT(PressWalkSupport),false,Player);
+        TestTrue(TEXT("Every catwalk corner has real support at four metres"),
+            W.World->GetTestWorld()->LineTraceSingleByChannel(Hit,Above,Above-FVector(0,0,100),ECC_Visibility,Q)&&
+            FMath::IsNearlyEqual(Hit.ImpactPoint.Z,400.f,1.f));
+    }
+    if(!W.Press(EKeys::Escape)||!TestTrue(TEXT("Jump can be rebound"),Player->RemapCombatAction(TEXT("Jump"),EKeys::J))||
+        !W.Press(EKeys::Escape)||!W.Hold(EKeys::SpaceBar,30)) return false;
+    TestFalse(TEXT("The former Jump binding cannot take the ladder"),Craft->IsOnLadder());
+    W.Look(FRotator(0,-90,0));
+    AActor* Barrier=Block(W,Foot+FVector(0,0,260),FVector(90,90,10));
+    if(!TestNotNull(TEXT("The ladder obstruction spawns"),Barrier)||!W.Press(EKeys::J)||
+        !TestTrue(TEXT("Mapped Jump starts descending with arms stowed"),Craft->IsOnLadder()&&Craft->ArmsStowed())||!W.Tick(240)) return false;
+    TestTrue(TEXT("The swept capsule stops above the obstruction"),Craft->IsOnLadder()&&Feet(*Player).Z>=269.f);
+    const FVector Blocked=Player->GetActorLocation();
+    if(!W.Tick(120)) return false;
+    TestTrue(TEXT("Time alone cannot move through the obstacle"),Player->GetActorLocation().Equals(Blocked,.1f));
+    if(!W.Press(EKeys::Escape)) return false;
+    const FVector Paused=Player->GetActorLocation();
+    if(!W.Tick(120)) return false;
+    TestTrue(TEXT("Pause freezes the held ladder position"),Player->GetActorLocation().Equals(Paused,.1f));
+    if(!W.Press(EKeys::Escape)||!W.Press(EKeys::J)) return false;
+    TestFalse(TEXT("Jump again releases even an obstructed ladder"),Craft->IsOnLadder());
+    TestFalse(TEXT("Release restores gravity"),Player->GetCharacterMovement()->IsFlying());
+    Barrier->Destroy();
+    if(!W.Tick(90)||!TestTrue(TEXT("The released hero lands at the ladder foot"),FVector::Dist(Feet(*Player),Foot)<5.f)) return false;
+    W.Look(FRotator(0,90,0));
+    if(!W.Press(EKeys::J)||!TestTrue(TEXT("The floor endpoint admits the upward climb"),Craft->IsOnLadder())) return false;
+    float LargestStep=0;
+    for(int Frame=0;Frame<360&&Craft->IsOnLadder();++Frame)
+    {
+        const FVector Before=Player->GetActorLocation();
+        if(!W.Tick(1)) return false;
+        LargestStep=FMath::Max(LargestStep,float(FVector::Dist(Before,Player->GetActorLocation())));
+    }
+    if(!W.Tick(5)) return false;
+    TestTrue(TEXT("The full ascent and step onto the deck remain bounded by 150 cm/s"),LargestStep<=2.6f);
+    TestTrue(TEXT("Ascent ends on the supported catwalk with ordinary movement restored"),
+        !Craft->IsOnLadder()&&Player->GetCharacterMovement()->IsMovingOnGround()&&FVector::Dist(Feet(*Player),Top)<5.f&&W.Raised(TEXT("roof_reached:press_nw")));
+    W.Look(FRotator(0,-90,0));
+    if(!W.Press(EKeys::J)) return false;
+    for(int Frame=0;Frame<360&&Craft->IsOnLadder();++Frame) if(!W.Tick(1)) return false;
+    if(!W.Tick(5)) return false;
+    TestTrue(TEXT("The unobstructed return reaches the floor through the same ladder"),
+        !Craft->IsOnLadder()&&FVector::Dist(Feet(*Player),Foot)<5.f&&W.Raised(TEXT("ladder_foot:press_nw")));
+    W.Look(FRotator(0,90,0));
+    if(!W.Press(EKeys::J)||!W.Tick(90)) return false;
+    FBeatWorld::Hurt(*Player,Player->Health+1000.f);
+    if(!W.Tick(2)||!W.Press(EKeys::Enter)||!W.Tick(60)) return false;
+    Player=W.Hero();
+    TestTrue(TEXT("Death during a climb clears the old ladder and returns to elevated entry"),
+        !Craft->IsOnLadder()&&!Craft->HoldsHero()&&!Player->GetCharacterMovement()->IsFlying()&&FVector::Dist(Feet(*Player),Top)<5.f);
+    AddInfo(TEXT("Directed mapped-input traversal, swept collision, pause/release and retry. Guards frozen after checking the authored elevated spawn; not ordinary encounter acceptance."));
+    return !HasAnyErrors();
+}
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraPressCatwalkPatrolTest,"SoraArena.Campaign.PressCatwalkPatrol",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraPressCatwalkPatrolTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;
+    using namespace SoraPressAutomation;
+    namespace Press=SoraPressRules;
+    if(!FSoraCatalog::Get().Load()) return false;
+    FBeatWorld W(*this,TEXT("PressCatwalkPatrol"),5,10);
+    if(!W.Start()) return false;
+    W.Harden(); FreezeGuards(W);
+    const FVector Origin(W.BeatData().Space.PressHall.Origin,0);
+    // The companion traversal fixture checks the authored elevated spawn.
+    // This living enforcer isolates the same route's real navigation from
+    // sight/hearing, so a blocked corner cannot pass as a timed patrol.
+    FloorFixture(W,Origin+FVector(300,2140,0));
+    if(!W.Tick(120)) return false;
+    FSoraPatrolRoute Route;
+    for(const auto& Point:Press::CatwalkRoute)
+        Route.Points.Add(Origin+FVector(Point.X,Point.Y,490));
+    FSoraEnemyTuning Tune; Tune.SightCm=1; Tune.DarkSightCm=0; Tune.HearingCm=0;
+    auto* Guard=ASoraEnemy::SpawnArchetype(*W.World->GetTestWorld(),TEXT("enforcer_rifle"),0,
+        Route.Points[0]+FVector(0,0,30),FRotator(0,-90,0),&Route,&Tune);
+    if(!TestNotNull(TEXT("The route fixture has a living rifle enforcer"),Guard)||!W.Tick(60)) return false;
+    bool Reached[4]={}; bool Supported=true;
+    for(int Frame=0;Frame<9000;++Frame)
+    {
+        if(!W.Tick(1)) return false;
+        const FVector At=Feet(*Guard);
+        Supported&=FMath::Abs(At.Z-400.f)<15.f;
+        for(int I=0;I<4;++I)
+            Reached[I]|=FVector::Dist2D(At,Route.Points[I])<=110.f;
+        if(Reached[0]&&Reached[1]&&Reached[2]&&Reached[3]) break;
+    }
+    TestTrue(TEXT("The real patrol reaches all four sides instead of skipping blocked goals"),Reached[0]&&Reached[1]&&Reached[2]&&Reached[3]);
+    TestTrue(TEXT("The walker remains supported at catwalk height throughout the circuit"),Supported);
+    AddInfo(TEXT("Directed real navigation with this enforcer's sight/hearing disabled. This does not qualify authored auditor/drone cadence or ordinary combat."));
     return !HasAnyErrors();
 }
 #endif

@@ -11,6 +11,9 @@ constexpr int LampSuspicionMs=5000;
 constexpr bool LampNoticeDue(long long Now,long long Extinguished)
 { return Extinguished>=0&&Now>=Extinguished&&Now-Extinguished>=LampSuspicionMs; }
 struct FPoint { int X,Y; };
+constexpr int CatwalkHeightCm=400, CatwalkWidthCm=120, CatwalkGuard=4;
+constexpr FPoint LadderFoot={300,2140}, LadderTop={300,2340};
+constexpr FPoint CatwalkRoute[4]={{4140,2340},{4140,60},{60,60},{60,2340}};
 constexpr FPoint Centers[Count]={{800,500},{1800,500},{2800,500},
     {800,1200},{1800,1200},{2800,1200},{1200,1900},{2400,1900}};
 constexpr int Master[3]={1,4,6};

@@ -442,7 +442,15 @@ def check_space(chapter, beats, rewards, labels, where):
         routed = beat["type"] == "horseback_ride" or task["goal"] == "escort"
         require(routed == (record["route"] is not None) and
                 (not routed or zones[index]["form"] == "route"), f"{what}: rides and escorts run on a route")
-        on_floor(index, record["entry"], f"{what} entry")
+        if what == "ch06.b11":
+            # press_hall_valid has already fixed this exact elevated landing.
+            # The 120 cm deck cannot use the floor's 150 cm wall clearance;
+            # require the 34 cm capsule plus 8 cm, without relaxing floor points.
+            require(record["entry"] == record["press_hall"]["catwalk"]["ladder_top_cm"] + [-90]
+                    and _inside(zones[index]["rect"], record["entry"], 42),
+                    f"{what}: supported catwalk entry with capsule clearance")
+        else:
+            on_floor(index, record["entry"], f"{what} entry")
         on_floor(index, record["anchor"], f"{what} anchor", 0)
         for key, count in (("objectives", len(task["objectives"])), ("pickups", len(task["pickups"])),
                            ("dropoffs", len(task["dropoffs"])), ("targets", len(task["targets"]))):

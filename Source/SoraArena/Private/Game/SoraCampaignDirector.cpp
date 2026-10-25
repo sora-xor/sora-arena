@@ -15,6 +15,7 @@
 #include "SoraEnemyController.h"
 #include "SoraEquipmentComponent.h"
 #include "SoraFieldcraft.h"
+#include "SoraPressRules.h"
 #include "SoraGameEvents.h"
 #include "SoraGameMode.h"
 #include "SoraGalleryRules.h"
@@ -1056,6 +1057,13 @@ ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int
     }
     if(Space->Climb.bEnabled&&GuardIndex==Space->Climb.GuardIndex)
     { Post=FVector(Space->Climb.Origin,0)+FVector(360,-300,1690);Route.Points={Post}; }
+    if(Space->PressHall.bEnabled&&GuardIndex==SoraPressRules::CatwalkGuard)
+    {
+        Route.Points.Reset();
+        for(const auto& Point:SoraPressRules::CatwalkRoute)
+            Route.Points.Add(FVector(Space->PressHall.Origin+FVector2D(Point.X,Point.Y),SoraPressRules::CatwalkHeightCm+90.f));
+        Post=Route.Points[0]+FVector(0,0,30);
+    }
     if(Route.Points.IsEmpty()) Route.Points.Add(FVector(Post.X,Post.Y,90.f));
     // A route of two points is walked back and forth; a longer one loops. A
     // guard the chapter posts keeps the first point of its round as its post.

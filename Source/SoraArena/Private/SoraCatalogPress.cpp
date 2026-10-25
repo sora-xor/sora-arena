@@ -34,11 +34,27 @@ bool SoraCatalogPress::Read(const FJsonObject& O,FSoraBeat& Beat,const FSoraSpac
         !Beat.Is(SoraBeatRules::EType::StealthZone)||Beat.Place!=TEXT("pl_press_hall")||
         B.Objectives.Num()!=4||Beat.Objectives.Num()!=4||Beat.ObjectiveHoldMs.Num()!=4||Beat.ObjectiveHoldMs[3]!=0) return false;
     const auto H=V->AsObject(); const auto& Zone=Space.Zones[B.Zone]; const FVector2D Origin=Zone.Rect.Min;
-    if(H->Values.Num()!=8||Zone.Rect.GetSize()!=FVector2D(4200,2400)||!Zone.Cover.IsEmpty()||
+    if(H->Values.Num()!=9||Zone.Rect.GetSize()!=FVector2D(4200,2400)||!Zone.Cover.IsEmpty()||
         !Point(*H,TEXT("origin_cm"),Origin)||!Number(*H,TEXT("period_ms"),Press::PeriodMs)||
         !Number(*H,TEXT("window_ms"),Press::WindowMs)||!Number(*H,TEXT("radius_cm"),Press::RadiusCm)||
         !Number(*H,TEXT("noise_permille"),Press::NoisePermille)||!Number(*H,TEXT("inspection_ms"),Press::InspectionMs)||
         !Number(*H,TEXT("lamp_suspicion_ms"),Press::LampSuspicionMs)) return false;
+    const auto Walk=H->TryGetField(TEXT("catwalk"));
+    if(!Walk||Walk->Type!=EJson::Object) return false;
+    const auto W=Walk->AsObject();
+    if(W->Values.Num()!=6||!Number(*W,TEXT("height_cm"),Press::CatwalkHeightCm)||
+        !Number(*W,TEXT("width_cm"),Press::CatwalkWidthCm)||!Number(*W,TEXT("guard_index"),Press::CatwalkGuard)||
+        !Point(*W,TEXT("ladder_foot_cm"),Origin+FVector2D(Press::LadderFoot.X,Press::LadderFoot.Y))||
+        !Point(*W,TEXT("ladder_top_cm"),Origin+FVector2D(Press::LadderTop.X,Press::LadderTop.Y))||
+        B.Entry!=Origin+FVector2D(Press::LadderTop.X,Press::LadderTop.Y)||B.EntryYaw!=-90.f) return false;
+    const auto Route=Rows(*W,TEXT("guard_route_cm"));
+    if(!Route||Route->Num()!=4) return false;
+    for(int I=0;I<4;++I)
+    {
+        // Reuse the strict two-coordinate decoder for the route's array rows.
+        FJsonObject P; P.SetField(TEXT("at"),(*Route)[I]);
+        if(!Point(P,TEXT("at"),Origin+FVector2D(Press::CatwalkRoute[I].X,Press::CatwalkRoute[I].Y))) return false;
+    }
     const auto Items=Rows(*H,TEXT("presses")); if(!Items||Items->Num()!=Press::Count) return false;
     static const TCHAR* Names[]={TEXT("press_a1"),TEXT("press_a2"),TEXT("press_a3"),TEXT("press_b1"),
         TEXT("press_b2"),TEXT("press_b3"),TEXT("press_c1"),TEXT("press_c2")};

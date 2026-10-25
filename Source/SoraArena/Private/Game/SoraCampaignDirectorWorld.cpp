@@ -7,6 +7,7 @@
 #include "SoraEnemy.h"
 #include "SoraEquipmentComponent.h"
 #include "SoraFieldcraft.h"
+#include "SoraPressRules.h"
 #include "SoraGameMode.h"
 #include "SoraHorse.h"
 #include "SoraMountRules.h"
@@ -247,13 +248,15 @@ void USoraCampaignDirector::EnterBeatSpace(bool bResumed)
     // reaches the same landing on foot and continues onto the lift.
     const bool NeedsLiftEntry=Space.Lift.bEnabled&&Hero&&FMath::Abs(Hero->GetActorLocation().Z-Space.HeightCm)>180.f;
     const bool NeedsSummitEntry=Space.Summit.Enabled()&&Beat->Is(SoraBeatRules::EType::Boss);
-    if(Hero&&(NeedsLiftEntry||NeedsSummitEntry||Chapter->Space.ZoneAt(Hero->GetActorLocation())!=Space.Zone))
+    const bool NeedsPressEntry=Space.PressHall.bEnabled;
+    if(Hero&&(NeedsLiftEntry||NeedsSummitEntry||NeedsPressEntry||Chapter->Space.ZoneAt(Hero->GetActorLocation())!=Space.Zone))
     {
         ClearHorses();
         Hero->SetBase(static_cast<FMovementBaseInterfaceData*>(nullptr));
         Hero->GetCharacterMovement()->StopMovementImmediately();
         const FRotator Facing(0,Space.EntryYaw,0);
-        Hero->SetActorLocationAndRotation(ASoraWorldBuilder::Floor(Space.Entry,Space.HeightCm+120.f),Facing,false,nullptr,ETeleportType::TeleportPhysics);
+        const float EntryHeight=NeedsPressEntry?float(SoraPressRules::CatwalkHeightCm):float(Space.HeightCm);
+        Hero->SetActorLocationAndRotation(ASoraWorldBuilder::Floor(Space.Entry,EntryHeight+120.f),Facing,false,nullptr,ETeleportType::TeleportPhysics);
         if(AController* Controller=Hero->GetController()) Controller->SetControlRotation(Facing);
         if(APlayerController* Player=Cast<APlayerController>(Hero->GetController()))
             if(Player->PlayerCameraManager&&!bResumed) Player->PlayerCameraManager->StartCameraFade(1.f,0.f,.6f,FLinearColor::Black);

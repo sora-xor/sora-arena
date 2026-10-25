@@ -11859,8 +11859,8 @@
     "beat": "ch06.b11",
     "zone": 5,
     "entry": [
-     42000,
-     1000,
+     42100,
+     1140,
      -90
     ],
     "anchor": [
@@ -12112,6 +12112,37 @@
      "noise_permille": 200,
      "inspection_ms": 20000,
      "lamp_suspicion_ms": 5000,
+     "catwalk": {
+      "height_cm": 400,
+      "width_cm": 120,
+      "guard_index": 4,
+      "ladder_foot_cm": [
+       42100,
+       940
+      ],
+      "ladder_top_cm": [
+       42100,
+       1140
+      ],
+      "guard_route_cm": [
+       [
+        45940,
+        1140
+       ],
+       [
+        45940,
+        -1140
+       ],
+       [
+        41860,
+        -1140
+       ],
+       [
+        41860,
+        1140
+       ]
+      ]
+     },
      "presses": [
       {
        "id": "press_a1",

@@ -1,7 +1,7 @@
 """Chapter-six press positions and stamp/inspection contract, in authored cm.
 
 The floor footprint and eight machine positions come from chapter-06 L7.
-Catwalk access, patrol timing, machine art and synchronized music require
+Catwalk access, patrol movement, machine art and synchronized music require
 separate runtime/visual evidence; this contract does not qualify them.
 """
 import json
@@ -10,6 +10,7 @@ CENTERS = ((800, 500), (1800, 500), (2800, 500), (800, 1200),
            (1800, 1200), (2800, 1200), (1200, 1900), (2400, 1900))
 IDS = ('press_a1', 'press_a2', 'press_a3', 'press_b1', 'press_b2', 'press_b3', 'press_c1', 'press_c2')
 MASTERS = (1, 4, 6)
+CATWALK_ROUTE = ((4140, 2340), (4140, 60), (60, 60), (60, 2340))
 LAMP_IDS = tuple('l_die_lamp_'+IDS[i].removeprefix('press_') for i in MASTERS)
 MASK = {'source': 'press_stamp', 'period_ms': 1600, 'window_ms': 500,
         'radius_cm': 800, 'player_noise_mult': 0.2}
@@ -33,6 +34,9 @@ def contract(beat, origin):
     x, y = origin
     return {'origin_cm': list(origin), 'period_ms': 1600, 'window_ms': 500, 'radius_cm': 800,
             'noise_permille': 200, 'inspection_ms': 20000, 'lamp_suspicion_ms': 5000,
+            'catwalk': {'height_cm': 400, 'width_cm': 120, 'guard_index': 4,
+                        'ladder_foot_cm': [x+300,y+2140], 'ladder_top_cm': [x+300,y+2340],
+                        'guard_route_cm': [[x+dx,y+dy] for dx,dy in CATWALK_ROUTE]},
             'presses': [{'id': name, 'center_cm': [x+dx, y+dy],
                          'work_cm': [x+dx, y+dy-240],
                          'objective': MASTERS.index(i) if i in MASTERS else -1}
@@ -58,8 +62,7 @@ def place_press_hall(beats, records, zones, pickups, fail):
         except (KeyError, TypeError, ValueError) as error:
             fail(beat['id'], str(error))
         record['press_hall'] = hall
-        # Floor access is provisional until the NW catwalk and ladder are built.
-        record['entry'] = [x+200, y+2200, -90]
+        record['entry'] = hall['catwalk']['ladder_top_cm'] + [-90]
         record['objectives'] = [hall['presses'][i]['work_cm'][:] for i in MASTERS] + [[x+4000, y+200]]
         record['anchor'] = [x+3500, y+800]
         record['exit'] = {'center': [x+4000, y+200], 'size': [300, 300]}
@@ -94,6 +97,7 @@ def press_hall_valid(chapter):
             x, y, x1, y1 = zone['rect']
             expected = contract(beat, [x, y])
             if ((x1-x, y1-y) != (4200,2400) or not same(record['press_hall'],expected)
+                    or not same(record['entry'],expected['catwalk']['ladder_top_cm']+[-90])
                     or not same(record['objectives'],[expected['presses'][i]['work_cm'] for i in MASTERS]+[[x+4000,y+200]])
                     or not same(record['fieldcraft']['lamps'],die_lamps(expected))
                     or zone['cover'] or record['height_cm'] != 0):

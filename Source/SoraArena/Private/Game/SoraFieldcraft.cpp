@@ -579,6 +579,7 @@ void USoraFieldcraft::Tick(float DeltaTime)
     if (Staged) TickWater(DtMs);
     if (Staged) TickClimb(DeltaTime, DtMs);
     if (Staged) TickLadders(DeltaTime);
+    if (Staged) TickPressAccess(DeltaTime);
     if (Staged) TickCharge(DeltaTime, DtMs);
     if (Staged) TickCandle();
     if (Staged) TickLooks();
@@ -917,7 +918,7 @@ bool USoraFieldcraft::Jump(ASoraPlayerCharacter& Player)
     if(MoatSpace&&bSwimming) { bMoatDiveWish=false;return true; }
     if (!Staged) return false;
     // At a ladder's foot, or its top on the roof, Jump takes the ladder.
-    if (LadderJump(Player)) return true;
+    if (PressLadderJump(Player)||LadderJump(Player)) return true;
     if (bClimbing)
     {
         LetGo(Player, false);
@@ -1522,7 +1523,9 @@ FSoraFieldcraftReadout USoraFieldcraft::Readout(const ASoraPlayerCharacter& Play
                 static_cast<float>(LightStates[Light].InSpotMs) / FMath::Max(1, Staged->Searchlights[Light].Rules.AlertMs));
         }
     Out.FiresOut = FiresOut();
-    Out.bOnLadder = LadderClimb != INDEX_NONE;
+    Out.bOnLadder = IsOnLadder();
+    bool bPressUp=false;
+    Out.bAtLadder = !Out.bOnLadder&&AtPressLadder(Player,bPressUp);
     for (const FSoraLadder& Ladder : Staged->Ladders)
     {
         const FVector Foot(Ladder.Foot, Player.GetActorLocation().Z);

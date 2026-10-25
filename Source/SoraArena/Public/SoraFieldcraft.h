@@ -255,9 +255,9 @@ public:
     void CancelHeldInteraction();
     bool Jump(ASoraPlayerCharacter& Hero);
     // In the water or on the wall no arm is used and no weapon changes hands.
-    bool ArmsStowed() const { return bSwimming || (bClimbing&&!IsClimbResting()) || bClimbCrawl || LadderClimb != INDEX_NONE; }
+    bool ArmsStowed() const { return bSwimming || (bClimbing&&!IsClimbResting()) || bClimbCrawl || IsOnLadder(); }
     // The hero's own movement input is ignored (the wall moves him).
-    bool HoldsHero() const { return bClimbing || LadderClimb != INDEX_NONE; }
+    bool HoldsHero() const { return bClimbing || IsOnLadder(); }
     // A cap on the hero's pace in cm/s (the water), or 0.
     float HeroPace() const;
     bool IsSwimming() const { return bSwimming; }
@@ -349,7 +349,7 @@ public:
     int32 FiresOut() const;
     FVector FireLocation(int32 Fire) const;
     // Ladders: on one now, and whether the hero stands on a roof.
-    bool IsOnLadder() const { return LadderClimb != INDEX_NONE; }
+    bool IsOnLadder() const { return LadderClimb != INDEX_NONE || PressLadderStep != INDEX_NONE; }
     bool IsOnRoof(const FVector& Location) const;
     // The League's charge: its riders (the rival first), the stakes, and
     // what the riders have struck.
@@ -390,6 +390,15 @@ private:
     bool NearRunningPress(const FVector& Origin) const;
     void PressLampExtinguished(int32 Index);
     void TickPressLamps();
+    void StagePressAccess();
+    void TickPressAccess(float DeltaTime);
+    bool AtPressLadder(const ASoraPlayerCharacter& Player,bool& bUp) const;
+    bool PressLadderJump(ASoraPlayerCharacter& Player);
+    TArray<FVector> PressLadderFeet;
+    int32 PressLadderStep=INDEX_NONE;
+    bool bPressLadderUp=false;
+    bool bPressFalling=false;
+    float PressFallPeak=0;
     enum class EHoldKind : uint8 { None, Snuff, Companion, Release, NetCut, Relight };
     struct FHold
     {

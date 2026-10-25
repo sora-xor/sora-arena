@@ -65,6 +65,10 @@ void USoraFieldcraft::AdvancePressClock(UWorld* World,ELevelTick TickType,float 
 }
 void USoraFieldcraft::ClearPressHall()
 {
+    if(PressLadderStep!=INDEX_NONE)
+        if(auto* Player=Hero()) Player->GetCharacterMovement()->SetMovementMode(MOVE_Falling);
+    PressLadderStep=INDEX_NONE; PressLadderFeet.Reset(); bPressLadderUp=false;
+    bPressFalling=false; PressFallPeak=0;
     if(PressClockHandle.IsValid()) FWorldDelegates::OnWorldPreActorTick.Remove(PressClockHandle);
     PressClockHandle.Reset(); PressCarryMs=0;
     for(auto& Inspection:PressInspections)
@@ -80,6 +84,7 @@ void USoraFieldcraft::StagePressHall(const FSoraBeat& Beat)
 {
     if(!Beat.Space.PressHall.bEnabled) return;
     PressHall=&Beat.Space.PressHall;
+    StagePressAccess();
     PressClockHandle=FWorldDelegates::OnWorldPreActorTick.AddUObject(this,&USoraFieldcraft::AdvancePressClock);
     const FLinearColor Metal(.055f,.07f,.075f),Die(.2f,.3f,.31f);
     for(int32 I=0;I<Press::Count;++I)

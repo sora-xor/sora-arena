@@ -41,8 +41,21 @@ freezes the delay; retry clears it and restores the lamps. This behavior has
 an additional prepared `PressDieLamps` collision/delay fixture and remains
 uncompiled and unrun in Unreal.
 
+The catwalk candidate now places a colliding 1.2 metre perimeter at four
+metres, with a north-west ladder opening and an elevated rifle-enforcer
+route. Checkpoint entry starts on the catwalk. Mapped Jump takes the ladder
+when grounded, close to an endpoint and facing it; pressing Jump again
+releases it. Every alignment, vertical and landing step sweeps the actual
+capsule, with a shared 150 cm/s movement budget across corners. An obstruction
+holds the current waypoint rather than allowing time to advance through it.
+Pause freezes traversal, and leaving the beat clears its held movement mode.
+Drops use ordinary gravity and emit landing noise through the press mask.
+The source fixtures cover these assertions, including retry during a climb
+and a living enforcer following all four sides with senses isolated. None of
+these traversal or navigation results has yet been observed in Unreal.
+
 The source includes integer rule tests for exact window boundaries, long
-intervals, 30/60/144 Hz partitions and independent master state. Seven Python
+intervals, 30/60/144 Hz partitions and independent master state. Eight Python
 contract tests pass, including malformed numbers, reordered or missing
 machines, altered authored rules and footprint clearance at work/patrol
 points. Campaign generation and the existing schema validator pass all 133
@@ -53,18 +66,20 @@ later zones and failing the existing climb/flood baseline. The correction
 extends the hall six metres into its existing thirty-metre gap, preserving
 all other zone coordinates. Four host-only moat checks (including the
 unchanged baseline) and the six press contract checks pass on the corrected
-data. Five engine fixtures (`PressHall`, `PressInspection`, `PressNoiseEmission`,
-`PressDieLamps`, `PressCheckpointReload`) are prepared and remain unrun.
+data. Seven engine fixtures (`PressHall`, `PressInspection`, `PressNoiseEmission`,
+`PressDieLamps`, `PressCheckpointReload`, `PressCatwalk`, `PressCatwalkPatrol`)
+are prepared and remain unrun.
 The reload fixture saves after an actual held jam and a swept arrow impact,
 destroys the test world, and resumes the same save in a new world. It requires
 all machines and lamps restored, no old inspection or suspicion delivered,
 and exactly one encounter clock advancing. These are pending assertions, not
 observed runtime results.
 
-This is still a functional blockout. The north-west catwalk/ladder entry,
-elevated enforcer, authored 45/30-second patrol loops, die-lamp suspicion after
+This is still a functional blockout. Actual catwalk/ladder and elevated
+enforcer execution, authored 45/30-second patrol loops, die-lamp suspicion after
 five seconds in actual play, synchronized stamp audio/music, final machines and dressing,
 ordinary stealth difficulty, fresh-world save reload execution, full campaign regression
-and current packages remain open. The entry is explicitly provisional floor
-access; neither these host checks nor the prepared engine fixtures establish
+and current packages remain open. The archive-to-catwalk stair connection is
+also unfinished; entry currently uses the campaign's beat placement. Neither
+these host checks nor the prepared engine fixtures establish
 complete campaign or release acceptance.
