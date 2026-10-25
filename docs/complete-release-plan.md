@@ -11,6 +11,54 @@ production. Work runs in isolated worktrees, with a single coordinated Unreal
 and GPU rendering lane. The shared checkout is not a build or render workspace.
 The local coordination mailboxes record current ownership, commits and lane use.
 
+## October 25 horse treatment and canister runtime
+
+Exact `6750fa6` builds successfully in 27.92 seconds and runs all fourteen
+selected campaign tests to natural editor exit 3. Eleven pass; three fail,
+with five selected errors and zero warnings. Both horse-treatment tests pass,
+including held input, interruption, per-horse cooldowns and checkpoint retry.
+Canister blast damage, physical cover/radius exclusion and registered enemy
+credit pass, along with Foundry repair/deadline, hangar falls/spawn clearance,
+wind projectiles, both casting-channel tests and MarginCover.
+
+HangarCanisterShots fails during mapped walking. Its first waypoint is inside
+the gallery staircase; `9b54b44` routes around the foot and records actual
+positions. MarginLinger's new diagnostics show a real crouched blocker, console
+6, in front of the expected console 2. `af23810` approaches console 6 directly,
+retaining physical trace, damage, six-second pin and destruction assertions.
+Playthrough still assumes instant quarter-HP repairs at the generic anchor.
+`5550ddb` replaces that expectation with mapped two-second treatment beside
+the real horse, a cooldown rejection, and a fresh sixty-HP treatment. Seeded
+injuries, assisted enemy defeats and checkpoint failure remain explicit. All
+three corrections need an engine rerun; none is reported as passed.
+
+The initial `cdb425c` attempt failed before editor launch with two C++ errors:
+a local name shadowed the director's Horse field, and UE 5.8's TObjectPtr pawn
+return made a conditional expression ambiguous. `6750fa6` fixes these and a
+deprecated diagnostic call without changing gameplay. Independent source
+review agrees. Both failed-run archives remain intact. The root rehashed all
+twenty terminal-run files; source, native inputs, Config and Generated remained
+unchanged. Evidence: `horse-canister-cdb425c-runtime-attempt1`,
+`horse-canister-6750fa6-runtime-attempt1`,
+`horse-canister-6750fa6-root-review.json` and
+`compile-correction-6750fa6-independent` under the October 25 qualification
+folder. These are directed uncooked results, not ordinary full-game acceptance.
+
+Separate independent review authenticated the earlier ten-pass/one-fail run
+and all 36 SM6 plus 18 SM5 timber frames at `0c7961d`, rehashed the archives and
+viewed twelve originals. The capture readiness defect is closed for that
+source and saved asset set; timber remains visually unfinished. The optional
+editor dylib copy was unavailable during later rebuilding, so its archived
+exact-source receipt is retained without claiming preserved binary bytes.
+
+Claude now owns the engine/Blender slot for revised timber, skeletal yumi and
+hands. The first three reproduced yumi checker omissions are corrected in
+`ec5df08`; a separate degenerate-triangle distance error remains reported. New
+rig interpolation/socket/provenance source is still under review. Pod-arrival
+source and the horse-targeted grenadier remain in progress. Latest completed
+package is still `c655b6b`, production native bridge `10ad7dad`, and latest
+fully authenticated CI is still `dfbf1b9`. The release remains incomplete.
+
 ## October 25 shader readiness and encounter mechanics
 
 At exact `0c7961d`, the editor builds successfully and ten of eleven directed

@@ -8,6 +8,18 @@ remains a historical recovery record. This is a progress record, not a claim
 that the release is complete. Backward compatibility,
 legacy formats, aliases, and fallback decoders are prohibited.
 
+## 2026-10-25 horse treatment and canister runtime
+
+Exact `6750fa6` builds and finishes fourteen selected campaign tests: eleven
+pass and three fail, with five selected errors and zero warnings. Horse holds,
+cooldowns/retry and canister blast/credit pass. The shot fixture walks into the
+stairs; MarginLinger expects the wrong physical blocker; Playthrough retains
+an obsolete instant-repair expectation. Separate source corrections are
+integrated and await rerun. Original failures and unchanged input/content
+guards are preserved. The [current evidence and limits](complete-release-plan.md#october-25-horse-treatment-and-canister-runtime)
+include independent authentication of the earlier 54 timber frames, ongoing
+Claude art work, and still-missing release qualification.
+
 ## 2026-10-25 shader readiness and encounter mechanics
 
 Exact `0c7961d` passes ten of eleven directed encounter tests. Casting channels,
