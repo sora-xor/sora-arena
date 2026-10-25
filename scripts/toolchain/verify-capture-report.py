@@ -23,6 +23,9 @@ CODEX_SPEC.loader.exec_module(codex_capture_validation)
 NANITE_SPEC = importlib.util.spec_from_file_location("nanite_capture_validation", Path(__file__).with_name("nanite_capture_validation.py"))
 nanite_capture_validation = importlib.util.module_from_spec(NANITE_SPEC)
 NANITE_SPEC.loader.exec_module(nanite_capture_validation)
+PROBE_SPEC = importlib.util.spec_from_file_location("timber_probe_capture_validation", Path(__file__).with_name("timber_probe_capture_validation.py"))
+timber_probe_capture_validation = importlib.util.module_from_spec(PROBE_SPEC)
+PROBE_SPEC.loader.exec_module(timber_probe_capture_validation)
 
 
 CARGO_SPEC = importlib.util.spec_from_file_location("cargo_capture_validation", Path(__file__).with_name("cargo_capture_validation.py"))
@@ -243,6 +246,7 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
         "SORA_CARGO_FRAME": ("SoraCapture.Cargo.", cargo_capture_validation.SCOPE),
         "SORA_CODEX_FRAME": ("SoraCapture.Codex.", codex_capture_validation.SCOPE),
         "SORA_NANITE_DRAW_FRAME": ("SoraCapture.NaniteDraw.", nanite_capture_validation.SCOPE),
+        "SORA_TIMBER_PROBE_FRAME": ("SoraCapture.TimberProbe.", timber_probe_capture_validation.SCOPE),
     }
     # Failed automation replays captured log events through
     # LogAutomationController, appending " [log]". Those are not new frame
@@ -264,6 +268,7 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
     codex_sequences = {}
     cargo_sequences = {}
     nanite_sequences = {}
+    probe_sequences = {}
     seen = set()
     for marker, name in names:
         try:
@@ -312,6 +317,8 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
             codex_sequences.setdefault(path.parent, []).append((path, target, frame))
         if marker == "SORA_NANITE_DRAW_FRAME":
             nanite_sequences.setdefault(path.parent, []).append((path, target, frame))
+        if marker == "SORA_TIMBER_PROBE_FRAME":
+            probe_sequences.setdefault(path.parent, []).append((path, target, frame))
         frames.append(frame)
     if cargo_sequences:
         expected = [test.get("fullTestPath") for test in report.get("tests", [])
@@ -399,6 +406,43 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
                          pixel_review_sha256=hashlib.sha256(review.read_bytes()).hexdigest(), nanite_phase=path.stem)
         if result["errors"]:
             raise NaniteDrawEvidenceError("Nanite draw evidence: " + "; ".join(result["errors"]), frames)
+    expected_probe = [test.get("fullTestPath") for test in report.get("tests", [])
+                      if test.get("fullTestPath", "").startswith("SoraCapture.TimberProbe.")]
+    for folder, sequence in probe_sequences.items():
+        sidecar = (folder / "capture.json").resolve()
+        if sidecar.parent != folder or sidecar.stat().st_mtime_ns < max(start_ns, *(p.stat().st_mtime_ns for p, _, _ in sequence)):
+            raise NaniteDrawEvidenceError("stale/escaped timber probe metadata", frames)
+        raw = sidecar.read_bytes()
+        target = sequence[0][1].parent / "capture.json"
+        with target.open("xb") as stream:
+            stream.write(raw)
+        # Keep every original and its metadata even when provenance or actual
+        # visible-draw validation fails. Production Nanite rules stay separate.
+        try:
+            metadata = json.loads(raw)
+            actual_model = "sm6" if metadata.get("sm6_requested") is True else "sm5"
+            actual_test = "SoraCapture.TimberProbe." + actual_model.upper()
+            if len(probe_sequences) != 1 or expected_probe != [actual_test]:
+                raise ValueError("timber probe originals differ from requested tests")
+            if not report.get("devices") or any(d.get("renderMode", "").lower() != actual_model for d in report["devices"]):
+                raise ValueError("timber probe shader model differs from actual automation device")
+            identities = timber_probe_capture_validation.identities(metadata, project, (output / "source-commit.txt").read_text().strip())
+            result = timber_probe_capture_validation.inspect(metadata,
+                {p.name: destination.read_bytes() for p, destination, _ in sequence}, width, height, bow_capture_validation.rgb8)
+            result["provenance"] = identities
+        except (ValueError, KeyError, TypeError, AttributeError, OSError, subprocess.CalledProcessError) as error:
+            result = {"scope": timber_probe_capture_validation.SCOPE, "errors": [str(error)],
+                      "nanite_draw_evidence": False, "release_qualified": False}
+        review = target.with_name("pixel-review.json")
+        with review.open("x") as stream:
+            stream.write(json.dumps(result, indent=2) + "\n")
+        for path, _, frame in sequence:
+            frame.update(observations=str(target.relative_to(output)), observations_source=str(sidecar),
+                         observations_sha256=hashlib.sha256(raw).hexdigest(),
+                         pixel_review=str(review.relative_to(output)), pixel_review_sha256=hashlib.sha256(review.read_bytes()).hexdigest(),
+                         timber_probe_phase=path.stem)
+        if result["errors"]:
+            raise NaniteDrawEvidenceError("Timber probe evidence: " + "; ".join(result["errors"]), frames)
     for sequence in bow_sequences.values():
         bow_capture_validation.verify_sequence(sequence)
     if campaign_errors:

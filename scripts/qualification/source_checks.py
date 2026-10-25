@@ -130,6 +130,7 @@ def checks(python: str = sys.executable) -> list[Check]:
         ("capture-frame-contract", "scripts/toolchain/test_capture_frame_contract.py"),
         ("cargo-capture-evidence", "scripts/toolchain/test_cargo_capture.py"),
         ("nanite-draw-evidence", "scripts/toolchain/test_nanite_capture.py"),
+        ("timber-probe-evidence", "scripts/toolchain/test_timber_probe_capture.py"),
         ("dojo-nanite-import", "scripts/unreal/test_dojo_nanite.py"),
         ("dojo-timber-admission", "scripts/unreal/test_dojo_timber_admission.py"),
         ("dojo-timber-uv-roundtrip", "scripts/unreal/test_timber_uv_roundtrip.py"),
