@@ -42,6 +42,12 @@ strength (T_TimberRingRandom). Contrast fades where rings fall below a pixel.
 The normal is perturbed by the ring ridge and fibre height with screen-space
 derivatives (Mikkelsen's surface-gradient bump), over the baked normal on the
 fallback and the geometric normal on Nanite. Clear coat is the fuki-urushi.
+
+Interchange FBX imports every UV channel as (U, 1 - V). Recover the Blender
+values before interpreting UV0/2/3 as metric or log data, then convert each
+computed texture coordinate back to top-down V at sampling. Baked UV1 maps
+already use imported texture coordinates. This preserves the baseline ring
+wander; the v2 pilot's different ring model is not enabled here.
 """
 
 from __future__ import annotations
@@ -166,6 +172,16 @@ class Graph:
         self.link(b, e, "B")
         return e
 
+    def flip_v(self, uv):
+        # Both the FBX data decode and Blender-to-Unreal image coordinate
+        # conversion are (U, 1 - V). Do not wrap/clamp metric log payloads.
+        return self.append(self.mask(uv, "r"),
+                           self.one(unreal.MaterialExpressionOneMinus, self.mask(uv, "g")))
+
+    def sample_blender(self, tex, uv):
+        """Sample a shared PNG at a computed Blender (V-up) coordinate."""
+        return self.sample(tex, self.flip_v(uv))
+
     def sample(self, tex, uv, sampler=unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR, name=None):
         cls = unreal.MaterialExpressionTextureSampleParameter2D if name else unreal.MaterialExpressionTextureSample
         props = {"texture": tex, "sampler_type": sampler}
@@ -225,16 +241,17 @@ def timber_master(name, shared, fallback: bool):
     required_pins = {"BaseColor", "Roughness", "ClearCoat", "ClearCoatRoughness", "Normal"}
     require(required_pins <= set(lib.get_material_expression_input_names(attributes)),
             f"{name}: required timber material attributes are unavailable")
-    uvq = g.n(unreal.MaterialExpressionTextureCoordinate, coordinate_index=2)
+    uvq = g.flip_v(g.n(unreal.MaterialExpressionTextureCoordinate, coordinate_index=2))
     uvz = g.n(unreal.MaterialExpressionTextureCoordinate, coordinate_index=3)
-    seed = g.mask(uvz, "g")
+    seed = g.one(unreal.MaterialExpressionOneMinus, g.mask(uvz, "g"))
     # Fibres (R), streaks (G) and drift (B) from T_TimberFibre on UV0 (metres).
-    uv0 = g.n(unreal.MaterialExpressionTextureCoordinate, coordinate_index=0)
+    # Decode before scaling: flip_v(k * imported_uv) is not k * source_uv.
+    uv0 = g.flip_v(g.n(unreal.MaterialExpressionTextureCoordinate, coordinate_index=0))
     tile = g.scalar("FibreTileMeters", 0.25)
-    fibre = g.sample(shared["Fibre"], g.op(unreal.MaterialExpressionDivide, uv0, tile))
+    fibre = g.sample_blender(shared["Fibre"], g.op(unreal.MaterialExpressionDivide, uv0, tile))
     fib = g.mask(fibre, "r")
     streak = g.mask(fibre, "g")
-    drift = g.mask(g.sample(shared["Fibre"], g.op(unreal.MaterialExpressionMultiply, uv0, 0.11)), "b")
+    drift = g.mask(g.sample_blender(shared["Fibre"], g.op(unreal.MaterialExpressionMultiply, uv0, 0.11)), "b")
     # Fibres deviate: the ring radius wanders by a quarter millimetre.
     r = g.op(unreal.MaterialExpressionAdd, g.one(unreal.MaterialExpressionLength, uvq),
              g.op(unreal.MaterialExpressionMultiply, g.op(unreal.MaterialExpressionSubtract, streak, 0.5), 0.00025))
@@ -245,7 +262,7 @@ def timber_master(name, shared, fallback: bool):
     nu = g.op(unreal.MaterialExpressionAdd, g.op(unreal.MaterialExpressionDivide, r, six_w),
               g.op(unreal.MaterialExpressionMultiply, seed, 37.0))
     nv = g.one(unreal.MaterialExpressionFrac, g.op(unreal.MaterialExpressionMultiply, seed, 7.31))
-    var = g.mask(g.sample(shared["RingNoise"], g.append(nu, nv)), "r")
+    var = g.mask(g.sample_blender(shared["RingNoise"], g.append(nu, nv)), "r")
     phase = g.op(unreal.MaterialExpressionAdd, g.op(unreal.MaterialExpressionDivide, r, w),
                  g.op(unreal.MaterialExpressionMultiply, g.op(unreal.MaterialExpressionSubtract, var, 0.5), 3.0))
     f = g.one(unreal.MaterialExpressionFrac, phase)
@@ -253,7 +270,7 @@ def timber_master(name, shared, fallback: bool):
     yu = g.op(unreal.MaterialExpressionDivide, g.op(unreal.MaterialExpressionAdd, ring,
                                                      g.op(unreal.MaterialExpressionMultiply, seed, 101.0)), 256.0)
     yv = g.one(unreal.MaterialExpressionFrac, g.op(unreal.MaterialExpressionMultiply, seed, 3.7))
-    year = g.mask(g.sample(shared["RingRandom"], g.append(yu, yv)), "r")
+    year = g.mask(g.sample_blender(shared["RingRandom"], g.append(yu, yv)), "r")
     one = g.const(1.0)
     onset = g.op(unreal.MaterialExpressionSubtract, one, lwf)
     late = g.smooth(g.op(unreal.MaterialExpressionSubtract, onset, 0.07), g.op(unreal.MaterialExpressionAdd, onset, 0.03), f)
