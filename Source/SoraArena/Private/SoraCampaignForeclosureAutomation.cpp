@@ -250,6 +250,7 @@ bool FSoraCampaignCollectorSheathingTest::RunTest(const FString& Parameters)
             W.LookAt(Boss->GetActorLocation()); if(!W.Tick(2)) return false;
             if(State==2&&(!W.Press(Sheathe)||!Until([&]() { return Kit->IsSheathed(); },120))) return false;
             const float BeforeDamage=Damage; const int32 BeforeParries=Parries;
+            DamagedWhileSheathing=false;
             if(!TestTrue(TEXT("The real foreclosure starts"),Boss->ForceAttack(TEXT("amort_final_foreclosure")))||
                 !Until([&]() { return Boss->IsBossTelegraphing(); },180)) return false;
             if(State==1)
