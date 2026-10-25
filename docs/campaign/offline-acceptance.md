@@ -1,5 +1,10 @@
 # Offline campaign progression acceptance
 
+The later `57ce095` art diagnostic establishes saved timber readback and
+frame-matched exposure observations in SM5 and SM6; it does not add campaign
+playthrough acceptance. Visual defects and the remaining full-release work are
+tracked in the [current art checkpoint](../complete-release-plan.md#october-25-saved-timber-probe-and-measured-exposure).
+
 At exact `e37e5ae`, both SM6 720p and 1080p combined captures pass all twelve
 selected tests with zero selected errors/warnings. All 34 originals per run
 were independently inspected. The complete Tarifa panel, BowDraw, three stealth

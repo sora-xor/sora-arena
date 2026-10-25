@@ -8,6 +8,19 @@ remains a historical recovery record. This is a progress record, not a claim
 that the release is complete. Backward compatibility,
 legacy formats, aliases, and fallback decoders are prohibited.
 
+## 2026-10-25 timber persistence and exposure observations
+
+Exact `57ce095` passes a nine-mesh isolated import and fresh-process saved
+readback, 38 local asset/tooling gates and 90 authenticated CI source gates.
+Its six-view SM6 and SM5 ArtReview runs both pass with frame-matched exposure
+records; all twelve originals still fail visual acceptance. The observed
+minimum exposure bound is not active, and SM5 West_Back remains visibly darker.
+The newer UV correction `cd10643` has CPU regression coverage but has not been
+applied to saved probe assets. Claude's first six-member relief pilot is also
+visually rejected and preserved for correction. See the
+[exact checkpoint](complete-release-plan.md#october-25-saved-timber-probe-and-measured-exposure)
+for sources, results and limits. No new package or completed release is claimed.
+
 ## 2026-10-25 current HUD and art checkpoint
 
 At exact `e37e5ae`, all twelve selected SM6 capture tests pass at both 720p and

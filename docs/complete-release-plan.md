@@ -11,6 +11,53 @@ production. Work runs in isolated worktrees, with a single coordinated Unreal
 and GPU rendering lane. The shared checkout is not a build or render workspace.
 The local coordination mailboxes record current ownership, commits and lane use.
 
+## October 25 saved timber probe and measured exposure
+
+At exact signed `57ce095`, the bounded timber import passes for nine meshes:
+five with built Nanite resource inputs (1,245,236 source triangles) and four
+conventional pool meshes (124,868 LOD0 triangles). A fresh Unreal process
+reopens all nine meshes, nine material instances, two masters and eleven
+textures with no reported differences. All 31 probe packages and all 1,151
+production Generated files remain unchanged during readback. Both processes
+reach natural EOF without a resource breach. This is saved-asset acceptance,
+not actual Nanite draw or visual acceptance. The four earlier failed import
+attempts and the 19 startup `Condition failed` diagnostics are retained.
+Evidence: `timber-baseline-probe-attempt5/` and
+`timber-baseline-reopen-attempt1/` under `Saved/Qualification/2026-10-25/`.
+
+At the same source, ordinary six-view 1280×720 ArtReview captures pass separately
+on M2 Ultra Metal SM6 and SM5, with zero selected errors/warnings. All twelve
+originals were inspected; each has a valid frame-matched GPU exposure record.
+At every screenshot, metered average luminance (0.00787–0.02113) exceeds the
+legacy minimum average (0.0054), and target exposure matches the unclamped
+formula. Lowering that minimum is not supported as a fix for these views.
+All screenshot current/target gaps are below 0.05 stops, but Kamiza fails the
+preceding-30-frame criterion and SM5 Ceiling has only 26 observations. Full
+exposure/GI/streaming convergence is not established. Production lighting and
+generated assets are unchanged. The records are in
+`eye-adaptation-sm6-baseline-attempt1/`, `eye-adaptation-sm5-baseline-attempt1/`
+and `eye-adaptation-diagnostic/baseline-57ce095-exposure-review.json`.
+
+Visual acceptance still fails: orange surfaces, bright panes/lamp glare, dark
+characters, repeated ceiling marks, old boxes and red cylinders remain. The
+SM5 West_Back median is 0.60 display stops below SM6 and its right-wall window
+appearance differs; other paired medians differ by at most 0.12 stops. These
+captures use the existing generated kit, not the isolated timber probe, and
+do not qualify M1. Claude's six-member v2 Blender pilot also remains visually
+rejected after review of all fifteen originals: stepped cracks, knot kinks,
+glossy bands and rounded adze dimples require correction. Its first output is
+preserved under `timber-v2-pilot-original-review/`; no bulk v2 import is admitted.
+
+All 38 local asset/tooling gates pass at `57ce095`. Authenticated CI
+`40155065706` passes all 90 source gates in five jobs at that exact source,
+including 279 Rust tests and five explicit ignores; the tested merge tree
+matches the source tree. Newer UV correction `cd10643` restores metric/log UV
+data and image sampling after Interchange's V flip, preserving baked UV1 and
+the frozen ring model. Its new source gate and 47 focused tests pass; current
+saved probe assets have not been regenerated with that correction. Exact CI
+artifacts are under `ci-57ce095/`. The latest package remains `c655b6b` and the
+production native bridge `10ad7dad`; all other release requirements stay open.
+
 ## October 25 HUD corrections and resumed art work
 
 At exact `e37e5ae`, both SM6 1280×720 and 1920×1080 combined captures pass all
