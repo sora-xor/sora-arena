@@ -2,9 +2,9 @@
 
 **Status:**
 
-- Root accepted this order (Codex, 2026-10-25 16:43 UTC). It is **not
-  started**. It runs only after root's explicit handback of the UE/Blender
-  lane.
+- Root accepted this order (Codex, 2026-10-25 16:43 UTC). It **started** at
+  root's explicit handback of the UE/Blender lane (2026-10-25, step 1 at
+  17:59 UTC). Each step's evidence is in the mailbox.
 - It runs from the art worktree (`claude/photoreal-art`), never the shared
   checkout.
 - One job at a time. At the start of each step, post its command, PID and log
@@ -48,14 +48,20 @@ root's review of the originals, never a ledger's.
    - `B scripts/art/render_timber_patch_study.py -- --cpu --raw /Users/mtakemiya/.codex/worktrees/complete-game/sora-arena/Local/ThirdPartyRaw`
    - Marker `PATCH_STUDY_READY`. It writes `Local/ArtCache/NyaagyuDojoTimbersV23Patch/attempt<N>/`, created exclusively, so no archive is needed.
    - **Check:** view both contact sheets and every panel. `study.json` must hold both variants' measurements beside the scans'. The EXR normal-map read must pass its unit-normal check, or the study stops (that is a result, not a retry).
+   - **Done (attempt 0, kept unchanged).** Its render slopes were 1000 times their value: Cycles' camera space looks along +z, and the study divided by +z clamped at 1e-3. `7b38f6e` fixed the decode (`camera_normal_slope.py`, tested); `--reanalyse` recomputed the slopes from attempt 0's retained renders into `attempt0_reanalysis0/`, rendering nothing. No timber production batch follows from an unreviewed metric.
 2. **W18 static rebuild** (Blender).
    - **The raw CC0 inputs.** The weapon library reads them only at `Local/ThirdPartyRaw/cc0` (`create_runtime_weapon_lib.cc0`).
      - Nine of W18's sixteen were missing from this worktree. They are **copied** into its ignored `Local/ThirdPartyRaw`, relative paths kept (Codex authorized this, 2026-10-25; a symlink would not make root's cache read-only).
      - All sixteen were verified against the ledger before and after the copy. The receipt is `Saved/W18Rebuild/raw_inputs_copy.json`.
      - The copies stay through step 5's final ledger and check.
    - Before the build, `PY scripts/art/record_runtime_weapon.py --weapon 18 --preflight` must print `RECORD_PREFLIGHT_OK`. It did on 2026-10-25, after the copy.
-   - **Archive** `Content/SourceArt/Weapons/Runtime/W18_Yumi/{*.fbx,*.blend,T_Weapon_18_*.png,build_record.json}` and `Runtime/Renders/SM_Weapon_18*.png`.
+   - **Archive** `Content/SourceArt/Weapons/Runtime/W18_Yumi/{*.fbx,*.blend,T_Weapon_18_*.png,build_record.json}`, `Runtime/Renders/SM_Weapon_18*.png` and `Runtime/metric_report.json`. Hash the whole `Runtime/` tree too.
    - `B scripts/art/create_runtime_weapon_yumi.py -- --only 18`, then `B scripts/art/create_runtime_weapon_validation.py -- --only 18`. These are the two Blender jobs `create_runtime_weapon_build_all.py --only 18` runs, without its manifest rewrite, which would re-record every weapon (root's decision B, below).
+   - **The validation's exit, and the scoped W18 gate** (root's rule, below):
+     - The validator rewrites the whole `metric_report.json`. It exits from the summary of every row, and the four blockout rows fail, so it exits 1 whatever W18 does. That exit and the full report are kept and reported as they are.
+     - **Separately**, after archiving the rewritten report: `PY scripts/art/check_scoped_validation.py --weapon 18 --expected-failures 3,11,13,16 --before <the archived report> --after Content/SourceArt/Weapons/Runtime/metric_report.json --log Saved/W18Rebuild/s2_validate.log --validator-exit <its real exit> --out Saved/W18Rebuild/s2_scoped_validation.json` must print `SCOPED_VALIDATION_OK`. It checks that W18 passes every check, that the failing rows are exactly 03/11/13/16 before and after, that every other row is byte-identical, that the summary keeps its counts, and that the exit is what the summary implies (`test_check_scoped_validation`).
+     - The `Runtime/` tree after: only W18's static outputs, its three renders, an ignored `*.blend1` and `metric_report.json` may differ.
+     - Any new failure, or any unrelated change, stops the sequence.
    - **Check:**
      - LOD0 under the 80,000-triangle budget (it was 61,556; the new strip adds about 7,000);
      - the spec checks pass (length, grip ratio, brace, arrow length), and `Nigiri` still names the grip part;
@@ -80,6 +86,11 @@ root's review of the originals, never a ledger's.
        - It replaces only W18's scope in the runtime-weapons manifest: its static outputs (not `Rig/`, which keeps its own ledger, nor `*.blend1`) and its renders.
        - Every other weapon's entry is kept exactly, stale or not (`test_record_runtime_weapon`).
        - It records W18's generators and derived inputs by SHA-256, as OWN provenance, not admission.
+     - **The metric report's ledger entry** (an explicit W18-scoped exception):
+       - The runtime-weapons manifest records `metric_report.json`'s bytes and hash. That one global metadata record changes only because W18's row and the summary did.
+       - It is updated only with the scoped gate passing again, on the archived report before step 2 and the file now. The scoped update records the before and after.
+       - No other weapon's entry or output is refreshed.
+       - At integration, root applies the same reviewed W18 row and summary to root's validated baseline, and updates that one hash.
      - **The rig:** regenerate `W18_Yumi/Rig/manifest.ledger.json` (`scripts/assets/write_own_ledger.py`, its original arguments, after the rebuilt files are staged).
      - **Never** run `create_runtime_weapon_build_all.py` or `--manifests-only`. They re-record every weapon.
      - **Validate:** `scripts/assets/validate_asset_ledger.py` before and after. The only errors that may go are W18's; none may be added.
@@ -121,3 +132,20 @@ root's review of the originals, never a ledger's.
   is not a replacement for it.
 - **Either way:** the blockout weapons' tracked renders (03, 11, 13, 16)
   stay unrecorded here, by the manifest's own rule.
+
+## Root's rule for the targeted validation (Codex, 2026-10-25)
+
+- **The real exit stays.** `--only 18` returns 1 from the accumulated
+  summary. That exit and the full report are kept, archived before and
+  after, and never reported as a pass.
+- **The narrow expected-baseline exception** gates the new W18 row
+  separately. It holds **only if** W18 passes every check, the four
+  blockout failures are exactly the unchanged pre-run failures (03, 11, 13,
+  16), and every other weapon record stays byte-identical. Any new failure or
+  unrelated record change stops the sequence.
+- **The report's metadata** may change only in W18's row and its summary.
+  Its ledger hash in the runtime-weapons manifest is the one W18-scoped
+  metadata exception, with a before/after comparison. No other weapon output
+  is refreshed.
+- **At integration** root applies the same reviewed W18 row and summary to
+  root's validated baseline, and updates that single metadata hash.
