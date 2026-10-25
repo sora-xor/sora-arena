@@ -331,6 +331,11 @@ class TimberMaterialInputs(unittest.TestCase):
                 if name.startswith("MaterialExpression"):
                     return name
                 raise AttributeError(name)
+        class CustomInput:
+            def __init__(self):
+                self.props = {}
+            def set_editor_property(self, key, value):
+                self.props[key] = value
         unreal = PublicUnreal(
             MaterialProperty=SimpleNamespace(MP_BASE_COLOR="BaseColor", MP_ROUGHNESS="Roughness",
                                              MP_NORMAL="Normal", MP_MATERIAL_ATTRIBUTES="Attributes"),
@@ -340,7 +345,7 @@ class TimberMaterialInputs(unittest.TestCase):
             MaterialVectorCoordTransform=SimpleNamespace(TRANSFORM_WORLD="world"),
             WorldPositionIncludedOffsets=SimpleNamespace(WPT_CAMERA_RELATIVE_NO_OFFSETS="camera_relative"),
             CustomMaterialOutputType=SimpleNamespace(CMOT_FLOAT3="float3"),
-            CustomInput=lambda **kwargs: kwargs, LinearColor=lambda *args: args)
+            CustomInput=CustomInput, LinearColor=lambda *args: args)
         material, nodes, outputs = Node("material"), [], []
         def create(material, kind, x, y):
             node = Node(kind); nodes.append(node); return node
@@ -385,6 +390,7 @@ class TimberMaterialInputs(unittest.TestCase):
                 self.assertEqual(params["ClearCoatRoughness"].props["default_value"], 0.17)
                 normal = attributes.inputs["Normal"][0]
                 self.assertEqual(normal.kind, "MaterialExpressionCustom")
+                self.assertEqual([item.props["input_name"] for item in normal.props["inputs"]], ["P", "H", "N"])
                 self.assertEqual(set(normal.inputs), {"P", "H", "N"})
                 self.assertEqual("NormalMap" in params, fallback)
                 self.assertEqual("MasksMap" in params, fallback)

@@ -331,10 +331,14 @@ def timber_master(name, shared, fallback: bool):
         normal_in = g.n(unreal.MaterialExpressionVertexNormalWS)
     pos = g.n(unreal.MaterialExpressionWorldPosition,
               world_position_shader_offset=unreal.WorldPositionIncludedOffsets.WPT_CAMERA_RELATIVE_NO_OFFSETS)
+    # CustomInput is a reflected struct with no Python constructor arguments.
+    inputs = []
+    for name in ("P", "H", "N"):
+        item = unreal.CustomInput()
+        item.set_editor_property("input_name", name)
+        inputs.append(item)
     bump = g.n(unreal.MaterialExpressionCustom, code=BUMP_HLSL, output_type=unreal.CustomMaterialOutputType.CMOT_FLOAT3,
-               description="SurfaceGradientBump",
-               inputs=[unreal.CustomInput(input_name="P"), unreal.CustomInput(input_name="H"),
-                       unreal.CustomInput(input_name="N")])
+               description="SurfaceGradientBump", inputs=inputs)
     g.link(pos, bump, "P")
     g.link(height_cm, bump, "H")
     g.link(normal_in, bump, "N")
