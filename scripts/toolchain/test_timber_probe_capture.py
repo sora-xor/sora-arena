@@ -23,6 +23,10 @@ def metadata(sm6=True):
             "sm6_requested": sm6, "nanite_eligible": sm6, "shader_platform": "METAL_SM6" if sm6 else "METAL_SM5",
             "rhi": "Metal", "adapter": "synthetic, not hardware evidence", "null_rhi": False,
             "viewport": [WIDTH, HEIGHT], "fixture_origin": [1000000]*3, "meshes": [], "frames": []}
+    control = {"screen_percentage": 75, "flags": 0x02000000, "set_by": "Scalability",
+               "dynamic_resolution_status": "Disabled", "test_interface_override": 0}
+    meta['original_resolution_control'] = control
+    meta['restored_resolution_control'] = copy.deepcopy(control)
     for i, name in enumerate(P.NAMES):
         dense = i < 5
         textures = {} if dense else {param: P.object_path("Textures/T_" + name.removeprefix("SM_") + "_" + suffix)
@@ -43,6 +47,9 @@ def metadata(sm6=True):
                 "request_frame": len(meta["frames"])*100+10, "screenshot_processed_frame": len(meta["frames"])*100+11,
                 "final_view_observations": 1, "final_view_frame": len(meta["frames"])*100+11,
                 "final_post_process": copy.deepcopy(P.FINAL_POST_PROCESS), "final_show_flags": dict.fromkeys(P.EXCLUDED_SHOW_FLAGS, False),
+                "final_resolution": {**control, "screen_percentage": 100, "primary_fraction_upper_bound": 1,
+                                     "secondary_fraction": 1, "screen_percentage_show_flag": True,
+                                     "unscaled_view_rect": [0, 0, WIDTH, HEIGHT]},
                 "active_visualization": mode if mode != 'Lit' else 'None', "active_mode_id": 1 if mode != 'Lit' else -1,
                 "material_render_readback": {"proxy_present": True, "shader_map_valid": True, "shader_map_complete": True,
                                              "used_fallback_proxy": False, "default_material": False, "resource_asset": "M_SoraTimber"},
@@ -187,6 +194,24 @@ class ProbeEvidence(unittest.TestCase):
         declaration = source.split('const TCHAR* Names[]={', 1)[1].split('};', 1)[0]
         self.assertEqual(tuple(re.findall(r'TEXT\("([^"\n]+)"\)', declaration)), P.NAMES)
         self.assertIn(P.SCHEMA, source); self.assertIn(P.SCOPE, source)
+
+    def test_100_cvar_cannot_hide_dynamic_secondary_or_wrong_final_view_scaling(self):
+        for sm6 in (False, True):
+            for field, value in (('screen_percentage', 75), ('dynamic_resolution_status', 'Enabled'),
+                    ('dynamic_resolution_status', 'Paused'), ('dynamic_resolution_status', 'DebugForceEnabled'),
+                    ('test_interface_override', 1), ('primary_fraction_upper_bound', .75), ('primary_fraction_upper_bound', float('nan')),
+                    ('secondary_fraction', .5), ('unscaled_view_rect', [0, 0, WIDTH-1, HEIGHT]),
+                    ('set_by', 'Console'), ('flags', 0x10000000)):
+                with self.subTest(sm6=sm6, field=field, value=value):
+                    meta = metadata(sm6); meta['frames'][-1]['final_resolution'][field] = value
+                    with self.assertRaises(ValueError): self.inspect(meta)
+            meta = metadata(sm6); meta['frames'][-1].pop('final_resolution')
+            with self.assertRaises(ValueError): self.inspect(meta)
+
+    def test_resolution_value_and_priority_must_both_restore(self):
+        for field, value in (('screen_percentage', 100), ('flags', 0x10000000), ('set_by', 'Console')):
+            meta = metadata(); meta['restored_resolution_control'][field] = value
+            with self.assertRaises(ValueError): self.inspect(meta)
 
 
 class ProvenanceAndTransport(unittest.TestCase):
