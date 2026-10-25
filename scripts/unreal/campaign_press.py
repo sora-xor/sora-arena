@@ -65,7 +65,7 @@ def place_press_hall(beats, records, zones, pickups, fail):
         record['entry'] = hall['catwalk']['ladder_top_cm'] + [-90]
         record['objectives'] = [hall['presses'][i]['work_cm'][:] for i in MASTERS] + [[x+4000, y+200]]
         record['anchor'] = [x+3500, y+800]
-        record['exit'] = {'center': [x+4000, y+200], 'size': [300, 300]}
+        record['exit'] = {'center': [x+4000, y+200], 'size': [300, 300], 'floor_cm': 0}
         zone.cover = []  # The eight runtime machine frames own their collision.
         zone.props = []
         record['spawns'] = [[x+500,y+260], [x+3000,y+1660], [x+1000,y+850],
@@ -76,9 +76,9 @@ def place_press_hall(beats, records, zones, pickups, fail):
         record['fieldcraft']['lamps'] = die_lamps(hall)
         for volume in record['volumes']:
             if volume['event'] == 'volume_enter:vol_press_floor':
-                volume.update(center=[x+2100,y+1200], size=[4000,2200])
+                volume.update(center=[x+2100,y+1200], size=[4000,2200], floor_cm=0)
             elif volume['event'] == 'volume_enter:vol_press_binding':
-                volume.update(center=[x+3600,y+250], size=[800,300])
+                volume.update(center=[x+3600,y+250], size=[800,300], floor_cm=0)
         for pickup in pickups:
             if pickup['collectible'] == 'ch06.c06':
                 pickup['at'] = [x+3600,y+250]
@@ -100,6 +100,10 @@ def press_hall_valid(chapter):
                     or not same(record['entry'],expected['catwalk']['ladder_top_cm']+[-90])
                     or not same(record['objectives'],[expected['presses'][i]['work_cm'] for i in MASTERS]+[[x+4000,y+200]])
                     or not same(record['fieldcraft']['lamps'],die_lamps(expected))
+                    or not same(record['exit'],{'center':[x+4000,y+200],'size':[300,300],'floor_cm':0})
+                    or not same(record['volumes'],[
+                        {'event':'volume_enter:vol_press_floor','center':[x+2100,y+1200],'size':[4000,2200],'floor_cm':0},
+                        {'event':'volume_enter:vol_press_binding','center':[x+3600,y+250],'size':[800,300],'floor_cm':0}])
                     or zone['cover'] or record['height_cm'] != 0):
                 return False
         return True

@@ -1816,7 +1816,7 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
     case SoraBeatRules::EGoal::Objectives:
     {
         const int32 Objective=NearestOf(Space.Objectives,[&](int32 Index) { return (TaskState.PointsMask&(1u<<Index))==0u; });
-        if(Space.PressHall.bEnabled&&Objective>=0&&Objective<3&&
+        if(Space.PressHall.bEnabled&&Objective>=0&&
             (!USoraFieldcraft::Get(this)||!USoraFieldcraft::Get(this)->CanWorkPress(Objective))) return;
         // An objective with a hold (a charge planted, a relay node pulled) is
         // worked with Interact held; the hold fills in TickHeldWork.

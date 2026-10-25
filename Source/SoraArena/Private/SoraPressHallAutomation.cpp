@@ -23,6 +23,12 @@ void FloorFixture(FBeatWorld& W,const FVector& At,float Yaw=0)
     W.Hero()->SetActorLocation(FVector(At.X,At.Y,W.Hero()->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2),false,nullptr,ETeleportType::TeleportPhysics);
     W.Look(FRotator(0,Yaw,0));
 }
+bool WaitForPressDialogue(FBeatWorld& W)
+{
+    for(int I=0;I<1800&&W.Campaign()->IsDialogueBlocking();++I)
+        if(!W.Tick(1)) return false;
+    return W.Test.TestFalse(TEXT("Authored press dialogue releases control without being skipped"),W.Campaign()->IsDialogueBlocking());
+}
 void FreezeGuards(FBeatWorld& W)
 {
     for(TActorIterator<ASoraEnemy> It(W.World->GetTestWorld());It;++It)
@@ -104,7 +110,7 @@ bool FSoraPressHallTest::RunTest(const FString& Parameters)
     if(!TestTrue(TEXT("Interact can be rebound in the menu"),W.Hero()->RemapCombatAction(TEXT("Interact"),EKeys::G))||
         !W.Press(EKeys::Escape)) return false;
     const FVector Work(Space.Objectives[0],0); FloorFixture(W,Work,90);
-    if(!W.Tick(2)||!TestTrue(TEXT("The master handle is unobstructed and grounded"),Craft->CanWorkPress(0))) return false;
+    if(!W.Tick(2)||!WaitForPressDialogue(W)||!TestTrue(TEXT("The master handle is unobstructed and grounded"),Craft->CanWorkPress(0))) return false;
     if(!W.Hold(EKeys::E,270)) return false;
     TestEqual(TEXT("The old binding cannot jam a press"),C->TaskProgress().Done,0);
     if(!W.Hold(EKeys::G,120)) return false;
@@ -152,6 +158,7 @@ bool FSoraPressInspectionTest::RunTest(const FString& Parameters)
     auto* Brain=Cast<ASoraEnemyController>(Auditor->GetController());
     if(!TestNotNull(TEXT("The inspector has its real navigation controller"),Brain)) return false;
     FloorFixture(W,FVector(W.BeatData().Space.Entry,0));
+    if(!W.Tick(2)||!WaitForPressDialogue(W)) return false;
     AActor* Barrier=Block(W,Work+FVector(0,0,150),FVector(150,150,150));
     if(!TestNotNull(TEXT("The inspection path obstruction spawns"),Barrier)) return false;
     Craft->JamPress(0);
@@ -290,7 +297,7 @@ bool FSoraPressReloadTest::RunTest(const FString& Parameters)
     W.Harden(); FreezeGuards(W);
     if(!TestTrue(TEXT("Mapped Interact is available"),W.Hero()->RemapCombatAction(TEXT("Interact"),EKeys::G))) return false;
     FloorFixture(W,FVector(W.BeatData().Space.Objectives[0],0),90);
-    if(!W.Tick(2)||!W.Hold(EKeys::G,270)) return false;
+    if(!W.Tick(2)||!WaitForPressDialogue(W)||!W.Hold(EKeys::G,270)||!WaitForPressDialogue(W)) return false;
     if(!TestTrue(TEXT("The original world has one jam and an unfinished inspection"),
         W.Campaign()->TaskProgress().Done==1&&!W.Fieldcraft()->PressRunning(1)&&
         !W.Fieldcraft()->PressInspectionArrived(0))) return false;
@@ -366,7 +373,7 @@ bool FSoraPressCatwalkTest::RunTest(const FString& Parameters)
     TestFalse(TEXT("Jump again releases even an obstructed ladder"),Craft->IsOnLadder());
     TestFalse(TEXT("Release restores gravity"),Player->GetCharacterMovement()->IsFlying());
     Barrier->Destroy();
-    if(!W.Tick(90)||!TestTrue(TEXT("The released hero lands at the ladder foot"),FVector::Dist(Feet(*Player),Foot)<5.f)) return false;
+    if(!W.Tick(90)||!WaitForPressDialogue(W)||!TestTrue(TEXT("The released hero lands at the ladder foot"),FVector::Dist(Feet(*Player),Foot)<5.f)) return false;
     W.Look(FRotator(0,90,0));
     if(!W.Press(EKeys::J)||!TestTrue(TEXT("The floor endpoint admits the upward climb"),Craft->IsOnLadder())) return false;
     float LargestStep=0;
@@ -386,6 +393,7 @@ bool FSoraPressCatwalkTest::RunTest(const FString& Parameters)
     if(!W.Tick(5)) return false;
     TestTrue(TEXT("The unobstructed return reaches the floor through the same ladder"),
         !Craft->IsOnLadder()&&FVector::Dist(Feet(*Player),Foot)<5.f&&W.Raised(TEXT("ladder_foot:press_nw")));
+    if(!WaitForPressDialogue(W)) return false;
     W.Look(FRotator(0,90,0));
     if(!W.Press(EKeys::J)||!W.Tick(90)) return false;
     FBeatWorld::Hurt(*Player,Player->Health+1000.f);
@@ -433,6 +441,47 @@ bool FSoraPressCatwalkPatrolTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("The real patrol reaches all four sides instead of skipping blocked goals"),Reached[0]&&Reached[1]&&Reached[2]&&Reached[3]);
     TestTrue(TEXT("The walker remains supported at catwalk height throughout the circuit"),Supported);
     AddInfo(TEXT("Directed real navigation with this enforcer's sight/hearing disabled. This does not qualify authored auditor/drone cadence or ordinary combat."));
+    return !HasAnyErrors();
+}
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraPressExitTest,"SoraArena.Campaign.PressExit",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraPressExitTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;
+    using namespace SoraPressAutomation;
+    if(!FSoraCatalog::Get().Load()) return false;
+    FBeatWorld W(*this,TEXT("PressExit"),5,10);
+    if(!W.Start()) return false;
+    W.Harden(); FreezeGuards(W);
+    const auto& Space=W.BeatData().Space;
+    auto* Craft=W.Fieldcraft(); auto* C=W.Campaign();
+    const FVector Exit(Space.Objectives[3],0);
+    if(!TestTrue(TEXT("Mapped Interact is available"),W.Hero()->RemapCombatAction(TEXT("Interact"),EKeys::G))) return false;
+    FloorFixture(W,Exit);
+    if(!W.Tick(5)||!WaitForPressDialogue(W)||!W.Press(EKeys::G)) return false;
+    TestEqual(TEXT("Visiting the lift early cannot pre-credit the exit"),C->TaskProgress().Done,0);
+    for(int I=0;I<3;++I)
+    {
+        FloorFixture(W,FVector(Space.Objectives[I],0),90);
+        if(!W.Tick(5)||!WaitForPressDialogue(W)||!W.Hold(EKeys::G,270)||!WaitForPressDialogue(W)) return false;
+        if(!TestEqual(TEXT("Each real held jam counts once before exit"),C->TaskProgress().Done,I+1)) return false;
+    }
+    // Deliberate negative-fixture placement on the south deck above the lift.
+    // PressCatwalk separately establishes actual input traversal to the deck.
+    auto* Player=W.Hero();
+    Player->GetCharacterMovement()->StopMovementImmediately();
+    Player->SetActorLocation(Exit+FVector(0,-140,402+Player->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()));
+    W.Look(FRotator(0,90,0));
+    if(!W.Tick(5)||!TestTrue(TEXT("The negative fixture is supported on the deck above the lift"),FMath::Abs(Feet(*Player).Z-400.f)<5.f)||
+        !W.Press(EKeys::G)) return false;
+    TestTrue(TEXT("All jams done still cannot exit from the catwalk above the lift"),C->ActiveBeat()==10&&C->TaskProgress().Done==3&&!Craft->CanWorkPress(3));
+    TestFalse(TEXT("The lift exit volume excludes the catwalk"),Space.Exit.Contains(Player->GetActorLocation()));
+    for(const auto& Volume:Space.Volumes)
+        TestFalse(TEXT("Floor dialogue volumes exclude the catwalk layer"),Volume.Contains(FVector(Volume.Center,488)));
+    FloorFixture(W,Exit);
+    if(!W.Tick(5)||!WaitForPressDialogue(W)||!W.Press(EKeys::G)||!W.Tick(2)) return false;
+    TestTrue(TEXT("Returning to the actual floor lift completes the beat"),C->ActiveBeat()!=10||W.Mode()->bChapterComplete);
+    AddInfo(TEXT("Directed real input for early-exit refusal, three holds, elevated refusal and floor exit. Positioning is assisted and guards frozen; not ordinary traversal or difficulty acceptance."));
     return !HasAnyErrors();
 }
 #endif

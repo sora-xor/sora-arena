@@ -54,8 +54,15 @@ The source fixtures cover these assertions, including retry during a climb
 and a living enforcer following all four sides with senses isolated. None of
 these traversal or navigation results has yet been observed in Unreal.
 
+Floor chatter and the lift exit now carry an explicit floor-height bound.
+The exit cannot be pre-credited while a master is still running, or activated
+from the catwalk above it after the jams. A prepared `PressExit` fixture uses
+real held input for all three masters, rejects an early lift visit and an
+elevated attempt, and requires returning to the floor to finish. Its positions
+are assisted; it has not run in Unreal.
+
 The source includes integer rule tests for exact window boundaries, long
-intervals, 30/60/144 Hz partitions and independent master state. Eight Python
+intervals, 30/60/144 Hz partitions and independent master state. Nine Python
 contract tests pass, including malformed numbers, reordered or missing
 machines, altered authored rules and footprint clearance at work/patrol
 points. Campaign generation and the existing schema validator pass all 133
@@ -66,8 +73,8 @@ later zones and failing the existing climb/flood baseline. The correction
 extends the hall six metres into its existing thirty-metre gap, preserving
 all other zone coordinates. Four host-only moat checks (including the
 unchanged baseline) and the six press contract checks pass on the corrected
-data. Seven engine fixtures (`PressHall`, `PressInspection`, `PressNoiseEmission`,
-`PressDieLamps`, `PressCheckpointReload`, `PressCatwalk`, `PressCatwalkPatrol`)
+data. Eight engine fixtures (`PressHall`, `PressInspection`, `PressNoiseEmission`,
+`PressDieLamps`, `PressCheckpointReload`, `PressCatwalk`, `PressCatwalkPatrol`, `PressExit`)
 are prepared and remain unrun.
 The reload fixture saves after an actual held jam and a swept arrow impact,
 destroys the test world, and resumes the same save in a new world. It requires

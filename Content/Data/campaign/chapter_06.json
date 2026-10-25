@@ -11898,7 +11898,8 @@
       "size": [
        4000,
        2200
-      ]
+      ],
+      "floor_cm": 0
      },
      {
       "event": "volume_enter:vol_press_binding",
@@ -11909,7 +11910,8 @@
       "size": [
        800,
        300
-      ]
+      ],
+      "floor_cm": 0
      }
     ],
     "exit": {
@@ -11920,7 +11922,8 @@
      "size": [
       300,
       300
-     ]
+     ],
+     "floor_cm": 0
     },
     "closing": null,
     "spawns": [

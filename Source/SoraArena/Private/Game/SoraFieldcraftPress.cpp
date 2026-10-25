@@ -41,13 +41,18 @@ int32 USoraFieldcraft::PressMaskedMs(const FVector& Origin,int32 IntervalMs) con
 }
 bool USoraFieldcraft::CanWorkPress(int32 Objective) const
 {
-    if(!PressHall||Objective==3) return true;
+    if(!PressHall) return true;
     ASoraPlayerCharacter* Player=Hero();
-    if(Objective<0||Objective>=3||!Player||!Player->GetCharacterMovement()->IsMovingOnGround()) return false;
+    if(Objective<0||Objective>3||!Player||!Player->GetCharacterMovement()->IsMovingOnGround()) return false;
+    const float FeetZ=Player->GetActorLocation().Z-Player->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+    if(FMath::Abs(FeetZ)>120.f) return false;
+    if(Objective==3)
+    {
+        for(int I:Press::Master) if(PressRunning(I)) return false;
+        return FVector::Dist2D(Player->GetActorLocation(),FVector(PressHall->Origin+FVector2D(4000,200),0))<=SoraCampaignReach::Interact;
+    }
     const FVector Center=PressCenter(Press::Master[Objective]);
     if(FVector::Dist2D(Player->GetActorLocation(),Center+FVector(0,-240,0))>SoraCampaignReach::Interact) return false;
-    const float FeetZ=Player->GetActorLocation().Z-Player->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
-    if(FMath::Abs(FeetZ-Center.Z)>120.f) return false;
     const FVector Handle=Center+FVector(0,-170,110);
     FHitResult Hit; FCollisionQueryParams Query(SCENE_QUERY_STAT(PressWork),false,Player);
     return !GetWorld()->LineTraceSingleByChannel(Hit,Player->GetEye()->GetComponentLocation(),Handle,ECC_Visibility,Query);

@@ -104,5 +104,16 @@ class PressContract(unittest.TestCase):
         self.record['entry'][2]=90
         self.assertFalse(press_hall_valid(self.chapter))
 
+    def test_floor_events_and_exit_cannot_be_triggered_from_the_catwalk(self):
+        for volume in [self.record['exit'],*self.record['volumes']]:
+            self.assertIs(type(volume['floor_cm']),int)
+            self.assertEqual(volume['floor_cm'],0)
+            for value in (400,True,None):
+                volume['floor_cm']=value
+                self.assertFalse(press_hall_valid(self.chapter))
+            del volume['floor_cm']
+            self.assertFalse(press_hall_valid(self.chapter))
+            volume['floor_cm']=0
+
 
 if __name__=='__main__':unittest.main()

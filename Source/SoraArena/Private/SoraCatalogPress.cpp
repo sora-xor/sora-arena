@@ -70,7 +70,17 @@ bool SoraCatalogPress::Read(const FJsonObject& O,FSoraBeat& Beat,const FSoraSpac
         if(Objective>=0&&(!Beat.ObjectiveHoldMs.IsValidIndex(Objective)||Beat.ObjectiveHoldMs[Objective]!=Press::JamMs||
             Beat.Objectives[Objective]!=Id||B.Objectives[Objective]!=Center-FVector2D(0,240))) return false;
     }
-    if(Beat.Objectives[3]!=TEXT("exit")||B.Objectives[3]!=Origin+FVector2D(4000,200)) return false;
+    if(Beat.Objectives[3]!=TEXT("exit")||B.Objectives[3]!=Origin+FVector2D(4000,200)||
+        B.Exit.Center!=B.Objectives[3]||B.Exit.Size!=FVector2D(300,300)||!B.Exit.bHeight||B.Exit.FloorCm!=0) return false;
+    if(B.Volumes.Num()!=2) return false;
+    for(int I=0;I<2;++I)
+    {
+        const auto& Volume=B.Volumes[I];
+        if(!Volume.bHeight||Volume.FloorCm!=0||
+            Volume.Event!=(I==0?TEXT("volume_enter:vol_press_floor"):TEXT("volume_enter:vol_press_binding"))||
+            Volume.Center!=Origin+(I==0?FVector2D(2100,1200):FVector2D(3600,250))||
+            Volume.Size!=(I==0?FVector2D(4000,2200):FVector2D(800,300))) return false;
+    }
     if(B.Fieldcraft.Lamps.Num()!=3) return false;
     for(int I=0;I<3;++I)
     {
