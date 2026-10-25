@@ -1,9 +1,18 @@
 # The first-person paw's fur, v5: the coat's colour and volume, each clump's taper, the sleeve's cloth
 
-**Status (2026-10-25):** source and CPU measurements, made under root's
-second bounded fur and kote lane. Capture v6 (`Saved/YumiFP/v6_fur`) will
-show how it renders. It is a candidate: not art acceptance, an admission or
-a photoreal claim.
+**Status (2026-10-25):** source, rebuilt assets and capture v6
+(`Saved/YumiFP/v6_fur`), made under root's second bounded fur and kote lane.
+It is a candidate: not art acceptance, an admission or a photoreal claim.
+
+**Result, qualified:** two asset versions, one capture each, with the
+colour, occlusion, taper, fringes, curl and sleeve all changed together.
+- **The sleeve** visibly puffs between its cords, with irregular folds.
+- **The fur barely changes.** The close-up's gaps read grey-brown rather
+  than pale, and its form contrast rose by about 15 %. The eye view stays a
+  flat bright white, and the angular patchwork of cards remains.
+- **The high-frequency residual rose** by 10-18 %. That measure cannot tell
+  speckle from the variation added on purpose.
+- Details below.
 
 ## What v5 answers
 
@@ -96,16 +105,81 @@ and exposure.
   from the grip). It now requires the median at tip_width, fewer than 0.1 %
   wider, and each wider card within 1 mm of the grip.
 
-## The run and the capture
+## The run (2026-10-25, root's lane, returned at 21:26 UTC)
 
-To follow, one job at a time: the Blender build, the ledgers, the Unreal
-import with its normal readback, the fresh-editor material check, then
-capture v6. Capture v6 is matched to v5: right_cheek_clear and paw, 1920 x
-1080, runup=auto, IDs.
+Each command, PID, log and exit is in `Saved/W18Rebuild/s26-s30*` and the
+mailbox note of 21:26 UTC.
 
-**The comparison with v5** waits for the comparator's fix (root's review of
-`--assets`).
+1. **Atlas v5:** byte-identical to the reviewed draft. v4 is archived, and
+   the ledger rewritten.
+2. **Blender:** exit 0.
+   - Counts as v4's: 404,012 triangles, 20,292 cards.
+   - Occlusion median 0.966, with 23.6 % of card points below 0.8.
+   - FBX card normals 8.449°, against 8.351° built.
+   - The kote clears the grip by 51.26 mm.
+   - Signed bc2d1d4; v4's production files are archived.
+3. **The Unreal import:** editor 0, wrapper 0. The fur corners read back
+   8.49° off their faces. It wrote `readback_v5.json` exclusively; the
+   importer's `out=` is new (c928d90).
+4. **The fresh-editor material check:** no problems
+   (`material_check_v5.json`).
+5. **Capture v6:** matched to v5 (right_cheek_clear and paw, 1920 x 1080,
+   runup=auto, IDs). Editor 0, wrapper 0; it exited by itself 3 s after its
+   marker. Cameras, exposure and gates are v5's.
 
-**What it can show:** the colour, occlusion, taper, fringes, curl and sleeve
-all change together. So like v5, it can compare the two versions, and it
-cannot split the change among them.
+## Capture v6 against v5
+
+The comparison uses `fur_capture_noise --assets`, fixed in a036f59 to root's
+review, whose probes it now refuses. It passed its setup checks.
+
+**The reticle:** right_cheek_clear's ID pass still shows no bow, arrow or
+paw pixel in the 0.12 disc.
+
+**The fur's high-frequency residual** (`Saved/W18Rebuild/s32_fur_assets_v5_v6.json`):
+
+| hold | fur pixels, v5 / v6 | own residual, v5 / v6 | common-region residual, v5 / v6 | fur / bow |
+| --- | --- | --- | --- | --- |
+| right_cheek_clear | 7,630 / 7,541 | 0.0133 / 0.0157 | 0.0132 / 0.0156 (+18 %) | 2.5x / 2.9x |
+| paw | 279,556 / 274,438 | 0.0092 / 0.0098 | 0.0089 / 0.0098 (+10 %) | - |
+
+The residual rose. The occlusion, the colour's variation, the soft card
+edges and the irregular fringes all add high-frequency content on purpose,
+and this measure cannot separate that from speckle. It is not a speckle win.
+
+**The coat's form** (`s32_fur_form_v5_v6.json`, `s32_fur_form_v5_v6_eyeview.json`;
+over the union of both runs' fur selections):
+
+| hold | mean luminance, v5 / v6 | form contrast (15 px), v5 / v6 | p10 luminance, v5 / v6 |
+| --- | --- | --- | --- |
+| right_cheek_clear | 0.814 / 0.799 | 0.070 / 0.072 | 0.754 / 0.728 |
+| paw | 0.823 / 0.807 | 0.052 / 0.059 | 0.753 / 0.711 |
+
+The hero's white is 14 % less albedo than v4's. The display moves only
+about 2 %, because a white in this sun at EV100 12.97 sits near the tone
+curve's shoulder.
+
+**What the originals show:**
+- **The sleeve:** it puffs between its cord bindings, and its folds are
+  irregular. It reads more as gathered cloth than v5's even ridges. This is
+  the clearest gain.
+- **The close-up:** the same patchwork of flat, angular card shapes. The
+  gaps between them are grey-brown rather than pale. The cards' taper does
+  not show, because what reads as angular are the gaps between overlapping
+  cards, not their tips.
+- **The eye view:** a flat bright white, about as v5.
+
+## What it suggests, for a later lane
+
+These are candidates, not started.
+- **The fur material's transmission:** two-sided foliage passes light
+  through each card (its subsurface colour 0.9, 0.82, 0.74 of the base),
+  which flattens the form in sun. Try less of it, or the Hair shading model
+  for anisotropic sheen.
+- **An undercoat that is fur:** the gaps show the skin, lit as a flat
+  surface. A shell layer of the coat's texture under the cards would put fur
+  in every gap.
+- **Smaller, denser cards:** the patchwork's scale is the cards'. At the
+  close-up they are 8 to 13 px wide; smaller ones would put it below what
+  reads.
+- **Exposure:** the coat sits near the tone curve's shoulder. That is set
+  by the scene's sun and exposure, which this pass kept as v5's.
