@@ -77,7 +77,21 @@ bool FSoraArchiveExitTest::RunTest(const FString&)
     const bool Blocked=!Walk({X+800,WalkY},180);
     TestTrue(TEXT("A solid obstacle prevents passage and premature completion"),Blocked&&Hero->GetActorLocation().X<BlockX&&W.Campaign()->ActiveBeat()==9);
     Barrier->Destroy();
-    if(!TestTrue(TEXT("Removing the obstacle allows walking along the same landing"),Walk({PX,WalkY}))||
+    const double MidX=(X+PX)*.5;
+    if(!TestTrue(TEXT("Removing the obstacle allows walking along the same landing"),Walk({MidX,WalkY}))) return false;
+    // Ordinary jump/vault input must not escape the provisional connector
+    // into the unbuilt gap. Test both edges with the actual moving capsule.
+    for(int Side:{-1,1})
+    {
+        W.Look(FRotator(0,Side*90,0));
+        if(!W.World->InjectKey(EKeys::W,IE_Pressed)||!W.World->InjectKey(EKeys::SpaceBar,IE_Pressed)||!W.Tick(120)||
+            !W.World->InjectKey(EKeys::SpaceBar,IE_Released)||!W.World->InjectKey(EKeys::W,IE_Released)||!W.Tick(30)) return false;
+        if(!TestTrue(TEXT("Jumping toward either bridge screen retains supported play"),
+            FMath::Abs(Hero->GetActorLocation().Y-WalkY)<R::WalkHalfWidth&&
+            Hero->GetCharacterMovement()->IsMovingOnGround()&&FMath::Abs(ArchiveFeet(*Hero).Z-R::CatwalkCm)<4.f&&
+            W.Campaign()->ActiveBeat()==9)||!Walk({MidX,WalkY})) return false;
+    }
+    if(!TestTrue(TEXT("The guarded connector reaches the press approach"),Walk({PX,WalkY}))||
         !TestEqual(TEXT("The hall does not start before the press landing"),W.Campaign()->ActiveBeat(),9)||
         !TestTrue(TEXT("The north press doorway reaches the actual NW catwalk"),Walk(Press.Entry))) return false;
     TestEqual(TEXT("Physical arrival after the pledge starts the press hall"),W.Campaign()->ActiveBeat(),10);

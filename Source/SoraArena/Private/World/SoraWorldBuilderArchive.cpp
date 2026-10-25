@@ -72,12 +72,12 @@ void ASoraWorldBuilder::BuildArchive(const FSoraZone& Zone,const FSoraZone& Pres
         RoutePart(TEXT("ArchiveWalkRail"),FVector((A+B)*.5,(Bottom+Top)*.5),
             FVector(FMath::Abs(B.X-A.X)+10,FMath::Abs(B.Y-A.Y)+10,Top-Bottom));
     };
-    Rail({X-110,Y+80},{X-110,WalkY+100},400,710);
-    Rail({X+110,Y+80},{X+110,WalkY-100},400,710);
-    Rail({X-100,WalkY+110},{PX+100,WalkY+110},400,510);
-    Rail({X+100,WalkY-110},{PX-100,WalkY-110},400,510);
-    Rail({PX+110,PY+60},{PX+110,WalkY+100},400,510);
-    Rail({PX-110,PY+60},{PX-110,WalkY-100},400,510);
+    Rail({X-110,Y+80},{X-110,WalkY+100},400,R::FloorCm+R::GuardHeightCm);
+    Rail({X+110,Y+80},{X+110,WalkY-100},400,R::FloorCm+R::GuardHeightCm);
+    Rail({X-100,WalkY+110},{PX+100,WalkY+110},400,R::CatwalkCm+R::GuardHeightCm);
+    Rail({X+100,WalkY-110},{PX-100,WalkY-110},400,R::CatwalkCm+R::GuardHeightCm);
+    Rail({PX+110,PY+60},{PX+110,WalkY+100},400,R::CatwalkCm+R::GuardHeightCm);
+    Rail({PX-110,PY+60},{PX-110,WalkY-100},400,R::CatwalkCm+R::GuardHeightCm);
 }
 
 void ASoraWorldBuilder::ShowArchivePage(const FSoraBeat& Beat,int32 Phase)

@@ -45,11 +45,16 @@ class LiftDataTests(unittest.TestCase):
             place_lift(chapter["beats"], records, fail)
             for before,after in zip(chapter["space"]["beats"],records):
                 if before["beat"]=="ch08.b12": after["exit"]=before["exit"]
-                if before.get("summit"): after["height_cm"]=before["height_cm"]
+                if before.get("summit") or before["beat"] in ("ch06.b09", "ch06.b10"):
+                    # These floors are applied after the lift pass.
+                    after["height_cm"]=before["height_cm"]
             self.assertEqual(records, chapter["space"]["beats"])
             for record in records:
                 if record.get("summit"):
                     self.assertEqual(record["height_cm"],16000)
+                elif record["beat"] in ("ch06.b09", "ch06.b10"):
+                    self.assertEqual(record["height_cm"], 600)
+                    self.assertIsNone(record["lift"])
                 elif record["beat"] not in ("ch08.b11", "ch08.b12"):
                     self.assertEqual(record["height_cm"], 0)
                     self.assertIsNone(record["lift"])
