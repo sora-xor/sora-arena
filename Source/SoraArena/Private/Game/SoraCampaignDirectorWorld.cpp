@@ -303,6 +303,7 @@ void USoraCampaignDirector::EnterBeatSpace(bool bResumed)
 }
 void USoraCampaignDirector::LeaveBeatSpace()
 {
+    ResetPods();
     ResetFoundry();
     ResetHorseTreatment();
     ResetWind();

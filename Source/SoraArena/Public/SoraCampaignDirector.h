@@ -11,6 +11,7 @@
 #include "SoraHelmRules.h"
 #include "SoraFoundryDefenseRules.h"
 #include "SoraHorseTreatmentRules.h"
+#include "SoraPodRules.h"
 #include "SoraMillisecondClock.h"
 #include "SoraCampaignDirector.generated.h"
 class ACameraActor;
@@ -99,6 +100,7 @@ class SORAARENA_API USoraCampaignDirector : public UActorComponent
 public:
     USoraCampaignDirector();
     virtual void BeginPlay() override;
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
     virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
     // Reads the campaign save into the director and the mode; false when no
     // save object can be created. A save of another schema, or one whose
@@ -236,6 +238,8 @@ public:
     // pickup (ch03.b05's 釣瓶, waiting while a guard watches) or an objective
     // worked with Interact held (a charge planted, a relay node pulled).
     float HeldWorkProgress() const;
+    const SoraPodRules::FArrival& PodArrival(int32 Wave) const { check(Wave>=0&&Wave<SoraPodRules::Count); return PodState[Wave]; }
+    AActor* PodWarning(int32 Wave) const { return PodWarnings.IsValidIndex(Wave)?PodWarnings[Wave].Get():nullptr; }
     bool IsHorseTreatment() const;
     ASoraHorse* TreatmentHorse(int32 Index) const;
     bool InteractHorseTreatment(ASoraPlayerCharacter& Hero);
@@ -364,6 +368,7 @@ private:
         int32 Wave = INDEX_NONE;
         FName Type;
         bool bInvulnerable = false;
+        int32 PodMember = INDEX_NONE;
     };
     ASoraGameMode& Mode() const;
     UPROPERTY() TObjectPtr<USoraSaveGame> Save;
@@ -401,6 +406,15 @@ private:
     bool InteractSpine();
     void TickSpineCut(int32 DeltaMs);
     TArray<FPendingSpawn> Pending;
+    SoraPodRules::FArrival PodState[SoraPodRules::Count];
+    FSoraMillisecondClock PodClocks[SoraPodRules::Count];
+    UPROPERTY() TArray<TObjectPtr<AActor>> PodWarnings;
+    uint64 PodGeneration=0;
+    unsigned PodQueued=0;
+    void ResetPods();
+    void ActivatePod(int32 Wave);
+    void TickPods(float DeltaSeconds);
+    bool ImpactPod(int32 Wave);
     // Chapter progress and the unlocks and flags held when the chapter began.
     SoraBeatRules::FProgress BeatState{0u, 0u, 0u, 0u, 0u, false};
     unsigned EntryWeapons = 0u;
@@ -637,7 +651,7 @@ private:
     // (Content/Data/enemies.json) and data-driven bosses (bosses.json) replace
     // these bodies at merge; until then every opponent is the prototype
     // invader, a sparring pupil or the collector.
-    ASoraEnemy* SpawnWaveOpponent(FName Type, bool bSparring, int32 Slot, bool bInvulnerable = false);
+    ASoraEnemy* SpawnWaveOpponent(FName Type, bool bSparring, int32 Slot, bool bInvulnerable = false, const FVector* Position = nullptr);
     ASoraEnemy* SpawnStealthGuard(const FSoraGuard& Guard, int32 GuardIndex, int32 Slot);
     ASoraEnemy* SpawnDuelOpponent(FName Opponent, bool bSparring, int32 Slot);
     ASoraBoss* SpawnBoss(FName Boss, int32 Slot);

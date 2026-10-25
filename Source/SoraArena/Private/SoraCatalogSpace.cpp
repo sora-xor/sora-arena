@@ -2,6 +2,7 @@
 #include "SoraCatalogClimb.h"
 #include "SoraCatalogFoundryDefense.h"
 #include "SoraCatalogHorseTreatment.h"
+#include "SoraCatalogPods.h"
 #include "SoraCatalogMolten.h"
 #include "SoraCatalogMoat.h"
 #include "SoraCatalog.h"
@@ -1039,6 +1040,7 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
             return Bad(Beat.Id + TEXT(" fieldcraft"));
         if(!SoraCatalogFoundryDefense::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" foundry defense"));
         if(!SoraCatalogHorseTreatment::Read(*O,Beat)) return Bad(Beat.Id+TEXT(" horse treatment"));
+        if(!SoraCatalogPods::Read(*O,Beat)) return Bad(Beat.Id+TEXT(" pod arrivals"));
         if(!SoraCatalogMolten::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" molten channels"));
         if(!SoraCatalogFlood::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" flood route"));
         if(!SoraCatalogClimb::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" climb routes"));
