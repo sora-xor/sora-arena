@@ -613,7 +613,7 @@ void USoraCampaignDirector::CompleteOptional(int32 Index)
     const FSoraChapter& Chapter=*ActiveChapter();
     SoraBeatRules::FProgress Next=BeatState;
     if(!Chapter.Rules[Index].Optional||!SoraBeatRules::CompleteBeat(Next,Chapter.Rules.GetData(),Chapter.Rules.Num(),Index)) return;
-    if(!ClaimGalleryArrows(Index)) return;
+    if(!ClaimCacheArrows(Index)||!ClaimGalleryArrows(Index)) return;
     const unsigned NewWeapons=Next.WeaponsMask&~BeatState.WeaponsMask;
     BeatState=Next;
     Collect(Index);

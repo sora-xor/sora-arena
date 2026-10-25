@@ -232,6 +232,40 @@ The existing checkpoint contract remains beat-start: reloading ch03.b05 repeats 
 
 Host `test_campaign_progression.py` covers equipment permissions, refusal to hoist early, continuous stringing, one-time completion, malformed contracts and checkpoint reset. `test_recovery_data.py` covers exact authored parameters, restriction boundaries, placement and the two raised lines with their delay. These host checks and content/localization validation pass. `SoraArena.Campaign.EquipmentRecovery` performs actual W/Interact movement, interrupted/resumed descent, exact depth, timed stringing, delayed dialogue, ascent and fresh-world checkpoint reload assertions. The full campaign playthrough uses the same real-input retrieval before hoisting. The October 18 integration run passed these tests and all 133 campaign beats; the end-play cleanup removed the earlier teardown warnings without suppressing them. This does not establish rendered or packaged acceptance.
 
+### Finite arrow rewards in the earlier exploration caches
+
+The five earlier caches now retain their authored ammunition contract:
+ch02.b14 refills the quiver to twelve; ch04.b09 and ch06.b07 add six arrows;
+ch05.b13 and ch07.b05 add twelve, capped by the existing twelve-arrow quiver.
+All five occur after the required chapter-one yumi unlock. A supply reward
+cannot grant weapon entitlement. Malformed, missing or repeated arrow tokens
+and nonexclusive cache finds fail catalog admission.
+
+Acceptance happens through the existing cache Interact path. A busy weapon
+refuses both the reward and cache completion. Success updates the authoritative
+held or stowed bow count, then collects and saves the cache's exclusive codex
+finds with its existing completion. Other inventory and action state remain
+unchanged. A full quiver still consumes the finite bundle.
+
+The saved collectible bits exhaust these bundles across retry, fresh load and
+chapter replay; no second claim ledger or ammunition save is introduced. A
+restored cache whose finds are already present remains exhausted, including a
+previous discovery made before this implementation. There is no retroactive
+inventory award or legacy-save migration. Checkpoint load still resets the
+ordinary full-magazine loadout, and New Campaign clears the existing finds.
+Chapter eight keeps its separate gallery claim behavior. Hayago, firearm
+reserves, other resupply points and the ordinary reload rules are outside this
+slice and remain open where previously unimplemented.
+
+`test_cache_rewards.py` executes the production token, inventory and claim
+rules with host C++ harnesses and validates the original chapter data. The
+prepared `SoraArena.Campaign.CacheArrows` fixture covers mapped and rebound
+Interact, distance/menu/busy refusal, actual arrow spending, held/stowed/full
+quivers, saved discoveries, repeat use, retry, fresh-world load and reset.
+It uses checkpoint setup, assisted placement and frozen threats. **This source
+slice has not been built or run in Unreal** and does not establish ordinary
+campaign play or a packaged result.
+
 ## What the offline runtime does not do yet
 
 These wait for other lanes or later steps and are not claimed:
