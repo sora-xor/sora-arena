@@ -241,6 +241,11 @@ bool FSoraRelayInspectionTest::RunTest(const FString& Parameters)
     if(Craft->RelayInspectionArrived(2))
     {
         for(int I=0;I<3000&&Craft->RelayInspector();++I) if(!W.Tick(1)) return false;
+        AddInfo(FString::Printf(TEXT("Relay inspector return: feet=%s velocity=%s mode=%d assigned=%d errand=%d reached=%d state=%d floor=%s at=%s"),
+            *(Feet(*Auditor)-O).ToString(),*Auditor->GetVelocity().ToString(),int(Auditor->GetCharacterMovement()->MovementMode),
+            Craft->RelayInspector()!=nullptr,Brain->HasErrand(),Brain->ErrandReached(),int(Brain->State()),
+            *GetNameSafe(Auditor->GetCharacterMovement()->CurrentFloor.HitResult.GetComponent()),
+            *(Auditor->GetCharacterMovement()->CurrentFloor.HitResult.ImpactPoint-O).ToString()));
         TestTrue(TEXT("After inspecting, the auditor walks back down to its floor post"),
             !Craft->RelayInspector()&&Auditor->GetCharacterMovement()->IsMovingOnGround()&&
             FVector::Dist(Feet(*Auditor),O+FVector(300,500,0))<50);
