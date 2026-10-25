@@ -407,9 +407,19 @@ def _assess_group(rings, rest, state, contract):
         margin = max(gaps) / 2 if gaps else 0.0
         out.update({"nearest_half_heights": round(float(dist[i, j]), 4), "margin": round(margin, 4),
                     "nearest_conservative": round(float(dist[i, j]) - margin, 4)})
-    # Near-plane crossings along rings and along the axis, inside the frame.
+    clipped, where = near_cuts(E, near_x, screen)
+    out["near_clip_in_frame"] = clipped
+    out["clip_points"] = where[:4]
+    return out
+
+
+def near_cuts(E, near_x, screen):
+    """Near-plane crossings that fall inside the frame, for eye-space rings
+    E (rings, points, 3): every edge round each closed ring (the last point
+    back to the first) and between consecutive rings. Returns (count, (u, v))."""
+    import numpy as np
     clipped, where = 0, []
-    for A, B in ((E[:, :-1], E[:, 1:]), (E[:-1], E[1:])):
+    for A, B in ((E, np.roll(E, -1, axis=1)), (E[:-1], E[1:])):
         fa, fb = A[..., 0] > near_x, B[..., 0] > near_x
         cross = fa != fb
         if cross.any():
@@ -421,9 +431,7 @@ def _assess_group(rings, rest, state, contract):
             inside = (np.abs(cu) <= 1.0) & (np.abs(cv) <= 1.0)
             clipped += int(np.sum(inside))
             where += [(round(float(a), 3), round(float(b), 3)) for a, b in zip(cu[inside], cv[inside])]
-    out["near_clip_in_frame"] = clipped
-    out["clip_points"] = where[:4]
-    return out
+    return clipped, where
 
 
 def footprint(pose_name="bow.drawn", shape=None, contract=None):

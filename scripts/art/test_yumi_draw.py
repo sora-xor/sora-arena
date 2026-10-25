@@ -111,6 +111,21 @@ class Envelopes(unittest.TestCase):
             self.assertGreaterEqual(half_d + 1e-12, d * taper / 2, sig)
             self.assertEqual(len(ring), Y.STAVE_SECTION_POINTS)
 
+    def test_ring_edges_close_last_to_first(self):
+        # Codex's counterexample on 4481327: a ring whose last edge crosses the
+        # near plane counted no cut, but did once its first point was repeated.
+        import numpy as np
+        screen = Y.F.Screen(contract()["camera"])
+        near_x = screen.near / screen.scale
+        ring = [(30.0, 1.0, 0.0), (30.0, 0.0, 1.0), (30.0, -1.0, 0.0), (5.0, 0.0, -1.0)]
+        implicit, _ = Y.near_cuts(np.array([ring]), near_x, screen)
+        explicit, _ = Y.near_cuts(np.array([ring + [ring[0]]]), near_x, screen)
+        self.assertEqual(implicit, 2)                # into and out of the point behind the plane
+        self.assertEqual(explicit, implicit)         # repeating the first point adds only a zero-length edge
+        E = np.array([ring])
+        unclosed = int(np.sum((E[:, :-1, 0] > near_x) != (E[:, 1:, 0] > near_x)))
+        self.assertEqual(unclosed, 1)                # 4481327's traversal saw only one of the two
+
     def test_batch_placement_equals_the_checker(self):
         c = contract()
         rest = c["poses"]["bow.drawn"]["rest"]
