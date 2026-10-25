@@ -648,8 +648,9 @@ bool WorkAtAnchor(FAutomationTestBase& Test, FState& State)
     }
     else if(bRelay)
     {
+        const int ObjectiveBefore=Director->TaskProgress().Done;
         if(!State.World->InjectKey(EKeys::E,IE_Pressed)) return false;
-        if(Director->TaskProgress().Done<3&&!Test.TestTrue(TEXT("The player's actual interaction starts the relay hold"),Director->HeldWorkProgress()>=0.f))
+        if(ObjectiveBefore<3&&!Test.TestTrue(TEXT("The player's actual interaction starts the relay hold"),Director->HeldWorkProgress()>=0.f))
         {
             Test.AddInfo(FString::Printf(TEXT("Relay interaction diagnostic: done=%d disabled=%u held=%d phase=%d locked=%d input=%d key=%d"),
                 Director->TaskProgress().Done,Director->RelayState().Disabled,Director->RelayState().HeldNode,

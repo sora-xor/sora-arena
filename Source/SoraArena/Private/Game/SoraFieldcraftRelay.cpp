@@ -208,5 +208,9 @@ void USoraFieldcraft::TickRelayInspection()
     }
     const FVector Feet=RelayInspectionPath[RelayInspectionLeg];
     const FVector Facing=RelayInspectionLeg==RelayInspectionAtLeg?Campaign->RelayNodeLocation(RelayInspecting)-Feet:FVector(1,0,0);
-    Brain->SetErrand(Feet+FVector(0,0,Guard->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2),Facing,.6f,0,true,true,45.f);
+    // The mesh's upper stair connection is missing at the default nav
+    // resolution. Follow these authored, supported legs with the actual
+    // walking capsule; ground-floor approaches still use navigation.
+    const bool Steps=RelayInspecting==2&&RelayInspectionLeg>0&&RelayInspectionLeg<RelayInspectionPath.Num()-1;
+    Brain->SetErrand(Feet+FVector(0,0,Guard->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2),Facing,.6f,0,true,true,Steps?20.f:45.f,Steps);
 }

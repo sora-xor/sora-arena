@@ -486,12 +486,13 @@ void ASoraEnemyController::Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, 
 }
 
 void ASoraEnemyController::SetErrand(const FVector& Goal, const FVector& Facing, float Pace, int32 DurationMs, bool bWhileCalm,
-    bool bThreeDimensional,float AcceptanceCm)
+    bool bThreeDimensional,float AcceptanceCm,bool bSupportedSteps)
 {
     bErrand = true;
     bErrandWhileCalm = bWhileCalm;
     bErrandReached = false;
     bErrand3D = bThreeDimensional;
+    bErrandSupportedSteps = bSupportedSteps;
     ErrandAcceptanceCm = FMath::Max(1.f,AcceptanceCm);
     ErrandGoal = Goal;
     ErrandFacing = Facing.IsNearlyZero() ? FVector::ForwardVector : Facing.GetSafeNormal2D();
@@ -509,7 +510,9 @@ bool ASoraEnemyController::RunErrand(ASoraEnemy& Enemy, float Dt, int32 NowMs)
         bErrand = false;
         return false;
     }
-    const EMove Move=WalkTo(Enemy,ErrandGoal,ErrandPace,ErrandAcceptanceCm,NowMs);
+    const EMove Move=bErrandSupportedSteps
+        ?WalkSupportedSegment(Enemy,ErrandGoal,ErrandPace,ErrandAcceptanceCm,true)
+        :WalkTo(Enemy,ErrandGoal,ErrandPace,ErrandAcceptanceCm,NowMs);
     bErrandReached=bErrand3D?Move==EMove::Arrived:Move!=EMove::Moving;
     // Once a flying worker is over its station, keep its tool aimed there
     // while following the station's changing Z. Vertical travel has no yaw.
@@ -687,26 +690,38 @@ void ASoraEnemyController::Patrol(ASoraEnemy& Enemy, float Dt, int32 NowMs)
     Face(Enemy, Heading, Dt, 5.f);
 }
 
-ASoraEnemyController::EMove ASoraEnemyController::WalkSupportedSegment(ASoraEnemy& Enemy,const FVector& Goal,float Speed)
+ASoraEnemyController::EMove ASoraEnemyController::WalkSupportedSegment(ASoraEnemy& Enemy,const FVector& Goal,float Speed,float Acceptance,bool bSteps)
 {
     auto* Move=Enemy.GetCharacterMovement();
     const FVector Here=Enemy.GetActorLocation();
     const auto* Capsule=Enemy.GetCapsuleComponent();
     const float Half=Capsule->GetScaledCapsuleHalfHeight();
     const auto Stop=[&](EMove Result) { Move->StopMovementImmediately();return Result; };
-    if(!Move->IsMovingOnGround()||FMath::Abs(Here.Z-Goal.Z)>15.f) return Stop(EMove::Blocked);
+    // A short descent can become airborne. Let gravity finish it; resetting
+    // velocity here would repeatedly cancel the fall instead of landing.
+    if(!Move->IsMovingOnGround()) return bSteps?EMove::Moving:Stop(EMove::Blocked);
+    if(!bSteps&&FMath::Abs(Here.Z-Goal.Z)>15.f) return Stop(EMove::Blocked);
     // A 70 cm arrival radius cuts the inside of a 120 cm corner. Twenty
     // centimetres keeps the ordinary 34 cm capsule inside either strip.
-    if(FVector::Dist2D(Here,Goal)<=20.f) return Stop(EMove::Arrived);
+    // A capsule straddling a riser can sit above the tread beneath its
+    // centre. Accept at most one ordinary step vertically, while keeping
+    // the tight horizontal corner tolerance and requiring grounded feet.
+    if(FVector::Dist2D(Here,Goal)<=Acceptance&&(!bSteps||FMath::Abs(Here.Z-Goal.Z)<=Move->MaxStepHeight+2.f))
+        return Stop(EMove::Arrived);
     const FVector Direction=(Goal-Here).GetSafeNormal2D();
-    const FVector Next=Here+Direction*FMath::Min(60.f,float(FVector::Dist2D(Here,Goal)));
+    const FVector Next=Here+Direction*FMath::Min(bSteps?12.f:60.f,float(FVector::Dist2D(Here,Goal)));
     FCollisionQueryParams Query(SCENE_QUERY_STAT(SupportedPatrol),false,&Enemy);
     FHitResult Hit;
-    if(GetWorld()->SweepSingleByChannel(Hit,Here,Next,FQuat::Identity,ECC_Pawn,
+    // Flat segments can preflight a level capsule sweep. On stairs the real
+    // CharacterMovement sweep and StepUp must resolve each riser; a level
+    // preflight would reject every step before the capsule could climb it.
+    if(!bSteps&&GetWorld()->SweepSingleByChannel(Hit,Here,Next,FQuat::Identity,ECC_Pawn,
         FCollisionShape::MakeCapsule(Capsule->GetScaledCapsuleRadius(),Half),Query)) return Stop(EMove::Blocked);
     const FVector Foot=Next-FVector(0,0,Half);
-    if(!GetWorld()->LineTraceSingleByChannel(Hit,Foot+FVector(0,0,30),Foot-FVector(0,0,30),ECC_Visibility,Query)||
-        Hit.ImpactNormal.Z<Move->GetWalkableFloorZ()||FMath::Abs(Hit.ImpactPoint.Z-(Goal.Z-Half-2.f))>5.f)
+    const float StepLimit=bSteps?Move->MaxStepHeight+2.f:30.f;
+    if(!GetWorld()->LineTraceSingleByChannel(Hit,Foot+FVector(0,0,StepLimit),Foot-FVector(0,0,StepLimit),ECC_Visibility,Query)||
+        Hit.ImpactNormal.Z<Move->GetWalkableFloorZ()||
+        (bSteps?FMath::Abs(Hit.ImpactPoint.Z-Foot.Z)>StepLimit:FMath::Abs(Hit.ImpactPoint.Z-(Goal.Z-Half-2.f))>5.f))
         return Stop(EMove::Blocked);
     Heading=Direction;
     Enemy.AddMovementInput(Direction,Speed);

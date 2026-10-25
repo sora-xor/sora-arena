@@ -1,10 +1,41 @@
 # Relay room source candidate
 
-This is a work-in-progress implementation of chapter 6 L3 / beat 4. The
-runtime changes and six Unreal fixtures have **not been compiled or run**.
-The separate complete-game worktree stays frozen at `c3fcf8e` for the queued
-press regression. Claude owns the Unreal and Blender lane during the art
-rebuild. This candidate does not qualify gameplay, art or a release.
+This is a work-in-progress implementation of chapter 6 L3 / beat 4.
+The integrated source at `1479a6e` first failed to compile because its
+FJsonObject forward declaration used struct instead of Unreal's class.
+That one-line error is fixed by signed `ae5bee6`; the failed build and
+natural wrapper exit are retained. Review SHA-256:
+`527b97fa2e60fd0d6ebd78de47ea2bbe6a9a8c2a9434517354402177c4600aed`.
+
+The exact `ae5bee6` editor build succeeded in 16.20 seconds. Seventeen of
+20 NullRHI fixtures passed: all eleven press tests, CopyDesks, Candle, and
+RelayControls, RelayScan, RelayExit and RelayLookout. The failures were
+Playthrough, RelayGallery and RelayInspection. Source, native, generated
+content and configuration stayed unchanged; editor 3/wrapper 1 reached
+natural EOF. All 20 evidence files were rehashed; review SHA-256:
+`bbd590796506fb3d99fd924d5eb1fa7d262b7f36df1717e287abc4b50c182ddd`.
+
+The `2ddd15d` follow-up passes the gallery route, including ordinary ascent,
+upper-node work and descent. Its earlier failure checked floor height before
+the descending capsule finished landing; it now waits for natural grounding.
+The inspector still stalls at local feet (395.627,861.723,327.855), near the
+top of the stair. A navigation query to the upper control returns a path
+back down to floor level, not a usable gallery connection. The ordinary
+player traversal establishes that the physical stair is usable.
+The assisted campaign's relay exit advances to the next beat, where its
+test incorrectly demands a new hold from the reset objective count.
+These two failures are retained, with natural editor 3/wrapper 1; review:
+`c3792459cc9f2da348ac55755c69ea1f27b8c3e966065895176cb5e8a5d4bf45`.
+
+The next candidate follows only the inspector's authored stair/gallery legs
+with normal character movement and a support check at each next step. The
+walking capsule still handles collision and step-up; actual arrival is
+required, and a blocking wall cannot count as inspection. Ground approaches
+keep navigation. The fixture also checks the return down to the floor post.
+The campaign test now decides whether to expect a hold from the objective
+before pressing, so completing the exit is accepted. These latest changes
+are not yet compiled or run. Claude owns the engine lane for two controlled
+art captures while root prepares the source fix.
 
 The previous room credited three generic held points. This candidate binds
 the portable relay reducer to mapped Interact input, grounded floor height,

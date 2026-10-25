@@ -236,6 +236,13 @@ bool FSoraRelayInspectionTest::RunTest(const FString& Parameters)
     }
     TestTrue(TEXT("The auditor physically reaches the upper node after the route opens"),
         Craft->RelayInspectionArrived(2)&&FVector::Dist(Feet(*Auditor),C->RelayWorkLocation(2))<50);
+    if(Craft->RelayInspectionArrived(2))
+    {
+        for(int I=0;I<3000&&Craft->RelayInspector();++I) if(!W.Tick(1)) return false;
+        TestTrue(TEXT("After inspecting, the auditor walks back down to its floor post"),
+            !Craft->RelayInspector()&&Auditor->GetCharacterMovement()->IsMovingOnGround()&&
+            FVector::Dist(Feet(*Auditor),O+FVector(300,500,0))<50);
+    }
     AddInfo(TEXT("Directed real-navigation fixture with a deaf, nearly blind auditor. Path obstruction, floor height and arrival are checked; ordinary detection remains separate."));
     return true;
 }

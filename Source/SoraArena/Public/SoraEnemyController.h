@@ -117,7 +117,7 @@ public:
     // notices the hero; one that only runs while calm (bWhileCalm) ends the
     // moment it is alerted. DurationMs 0 lasts until cleared.
     void SetErrand(const FVector& Goal, const FVector& Facing, float Pace, int32 DurationMs, bool bWhileCalm,
-        bool bThreeDimensional = false, float AcceptanceCm = ErrandReachCm);
+        bool bThreeDimensional = false, float AcceptanceCm = ErrandReachCm, bool bSupportedSteps = false);
     void AssignLift(ASoraCampaignLift& Lift,int32 Wave);
     void AssignSpireFlight() { bSpireFlight=true; }
     // An errand's goal is reached within this (2D).
@@ -168,7 +168,7 @@ private:
     bool ChoosePosition(const ASoraEnemy& Enemy, const FVector& Threat, bool bRetreat);
     bool Claimed(const FVector& Spot) const;
     EMove WalkTo(ASoraEnemy& Enemy, const FVector& Goal, float Speed, float Acceptance, int32 NowMs,bool bStrict3D=false);
-    EMove WalkSupportedSegment(ASoraEnemy& Enemy,const FVector& Goal,float Speed);
+    EMove WalkSupportedSegment(ASoraEnemy& Enemy,const FVector& Goal,float Speed,float Acceptance=20.f,bool bSteps=false);
     EMove FlyTo(ASoraEnemy& Enemy, const FVector& Goal, float Speed, float Acceptance, int32 NowMs,bool bVolume=false);
     // One move request at Here: true once the walk has made no progress for
     // SoraStealthRules::StuckMs; the next request starts a fresh clock.
@@ -239,6 +239,9 @@ private:
     bool bErrandWhileCalm = false;
     bool bErrandReached = false;
     bool bErrand3D = false;
+    // Authored stair/gallery waypoints use ordinary swept character movement
+    // with support checked ahead, where coarse navmesh cells lose the treads.
+    bool bErrandSupportedSteps = false;
     float ErrandAcceptanceCm = ErrandReachCm;
     FVector ErrandGoal = FVector::ZeroVector;
     FVector ErrandFacing = FVector::ForwardVector;
