@@ -10,13 +10,14 @@ legacy formats, aliases, and fallback decoders are prohibited.
 
 ## 2026-10-25 current HUD and art checkpoint
 
-The combined `c139192` SM6 capture fails Tarifa's layout and records eight
-BowDraw Canvas warnings; all 33 accepted originals were reviewed. Three prior
-stealth/tracker collisions are corrected in those frames. Compact boss spacing
-and fixture validation during the actual HUD draw are integrated at `df3d5d5`
-and `2ea1d4a`, with host checks passing; fresh runtime validation awaits the
-unchanged disk reserve. CI passes 83 gates at earlier `b71f4e8`. Claude has
-resumed art production; timber assets remain unadmitted. The
+At exact `e37e5ae`, all twelve selected SM6 capture tests pass at both 720p and
+1080p, with zero selected errors/warnings and 34 independently inspected
+originals per run. Tarifa, BowDraw, stealth/tracker and cargo layouts pass their
+prepared fixtures. Startup diagnostics and prior failures remain preserved;
+overall visual acceptance still fails for dark subjects, broad HUD obstruction
+and provisional world/weapon art. Claude's reviewed timber source is integrated
+at `6e951e5`; all 37 asset/tooling source gates pass, but its Unreal import and
+draw remain unrun. CI passes 85 gates at earlier `66a23f4`. The
 [current checkpoint](complete-release-plan.md#october-25-hud-corrections-and-resumed-art-work)
 records precise evidence and limits. The full release remains incomplete.
 

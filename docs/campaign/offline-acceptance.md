@@ -1,11 +1,13 @@
 # Offline campaign progression acceptance
 
-The latest combined capture at `c139192` has eleven successful test states and
-one failed Tarifa layout, with eight BowDraw Canvas warnings. All 33 accepted
-originals were independently inspected; the three earlier stealth/tracker
-collisions are resolved in those frames. Source corrections `df3d5d5` and
-`2ea1d4a` retain the complete readouts and validate fixture geometry during the
-actual HUD draw. Fresh runtime acceptance is pending. See the
+At exact `e37e5ae`, both SM6 720p and 1080p combined captures pass all twelve
+selected tests with zero selected errors/warnings. All 34 originals per run
+were independently inspected. The complete Tarifa panel, BowDraw, three stealth
+layouts and final cargo zero/idle-boss frame pass their prepared checks. The
+full cargo holds/cinematic and cleanup remain intact. Prior failures and startup
+diagnostics are retained. Overall visual acceptance, normal-control campaign
+play and a current package remain open: broad panels obscure the world,
+subjects are dark and world/weapon art remains provisional. See the
 [current checkpoint](../complete-release-plan.md#october-25-hud-corrections-and-resumed-art-work).
 
 The earlier prepared cargo checkpoint is `eeaf2ed`: five selected SM6 720p

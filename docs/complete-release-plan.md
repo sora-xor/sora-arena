@@ -13,40 +13,61 @@ The local coordination mailboxes record current ownership, commits and lane use.
 
 ## October 25 HUD corrections and resumed art work
 
-The latest completed combined capture at `c139192` remains **failed**. The
-Mac editor builds in 23.06 seconds; twelve selected SM6 1280×720 tests produce
-11 successful states and one failure. Tarifa's complete boss readout has no
-valid placement, so its original is correctly rejected. BowDraw succeeds with
-eight Canvas warnings. All 33 accepted originals were independently inspected;
-the three prior stealth/tracker collisions are absent. Cargo timing and final
-zero/idle-boss presentation still pass. Dark subjects and broad panels obscuring
-the world remain presentation defects. Original logs, source bindings and failed
-results are retained under `Saved/Qualification/2026-10-24/gameplay-hud-obstacles/`;
-independent review is `2026-10-25/hud-runtime-41450-independent/review.json`.
+At exact `e37e5ae`, both SM6 1280×720 and 1920×1080 combined captures pass all
+twelve selected tests: Cargo.Transfer, four WeaponHUDFixture tests and
+Campaign.Chapter2–8. Each run has zero selected errors and warnings, reaches
+natural EOF without a resource breach, and archives 34 original images. Every
+original was independently inspected. Tarifa's complete readout clears the
+reticle, BowDraw has no Canvas warnings, the three stealth/tracker collisions
+remain corrected, and the cargo counter, full holds, full cinematic and final
+zero/idle-boss layout pass. Builds take 83.79 seconds at 720p and 4.29 seconds
+at 1080p. Both runs retain 19 startup `Condition failed` diagnostics and 23
+startup warnings, separate from the selected tests.
 
-`df3d5d5` adds a measured compact-spacing fallback after normal boss placements,
-retaining complete text, font sizes and meter dimensions. `2ea1d4a` moves all six
-weapon-fixture geometry checks into the actual observed HUD draw, where the
-projected bow reticle has a valid Canvas. Common screenshot, same-frame,
-fresh-file and cleanup guards remain. The source candidates have ten layout
-and 68 capture/tooling test-method passes respectively; these are host/source
-checks. Actual compilation, corrected 720p originals and zero BowDraw warnings
-are pending. Disk is below the unchanged 30 GiB capture launch reserve; only
-superseded owned packages are being losslessly archived to recover space.
+The corrections are `df3d5d5` (compact row whitespace without shrinking fonts
+or removing text/meters) and `2ea1d4a` (fixture geometry checked during the actual
+HUD draw). The first `66a23f4` build attempt failed on an incomplete `ASoraEnemy`
+definition; `e37e5ae` includes its header directly. That failure and the earlier
+`c139192` Tarifa failure/eight BowDraw warnings are preserved. Evidence is under
+`Saved/Qualification/2026-10-25/hud-spacing-and-frame-e37e5ae/`, with independent
+reviews `hud-e37e5ae-independent/review.json` and
+`hud-e37e5ae-1080-independent/review.json`.
 
-CI `40012841586` succeeds at `b71f4e8`: five jobs, 83 source gates, 279 Rust
-tests passed and five explicitly ignored. Exact merge/source trees and original
-archives are authenticated under `Saved/Qualification/2026-10-24/ci-b71f4e8/`.
-Newer changes do not inherit that qualification.
+**Overall visual acceptance still fails.** Broad panels obscure the world,
+Landing and HighCollector subjects are almost black, dojo lamps glare, and
+the horses, bow and world remain provisional. The cargo view also exposes
+distant floating platforms and a gray void. These prepared uncooked M2 Ultra
+captures do not establish ordinary play, photoreal art, M1/Windows performance,
+a new package or later boss states. The latest package remains `c655b6b` with
+native bridge `10ad7dad`.
 
-Claude resumed **Photoreal art WIP checkpoint** on October 25 and is reviewing
-timber renders and preparing the signed asset/ledger delivery. A2 lighting is
-already integrated as `e3b8aa5`; it must not be applied twice. Timber integration
-still requires current campaign placement inputs, a frozen binary/ledger slice,
-import validation and capture inventory that explicitly includes DojoTimbers.
-The prior kit-only Nanite draw result does not qualify those new assets.
-Photoreal acceptance, ordinary play, current packages, M1/Windows/performance
-and full native/network/settlement requirements remain open.
+Claude's reviewed timber source is integrated at `6e951e5`: eleven art commits
+through `1b4221b`, four timber-capture commits, refreshed campaign binding and
+notices, and four registered source gates. Cache lookup, exact cloth material
+slots and duplicate/altered placement records now fail closed. All 103 changed
+LFS assets (130,902,261 bytes) are verified. All 37 asset/tooling gates pass on
+the materialized root with unchanged source, including content, images, ledger,
+notices and binding. The source candidate's earlier ledger failure for 577
+unchanged LFS pointers is retained; its files were not corrupt. Root's stronger
+notices and Nanite fallback helpers remain intact.
+
+The new timbers have **no Unreal import or draw acceptance yet**. Unique logs
+cover 65/260 columns and 235/940 rails; floors and the other halls remain open.
+The first hall has about 57.1 million source triangles with unmeasured runtime
+cost. The nine Blender originals remain visually rejected. A small import in
+an isolated asset namespace is next, followed by actual exposure telemetry.
+Claude is correcting the first-person contract and proposing a separate
+six-member timber pilot. A2 lighting was already integrated at `e3b8aa5` and
+was not reapplied. Frozen source/cache evidence remains intact.
+
+CI `40144633078` succeeds at earlier `66a23f4`: five jobs, 85 source gates,
+279 Rust tests passed and five explicitly ignored; tested/source trees and
+archives are authenticated under `Saved/Qualification/2026-10-25/ci-66a23f4/`.
+Later source does not inherit that qualification. Authorized unused-build
+cleanup recovered 38.56 GiB of inactive incremental caches; source, active
+builds and retained qualification artifacts were preserved. Disk no longer
+blocks the capture lane. Full native/network/settlement, ordinary play,
+photoreal art and platform/performance requirements remain open.
 
 ## October 24 cargo timing and campaign HUD checkpoint
 
