@@ -17,10 +17,13 @@ A failed check raises AdmissionError, with the reason.
 from __future__ import annotations
 
 import hashlib
+import re
 from pathlib import Path
 
 CACHE_KEY_PREFIX = "Local/ArtCache/"
 BINDING_SCHEMA = "sora-dojo-timber-campaign-binding-v1"
+PROBE_SCHEMA = "sora-arena.dojo-timber-probe.v1"
+PROBE_DEST = "/Game/Generated/Qualification/DojoTimberProbe"
 
 
 class AdmissionError(RuntimeError):
@@ -84,3 +87,48 @@ def check_binding(project_root: Path, binding: dict, manifests) -> dict:
         if sha(project_root / rel) != digest:
             raise AdmissionError(f"{rel} changed since the binding (rerun python3 scripts/art/bind_dojo_timbers.py)")
     return binding
+
+
+def check_probe(project_root: Path, spec: dict, manifests: dict) -> set[str]:
+    """A bounded, explicit selection from exactly the current column/rail kits.
+
+    This performs no editor operations. The caller must also check the campaign
+    binding and reject an occupied fixed probe destination before any writes.
+    The base commit labels the reviewed source; current bytes are bound by hashes.
+    """
+    fields = {"schema", "base_source_commit", "manifest_sha256", "binding_sha256", "assets"}
+    if not isinstance(spec, dict) or set(spec) != fields or spec.get("schema") != PROBE_SCHEMA:
+        raise AdmissionError("unknown probe schema or fields")
+    if not isinstance(spec["base_source_commit"], str) or not re.fullmatch(r"[0-9a-f]{40}", spec["base_source_commit"]):
+        raise AdmissionError("probe requires the full reviewed base commit")
+    pins = spec["manifest_sha256"]
+    if not isinstance(pins, dict) or set(pins) != set(manifests):
+        raise AdmissionError("probe covers other manifests")
+    for rel, expected in pins.items():
+        if sha(project_root / rel) != expected:
+            raise AdmissionError(f"probe manifest changed: {rel}")
+    binding = project_root / "Content/SourceArt/Environment/NyaagyuDojoTimbers/campaign_binding.json"
+    if sha(binding) != spec["binding_sha256"]:
+        raise AdmissionError("probe campaign binding changed")
+    names = spec["assets"]
+    if not isinstance(names, list) or not names or any(not isinstance(name, str) or not name for name in names):
+        raise AdmissionError("probe requires a nonempty explicit asset list")
+    if len(set(names)) != len(names):
+        raise AdmissionError("duplicate probe asset")
+    known = [rec["asset"] for manifest in manifests.values()
+             for group in ("pool", "placements") for rec in manifest[group]]
+    if len(set(known)) != len(known):
+        raise AdmissionError("duplicate asset in probe manifests")
+    unknown = set(names) - set(known)
+    if unknown:
+        raise AdmissionError(f"unknown probe assets: {sorted(unknown)}")
+    # A probe must remain bounded even if someone copies the complete inventory.
+    if len(names) > 16:
+        raise AdmissionError("probe is limited to 16 explicit assets")
+    return set(names)
+
+
+def check_slots(names) -> None:
+    """Both generators export one M_Timber slot before lookdev/bake materials."""
+    if names != ["M_Timber"]:
+        raise AdmissionError(f"expected one M_Timber material slot, got {names!r}")
