@@ -23,6 +23,7 @@
 #include "SoraBulkheadAutomation.h"
 #include "SoraCarryAutomation.h"
 #include "SoraCopyDeskAutomation.h"
+#include "SoraPressRules.h"
 #include "SoraEnemy.h"
 #include "SoraEnemyController.h"
 #include "SoraEquipmentComponent.h"
@@ -34,6 +35,7 @@
 #include "SoraSaveGame.h"
 #include "SoraWorldBuilder.h"
 #include "Camera/CameraActor.h"
+#include "Camera/CameraComponent.h"
 #include "Camera/PlayerCameraManager.h"
 #include "Components/CapsuleComponent.h"
 #include "Dom/JsonObject.h"
@@ -589,10 +591,23 @@ bool WorkAtAnchor(FAutomationTestBase& Test, FState& State)
     for (int32 Quarter = 0; Quarter < 40 && bHeld && !Worked(); ++Quarter)
         bHeld = Advance(Test, State, 1, .25f);
     if(!Worked())
+    {
         Test.AddInfo(FString::Printf(TEXT("Held objective diagnostic: anchor=%s hero=%s velocity=%s grounded=%d key=%d held=%.3f dialogue=%d done=%d mask=%u"),
             *Anchor.ToString(),*Player(State)->GetActorLocation().ToString(),*Player(State)->GetVelocity().ToString(),
             Player(State)->GetCharacterMovement()->IsMovingOnGround(),Player(State)->IsActionHeld(TEXT("Interact")),
             Director->HeldWorkProgress(),Director->IsDialogueBlocking(),Director->TaskProgress().Done,Director->TaskProgress().PointsMask));
+        if(const auto* Beat=Director->ActiveBeatData();Beat&&Beat->Space.PressHall.bEnabled&&DeliveredBefore<3)
+        {
+            const auto P=SoraPressRules::Centers[SoraPressRules::Master[DeliveredBefore]];
+            const FVector Handle=FVector(Beat->Space.PressHall.Origin,0)+FVector(P.X,P.Y-170,110);
+            const FVector Eye=Player(State)->GetCamera()->GetComponentLocation();
+            FHitResult Hit;FCollisionQueryParams Query(SCENE_QUERY_STAT(PressHoldDiagnostic),false,Player(State));
+            const bool Blocked=State.World->GetTestWorld()->LineTraceSingleByChannel(Hit,Eye,Handle,ECC_Visibility,Query);
+            Test.AddInfo(FString::Printf(TEXT("Press handle diagnostic: can_work=%d eye=%s handle=%s blocked=%d by=%s/%s impact=%s"),
+                USoraFieldcraft::Get(Player(State))->CanWorkPress(DeliveredBefore),*Eye.ToString(),*Handle.ToString(),Blocked,
+                *GetNameSafe(Hit.GetActor()),*GetNameSafe(Hit.GetComponent()),*Hit.ImpactPoint.ToString()));
+        }
+    }
     State.World->InjectKey(EKeys::E, IE_Released);
     if (!bHeld || !Advance(Test, State, 1))
         return false;

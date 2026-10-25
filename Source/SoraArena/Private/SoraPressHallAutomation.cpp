@@ -6,6 +6,7 @@
 #include "SoraEnemyController.h"
 #include "SoraProjectile.h"
 #include "Combat/SoraEnemyCatalog.h"
+#include "World/SoraNavigation.h"
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 
@@ -462,6 +463,22 @@ bool FSoraPressCatwalkPatrolTest::RunTest(const FString& Parameters)
     }
     AddInfo(FString::Printf(TEXT("Catwalk patrol local feet %s; reached corners %d/%d/%d/%d; velocity %s"),
         *(Feet(*Guard)-Origin).ToString(),Reached[0],Reached[1],Reached[2],Reached[3],*Guard->GetVelocity().ToString()));
+    if(!(Reached[0]&&Reached[1]&&Reached[2]&&Reached[3]))
+    {
+        TArray<FVector> Path;
+        if(const auto* Nav=USoraNavigation::Get(Guard);Nav&&Nav->FindPath(Guard->GetActorLocation(),Route.Points[1],*Guard,Path))
+            for(const auto& Point:Path) AddInfo(TEXT("Catwalk path local: ")+(Point-Origin).ToString());
+        for(const FVector Direction:{FVector(0,-1,0),FVector(-1,0,0),FVector(1,0,0)})
+        {
+            FHitResult Hit;FCollisionQueryParams Query(SCENE_QUERY_STAT(PressPatrolDiagnostic),false,Guard);
+            const auto* Capsule=Guard->GetCapsuleComponent();
+            if(W.World->GetTestWorld()->SweepSingleByChannel(Hit,Guard->GetActorLocation(),Guard->GetActorLocation()+Direction*180,
+                FQuat::Identity,ECC_Pawn,FCollisionShape::MakeCapsule(Capsule->GetScaledCapsuleRadius(),Capsule->GetScaledCapsuleHalfHeight()),Query))
+                AddInfo(FString::Printf(TEXT("Catwalk sweep %s blocked by %s/%s at local %s, normal %s"),
+                    *Direction.ToString(),*GetNameSafe(Hit.GetActor()),*GetNameSafe(Hit.GetComponent()),
+                    *(Hit.ImpactPoint-Origin).ToString(),*Hit.ImpactNormal.ToString()));
+        }
+    }
     TestTrue(TEXT("The real patrol reaches all four sides instead of skipping blocked goals"),Reached[0]&&Reached[1]&&Reached[2]&&Reached[3]);
     TestTrue(TEXT("The walker remains supported at catwalk height throughout the circuit"),Supported);
     AddInfo(TEXT("Directed real navigation with this enforcer's sight/hearing disabled. This does not qualify authored auditor/drone cadence or ordinary combat."));

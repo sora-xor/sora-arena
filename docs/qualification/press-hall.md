@@ -29,11 +29,22 @@ Failures remain explicit:
   The next candidate records held-input and physical-state diagnostics; the
   cause and full campaign result remain open.
 
-These corrections and diagnostics have not yet been compiled or run. The
-implementation description below records intended behavior; where it says
-execution is pending, the first-run results above take precedence. Prior
-exact-source Linux CI at `2b911ea` passed all 108 source checks; source CI does
-not establish Unreal behavior.
+The focused follow-up on signed `f9b12114878b371567c7608d90c3bae2d09c7aed`
+passed PressCatwalk, PressCheckpointReload and PressExit. The largest measured
+ascent step was 2.5 cm at 60 Hz. Playthrough and PressCatwalkPatrol still
+failed; the guard stopped at local feet (4131.549,2222.871,402.150) after
+reaching only the first corner. The held objective cancelled at the first
+master while the hero remained grounded and Interact stayed held. The run
+exited naturally with editor 3/wrapper 1; all source and generated inputs
+remained unchanged. Review SHA-256:
+`e74ceb09c09e1e2b4dc00ab160d4ee165729d4a8b253ba99e828fd944a6f64a4`.
+The next candidate adds collision/path diagnostics for those two failures;
+it does not yet claim a correction.
+
+The implementation description below records intended behavior; where it
+says execution is pending, these dated results take precedence. Prior Linux
+CI at `2b911ea` passed all 108 source checks; source CI does not establish
+Unreal behavior.
 
 The previous encounter credited three four-second held objectives, but had
 no running presses, stamp masking or silent-machine inspection. The candidate
