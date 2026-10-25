@@ -168,12 +168,14 @@ reports.
 
 **`scripts/art/fp_fur_overdraw.py`** counts on the CPU the shells'
 front-facing fragments that pass the opaque depth. At v7's poses, with this
-source:
+source (d65d96e2; `Saved/W18Rebuild/s45_overdraw_v7_poses_d65d96e2.json`):
 
 | hold | fragments | pixels with shells | mean layers | most layers |
 | --- | --- | --- | --- | --- |
-| right_cheek_clear | 89,609 | 9,366 | 9.57 | 23 |
-| paw | 2,911,762 | 303,986 | 9.58 | 23 |
+| right_cheek_clear | 89,514 | 9,371 | 9.55 | 23 |
+| paw | 2,908,447 | 303,865 | 9.57 | 23 |
+
+The most layers, 23, is where one digit's shells overlie another's.
 
 ## On the CPU
 

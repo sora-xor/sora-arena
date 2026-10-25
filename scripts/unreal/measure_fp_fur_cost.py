@@ -136,7 +136,10 @@ def main():
         out["missing"] = missing
         return out
 
-    # --- Material statistics, before the scene ------------------------------------------------------------
+    # --- The scene, as the capture builds it: the new level first, as the capture makes it before any review material
+    # (a material created or deleted before new_level would leave the editor dirty as it switches levels) ---------
+    env = R.build_level()
+    # --- Material statistics ---------------------------------------------------------------------------------
     folder = R.LEVEL.rsplit("/", 1)[0]
     assets.make_directory(folder)
     materials = {}
@@ -159,8 +162,6 @@ def main():
         variants[mode] = stats_of(dup)
         assets.delete_asset(dst)
 
-    # --- The scene, as the capture builds it ----------------------------------------------------------------
-    env = R.build_level()
     ev100 = R.metered_ev100()
     R.exposure(ev100)
     vm = R.Viewmodel(True)
