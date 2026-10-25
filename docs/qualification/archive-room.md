@@ -26,3 +26,12 @@ The first engine run at `1248987` exposed a fixture error: it equipped weapon
 assertions failed, so the post check was not accepted. The correction equips
 weapon 0, asserts its identity, and waits through the real equip recovery
 before mapped attack input. Runtime rerun remains pending.
+
+The same run passed the assisted 133-beat campaign and ValAmort boss fixture,
+but `Campaign.Spaces` still required the removed generic relay pedestal.
+It now requires the actual floor at zero and standing capsule clearance for
+that relay site, while preserving the raised-base check for ordinary sites.
+All 20 evidence files rehashed; editor/wrapper exited naturally with 3/1;
+source, native, config and generated inputs were unchanged. Failed-run review:
+`e6858f5a78f3d24e6acf9b922f939c011d6894e37706b5fafc3cd08d523e28a4`.
+The next run includes ToranosukeSteel, the boss specific to this archive.
