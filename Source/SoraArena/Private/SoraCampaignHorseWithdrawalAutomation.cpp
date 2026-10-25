@@ -62,8 +62,9 @@ bool FSoraHorseWithdrawalMovementTest::RunTest(const FString& Parameters)
     if(!Ready(W)) return false;
     auto* C=W.Campaign(); const auto Survivors=Living(W);
     if(!TestEqual(TEXT("Six real survivors leave the capped third pod unspawned"),Survivors.Num(),6)) return false;
-    TestEqual(TEXT("One authored withdrawal event"),W.Events.FilterByPredicate([](const FString& E)
-        { return E==TEXT("event:horse_defense_withdrawal"); }).Num(),1);
+    const auto* RetreatCue=C->CurrentDialogueCue();
+    TestTrue(TEXT("The actual authored retreat bark begins with the withdrawal"),
+        RetreatCue&&RetreatCue->Id==TEXT("ch02.b02.enforcer.009"));
     const int BeforeDown=Down(*C); const int DefenseMs=C->TaskProgress().ElapsedMs;
     for(int I=0;I<3;++I) TestFalse(TEXT("No old pod warning survives the won task"),IsValid(C->PodWarning(I)));
     for(const auto& Weak:Survivors)
@@ -99,6 +100,9 @@ bool FSoraHorseWithdrawalMovementTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("Physical obstruction cannot be accepted as completed withdrawal"),C->HorseWithdrawalActive()&&C->ActiveBeat()==5&&Completed==0);
     for(const auto& E:Survivors) TestTrue(TEXT("No survivor is teleported through the physical wall"),E.IsValid()&&E->GetActorLocation().X>-1740);
     TestEqual(TEXT("The defense clock remains won at its existing value"),C->TaskProgress().ElapsedMs,DefenseMs);
+    const auto* AfterBark=C->CurrentDialogueCue();
+    TestFalse(TEXT("The 4.6-second retreat bark is not duplicated for each survivor"),
+        AfterBark&&AfterBark->Id==TEXT("ch02.b02.enforcer.009"));
     if(!W.Press(EKeys::Escape)) return false;
     TArray<FVector> Paused; for(const auto& E:Survivors) Paused.Add(E->GetActorLocation());
     if(!W.Tick(40,.02f)) return false;
