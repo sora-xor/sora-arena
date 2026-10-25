@@ -31,7 +31,7 @@ void USoraCampaignDirector::CancelFoundryWork()
 {
     const bool Working=Foundry.Work!=FoundryRules::EWork::None;
     FoundryRules::Cancel(Foundry);
-    if(Working&&Mode().Hero()) Mode().Hero()->GetViewmodel()->SetHiddenInGame(HelmOccupiesHands()||CrankOccupiesHands(),true);
+    if(Working&&Mode().Hero()) Mode().Hero()->GetViewmodel()->SetHiddenInGame(HelmOccupiesHands()||CrankOccupiesHands()||HorseTreatmentOccupiesHands(),true);
 }
 void USoraCampaignDirector::ResetFoundry()
 {

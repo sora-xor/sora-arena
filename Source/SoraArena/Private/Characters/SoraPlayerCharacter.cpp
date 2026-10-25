@@ -418,7 +418,7 @@ void ASoraPlayerCharacter::Reload()
 void ASoraPlayerCharacter::Interact()
 {
     if(!CanPlay()) return;
-    if(auto* G=PlayerGameMode(this); G&&G->Campaign()&&G->Campaign()->InteractFoundry(*this)) return;
+    if(auto* G=PlayerGameMode(this); G&&G->Campaign()&&(G->Campaign()->InteractHorseTreatment(*this)||G->Campaign()->InteractFoundry(*this))) return;
     // Held at a body in a stealth zone, Interact drags it.
     if(USoraStealth* Stealth=USoraStealth::Get(this); Stealth&&Stealth->BeginDrag(*this)) return;
     // Held at the beat's fieldcraft: a lamp snuffed, the downed raised, a
@@ -433,6 +433,7 @@ void ASoraPlayerCharacter::InteractUp()
     {
         G->Campaign()->StopPlayerCrank(false);
         G->Campaign()->CancelFoundryWork();
+        G->Campaign()->CancelHorseTreatment();
         G->Campaign()->CancelCargoUnload();
         G->Campaign()->CancelHelm();
         G->Campaign()->CancelSpineCut();
