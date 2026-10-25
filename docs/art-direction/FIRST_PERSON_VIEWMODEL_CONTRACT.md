@@ -98,7 +98,9 @@ Errors are in half-heights; the tolerance is 0.02.
   Blender metres, +Y the wielder's left).
 - **Rotations:** build records don't store them. Two grips rotate their axes,
   and the contract lists them with the builder call quoted verbatim, which the
-  checker re-finds:
+  checker re-finds. Every other *grip* uses the builder default; other sockets
+  (several Muzzle tips, the saya Koiguchi) can rotate too and come from the
+  imported mesh, since no paw attaches there:
   - the kusarigama's `Grip_L`: x (0, 0, −1), z (1, 0, 0);
   - the micro-mortar's `Grip_R`: x (0, 0, 1), z (−1, 0, 0).
 
@@ -115,8 +117,14 @@ Errors are in half-heights; the tolerance is 0.02.
 **Reconciliation:** one idempotent pass, rebuilding the gear components to
 match:
 
-- **Inputs:** `SoraBeatRules::EquipmentAllows` (the task's equipment mask, or
-  `EquipmentRecovered`), the held `WeaponId`, and `AmmoByWeapon[18]`.
+- **Presence:** an item appears only for an active campaign hero, when its
+  weapon is both unlocked (`IsWeaponUnlocked(id)`) and allowed by the task
+  (`SoraBeatRules::EquipmentAllows`: the equipment mask, or
+  `EquipmentRecovered`). Allowance alone would show the wakizashi in
+  chapter 2, before its `ch03.b01` unlock.
+- **Arrow count:** `WeaponId == 18 ? Equipment->Ammo : AmmoByWeapon[18]`, since
+  a held bow spends live `Ammo` and `AmmoByWeapon[18]` only catches up on a
+  switch.
 - **When it runs:** at beat start and checkpoint restart, chapter select,
   recovery completion, weapon change and ammo change.
 - **What it does:** creates each missing item component and destroys each
@@ -162,6 +170,8 @@ keeps zero instances.
 - recovery at `ch03.b05`;
 - checkpoint restart before and after the recovery;
 - chapter select into chapter 3 and later;
+- no wakizashi in chapter 2, before its `ch03.b01` unlock;
+- the held bow's quiver emptying live as arrows are shot;
 - no item both held and slung or sheathed;
 - an empty quiver.
 

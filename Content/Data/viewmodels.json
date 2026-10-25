@@ -14,7 +14,7 @@
   "reticle_clear_radius": 0.12
  },
  "mesh_scale": 0.75,
- "socket_frame": "Weapon sockets are in Blender metres of the weapon mesh: +X the line of action, +Z up, +Y the wielder's left (UE's FBX import flips Y). Grip_R is the right paw's hold, Grip_L the left paw's, Muzzle the business end. Build records store socket translations only; a socket whose axes the builder rotates is listed in that weapon's socket_axes with the builder call it comes from. All other sockets use the builder default axes x=(1,0,0), z=(0,0,1).",
+ "socket_frame": "Weapon sockets are in Blender metres of the weapon mesh: +X the line of action, +Z up, +Y the wielder's left (UE's FBX import flips Y). Grip_R is the right paw's hold, Grip_L the left paw's, Muzzle the business end. Build records store socket translations only. A grip socket (Grip_R, Grip_L) whose axes the builder rotates is listed in that weapon's socket_axes, with the builder call it comes from; every other grip uses the builder default axes x=(1,0,0), z=(0,0,1). Other sockets can rotate too (several Muzzle tips, the saya Koiguchi) and are not listed, because nothing attaches a paw to them; read their full transforms from the imported mesh.",
  "composition": "Qpresentation = Qaim_presentation * Qaction_eye * Qrest, rightmost applied first, all about the WeaponRoot origin (the anchor). Bob and windup lift translate the WeaponRoot in eye coordinates. Only the presentation rest and state blend (blend_per_s); live gameplay aim - BowAimOffset, the shot direction and the HUD ray - is never delayed or changed.",
  "motion": {
   "note": "Today's magnitudes in USoraViewmodelComponent, unchanged, composed as above about each weapon's rest instead of the fixed (40,18,-18).",
@@ -185,7 +185,8 @@
    "admission": "authored mesh after its import, full socket and material checks and originals; Build()'s primitive fallback stays until then"}
  ],
  "hero_gear": {
-  "rule": "One idempotent reconciliation from the campaign grant (SoraBeatRules::EquipmentAllows: the task's equipment mask, or EquipmentRecovered), the held WeaponId and AmmoByWeapon[18]. It runs at beat start and checkpoint restart, chapter select, recovery completion, weapon change and ammo change; it creates each missing item component and destroys each absent one. Nothing is toggled hidden. No held item is also shown slung or sheathed.",
+  "rule": "One idempotent reconciliation. An item is present only for an active campaign hero, and only when its weapon is both unlocked (IsWeaponUnlocked(id)) and allowed by the task (SoraBeatRules::EquipmentAllows: the task's equipment mask, or EquipmentRecovered); allowance alone would show the wakizashi in chapter 2, before its ch03.b01 unlock. Inputs: those, the held WeaponId and the arrow count. It runs at beat start and checkpoint restart, chapter select, recovery completion, weapon change and ammo change; it creates each missing item component and destroys each absent one. Nothing is toggled hidden. No held item is also shown slung or sheathed.",
+  "arrow_count": "WeaponId == 18 ? Equipment->Ammo : AmmoByWeapon[18]: a held bow spends live Ammo, and AmmoByWeapon[18] only catches up on a weapon switch.",
   "recovery": {"beat": "ch03.b05", "interact": "act_b05_dry_well_rope", "item": "sword_bundle", "string_ms": 3000,
                "weapons": [0, 4, 18], "quiver": 12,
                "before": "ch03.b01 to b05 allow only weapon 4 (equipment_weapons [4]) until the recovery"},
@@ -203,17 +204,18 @@
   },
   "socket_note": "Component-space bind-pose transforms (cm, UE axes); the socket-authoring step converts them to bone-relative transforms on the existing pelvis and spine bones.",
   "items": [
-   {"item": "katana", "socket": "gear_saya_l", "present_when": "weapon 0 allowed",
+   {"item": "katana", "socket": "gear_saya_l", "present_when": "weapon 0 unlocked and allowed",
     "held": "SM_Nyaagyu_HeroSaya, empty", "not_held": "SM_Nyaagyu_HeroSaya with SM_Nyaagyu_HeroKatana seated at its Koiguchi (a socket to author)"},
-   {"item": "wakizashi", "socket": "gear_wakizashi_l", "present_when": "weapon 4 allowed",
+   {"item": "wakizashi", "socket": "gear_wakizashi_l", "present_when": "weapon 4 unlocked and allowed",
     "held": "SM_Weapon_04_Saya, empty", "not_held": "SM_Weapon_04_Saya with SM_Weapon_04 seated at its Koiguchi"},
-   {"item": "ebira", "socket": "gear_ebira", "present_when": "weapon 18 allowed",
+   {"item": "ebira", "socket": "gear_ebira", "present_when": "weapon 18 unlocked and allowed",
     "mesh": "SM_NyaakotoGear_Ebira (to author from the body's Ebira_ parts)",
-    "arrows": "SM_Weapon_18_Ya, one instance per AmmoByWeapon[18] up to quiver; an empty quiver keeps zero instances"},
-   {"item": "yumi", "socket": "gear_yumi_slung", "present_when": "weapon 18 allowed and not held", "mesh": "SM_Weapon_18"}
+    "arrows": "SM_Weapon_18_Ya, one instance per arrow (arrow_count) up to quiver; an empty quiver keeps zero instances"},
+   {"item": "yumi", "socket": "gear_yumi_slung", "present_when": "weapon 18 unlocked, allowed and not held", "mesh": "SM_Weapon_18"}
   ],
   "first_person": "Gear is owner-no-see: first person shows only the held weapon and its paws.",
   "root_tests": ["recovery at ch03.b05", "checkpoint restart before and after the recovery", "chapter select into chapter 3 and later",
+                 "chapter 2: no wakizashi before its ch03.b01 unlock", "drawing and firing the held bow empties the quiver live",
                  "no item both held and slung or sheathed", "an empty quiver with zero arrow instances"]
  }
 }
