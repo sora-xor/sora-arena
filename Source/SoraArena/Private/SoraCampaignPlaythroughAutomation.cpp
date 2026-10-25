@@ -1,3 +1,4 @@
+#include "SoraArchiveRules.h"
 #include "SoraGameMode.h"
 #include "SoraHelmAutomation.h"
 #include "SoraRidgeAutomation.h"
@@ -309,9 +310,11 @@ bool WaitForDialogue(FAutomationTestBase& Test,FState& State)
 {
     for(int32 Frame=0;Campaign(State)->IsDialogueBlocking()&&Frame<202;++Frame)
     {
-        if(!Test.TestNotNull(TEXT("A blocking scene keeps its subtitle cue"),Campaign(State)->CurrentDialogueCue())||
+        const auto* Cue=Campaign(State)->CurrentDialogueCue();
+        if(!Test.TestTrue(TEXT("A blocking scene has a cue or its timed visual prologue"),
+            Cue||(Campaign(State)->IsArchiveRevealActive()&&Campaign(State)->ArchiveRevealTime()<SoraArchiveRules::SpeechStartSeconds))||
             !Advance(Test,State,1,.1f)) return false;
-        ++State.LinesShown;
+        if(Cue) ++State.LinesShown;
     }
     return !Campaign(State)->IsDialogueBlocking()||Fail(Test,State,Where(State)+TEXT(": dialogue held control past twenty seconds"));
 }

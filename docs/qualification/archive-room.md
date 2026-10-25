@@ -148,3 +148,29 @@ CI artifacts remain authenticated under run `40237210108` (108 passes).
 This accepts the directed physical route, not the provisional long connector's
 visual design, the closed south entry's travel cut, the authored twenty-second
 rack-impact cinematic, ordinary duel balance, packaged play or final art.
+
+## Family-page cinematic source candidate
+
+The next source candidate stages the authored twenty-second reveal when the
+actual duel crosses 50 percent health. A preceding combat bark finishes first.
+The scene cuts to clear marks in the east aisle, moves Toranosuke into the east
+rack, shakes that physical rack and lights the family slate at 1.4 seconds.
+A wide impact shot, slow slate view and final reaction lead back to the duel
+ring and the player's camera. These are procedural character transforms;
+final strike/recoil animation, readable slate artwork, sound and rendered
+camera composition remain unfinished.
+
+The actual four subtitle durations total 15.4 seconds, leaving a 4.6-second
+visual prologue in the twenty-second sequence. A host contract now checks
+that sum against the generated dialogue. The scene uses active time, so pause
+freezes movement, camera and speech; held actions remain blocked. The phase
+checkpoint stays at phase one until all speech and the scene finish. Reset
+cancels the scene and camera ownership, while a saved phase-two reload does
+not replay it.
+
+ArchiveFamilyPage now checks both preceding-bark cases, actual camera ownership,
+physical rack response, pause, held movement/fire, the twenty-second duration,
+late pre-completion save state and completed reload. ArchiveRevealReset adds
+mid-scene checkpoint reset coverage. The assisted campaign permits a silent
+visual prologue only while that named scene is active. These fixtures have
+not yet compiled or run; Claude still owns the engine/Blender lane.

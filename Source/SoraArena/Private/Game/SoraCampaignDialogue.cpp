@@ -29,6 +29,7 @@ void USoraCampaignDirector::Enqueue(const TArray<int32>& Lines,bool bForce,const
         Queue.Add({Line,Cue.Beat,bBlocking});
     }
     RefreshDialogueHold();
+    if(bArchiveRevealPending) TickArchiveReveal(0.f);
 }
 
 void USoraCampaignDirector::RefreshDialogueHold()
@@ -36,7 +37,7 @@ void USoraCampaignDirector::RefreshDialogueHold()
     const bool bBlockingHead=!Queue.IsEmpty()&&Queue[0].bBlocking;
     if(!bBlockingHead) { BlockingSeconds=0.f; bBlockingLimitReached=false; }
     const ASoraGameMode& M=Mode();
-    const bool bWanted=bBlockingHead&&!bBlockingLimitReached&&M.bCampaign&&!M.bDefeated&&!M.bChapterComplete;
+    const bool bWanted=(bArchiveReveal||(bBlockingHead&&!bBlockingLimitReached))&&M.bCampaign&&!M.bDefeated&&!M.bChapterComplete;
     if(bDialogueHeld==bWanted) return;
     bDialogueHeld=bWanted;
     if(bWanted)
@@ -52,6 +53,7 @@ void USoraCampaignDirector::RefreshDialogueHold()
 
 void USoraCampaignDirector::ClearDialogue()
 {
+    ResetArchiveReveal();
     Queue.Reset(); LineRemaining=0.f;
     RefreshDialogueHold();
 }
@@ -62,6 +64,9 @@ void USoraCampaignDirector::TickDialogue(float DeltaSeconds)
     const FSoraChapter* Chapter=ActiveChapter();
     while(Chapter&&!Queue.IsEmpty()&&Remaining>0.f)
     {
+        // Do not spend any of the reveal's first line while finishing a
+        // preceding bark; its visual prologue owns the next active interval.
+        if(bArchiveRevealPending&&TickArchiveReveal(0.f)) break;
         const float Step=FMath::Min(Remaining,LineRemaining);
         if(bDialogueHeld)
         {

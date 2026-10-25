@@ -27,7 +27,10 @@ void ASoraWorldBuilder::BuildArchive(const FSoraZone& Zone,const FSoraZone& Pres
     // Physical racks occupy the authored 1.2 m strips; the four duel posts
     // alone occupy the ring. These are collision proxies pending final art.
     for(int Side:{0,1})
-        Part(TEXT("ArchiveSlateRack"),FVector(Side?2540:60,900,180),FVector(120,1800,360),Slate,TEXT("Metal"));
+    {
+        auto* Rack=Part(TEXT("ArchiveSlateRack"),FVector(Side?2540:60,900,180),FVector(120,1800,360),Slate,TEXT("Metal"));
+        if(Side) { ArchiveEastRack=Rack; Rack->ComponentTags.Add(TEXT("ArchiveEastRack")); }
+    }
     ArchivePage=Part(TEXT("ArchiveWashioSlate"),FVector(2477,900,150),FVector(4,75,100),FLinearColor(.025f,.04f,.05f),TEXT("Metal"),false);
     ArchivePage->ComponentTags.Add(TEXT("ArchiveFamilyPage"));
     ArchivePageLight=GetWorld()->SpawnActor<APointLight>(O+FVector(2440,900,150),FRotator::ZeroRotator);
@@ -96,5 +99,21 @@ void ASoraWorldBuilder::ShowArchivePage(const FSoraBeat& Beat,int32 Phase)
     {
         auto* Light=ArchivePageLight->PointLightComponent.Get();
         Light->SetIntensity(Lit?450.f:0.f); Light->SetVisibility(Lit);
+    }
+}
+
+void ASoraWorldBuilder::StageArchiveReveal(float Seconds)
+{
+    const float Age=Seconds-SoraArchiveRules::ImpactSeconds;
+    const float Shake=Age>=0&&Age<1.5f?FMath::Sin(Age*28.f)*1.4f*FMath::Exp(-Age*4.f):0.f;
+    if(IsValid(ArchiveEastRack)) ArchiveEastRack->SetRelativeRotation(FRotator(0,0,Shake));
+    // A negative time only resets the rack, leaving the phase-derived light.
+    if(Seconds<0) return;
+    const bool Lit=Age>=0;
+    if(IsValid(ArchivePage)) Tint(ArchivePage,Lit?FLinearColor(.12f,.72f,.82f):FLinearColor(.025f,.04f,.05f));
+    if(IsValid(ArchivePageLight))
+    {
+        auto* Light=ArchivePageLight->PointLightComponent.Get();
+        Light->SetIntensity(Lit?450.f:0.f);Light->SetVisibility(Lit);
     }
 }

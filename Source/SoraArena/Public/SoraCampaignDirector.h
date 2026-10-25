@@ -193,6 +193,8 @@ public:
     // the dialogue queue.
     const FSoraDialogueCue* CurrentDialogueCue() const;
     bool IsDialogueBlocking() const { return bDialogueHeld; }
+    bool IsArchiveRevealActive() const { return bArchiveReveal; }
+    double ArchiveRevealTime() const { return ArchiveRevealSeconds; }
     bool IsToriiEpilogue() const;
     bool HasWashioSword() const;
     bool HasReturnedWashioSword() const;
@@ -415,6 +417,12 @@ private:
     int32 SpineReadyMs=0;
     int32 PendingSummitPhaseSave=INDEX_NONE;
     int32 PendingArchivePhaseSave=INDEX_NONE;
+    bool bArchiveRevealPending=false,bArchiveReveal=false;
+    double ArchiveRevealSeconds=0;
+    FVector ArchiveRevealOrigin=FVector::ZeroVector;
+    TWeakObjectPtr<ASoraBoss> ArchiveRevealRival;
+    bool TickArchiveReveal(float DeltaSeconds);
+    void ResetArchiveReveal(float BlendSeconds=0.f);
     void SaveArrivedSummitPhase();
     bool bSpinePromptShown=false,bSpineMutoRaised=false;
     bool IsSpineCapture() const;

@@ -14,7 +14,7 @@
 namespace Pod=SoraPodRules;
 void USoraCampaignDirector::EndPlay(const EEndPlayReason::Type Reason)
 {
-    ResetPods(); Super::EndPlay(Reason);
+    ResetArchiveReveal(); ResetPods(); Super::EndPlay(Reason);
 }
 void USoraCampaignDirector::ResetPods()
 {

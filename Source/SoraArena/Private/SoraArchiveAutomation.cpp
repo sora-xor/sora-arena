@@ -10,6 +10,10 @@
 #include "SoraEquipmentComponent.h"
 #include "SoraGameEvents.h"
 #include "SoraWorldBuilder.h"
+#include "SoraArchiveRules.h"
+#include "Camera/CameraActor.h"
+#include "Camera/PlayerCameraManager.h"
+#include "GameFramework/PlayerController.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
 
@@ -103,16 +107,59 @@ bool FSoraArchiveFamilyPageTest::RunTest(const FString&)
         // Boss.ToranosukeSteel. This is not a player combat/difficulty claim.
         UGameplayStatics::ApplyDamage(Rival,Rival->MaxHealth*.5f,nullptr,W.Hero(),UDamageType::StaticClass());
         if(!W.Tick(2)||!TestEqual(TEXT("Actual opponent health enters the family-page phase"),W.Campaign()->ActivePhase(),1)||
-            !PageIsLit(W,true)) return false;
+            !PageIsLit(W,false)) return false;
         const auto* BeforeReveal=Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(W.Slot,0));
         if(!TestTrue(TEXT("Quitting before or during the reveal still resumes before the exchange"),
             BeforeReveal&&BeforeReveal->CheckpointChapter==5&&BeforeReveal->CheckpointBeat==8&&BeforeReveal->CheckpointPhase==0)) return false;
         if(WithBark) TestFalse(TEXT("A prior combat bark has not yet started the blocking exchange"),W.Campaign()->IsDialogueBlocking());
-        for(int I=0;I<600&&!W.Campaign()->IsDialogueBlocking();++I) if(!W.Tick(1)) return false;
-        TestTrue(TEXT("The family-page dialogue holds combat"),W.Campaign()->IsDialogueBlocking()&&!W.Hero()->CanPlay());
+        for(int I=0;I<600&&!W.Campaign()->IsArchiveRevealActive();++I) if(!W.Tick(1)) return false;
+        if(!TestTrue(TEXT("The family-page cinematic holds combat"),W.Campaign()->IsArchiveRevealActive()&&
+            W.Campaign()->IsDialogueBlocking()&&!W.Hero()->CanPlay())) return false;
+        auto* PC=Cast<APlayerController>(W.Hero()->GetController());
+        auto* Shot=W.Campaign()->CinematicCamera();
+        if(!TestTrue(TEXT("The actual local view belongs to the reveal camera"),PC&&Shot&&PC->GetViewTarget()==Shot)||
+            !TestNull(TEXT("The rack-impact prologue has no premature speech cue"),W.Campaign()->CurrentDialogueCue())) return false;
+        const double Initial=W.Campaign()->ArchiveRevealTime();int ActiveFrames=0;
+        const auto Step=[&]() { ++ActiveFrames;return W.Tick(1); };
+        const auto AdvanceTo=[&](double Seconds)
+        {
+            for(int I=0;I<1300&&W.Campaign()->IsArchiveRevealActive()&&W.Campaign()->ArchiveRevealTime()<Seconds;++I)
+                if(!Step()) return false;
+            return TestTrue(TEXT("The cinematic reaches its timed mark"),W.Campaign()->IsArchiveRevealActive()&&W.Campaign()->ArchiveRevealTime()>=Seconds);
+        };
+        if(!AdvanceTo(SoraArchiveRules::ImpactSeconds+.05)) return false;
+        if(!PageIsLit(W,true)) return false;
+        const auto& Zone=W.Campaign()->ActiveChapter()->Space.Zones[W.BeatData().Space.Zone];
+        TestTrue(TEXT("The real duellist has reached the east rack"),FMath::Abs(Rival->GetActorLocation().X-Zone.Rect.Min.X-2444)<2);
+        UStaticMeshComponent* Rack=nullptr;TArray<UStaticMeshComponent*> Parts;W.Mode()->Arena()->GetComponents(Parts);
+        for(auto* Part:Parts) if(Part->ComponentHasTag(TEXT("ArchiveEastRack"))) Rack=Part;
+        TestTrue(TEXT("The physical rack reacts to the impact"),Rack&&!Rack->GetRelativeRotation().IsNearlyZero(.01f));
+        const auto HeroAt=W.Hero()->GetActorLocation();
+        if(!W.World->InjectKey(EKeys::W,IE_Pressed)||!W.World->InjectKey(EKeys::LeftMouseButton,IE_Pressed)||!Step()||!Step()) return false;
+        TestTrue(TEXT("Held movement and fire cannot move the cinematic hero"),HeroAt.Equals(W.Hero()->GetActorLocation(),.1f)&&!W.Hero()->GetEquipment()->IsTriggerHeld());
+        W.World->InjectKey(EKeys::W,IE_Released);W.World->InjectKey(EKeys::LeftMouseButton,IE_Released);
+        W.Mode()->SetMenuOpen(true);
+        const double Paused=W.Campaign()->ArchiveRevealTime();const FTransform CameraAt=Shot->GetActorTransform(),RivalAt=Rival->GetActorTransform();
+        if(!W.Tick(120)) return false;
+        TestTrue(TEXT("Pause freezes the scene clock, camera and physical duellist"),
+            W.Campaign()->ArchiveRevealTime()==Paused&&CameraAt.Equals(Shot->GetActorTransform(),.001f)&&RivalAt.Equals(Rival->GetActorTransform(),.001f));
+        W.Mode()->ResumePlay();
+        if(!AdvanceTo(SoraArchiveRules::SpeechStartSeconds+.05)) return false;
         const auto* Reveal=W.Campaign()->CurrentDialogueCue();
-        TestTrue(TEXT("The family-page exchange precedes the remembered lesson"),Reveal&&Reveal->Id==TEXT("ch06.b09.toranosuke.005"));
-        for(int I=0;I<1800&&W.Campaign()->IsDialogueBlocking();++I) if(!W.Tick(1)) return false;
+        TestTrue(TEXT("The family-page exchange follows impact and precedes the remembered lesson"),Reveal&&Reveal->Id==TEXT("ch06.b09.toranosuke.005"));
+        if(!AdvanceTo(19.5)) return false;
+        const auto* LateSave=Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(W.Slot,0));
+        TestTrue(TEXT("The nearly complete cinematic still retains the phase-one checkpoint"),LateSave&&LateSave->CheckpointPhase==0);
+        for(int I=0;I<120&&W.Campaign()->IsArchiveRevealActive();++I) if(!Step()) return false;
+        TestTrue(TEXT("The reveal releases at twenty active seconds, excluding pause"),
+            !W.Campaign()->IsArchiveRevealActive()&&FMath::Abs(Initial+ActiveFrames/60.-SoraArchiveRules::RevealSeconds)<.04);
+        TestTrue(TEXT("The completed scene restores the player view"),PC->GetViewTarget()==W.Hero()||
+            (PC->PlayerCameraManager&&PC->PlayerCameraManager->PendingViewTarget.Target==W.Hero()));
+        TestTrue(TEXT("The rack settles and the duellist stands upright"),Rack&&Rack->GetRelativeRotation().IsNearlyZero()&&
+            FMath::IsNearlyZero(Rival->GetActorRotation().Pitch));
+        TestTrue(TEXT("Both characters return inside the duel ring before control resumes"),
+            FMath::Abs(W.Hero()->GetActorLocation().X-Zone.Rect.Min.X-1400)<2&&
+            FMath::Abs(Rival->GetActorLocation().X-Zone.Rect.Min.X-1800)<2);
         if(!TestFalse(TEXT("The authored reveal releases control"),W.Campaign()->IsDialogueBlocking())||!W.Tick(2)) return false;
         const auto* Memory=W.Campaign()->CurrentDialogueCue();
         TestTrue(TEXT("The remembered lesson follows the blocking exchange"),Memory&&Memory->Id==TEXT("ch06.b09.sekireisai.001"));
@@ -125,11 +172,30 @@ bool FSoraArchiveFamilyPageTest::RunTest(const FString&)
             !W.Press(EKeys::Enter)||!W.Press(EKeys::Enter)||!W.Press(EKeys::Enter)) return false;
         W.Events.Reset();W.EventsHandle=W.Fieldcraft()->OnEvent.AddLambda([&W](FName Event){W.Events.Add(Event.ToString());});
         if(!TestTrue(TEXT("The saved duel resumes in phase two"),W.Campaign()->ActiveBeat()==8&&W.Campaign()->ActivePhase()==1)||
-            !PageIsLit(W,true)) return false;
+            !PageIsLit(W,true)||!TestFalse(TEXT("Restoring phase two never replays the finished cinematic"),W.Campaign()->IsArchiveRevealActive())) return false;
     }
     FBeatWorld Pledge(*this,TEXT("ArchivePledgePage"),5,9);
     if(!Pledge.Start()||!PageIsLit(Pledge,true)) return false;
-    AddInfo(TEXT("Actual phase/light state and actual save reload; directed story damage. Slate text, character staging, cinematic animation and rendered lighting remain unqualified."));
+    AddInfo(TEXT("Actual twenty-second scene, rack impact, camera ownership, pause/input hold, phase/light state and save reload; directed story damage and procedural character staging. Authored character animation, readable slate art, rendered framing and sound remain unqualified."));
     return !HasAnyErrors();
+}
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraArchiveRevealResetTest,"SoraArena.Campaign.ArchiveRevealReset",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraArchiveRevealResetTest::RunTest(const FString&)
+{
+    using SoraFieldcraftAutomation::FBeatWorld;
+    FBeatWorld W(*this,TEXT("ArchiveRevealReset"),5,8);if(!W.Start()) return false;
+    W.Harden();ASoraBoss* Rival=nullptr;
+    for(TActorIterator<ASoraBoss> It(W.World->GetTestWorld());It;++It) Rival=*It;
+    if(!TestNotNull(TEXT("The real archive rival exists"),Rival)) return false;
+    Rival->Hold(600000);
+    for(int I=0;I<1800&&W.Campaign()->LinesQueued()>0;++I) if(!W.Tick(1)) return false;
+    UGameplayStatics::ApplyDamage(Rival,Rival->MaxHealth*.5f,nullptr,W.Hero(),UDamageType::StaticClass());
+    if(!W.Tick(180)||!TestTrue(TEXT("The reset occurs during the actual reveal"),W.Campaign()->IsArchiveRevealActive())) return false;
+    W.Mode()->ResetRound();if(!W.Tick(1)) return false;
+    auto* PC=Cast<APlayerController>(W.Hero()->GetController());
+    TestTrue(TEXT("Checkpoint reset cancels camera ownership and restores phase one"),
+        !W.Campaign()->IsArchiveRevealActive()&&W.Campaign()->ActivePhase()==0&&PC&&PC->GetViewTarget()==W.Hero());
+    return PageIsLit(W,false)&&!HasAnyErrors();
 }
 #endif

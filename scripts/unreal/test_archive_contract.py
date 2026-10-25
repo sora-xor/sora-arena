@@ -1,5 +1,6 @@
 import copy
 import json
+import re
 from pathlib import Path
 import unittest
 from campaign_archive import archive_valid
@@ -26,6 +27,20 @@ class ArchiveTests(unittest.TestCase):
             c=copy.deepcopy(self.chapter);mutate(c['space']['zones'][c['space']['beats'][8]['zone']]);self.assertFalse(archive_valid(c))
         c=copy.deepcopy(self.chapter);c['space']['beats'][9]['anchor'][0]+=100
         self.assertFalse(archive_valid(c))
+
+    def test_reveal_timing_matches_the_actual_authored_subtitles(self):
+        rows=[t for t in self.chapter['triggers'] if t['beat']=='ch06.b09' and t['on']=='duel_event:family_page']
+        self.assertEqual(len(rows),1)
+        self.assertEqual(rows[0]['mode'],'blocking')
+        self.assertEqual(rows[0]['lines'],['ch06.b09.toranosuke.005','ch06.b09.nyaakoto.002',
+                                         'ch06.b09.nyaakoto.003','ch06.b09.toranosuke.006'])
+        durations={line['id']:line['duration_s'] for line in self.chapter['lines']}
+        header=(Path(__file__).resolve().parents[2]/'Source/SoraArena/Public/SoraArchiveRules.h').read_text()
+        constants={name:float(re.search(r'\b'+name+r'=([0-9.]+)',header).group(1))
+                   for name in ['RevealSeconds','SpeechStartSeconds','ImpactSeconds']}
+        self.assertEqual(constants['RevealSeconds'],20.)
+        self.assertAlmostEqual(constants['SpeechStartSeconds']+sum(durations[n] for n in rows[0]['lines']),20.)
+        self.assertGreater(constants['SpeechStartSeconds'],constants['ImpactSeconds'])
 
     def test_pledge_waits_for_the_elevated_press_landing(self):
         self.assertTrue(archive_valid(self.chapter))

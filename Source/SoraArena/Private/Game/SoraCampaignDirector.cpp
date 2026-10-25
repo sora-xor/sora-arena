@@ -17,6 +17,7 @@
 #include "SoraEquipmentComponent.h"
 #include "SoraFieldcraft.h"
 #include "SoraPressRules.h"
+#include "SoraArchiveRules.h"
 #include "SoraGameEvents.h"
 #include "SoraGameMode.h"
 #include "SoraGalleryRules.h"
@@ -449,6 +450,7 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
         Chapter.Beats[BeatIndex].Task.Maai.Count==0&&Beat.Task.Maai.Count==0;
     if(Index!=0||bResumed) bChapterOpening=false;
     EndRecoveryClimb();
+    ResetArchiveReveal();
     ResetWind();
     BeatIndex=Index; BeatPhase=Phase;
     Task=Beat.Task;
@@ -703,6 +705,7 @@ void USoraCampaignDirector::TickComponent(float DeltaTime,ELevelTick TickType,FA
     TickScheduled();
     if(ActiveBeatData()!=Beat) return;
     const bool bWasBlocking=bDialogueHeld;
+    if(TickArchiveReveal(DeltaTime)) return;
     TickDialogue(DeltaTime);
     if(ActiveBeatData()!=Beat||bWasBlocking||bDialogueHeld) return;
     if(TickHorseWithdrawal(DeltaTime)||TickWoodTransit()||TickLiftGallery(DeltaTime)) return;
@@ -1025,6 +1028,11 @@ void USoraCampaignDirector::EnterPhases(int32 Before,bool bSave)
         // The family-page reveal precedes the remembered phase-two lesson;
         // otherwise its radio lines sit ahead of the blocking exchange.
         const bool Archive=Beat.Id==TEXT("ch06.b09");
+        if(Archive&&Phase==1&&bSave)
+        {
+            bArchiveRevealPending=true;
+            if(Mode().Arena()) Mode().Arena()->StageArchiveReveal(0.f);
+        }
         if(Archive&&Beat.PhaseEvents.IsValidIndex(Phase-1)) Fire(TEXT("duel_event:")+Beat.PhaseEvents[Phase-1]);
         Fire(FString::Printf(TEXT("%s_phase:%d"),bDuel?TEXT("duel"):TEXT("boss"),Phase+1));
         if(bDuel&&!Archive&&Beat.PhaseEvents.IsValidIndex(Phase-1)) Fire(TEXT("duel_event:")+Beat.PhaseEvents[Phase-1]);
@@ -1590,6 +1598,7 @@ const FSoraDialogueCue* USoraCampaignDirector::CurrentDialogueCue() const
                 return &Chapter.Dialogue[Trigger.Lines[0]];
         return nullptr;
     }
+    if(bArchiveReveal&&ArchiveRevealSeconds<SoraArchiveRules::SpeechStartSeconds) return nullptr;
     return !Queue.IsEmpty()?&Chapter.Dialogue[Queue[0].Line]:nullptr;
 }
 TArray<FSoraSubtitle> USoraCampaignDirector::QueuedSubtitles() const

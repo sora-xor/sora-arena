@@ -10,4 +10,5 @@ constexpr int WalkNorth=600, WalkHalfWidth=100;
 // The provisional connector crosses an unbuilt gap. Solid screens must be
 // above both ordinary jump height and the 165 cm vault limit.
 constexpr int GuardHeightCm=180;
+constexpr double RevealSeconds=20.0, SpeechStartSeconds=4.6, ImpactSeconds=1.4;
 }
