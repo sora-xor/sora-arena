@@ -1,5 +1,14 @@
 # Offline campaign progression acceptance
 
+The `f6b7a5f` chapter-six integration builds and passes six of eight directed
+tests. InfiltrationLoadout and Playthrough fail because their fixtures disregard
+the equip cooldown and mission carrying restrictions. `d338b0e` corrects both
+while preserving busy/forbidden-input checks; its engine rerun is pending.
+`160897c` fixes unfinished sheathing wrongly receiving an offline blade guard
+or parry, with Collector keyboard/remap/gamepad regression still unrun. Earlier
+runtime results do not qualify these new changes. See the
+[current checkpoint](../complete-release-plan.md#october-25-campaign-first-person-and-metal-corrections).
+
 The later `57ce095` art diagnostic establishes saved timber readback and
 frame-matched exposure observations in SM5 and SM6; it does not add campaign
 playthrough acceptance. Visual defects and the remaining full-release work are

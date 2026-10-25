@@ -8,6 +8,18 @@ remains a historical recovery record. This is a progress record, not a claim
 that the release is complete. Backward compatibility,
 legacy formats, aliases, and fallback decoders are prohibited.
 
+## 2026-10-25 campaign and Metal corrections
+
+Eight directed editor tests pass at `e237b9f`, while its four BowAim originals
+fail visual review and both timber Metal draws fail material/resolution
+admission. At `f6b7a5f`, chapter-six integration builds and passes six of eight
+tests; two fixture assumptions require correction. Proxy framing, material
+samplers, capture resolution, those fixture assumptions and a real unfinished-
+sheathing guard defect are corrected in source, with engine reruns pending.
+The [current checkpoint](complete-release-plan.md#october-25-campaign-first-person-and-metal-corrections)
+records failures, exact evidence, the refreshed binding and missing historical
+native artifacts. No current package or completed release is claimed.
+
 ## 2026-10-25 timber persistence and exposure observations
 
 Exact `57ce095` passes a nine-mesh isolated import and fresh-process saved

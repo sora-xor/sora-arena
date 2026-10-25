@@ -11,6 +11,57 @@ production. Work runs in isolated worktrees, with a single coordinated Unreal
 and GPU rendering lane. The shared checkout is not a build or render workspace.
 The local coordination mailboxes record current ownership, commits and lane use.
 
+## October 25 campaign, first-person and Metal corrections
+
+At exact `e237b9f`, eight selected editor tests pass, including twenty
+cache/inventory cases and three presentation tests, with zero selected errors
+and one HTTP warning. The corrected log collector confirms actual editor EOF.
+Fresh 720p BowAim captures pass functional checks, but all four originals fail
+visual review: the temporary grip and paw obstruct the target. `c25d384` gives
+that unchanged proxy its own fixed poses and measures its actual component
+bounds. New engine and image results are still required.
+
+The nine-asset timber probe produces 36 SM6 and 18 SM5 originals at `e237b9f`,
+but both runs fail admission. Both masters fail Metal compilation and resolve
+to WorldGridMaterial. All 54 paired views retain the neutral post process and
+excluded production lighting, but use 75 percent internal resolution.
+`376e4ad` corrects sampler types, explicit alpha outputs and the parent mask
+default; `8ede60c` establishes and records full static resolution. Neither fix
+has a new Unreal draw result yet. Diagnostic Nanite triangles do not qualify
+the failed materials. All 31 original packages are preserved in a verified
+read-only archive; all 1,151 production Generated files remain unchanged.
+
+Chapter-six source `f6b7a5f` builds in 76.68 seconds. Six of eight selected
+tests pass: BulkheadCapture, CacheArrows, EquipmentRecovery, GalleryCache,
+SpineDrawCut and SpireSupply. InfiltrationLoadout tries to collect during the
+existing 0.25-second equip cooldown; Playthrough expects a rifle to equip
+despite the mission's carrying restriction. The original six assertion failures
+and one HTTP warning are retained. `d338b0e` corrects those fixture assumptions
+and preserves explicit busy/forbidden-input rejection. Its engine rerun is
+pending. `160897c` separately fixes a real offline combat defect: unfinished
+sheathing could receive a drawn-blade guard/parry. Completed sheathing remains
+required for mutō-dori. The new mapped keyboard/remap/gamepad Collector test
+and the three bilingual HUD states await engine qualification.
+
+Authenticated CI `40156704117` passes 94 of 95 gates at `e237b9f`; its UV test
+fails to import before its body runs. The corrected exact invocation passes
+locally. At `376e4ad`, 42 of 43 tooling/asset gates pass; only the campaign
+binding is stale after chapter-six data changed. Regenerating it changes only
+that chapter hash, and its check passes. No acceptance thresholds are relaxed.
+Evidence is under `Saved/Qualification/2026-10-25/` in `viewmodel-cache-e237b9f/`,
+`timber-baseline-metal-sm6-attempt1/`, `timber-baseline-metal-sm5-attempt1/`,
+`timber-baseline-31-readonly-archive/`, `ch06-f6b7a5f-runtime-attempt1/`,
+`source-checks-376e4ad-tooling-assets/` and `ci-e237b9f/`.
+
+Native evidence availability was rechecked: both old Iroha target folders are
+absent. Of 286 historical referenced file paths, 43 still exist and match their
+hashes; 243 are missing. Signed source survives, but the original final-death
+runner/log/archive was not found within the searched worktrees, development
+folders and temporary folders. No removal cause is inferred. Fresh exact-source
+qualification is being prepared. Production bridge `10ad7dad` and latest Mac
+package `c655b6b` remain unchanged. Ordinary play, photoreal art, platform and
+performance testing, full native execution and settlement remain unfinished.
+
 ## October 25 saved timber probe and measured exposure
 
 At exact signed `57ce095`, the bounded timber import passes for nine meshes:
