@@ -611,8 +611,15 @@ struct FSoraPodArrival
     FName Id;
     FVector Floor=FVector::ZeroVector;
 };
+struct FSoraPressHall
+{
+    bool bEnabled=false;
+    FVector2D Origin=FVector2D::ZeroVector;
+};
+
 struct FSoraBeatSpace
 {
+    FSoraPressHall PressHall;
     TArray<FSoraFuelCanister> FuelCanisters;
     TArray<FSoraPodArrival> PodArrivals;
     FSoraMoltenSpace Molten;

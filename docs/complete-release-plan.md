@@ -11,6 +11,17 @@ production. Work runs in isolated worktrees, with a single coordinated Unreal
 and GPU rendering lane. The shared checkout is not a build or render workspace.
 The local coordination mailboxes record current ownership, commits and lane use.
 
+## October 25 press-hall source candidate
+
+A separate source candidate adds the eight authored press positions, separate
+master jams, stamp-clock masking at player-noise emission, interval integration
+for footsteps, and living auditors' actual inspection movement with a visible
+missed-deadline state. The six new host contract tests and existing campaign
+schema checks pass. C++ and Unreal execution remain pending while the frozen
+native cohort runs. The [press-hall record](qualification/press-hall.md)
+separates this blockout from the unfinished catwalk, patrol cadence, lamp
+response, sound, art and ordinary encounter checks.
+
 ## October 25 separate desk copies and actual crate CPU evidence
 
 The chapter-six copying candidate preserves the three authored desk names

@@ -64,6 +64,7 @@ from campaign_horse_shell import horse_shell_valid
 from campaign_horse_withdrawal import horse_withdrawal_valid
 from campaign_molten import molten_valid
 from campaign_canisters import canisters_valid
+from campaign_press import press_hall_valid
 from campaign_moat import moat_valid
 from campaign_space import arena_blockers, spook_dismount
 from campaign_cargo import cargo_manifest
@@ -873,6 +874,7 @@ def validate(catalog, campaign, chapters, legacy, roster):
     drone_net = next(attack["windup_ms"] for row in roster["enemies"]["archetypes"] if row["id"] == "drone"
                      for attack in row["attacks"] if attack["id"] == "seizure_net")
     for chapter in chapters:
+        require(press_hall_valid(chapter), "press hall must retain its authored machines and noise rules")
         for record in chapter["space"]["beats"]:
             nets = record["fieldcraft"]["nets"]
             require(not nets or nets["quarry"][0]["kind"] != "person" or nets["windup_ms"] == drone_net,

@@ -828,6 +828,7 @@ bool USoraCampaignDirector::WorkObjectiveAt(int32 Objective)
 {
     const FSoraBeat* Beat=ActiveBeatData();
     if(!Beat||!SoraBeatRules::WorkObjective(TaskState,Task,Objective)) return false;
+    if(auto* Craft=USoraFieldcraft::Get(this)) Craft->JamPress(Objective);
     Fire(TEXT("interact:")+Beat->Objectives[Objective]);
     Fire(TEXT("event:objective_done_")+Beat->Objectives[Objective]);
     return true;
@@ -867,7 +868,9 @@ void USoraCampaignDirector::TickHeldWork(int32 DeltaMs,float DeltaSeconds)
     // guard waits (without letting the load fall) while a guard watches.
     if(!Hero->IsActionHeld(TEXT("Interact"))||!Points.IsValidIndex(HeldPoint)||
         !Near(ASoraWorldBuilder::Floor(Points[HeldPoint]),Reach+60.f)||
-        (bCargo&&!SoraBeatRules::DropoffHasRoom(TaskState,Task,HeldPoint)))
+        (bCargo&&!SoraBeatRules::DropoffHasRoom(TaskState,Task,HeldPoint))||
+        (HeldWork==EHeldWork::Objective&&Space->PressHall.bEnabled&&
+            (!USoraFieldcraft::Get(this)||!USoraFieldcraft::Get(this)->CanWorkPress(HeldPoint))))
     {
         HeldWork=EHeldWork::None; HeldPoint=INDEX_NONE; HeldMs=0; bHeldWatched=false;
         CargoClock.Reset();
@@ -1805,6 +1808,8 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
     case SoraBeatRules::EGoal::Objectives:
     {
         const int32 Objective=NearestOf(Space.Objectives,[&](int32 Index) { return (TaskState.PointsMask&(1u<<Index))==0u; });
+        if(Space.PressHall.bEnabled&&Objective>=0&&Objective<3&&
+            (!USoraFieldcraft::Get(this)||!USoraFieldcraft::Get(this)->CanWorkPress(Objective))) return;
         // An objective with a hold (a charge planted, a relay node pulled) is
         // worked with Interact held; the hold fills in TickHeldWork.
         if(Beat->ObjectiveHoldMs.IsValidIndex(Objective)&&Beat->ObjectiveHoldMs[Objective]>0)

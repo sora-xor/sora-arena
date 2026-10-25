@@ -295,6 +295,7 @@ UStaticMeshComponent* USoraFieldcraft::Piece(const FString& Name, const TCHAR* M
 
 void USoraFieldcraft::Clear()
 {
+    ClearPressHall();
     ClearMolten();
     for(const auto& Canister:FuelCanisters) if(IsValid(Canister)) Canister->Destroy();
     FuelCanisters.Reset();
@@ -345,7 +346,7 @@ void USoraFieldcraft::Stage(const FSoraBeat& Beat)
 {
     Clear();
     ClimbSpace=Beat.Space.Climb.bEnabled?&Beat.Space.Climb:nullptr;
-    if ((Beat.Space.Fieldcraft.IsEmpty() && !Beat.Space.Molten.bEnabled && Beat.Space.FuelCanisters.IsEmpty()) || !GetWorld()) return;
+    if ((Beat.Space.Fieldcraft.IsEmpty() && !Beat.Space.Molten.bEnabled && Beat.Space.FuelCanisters.IsEmpty() && !Beat.Space.PressHall.bEnabled) || !GetWorld()) return;
     Staged = &Beat.Space.Fieldcraft;
     BeatId = Beat.Id;
     FActorSpawnParameters Params;
@@ -360,6 +361,7 @@ void USoraFieldcraft::Stage(const FSoraBeat& Beat)
     StageWorld(Beat);
     StageMolten(Beat);
     StageCanisters(Beat);
+    StagePressHall(Beat);
     StageCompanions(Beat);
     StageFlood(Beat);
     StageMoat();
@@ -557,6 +559,7 @@ void USoraFieldcraft::Tick(float DeltaTime)
     if (Staged) TickCandle();
     if (Staged) TickLooks();
     if (Staged) TickMolten(DtMs);
+    if (Staged) TickPressHall(DtMs);
 }
 
 // ---------------------------------------------------------------------------

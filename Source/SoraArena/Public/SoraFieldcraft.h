@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Engine/HitResult.h"
+#include "Engine/EngineBaseTypes.h"
 #include "GameFramework/Actor.h"
 #include "SoraCatalog.h"
 #include "SoraFieldcraftRules.h"
@@ -221,6 +222,17 @@ public:
     bool MoveFloodCompanion(ASoraCompanion& Companion,float Dt);
     int32 FloodFootstepPermille(const FVector& Feet) const;
     bool IsStaged() const { return Staged != nullptr; }
+    // Press masking is sampled when a noise is emitted. An interval is used
+    // for continuous footsteps; overlapping presses never multiply masks.
+    int32 PressNoisePermille(const FVector& Origin) const;
+    int32 PressMaskedMs(const FVector& Origin,int32 IntervalMs) const;
+    bool CanWorkPress(int32 Objective) const;
+    void JamPress(int32 Objective);
+    bool PressRunning(int32 Index) const;
+    int64 PressClock() const { return PressClockMs; }
+    bool PressInspectionArrived(int32 Objective) const;
+    bool PressInspectionOverdue(int32 Objective) const;
+    ASoraEnemy* PressInspector(int32 Objective) const;
     int32 MoltenClock() const { return MoltenClockMs; }
     int32 MoltenBurnLeft(const ASoraCharacterBase& Body) const;
     const FSoraFieldcraft* Active() const { return Staged; }
@@ -353,6 +365,25 @@ public:
 protected:
     virtual bool DoesSupportWorldType(const EWorldType::Type WorldType) const override;
 private:
+    const FSoraPressHall* PressHall=nullptr;
+    int64 PressClockMs=0;
+    double PressCarryMs=0;
+    FDelegateHandle PressClockHandle;
+    void AdvancePressClock(UWorld* World,ELevelTick TickType,float DeltaSeconds);
+    uint32 JammedPresses=0;
+    struct FPressInspection
+    {
+        int64 RequestedMs=-1,ArrivedMs=-1;
+        bool bOverdue=false,bFinished=false;
+        TWeakObjectPtr<ASoraEnemy> Guard;
+    };
+    FPressInspection PressInspections[3];
+    TArray<TWeakObjectPtr<UStaticMeshComponent>> PressPlatens;
+    void StagePressHall(const FSoraBeat& Beat);
+    void ClearPressHall();
+    void TickPressHall(int32 DeltaMs);
+    FVector PressCenter(int32 Index) const;
+    bool NearRunningPress(const FVector& Origin) const;
     enum class EHoldKind : uint8 { None, Snuff, Companion, Release, NetCut, Relight };
     struct FHold
     {

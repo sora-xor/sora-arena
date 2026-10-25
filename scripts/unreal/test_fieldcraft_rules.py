@@ -21,16 +21,16 @@ if platform.system() == "Darwin":
     sdk_flags = ["-isysroot", sdk]
 assert compiler, "A C++ compiler is required to test the fieldcraft rules"
 with tempfile.TemporaryDirectory(prefix="sora-fieldcraft-rules-") as temp:
-    binary = Path(temp) / "fieldcraft-rules"
-    # Asserts must stay live: the driver is nothing but asserts. It is built
-    # optimized as the editor builds the rules, with undefined behaviour
-    # trapping instead of silently miscomparing.
-    subprocess.run([compiler, "-std=c++20", "-UNDEBUG", "-O2", "-fsanitize=undefined", "-fsanitize-trap=undefined",
-                    "-Wall", "-Werror", *sdk_flags,
-                    "-I", str(ROOT / "Source/SoraArena/Public"),
-                    str(ROOT / "scripts/unreal/fieldcraft_rules_driver.cpp"), "-o", str(binary)],
-                   check=True, env=env)
-    subprocess.run([str(binary)], check=True, env=env)
+    for name in ("fieldcraft", "press"):
+        binary = Path(temp) / (name + "-rules")
+        # Assertions stay live; undefined behavior traps on both rule drivers.
+        subprocess.run([compiler, "-std=c++20", "-UNDEBUG", "-O2", "-fsanitize=undefined", "-fsanitize-trap=undefined",
+                        "-Wall", "-Werror", *sdk_flags,
+                        "-I", str(ROOT / "Source/SoraArena/Public"),
+                        str(ROOT / f"scripts/unreal/{name}_rules_driver.cpp"), "-o", str(binary)],
+                       check=True, env=env)
+        subprocess.run([str(binary)], check=True, env=env)
+
 print("Fieldcraft rules pass: the arms ring, groups, stepping and wheel sectors; companions downed, raised by a "
       "held hand or a healing lance, bleeding out, freed from collars and cells, hidden and sent on by signal, and "
       "the party walking only whole; held work; lamps snuffed and relit; breath and drowning at any frame rate; grip, "

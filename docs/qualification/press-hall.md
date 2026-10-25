@@ -1,0 +1,50 @@
+# Press stamp masking and silent-machine inspection
+
+This is an unqualified source candidate for chapter 6, beat 11. It has not
+been compiled or exercised in Unreal. The existing copying-desk regression
+remains pinned to `56bdcfe` in a different worktree while the native proof
+cohort runs. No local compiler, Unreal or Blender process was launched for
+this change during that cohort.
+
+The previous encounter credited three four-second held objectives, but had
+no running presses, stamp masking or silent-machine inspection. The candidate
+places the eight machine footprints from chapter 6 L7 on a 42 by 24 metre
+floor. A2, B2 and C1 retain their separate four-second holds. Grounding, reach
+and a clear view to the handle are required at admission and during work.
+Releasing, leaving or becoming obstructed resets an unfinished jam; clearing
+an obstruction while holding the key does not restart it.
+
+The stamp clock advances before actor perception and sound emission. It
+freezes when play is paused and resets with the beat. A running press masks
+player noise to 0.2 within 800 cm of its impact, for the first 500 ms of every
+1600 ms period. Overlapping presses do not compound the mask. Impulse noise
+stores its loudness when emitted, including ranged attacks, melee, landing,
+takedowns and player-instigated thrown objects or explosions. Alarms and
+unrelated environmental sounds retain their behavior. Footsteps integrate
+the masked and exposed perception values across the interval; averaging an
+audible radius would incorrectly make a distant listener hear the quiet part.
+
+Jamming stops that machine's masking immediately. An available living,
+calm auditor receives a real navigation errand to the jammed master. An
+unreachable path cannot count as arrival. The twenty-second deadline and
+actual arrival are recorded separately, so a blocked or delayed inspection
+cannot silently become a passing timed event. An unavailable auditor remains
+pending; detection takes precedence over the calm inspection. The first jam
+and dispatch raise their authored dialogue events.
+
+The source includes integer rule tests for exact window boundaries, long
+intervals, 30/60/144 Hz partitions and independent master state. Six Python
+contract tests pass, including malformed numbers, reordered or missing
+machines, altered authored rules and footprint clearance at work/patrol
+points. Campaign generation and the existing schema validator pass all 133
+beats and reject its 65 malformed fixtures. The timber binding changes only
+the chapter-six digest. The C++ rule driver and three new engine fixtures
+(`PressHall`, `PressInspection`, `PressNoiseEmission`) are prepared but unrun.
+
+This is still a functional blockout. The north-west catwalk/ladder entry,
+elevated enforcer, authored 45/30-second patrol loops, die-lamp suspicion after
+five seconds, synchronized stamp audio/music, final machines and dressing,
+ordinary stealth difficulty, fresh-world save reload, full campaign regression
+and current packages remain open. The entry is explicitly provisional floor
+access; neither these host checks nor the prepared engine fixtures establish
+complete campaign or release acceptance.

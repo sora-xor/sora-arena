@@ -10,6 +10,7 @@
 #include "SoraEnemy.h"
 #include "SoraFieldcraft.h"
 #include "SoraFieldcraftRules.h"
+#include "SoraPressRules.h"
 #include "SoraGameEvents.h"
 #include "SoraHistoricalArms.h"
 #include "SoraPlayerCharacter.h"
@@ -135,12 +136,12 @@ void ASoraEnemyController::OnWeaponFired(const FSoraWeaponFiredEvent& Event)
     // A bowstring is no louder than a blade. The hero's shot gives him away;
     // an ally's shot shows where it was aimed.
     const Stealth::ENoise Kind = Event.Kind == ESoraShotKind::Arrow ? Stealth::ENoise::Melee : Stealth::ENoise::Shot;
-    Heard.Add({Kind, Event.Origin, Shooter->IsEnemy() ? Event.End : Event.Origin, Shooter});
+    HearNoise(Kind, Event.Origin, Shooter->IsEnemy() ? Event.End : Event.Origin, Shooter);
 }
 
 void ASoraEnemyController::OnDetonated(const FSoraDetonatedEvent& Event)
 {
-    Heard.Add({Stealth::ENoise::Explosion, Event.Location, Event.Location, nullptr});
+    HearNoise(Stealth::ENoise::Explosion, Event.Location, Event.Location, Event.Instigator);
 }
 
 void ASoraEnemyController::OnMeleeCommitted(const FSoraMeleeCommittedEvent& Event)
@@ -149,7 +150,7 @@ void ASoraEnemyController::OnMeleeCommitted(const FSoraMeleeCommittedEvent& Even
     const auto* Attacker = Cast<ASoraCharacterBase>(Event.Attacker);
     if (!Attacker || Attacker->IsEnemy())
         return;
-    Heard.Add({Stealth::ENoise::Melee, Attacker->GetActorLocation(), Attacker->GetActorLocation(), Attacker});
+    HearNoise(Stealth::ENoise::Melee, Attacker->GetActorLocation(), Attacker->GetActorLocation(), Attacker);
 }
 
 void ASoraEnemyController::HearCallout(const FVector& Caller, const FVector& Where, bool bAlarm)
@@ -169,6 +170,10 @@ void ASoraEnemyController::Rouse(const FVector& Where)
 void ASoraEnemyController::HearNoise(Stealth::ENoise Kind, const FVector& Origin, const FVector& Evidence, const AActor* Source,
     int32 LoudnessPermille)
 {
+    // Queue the emitted loudness, never the later listener's stamp phase.
+    if(Cast<ASoraPlayerCharacter>(Source)||(Source&&Cast<ASoraPlayerCharacter>(Source->GetInstigator())))
+        if(const auto* Craft=USoraFieldcraft::Get(this))
+            LoudnessPermille=SoraPressRules::Scale(LoudnessPermille,Craft->PressNoisePermille(Origin));
     Heard.Add({Kind, Origin, Evidence, Source, false, LoudnessPermille});
 }
 
@@ -346,7 +351,16 @@ void ASoraEnemyController::Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, 
         const int32 Loudness = Zone && Zone->IsZoneActive() ? Stealth::StepLoudnessPermille(Steps, Zone->SurfaceAt(Feet)) : 1000;
         const int32 Distance = FMath::RoundToInt32(FVector::Dist(There, Ear));
         if (Distance <= Stealth::HeardRadiusCm(Steps, Perception, Loudness))
-            Senses.NoisePerSecond = Stealth::HeardPermille(Steps, Distance, Occluded(There, Ear, &Target), Perception, Loudness);
+        {
+            const bool Blocked=Occluded(There,Ear,&Target);
+            const int32 Open=Stealth::HeardPermille(Steps,Distance,Blocked,Perception,Loudness);
+            const int32 MaskedMs=Hero&&WaterCraft?WaterCraft->PressMaskedMs(Feet,DtMs):0;
+            const int32 Quiet=Stealth::HeardPermille(Steps,Distance,Blocked,Perception,
+                SoraPressRules::Scale(Loudness,SoraPressRules::NoisePermille));
+            // Integrate the two audible states, not an average radius: a
+            // short stamp cannot extend quiet footsteps to a farther guard.
+            Senses.NoisePerSecond=DtMs>0?int32((int64(Open)*(DtMs-MaskedMs)+int64(Quiet)*MaskedMs)/DtMs):Open;
+        }
         bEvidence |= Senses.NoisePerSecond > 0;
     }
     // The loudest single noise since the last tick.
