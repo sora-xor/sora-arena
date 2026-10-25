@@ -7,10 +7,12 @@
 #include "SoraFloodRules.h"
 #include "SoraClimbRules.h"
 #include "SoraMoatRules.h"
+#include "SoraMoltenRules.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "SoraFieldcraft.generated.h"
 class APointLight;
 class ASoraCompanion;
+class ASoraCharacterBase;
 class ASoraEnemy;
 class ASoraHorse;
 class ASoraPlayerCharacter;
@@ -218,6 +220,8 @@ public:
     bool MoveFloodCompanion(ASoraCompanion& Companion,float Dt);
     int32 FloodFootstepPermille(const FVector& Feet) const;
     bool IsStaged() const { return Staged != nullptr; }
+    int32 MoltenClock() const { return MoltenClockMs; }
+    int32 MoltenBurnLeft(const ASoraCharacterBase& Body) const;
     const FSoraFieldcraft* Active() const { return Staged; }
     // Every event raised for the beat: npc_downed:<id>, npc_revived:any,
     // signal:hide, interact_done:collar_<id>, event:door_1_open,
@@ -362,6 +366,9 @@ private:
     ASoraPlayerCharacter* Hero() const;
     int32 StepMs(float DeltaTime);
     void StageWorld(const FSoraBeat& Beat);
+    void StageMolten(const FSoraBeat& Beat);
+    void ClearMolten();
+    void TickMolten(int32 DtMs);
     void StageCompanions(const FSoraBeat& Beat);
     void TickHolds(int32 DtMs);
     void TickCompanions(int32 DtMs);
@@ -424,6 +431,18 @@ private:
     int32 RoofAt(const FVector& Location) const;
 
     const FSoraFieldcraft* Staged = nullptr;
+    const FSoraMoltenSpace* MoltenSpace=nullptr;
+    int32 MoltenClockMs=0;
+    uint32 MoltenGeneration=0;
+    struct FMoltenBody
+    {
+        SoraMoltenRules::FBody Exposure;
+        FVector Last=FVector::ZeroVector;
+        bool bGrounded=false;
+    };
+    TMap<TWeakObjectPtr<ASoraCharacterBase>,FMoltenBody> MoltenBodies;
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> MoltenSurfaces;
+    UPROPERTY() TArray<TObjectPtr<UPointLightComponent>> MoltenLights;
     FString BeatId;
     UPROPERTY() TObjectPtr<AActor> Props;
     UPROPERTY() TArray<TObjectPtr<ASoraLamp>> LampActors;

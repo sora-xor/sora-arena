@@ -21,6 +21,7 @@ struct FSoraHit
     bool bHasOrigin = false;
     // True only for traced rounds; arrows, blasts and drowning remain distinct.
     bool bHitscan = false;
+    SoraCombatRules::EEnvironmentalRate EnvironmentalRate = SoraCombatRules::EEnvironmentalRate::None;
     // A catalog weapon, or INDEX_NONE for an opponent's attack.
     int32 WeaponId = INDEX_NONE;
     // The opponent's attack (Content/Data/enemies.json), if any.

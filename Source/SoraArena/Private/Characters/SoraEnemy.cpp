@@ -636,8 +636,8 @@ bool ASoraEnemy::AdmitDamage(float& Damage,FSoraHit& Hit,AActor* Causer)
             return false;
         }
     }
-    Amount=Rules::StaggeredDamage(Amount,IsStaggered());
-    if(Kind) Amount=Rules::RearDamage(Amount,Facing,Kind->RearWeakPermille);
+    Amount=Rules::EnemyVulnerabilityDamage(Amount,Hit.Kind,Hit.EnvironmentalRate,IsStaggered(),Facing,
+        Kind?Kind->RearWeakPermille:1000);
     // A landed strike staggers when it outweighs the opponent's poise, but a
     // chain of cuts cannot hold it still.
     if(Kind&&Hit.Kind==Rules::EHit::Melee)

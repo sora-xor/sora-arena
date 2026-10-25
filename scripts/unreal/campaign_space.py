@@ -620,6 +620,8 @@ def derive_space(chapter, beats, places, collectibles, triggers, layout, fail):
     place_flood(beats, records, zones, fail)
     from campaign_foundry_defense import place_foundry_defense
     place_foundry_defense(beats, records, fail)
+    from campaign_molten import place_molten
+    place_molten(beats, records, fail)
     place_spire(beats, records, zones, fail)
     place_summit(beats, records, zones, fail)
     place_climb(beats, records, zones, fail)

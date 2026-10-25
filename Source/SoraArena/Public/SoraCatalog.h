@@ -596,8 +596,14 @@ struct FSoraFoundryDefenseSpace
     bool bEnabled=false;
     TArray<FVector2D> Tubs, Crew;
 };
+struct FSoraMoltenSpace
+{
+    bool bEnabled=false;
+    TArray<FSoraVolume> Channels;
+};
 struct FSoraBeatSpace
 {
+    FSoraMoltenSpace Molten;
     FSoraFoundryDefenseSpace FoundryDefense;
     FSoraHelmSpace Helm;
     FSoraBridgeSpace Bridge;
