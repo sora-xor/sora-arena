@@ -168,22 +168,48 @@ frames (0.17 s) early in the draw.
 **The continuous draw rig.** Production W18 is a skeletal yumi, not a
 rest/drawn mesh swap.
 
-- **Bones:**
+- **Bones (28):**
   - one Grip root;
   - 12 bones along the upper limb and 8 along the lower;
-  - Tip_U and Tip_L in the horn hazu;
-  - String_Nock.
+  - the string's seven (`yumi_draw.string_frames`):
+    - Tip_L and Tip_U in the horn hazu, each turning with its straight
+      segment;
+    - String_Bend_L2, String_Bend_L1, String_Nock, String_Bend_U1 and
+      String_Bend_U2, which carry the string round a circular fillet at the
+      nock. Its arc length (24 mm) is held at every draw.
 - **Draw:** one draw value, 0 to 1, poses them. The limbs follow the solved
   shape at each draw (`yumi_draw.drawn`), the string's unstretched 2.1346 m
   reaching the nock 0.88 m behind the grip. The skinned stave stays within
   1.8 mm of that shape through the draw.
-- **The string:** two straight segments skinned between String_Nock and the
-  tips.
-- **Release:** the string returns in 0.03 s with a damped overshoot past
-  brace.
+- **The string:** two straight segments and the bend between them. Its
+  sections stay square to it, the nakajikake's included, so nothing shears.
+  - The v2 rig's translation-only string sheared the serving up to 1.28×.
+  - Every island lying on the string, the serving included, rides the string
+    bones whole.
+  - Every face meets the deformation gate, 25% or 1 mm, with no exception.
+- **Release:** the string returns to brace in 0.03 s and holds there. An
+  unstretched string can't pass brace. Its few millimetres of vibration are
+  not modelled.
 - **Sockets:** they keep their committed positions at brace (`Grip_L`,
   `Grip_R`, `Muzzle`, `String_*`, checked to 5 decimals). Grip_R rides
-  String_Nock.
+  String_Nock, the apex of the bend. That is where the arrow's nock sits:
+  3.4 mm inside the model's sharp V at full draw. The rig record has each socket in both frames, the mesh frame
+  and the bone-local offset from that bone's bind matrix. Copy the bone-local
+  offset onto the bone, not the mesh-frame point.
+- **The take:** `A_Weapon_18_Draw`, 11 keys at 10 fps, so its time in seconds
+  is the draw fraction. Between keys, Blender's FBX import and Unreal blend
+  each bone's local translation linearly and its rotation by normalised lerp.
+  `yumi_draw._deform_at` does the same. Against the exported FBX as Blender
+  plays it, at the keys, quarter points and midpoints, it agrees within
+  0.55 µm (`Rig/Review/W18_rig_playback_blender.npz`). Unreal's playback is
+  read back separately.
+- **Check geometry:** only `sora-yumi-rig-check-v3` (bind and per-key pose
+  matrices of the 28-bone rig) is accepted. Earlier rigs are archived
+  evidence, never admitted:
+  - `data/yumi_rig_b55fe81.json`;
+  - the schema-2 attempt, with its string-to-stave webs:
+    `data/yumi_rig_schema2_attempt.json`;
+  - the serving-exception attempt: `data/yumi_rig_schema2b_attempt3.json`.
 
 ## Sockets
 

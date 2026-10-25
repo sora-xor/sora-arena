@@ -1,15 +1,16 @@
 {
- "schema_version": 1,
+ "schema_version": 3,
+ "check_geometry_schema": "sora-yumi-rig-check-v3",
  "asset": "SK_Weapon_18",
  "skeleton": "SK_Weapon_18_Skeleton",
  "action": "A_Weapon_18_Draw",
  "generator": "scripts/art/create_runtime_weapon_yumi_rig.py",
- "generator_sha256": "0a83c4596b36648769128dbe48910e500bd3646e9bb6980d51aec006cb95e98b",
+ "generator_sha256": "5919e88cfed6cdb95057f62cce5ed94b40eae32aa11394da8b7ecd46943f4d95",
  "inputs": {
   "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18.fbx": "96ffd4ac042e9dd4a39290c34c4fd855dc47f57b4c09428fe005f3cecd55df39",
   "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_Ya.fbx": "3fbec542158e1aa6a7fd20b36a4cb12ed749a2a4296a96c59637476560604b40",
   "Content/SourceArt/Weapons/Runtime/W18_Yumi/build_record.json": "e598a0df54d4ec06ab9bdff59f8ed0b812b8576729ea17aa87cf85ec20b83fe8",
-  "scripts/art/yumi_draw.py": "8eb7181d2a94454c3d31fbea2804e826bcb6b9972efd42836a37aebacc570cee",
+  "scripts/art/yumi_draw.py": "de360fd3eaa25f5f08e9222c4d5ec6954d9809ab2e898def4ba4035d4d19f71f",
   "scripts/art/create_runtime_weapon_yumi.py": "5c4c6b6a082f67483b152af72921258dfcdc15d20a7fac241353fc40ed78d9f3"
  },
  "versions": {
@@ -318,20 +319,6 @@
    ]
   },
   {
-   "name": "Tip_U",
-   "parent": "Grip",
-   "head": [
-    -0.1710988,
-    0.0,
-    1.4404515
-   ],
-   "tail": [
-    -0.1510988,
-    0.0,
-    1.4404515
-   ]
-  },
-  {
    "name": "Tip_L",
    "parent": "Grip",
    "head": [
@@ -340,9 +327,37 @@
     -0.6940933
    ],
    "tail": [
-    -0.1438746,
+    -0.1639423,
     0.0,
-    -0.6940933
+    -0.6740934
+   ]
+  },
+  {
+   "name": "String_Bend_L2",
+   "parent": "Grip",
+   "head": [
+    -0.16642,
+    0.0,
+    0.0580001
+   ],
+   "tail": [
+    -0.1664877,
+    0.0,
+    0.078
+   ]
+  },
+  {
+   "name": "String_Bend_L1",
+   "parent": "Grip",
+   "head": [
+    -0.1664403,
+    0.0,
+    0.064
+   ],
+   "tail": [
+    -0.166508,
+    0.0,
+    0.0839999
    ]
   },
   {
@@ -351,18 +366,61 @@
    "head": [
     -0.1664606,
     0.0,
-    0.0700001
+    0.07
    ],
    "tail": [
-    -0.1964606,
+    -0.1665283,
     0.0,
-    0.0700001
+    0.0899999
+   ]
+  },
+  {
+   "name": "String_Bend_U1",
+   "parent": "Grip",
+   "head": [
+    -0.1664809,
+    0.0,
+    0.076
+   ],
+   "tail": [
+    -0.1665486,
+    0.0,
+    0.0959999
+   ]
+  },
+  {
+   "name": "String_Bend_U2",
+   "parent": "Grip",
+   "head": [
+    -0.1665012,
+    0.0,
+    0.0819999
+   ],
+   "tail": [
+    -0.1665689,
+    0.0,
+    0.1019998
+   ]
+  },
+  {
+   "name": "Tip_U",
+   "parent": "Grip",
+   "head": [
+    -0.1710988,
+    0.0,
+    1.4404515
+   ],
+   "tail": [
+    -0.1711665,
+    0.0,
+    1.4604514
    ]
   }
  ],
  "weights": {
-  "string": 1568,
-  "stave": 29306
+  "string": 1598,
+  "stave": 29276,
+  "string_loops": 0
  },
  "keys": [
   {
@@ -657,19 +715,6 @@
       0.0
      ]
     },
-    "Tip_U": {
-     "location": [
-      0.0,
-      0.0,
-      0.0
-     ],
-     "rotation_quaternion": [
-      1.0,
-      0.0,
-      0.0,
-      0.0
-     ]
-    },
     "Tip_L": {
      "location": [
       0.0,
@@ -683,11 +728,76 @@
       0.0
      ]
     },
+    "String_Bend_L2": {
+     "location": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "rotation_quaternion": [
+      1.0,
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "String_Bend_L1": {
+     "location": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "rotation_quaternion": [
+      1.0,
+      0.0,
+      -0.0,
+      0.0
+     ]
+    },
     "String_Nock": {
+     "location": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "rotation_quaternion": [
+      1.0,
+      0.0,
+      -0.0,
+      0.0
+     ]
+    },
+    "String_Bend_U1": {
+     "location": [
+      0.0,
+      -0.0,
+      0.0
+     ],
+     "rotation_quaternion": [
+      1.0,
+      0.0,
+      -0.0,
+      0.0
+     ]
+    },
+    "String_Bend_U2": {
+     "location": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "rotation_quaternion": [
+      1.0,
+      0.0,
+      -0.0,
+      0.0
+     ]
+    },
+    "Tip_U": {
      "location": [
       -0.0,
       0.0,
-      -1e-07
+      0.0
      ],
      "rotation_quaternion": [
       1.0,
@@ -990,43 +1100,95 @@
       0.0108587
      ]
     },
-    "Tip_U": {
-     "location": [
-      0.0,
-      -0.0087359,
-      -0.0015714
-     ],
-     "rotation_quaternion": [
-      1.0,
-      0.0,
-      0.0,
-      0.0
-     ]
-    },
     "Tip_L": {
      "location": [
-      0.0,
-      -0.0066019,
-      0.0026153
+      -0.006593,
+      0.0026376,
+      -2.23e-05
      ],
      "rotation_quaternion": [
-      1.0,
+      0.9991009,
+      -0.0001435,
+      -0.0,
+      0.0423955
+     ]
+    },
+    "String_Bend_L2": {
+     "location": [
+      -0.0703351,
+      0.0002676,
+      -0.000238
+     ],
+     "rotation_quaternion": [
+      0.9991009,
+      -0.0001435,
       0.0,
-      0.0,
-      0.0
+      0.0423955
+     ]
+    },
+    "String_Bend_L1": {
+     "location": [
+      -0.0707458,
+      0.0002533,
+      -0.0002394
+     ],
+     "rotation_quaternion": [
+      0.9996597,
+      -8.83e-05,
+      -0.0,
+      0.0260888
      ]
     },
     "String_Nock": {
      "location": [
-      -0.0,
-      0.0713539,
-      -1e-07
+      -0.0709609,
+      0.0002491,
+      -0.0002401
      ],
      "rotation_quaternion": [
-      1.0,
+      0.9999523,
+      -3.31e-05,
       0.0,
+      0.0097753
+     ]
+    },
+    "String_Bend_U1": {
+     "location": [
+      -0.0709803,
+      0.0002488,
+      -0.0002402
+     ],
+     "rotation_quaternion": [
+      0.9999786,
+      2.21e-05,
+      -0.0,
+      -0.0065408
+     ]
+    },
+    "String_Bend_U2": {
+     "location": [
+      -0.0708039,
+      0.000246,
+      -0.0002396
+     ],
+     "rotation_quaternion": [
+      0.9997388,
+      7.73e-05,
       0.0,
-      0.0
+      -0.0228553
+     ]
+    },
+    "Tip_U": {
+     "location": [
+      -0.0087412,
+      -0.0015419,
+      -2.96e-05
+     ],
+     "rotation_quaternion": [
+      0.9997388,
+      7.73e-05,
+      0.0,
+      -0.0228553
      ]
     }
    }
@@ -1323,43 +1485,95 @@
       0.0356359
      ]
     },
-    "Tip_U": {
-     "location": [
-      0.0,
-      -0.0286121,
-      -0.0054801
-     ],
-     "rotation_quaternion": [
-      1.0,
-      0.0,
-      0.0,
-      0.0
-     ]
-    },
     "Tip_L": {
      "location": [
-      0.0,
-      -0.0214917,
-      0.0089708
+      -0.0214611,
+      0.0090435,
+      -7.26e-05
      ],
      "rotation_quaternion": [
-      1.0,
+      0.9968368,
+      -0.000269,
       0.0,
+      0.0794754
+     ]
+    },
+    "String_Bend_L2": {
+     "location": [
+      -0.1407955,
+      0.0005761,
+      -0.0004765
+     ],
+     "rotation_quaternion": [
+      0.9968368,
+      -0.000269,
       0.0,
-      0.0
+      0.0794754
+     ]
+    },
+    "String_Bend_L1": {
+     "location": [
+      -0.1415661,
+      0.0005255,
+      -0.0004791
+     ],
+     "rotation_quaternion": [
+      0.9987878,
+      -0.0001666,
+      0.0,
+      0.0492242
      ]
     },
     "String_Nock": {
      "location": [
-      -0.0,
-      0.1427079,
-      -1e-07
+      -0.1419747,
+      0.0005106,
+      -0.0004805
      ],
      "rotation_quaternion": [
-      1.0,
+      0.9998209,
+      -6.41e-05,
       0.0,
+      0.0189278
+     ]
+    },
+    "String_Bend_U1": {
+     "location": [
+      -0.14202,
+      0.0005095,
+      -0.0004806
+     ],
+     "rotation_quaternion": [
+      0.9999352,
+      3.85e-05,
       0.0,
-      0.0
+      -0.0113861
+     ]
+    },
+    "String_Bend_U2": {
+     "location": [
+      -0.1417016,
+      0.0005002,
+      -0.0004795
+     ],
+     "rotation_quaternion": [
+      0.9991306,
+      0.0001411,
+      -0.0,
+      -0.0416895
+     ]
+    },
+    "Tip_U": {
+     "location": [
+      -0.0286304,
+      -0.0053833,
+      -9.69e-05
+     ],
+     "rotation_quaternion": [
+      0.9991307,
+      0.0001411,
+      -0.0,
+      -0.0416895
      ]
     }
    }
@@ -1656,43 +1870,95 @@
       0.0679324
      ]
     },
-    "Tip_U": {
-     "location": [
-      0.0,
-      -0.0544026,
-      -0.0112511
-     ],
-     "rotation_quaternion": [
-      1.0,
-      0.0,
-      0.0,
-      0.0
-     ]
-    },
     "Tip_L": {
      "location": [
-      0.0,
-      -0.0405195,
-      0.0180572
+      -0.0404579,
+      0.0181942,
+      -0.0001369
      ],
      "rotation_quaternion": [
-      1.0,
+      0.9934831,
+      -0.0003857,
       0.0,
+      0.1139791
+     ]
+    },
+    "String_Bend_L2": {
+     "location": [
+      -0.2113143,
+      0.0009186,
+      -0.0007151
+     ],
+     "rotation_quaternion": [
+      0.9934831,
+      -0.0003857,
       0.0,
-      0.0
+      0.1139791
+     ]
+    },
+    "String_Bend_L1": {
+     "location": [
+      -0.2124193,
+      0.0008141,
+      -0.0007188
+     ],
+     "rotation_quaternion": [
+      0.9974769,
+      -0.0002402,
+      0.0,
+      0.0709925
      ]
     },
     "String_Nock": {
      "location": [
-      -0.0,
-      0.2140618,
-      -1e-07
+      -0.2130118,
+      0.0007829,
+      -0.0007208
      ],
      "rotation_quaternion": [
-      1.0,
+      0.9996115,
+      -9.43e-05,
       0.0,
+      0.0278736
+     ]
+    },
+    "String_Bend_U1": {
+     "location": [
+      -0.2130872,
+      0.0007805,
+      -0.0007211
+     ],
+     "rotation_quaternion": [
+      0.999883,
+      5.18e-05,
       0.0,
-      0.0
+      -0.0152973
+     ]
+    },
+    "String_Bend_U2": {
+     "location": [
+      -0.2126451,
+      0.0007624,
+      -0.0007196
+     ],
+     "rotation_quaternion": [
+      0.9982909,
+      0.0001978,
+      0.0,
+      -0.0584397
+     ]
+    },
+    "Tip_U": {
+     "location": [
+      -0.0544401,
+      -0.011067,
+      -0.0001842
+     ],
+     "rotation_quaternion": [
+      0.998291,
+      0.0001978,
+      0.0,
+      -0.0584397
      ]
     }
    }
@@ -1989,43 +2255,95 @@
       0.1048638
      ]
     },
-    "Tip_U": {
-     "location": [
-      0.0,
-      -0.0837335,
-      -0.0187938
-     ],
-     "rotation_quaternion": [
-      1.0,
-      0.0,
-      0.0,
-      0.0
-     ]
-    },
     "Tip_L": {
      "location": [
-      0.0,
-      -0.0617157,
-      0.0295461
+      -0.061615,
+      0.0297548,
+      -0.0002085
      ],
      "rotation_quaternion": [
-      1.0,
+      0.9891083,
+      -0.0004981,
       0.0,
+      0.1471886
+     ]
+    },
+    "String_Bend_L2": {
+     "location": [
+      -0.28186,
+      0.0012938,
+      -0.0009538
+     ],
+     "rotation_quaternion": [
+      0.9891083,
+      -0.0004981,
       0.0,
-      0.0
+      0.1471886
+     ]
+    },
+    "String_Bend_L1": {
+     "location": [
+      -0.2832854,
+      0.0011188,
+      -0.0009587
+     ],
+     "rotation_quaternion": [
+      0.9957455,
+      -0.0003118,
+      0.0,
+      0.0921452
      ]
     },
     "String_Nock": {
      "location": [
-      -0.0,
-      0.2854158,
-      -1e-07
+      -0.2840576,
+      0.0010658,
+      -0.0009613
      ],
      "rotation_quaternion": [
-      1.0,
+      0.999322,
+      -0.0001246,
       0.0,
+      0.0368184
+     ]
+    },
+    "String_Bend_U1": {
+     "location": [
+      -0.2841667,
+      0.0010618,
+      -0.0009616
+     ],
+     "rotation_quaternion": [
+      0.9998266,
+      6.3e-05,
+      -0.0,
+      -0.0186213
+     ]
+    },
+    "String_Bend_U2": {
+     "location": [
+      -0.2836116,
+      0.001033,
+      -0.0009598
+     ],
+     "rotation_quaternion": [
+      0.9972579,
+      0.0002504,
       0.0,
-      0.0
+      -0.074004
+     ]
+    },
+    "Tip_U": {
+     "location": [
+      -0.0837961,
+      -0.0185103,
+      -0.0002836
+     ],
+     "rotation_quaternion": [
+      0.9972579,
+      0.0002504,
+      0.0,
+      -0.074004
      ]
     }
    }
@@ -2322,43 +2640,95 @@
       0.1450127
      ]
     },
-    "Tip_U": {
-     "location": [
-      0.0,
-      -0.1154282,
-      -0.0281481
-     ],
-     "rotation_quaternion": [
-      1.0,
-      0.0,
-      0.0,
-      0.0
-     ]
-    },
     "Tip_L": {
      "location": [
-      0.0,
-      -0.0840289,
-      0.043348
+      -0.0838812,
+      0.0436321,
+      -0.0002839
      ],
      "rotation_quaternion": [
-      1.0,
+      0.9837081,
+      -0.0006084,
       0.0,
+      0.1797722
+     ]
+    },
+    "String_Bend_L2": {
+     "location": [
+      -0.3524154,
+      0.0017026,
+      -0.0011926
+     ],
+     "rotation_quaternion": [
+      0.9837081,
+      -0.0006084,
       0.0,
-      0.0
+      0.1797722
+     ]
+    },
+    "String_Bend_L1": {
+     "location": [
+      -0.3541532,
+      0.0014407,
+      -0.0011985
+     ],
+     "rotation_quaternion": [
+      0.9935855,
+      -0.0003827,
+      -0.0,
+      0.1130824
      ]
     },
     "String_Nock": {
      "location": [
-      -0.0,
-      0.3567697,
-      -1e-07
+      -0.3551037,
+      0.0013603,
+      -0.0012017
      ],
      "rotation_quaternion": [
-      1.0,
+      0.998947,
+      -0.0001553,
       0.0,
+      0.0458788
+     ]
+    },
+    "String_Bend_U1": {
+     "location": [
+      -0.3552498,
+      0.001354,
+      -0.0012022
+     ],
+     "rotation_quaternion": [
+      0.9997681,
+      7.29e-05,
       0.0,
-      0.0
+      -0.0215334
+     ]
+    },
+    "String_Bend_U2": {
+     "location": [
+      -0.3545886,
+      0.0013129,
+      -0.0012
+     ],
+     "rotation_quaternion": [
+      0.9960452,
+      0.0003007,
+      -0.0,
+      -0.0888477
+     ]
+    },
+    "Tip_U": {
+     "location": [
+      -0.1155222,
+      -0.0277573,
+      -0.0003909
+     ],
+     "rotation_quaternion": [
+      0.9960452,
+      0.0003007,
+      -0.0,
+      -0.0888477
      ]
     }
    }
@@ -2655,43 +3025,95 @@
       0.187642
      ]
     },
-    "Tip_U": {
-     "location": [
-      0.0,
-      -0.1488653,
-      -0.0394181
-     ],
-     "rotation_quaternion": [
-      1.0,
-      0.0,
-      0.0,
-      0.0
-     ]
-    },
     "Tip_L": {
      "location": [
-      0.0,
-      -0.1068244,
-      0.0594791
+      -0.1066218,
+      0.0598402,
+      -0.0003608
      ],
      "rotation_quaternion": [
-      1.0,
+      0.9772448,
+      -0.0007178,
       0.0,
+      0.2121133
+     ]
+    },
+    "String_Bend_L2": {
+     "location": [
+      -0.42297,
+      0.0021471,
+      -0.0014314
+     ],
+     "rotation_quaternion": [
+      0.9772449,
+      -0.0007178,
       0.0,
-      0.0
+      0.2121133
+     ]
+    },
+    "String_Bend_L1": {
+     "location": [
+      -0.425015,
+      0.0017812,
+      -0.0014383
+     ],
+     "rotation_quaternion": [
+      0.9909756,
+      -0.0004536,
+      0.0,
+      0.1340419
      ]
     },
     "String_Nock": {
      "location": [
-      -0.0,
-      0.4281236,
-      -1e-07
+      -0.4261447,
+      0.0016675,
+      -0.0014421
      ],
      "rotation_quaternion": [
-      1.0,
+      0.9984793,
+      -0.0001866,
       0.0,
+      0.0551282
+     ]
+    },
+    "String_Bend_U1": {
+     "location": [
+      -0.4263306,
+      0.0016583,
+      -0.0014427
+     ],
+     "rotation_quaternion": [
+      0.9997088,
+      8.17e-05,
       0.0,
-      0.0
+      -0.0241319
+     ]
+    },
+    "String_Bend_U2": {
+     "location": [
+      -0.4255681,
+      0.0016033,
+      -0.0014402
+     ],
+     "rotation_quaternion": [
+      0.9946564,
+      0.0003494,
+      0.0,
+      -0.1032403
+     ]
+    },
+    "Tip_U": {
+     "location": [
+      -0.148997,
+      -0.0389141,
+      -0.0005042
+     ],
+     "rotation_quaternion": [
+      0.9946564,
+      0.0003494,
+      0.0,
+      -0.1032403
      ]
     }
    }
@@ -2988,43 +3410,95 @@
       0.2323626
      ]
     },
-    "Tip_U": {
-     "location": [
-      0.0,
-      -0.1837065,
-      -0.0527571
-     ],
-     "rotation_quaternion": [
-      1.0,
-      0.0,
-      0.0,
-      0.0
-     ]
-    },
     "Tip_L": {
      "location": [
-      0.0,
-      -0.1296666,
-      0.0780164
+      -0.1294011,
+      0.0784547,
+      -0.0004379
      ],
      "rotation_quaternion": [
-      1.0,
+      0.9696615,
+      -0.0008272,
       0.0,
+      0.2444501
+     ]
+    },
+    "String_Bend_L2": {
+     "location": [
+      -0.4935169,
+      0.00263,
+      -0.0016701
+     ],
+     "rotation_quaternion": [
+      0.9696615,
+      -0.0008272,
       0.0,
-      0.0
+      0.2444501
+     ]
+    },
+    "String_Bend_L1": {
+     "location": [
+      -0.4958653,
+      0.0021422,
+      -0.001678
+     ],
+     "rotation_quaternion": [
+      0.9878864,
+      -0.0005251,
+      0.0,
+      0.1551778
      ]
     },
     "String_Nock": {
      "location": [
-      -0.0,
-      0.4994776,
-      -1e-07
+      -0.4971756,
+      0.0019889,
+      -0.0016825
      ],
      "rotation_quaternion": [
-      1.0,
+      0.9979101,
+      -0.0002187,
       0.0,
+      0.0646174
+     ]
+    },
+    "String_Bend_U1": {
+     "location": [
+      -0.4974043,
+      0.0019762,
+      -0.0016833
+     ],
+     "rotation_quaternion": [
+      0.9996493,
+      8.96e-05,
+      -0.0,
+      -0.0264796
+     ]
+    },
+    "String_Bend_U2": {
+     "location": [
+      -0.4965439,
+      0.0019058,
+      -0.0016803
+     ],
+     "rotation_quaternion": [
+      0.9930898,
+      0.0003971,
       0.0,
-      0.0
+      -0.1173566
+     ]
+    },
+    "Tip_U": {
+     "location": [
+      -0.1838829,
+      -0.0521352,
+      -0.0006223
+     ],
+     "rotation_quaternion": [
+      0.9930898,
+      0.0003971,
+      0.0,
+      -0.1173566
      ]
     }
    }
@@ -3321,43 +3795,95 @@
       0.2789842
      ]
     },
-    "Tip_U": {
-     "location": [
-      0.0,
-      -0.2197721,
-      -0.0683683
-     ],
-     "rotation_quaternion": [
-      1.0,
-      0.0,
-      0.0,
-      0.0
-     ]
-    },
     "Tip_L": {
      "location": [
-      0.0,
-      -0.1522138,
-      0.0990838
+      -0.1518768,
+      0.0995983,
+      -0.000514
      ],
      "rotation_quaternion": [
-      1.0,
+      0.960887,
+      -0.0009372,
+      -0.0,
+      0.2769395
+     ]
+    },
+    "String_Bend_L2": {
+     "location": [
+      -0.56405,
+      0.0031547,
+      -0.0019088
+     ],
+     "rotation_quaternion": [
+      0.960887,
+      -0.0009372,
       0.0,
+      0.2769395
+     ]
+    },
+    "String_Bend_L1": {
+     "location": [
+      -0.566699,
+      0.0025264,
+      -0.0019178
+     ],
+     "rotation_quaternion": [
+      0.9842829,
+      -0.0005976,
       0.0,
-      0.0
+      0.1765982
      ]
     },
     "String_Nock": {
      "location": [
-      -0.0,
-      0.5708315,
-      -1e-07
+      -0.5681923,
+      0.0023267,
+      -0.0019228
      ],
      "rotation_quaternion": [
-      1.0,
+      0.9972298,
+      -0.0002517,
       0.0,
+      0.0743823
+     ]
+    },
+    "String_Bend_U1": {
+     "location": [
+      -0.5684665,
+      0.0023097,
+      -0.0019237
+     ],
+     "rotation_quaternion": [
+      0.9995903,
+      9.69e-05,
       0.0,
-      0.0
+      -0.0286233
+     ]
+    },
+    "String_Bend_U2": {
+     "location": [
+      -0.5675104,
+      0.0022223,
+      -0.0019205
+     ],
+     "rotation_quaternion": [
+      0.9913393,
+      0.0004444,
+      0.0,
+      -0.1313251
+     ]
+    },
+    "Tip_U": {
+     "location": [
+      -0.220001,
+      -0.0676242,
+      -0.0007445
+     ],
+     "rotation_quaternion": [
+      0.9913393,
+      0.0004444,
+      -0.0,
+      -0.131325
      ]
     }
    }
@@ -3654,43 +4180,95 @@
       0.3274413
      ]
     },
-    "Tip_U": {
-     "location": [
-      0.0,
-      -0.2569797,
-      -0.086514
-     ],
-     "rotation_quaternion": [
-      1.0,
-      0.0,
-      0.0,
-      0.0
-     ]
-    },
     "Tip_L": {
      "location": [
-      0.0,
-      -0.1741589,
-      0.1228496
+      -0.1737412,
+      0.1234382,
+      -0.000588
      ],
      "rotation_quaternion": [
-      1.0,
+      0.9508372,
+      -0.001048,
       0.0,
+      0.3096895
+     ]
+    },
+    "String_Bend_L2": {
+     "location": [
+      -0.6345646,
+      0.0037254,
+      -0.0021474
+     ],
+     "rotation_quaternion": [
+      0.9508372,
+      -0.001048,
+      -0.0,
+      0.3096895
+     ]
+    },
+    "String_Bend_L1": {
+     "location": [
+      -0.6375111,
+      0.0029368,
+      -0.0021574
+     ],
+     "rotation_quaternion": [
+      0.9801244,
+      -0.0006713,
       0.0,
-      0.0
+      0.1983826
      ]
     },
     "String_Nock": {
      "location": [
-      -0.0,
-      0.6421854,
-      -1e-07
+      -0.6391901,
+      0.0026833,
+      -0.0021631
      ],
      "rotation_quaternion": [
-      1.0,
+      0.9964279,
+      -0.0002858,
+      -0.0,
+      0.0844477
+     ]
+    },
+    "String_Bend_U1": {
+     "location": [
+      -0.6395128,
+      0.0026614,
+      -0.0021642
+     ],
+     "rotation_quaternion": [
+      0.9995315,
+      0.0001036,
       0.0,
+      -0.030606
+     ]
+    },
+    "String_Bend_U2": {
+     "location": [
+      -0.6384623,
+      0.0025552,
+      -0.0021606
+     ],
+     "rotation_quaternion": [
+      0.9893942,
+      0.0004916,
       0.0,
-      0.0
+      -0.1452542
+     ]
+    },
+    "Tip_U": {
+     "location": [
+      -0.2572696,
+      -0.0856439,
+      -0.0008706
+     ],
+     "rotation_quaternion": [
+      0.9893942,
+      0.0004916,
+      0.0,
+      -0.1452541
      ]
     }
    }
@@ -3987,43 +4565,95 @@
       0.3777571
      ]
     },
-    "Tip_U": {
-     "location": [
-      0.0,
-      -0.2953122,
-      -0.1075351
-     ],
-     "rotation_quaternion": [
-      1.0,
-      0.0,
-      0.0,
-      0.0
-     ]
-    },
     "Tip_L": {
      "location": [
-      0.0,
-      -0.19519,
-      0.1495316
+      -0.1946817,
+      0.1501912,
+      -0.0006588
      ],
      "rotation_quaternion": [
-      1.0,
+      0.9394163,
+      -0.00116,
       0.0,
+      0.3427765
+     ]
+    },
+    "String_Bend_L2": {
+     "location": [
+      -0.7050557,
+      0.0043469,
+      -0.002386
+     ],
+     "rotation_quaternion": [
+      0.9394163,
+      -0.00116,
       0.0,
-      0.0
+      0.3427765
+     ]
+    },
+    "String_Bend_L1": {
+     "location": [
+      -0.7082962,
+      0.0033772,
+      -0.0023969
+     ],
+     "rotation_quaternion": [
+      0.9753662,
+      -0.0007465,
+      0.0,
+      0.220591
      ]
     },
     "String_Nock": {
      "location": [
-      -0.0,
-      0.7135394,
-      -1e-07
+      -0.7101637,
+      0.0030621,
+      -0.0024032
      ],
      "rotation_quaternion": [
-      1.0,
+      0.9954938,
+      -0.0003209,
       0.0,
+      0.0948271
+     ]
+    },
+    "String_Bend_U1": {
+     "location": [
+      -0.7105373,
+      0.0030342,
+      -0.0024045
+     ],
+     "rotation_quaternion": [
+      0.9994726,
+      0.0001099,
+      -0.0,
+      -0.0324749
+     ]
+    },
+    "String_Bend_U2": {
+     "location": [
+      -0.7093931,
+      0.0029075,
+      -0.0024006
+     ],
+     "rotation_quaternion": [
+      0.9872381,
+      0.0005389,
       0.0,
-      0.0
+      -0.1592503
+     ]
+    },
+    "Tip_U": {
+     "location": [
+      -0.2956727,
+      -0.1065352,
+      -0.0010006
+     ],
+     "rotation_quaternion": [
+      0.9872381,
+      0.0005389,
+      0.0,
+      -0.1592503
      ]
     }
    }
@@ -4032,42 +4662,197 @@
  "sockets": {
   "Grip_L": {
    "bone": "Grip",
-   "location_m": [
+   "mesh_frame_m": [
     0.0,
     0.0,
     0.0
+   ],
+   "bone_local_m": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "bone_bind_matrix": [
+    [
+     1.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     -1.0,
+     0.0
+    ],
+    [
+     0.0,
+     1.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
    ]
   },
   "Muzzle": {
    "bone": "Grip",
-   "location_m": [
-    0.014749997295439243,
-    -0.019750002771615982,
-    0.07000000029802322
+   "mesh_frame_m": [
+    0.01475,
+    -0.01975,
+    0.07
+   ],
+   "bone_local_m": [
+    0.01475,
+    0.07,
+    0.01975
+   ],
+   "bone_bind_matrix": [
+    [
+     1.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     -1.0,
+     0.0
+    ],
+    [
+     0.0,
+     1.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
    ]
   },
   "Grip_R": {
    "bone": "String_Nock",
-   "location_m": [
+   "mesh_frame_m": [
+    -0.1664606,
     0.0,
+    0.0700001
+   ],
+   "bone_local_m": [
     0.0,
-    0.0
+    1e-07,
+    -0.0
+   ],
+   "bone_bind_matrix": [
+    [
+     0.9999886,
+     -0.0033841,
+     0.003384,
+     -0.1664606
+    ],
+    [
+     0.0033841,
+     0.0,
+     -0.9999943,
+     0.0
+    ],
+    [
+     0.003384,
+     0.9999943,
+     1.15e-05,
+     0.07
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
    ]
   },
   "String_Upper": {
    "bone": "Tip_U",
-   "location_m": [
+   "mesh_frame_m": [
+    -0.1710988,
     0.0,
+    1.4404515
+   ],
+   "bone_local_m": [
+    -0.0,
     0.0,
-    0.0
+    -0.0
+   ],
+   "bone_bind_matrix": [
+    [
+     0.9999886,
+     -0.0033841,
+     0.003384,
+     -0.1710988
+    ],
+    [
+     0.0033841,
+     0.0,
+     -0.9999943,
+     0.0
+    ],
+    [
+     0.003384,
+     0.9999943,
+     1.15e-05,
+     1.4404515
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
    ]
   },
   "String_Lower": {
    "bone": "Tip_L",
-   "location_m": [
+   "mesh_frame_m": [
+    -0.1638746,
     0.0,
+    -0.6940933
+   ],
+   "bone_local_m": [
     0.0,
-    0.0
+    -0.0,
+    -0.0
+   ],
+   "bone_bind_matrix": [
+    [
+     0.9999886,
+     -0.0033841,
+     0.003384,
+     -0.1638746
+    ],
+    [
+     0.0033841,
+     0.0,
+     -0.9999943,
+     0.0
+    ],
+    [
+     0.003384,
+     0.9999943,
+     1.15e-05,
+     -0.6940933
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
    ]
   }
  },
@@ -4084,7 +4869,11 @@
    "stave_max_error_m": 0.0,
    "string_off_segment_m": 0.0,
    "string_length_m": 2.134557,
-   "braced_max_diff_m": 2.4620758953479386e-07
+   "braced_max_diff_m": 2.4620758953479386e-07,
+   "edge_ratio_max": 1.0001,
+   "edge_growth_max_m": 0.0,
+   "stretched_triangles": 0,
+   "string_section_change_m": 0.0
   },
   {
    "frame": 1,
@@ -4092,7 +4881,11 @@
    "stave_max_error_m": 5e-05,
    "string_off_segment_m": 0.0,
    "string_length_m": 2.1345569,
-   "braced_max_diff_m": null
+   "braced_max_diff_m": null,
+   "edge_ratio_max": 1.0162,
+   "edge_growth_max_m": 0.000176,
+   "stretched_triangles": 0,
+   "string_section_change_m": 2.36e-05
   },
   {
    "frame": 2,
@@ -4100,7 +4893,11 @@
    "stave_max_error_m": 0.000165,
    "string_off_segment_m": 0.0,
    "string_length_m": 2.1345569,
-   "braced_max_diff_m": null
+   "braced_max_diff_m": null,
+   "edge_ratio_max": 1.0305,
+   "edge_growth_max_m": 0.000325,
+   "stretched_triangles": 0,
+   "string_section_change_m": 4.43e-05
   },
   {
    "frame": 3,
@@ -4108,7 +4905,11 @@
    "stave_max_error_m": 0.000315,
    "string_off_segment_m": 0.0,
    "string_length_m": 2.1345569,
-   "braced_max_diff_m": null
+   "braced_max_diff_m": null,
+   "edge_ratio_max": 1.0438,
+   "edge_growth_max_m": 0.000459,
+   "stretched_triangles": 0,
+   "string_section_change_m": 6.38e-05
   },
   {
    "frame": 4,
@@ -4116,7 +4917,11 @@
    "stave_max_error_m": 0.000487,
    "string_off_segment_m": 0.0,
    "string_length_m": 2.1345569,
-   "braced_max_diff_m": null
+   "braced_max_diff_m": null,
+   "edge_ratio_max": 1.0568,
+   "edge_growth_max_m": 0.000585,
+   "stretched_triangles": 0,
+   "string_section_change_m": 8.26e-05
   },
   {
    "frame": 5,
@@ -4124,7 +4929,11 @@
    "stave_max_error_m": 0.000675,
    "string_off_segment_m": 0.0,
    "string_length_m": 2.1345569,
-   "braced_max_diff_m": null
+   "braced_max_diff_m": null,
+   "edge_ratio_max": 1.0696,
+   "edge_growth_max_m": 0.000705,
+   "stretched_triangles": 0,
+   "string_section_change_m": 0.0001014
   },
   {
    "frame": 6,
@@ -4132,7 +4941,11 @@
    "stave_max_error_m": 0.000877,
    "string_off_segment_m": 0.0,
    "string_length_m": 2.1345568,
-   "braced_max_diff_m": null
+   "braced_max_diff_m": null,
+   "edge_ratio_max": 1.0825,
+   "edge_growth_max_m": 0.000822,
+   "stretched_triangles": 0,
+   "string_section_change_m": 0.0001202
   },
   {
    "frame": 7,
@@ -4140,7 +4953,11 @@
    "stave_max_error_m": 0.001091,
    "string_off_segment_m": 0.0,
    "string_length_m": 2.1345569,
-   "braced_max_diff_m": null
+   "braced_max_diff_m": null,
+   "edge_ratio_max": 1.0955,
+   "edge_growth_max_m": 0.000937,
+   "stretched_triangles": 0,
+   "string_section_change_m": 0.0001395
   },
   {
    "frame": 8,
@@ -4148,7 +4965,11 @@
    "stave_max_error_m": 0.001317,
    "string_off_segment_m": 0.0,
    "string_length_m": 2.1345568,
-   "braced_max_diff_m": null
+   "braced_max_diff_m": null,
+   "edge_ratio_max": 1.1088,
+   "edge_growth_max_m": 0.001049,
+   "stretched_triangles": 0,
+   "string_section_change_m": 0.000159
   },
   {
    "frame": 9,
@@ -4156,7 +4977,11 @@
    "stave_max_error_m": 0.001556,
    "string_off_segment_m": 0.0,
    "string_length_m": 2.134557,
-   "braced_max_diff_m": null
+   "braced_max_diff_m": null,
+   "edge_ratio_max": 1.1224,
+   "edge_growth_max_m": 0.00116,
+   "stretched_triangles": 0,
+   "string_section_change_m": 0.0001792
   },
   {
    "frame": 10,
@@ -4164,9 +4989,32 @@
    "stave_max_error_m": 0.00181,
    "string_off_segment_m": 0.0,
    "string_length_m": 2.1345569,
-   "braced_max_diff_m": null
+   "braced_max_diff_m": null,
+   "edge_ratio_max": 1.1364,
+   "edge_growth_max_m": 0.00127,
+   "stretched_triangles": 0,
+   "string_section_change_m": 0.0001999
   }
  ],
+ "stretch_gate": {
+  "ratio": 1.25,
+  "growth_m": 0.001,
+  "applies_to": "every face, no exception",
+  "string_section_tol_m": 0.0003
+ },
+ "string": {
+  "bones": [
+   "Tip_L",
+   "String_Bend_L2",
+   "String_Bend_L1",
+   "String_Nock",
+   "String_Bend_U1",
+   "String_Bend_U2",
+   "Tip_U"
+  ],
+  "bend_half_arc_m": 0.012,
+  "nock": "String_Nock is the apex of the bend's fillet: Grip_R and the arrow's nock ride it, 3.4 mm inside the model's sharp V at full draw"
+ },
  "scope": "rig built on the committed static mesh; deformed vertices checked at the 11 keys in Blender. Not imported, not drawn in the engine, not visually qualified.",
  "check_geometry": {
   "bow_vertices": 30874,
@@ -4181,12 +5029,12 @@
  },
  "exports": {
   "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/SK_Weapon_18.fbx": {
-   "sha256": "8fa3a88392a3161fd61eed5e8af952103421a522912a521c82d59cd5e14a147c",
-   "bytes": 7505100
+   "sha256": "bc16ad9927ccd82962487d480263fa306d743d8c90bc8f9244cb3716ca4badf2",
+   "bytes": 7532604
   },
   "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/W18_rig_check_geometry.npz": {
-   "sha256": "d74fe3fae4b4a45e8d916e9f3598c7a45f31522f4bbf8cdbbbb39aee5340622e",
-   "bytes": 692176
+   "sha256": "037a271716a0564802340dc5006a55a92d81c71a353fe1ff070c06ee03acc708",
+   "bytes": 694971
   }
  }
 }

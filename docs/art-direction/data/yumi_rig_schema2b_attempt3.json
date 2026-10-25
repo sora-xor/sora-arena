@@ -1,0 +1,131 @@
+{
+ "schema_version": 1,
+ "kind": "art-run-archive",
+ "label": "rig attempt 3 (build PID 21904, review PID 22114): accepted only through a serving-only stretch exception; rejected by root",
+ "run_dir": "Local/ArtCache/W18YumiRig_schema2b_attempt3",
+ "archived_utc": "2026-10-25T07:18:08Z",
+ "exit_code": 0,
+ "log": {
+  "path": "Saved/YumiRig/rig_schema2b.log",
+  "bytes": 4408,
+  "sha256": "4510f933120241cdf36e4236275b9503d204f51b7d1403cf429612af4e5b31e1",
+  "markers": [
+   "YUMI_RIG_WEIGHTS {\"string\": 1598, \"stave\": 29276, \"string_loops\": 0}",
+   "YUMI_RIG_KEY {\"frame\": 0, \"draw\": 0.0, \"stave_max_error_m\": 0.0, \"string_off_segment_m\": 0.0, \"string_length_m\": 2.134557, \"braced_max_diff_m\": 2.4620758953479386e-07, \"edge_ratio_max\": 1.0001, \"edge_growth_max_m\": 0.0, \"stretched_triangles\": 0, \"serving_edge_ratio_max\": 1.0, \"serving_edge_growth_max_m\": 0.0, \"serving_stretched_triangles\": 0}",
+   "YUMI_RIG_KEY {\"frame\": 1, \"draw\": 0.1, \"stave_max_error_m\": 5e-05, \"string_off_segment_m\": 0.0, \"string_length_m\": 2.1345569, \"braced_max_diff_m\": null, \"edge_ratio_max\": 1.0184, \"edge_growth_max_m\": 0.000151, \"stretched_triangles\": 0, \"serving_edge_ratio_max\": 1.0345, \"serving_edge_growth_max_m\": 0.000151, \"serving_stretched_triangles\": 0}",
+   "YUMI_RIG_KEY {\"frame\": 2, \"draw\": 0.2, \"stave_max_error_m\": 0.000165, \"string_off_segment_m\": 0.0, \"string_length_m\": 2.1345569, \"braced_max_diff_m\": null, \"edge_ratio_max\": 1.0331, \"edge_growth_max_m\": 0.000288, \"stretched_triangles\": 0, \"serving_edge_ratio_max\": 1.0641, \"serving_edge_growth_max_m\": 0.000288, \"serving_stretched_triangles\": 0}",
+   "YUMI_RIG_KEY {\"frame\": 3, \"draw\": 0.3, \"stave_max_error_m\": 0.000315, \"string_off_segment_m\": 0.0, \"string_length_m\": 2.1345569, \"braced_max_diff_m\": null, \"edge_ratio_max\": 1.0456, \"edge_growth_max_m\": 0.000425, \"stretched_triangles\": 0, \"serving_edge_ratio_max\": 1.0914, \"serving_edge_growth_max_m\": 0.000425, \"serving_stretched_triangles\": 0}",
+   "YUMI_RIG_KEY {\"frame\": 4, \"draw\": 0.4, \"stave_max_error_m\": 0.000487, \"string_off_segment_m\": 0.0, \"string_length_m\": 2.1345569, \"braced_max_diff_m\": null, \"edge_ratio_max\": 1.0565, \"edge_growth_max_m\": 0.000568, \"stretched_triangles\": 0, \"serving_edge_ratio_max\": 1.1176, \"serving_edge_growth_max_m\": 0.000568, \"serving_stretched_triangles\": 0}",
+   "YUMI_RIG_KEY {\"frame\": 5, \"draw\": 0.5, \"stave_max_error_m\": 0.000675, \"string_off_segment_m\": 0.0, \"string_length_m\": 2.1345569, \"braced_max_diff_m\": null, \"edge_ratio_max\": 1.0662, \"edge_growth_max_m\": 0.000722, \"stretched_triangles\": 0, \"serving_edge_ratio_max\": 1.1435, \"serving_edge_growth_max_m\": 0.000722, \"serving_stretched_triangles\": 0}",
+   "YUMI_RIG_KEY {\"frame\": 6, \"draw\": 0.6, \"stave_max_error_m\": 0.000877, \"string_off_segment_m\": 0.0, \"string_length_m\": 2.1345568, \"braced_max_diff_m\": null, \"edge_ratio_max\": 1.0748, \"edge_growth_max_m\": 0.00089, \"stretched_triangles\": 0, \"serving_edge_ratio_max\": 1.1694, \"serving_edge_growth_max_m\": 0.00089, \"serving_stretched_triangles\": 0}",
+   "YUMI_RIG_KEY {\"frame\": 7, \"draw\": 0.7, \"stave_max_error_m\": 0.001091, \"string_off_segment_m\": 0.0, \"string_length_m\": 2.1345569, \"braced_max_diff_m\": null, \"edge_ratio_max\": 1.0824, \"edge_growth_max_m\": 0.001076, \"stretched_triangles\": 0, \"serving_edge_ratio_max\": 1.1957, \"serving_edge_growth_max_m\": 0.001076, \"serving_stretched_triangles\": 0}",
+   "YUMI_RIG_KEY {\"frame\": 8, \"draw\": 0.8, \"stave_max_error_m\": 0.001317, \"string_off_segment_m\": 0.0, \"string_length_m\": 2.1345568, \"braced_max_diff_m\": null, \"edge_ratio_max\": 1.0952, \"edge_growth_max_m\": 0.001283, \"stretched_triangles\": 0, \"serving_edge_ratio_max\": 1.2228, \"serving_edge_growth_max_m\": 0.001283, \"serving_stretched_triangles\": 0}",
+   "YUMI_RIG_KEY {\"frame\": 9, \"draw\": 0.9, \"stave_max_error_m\": 0.001556, \"string_off_segment_m\": 0.0, \"string_length_m\": 2.134557, \"braced_max_diff_m\": null, \"edge_ratio_max\": 1.1126, \"edge_growth_max_m\": 0.001517, \"stretched_triangles\": 0, \"serving_edge_ratio_max\": 1.251, \"serving_edge_growth_max_m\": 0.001517, \"serving_stretched_triangles\": 0}",
+   "YUMI_RIG_KEY {\"frame\": 10, \"draw\": 1.0, \"stave_max_error_m\": 0.00181, \"string_off_segment_m\": 0.0, \"string_length_m\": 2.1345569, \"braced_max_diff_m\": null, \"edge_ratio_max\": 1.1323, \"edge_growth_max_m\": 0.001783, \"stretched_triangles\": 0, \"serving_edge_ratio_max\": 1.2807, \"serving_edge_growth_max_m\": 0.001783, \"serving_stretched_triangles\": 0}",
+   "YUMI_RIG_GEOMETRY {\"bow_vertices\": 30874, \"bow_triangles\": 61556, \"arrow_vertices\": 2209, \"arrow_triangles\": 4382, \"arrow_bounds_m\": [0.982, 0.037913, 0.032833]}",
+   "YUMI_RIG_READY Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/SK_Weapon_18.fbx 7504716 bytes 9.9s"
+  ]
+ },
+ "totals": {
+  "files": 17,
+  "bytes": 19911140,
+  "by_folder": {
+   "Rig": {
+    "files": 3,
+    "bytes": 8266721
+   },
+   "Saved": {
+    "files": 14,
+    "bytes": 11644419
+   }
+  }
+ },
+ "files_digest": "5112513d392407fca6678309f65dc29d385fb68c6b00e30cefbb445357d256a3",
+ "files": [
+  {
+   "path": "Rig/SK_Weapon_18.fbx",
+   "bytes": 7504716,
+   "sha256": "829223542d2e064689c06a5cd740da5a22194d70d37c74f695888289ceef5af3"
+  },
+  {
+   "path": "Rig/W18_rig_check_geometry.npz",
+   "bytes": 695111,
+   "sha256": "1771c1a28bf31749284c370d161ab30c9084892c025c4c8dc33b74c03a804339"
+  },
+  {
+   "path": "Rig/rig_record.json",
+   "bytes": 66894,
+   "sha256": "17e3299651941641fcbfd4772b57331965313c240d736ef7b21ed7d91545350d"
+  },
+  {
+   "path": "Saved/Review_schema2b/SK_Weapon_18_Braced_FullProfile.png",
+   "bytes": 828693,
+   "sha256": "e6e8a37305dad5d434bda2d26e01e285e5cfc678d9f8666fc2ef5d750f552e6e"
+  },
+  {
+   "path": "Saved/Review_schema2b/SK_Weapon_18_Braced_GripClose.png",
+   "bytes": 941872,
+   "sha256": "e70128ca9205843fd1fb58e72022fe23cf872aaa6d5b5d2273c7d0a01163772d"
+  },
+  {
+   "path": "Saved/Review_schema2b/SK_Weapon_18_Braced_Profile.png",
+   "bytes": 850684,
+   "sha256": "2ff807590828249b217fb1f8e852d1da1504260541a1d2a8f374f18b3a8e2d1d"
+  },
+  {
+   "path": "Saved/Review_schema2b/SK_Weapon_18_Full_FullProfile.png",
+   "bytes": 832939,
+   "sha256": "1ebc77957520e93aab4ac1f44050ed5783e93167bc2b82e6a60c563e53096145"
+  },
+  {
+   "path": "Saved/Review_schema2b/SK_Weapon_18_Full_GripClose.png",
+   "bytes": 906787,
+   "sha256": "042cf83cee5af3bcaac9cca35d5926e8cb32779ad9812db66e2e2365660145c8"
+  },
+  {
+   "path": "Saved/Review_schema2b/SK_Weapon_18_Full_Profile.png",
+   "bytes": 877150,
+   "sha256": "5274f000b933a658aa67bb5e4cc11aad7ea2cf7850b5b7f3c6b5bd8c8f2811e8"
+  },
+  {
+   "path": "Saved/Review_schema2b/SK_Weapon_18_Half_FullProfile.png",
+   "bytes": 835606,
+   "sha256": "c6a8ed81b70a01546bd3eb962c5b4e1a095f17f24e23fe30826f36cca726df51"
+  },
+  {
+   "path": "Saved/Review_schema2b/SK_Weapon_18_Half_GripClose.png",
+   "bytes": 906956,
+   "sha256": "a16d4fbf35c2d31219e1a2b3694de17eb870d0ac251e094483ce282732b0a50f"
+  },
+  {
+   "path": "Saved/Review_schema2b/SK_Weapon_18_Half_Profile.png",
+   "bytes": 867228,
+   "sha256": "aef3c895d45d61e289bdf5daf39487c30f0d603f931527b67878ba45881e5e12"
+  },
+  {
+   "path": "Saved/Review_schema2b/W18_rig_playback_blender.npz",
+   "bytes": 3790011,
+   "sha256": "2ba7ee3112080eb6ad1185d8f6274c7929e65d54fad12ec593d412773738e16a"
+  },
+  {
+   "path": "Saved/review_schema2b.log",
+   "bytes": 1981,
+   "sha256": "279e5608262a5285242037e6ca60e806da66333bf12ea904baed77fb4a6d235f"
+  },
+  {
+   "path": "Saved/review_schema2b.times",
+   "bytes": 52,
+   "sha256": "d93121640e00dd949a7dccf9da56d9670170201eac38bad3d051cbce19ed8517"
+  },
+  {
+   "path": "Saved/rig_schema2b.log",
+   "bytes": 4408,
+   "sha256": "4510f933120241cdf36e4236275b9503d204f51b7d1403cf429612af4e5b31e1"
+  },
+  {
+   "path": "Saved/rig_schema2b.times",
+   "bytes": 52,
+   "sha256": "70a8f1b393e90523fc4a15e1e480ac083ba46d553289673087e4721fffd563bb"
+  }
+ ]
+}

@@ -497,10 +497,20 @@ def footprint(pose_name="bow.drawn", shape=None, contract=None):
 # ---------------------------------------------------------------------------
 
 # Bones along each limb, from the grip, at equal arc fractions; their bind
-# pose is the braced bow. The string is three bones: Tip_U and Tip_L in the
-# horn hazu, and String_Nock. Each string segment is skinned linearly
-# between its two bones, so it stays straight at any draw.
+# pose is the braced bow. The string has seven bones (string_frames).
+# - Tip_U and Tip_L sit in the horn hazu. Each turns with its straight
+#   segment, so the string's cross-sections, the nakajikake's included, stay
+#   square to it.
+# - At the nock, four bend bones and String_Nock carry the string round a
+#   circular fillet of arc length 2 x STRING_BEND_M, preserved at every draw,
+#   so it neither shears (Codex's review of the translation-only string) nor
+#   mitres. String_Nock is the fillet's apex, where the arrow's nock sits:
+#   3.4 mm inside the model's sharp V at full draw.
 RIG_BONES = {"upper": 12, "lower": 8}
+STRING_BEND_M = 0.012
+STRING_BEND_BONES = ("String_Bend_L2", "String_Bend_L1", "String_Nock", "String_Bend_U1", "String_Bend_U2")
+STRING_BEND_S = (-1.0, -0.5, 0.0, 0.5, 1.0)          # each bend bone's arc position, in STRING_BEND_M
+STRING_BONES = ("Tip_L",) + STRING_BEND_BONES + ("Tip_U",)
 DRAW_S = 0.65                       # the HUD's hold to full draw
 # The release returns the string exactly to brace in RELEASE_S and holds it
 # there. An unstretched string can't pass brace: its real few-millimetre
@@ -516,6 +526,76 @@ PAW_R = {"centre": (-0.02, -0.03, -0.015), "radius": 0.045, "forearm_to": (-0.26
 
 def brace_nock_x():
     return braced()["sockets"]["Grip_R"][0]
+
+
+def string_frames(d):
+    """The string's seven bones at draw fraction d:
+    {name: (head (x, 0, z) in bow metres, tangent angle atan2(z, x) of the
+    string there, pointing from the lower tip toward the upper)}.
+
+    - **The tips:** stay at the model's grooves and turn with their straight
+      segments.
+    - **The nock:** the two segments meet at the model's nock V, turning by
+      dtheta there. The bend bones lie on the circular fillet tangent to both
+      segments, whose arc length is 2 x STRING_BEND_M at every draw (radius
+      2 x STRING_BEND_M / dtheta). The string's length along the bend never
+      changes; at brace (dtheta 0) the fillet is the straight string itself.
+    - **The apex:** String_Nock sits at the fillet's apex."""
+    import numpy as np
+    s = shape_at(d)["sockets"]
+    a = np.array(s["String_Lower"], np.float64)
+    b = np.array(s["String_Upper"], np.float64)
+    v = np.array(s["Grip_R"], np.float64)
+    e_l = (v - a) / np.linalg.norm(v - a)
+    e_u = (b - v) / np.linalg.norm(b - v)
+    ang = lambda e: math.atan2(e[2], e[0])  # noqa: E731
+    phi_l, phi_u = ang(e_l), ang(e_u)
+    turn = math.atan2(math.sin(phi_u - phi_l), math.cos(phi_u - phi_l))
+    out = {"Tip_L": (a, phi_l), "Tip_U": (b, phi_u)}
+    B = STRING_BEND_M
+    for name, sk in zip(STRING_BEND_BONES, STRING_BEND_S):
+        sigma = sk * B                                         # arc length from the apex
+        if abs(turn) < 1e-9:
+            out[name] = (v + e_l * sigma, phi_l)
+            continue
+        R = 2.0 * B / abs(turn)
+        t_l = v - e_l * R * math.tan(abs(turn) / 2.0)          # the fillet's lower tangent point
+        nrm = np.array((-e_l[2], 0.0, e_l[0])) * math.copysign(1.0, turn)   # toward the bend's inside
+        centre = t_l + nrm * R
+        alpha = (sigma + B) / R * math.copysign(1.0, turn)     # turned from the lower tangent point
+        c, sn = math.cos(alpha), math.sin(alpha)
+        r0 = t_l - centre
+        rot = np.array((c * r0[0] - sn * r0[2], 0.0, sn * r0[0] + c * r0[2]))
+        out[name] = (centre + rot, phi_l + alpha)
+    return out
+
+
+def string_centreline(d, n=64):
+    """The string's axis at draw fraction d as a polyline, lower tip to upper:
+    straight to the fillet, round it, straight on (string_frames)."""
+    import numpy as np
+    f = string_frames(d)
+    pts = [f["Tip_L"][0]]
+    bend = [f[k][0] for k in STRING_BEND_BONES]
+    if np.linalg.norm(bend[0] - bend[-1]) > 1e-12:
+        # the fillet itself, densely (its five bones are only its knots)
+        a0, a1 = f[STRING_BEND_BONES[0]][1], f[STRING_BEND_BONES[-1]][1]
+        p0 = bend[0]
+        tan0 = np.array((math.cos(a0), 0.0, math.sin(a0)))
+        turn = a1 - a0
+        R = 2.0 * STRING_BEND_M / abs(turn) if abs(turn) > 1e-9 else None
+        if R is None:
+            pts += [bend[0], bend[-1]]
+        else:
+            nrm = np.array((-tan0[2], 0.0, tan0[0])) * math.copysign(1.0, turn)
+            centre = p0 + nrm * R
+            r0 = p0 - centre
+            for k in range(n + 1):
+                al = turn * k / n
+                c, sn = math.cos(al), math.sin(al)
+                pts.append(centre + np.array((c * r0[0] - sn * r0[2], 0.0, sn * r0[0] + c * r0[2])))
+    pts.append(f["Tip_U"][0])
+    return np.array(pts)
 
 
 _SHAPES = {}
@@ -745,33 +825,60 @@ if __name__ == "__main__":
 # ---------------------------------------------------------------------------
 
 RIG_GEOMETRY = HERE.parents[1] / "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/W18_rig_check_geometry.npz"
-MESH_SCOPE = ("emitted geometry: the built rig's skinned bow triangles (its own weights and key matrices; between keys "
-              "the take's local interpolation when the rig carries bind and pose matrices, else an approximation within "
-              "about 1.1 mm) and the committed arrow's triangles; exact projected point-to-triangle "
+# The only rig check geometry accepted: bind and per-key pose matrices of the
+# 28-bone rig whose string turns round the nock (STRING_BONES). The b55fe81
+# npz (deform matrices only) and the 24-bone v2 (a translation-only string,
+# whose nakajikake sheared) are historical evidence, never admitted.
+RIG_SCHEMA = "sora-yumi-rig-check-v3"
+RIG_KEYS = ("schema", "rest", "tris", "bone_index", "bone_weight", "bones", "bind", "pose", "fractions",
+            "arrow_verts", "arrow_tris")
+MESH_SCOPE = ("emitted geometry: the built rig's skinned bow triangles (its own weights, bind and per-key pose "
+              "matrices; between keys each bone's local translation lerped and rotation nlerped, as Blender and "
+              "Unreal play the take) and the committed "
+              "arrow's triangles; exact projected point-to-triangle "
               "distances, triangles clipped at the near plane, cuts counted inside the frame. The paws are still "
               "envelopes until their meshes exist. Sampled at the timeline's fps in rest and the nominal bob "
               "extremes; not the native camera path.")
 
 
 def load_rig(path=None):
+    """The rig's check geometry, refused unless it is the current schema."""
     import numpy as np
-    z = np.load(path or RIG_GEOMETRY)
-    return {k: z[k] for k in z.files}
+    path = path or RIG_GEOMETRY
+    z = np.load(path)
+    rig = {k: z[k] for k in z.files}
+    schema = str(rig["schema"]) if "schema" in rig else None
+    missing = [k for k in RIG_KEYS if k not in rig]
+    if schema != RIG_SCHEMA or missing:
+        raise ValueError(f"yumi_draw: {path} is not {RIG_SCHEMA} rig check geometry (schema {schema}, missing "
+                         f"{missing}); rebuild it with create_runtime_weapon_yumi_rig.py")
+    return rig
 
 
 def _quat(R):
-    """Unit quaternions (w, x, y, z) of rotation matrices R (..., 3, 3)."""
+    """Unit quaternions (w, x, y, z) of rotation matrices R (..., 3, 3), by
+    Shepperd's method: the largest of the trace and the diagonal sets the
+    square root, the off-diagonal terms the rest. Square roots of every
+    component, as before, lose precision near the identity (a component near
+    zero is the root of a sum near zero): 1e-5 rad, so 20 um at the rig's
+    1.45 m arms, as the exported take's playback test found."""
     import numpy as np
     R = np.asarray(R, np.float64)
-    w = np.sqrt(np.maximum(0.0, 1.0 + R[..., 0, 0] + R[..., 1, 1] + R[..., 2, 2])) / 2.0
-    x = np.sqrt(np.maximum(0.0, 1.0 + R[..., 0, 0] - R[..., 1, 1] - R[..., 2, 2])) / 2.0
-    y = np.sqrt(np.maximum(0.0, 1.0 - R[..., 0, 0] + R[..., 1, 1] - R[..., 2, 2])) / 2.0
-    z = np.sqrt(np.maximum(0.0, 1.0 - R[..., 0, 0] - R[..., 1, 1] + R[..., 2, 2])) / 2.0
-    x = np.copysign(x, R[..., 2, 1] - R[..., 1, 2])
-    y = np.copysign(y, R[..., 0, 2] - R[..., 2, 0])
-    z = np.copysign(z, R[..., 1, 0] - R[..., 0, 1])
-    q = np.stack([w, x, y, z], -1)
-    return q / np.linalg.norm(q, axis=-1, keepdims=True)
+    m00, m11, m22 = R[..., 0, 0], R[..., 1, 1], R[..., 2, 2]
+    d21, d02, d10 = R[..., 2, 1] - R[..., 1, 2], R[..., 0, 2] - R[..., 2, 0], R[..., 1, 0] - R[..., 0, 1]
+    s01, s02, s12 = R[..., 0, 1] + R[..., 1, 0], R[..., 0, 2] + R[..., 2, 0], R[..., 1, 2] + R[..., 2, 1]
+    cand = np.stack([m00 + m11 + m22, m00, m11, m22], -1)
+    case = np.argmax(cand, -1)
+    s = [2.0 * np.sqrt(np.maximum(1.0 + m00 + m11 + m22, 1e-300)),
+         2.0 * np.sqrt(np.maximum(1.0 + m00 - m11 - m22, 1e-300)),
+         2.0 * np.sqrt(np.maximum(1.0 - m00 + m11 - m22, 1e-300)),
+         2.0 * np.sqrt(np.maximum(1.0 - m00 - m11 + m22, 1e-300))]
+    q = [np.stack([s[0] / 4, d21 / s[0], d02 / s[0], d10 / s[0]], -1),
+         np.stack([d21 / s[1], s[1] / 4, s01 / s[1], s02 / s[1]], -1),
+         np.stack([d02 / s[2], s01 / s[2], s[2] / 4, s12 / s[2]], -1),
+         np.stack([d10 / s[3], s02 / s[3], s12 / s[3], s[3] / 4], -1)]
+    out = np.select([(case == k)[..., None] for k in range(4)], q)
+    return out / np.linalg.norm(out, axis=-1, keepdims=True)
 
 
 def _quat_matrix(q):
@@ -782,53 +889,40 @@ def _quat_matrix(q):
                      np.stack([2 * (x * z - w * y), 2 * (y * z + w * x), 1 - 2 * (x * x + y * y)], -1)], -2)
 
 
-def _slerp(q0, q1, t):
+def _nlerp(q0, q1, t):
+    """Normalised linear blend of unit quaternions along the shorter arc: how
+    Blender's FBX import (LINEAR quaternion curves) and Unreal (FQuat::FastLerp,
+    then normalise) play rotation between keys. It meets slerp at keys and
+    midpoints and leads or lags it slightly between."""
     import numpy as np
     dot = np.sum(q0 * q1, -1, keepdims=True)
     q1 = np.where(dot < 0, -q1, q1)
-    dot = np.abs(dot)
-    th = np.arccos(np.clip(dot, -1.0, 1.0))
-    s = np.sin(th)
-    small = s < 1e-9
-    a = np.where(small, 1.0 - t, np.sin((1.0 - t) * th) / np.where(small, 1.0, s))
-    b = np.where(small, t, np.sin(t * th) / np.where(small, 1.0, s))
-    q = a * q0 + b * q1
+    q = (1.0 - t) * q0 + t * q1
     return q / np.linalg.norm(q, axis=-1, keepdims=True)
 
 
 def _deform_at(rig, d):
-    """The bones' deform matrices at draw fraction d.
+    """The bones' deform matrices at draw fraction d, as the take plays.
 
-    With the rig's bind and per-key pose matrices (a rig rebuilt since Codex's
-    review of b55fe81), this is the take as it plays. Each bone's local
-    transform under the identity Grip root has its translation lerped and its
-    rotation slerped between keys; then deform = pose x bind^-1. Without them
-    (the b55fe81 rig) it is an approximation: the deform matrices' angle about
-    Y and translation lerped, 0.045-1.086 mm from the take's playback at ten
-    midpoints (Codex's measure). The keys themselves are exact either way."""
+    Each bone's local transform under the identity Grip root has its
+    translation lerped and its rotation nlerped between keys, from the rig's
+    bind and per-key pose matrices; then deform = pose x bind^-1. Against
+    the exported take as Blender plays it (Rig/Review), this is within a
+    micron. There is no other path: a rig without them is refused (Codex's
+    review of 1b3cd68), as load_rig refuses any but RIG_SCHEMA."""
     import numpy as np
+    if "pose" not in rig or "bind" not in rig:
+        raise ValueError(f"yumi_draw: the rig has no bind and pose matrices; only {RIG_SCHEMA} is accepted")
     fr = rig["fractions"]
     k = int(min(max(np.searchsorted(fr, d, side="right") - 1, 0), len(fr) - 2))
     t = float((d - fr[k]) / (fr[k + 1] - fr[k]))
-    if "pose" in rig and "bind" in rig:
-        P0, P1 = rig["pose"][k], rig["pose"][k + 1]
-        R = _quat_matrix(_slerp(_quat(P0[:, :3, :3]), _quat(P1[:, :3, :3]), t))
-        P = np.zeros_like(P0)
-        P[:, :3, :3] = R
-        P[:, :3, 3] = P0[:, :3, 3] + (P1[:, :3, 3] - P0[:, :3, 3]) * t
-        P[:, 3, 3] = 1.0
-        return P @ np.linalg.inv(rig["bind"])
-    A, B = rig["deform"][k].astype(np.float64), rig["deform"][k + 1].astype(np.float64)
-    ang_a = np.arctan2(A[:, 0, 2], A[:, 0, 0])
-    ang_b = np.arctan2(B[:, 0, 2], B[:, 0, 0])
-    ang = ang_a + (ang_b - ang_a) * t
-    out = np.zeros_like(A)
-    c, s = np.cos(ang), np.sin(ang)
-    out[:, 0, 0], out[:, 0, 2], out[:, 2, 0], out[:, 2, 2] = c, s, -s, c
-    out[:, 1, 1] = 1.0
-    out[:, :3, 3] = A[:, :3, 3] + (B[:, :3, 3] - A[:, :3, 3]) * t
-    out[:, 3, 3] = 1.0
-    return out
+    P0, P1 = rig["pose"][k], rig["pose"][k + 1]
+    R = _quat_matrix(_nlerp(_quat(P0[:, :3, :3]), _quat(P1[:, :3, :3]), t))
+    P = np.zeros_like(P0)
+    P[:, :3, :3] = R
+    P[:, :3, 3] = P0[:, :3, 3] + (P1[:, :3, 3] - P0[:, :3, 3]) * t
+    P[:, 3, 3] = 1.0
+    return P @ np.linalg.inv(rig["bind"])
 
 
 def skinned(rig, d):
@@ -1037,7 +1131,8 @@ def timeline_mesh(contract=None, rig=None, release_at=1.2, end=1.8, fps=60.0,
         rot = [rot[i] + (target_r[i] - rot[i]) * f for i in range(3)]
         d = draw_fraction(t, release_at)
         bow = skinned(rig, d)
-        nock = shape_at(d)["sockets"]["Grip_R"]
+        # The arrow nocks where the rig's Grip_R rides: the apex of the string's bend.
+        nock = tuple(float(c) for c in string_frames(d)["String_Nock"][0])
         if t < release_at:
             held = nock
         flown = 0.0 if t < release_at else min((t - release_at) / 0.10, 1.0)

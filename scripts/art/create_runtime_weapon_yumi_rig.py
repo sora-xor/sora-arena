@@ -12,30 +12,43 @@ and sockets exactly as they are, and adds:
    UVs and material slots) with the weapon exporter's own axes. It checks the
    bounds and SOCKET_ empties against W18's build record.
 2. **The armature.** Its object is named "Armature", so Unreal adds no root.
-   There are 24 bones:
+   There are 28 bones:
    - Grip, the root at Grip_L;
    - LimbU_01-12 and LimbL_01-08 at yumi_draw.bone_joints of the braced
      shape, each a child of Grip;
-   - Tip_U and Tip_L at the string grooves;
-   - String_Nock at Grip_R.
+   - the string's seven (yumi_draw.string_frames): Tip_L and Tip_U at the
+     grooves, and String_Bend_L2, String_Bend_L1, String_Nock,
+     String_Bend_U1 and String_Bend_U2 round the nock. Each turns with the
+     string, so its sections stay square to it.
 3. **Weights,** deterministic and the model of yumi_draw.skinning_error.
-   - A string vertex lies within 4 mm of the braced string line, behind
-     the stave and clear of the tip loops. It goes to String_Nock and the
-     nearer tip, linear in height, so each segment stays straight.
-   - Every other vertex goes to the two limb joints either side of its arc
-     position along the stave centreline, linear in arc.
+   - Only the string's own island may ride the string bones: the mesh
+     island almost wholly on the braced string line. Choosing vertex by
+     vertex by distance put the loops round the hazu on the limbs and the
+     recurved tip's stave on the string, and webs stretched between them
+     (Codex's review of the schema-2 attempt).
+   - A string vertex within 4 mm of the braced string line, between its two
+     grooves, goes to String_Nock and the nearer tip, linear in height, so
+     each segment stays straight.
+   - The string's loops beyond its grooves, and every other vertex, go to
+     the two limb joints either side of its arc position along the stave
+     centreline, linear in arc. The loops therefore ride the hazu they wrap.
 4. **The Draw action** (A_Weapon_18_Draw): frame i is draw fraction i/10, 11
    keys. The scene runs at 10 fps, so the take's time in seconds is the draw
    fraction (0-1 s). The scene is named after the action, so the FBX take
    (and Unreal's animation) is A_Weapon_18_Draw, not "Scene". Each limb bone is posed from yumi_draw.shape_at(d): its joint's head
-   and its tangent's turn about Y. Tip_U and Tip_L move to the drawn grooves,
-   and String_Nock to the drawn nock (-0.88, 0, 0.07).
+   and its tangent's turn about Y. The string's bones follow string_frames:
+   the tips at the drawn grooves turned with their segments, and the bend
+   round its fillet, whose apex (String_Nock, Grip_R) is 3.4 mm inside the
+   drawn V at (-0.88, 0, 0.07).
 5. **Checks, on the evaluated (deformed) mesh at every key:**
    - every stave vertex against its section carried rigidly by the solved
      shape;
    - the string vertices on their two straight segments;
    - the string's length unstretched;
-   - the braced key identical to the static mesh.
+   - the braced key identical to the static mesh;
+   - every triangle against its rest size. An edge may grow 25% or 1 mm,
+     whichever is larger. A face joining two differently driven parts
+     stretches although each vertex alone passes.
    A failure raises before export.
 6. **Outputs:**
    - Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/SK_Weapon_18.fbx: the
@@ -47,7 +60,7 @@ and sockets exactly as they are, and adds:
      first-person checks, so they measure real triangles, not envelopes:
      - the bow's rest vertices and triangles, and each vertex's two bones
        and weights;
-     - every key's bone deform matrices;
+     - each bone's bind and every key's pose matrices (yumi_draw.RIG_SCHEMA);
      - the committed arrow (SM_Weapon_18_Ya) in its own frame, Nock at the
        origin and Tip on +X.
 
@@ -56,6 +69,7 @@ runtime at String_Nock. Gameplay aim, ammo and damage are unchanged.
 """
 from __future__ import annotations
 
+import bisect
 import json
 import math
 import sys
@@ -77,6 +91,10 @@ RECORD = W18 / "build_record.json"
 OUT = W18 / "Rig"
 FRACTIONS = [i / 10 for i in range(11)]
 STRING_RADIUS_M = 0.004         # the string, its nakajikake and their margin
+STRING_ISLAND_SHARE = 0.98       # an island this much within STRING_RADIUS_M of the line is the string's own
+STRETCH_RATIO = 1.25            # a triangle edge may grow 25% through the draw...
+STRETCH_ABS_M = 0.001           # ...or 1 mm, whichever is larger; past both, the build refuses
+SECTION_TOL_M = 0.0003          # a string vertex's distance from the string's axis may change this much
 TOL_STAVE_M = 0.0025            # deformed stave vertex against the solved section
 TOL_STRING_M = 0.0002           # string vertex off its straight segment (beyond its radius)
 ARROW_FBX = W18 / "SM_Weapon_18_Ya.fbx"
@@ -182,48 +200,126 @@ def build_armature(bind, sockets):
             b.roll = 0.0
             b.parent = grip
             b.use_connect = False
-    for name, loc, tail in (("Tip_U", sockets["String_Upper"], (0.02, 0.0, 0.0)),
-                            ("Tip_L", sockets["String_Lower"], (0.02, 0.0, 0.0)),
-                            ("String_Nock", sockets["Grip_R"], (-0.03, 0.0, 0.0))):
+    # The string's seven bones (yumi_draw.string_frames), each along the string.
+    frames = Y.string_frames(0.0)
+    for name in Y.STRING_BONES:
+        head, phi = frames[name]
         b = arm_data.edit_bones.new(name)
-        b.head = Vector(loc)
-        b.tail = Vector(loc) + Vector(tail)
+        b.head = Vector(tuple(head))
+        b.tail = b.head + Vector((math.cos(phi), 0.0, math.sin(phi))) * 0.02
+        b.roll = 0.0
         b.parent = grip
         b.use_connect = False
+    for name, loc in (("Tip_U", sockets["String_Upper"]), ("Tip_L", sockets["String_Lower"]),
+                      ("String_Nock", sockets["Grip_R"])):
+        if (Vector(tuple(frames[name][0])) - Vector(loc)).length > 2e-5:
+            raise RuntimeError(f"yumi rig: {name} at {tuple(frames[name][0])}, its socket at {loc}")
     bpy.ops.object.mode_set(mode="OBJECT")
     return arm
 
 
+def islands(me):
+    """Each vertex's connected-component id over the mesh's faces."""
+    parent = list(range(len(me.vertices)))
+
+    def find(a):
+        while parent[a] != a:
+            parent[a] = parent[parent[a]]
+            a = parent[a]
+        return a
+    for poly in me.polygons:
+        vs = poly.vertices
+        r0 = find(vs[0])
+        for v in vs[1:]:
+            r = find(v)
+            if r != r0:
+                parent[r] = r0
+    return [find(v) for v in range(len(me.vertices))]
+
+
+def string_vertices(obj, a, b):
+    """The string's islands, chosen whole by geometry: (segment, loops).
+
+    Only the string's own islands may ride the string bones (Codex's review
+    of the schema-2 attempt). Chosen vertex by vertex by distance from the
+    string line, the loops round both hazu went to the limbs and the
+    recurved upper tip's stave to the string; 110 faces between them
+    stretched up to 14.9x at full draw. The static bow has one baked slot
+    (M_Weapon_18), so islands are told apart by shape, not material:
+    - **The string:** every island almost wholly (STRING_ISLAND_SHARE)
+      within STRING_RADIUS_M of the braced line rides the string bones
+      whole. That is the string itself and what is wound on it, such as the
+      nakajikake.
+    - **Loops:** a short island at a groove's end rides the limb whole.
+    - **Everything else** is stave, however close some of its vertices come
+      to the string."""
+    me = obj.data
+    comp = islands(me)
+    ab = b - a
+    members = {}
+    for v in me.vertices:
+        members.setdefault(comp[v.index], []).append(v.index)
+    segment, loops = set(), set()
+    for c, vs in members.items():
+        ts, offs = [], []
+        for i in vs:
+            p = me.vertices[i].co
+            t = (p - a).dot(ab) / ab.length_squared
+            ts.append(t)
+            offs.append((a + ab * t - p).length)
+        near = sum(o < STRING_RADIUS_M for o in offs) / len(vs)
+        if near < STRING_ISLAND_SHARE:
+            continue
+        at_groove = min(ts) < 0.02 or max(ts) > 0.98
+        if at_groove and max(ts) - min(ts) <= 0.5:
+            loops.update(vs)                     # a loop round a hazu: it stays with the tip
+            continue
+        if max(offs) >= STRING_RADIUS_M:
+            raise RuntimeError(f"yumi rig: a string island has vertices {max(offs) * 1e3:.2f} mm off its line")
+        # The string itself, and anything wound on it between the grooves (the
+        # nakajikake serving at the nock): it travels with the string. Corrected
+        # attempt 1 sent the serving to the limb, to float near brace at full draw.
+        segment.update(vs)
+    if not any(max((me.vertices[i].co - a).dot(ab) / ab.length_squared for i in vs) -
+               min((me.vertices[i].co - a).dot(ab) / ab.length_squared for i in vs) > 0.5
+               for c, vs in members.items() if set(vs) <= segment):
+        raise RuntimeError("yumi rig: no island spans the string between its grooves")
+    return segment, loops
+
+
 def assign_weights(obj, arm, braced, bind, sockets):
     """Deterministic weights (see the module docstring). Returns per-vertex
-    (kind, data) for the checks: ('string', s) or ('stave', sig)."""
+    (kind, data) for the checks: ('string', s) or ('stave', sig); the
+    string's loops beyond its grooves are 'stave', riding the limb tip."""
     cl = centreline(braced)
     a, b = Vector(sockets["String_Lower"]), Vector(sockets["String_Upper"])
-    nock = Vector(sockets["Grip_R"])
-    s_n = (nock.z - a.z) / (b.z - a.z)
     groups = {}
-    for name in ["Grip", "Tip_U", "Tip_L", "String_Nock", *sum(bone_names(), [])]:
+    for name in ["Grip", *Y.STRING_BONES, *sum(bone_names(), [])]:
         groups[name] = obj.vertex_groups.new(name=name)
+    f0 = Y.string_frames(0.0)
+    v0 = Vector(tuple(f0["String_Nock"][0]))
+    e0 = Vector((math.cos(f0["Tip_L"][1]), 0.0, math.sin(f0["Tip_L"][1])))
+    sig_b = [(Vector(tuple(f0[n][0])) - v0).dot(e0) for n in Y.STRING_BONES]
     ab = b - a
     lims = {"upper": Y.L_UP, "lower": Y.L_LOW}
     info = []
-    counts = {"string": 0, "stave": 0}
+    counts = {"string": 0, "stave": 0, "string_loops": 0}
+    segment, loops = string_vertices(obj, a, b)
     for v in obj.data.vertices:
         p = v.co
-        t = (p - a).dot(ab) / ab.length_squared
-        off = (a + ab * t - p).length
-        is_string = (off < STRING_RADIUS_M and p.x < -0.05 and a.z + 0.03 < p.z < b.z - 0.03)
+        is_string = v.index in segment
+        if v.index in loops:
+            counts["string_loops"] += 1
         if is_string:
-            s = (p.z - a.z) / (b.z - a.z)
-            if s <= s_n:
-                w = s / s_n
-                groups["Tip_L"].add([v.index], 1.0 - w, "REPLACE")
-                groups["String_Nock"].add([v.index], w, "REPLACE")
-            else:
-                w = (s - s_n) / (1.0 - s_n)
-                groups["String_Nock"].add([v.index], 1.0 - w, "REPLACE")
-                groups["Tip_U"].add([v.index], w, "REPLACE")
-            info.append(("string", s))
+            # Along the braced string from the nock: between the two string
+            # bones either side, linear, so straight parts stay straight and
+            # the bend follows the fillet's bones.
+            sig = (p - v0).dot(e0)
+            k = max(min(bisect.bisect_right(sig_b, sig) - 1, len(sig_b) - 2), 0)
+            w = min(max((sig - sig_b[k]) / (sig_b[k + 1] - sig_b[k]), 0.0), 1.0)
+            groups[Y.STRING_BONES[k]].add([v.index], 1.0 - w, "REPLACE")
+            groups[Y.STRING_BONES[k + 1]].add([v.index], w, "REPLACE")
+            info.append(("string", sig))
             counts["string"] += 1
             continue
         sig = project_arc(cl, p.x, p.z)
@@ -258,10 +354,12 @@ def pose_targets(d, bind):
             # A turn of the tangent by +dphi in the (x, z) plane is a rotation of -dphi about +Y.
             rot = Matrix.Rotation(-dphi, 4, "Y")
             out[joint_bone(limb, j)] = (Vector((px, 0.0, pz)), rot)
-    s = shape["sockets"]
-    out["Tip_U"] = (Vector(s["String_Upper"]), Matrix.Identity(4))
-    out["Tip_L"] = (Vector(s["String_Lower"]), Matrix.Identity(4))
-    out["String_Nock"] = (Vector(s["Grip_R"]), Matrix.Identity(4))
+    # The string's bones turn with it: each segment's two ends with that
+    # segment, the bend bones with the fillet round the nock (string_frames).
+    f0, fd = Y.string_frames(0.0), Y.string_frames(d)
+    for name in Y.STRING_BONES:
+        dphi = math.atan2(math.sin(fd[name][1] - f0[name][1]), math.cos(fd[name][1] - f0[name][1]))
+        out[name] = (Vector(tuple(fd[name][0])), Matrix.Rotation(-dphi, 4, "Y"))
     return shape, out
 
 
@@ -297,11 +395,46 @@ def key_draw(arm, bind):
     return keys
 
 
+def stretch(rest, co, tris):
+    """Each triangle edge's growth through the deform, against STRETCH_RATIO
+    and STRETCH_ABS_M, for every face: (largest ratio, largest growth in m,
+    triangles past both)."""
+    import numpy as np
+    e0 = np.stack([np.linalg.norm(rest[tris[:, i]] - rest[tris[:, (i + 1) % 3]], axis=1) for i in range(3)], 1)
+    e1 = np.stack([np.linalg.norm(co[tris[:, i]] - co[tris[:, (i + 1) % 3]], axis=1) for i in range(3)], 1)
+    ratio = e1 / np.maximum(e0, 1e-9)
+    grow = e1 - e0
+    past = ((ratio > STRETCH_RATIO) & (grow > STRETCH_ABS_M)).any(1)
+    return float(ratio.max()), float(grow.max()), int(past.sum())
+
+
+def axis_distance(points, polyline):
+    """Each point's distance from a polyline (numpy arrays)."""
+    import numpy as np
+    best = np.full(len(points), np.inf)
+    for q0, q1 in zip(polyline[:-1], polyline[1:]):
+        u = q1 - q0
+        L2 = float(u @ u)
+        if L2 < 1e-18:
+            continue
+        t = np.clip(((points - q0) @ u) / L2, 0.0, 1.0)
+        best = np.minimum(best, np.linalg.norm(points - (q0 + t[:, None] * u), axis=1))
+    return best
+
+
 def check(obj, arm, info, braced, bind, rest_co):
-    """The deformed mesh at every key against the solved shape."""
+    """The deformed mesh at every key: each vertex against the solved shape,
+    and every face against its rest size (a face spanning two differently
+    driven parts stretches, as the schema-2 attempt's string-to-stave webs did,
+    though each vertex alone passed)."""
+    import numpy as np
     scene = bpy.context.scene
     cl0 = centreline(braced)
     frames0 = Y._frames(braced["low"], braced["up"])
+    tris = np.array([p.vertices[:] for p in obj.data.polygons], np.int64)
+    rest_np = np.array([v[:] for v in rest_co])
+    is_string = np.array([kind == "string" for kind, _ in info])
+    rest_axis = axis_distance(rest_np[is_string], Y.string_centreline(0.0, 400))
     results = []
     for frame, d in enumerate(FRACTIONS):
         scene.frame_set(frame)
@@ -310,21 +443,23 @@ def check(obj, arm, info, braced, bind, rest_co):
         me = ev.to_mesh()
         co = [v.co.copy() for v in me.vertices]
         ev.to_mesh_clear()
+        co_np = np.array([c[:] for c in co])
+        s_ratio, s_grow, s_bad = stretch(rest_np, co_np, tris)
+        # The string round its fillet: every string vertex keeps its distance
+        # from the string's axis (string_centreline), so sections stay rigid.
+        axis_d = axis_distance(co_np[is_string], Y.string_centreline(d, 400))
+        section_change = float(np.abs(axis_d - rest_axis).max())
+        string_err = max(0.0, float(axis_d.max()) - STRING_RADIUS_M)
         shape = Y.shape_at(d)
         frames_d = Y._frames(shape["low"], shape["up"])
         sig_list = [f[0] for f in frames0]
-        stave_err, string_err = 0.0, 0.0
+        stave_err = 0.0
         s = shape["sockets"]
         a, b, n = Vector(s["String_Lower"]), Vector(s["String_Upper"]), Vector(s["Grip_R"])
         for i, (kind, val) in enumerate(info):
             p = co[i]
             if kind == "string":
-                seg = (a, n) if p.z <= n.z else (n, b)
-                u = seg[1] - seg[0]
-                t = max(0.0, min(1.0, (p - seg[0]).dot(u) / u.length_squared))
-                off = (seg[0] + u * t - p).length
-                string_err = max(string_err, off - STRING_RADIUS_M if off > STRING_RADIUS_M else 0.0)
-                continue
+                continue                          # measured above, against the string's own axis
             # The vertex's section, carried rigidly by the solved shape at d.
             import bisect
             k = min(max(bisect.bisect_left(sig_list, val), 1), len(sig_list) - 1)
@@ -343,15 +478,24 @@ def check(obj, arm, info, braced, bind, rest_co):
         rest_diff = max((co[i] - rest_co[i]).length for i in range(len(co))) if d == 0 else None
         results.append({"frame": frame, "draw": d, "stave_max_error_m": round(stave_err, 6),
                         "string_off_segment_m": round(string_err, 7),
-                        "string_length_m": round(length, 7), "braced_max_diff_m": rest_diff})
+                        "string_length_m": round(length, 7), "braced_max_diff_m": rest_diff,
+                        "edge_ratio_max": round(s_ratio, 4), "edge_growth_max_m": round(s_grow, 6),
+                        "stretched_triangles": s_bad, "string_section_change_m": round(section_change, 7)})
     scene.frame_set(0)
     braced_len = braced["string_m"]
     failures = []
     for r in results:
+        if r["stretched_triangles"]:
+            failures.append(f"key {r['frame']}: {r['stretched_triangles']} triangles stretch past {STRETCH_RATIO}x "
+                            f"and {STRETCH_ABS_M * 1e3:.0f} mm (largest {r['edge_ratio_max']}x, "
+                            f"{r['edge_growth_max_m'] * 1e3:.1f} mm)")
+        if r["string_section_change_m"] > SECTION_TOL_M:
+            failures.append(f"key {r['frame']}: a string section changes by {r['string_section_change_m']*1e3:.3f} mm "
+                            "about the string's axis")
         if r["stave_max_error_m"] > TOL_STAVE_M:
             failures.append(f"key {r['frame']}: a stave vertex is {r['stave_max_error_m']*1e3:.2f} mm off the solved shape")
         if r["string_off_segment_m"] > TOL_STRING_M:
-            failures.append(f"key {r['frame']}: a string vertex leaves its straight segment by {r['string_off_segment_m']*1e3:.3f} mm")
+            failures.append(f"key {r['frame']}: a string vertex leaves the string's axis by {r['string_off_segment_m']*1e3:.3f} mm")
         if abs(r["string_length_m"] - braced_len) > 1e-6:
             failures.append(f"key {r['frame']}: the string is {r['string_length_m'] - braced_len:+.2e} m long")
     if results[0]["braced_max_diff_m"] > 1e-6:
@@ -404,15 +548,12 @@ def check_geometry(obj, arm, record):
         for k, (w, n) in enumerate(ws):
             bi[v.index, k], bw[v.index, k] = index[n], w
     scene = bpy.context.scene
-    deform = np.zeros((len(FRACTIONS), len(names), 4, 4), np.float32)
     pose = np.zeros((len(FRACTIONS), len(names), 4, 4), np.float64)
     bind = np.array([np.array(arm.data.bones[n].matrix_local) for n in names], np.float64)
     for frame in range(len(FRACTIONS)):
         scene.frame_set(frame)
         for i, n in enumerate(names):
-            pb, b = arm.pose.bones[n], arm.data.bones[n]
-            deform[frame, i] = np.array(pb.matrix @ b.matrix_local.inverted())
-            pose[frame, i] = np.array(pb.matrix)             # armature space = local to Grip (identity)
+            pose[frame, i] = np.array(arm.pose.bones[n].matrix)   # armature space = local to Grip (identity)
     scene.frame_set(0)
     # The arrow, as committed, in its own frame.
     before = set(bpy.data.objects)
@@ -439,9 +580,10 @@ def check_geometry(obj, arm, record):
     path = OUT / "W18_rig_check_geometry.npz"
     # bind and pose (armature space, which is local to the identity Grip root)
     # let the checker interpolate between keys as the take plays: each bone's
-    # local translation lerped and rotation slerped.
-    np.savez_compressed(path, rest=rest, tris=tris, bone_index=bi, bone_weight=bw, bones=np.array(names),
-                        deform=deform, bind=bind, pose=pose, fractions=np.array(FRACTIONS, np.float32),
+    # local translation lerped and rotation nlerped. Y.RIG_SCHEMA is the only
+    # schema yumi_draw.load_rig accepts.
+    np.savez_compressed(path, schema=np.array(Y.RIG_SCHEMA), rest=rest, tris=tris, bone_index=bi, bone_weight=bw,
+                        bones=np.array(names), bind=bind, pose=pose, fractions=np.array(FRACTIONS, np.float32),
                         arrow_verts=av, arrow_tris=at)
     return path, {"bow_vertices": int(len(rest)), "bow_triangles": int(len(tris)), "arrow_vertices": int(len(av)),
                   "arrow_triangles": int(len(at)), "arrow_bounds_m": [round(c, 6) for c in size]}
@@ -475,7 +617,9 @@ def main():
     bones = [{"name": b.name, "parent": b.parent.name if b.parent else None, "head": [round(c, 7) for c in b.head_local],
               "tail": [round(c, 7) for c in b.tail_local]} for b in arm.data.bones]
     rig = {
-        "schema_version": 1, "asset": "SK_Weapon_18", "skeleton": "SK_Weapon_18_Skeleton", "action": "A_Weapon_18_Draw",
+        # 3: the string's seven turning bones round a fillet at the nock (28 bones).
+        "schema_version": 3, "check_geometry_schema": Y.RIG_SCHEMA,
+        "asset": "SK_Weapon_18", "skeleton": "SK_Weapon_18_Skeleton", "action": "A_Weapon_18_Draw",
         "generator": GEN, "generator_sha256": sha256(ROOT / GEN),
         "inputs": {rel(p): sha256(p) for p in (STATIC_FBX, ARROW_FBX, RECORD, HERE / "yumi_draw.py",
                                                 HERE / "create_runtime_weapon_yumi.py")},
@@ -494,6 +638,11 @@ def main():
                                        ("String_Upper", "Tip_U"), ("String_Lower", "Tip_L"))},
         "axes": record["axes"], "static_bounds_m": [round(c, 6) for c in size],
         "checks": results,
+        "stretch_gate": {"ratio": STRETCH_RATIO, "growth_m": STRETCH_ABS_M, "applies_to": "every face, no exception",
+                         "string_section_tol_m": SECTION_TOL_M},
+        "string": {"bones": list(Y.STRING_BONES), "bend_half_arc_m": Y.STRING_BEND_M,
+                   "nock": "String_Nock is the apex of the bend's fillet: Grip_R and the arrow's nock ride it, "
+                           "3.4 mm inside the model's sharp V at full draw"},
         "scope": "rig built on the committed static mesh; deformed vertices checked at the 11 keys in Blender. Not "
                  "imported, not drawn in the engine, not visually qualified.",
         "check_geometry": geo_summary,

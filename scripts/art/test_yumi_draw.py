@@ -270,11 +270,63 @@ class MeshChecker(unittest.TestCase):
 
 
 class EmittedGeometry(unittest.TestCase):
-    """The built rig (b55fe81) and the committed arrow, as triangles."""
+    """The built rig (RIG_SCHEMA only) and the committed arrow, as triangles."""
+
+    PLAYBACK_BLENDER = ROOT / "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/W18_rig_playback_blender.npz"
+    PLAYBACK_TOL_M = 1e-5               # 0.01 mm bound; measured 0.55 um (FBX keys are float32)
+    PLAYBACK_TOL_RAD = 1e-5
 
     @classmethod
     def setUpClass(cls):
         cls.rig = Y.load_rig()
+
+    def test_only_the_current_rig_schema_loads(self):
+        # Codex's review of 1b3cd68: no legacy format or fallback decoder.
+        # The b55fe81 npz had deform matrices and no schema, bind or pose.
+        import tempfile
+        import numpy as np
+        old = {k: self.rig[k] for k in ("rest", "tris", "bone_index", "bone_weight", "bones", "fractions",
+                                         "arrow_verts", "arrow_tris")}
+        old["deform"] = np.einsum("kbij,bjl->kbil", self.rig["pose"], np.linalg.inv(self.rig["bind"]))
+        both = {"bind": self.rig["bind"], "pose": self.rig["pose"]}
+        with tempfile.TemporaryDirectory() as tmp:
+            for name, arrays in (("b55fe81", old), ("unversioned", {**old, **both}),
+                                 ("v1", {**old, **both, "schema": np.array("sora-yumi-rig-check-v1")}),
+                                 ("no_pose", {**old, "bind": self.rig["bind"], "schema": np.array(Y.RIG_SCHEMA)})):
+                path = Path(tmp) / f"{name}.npz"
+                np.savez(path, **arrays)
+                with self.assertRaisesRegex(ValueError, Y.RIG_SCHEMA, msg=name):
+                    Y.load_rig(path)
+        with self.assertRaisesRegex(ValueError, "no bind and pose"):
+            Y._deform_at({"fractions": self.rig["fractions"], "deform": old["deform"]}, 0.5)
+
+    def test_blender_plays_the_exported_take_as_the_checker_interpolates(self):
+        # The exported FBX imported and played by Blender (render_yumi_rig_review.py)
+        # at keys, quarter points and midpoints, against _deform_at and skinned.
+        import numpy as np
+        z = np.load(self.PLAYBACK_BLENDER)
+        self.assertEqual(z["interpolation"].tolist(), ["LINEAR"])
+        self.assertEqual(z["key_frames"].tolist(), [float(f) for f in range(11)])
+        self.assertEqual(z["bone_names"].tolist(), list(self.rig["bones"]))
+        for t, V in zip(z["full_times"], z["verts"]):
+            err = float(np.linalg.norm(V - Y.skinned(self.rig, t / 10.0), axis=1).max())
+            self.assertLess(err, self.PLAYBACK_TOL_M, f"vertices at frame {t}: {err:.2e} m")
+        P0 = self.rig["pose"][0][:, :3, :3]
+        B0 = z["bones"][0][:, :3, :3]
+        for t, B in zip(z["times"], z["bones"]):
+            P = Y._deform_at(self.rig, t / 10.0) @ self.rig["bind"]
+            head = float(np.linalg.norm(B[:, :3, 3] - P[:, :3, 3], axis=1).max())
+            self.assertLess(head, self.PLAYBACK_TOL_M, f"bone heads at frame {t}: {head:.2e} m")
+            # Each turn from the braced key, so the importer's own bone axes cancel.
+            turn_imported = B[:, :3, :3] @ np.transpose(B0, (0, 2, 1))
+            turn_checker = P[:, :3, :3] @ np.transpose(P0, (0, 2, 1))
+            # The angle between them from the antisymmetric part: Blender's
+            # float32 matrices are orthonormal only to ~6e-6, which arccos
+            # of the trace near 1 inflates to ~1.7e-3 rad.
+            D = np.transpose(turn_imported, (0, 2, 1)) @ turn_checker
+            axis = np.stack([D[:, 2, 1] - D[:, 1, 2], D[:, 0, 2] - D[:, 2, 0], D[:, 1, 0] - D[:, 0, 1]], 1) / 2.0
+            ang = float(np.arctan2(np.linalg.norm(axis, axis=1), (np.trace(D, axis1=1, axis2=2) - 1.0) / 2.0).max())
+            self.assertLess(ang, self.PLAYBACK_TOL_RAD, f"bone turns at frame {t}: {ang:.2e} rad")
 
     def test_the_rig_reproduces_the_static_bow_and_the_drawn_nock(self):
         import numpy as np
@@ -282,13 +334,18 @@ class EmittedGeometry(unittest.TestCase):
         i = list(self.rig["bones"]).index("String_Nock")
         M = Y._deform_at(self.rig, 1.0)[i]
         nock = M[:3, :3] @ np.array(Y.braced()["sockets"]["Grip_R"]) + M[:3, 3]
-        np.testing.assert_allclose(nock, (-Y.DRAW_M, 0.0, Y.NOCK_Z), atol=1e-5)
+        # The arrow's nock rides the apex of the string's bend, 3.4 mm inside
+        # the model's sharp V at (-DRAW_M, 0, NOCK_Z), toward the bow.
+        np.testing.assert_allclose(nock, Y.string_frames(1.0)["String_Nock"][0], atol=1e-5)
+        v = np.array((-Y.DRAW_M, 0.0, Y.NOCK_Z))
+        self.assertLess(float(np.linalg.norm(nock - v)), 0.004)
+        self.assertGreater(float(nock[0]), float(v[0]))
         self.assertEqual(self.rig["arrow_verts"].shape[1], 3)
         size = self.rig["arrow_verts"].max(0) - self.rig["arrow_verts"].min(0)
         self.assertGreater(float(size[1]), 0.03)                 # the feathers, not a 4 mm shaft
 
-    def test_local_slerp_reproduces_keys_and_rotations(self):
-        # The take's playback between keys (local slerp and lerp), on a synthetic two-bone rig.
+    def test_local_interpolation_reproduces_keys_and_rotations(self):
+        # The take's playback between keys (local nlerp and lerp), on a synthetic two-bone rig.
         import numpy as np
 
         def rot_y(a):
@@ -302,13 +359,126 @@ class EmittedGeometry(unittest.TestCase):
                 pose[k, b] = np.eye(4)
                 pose[k, b, :3, :3] = rot_y(a * b) @ bind[b, :3, :3]
                 pose[k, b, :3, 3] = bind[b, :3, 3] + (0.1 * k * b, 0.0, 0.0)
-        rig = {"fractions": np.array([0.0, 1.0]), "bind": bind, "pose": pose,
-               "deform": np.einsum("kbij,bjl->kbil", pose, np.linalg.inv(bind))}
-        np.testing.assert_allclose(Y._deform_at(rig, 0.0), rig["deform"][0], atol=1e-12)
-        np.testing.assert_allclose(Y._deform_at(rig, 1.0 - 1e-12), rig["deform"][1], atol=1e-9)
+        rig = {"fractions": np.array([0.0, 1.0]), "bind": bind, "pose": pose}
+        keys = np.einsum("kbij,bjl->kbil", pose, np.linalg.inv(bind))
+        np.testing.assert_allclose(Y._deform_at(rig, 0.0), keys[0], atol=1e-12)
+        np.testing.assert_allclose(Y._deform_at(rig, 1.0 - 1e-12), keys[1], atol=1e-9)
         mid = Y._deform_at(rig, 0.5) @ bind
-        np.testing.assert_allclose(mid[1, :3, :3], rot_y(0.2), atol=1e-12)     # slerped halfway
+        np.testing.assert_allclose(mid[1, :3, :3], rot_y(0.2), atol=1e-12)     # nlerp meets slerp halfway
+        quarter = Y._deform_at(rig, 0.25) @ bind                              # and leads it a quarter of the way
+        a = math.atan2(0.25 * math.sin(0.2), 0.75 + 0.25 * math.cos(0.2)) * 2   # the half-angle blend, doubled
+        np.testing.assert_allclose(quarter[1, :3, :3], rot_y(a), atol=1e-12)
+        self.assertGreater(abs(a - 0.1), 1e-4)
         np.testing.assert_allclose(mid[1, :3, 3], (0.05, 0.0, 1.0), atol=1e-12)  # translation lerped
+
+    def test_no_face_stretches_through_the_draw(self):
+        # Codex's review of the schema-2 attempt: faces joining the string to
+        # the stave stretched up to 14.9x at full draw, pale webs by both hazu,
+        # although every vertex alone passed its own check.
+        import numpy as np
+        T = self.rig["tris"].astype(np.int64)
+        rest = self.rig["rest"].astype(np.float64)
+
+        def edges(V):
+            return np.stack([np.linalg.norm(V[T[:, i]] - V[T[:, (i + 1) % 3]], axis=1) for i in range(3)], 1)
+        e0 = edges(rest)
+        names = list(self.rig["bones"])
+        string_bones = [names.index(n) for n in Y.STRING_BONES]
+        driven = (np.isin(self.rig["bone_index"], string_bones) & (self.rig["bone_weight"] > 0)).any(1)
+        # Every face, the nakajikake's included (Codex rejected a serving-only
+        # exception): no edge grows past 25% and 1 mm at any key.
+        for d in self.rig["fractions"]:
+            e1 = edges(Y.skinned(self.rig, float(d)))
+            ratio, grow = e1 / np.maximum(e0, 1e-9), e1 - e0
+            bad = ((ratio > 1.25) & (grow > 0.001)).any(1)
+            self.assertEqual(int(bad.sum()), 0, f"draw {float(d):.1f}: {int(bad.sum())} faces stretch")
+        # A face may join string-driven to limb-driven vertices only at a groove.
+        spanning = driven[T].any(1) & ~driven[T].all(1)
+        grooves = np.array([Y.braced()["sockets"][k] for k in ("String_Upper", "String_Lower")])
+        centres = rest[T[spanning]].mean(1)
+        far = np.linalg.norm(centres[:, None, :] - grooves[None], axis=2).min(1) > 0.015 if len(centres) else []
+        self.assertEqual(int(np.sum(far)), 0, "a face spans string and limb away from the grooves")
+
+    def test_everything_on_the_string_travels_with_it(self):
+        # Corrected attempt 1 left the nakajikake (its own island, wound on the
+        # string at the nock) on the limb, to float near brace at full draw;
+        # no face stretched, so only island membership can catch it.
+        import numpy as np
+        rest = self.rig["rest"].astype(np.float64)
+        T = self.rig["tris"].astype(np.int64)
+        br = Y.braced()["sockets"]
+        a, b = np.array(br["String_Lower"]), np.array(br["String_Upper"])
+        ab = b - a
+        t = (rest - a) @ ab / (ab @ ab)
+        off = np.linalg.norm(a + t[:, None] * ab - rest, axis=1)
+        parent = np.arange(len(rest))
+
+        def find(x):
+            while parent[x] != x:
+                parent[x] = parent[parent[x]]
+                x = parent[x]
+            return x
+        for tri in T:
+            r0 = find(tri[0])
+            for v in tri[1:]:
+                r = find(v)
+                if r != r0:
+                    parent[r] = r0
+        comp = np.array([find(v) for v in range(len(rest))])
+        names = list(self.rig["bones"])
+        driven = (np.isin(self.rig["bone_index"], [names.index(n) for n in Y.STRING_BONES])
+                  & (self.rig["bone_weight"] > 0)).any(1)
+        on_line = 0
+        for c in np.unique(comp):
+            m = comp == c
+            if float((off[m] < 0.004).mean()) >= 0.98 and 0.02 <= t[m].min() and t[m].max() <= 0.98 or \
+                    float((off[m] < 0.004).mean()) >= 0.98 and t[m].max() - t[m].min() > 0.5:
+                on_line += 1
+                self.assertTrue(bool(driven[m].all()), f"island {c} lies on the string but rides the limb")
+        self.assertGreaterEqual(on_line, 2)                                   # the string and its nakajikake
+
+    def test_the_string_bends_round_the_nock_without_stretching(self):
+        # The string's bend: a fillet tangent to both segments, its arc length
+        # held at 2 x STRING_BEND_M from brace to full draw, its bones turning
+        # in equal steps, its apex inside the V by R (sec(turn / 2) - 1).
+        import numpy as np
+        for d in (0.0, 0.3, 0.6, 1.0):
+            f = Y.string_frames(d)
+            sk = Y.shape_at(d)["sockets"]
+            a, b, v = (np.array(sk[k]) for k in ("String_Lower", "String_Upper", "Grip_R"))
+            cl = Y.string_centreline(d, 400)
+            arc = float(np.sum(np.linalg.norm(np.diff(cl[1:-1], axis=0), axis=1)))
+            self.assertAlmostEqual(arc, 2 * Y.STRING_BEND_M, places=7, msg=d)
+            ang = [f[k][1] for k in Y.STRING_BONES]
+            self.assertAlmostEqual(ang[0], ang[1], places=12)             # Tip_L turns with its segment
+            self.assertAlmostEqual(ang[-1], ang[-2], places=12)           # and Tip_U with its own
+            steps = np.diff(ang[1:-1])
+            np.testing.assert_allclose(steps, steps[0], atol=1e-9)
+            turn = ang[-1] - ang[0]
+            if abs(turn) > 1e-9:
+                R = 2 * Y.STRING_BEND_M / abs(turn)
+                apex_off = float(np.linalg.norm(f["String_Nock"][0] - v))
+                self.assertAlmostEqual(apex_off, R * (1 / math.cos(turn / 2) - 1), places=9)
+            for name, (q0, q1) in (("String_Bend_L2", (a, v)), ("String_Bend_U2", (v, b))):
+                u = (q1 - q0) / np.linalg.norm(q1 - q0)
+                w = f[name][0] - q0
+                self.assertLess(float(np.linalg.norm(w - (w @ u) * u)), 1e-9, (d, name))
+
+    def test_quaternions_keep_small_and_half_turns_exact(self):
+        # The playback test found _quat's all-square-root form 1e-5 rad off
+        # near the identity (20 um at the rig's 1.45 m arms).
+        import numpy as np
+        rng = np.random.default_rng(18)
+        axes = rng.normal(size=(600, 3))
+        axes /= np.linalg.norm(axes, axis=1, keepdims=True)
+        angles = np.concatenate([10.0 ** rng.uniform(-9, -3, 200), rng.uniform(0, math.pi, 200),
+                                 math.pi - 10.0 ** rng.uniform(-9, -3, 200)])
+        K = np.zeros((600, 3, 3))
+        K[:, 0, 1], K[:, 0, 2], K[:, 1, 2] = -axes[:, 2], axes[:, 1], -axes[:, 0]
+        K -= np.transpose(K, (0, 2, 1))
+        s, c = np.sin(angles)[:, None, None], np.cos(angles)[:, None, None]
+        R = np.eye(3)[None] + s * K + (1 - c) * (K @ K)
+        np.testing.assert_allclose(Y._quat_matrix(Y._quat(R)), R, atol=1e-12)
 
     def test_point_to_triangle_distance(self):
         import numpy as np
@@ -347,9 +517,12 @@ class EmittedGeometry(unittest.TestCase):
         self.assertEqual(sm["arrow"]["hold"]["near_clip_frames"], 0)
         # Reported residual: the real feathers cross the near plane at the
         # frame's bottom-left corner briefly in the draw (draw about 0.64-0.69).
-        self.assertEqual(sm["arrow"]["draw"]["near_clip_frames"], 2)    # at this test's 30 fps (3 at 60 fps), cut segments clipped to the frame
+        # With the arrow nocked on the string's bend (the v3 rig's apex, up to
+        # 3.4 mm forward of the old sharp V) it is 3 sampled frames at this
+        # test's 30 fps (2 before) and 3 at 60 fps, as before.
+        self.assertEqual(sm["arrow"]["draw"]["near_clip_frames"], 3)
         u0, u1, v0, v1 = sm["arrow"]["draw"]["clip_box"]
-        self.assertTrue(u1 <= -0.9 and v1 <= -0.85, sm["arrow"]["draw"]["clip_box"])
+        self.assertTrue(u1 <= -0.88 and v1 <= -0.88, sm["arrow"]["draw"]["clip_box"])
 
 
 if __name__ == "__main__":
