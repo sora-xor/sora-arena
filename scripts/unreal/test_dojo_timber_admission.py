@@ -223,6 +223,7 @@ class Probe(unittest.TestCase):
         for disk in (False, True):
             with self.subTest(disk=disk):
                 ns = self.importer_functions()
+                ns["assets"].does_directory_exist.return_value = not disk
                 ns["assets"].list_assets.return_value = [] if disk else [A.PROBE_DEST + "/old"]
                 if disk:
                     write(self.root / "Content/Generated/Qualification/DojoTimberProbe/old.uasset", b"old")
@@ -230,7 +231,22 @@ class Probe(unittest.TestCase):
                 with self.assertRaisesRegex(RuntimeError, "destination is occupied"):
                     ns["run_probe"](spec_path)
                 ns["create_materials"].assert_not_called()
-                self.assertEqual(len(ns["assets"].mock_calls), 1)
+                self.assertEqual(len(ns["assets"].mock_calls), 1 if disk else 2)
+
+    def test_absent_namespace_skips_enumeration_and_reaches_source_preflight(self):
+        ns = self.importer_functions()
+        ns["assets"].does_directory_exist.return_value = False
+        for manifest in self.manifests.values():
+            for group in ("pool", "placements"):
+                for rec in manifest[group]:
+                    rec.update({"cache_fbx": "dense.fbx", "fallback_fbx": "pool.fbx", "digest": "x"})
+        ns["verified"] = Mock(side_effect=RuntimeError("missing source at preflight"))
+        spec_path = write(self.root / "probe.json", json.dumps(self.spec).encode())
+        with self.assertRaisesRegex(RuntimeError, "missing source at preflight"):
+            ns["run_probe"](spec_path)
+        ns["assets"].list_assets.assert_not_called()
+        ns["verified"].assert_called_once()
+        ns["create_materials"].assert_not_called()
 
     def test_bad_slot_stops_before_material_assignment(self):
         ns = self.importer_functions()
