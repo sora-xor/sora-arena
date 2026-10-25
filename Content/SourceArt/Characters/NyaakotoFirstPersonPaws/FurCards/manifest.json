@@ -1,0 +1,47 @@
+{
+ "schema_version": 3,
+ "generator": "scripts/art/create_nyaakoto_fp_fur_textures.py",
+ "seed": 20261025,
+ "atlas": {
+  "columns": 8,
+  "rows": 2,
+  "tile_px": [
+   256,
+   512
+  ],
+  "uv": "root at each tile's bottom (v up)"
+ },
+ "provenance": "original and procedural: every hair drawn by this script from its seed; no external image, scan or third-party texture",
+ "maps": {
+  "Albedo": {
+   "file": "T_NyaakotoFP_FurCards_Albedo.png",
+   "size": [
+    2048,
+    1024
+   ],
+   "mode": "RGBA",
+   "note": "sRGB colour; A = hair coverage (opacity mask)",
+   "sha256": "3bb60d857fe8b5f0550bb3a2859925baf33b92348b9e2625c36c202bd4038659"
+  },
+  "NormalDX": {
+   "file": "T_NyaakotoFP_FurCards_NormalDX.png",
+   "size": [
+    2048,
+    1024
+   ],
+   "mode": "RGB",
+   "note": "tangent space, DirectX (green down): each hair's cylinder across its width",
+   "sha256": "f7e3124d29009a9ac41501255e24801ef19588ca58a730d833464160ce01b635"
+  },
+  "Masks": {
+   "file": "T_NyaakotoFP_FurCards_Masks.png",
+   "size": [
+    2048,
+    1024
+   ],
+   "mode": "RGB",
+   "note": "linear: R root-to-tip, G per-hair random, B depth in the clump (1 front)",
+   "sha256": "c3624e07edc2003c3d60c3c2149fd6c90f8496d6789b646dcefff2e9c6dbe10a"
+  }
+ }
+}
