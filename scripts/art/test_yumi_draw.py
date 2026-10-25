@@ -269,6 +269,29 @@ class EmittedGeometry(unittest.TestCase):
         size = self.rig["arrow_verts"].max(0) - self.rig["arrow_verts"].min(0)
         self.assertGreater(float(size[1]), 0.03)                 # the feathers, not a 4 mm shaft
 
+    def test_local_slerp_reproduces_keys_and_rotations(self):
+        # The take's playback between keys (local slerp and lerp), on a synthetic two-bone rig.
+        import numpy as np
+
+        def rot_y(a):
+            c, s = math.cos(a), math.sin(a)
+            return np.array([[c, 0, s], [0, 1, 0], [-s, 0, c]])
+        bind = np.stack([np.eye(4), np.eye(4)])
+        bind[1, :3, 3] = (0.0, 0.0, 1.0)
+        pose = np.zeros((2, 2, 4, 4))
+        for k, a in enumerate((0.0, 0.4)):
+            for b in range(2):
+                pose[k, b] = np.eye(4)
+                pose[k, b, :3, :3] = rot_y(a * b) @ bind[b, :3, :3]
+                pose[k, b, :3, 3] = bind[b, :3, 3] + (0.1 * k * b, 0.0, 0.0)
+        rig = {"fractions": np.array([0.0, 1.0]), "bind": bind, "pose": pose,
+               "deform": np.einsum("kbij,bjl->kbil", pose, np.linalg.inv(bind))}
+        np.testing.assert_allclose(Y._deform_at(rig, 0.0), rig["deform"][0], atol=1e-12)
+        np.testing.assert_allclose(Y._deform_at(rig, 1.0 - 1e-12), rig["deform"][1], atol=1e-9)
+        mid = Y._deform_at(rig, 0.5) @ bind
+        np.testing.assert_allclose(mid[1, :3, :3], rot_y(0.2), atol=1e-12)     # slerped halfway
+        np.testing.assert_allclose(mid[1, :3, 3], (0.05, 0.0, 1.0), atol=1e-12)  # translation lerped
+
     def test_point_to_triangle_distance(self):
         import numpy as np
         P = np.array([[[-1.0, -1.0], [1.0, -1.0], [0.0, 1.0]],      # contains the origin

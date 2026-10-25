@@ -359,6 +359,16 @@ def check(obj, arm, info, braced, bind, rest_co):
     return results, failures
 
 
+def socket_frames(arm, bone, mesh_frame):
+    """A socket's mesh-frame location and its bone-local offset on ``bone``
+    (Blender metres), from the bone's bind matrix; plus the bind itself."""
+    b = arm.data.bones[bone]
+    local = b.matrix_local.inverted() @ Vector(mesh_frame)
+    return {"bone": bone, "mesh_frame_m": [round(c, 7) for c in mesh_frame],
+            "bone_local_m": [round(c, 7) for c in local],
+            "bone_bind_matrix": [[round(c, 7) for c in row] for row in b.matrix_local]}
+
+
 def export(obj, arm, path):
     bpy.ops.object.select_all(action="DESELECT")
     obj.select_set(True)
@@ -395,11 +405,14 @@ def check_geometry(obj, arm, record):
             bi[v.index, k], bw[v.index, k] = index[n], w
     scene = bpy.context.scene
     deform = np.zeros((len(FRACTIONS), len(names), 4, 4), np.float32)
+    pose = np.zeros((len(FRACTIONS), len(names), 4, 4), np.float64)
+    bind = np.array([np.array(arm.data.bones[n].matrix_local) for n in names], np.float64)
     for frame in range(len(FRACTIONS)):
         scene.frame_set(frame)
         for i, n in enumerate(names):
             pb, b = arm.pose.bones[n], arm.data.bones[n]
             deform[frame, i] = np.array(pb.matrix @ b.matrix_local.inverted())
+            pose[frame, i] = np.array(pb.matrix)             # armature space = local to Grip (identity)
     scene.frame_set(0)
     # The arrow, as committed, in its own frame.
     before = set(bpy.data.objects)
@@ -424,8 +437,12 @@ def check_geometry(obj, arm, record):
     for o in new:
         bpy.data.objects.remove(o, do_unlink=True)
     path = OUT / "W18_rig_check_geometry.npz"
+    # bind and pose (armature space, which is local to the identity Grip root)
+    # let the checker interpolate between keys as the take plays: each bone's
+    # local translation lerped and rotation slerped.
     np.savez_compressed(path, rest=rest, tris=tris, bone_index=bi, bone_weight=bw, bones=np.array(names),
-                        deform=deform, fractions=np.array(FRACTIONS, np.float32), arrow_verts=av, arrow_tris=at)
+                        deform=deform, bind=bind, pose=pose, fractions=np.array(FRACTIONS, np.float32),
+                        arrow_verts=av, arrow_tris=at)
     return path, {"bow_vertices": int(len(rest)), "bow_triangles": int(len(tris)), "arrow_vertices": int(len(av)),
                   "arrow_triangles": int(len(at)), "arrow_bounds_m": [round(c, 6) for c in size]}
 
@@ -468,11 +485,13 @@ def main():
                  "full_draw_m": Y.DRAW_M, "nock_z_m": Y.NOCK_Z, "string_m": braced["string_m"],
                  "release": "back to brace (frame 0) in 0.03 s; no overshoot past brace (the string is unstretched)"},
         "bones": bones, "weights": counts, "keys": keys,
-        "sockets": {"Grip_L": {"bone": "Grip", "location_m": list(sockets["Grip_L"])},
-                    "Muzzle": {"bone": "Grip", "location_m": list(sockets["Muzzle"])},
-                    "Grip_R": {"bone": "String_Nock", "location_m": [0.0, 0.0, 0.0]},
-                    "String_Upper": {"bone": "Tip_U", "location_m": [0.0, 0.0, 0.0]},
-                    "String_Lower": {"bone": "Tip_L", "location_m": [0.0, 0.0, 0.0]}},
+        # Each socket in both frames (Codex's review of b55fe81): the mesh
+        # (armature) frame as the static bow's record has it, and the bone-local
+        # offset Unreal's skeleton socket needs, from the bone's own bind
+        # matrix. Copying a mesh-frame offset onto a bone puts Muzzle 102.86 mm off.
+        "sockets": {name: socket_frames(arm, bone, sockets[name])
+                    for name, bone in (("Grip_L", "Grip"), ("Muzzle", "Grip"), ("Grip_R", "String_Nock"),
+                                       ("String_Upper", "Tip_U"), ("String_Lower", "Tip_L"))},
         "axes": record["axes"], "static_bounds_m": [round(c, 6) for c in size],
         "checks": results,
         "scope": "rig built on the committed static mesh; deformed vertices checked at the 11 keys in Blender. Not "

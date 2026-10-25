@@ -69,8 +69,10 @@ def main():
     scene.collection.objects.link(cam)
     scene.camera = cam
     views = {
-        # Profile: looking along +Y (the bow's plane is XZ), the whole bow.
+        # Profile: looking along +Y (the bow's plane is XZ), the middle of the bow.
         "Profile": dict(loc=(-0.35, -3.6, 0.38), target=(-0.35, 0.0, 0.38), lens=50.0),
+        # The full profile, both tips in frame (Codex's review of b55fe81: the Profile crops them).
+        "FullProfile": dict(loc=(-0.25, -7.5, 0.37), target=(-0.25, 0.0, 0.37), lens=50.0),
         # The nigiri and the first bones: close, slightly from the archer's side.
         "GripClose": dict(loc=(-0.30, -0.55, 0.05), target=(-0.02, 0.0, 0.05), lens=50.0),
     }

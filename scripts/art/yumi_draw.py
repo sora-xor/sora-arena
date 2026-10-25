@@ -745,8 +745,9 @@ if __name__ == "__main__":
 # ---------------------------------------------------------------------------
 
 RIG_GEOMETRY = HERE.parents[1] / "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/W18_rig_check_geometry.npz"
-MESH_SCOPE = ("emitted geometry: the built rig's skinned bow triangles (its own weights and key deform matrices, "
-              "interpolated between keys) and the committed arrow's triangles; exact projected point-to-triangle "
+MESH_SCOPE = ("emitted geometry: the built rig's skinned bow triangles (its own weights and key matrices; between keys "
+              "the take's local interpolation when the rig carries bind and pose matrices, else an approximation within "
+              "about 1.1 mm) and the committed arrow's triangles; exact projected point-to-triangle "
               "distances, triangles clipped at the near plane, cuts counted inside the frame. The paws are still "
               "envelopes until their meshes exist. Sampled at the timeline's fps in rest and the nominal bob "
               "extremes; not the native camera path.")
@@ -758,13 +759,65 @@ def load_rig(path=None):
     return {k: z[k] for k in z.files}
 
 
+def _quat(R):
+    """Unit quaternions (w, x, y, z) of rotation matrices R (..., 3, 3)."""
+    import numpy as np
+    R = np.asarray(R, np.float64)
+    w = np.sqrt(np.maximum(0.0, 1.0 + R[..., 0, 0] + R[..., 1, 1] + R[..., 2, 2])) / 2.0
+    x = np.sqrt(np.maximum(0.0, 1.0 + R[..., 0, 0] - R[..., 1, 1] - R[..., 2, 2])) / 2.0
+    y = np.sqrt(np.maximum(0.0, 1.0 - R[..., 0, 0] + R[..., 1, 1] - R[..., 2, 2])) / 2.0
+    z = np.sqrt(np.maximum(0.0, 1.0 - R[..., 0, 0] - R[..., 1, 1] + R[..., 2, 2])) / 2.0
+    x = np.copysign(x, R[..., 2, 1] - R[..., 1, 2])
+    y = np.copysign(y, R[..., 0, 2] - R[..., 2, 0])
+    z = np.copysign(z, R[..., 1, 0] - R[..., 0, 1])
+    q = np.stack([w, x, y, z], -1)
+    return q / np.linalg.norm(q, axis=-1, keepdims=True)
+
+
+def _quat_matrix(q):
+    import numpy as np
+    w, x, y, z = (q[..., i] for i in range(4))
+    return np.stack([np.stack([1 - 2 * (y * y + z * z), 2 * (x * y - w * z), 2 * (x * z + w * y)], -1),
+                     np.stack([2 * (x * y + w * z), 1 - 2 * (x * x + z * z), 2 * (y * z - w * x)], -1),
+                     np.stack([2 * (x * z - w * y), 2 * (y * z + w * x), 1 - 2 * (x * x + y * y)], -1)], -2)
+
+
+def _slerp(q0, q1, t):
+    import numpy as np
+    dot = np.sum(q0 * q1, -1, keepdims=True)
+    q1 = np.where(dot < 0, -q1, q1)
+    dot = np.abs(dot)
+    th = np.arccos(np.clip(dot, -1.0, 1.0))
+    s = np.sin(th)
+    small = s < 1e-9
+    a = np.where(small, 1.0 - t, np.sin((1.0 - t) * th) / np.where(small, 1.0, s))
+    b = np.where(small, t, np.sin(t * th) / np.where(small, 1.0, s))
+    q = a * q0 + b * q1
+    return q / np.linalg.norm(q, axis=-1, keepdims=True)
+
+
 def _deform_at(rig, d):
-    """The bones' deform matrices at draw fraction d: the keys interpolated,
-    angle about Y and translation, as a linear take between keys plays."""
+    """The bones' deform matrices at draw fraction d.
+
+    With the rig's bind and per-key pose matrices (a rig rebuilt since Codex's
+    review of b55fe81), this is the take as it plays. Each bone's local
+    transform under the identity Grip root has its translation lerped and its
+    rotation slerped between keys; then deform = pose x bind^-1. Without them
+    (the b55fe81 rig) it is an approximation: the deform matrices' angle about
+    Y and translation lerped, 0.045-1.086 mm from the take's playback at ten
+    midpoints (Codex's measure). The keys themselves are exact either way."""
     import numpy as np
     fr = rig["fractions"]
     k = int(min(max(np.searchsorted(fr, d, side="right") - 1, 0), len(fr) - 2))
     t = float((d - fr[k]) / (fr[k + 1] - fr[k]))
+    if "pose" in rig and "bind" in rig:
+        P0, P1 = rig["pose"][k], rig["pose"][k + 1]
+        R = _quat_matrix(_slerp(_quat(P0[:, :3, :3]), _quat(P1[:, :3, :3]), t))
+        P = np.zeros_like(P0)
+        P[:, :3, :3] = R
+        P[:, :3, 3] = P0[:, :3, 3] + (P1[:, :3, 3] - P0[:, :3, 3]) * t
+        P[:, 3, 3] = 1.0
+        return P @ np.linalg.inv(rig["bind"])
     A, B = rig["deform"][k].astype(np.float64), rig["deform"][k + 1].astype(np.float64)
     ang_a = np.arctan2(A[:, 0, 2], A[:, 0, 0])
     ang_b = np.arctan2(B[:, 0, 2], B[:, 0, 0])

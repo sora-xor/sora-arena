@@ -1,0 +1,89 @@
+{
+  "schema_version": 2,
+  "kind": "asset-ledger",
+  "ledger_id": "own-W18_Yumi_Rig",
+  "source": "project",
+  "purpose": "the yumi's continuous skeletal draw rig, its checker geometry and review originals; built from the committed static bow, not imported or admitted",
+  "generator": "scripts/assets/write_own_ledger.py",
+  "records": [
+    {
+      "asset_id": "W18_Yumi_Rig",
+      "name": "Yumi continuous draw rig (SK_Weapon_18)",
+      "kind": "generated-art",
+      "tier": "OWN",
+      "license": "project-owned",
+      "license_url": null,
+      "origin_url": "scripts/art/create_runtime_weapon_yumi_rig.py, scripts/art/render_yumi_rig_review.py",
+      "mirror_url": null,
+      "commercial_use": true,
+      "redistribution": "unrestricted",
+      "derivatives": true,
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "attribution_text": null,
+      "changes": null,
+      "access": "generated",
+      "acquired_at_utc": "2026-10-25T04:37:38Z",
+      "acquired_by": "agent",
+      "storage": "repo-lfs",
+      "used_by": [],
+      "fallback": null,
+      "generator": [
+        "scripts/art/create_runtime_weapon_yumi_rig.py",
+        "scripts/art/render_yumi_rig_review.py"
+      ],
+      "derived_from": [
+        {
+          "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18.fbx",
+          "sha256": "96ffd4ac042e9dd4a39290c34c4fd855dc47f57b4c09428fe005f3cecd55df39"
+        },
+        {
+          "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_Ya.fbx",
+          "sha256": "3fbec542158e1aa6a7fd20b36a4cb12ed749a2a4296a96c59637476560604b40"
+        },
+        {
+          "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/build_record.json",
+          "sha256": "e598a0df54d4ec06ab9bdff59f8ed0b812b8576729ea17aa87cf85ec20b83fe8"
+        }
+      ],
+      "files": [
+        {
+          "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_Braced_GripClose.png",
+          "bytes": 941872,
+          "sha256": "7988880dd1e1108b3e400ae844b3c177430244ad4311aa3e20a7c74c3b5de0d9"
+        },
+        {
+          "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_Braced_Profile.png",
+          "bytes": 850684,
+          "sha256": "a35763361a2eaf322010913160259fbb70b851e7fa42f5953e11025c219452d9"
+        },
+        {
+          "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_Full_GripClose.png",
+          "bytes": 906787,
+          "sha256": "4d109e714fc4cc25729b1084e0d95daf0c9a876482b039a44974f8d4147416f5"
+        },
+        {
+          "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_Full_Profile.png",
+          "bytes": 877752,
+          "sha256": "d45e7028a0337f3698042dc099bfde7fbcb1eed33f5e2012817d1b76acf79f97"
+        },
+        {
+          "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_Half_GripClose.png",
+          "bytes": 906956,
+          "sha256": "e7e033087f17c524971e66f985a8aaed4cd6c156d829a79aa2a843c3c8bc4379"
+        },
+        {
+          "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/SK_Weapon_18_Half_Profile.png",
+          "bytes": 867228,
+          "sha256": "5ccd4904d245a3c90f6272dd0c4890edc73ddb33f0ba8def7b50b787614336a4"
+        },
+        {
+          "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/SK_Weapon_18.fbx",
+          "bytes": 7505100,
+          "sha256": "8fa3a88392a3161fd61eed5e8af952103421a522912a521c82d59cd5e14a147c"
+        }
+      ]
+    }
+  ]
+}
