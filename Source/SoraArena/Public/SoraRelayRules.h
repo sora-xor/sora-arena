@@ -11,6 +11,7 @@ constexpr int NodesLockMs=30000, ReinforcementDelayMs=8000, ReinforcementCount=2
 constexpr int LampNoticeMs=5000, GalleryHeightCm=400, GalleryWidthCm=180;
 struct FPoint { int X,Y,Z; };
 constexpr FPoint Nodes[NodeCount]={{920,500,120},{1080,500,120},{1000,580,520}};
+constexpr FPoint Work[NodeCount]={{800,500,0},{1200,500,0},{1000,690,400}};
 // Positive rotation starts at east. Each node has the same eight-second
 // exposure and four-second gap, offset by its angle around the column.
 constexpr int NodePhaseMs[NodeCount]={6000,0,3000};
@@ -23,6 +24,7 @@ struct FStep
 {
     int Completed=-1;
     int Caught=-1;
+    int EventAtMs=0;
     bool ReinforcementsDue=false;
 };
 
@@ -62,11 +64,12 @@ struct FState
         return EBegin::Started;
     }
 
-    bool Detect()
+    bool Detect(int AgeMs=0)
     {
         if(Detected) return false;
-        Detected=true; NodesLockedMs=NodesLockMs;
-        ReinforcementsInMs=ReinforcementDelayMs;
+        const int Age=AgeMs<0?0:AgeMs;
+        Detected=true; NodesLockedMs=Age>=NodesLockMs?0:NodesLockMs-Age;
+        ReinforcementsInMs=Age>=ReinforcementDelayMs?0:ReinforcementDelayMs-Age;
         Cancel();
         return true;
     }
@@ -88,12 +91,14 @@ struct FState
             if(Need<=Safe&&Need<=Remaining)
             {
                 AdvanceClock(Need); Remaining-=Need;
+                Out.EventAtMs=Need;
                 Out.Completed=HeldNode; Disabled|=1u<<HeldNode;
                 Cancel();
             }
             else if(Safe<=Remaining)
             {
                 AdvanceClock(Safe); Remaining-=Safe;
+                Out.EventAtMs=Safe;
                 Out.Caught=HeldNode; Cancel(); FanLockedMs=FanLockMs;
             }
             else

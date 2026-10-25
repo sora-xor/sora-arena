@@ -127,6 +127,24 @@ void SoraHUDPanels::DrawFieldcraft(const FSoraHUDFrame& Frame, const ASoraPlayer
         Prompts.Last().Fraction=Campaign->HeldWorkProgress();
     }
     const FSoraFieldcraftReadout R = Fieldcraft->Readout(Hero);
+    if(const auto* Campaign=G.Campaign();Campaign&&Campaign->IsRelayRoom())
+    {
+        const auto& Relay=Campaign->RelayState();
+        if(Relay.NodesLockedMs>0)
+            Prompt(SoraText::Format(NSLOCTEXT("SoraArena.Fieldcraft","RelayLocked","中継器の封鎖　残り {Seconds} 秒"),
+                {{TEXT("Seconds"),(Relay.NodesLockedMs+999)/1000}}),Frame.Gold);
+        else if(Relay.FanLockedMs>0)
+            Prompt(SoraText::Line(NSLOCTEXT("SoraArena.Fieldcraft","RelayCaught","走査に捕まった　警戒が高まった")),Frame.Gold);
+        else for(int I=0;I<3;++I) if(!Relay.IsDisabled(I)&&Campaign->CanReachRelay(I))
+        {
+            if(Relay.Exposed(I))
+                Prompt(SoraText::Line(NSLOCTEXT("SoraArena.Fieldcraft","RelayWait","走査中　光が外れるまで待て")),Frame.Teal);
+            else
+                Prompt(SoraText::Format(NSLOCTEXT("SoraArena.Fieldcraft","RelayGap","走査の隙　残り {Seconds} 秒　{Key} を三秒長押し"),
+                    {{TEXT("Seconds"),(Relay.SafeRemainingMs(I)+999)/1000},{TEXT("Key"),SoraUI::ActionKey(&HUD,TEXT("Interact"))}}),Frame.Gold);
+            break;
+        }
+    }
     if (!R.bActive) { DrawPrompts(); return; }
     // What the hero's hand can do here, and how far a held piece of it has come.
     using EHold = FSoraFieldcraftReadout::EHold;

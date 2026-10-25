@@ -59,6 +59,7 @@ int main()
         assert(Same(Whole,Fine));
         assert(Completed==(One.Completed!=-1)&&Caught==(One.Caught!=-1));
         const int Safe=PeriodMs-PhaseAt(Phase,Node);
+        assert(One.EventAtMs==(Safe>=PullMs?PullMs:Safe));
         assert((One.Completed==Node)==(Safe>=PullMs));
         assert((One.Caught==Node)==(Safe<PullMs));
         assert(Completed+Caught==1);
@@ -103,6 +104,24 @@ int main()
     assert(!S.Advance(21999,true).ReinforcementsDue&&S.NodesLockedMs==1);
     assert(!S.Advance(1,true).ReinforcementsDue&&S.NodesLockedMs==0);
     assert(!S.Advance(INT_MAX,true).ReinforcementsDue);
+
+    // A sensor callback delivered after a coarse tick uses the event's age,
+    // not the callback time. Its 8 s / 30 s deadlines match 1 ms stepping.
+    for(int Frame:{1000,7999,8000,30000,45000,INT_MAX})
+    {
+        FState Coarse;Coarse.PhaseMs=11999;Coarse.Begin(1);
+        const auto Hit=Coarse.Advance(Frame,true);
+        assert(Hit.Caught==1&&Hit.EventAtMs==1);
+        assert(Coarse.Detect(Frame-Hit.EventAtMs));
+        FState Fine;Fine.PhaseMs=11999;Fine.Begin(1);
+        assert(Fine.Advance(1,true).Caught==1);Fine.Detect();
+        Fine.Advance(Frame-1,true);
+        assert(Same(Coarse,Fine));
+    }
+    S=FState{};S.Detect(INT_MIN);
+    assert(S.NodesLockedMs==NodesLockMs&&S.ReinforcementsInMs==ReinforcementDelayMs);
+    S=FState{};S.Detect(INT_MAX);
+    assert(S.NodesLockedMs==0&&S.ReinforcementsReady());
 
     // Timers remain independent when the scan pauses, and survive arbitrary
     // frame partitions without a cumulative phase or deadline error.

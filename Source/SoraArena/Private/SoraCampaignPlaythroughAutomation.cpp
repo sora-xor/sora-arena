@@ -553,6 +553,23 @@ bool WorkAtAnchor(FAutomationTestBase& Test, FState& State)
     MoveTo(State, Anchor);
     if (!Advance(Test, State, 1))
         return false;
+    if(Director->IsRelayRoom())
+    {
+        // This playthrough deliberately places the hero at controls. The
+        // relay fixtures separately exercise ordinary stair traversal.
+        Player(State)->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+        Player(State)->SetActorLocation(Anchor+FVector(0,0,Player(State)->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2));
+        if(!Advance(Test,State,3)||!WaitForDialogue(Test,State)) return false;
+        int Node=0;while(Node<4&&(Director->TaskProgress().PointsMask&(1u<<Node))) ++Node;
+        if(Node<3)
+        {
+            for(int Frame=0;Frame<3000&&(Director->RelayState().NodesLockedMs>0||
+                Director->RelayState().SafeRemainingMs(Node)<3300);++Frame)
+                if(!Advance(Test,State,1)) return false;
+            if(!Test.TestTrue(TEXT("The relay scan leaves time for the full pull"),
+                Director->RelayState().NodesLockedMs==0&&Director->RelayState().SafeRemainingMs(Node)>=3300)) return false;
+        }
+    }
     if(Director->ActiveTask().AlternateTreads)
     {
         // The bellows wave nets the boy beside this station. Interact gives

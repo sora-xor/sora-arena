@@ -616,10 +616,16 @@ struct FSoraPressHall
     bool bEnabled=false;
     FVector2D Origin=FVector2D::ZeroVector;
 };
+struct FSoraRelayRoom
+{
+    bool bEnabled=false;
+    FVector2D Origin=FVector2D::ZeroVector;
+};
 
 struct FSoraBeatSpace
 {
     FSoraPressHall PressHall;
+    FSoraRelayRoom RelayRoom;
     TArray<FSoraFuelCanister> FuelCanisters;
     TArray<FSoraPodArrival> PodArrivals;
     FSoraMoltenSpace Molten;

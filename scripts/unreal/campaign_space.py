@@ -518,6 +518,9 @@ def derive_space(chapter, beats, places, collectibles, triggers, layout, fail):
             # marker, including the accepted flood encounter.
             zone_gap -= 4200 - width
             width, height, wall = 4200, 2400, 900
+        if prefix == "ch06" and place_id == "pl_relay_room":
+            zone_gap += width - 2000
+            width, height, wall = 2000, 1000, 800
         if place_id in hosts_boss:
             width, height = max(width, BOSS_SIZE[0]), max(height, BOSS_SIZE[1])
         rect = (x, -height // 2, x + width, height // 2)
@@ -644,6 +647,8 @@ def derive_space(chapter, beats, places, collectibles, triggers, layout, fail):
     place_moat(beats, records, zones, pickups, fail)
     from campaign_press import place_press_hall
     place_press_hall(beats, records, zones, pickups, fail)
+    from campaign_relay import place_relay
+    place_relay(beats, records, zones, pickups, fail)
     for beat, record in zip(beats, records):
         if beat["id"] == "ch06.b13":
             # Chapter 6 §3 L8 puts the bulkhead lever beside the freight-lift
@@ -673,6 +678,8 @@ def _dress_zone(zone, combat, site_points):
     """Cover by the walls where a fight happens, lantern posts in the corners,
     and the style's buildings and trees as a backdrop outside the walls, so no
     visual-only prop ever stands over a work spot."""
+    if zone.place == 'pl_relay_room':
+        return  # The authored runtime room supplies its own cover and gallery.
     rect = zone.rect
     if combat:
         for fx in COVER_X:

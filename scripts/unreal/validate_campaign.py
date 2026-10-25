@@ -65,6 +65,7 @@ from campaign_horse_withdrawal import horse_withdrawal_valid
 from campaign_molten import molten_valid
 from campaign_canisters import canisters_valid
 from campaign_press import press_hall_valid
+from campaign_relay import relay_valid
 from campaign_moat import moat_valid
 from campaign_space import arena_blockers, spook_dismount
 from campaign_cargo import cargo_manifest
@@ -573,7 +574,12 @@ def check_fieldcraft(beat, record, index, zones, zone_of, on_floor):
     for lamp in craft["lamps"]:
         require(lamp["snuff"] in ("hold", "shot", "none") and lamp["radius_cm"] > 0 and lamp["relight_ms"] >= 0 and
                 (lamp["snuff"] == "hold") == (lamp["hold_ms"] > 0), f"{what}: lamp {lamp['id']} rules")
-        on_floor(index, lamp["at"], f"{what} lamp {lamp['id']}")
+        if record.get('relay_room'):
+            # Authored wall lamps are 1 m from the wall; their 50 cm lens
+            # needs its own footprint, not the standing-player clearance.
+            require(_inside(rect, lamp['at'], 25), f"{what}: relay lamp leaves the room")
+        else:
+            on_floor(index, lamp["at"], f"{what} lamp {lamp['id']}")
     roofs = {ladder["height_cm"] for ladder in craft["ladders"]}
     for surface in craft["surfaces"]:
         area(surface, f"{surface['kind']} floor")
@@ -883,6 +889,7 @@ def validate(catalog, campaign, chapters, legacy, roster):
                      for attack in row["attacks"] if attack["id"] == "seizure_net")
     for chapter in chapters:
         require(press_hall_valid(chapter), "press hall must retain its authored machines and noise rules")
+        require(relay_valid(chapter), "relay room must retain its authored nodes, scan and lock rules")
         for record in chapter["space"]["beats"]:
             nets = record["fieldcraft"]["nets"]
             require(not nets or nets["quarry"][0]["kind"] != "person" or nets["windup_ms"] == drone_net,
