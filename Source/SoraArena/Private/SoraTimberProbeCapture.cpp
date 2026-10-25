@@ -394,7 +394,7 @@ private:
             (Resolution->GetBoolField(TEXT("test_interface_override_registered"))&&Resolution->GetNumberField(TEXT("test_interface_override"))!=0))
         {
             FString Observed; FJsonSerializer::Serialize(Resolution,TJsonWriterFactory<>::Create(&Observed));
-            Fail(TEXT("Probe requires unchanged 100 percent control and inactive dynamic/test resolution overrides: ")+Observed); return;
+            Fail(*(TEXT("Probe requires unchanged 100 percent control and inactive dynamic/test resolution overrides: ")+Observed)); return;
         }
         FlushRenderingCommands(); const auto& Data=GetNaniteVisualizationData(); const bool Diagnostic=SM6&&(Mode()==1||Mode()==2);
         if ((Diagnostic&&(!Data.IsActive()||Data.GetActiveModeName()!=FName(Modes[Mode()])))||(!Diagnostic&&Data.IsActive())) { Fail(TEXT("Renderer has not selected requested visualization")); return; }
