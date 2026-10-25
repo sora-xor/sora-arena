@@ -1,8 +1,8 @@
 # Horse-defense shells
 
-This implements the horse-targeted grenadier in `ch02.b06`. It is source
-work awaiting its first Unreal build and directed runtime tests. It is not
-qualification of campaign pacing, final art, a package, or either platform.
+This implements the horse-targeted grenadier in `ch02.b06`. Its Unreal build
+and three directed runtime fixtures pass across the exact-source runs below.
+This does not qualify campaign pacing, final art, a package, or either platform.
 
 The actual grenadier registered from pod B receives an encounter binding.
 It chooses the nearest living indexed horse; a visible hero within 1500 cm
@@ -38,7 +38,7 @@ cross-check the actual grenadier projectile catalog. There is no older-schema
 decoder or fallback attack. The source gate exercises the production C++
 clock and rejects missing, foreign, mistyped and drifted bindings.
 
-Pending Unreal fixtures:
+Directed Unreal fixtures:
 
 - `SoraArena.Campaign.HorseShellClockAndImpact`: real pod-B spawn, visible
   warning, mapped menu pause, stagger, release cadence, swept impact, indexed
@@ -54,3 +54,33 @@ stage combat poses in a clear estate aisle. They do not prove an unassisted
 150-second defense or navigation all the way from the pod to firing range.
 Pod descent art, finished horses, the final warning effect and the authored
 withdrawal on completion remain separate unfinished work.
+
+## October 25 runtime evidence
+
+Exact `bf58810` builds in 39.28 seconds and runs sixteen selected tests: fifteen
+pass, with two selected errors in HorseShellCoverAndDud and zero warnings.
+ClockAndImpact and BaitAndCancellation pass, along with all three pod fixtures,
+held treatment/cooldown/retry, the corrected canister and MarginLinger cases,
+and the full assisted 133-beat Playthrough. The first armed-cover assertions
+pass; the second shot detonates because the fixture's fixed obstruction no
+longer guarantees a pre-arming contact after the shooter moves. The original
+failure is preserved; that cause was inferred from source, not measured in
+the original failed run.
+
+Fixture-only `2a69fb5` places the obstruction ahead of the actual shooter and
+asserts a radius-nine sweep along the first 199 cm reaches that obstruction.
+Its build passes in 46.76 seconds. HorseShellCoverAndDud and the shared
+ExplosiveSelfDamageAndArming regression both pass, with zero selected errors
+or warnings and actual editor/wrapper exit zero. The diagnostic measures
+first contact at 95.810 cm and projectile travel at 26.414 cm. Production
+arming and damage code are unchanged. The earlier fifteen passes were not
+rerun at this fixture-only revision.
+
+The root rehashed twenty files from each runtime archive and verified unchanged
+source, native inputs, Config and Generated files. Evidence is under
+`Saved/Qualification/2026-10-25/horse-shell-bf58810-runtime-attempt1` and
+`horse-dud-2a69fb5-runtime-attempt1`, with adjacent root-review JSON receipts.
+An earlier `03e8bf4` build failed before editor launch on four declaration/test
+helper errors; that failure also remains preserved. Authenticated CI at
+`bf58810` passes 105 source gates in five jobs, including 279 Rust tests with
+five explicit ignores. It does not cover the later fixture correction.

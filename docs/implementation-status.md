@@ -8,6 +8,25 @@ remains a historical recovery record. This is a progress record, not a claim
 that the release is complete. Backward compatibility,
 legacy formats, aliases, and fallback decoders are prohibited.
 
+## 2026-10-25 pod arrivals and horse-defense shells
+
+Exact `bf58810` builds and passes fifteen of sixteen directed Unreal tests,
+including all pod cases, the real horse-shell cadence/bait tests, held horse
+treatment, corrected canister/MarginLinger fixtures and the full assisted
+133-beat campaign. The remaining dud fixture is corrected without changing
+production code; exact `2a69fb5` builds and passes it plus the shared arming
+regression, with zero selected errors/warnings and actual process exit zero.
+The original failures remain archived. Authenticated CI at `bf58810` passes
+105 source gates in five jobs. These separate runs do not constitute one
+all-green sixteen-test run or ordinary-play acceptance.
+
+Claude has the engine/Blender lane for revised timber, the current-schema bow
+rig and authored paws; its numerical clipping fix passes independent directed
+review. Final art, the visible horse-defense withdrawal, current packages and
+release/platform/native qualification remain unfinished. See the
+[current evidence and limits](complete-release-plan.md#october-25-pod-arrivals-and-horse-defense-shells)
+and [shell contract](qualification/horse-defense-shells.md).
+
 ## 2026-10-25 horse treatment and canister runtime
 
 Exact `6750fa6` builds and finishes fourteen selected campaign tests: eleven
