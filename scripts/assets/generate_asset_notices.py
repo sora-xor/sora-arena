@@ -216,9 +216,14 @@ def render(root: Path) -> str:
     lines += ["## Project-owned work recorded in the ledger (OWN)", ""]
     if own:
         for _, _, record in sorted(own, key=lambda e: e[2].get("asset_id", "")):
-            derived = ", ".join(f"`{d}`" for d in record.get("derived_from", []) or []) or "-"
+            # write_own_ledger.py records list its generators and {path, sha256} inputs.
+            derived = ", ".join(f"`{d['path'] if isinstance(d, dict) else d}`"
+                                for d in record.get("derived_from", []) or []) or "-"
+            generator = record.get("generator") or record.get("origin_url")
+            if isinstance(generator, list):
+                generator = ", ".join(generator)
             lines.append(f"- `{record.get('asset_id')}`: {len(record.get('files', []))} files, generator "
-                         f"`{record.get('generator') or record.get('origin_url')}`, derived from {derived}")
+                         f"`{generator}`, derived from {derived}")
     else:
         lines.append("None.")
     lines.append("")
