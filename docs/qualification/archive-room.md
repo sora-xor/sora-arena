@@ -116,3 +116,35 @@ ArchiveExit fixture uses forward input through the door and ten treads,
 checks pause and a blocking obstacle, and verifies the press checkpoint and
 continuous position at arrival. None of this new geometry or movement has
 compiled or run in Unreal yet.
+
+
+## Guarded exit runtime result, October 26
+
+The source candidate above is now exercised. `dc32d81` passes ArchiveExit:
+ordinary mapped movement traverses the unlocked north door, all ten descending
+treads and the connector. Pause holds the stair position; a real obstacle stops
+passage; removing it restores passage. Ordinary jump input against both
+180 cm bridge screens cannot escape into the unbuilt gap. Pledge completion
+waits for physical arrival, saves beat 11 on disk and retains a grounded capsule
+on the four-metre catwalk without a teleport (largest frame step 13.289 cm).
+The fixture freezes press guards only after arrival to isolate traversal.
+
+That batch passes thirteen of fifteen checks. Its two failures are preserved:
+Spaces still probes the archive zone entry at zero, and the assisted campaign
+places its dialogue closing anchor at zero. `fa9f5a6` corrects those fixture
+heights, then passes ArchiveExit, Spaces and the complete assisted 133-beat
+campaign together. No production code changed between these two batches.
+Natural editor/wrapper exits are 0/0; all twenty evidence files and unchanged
+source/native/Config/Generated inputs verify. Passing review:
+`73e8cf05f9fe49f0d447d017f613f456467e02bf2ad0d441cbe4d2d8509619ab`.
+Initial failed-run review:
+`4102c4fc3205a2e77af7aef02e497666a043a75e9c461951062e8509dedfc5e8`.
+
+Source CI at `17fe866` fails the stale timber campaign hash and an older lift
+fixture's zero-height assumption. Both are corrected in `dc32d81`; the four lift
+and three archive host tests, plus the binding check, pass locally. The failed
+CI artifacts remain authenticated under run `40237210108` (108 passes).
+
+This accepts the directed physical route, not the provisional long connector's
+visual design, the closed south entry's travel cut, the authored twenty-second
+rack-impact cinematic, ordinary duel balance, packaged play or final art.

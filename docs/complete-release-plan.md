@@ -11,6 +11,47 @@ production. Work runs in isolated worktrees, with a single coordinated Unreal
 and GPU rendering lane. The shared checkout is not a build or render workspace.
 The local coordination mailboxes record current ownership, commits and lane use.
 
+## October 26 archive exit and shell-fur checkpoint
+
+The archive now has a physical north doorway, ten 20 cm descending treads,
+and a guarded connector to the press hall's four-metre catwalk. Pledge lines
+alone do not advance the beat: the player must arrive on the press landing.
+The transition preserves the moving capsule and then saves the press checkpoint.
+The connector crosses the current gap between blockout zones; its architecture
+and screens are provisional, and the south entry still uses the existing cut.
+
+Exact `dc32d81` passes 13 of 15 selected NullRHI fixtures. ArchiveExit covers
+mapped walking, a paused stair position, a real temporary obstruction, jump
+attempts against both connector screens, and the actual saved arrival. Its
+maximum per-frame movement is 13.289 cm. The two retained failures came from
+fixtures expecting or placing the hero at ground level. After those fixture
+corrections, exact `fa9f5a6` passes ArchiveExit, all-eight-chapter Spaces and the
+assisted 133-beat Playthrough with no errors or warnings. Editor/wrapper exits
+are naturally 0/0; twenty evidence files and unchanged inputs verify. Review:
+`73e8cf05f9fe49f0d447d017f613f456467e02bf2ad0d441cbe4d2d8509619ab`.
+The earlier failed-run review is
+`4102c4fc3205a2e77af7aef02e497666a043a75e9c461951062e8509dedfc5e8`.
+
+Source CI at `17fe866` retains 108 passes and two failures: the campaign's
+updated timber-binding hash and a lift test's ground-floor assumption. Both
+are corrected at `dc32d81` and pass locally. Its full source CI is pending.
+The prior `a5388b5` source CI is independently authenticated at 110 passes.
+These results do not establish ordinary encounter difficulty or release quality.
+
+Claude's `4bcc819` v7 replaces the visible fur flakes with a continuous shell
+coat. Both original SM6 images were reviewed: macro pile and silhouette improve,
+but gameplay scale still reads as a white glove with broad grey layer contours.
+The 25 archived evidence files verify, and all 32 manifest asset hashes match
+the before/after freezes and current imported namespaces. Natural exits are
+0/0 and the reticle disc remains clear. Review:
+`248f412b9b93194bda76a4c447084ed0687fd2b4d491e955c5b329dc001b699b`.
+The 1,781-instruction translucent shell material still needs measured cost.
+The comparator's explicitly permitted cards-to-shells slot change passes 28
+host tests at `3edabfb`; this is measurement tooling, not art acceptance.
+Claude has the engine/Blender lane for the next bounded iteration. The authored
+archive cinematic, ordinary duel play, final art, platform and performance
+qualification remain unfinished.
+
 ## October 26 relay aftermath, archive collision and fur review
 
 The archive family-page light and reveal/save ordering pass six NullRHI
