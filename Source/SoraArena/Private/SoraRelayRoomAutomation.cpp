@@ -269,9 +269,70 @@ bool FSoraRelayExitTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("Three nodes and the floor exit restore the relay site"),C->ActiveBeat()>3&&C->RelayOffline()&&(C->Progress().SitesMask&1u)!=0);
     const auto* Saved=Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(W.Slot,0));
     TestTrue(TEXT("The completed relay survives in the next checkpoint"),Saved&&(Saved->CheckpointBeatsMask&(1u<<3))!=0);
+    W.Fieldcraft()->OnEvent.Remove(W.EventsHandle);
+    W.World->DestroyTestWorld(true);W.World->ForwardErrorMessages(this);W.World.Reset();
+    W.World=MakeUnique<FSoraAutomationWorld>();
+    if(!W.World->Start(W.Slot)||!W.World->Tick(1)||!W.World->EnableKeyInput()||
+        !W.Press(EKeys::Enter)||!W.Press(EKeys::Enter)||!W.Press(EKeys::Enter)) return false;
+    W.Events.Reset();W.EventsHandle=W.Fieldcraft()->OnEvent.AddLambda([&W](FName Event){W.Events.Add(Event.ToString());});
+    C=W.Campaign();W.Harden();
+    TestTrue(TEXT("Loading the actual completion save restores the relay's offline chapter state"),
+        C->ChapterId==5&&C->ActiveBeat()>3&&C->RelayOffline()&&(C->Progress().CompletedMask&(1u<<3))!=0);
     AddInfo(TEXT("Directed completion and save fixture with explicit node placement and frozen guards. Stair movement is exercised separately."));
     return true;
 }
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraRelayLampNoticeTest,"SoraArena.Campaign.RelayLampNotice",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraRelayLampNoticeTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;using namespace SoraRelayAutomation;
+    if(!FSoraCatalog::Get().Load()) return false;
+    FBeatWorld W(*this,TEXT("RelayLampNotice"),5,3);if(!W.Start()) return false;
+    W.Harden();FreezeGuards(W);
+    if(!RebindInteract(W)||!TestEqual(TEXT("Both authored relay lamps are staged"),W.Fieldcraft()->Lamps().Num(),2)) return false;
+    const FVector At(W.BeatData().Space.Fieldcraft.Lamps[0].At,0);
+    auto* Lamp=W.Fieldcraft()->Lamps()[0].Get();
+    if(!TestNotNull(TEXT("The first relay work lamp exists"),Lamp)) return false;
+    // Negative height fixture: being above a floor switch cannot snuff it.
+    Place(W,At+FVector(-70,0,400));
+    if(!W.Press(EKeys::G)||!TestTrue(TEXT("The floor lamp cannot be switched from above"),Lamp->IsLit())) return false;
+    Place(W,At+FVector(-70,0,0));if(!W.Tick(3)||!Dialogue(W)) return false;
+    FSoraPatrolRoute Route;FSoraEnemyTuning Tune;Tune.SightCm=1;Tune.DarkSightCm=0;Tune.HearingCm=0;
+    ASoraEnemyController* Brains[2]={};
+    for(int I=0;I<2;++I)
+    {
+        auto* Guard=ASoraEnemy::SpawnArchetype(*W.World->GetTestWorld(),TEXT("auditor"),I,
+            At+FVector(I==0?-400:-1000,0,100),FRotator::ZeroRotator,&Route,&Tune);
+        Brains[I]=Guard?Cast<ASoraEnemyController>(Guard->GetController()):nullptr;
+        if(!TestNotNull(TEXT("The lamp-notice witness spawns"),Brains[I])) return false;
+        Guard->SetActorTickEnabled(false);Guard->SetActorEnableCollision(false);
+        Guard->GetCharacterMovement()->SetComponentTickEnabled(false);Brains[I]->SetActorTickEnabled(false);
+    }
+    if(!W.Hold(EKeys::E,180)||!TestTrue(TEXT("The former binding cannot switch the lamp"),Lamp->IsLit())||
+        !W.World->InjectKey(EKeys::G,IE_Pressed)) return false;
+    for(int I=0;I<180&&Lamp->IsLit();++I) if(!W.Tick(1)) return false;
+    if(!W.World->InjectKey(EKeys::G,IE_Released)||!TestFalse(TEXT("Mapped held interaction switches the floor lamp off"),Lamp->IsLit())) return false;
+    if(!W.Tick(120)||!W.Press(EKeys::Escape)||!W.Tick(360)) return false;
+    TestTrue(TEXT("A paused wait cannot deliver the five-second notice"),
+        Brains[0]->State()==SoraStealthRules::EState::Unaware&&Brains[1]->State()==SoraStealthRules::EState::Unaware);
+    if(!W.Press(EKeys::Escape)||!W.Tick(170)) return false;
+    TestTrue(TEXT("Neither witness notices before five active seconds"),
+        Brains[0]->State()==SoraStealthRules::EState::Unaware&&Brains[1]->State()==SoraStealthRules::EState::Unaware);
+    if(!W.Tick(15)) return false;
+    TestTrue(TEXT("Only the nearest guard receives suspicious evidence after five seconds"),
+        Brains[0]->State()==SoraStealthRules::EState::Suspicious&&Brains[1]->State()==SoraStealthRules::EState::Unaware);
+    TestTrue(TEXT("The evidence names the changed lamp rather than the hero"),
+        FVector::Dist2D(Brains[0]->LastKnownLocation(),At)<1.f);
+    FBeatWorld::Hurt(*W.Hero(),W.Hero()->Health+1000.f);
+    if(!W.Tick(2)||!W.Press(EKeys::Enter)) return false;
+    W.Harden();FreezeGuards(W);
+    TestTrue(TEXT("Retry restores both relay lamps"),W.Fieldcraft()->Lamps().Num()==2&&
+        W.Fieldcraft()->Lamps()[0]->IsLit()&&W.Fieldcraft()->Lamps()[1]->IsLit());
+    AddInfo(TEXT("Directed mapped-switch, height and delayed-notice fixture with isolated witness senses. Ordinary detection and light art remain separate."));
+    return !HasAnyErrors();
+}
+
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraRelayLookoutTest,"SoraArena.Campaign.RelayLookout",
     EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
 bool FSoraRelayLookoutTest::RunTest(const FString& Parameters)
