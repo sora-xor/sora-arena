@@ -5,10 +5,14 @@
 - **Run 1 (v2, `sora-timber-geometry-v2`):** ran once in Blender on CPU and
   was archived read-only. It is **not visually accepted**.
 - **v2.1 (`sora-timber-geometry-v2.1`):** fixes what run 1's renders showed.
-  It is source and CPU checks only: not run, rendered or imported.
+  It ran once in Blender on CPU at `4481327` (exit 0, 15 renders) and was
+  archived read-only (`data/timber_pilot_v21_run1.json`). Root's review:
+  the geometry is corrected, and the wood character still fails.
+- **v2.2 (`sora-timber-geometry-v2.2`):** that wood character. Source and CPU
+  checks only: not run, rendered or imported (below).
 - **Untouched:** the frozen v1 slice (`6b0e93e`) and its 8.4 GB baseline cache.
-- **Namespaces:** v2.1 writes only `Local/ArtCache/NyaagyuDojoTimbersV21Pilot/`.
-  The path guard refuses run 1, the v1 kit and its cache.
+- **Namespaces:** v2.2 writes only `Local/ArtCache/NyaagyuDojoTimbersV22Pilot/`.
+  The path guard refuses run 1, the v2.1 run, the v1 kit and its cache.
 
 ## Run 1 (v2), archived
 
@@ -143,6 +147,33 @@ with a crushed rim. They're sampled at 1.5 mm.
 **The SM5/M1 fallback** stays separate (`fallback()`): the same log and checks
 at 2 cm, with grain, adze scallops, knots and dents left to the bake from the
 dense mesh.
+
+## v2.2: wood character (source and CPU only; not run)
+
+Root reviewed the 15 v2.1 originals. The crack is continuous, but five
+surfaces still fail physical wood character. v2.2 corrects each with
+sculpted and material form, using controlled, reference-based variation and
+no more polygons: dense triangles drop from 2,442,978 to 2,439,030, and the
+fallback stays at 146,412. Each fix is measured on the real members and
+tested (`WoodCharacter`).
+
+| Root's finding | v2.2 | Measured |
+| --- | --- | --- |
+| The nuki: "a repeated grid of rounded hammered dimples, not directional cut facets" | **Naguri** (`NAGURI`). Each chōna stroke is one facet: the blade's arc across the grain, and along it a chip deepest just after a steep entry, easing out in a long tail. Lanes overlap 24% across and strokes 35% along; the deepest cut wins, so there is no land and the facets meet at crisp ridges. Rows are staggered half a stroke, each swing turns up to 8°, and the facets are 1.2–2.6 mm deep in 3–4 cm lanes of 5–7 cm strokes | Correlation length 18 mm along the grain against 8 mm across; land under 2% inside the arris fade |
+| The column dent: "still reads as a soft blister" | **A crushed groove** across the grain: a flat floor to 55% of the radius, a steep wall, up to a 25% tilt, and **no raised rim** (v2.1 had a Gaussian dish with one). The floor feeds the cavity mask: uncoated, rougher, darker | Floors flat (over 75% of their depth) within half the radius; no vertex raised |
+| The nageshi: "fine uniform corrugation" | **Year-to-year rings.** Ring widths take three sines at 1.7, 2.9 and 4.3 rings, phased by the log's seed (`YEAR_WAVES`), with a peak slope of 0.65, so the phase stays monotonic. Each ring's relief follows that year's latewood strength (RingRandom, 0.55–1.45×, `YEAR_RELIEF`), so a darker ridge stands prouder; the fall after a ridge takes the next ring's depth, so there is no step | Nageshi ring widths CV 0.17, 1.15–2.43 mm (v2.1: 0.04, 1.63–1.96 mm); relief per ring CV 0.28 (v2.1: constant); no phase reversal |
+| The koshi top: "repetitive parallel glossy ridges" | The **hand wear varies** along the rail. The finish is a **satin wiped urushi** (`FINISH_V22`: coat 0.55 at roughness 0.38, base 0.62), not v1's mirror coat (1.0 at 0.17) | Worn-top relief p95 varies along the rail (CV over 0.05) |
+| The column GrainClose: "broad smooth color bands with little believable fiber break-up" | **Fibre break-up** in the material: fibre tone 0.22 (from 0.12) and streaks 0.16, fibre streaks through the latewood (×(0.85 + 0.30 Fibre.R)), and cavities rougher and uncoated | Look-dev and contract only. Its proof is a render |
+
+The UV contract now carries the year-wave ring formula, the per-year relief
+rule and the finish (`UV_CONTRACT["ring"]["year_waves"]`, `["year"]`,
+`["finish"]`). Unreal needs a dedicated **PilotV22** master to match. The
+namespace is `Local/ArtCache/NyaagyuDojoTimbersV22Pilot/`; the path guard
+refuses run 1 and the v2.1 run.
+
+**Not done:** no Blender run, render, import or Unreal draw of v2.2. Its
+renders, under the next bounded slot, decide whether these read as wood. No
+photoreal claim.
 
 ## v2.1: what changes and how it is checked
 
@@ -298,8 +329,10 @@ Each feature carries its specified relief:
 - every check holds 17 samples across, with constant topology, and (v2.1)
   joins its V-bottoms in every row pair, forks included;
 - dents reach 81–100% of their depth;
-- the grain recess at p95 is 42–43 µm on the columns, 32 µm on the nageshi and
-  0.12 mm on the koshi top, and the phase from the stored UVs is exact;
+- the grain recess at p95 is 48–54 µm on the columns, 41 µm on the nageshi and
+  0.12 mm on the koshi top. These are the face's range times v2.2's per-year
+  0.55–1.45; v2.1 was 42–43 µm, 32 µm and 0.12 mm. The phase from the stored
+  UVs is exact;
 - adze depth is 2.2 mm at p50.
 
 Steep relief, such as a dent wall or an adze crease, is counted but allowed.

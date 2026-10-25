@@ -104,8 +104,10 @@ class Pilot(unittest.TestCase):
         wall = V.check_mesh(self.built["wall"][1], self.built["wall"][0])["metrics"]
         self.assertTrue(all(c["count_min"] == 17 for c in wall["checks"]))
         self.assertGreaterEqual(min(wall["dent_depth_reached"]), 0.6)
+        # The indoor 25-45 um, times v2.2's per-year relief (YEAR_RELIEF 0.55-1.45).
         self.assertGreater(wall["grain_recess_p95_m"], 25e-6)
-        self.assertLessEqual(wall["grain_recess_p95_m"], 45e-6)
+        self.assertLessEqual(wall["grain_recess_p95_m"], 45e-6 * V.YEAR_RELIEF[1])
+        self.assertTrue(25e-6 * V.YEAR_RELIEF[0] <= wall["grain_recess_p50_m"] <= 45e-6)
         self.assertEqual(wall["grain_phase_from_stored_uvs_max_error"], 0.0)
         koshi = V.check_mesh(self.built["Koshi"][1], self.built["Koshi"][0])["metrics"]
         self.assertGreater(koshi["grain_recess_p95_m"], 1e-4)               # the hand-worn top
@@ -178,9 +180,10 @@ class Baseline(unittest.TestCase):
 
     def test_pilot_writes_only_in_its_namespace(self):
         self.assertEqual(PILOT.guard(PILOT.OUT / "Dense" / "x.fbx"), PILOT.OUT / "Dense" / "x.fbx")
-        self.assertEqual(PILOT.NAMESPACE, "NyaagyuDojoTimbersV21Pilot")
+        self.assertEqual(PILOT.NAMESPACE, "NyaagyuDojoTimbersV22Pilot")
         for bad in (PILOT.KIT / "FBX" / "x.fbx", PILOT.ROOT / "Local/ArtCache/NyaagyuDojoTimbers/Unique/x.fbx",
-                    PILOT.ROOT / "Content/x.fbx", PILOT.RUN1 / "Dense" / "x.fbx", PILOT.RUN1 / "manifest.json"):
+                    PILOT.ROOT / "Content/x.fbx", PILOT.RUN1 / "Dense" / "x.fbx", PILOT.RUN1 / "manifest.json",
+                    PILOT.RUN_V21 / "Renders" / "x.png", PILOT.RUN_V21 / "manifest.json"):
             with self.subTest(path=str(bad)), self.assertRaises(ValueError):
                 PILOT.guard(bad)
 
@@ -377,8 +380,105 @@ class V21(unittest.TestCase):
         self.assertIn('for layer, arr in (("UV0", uv0), ("UV1", uv1), ("UVLogQ", uv2), ("UVLogZ", uv3)):', src)
         v2 = Path(V.__file__).read_text()
         self.assertIn('uv_layers.new(name="UVKnot")', v2[v2.index("def to_blender("):v2.index("def canonical_digest(")])
-        self.assertEqual(V.UV_CONTRACT["geometry"], "sora-timber-geometry-v2.1")
-        self.assertTrue(V.UV_CONTRACT["unreal_content_path"].endswith("DojoTimberPilotV21"))
+        self.assertEqual(V.UV_CONTRACT["geometry"], "sora-timber-geometry-v2.2")
+        self.assertTrue(V.UV_CONTRACT["unreal_content_path"].endswith("DojoTimberPilotV22"))
+        self.assertEqual(V.UV_CONTRACT["ring"]["year_waves"], [list(w) for w in V.YEAR_WAVES])
+        self.assertIn("finish", V.UV_CONTRACT)
+
+
+class WoodCharacter(unittest.TestCase):
+    """v2.2: what root's review of the v2.1 originals named, each measured on the real members."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.members = {kind: m for m, fam, kind, rec in PILOT.pilot_members()}
+        cls.nuki = cls.members["Nuki"]
+        cls.Bn = V.build(cls.nuki, ARRAYS)
+        cls.nag = cls.members["Nageshi"]
+        cls.Bg = V.build(cls.nag, ARRAYS)
+
+    def test_naguri_facets_cover_the_face_and_run_along_the_grain(self):
+        # "a repeated grid of rounded hammered dimples, not directional cut facets"
+        m, B = self.nuki, self.Bn
+        S = B["samples"]
+        f = 3
+        sel = (S.seg == 2 * f) & (S.detail > 0) & (V._from_arris(m, f, S.u, 0.008) >= 1.0)
+        cut = V.adze(m, S.u[sel], S.z[sel], f) - (T._adze_undulation(m, f, S.u[sel], S.z[sel]) - 0.001)
+        self.assertLess(float(np.mean(cut > -1e-4)), 0.02)                 # no flat land between facets
+        u = np.arange(-0.05, 0.05, 0.0005)
+        z = np.arange(1.0, 1.5, 0.0005)
+        Ug, Zg = np.meshgrid(u, z)
+        H = (V.adze(m, Ug.ravel(), Zg.ravel(), f) - (T._adze_undulation(m, f, Ug.ravel(), Zg.ravel()) - 0.001)).reshape(Ug.shape)
+        H = H - H.mean()
+
+        def corr_len(axis):
+            n, var = H.shape[axis], float(np.mean(H * H))
+            for lag in range(1, n // 2):
+                a, b = np.take(H, range(0, n - lag), axis=axis), np.take(H, range(lag, n), axis=axis)
+                if float(np.mean(a * b)) / var < 0.5:
+                    return lag * 0.0005
+            return n * 0.0005
+        # Directional cuts: the field holds together along the grain far longer than across it.
+        self.assertGreater(corr_len(0), 1.5 * corr_len(1))               # v2.2: 18 mm along, 8 mm across
+        self.assertTrue(0.0012 <= V.NAGURI["depth_m"][0] < V.NAGURI["depth_m"][1] <= 0.003)
+
+    def test_dents_are_crushed_grooves_without_a_rim(self):
+        # "Column_DentClose still reads as a soft blister"
+        wall = self.members["wall"]
+        B = V.build(wall, ARRAYS)
+        S = B["samples"]
+        floors = []
+        for df, du, dz, a_u, a_z, dep, _rim in V.dent_sites(wall):
+            near = (S.seg == 2 * df) & (np.abs(S.u - du) < 1.6 * a_u) & (np.abs(S.z - dz) < 1.6 * a_z)
+            if not near.any():
+                continue
+            rho = np.sqrt(((S.u[near] - du) / a_u) ** 2 + ((S.z[near] - dz) / a_z) ** 2)
+            self.assertLessEqual(float(B["dent_disp"][near].max()), 0.0)   # nothing raised
+            inner = rho < 0.5
+            if inner.any():
+                floors.append(float(np.mean(-B["dent_disp"][near][inner] > 0.75 * dep)))
+        self.assertTrue(floors)
+        self.assertGreater(min(floors), 0.9)                                 # flat crushed floors
+
+    def test_rings_vary_year_to_year_in_width_and_relief(self):
+        # "Nageshi_GrainClose looks like fine uniform corrugation"
+        B = self.Bg
+        g = B["grain_sel"]
+        ph, rec = B["grain_phase"][g], -B["grain_disp"][g]
+        frac, ring = np.mod(ph, 1.0), np.floor(ph)
+        by = {}
+        for r_, h_ in zip(ring[frac < 0.4], rec[frac < 0.4]):
+            by.setdefault(r_, []).append(h_)
+        means = np.array([np.mean(v) for v in by.values() if len(v) > 20])
+        self.assertGreater(float(means.std() / means.mean()), 0.2)           # relief per ring
+        S = B["samples"]
+        z0 = S.z[S.row_start][len(S.row_start) // 2]
+        row = g & (np.abs(B["z"] - z0) < 1e-9)
+        o = np.argsort(S.u[row])
+        u, p = S.u[row][o], B["grain_phase"][row][o]
+        d = np.diff(p)
+        self.assertEqual(int(np.sum(np.sign(d[:-1]) != np.sign(d[1:]))), 0)  # monotonic
+        crossings = [u[i] + (k - p[i]) / (p[i + 1] - p[i]) * (u[i + 1] - u[i]) for i in range(len(p) - 1)
+                     for k in range(int(math.ceil(min(p[i], p[i + 1]))), int(math.floor(max(p[i], p[i + 1]))) + 1)
+                     if min(p[i], p[i + 1]) <= k < max(p[i], p[i + 1])]
+        w = np.diff(np.sort(crossings))
+        self.assertTrue(0.12 <= float(w.std() / w.mean()) <= 0.4, w.std() / w.mean())   # v2.1: 0.04
+        self.assertLess(2 * math.pi * sum(a / period for period, a, _c in V.YEAR_WAVES), 0.8)
+
+    def test_the_finish_is_a_satin_film_and_cavities_are_bare(self):
+        # "Koshi_WornTopClose has repetitive parallel glossy ridges"
+        fin = V.FINISH_V22["column_fukiurushi"]
+        self.assertLessEqual(fin["coat"], 0.6)
+        self.assertGreaterEqual(fin["coat_rough"], 0.3)
+        self.assertTrue(V.FINISH_V22["cavity_uncoats"])
+        koshi = self.members["Koshi"]
+        B = V.build(koshi, ARRAYS)
+        g = B["grain_sel"] & (B["samples"].seg == 4)                        # the hand-worn top
+        rec = -B["grain_disp"][g]
+        z = B["z"][g]
+        bins = np.digitize(z, np.linspace(z.min(), z.max(), 9))
+        p95 = np.array([np.percentile(rec[bins == b], 95) for b in np.unique(bins) if np.sum(bins == b) > 50])
+        self.assertGreater(float(p95.std() / p95.mean()), 0.05)             # wear varies along the rail
 
 
 if __name__ == "__main__":

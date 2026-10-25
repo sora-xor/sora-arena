@@ -60,7 +60,7 @@ import numpy as np
 
 import sora_timber_lib as T
 
-DIGEST_VERSION = "sora-timber-geometry-v2.1"
+DIGEST_VERSION = "sora-timber-geometry-v2.2"
 LATEWOOD = 0.24                        # the masters' Latewood parameter
 # v2.1: between vertices the materials interpolate the log frame (UVLogQ)
 # linearly, so rows and samples go wherever that would move a ring. The
@@ -70,6 +70,30 @@ LATEWOOD = 0.24                        # the masters' Latewood parameter
 # 1.4-2.4 mm ring).
 RING_TOL_CLOSE = 0.03
 RING_TOL_FAR = 0.2
+# v2.2: wood character, against controlled, reference-based ranges.
+# - Year-to-year ring widths: three sines at incommensurate periods of 1.7,
+#   2.9 and 4.3 rings, their phases from the log's seed. The slow RingNoise
+#   wander can't do this: its row is red noise, nearly flat ring to ring (a
+#   second RingNoise term moved widths only 4%). Their slope peaks at
+#   2 pi sum(a / period) = 0.65 of a ring per ring, so the phase stays
+#   monotonic. Ring widths vary about +/-25% (CV about 0.2-0.3) and don't
+#   repeat over hundreds of rings.
+YEAR_WAVES = ((1.7, 0.07, 0.11), (2.9, 0.10, 0.48), (4.3, 0.12, 0.85))   # (period rings, amplitude rings, seed phase)
+# - Relief per year: the earlywood recess scales with that year's latewood
+#   strength, 0.55-1.45 times the face's.
+YEAR_RELIEF = (0.55, 1.45)
+# - Dents: a flat crushed floor to 55% of the radius, then the wall, with up
+#   to a 25% tilt.
+DENT_FLOOR = 0.55
+DENT_TILT = 0.25
+# - The finish: wiped urushi (fuki-urushi) is a thin, satin film, not v1's
+#   full mirror coat (coat 1.0 at roughness 0.17 mirrored the sky on the koshi).
+#   Cavities (checks, the adze, crushed dents) take no coat and are rougher.
+#   The fibre contrast within a band is raised. The look-dev applies these;
+#   Unreal's PilotV22 master mirrors them (UV_CONTRACT "finish").
+FINISH_V22 = {"column_fukiurushi": {"coat": 0.55, "coat_rough": 0.38, "rough": 0.62},
+              "cavity_rough": 0.30, "cavity_uncoats": True, "fibre_tone": 0.22, "streak_tone": 0.16,
+              "late_fibre": 0.30}
 # How far past a check's zone (m) the stitching frame still follows the check.
 STITCH_BAND = 0.010
 # A fork shares its parent's groove for at most this long, over at most this
@@ -180,24 +204,48 @@ def ring_phase(q: np.ndarray, seed01: float, uv0: np.ndarray, ring_width: float,
 
 
 def _phase_of_r(r, seed01, ring_width, arrays):
+    noise = arrays["RingNoise"].astype(np.float64) / 65535.0
     nu = r / (WANDER_RINGS_PER_UNIT * ring_width) + seed01 * 37.0
     nv = np.full_like(np.asarray(r, np.float64), (seed01 * 7.31) % 1.0)
-    var = sample_linear(arrays["RingNoise"].astype(np.float64) / 65535.0, nu, nv)
-    return np.asarray(r) / ring_width + (var - 0.5) * WANDER_AMPLITUDE
+    var = sample_linear(noise, nu, nv)
+    rho = np.asarray(r) / ring_width
+    return rho + (var - 0.5) * WANDER_AMPLITUDE + year_waves(rho, seed01)
+
+
+def year_waves(rho, seed01):
+    """The year-to-year ring-width term (v2.2, YEAR_WAVES), in rings, at nominal ring count rho = r / w."""
+    return sum(a * np.sin(2.0 * math.pi * (rho / period + seed01 * 7.0 + c)) for period, a, c in YEAR_WAVES)
+
+
+def sample_nearest(img: np.ndarray, u, v):
+    """Blender's Closest/REPEAT lookup (row 0 = the file's top) at UV (u, v), v up."""
+    h, w = img.shape[:2]
+    x = np.floor(np.asarray(u, np.float64) * w).astype(np.int64) % w
+    y = np.floor((1.0 - np.asarray(v, np.float64)) * h).astype(np.int64) % h
+    return img[y, x]
+
+
+def ring_year(ring, seed01, arrays):
+    """The materials' per-year latewood strength (0-1) of ring index ``ring``:
+    RingRandom, NEAREST, at ((ring + seed * 101) / 256, frac(seed * 3.7))."""
+    ring = np.asarray(ring, np.float64)
+    yu = (ring + seed01 * 101.0) / 256.0
+    yv = np.full_like(ring, (seed01 * 3.7) % 1.0)
+    return sample_nearest(arrays["RingRandom"], yu, yv).astype(np.float64) / 255.0
 
 
 # ---------------------------------------------------------------------------
 # The v2.1 UV contract: what each channel carries and how Unreal decodes it
 # ---------------------------------------------------------------------------
 
-UNREAL_NAMESPACE = "/Game/Generated/Qualification/DojoTimberPilotV21"
+UNREAL_NAMESPACE = "/Game/Generated/Qualification/DojoTimberPilotV22"
 UV_CONTRACT = {
     "geometry": DIGEST_VERSION,
     "unreal_content_path": UNREAL_NAMESPACE,
-    "master": "a dedicated PilotV21 timber master (and fallback master) in the PilotV21 content path that decodes UV4 "
-              "and applies the v2.1 ring formula below; never the baseline timber_master, whose ring model and four "
-              "channels do not apply. Not implemented in the importer yet.",
-    "readback": "after import, before any material review: read back each PilotV21 static mesh's UV channel count (5) "
+    "master": "a dedicated PilotV22 timber master (and fallback master) in the PilotV22 content path that decodes UV4 "
+              "and applies the v2.2 ring formula below (the wander and the year waves); never the baseline timber_master, whose ring "
+              "model and four channels do not apply, nor the v2.1 formula. Not implemented in the importer yet.",
+    "readback": "after import, before any material review: read back each PilotV22 static mesh's UV channel count (5) "
                 "and, at known source vertices, the decoded UV0, UVLogQ, UVLogZ seed and UVKnot values against the FBX "
                 "source (to 1e-6), and the material's resolved parent and sampler types.",
     "import_decode": "Interchange imports every channel as (U, 1 - V). Decode with flip_v before reading UV0/UVLogQ/"
@@ -232,12 +280,21 @@ UV_CONTRACT = {
     ],
     "ring": {
         "radius": "r = (d < 0 ? r_k : length(UVLogQ)) + (Fibre.G(UV0 / 0.25) - 0.5) * 0.00025",
-        "phase": "r / w + (RingNoise.R(nu, nv) - 0.5) * WANDER_AMPLITUDE, nu = r / (WANDER_RINGS_PER_UNIT * w) "
-                 "+ seed * 37, nv = frac(seed * 7.31); RingNoise sampled at the Blender coordinate (sample_blender)",
+        "phase": "rho + (RingNoise.R(nu, nv) - 0.5) * WANDER_AMPLITUDE + sum_k a_k sin(2 pi (rho / P_k + 7 seed + "
+                 "c_k)); rho = r / w; nu = r / (WANDER_RINGS_PER_UNIT * w) + seed * 37, nv = frac(seed * 7.31); "
+                 "RingNoise sampled bilinear at the Blender coordinate (sample_blender); (P_k, a_k, c_k) = YEAR_WAVES",
         "wander_rings_per_unit": WANDER_RINGS_PER_UNIT, "wander_amplitude": WANDER_AMPLITUDE,
+        "year_waves": [list(w_) for w_ in YEAR_WAVES],
+        "year": "the latewood strength per ring, RingRandom NEAREST at ((floor(phase) + seed * 101) / 256, "
+                "frac(seed * 3.7)); the geometry's raised grain scales with it (YEAR_RELIEF), so the shaded and "
+                "geometric ridge agree ring by ring",
         "knot_edge": "the select on d is per pixel; anti-alias over the pixel footprint, "
                      "inside = saturate(0.5 - d / max(fwidth(d), 1e-6))",
     },
+    "finish": {"presets": {"column_fukiurushi": FINISH_V22["column_fukiurushi"]},
+               "cavity": "roughness + 0.30 x cavity (vertex colour R, or the fallback Masks R); coat weight x (1 - cavity)",
+               "fibre": "tone = 0.68 + 0.12 year + 0.22 Fibre.R + 0.16 Fibre.G + 0.34 drift; latewood colour value x "
+                        "(0.85 + 0.30 Fibre.R)"},
 }
 
 
@@ -736,32 +793,62 @@ def _from_arris(m: MemberV2, f: int, u, width: float):
     return t * t * (3 - 2 * t)
 
 
+# The naguri (v2.2), against controlled, reference-based ranges. A chona
+# stroke leaves one facet:
+# - across the grain, the blade's arc;
+# - along it, a chip deepest just after its steep entry, where the previous
+#   stroke left its lip, easing out in a long tail.
+# Lanes overlap across and strokes overlap along, so the deepest cut wins
+# everywhere: no flat land, and crisp ridges where cuts meet. Rows are
+# staggered half a stroke; each swing turns up to 8 degrees in the face.
+NAGURI = {"lane_m": (0.030, 0.040), "stroke_m": (0.050, 0.070), "depth_m": (0.0012, 0.0026),
+          "half_width_of_lane": 0.62, "length_of_stroke": 1.35, "jitter": 0.24, "swing_deg": 8.0,
+          "entry": 0.3, "exit": 1.1}
+
+
+def _naguri_profile(t):
+    """Depth along a stroke, 0 at its entry and exit, 1 at its deepest (just after the entry)."""
+    e, x = NAGURI["entry"], NAGURI["exit"]
+    peak = e / (e + x)
+    tc = np.clip(t, 1e-9, 1.0)
+    return tc ** e * (1.0 - tc) ** x / (peak ** e * (1.0 - peak) ** x)
+
+
 def adze(m: MemberV2, u, z, f):
-    """Chona-hatsuri, v1's staggered scoops with a C1 rim. v1 used
-    (1 - q) ** 0.8, which is infinitely steep at the rim and folded once
-    sampled. Each scoop is (1 - q) ** 2; the deepest cut wins, so neighbouring
-    scoops still meet in crisp creases. Plus v1's slow undulation."""
+    """The chona-hatsuri as naguri facets (NAGURI), plus v1's slow undulation.
+
+    v2.1 was v1's round (1 - q)^2 scoops on a lattice: they never covered
+    their lanes and faded to zero at every rim, so they read as a grid of
+    hammered dimples (root's review of the v2.1 originals)."""
     seed = m.seed * 131 + f * 17
     rng = np.random.default_rng(seed)
-    a = rng.uniform(0.034, 0.042)       # lane width across the face
-    b = rng.uniform(0.050, 0.064)       # scoop pitch along the member
+    a = rng.uniform(*NAGURI["lane_m"])
+    b = rng.uniform(*NAGURI["stroke_m"])
+    jit = NAGURI["jitter"]
     j0 = np.floor(u / a).astype(np.int64)
     best = np.zeros(u.size)
     for dj in (-1, 0, 1):
         j = j0 + dj
-        zoff = (j % 2) * b * 0.5 + (T.hash01(seed, j, 7) - 0.5) * b * 0.4
+        zoff = (j % 2) * b * 0.5 + (T.hash01(seed, j, 7) - 0.5) * b * jit
         k0 = np.floor((z - zoff) / b).astype(np.int64)
-        for dk in (-1, 0, 1):
+        for dk in (-2, -1, 0, 1):
             k = k0 + dk
-            uc = (j + 0.5 + (T.hash01(seed, j, k, 1) - 0.5) * 0.3) * a
-            zc = zoff + (k + 0.5 + (T.hash01(seed, j, k, 2) - 0.5) * 0.35) * b
-            dep = 0.0009 + 0.0014 * T.hash01(seed, j, k, 3)
-            ru = a * (0.70 + 0.12 * T.hash01(seed, j, k, 4))
-            dz = z - zc
-            rz = np.where(dz > 0, 0.95 * b, 0.55 * b)
-            q = ((u - uc) / ru) ** 2 + (dz / rz) ** 2
-            best = np.minimum(best, -dep * np.clip(1.0 - q, 0.0, None) ** 2)
-    return best + T._adze_undulation(m, f, u, z) - 0.001
+
+            def h(c):
+                return T.hash01(seed, j, k, c) - 0.5
+            uc = (j + 0.5 + h(1) * jit) * a
+            zs = zoff + (k + h(2) * jit) * b
+            length = NAGURI["length_of_stroke"] * b * (1 + h(3) * jit)
+            hw = NAGURI["half_width_of_lane"] * a * (1 + h(4) * jit)
+            dep = NAGURI["depth_m"][0] + (NAGURI["depth_m"][1] - NAGURI["depth_m"][0]) * (h(5) + 0.5)
+            ang = math.radians(NAGURI["swing_deg"]) * h(6) * 2.0
+            du, dz = u - uc, z - zs
+            x = du * np.cos(ang) - dz * np.sin(ang)
+            t = (du * np.sin(ang) + dz * np.cos(ang)) / length
+            inside = (np.abs(x) < hw) & (t > 0.0) & (t < 1.0)
+            cut = np.where(inside, dep * np.clip(1.0 - (x / hw) ** 2, 0.0, None) * _naguri_profile(t), 0.0)
+            best = np.maximum(best, cut)
+    return -best + T._adze_undulation(m, f, u, z) - 0.001
 
 
 # ---------------------------------------------------------------------------
@@ -915,10 +1002,13 @@ def build(m: MemberV2, arrays=None):
             sel = (S.seg == 2 * df) & (np.abs(S.z - dz0) < 3 * a_z) & (np.abs(S.u - du0) < 3 * a_u)
             if not sel.any():
                 continue
-            e = ((S.u[sel] - du0) / a_u) ** 2 + ((S.z[sel] - dz0) / a_z) ** 2
-            dish = -dep * np.exp(-e)
-            ring = rim * np.exp(-((np.sqrt(e) - 1.6) / 0.35) ** 2)
-            dent_disp[sel] += dish + ring
+            # v2.2: a bokken edge crushes a groove across the grain: a flat
+            # crushed floor, a steep wall, a slight tilt where it struck off
+            # square, and no raised rim. v2.1's Gaussian dish with a rim read
+            # as a blister.
+            rho = np.sqrt(((S.u[sel] - du0) / a_u) ** 2 + ((S.z[sel] - dz0) / a_z) ** 2)
+            tilt = 1.0 + DENT_TILT * (2.0 * T.hash01(m.seed, int(du0 * 1e5), int(dz0 * 1e5)) - 1.0) * (S.u[sel] - du0) / a_u
+            dent_disp[sel] += -dep * np.clip(tilt, 0.5, 1.5) * (1.0 - T.smoothstep(DENT_FLOOR, 1.0, rho))
         disp += dent_disp
     rng = np.random.default_rng(m.seed + 41)
     ang = rng.uniform(0, T.TAU)
@@ -968,13 +1058,24 @@ def build(m: MemberV2, arrays=None):
         idx = np.nonzero(sel)[0]
         ph = ring_phase(np.stack([q2x[idx], q2y[idx]], 1), seed01, np.stack([s[idx], P[idx, 2]], 1), m.log.ring_width, arrays)
         amp = lo + (hi - lo) * float(T.hash01(m.seed, f, 909))
+        # v2.2: each ring's relief follows the materials' own per-year latewood
+        # strength (RingRandom), so a darker ridge stands prouder. The fall
+        # after a ridge belongs to the next ring's earlywood, so there is no
+        # step at a ring boundary.
+        frac = np.mod(ph, 1.0)
+        ring_no = np.floor(ph) + (frac >= RIDGE_KNOTS[-1])
+        amp = amp * (YEAR_RELIEF[0] + (YEAR_RELIEF[1] - YEAR_RELIEF[0]) * ring_year(ring_no, seed01, arrays))
+        if hi >= 1e-4:
+            # The hand-worn top: hands rub unevenly along the rail and toward its room edge.
+            wear = T.Waves(np.random.default_rng(m.seed + 4243), 6, (0.15, 0.9), 1.0)(P[idx, 2], 0.0)
+            amp = amp * np.clip(0.75 + 0.25 * wear, 0.45, 1.05)
         # Fade in over 3 cm at the zone ends, over 3 mm from where each arris's
         # round-over starts, and in dents (crushed fibres).
         fade = _from_arris(m, f, S.u[idx], 0.003)
         if m.grain_zone is not None:
             fade *= np.clip((S.z[idx] - m.grain_zone[0]) / 0.03, 0, 1) * np.clip((m.grain_zone[1] - S.z[idx]) / 0.03, 0, 1)
         fade *= np.clip(1.0 + dent_disp[idx] / 0.0002, 0, 1)
-        h = amp * fade * (ridge(np.mod(ph, 1.0)) - 1.0)
+        h = amp * fade * (ridge(frac) - 1.0)
         grain_disp[idx] = h
         phase[idx] = ph
         gsel[idx] = True
@@ -983,7 +1084,8 @@ def build(m: MemberV2, arrays=None):
     tris, wrap = ladder(S)
     caps = T.end_caps(S, N) if m.end_caps else None
     row_of = np.repeat(np.arange(S.row_start.size), S.row_count)
-    cavity = np.clip(check_depth / 0.004, 0, 1) * 0.9 + np.clip(adze_depth / 0.0025, 0, 1) * 0.35
+    cavity = (np.clip(check_depth / 0.004, 0, 1) * 0.9 + np.clip(adze_depth / 0.0025, 0, 1) * 0.35
+              + np.clip(-dent_disp / 0.0006, 0, 1) * 0.5)    # v2.2: the crushed dent floor is darker and rougher
     cavity = np.clip(cavity + mask * 0.15 + np.clip(-grain_disp / 0.0002, 0, 1) * 0.08, 0, 1)
     hz, hs = m.handling
     handled = np.exp(-((P[:, 2] - hz) / hs) ** 2)
@@ -1359,9 +1461,10 @@ def _feature_metrics(B, m, failures):
         out["grain_phase_from_stored_uvs_max_error"] = err
         if err > 1e-6:
             failures.append(f"the stored UVs give a ring phase {err:.2e} away from the ridges' (not aligned)")
-        fade_ok = h <= max(mx for _lo, mx in m.grain.values()) * (1 + 1e-9)
+        # The face's range, times the per-year variation (v2.2, YEAR_RELIEF).
+        fade_ok = h <= max(mx for _lo, mx in m.grain.values()) * YEAR_RELIEF[1] * (1 + 1e-9)
         if not fade_ok.all():
-            failures.append("a grain recess exceeds its specified amplitude")
+            failures.append("a grain recess exceeds its specified amplitude (the face's maximum times YEAR_RELIEF)")
     if (B["adze_depth"] > 0).any():
         d = B["adze_depth"][B["adze_depth"] > 0]
         out["adze_depth_p50_m"] = round(float(np.percentile(d, 50)), 6)

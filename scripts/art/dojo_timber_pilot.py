@@ -38,13 +38,15 @@ import timber_density_study as D  # noqa: E402
 ROOT = HERE.parents[1]
 KIT = ROOT / "Content/SourceArt/Environment/NyaagyuDojoTimbers"
 INDOOR = (25e-6, 45e-6)
-# v2.1 (sora-timber-geometry-v2.1) writes a namespace of its own. Run 1, the
-# v2 pilot (archived read-only, verified from the frozen 82869a4 inputs), is as
-# frozen as the v1 kit and its cache.
-NAMESPACE = "NyaagyuDojoTimbersV21Pilot"
+# Each geometry version writes a namespace of its own. These are as frozen as
+# the v1 kit and its cache, each archived read-only:
+# - run 1, the v2 pilot (verified from the frozen 82869a4 inputs);
+# - the v2.1 pilot (made at 4481327).
+NAMESPACE = "NyaagyuDojoTimbersV22Pilot"
 OUT = ROOT / "Local/ArtCache" / NAMESPACE
 RUN1 = ROOT / "Local/ArtCache/NyaagyuDojoTimbersV2Pilot"
-FROZEN = (KIT, ROOT / "Local/ArtCache/NyaagyuDojoTimbers", RUN1)
+RUN_V21 = ROOT / "Local/ArtCache/NyaagyuDojoTimbersV21Pilot"
+FROZEN = (KIT, ROOT / "Local/ArtCache/NyaagyuDojoTimbers", RUN1, RUN_V21)
 
 
 def guard(path: Path) -> Path:

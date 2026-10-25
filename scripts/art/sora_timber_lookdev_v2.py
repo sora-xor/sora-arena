@@ -1,4 +1,4 @@
-"""Blender look-dev material for the v2.1 pilot timbers (sora-timber-geometry-v2.1).
+"""Blender look-dev material for the v2.2 pilot timbers (sora-timber-geometry-v2.2).
 
 This is ``sora_timber_lookdev.timber_material``, which stays frozen as an input
 of the v1 kit, with the v2 and v2.1 changes:
@@ -10,6 +10,12 @@ of the v1 kit, with the v2 and v2.1 changes:
   the same phase the geometry's raised grain is cut from.
 * **Relief:** the latewood ridge is real geometry now. The shader keeps only a
   small supplementary raise (``raise_m``) and the fibre bump.
+* **Wood character (v2.2):**
+  - the year-to-year ring widths (sora_timber_v2.year_waves);
+  - the satin wiped-urushi finish (sora_timber_v2.FINISH_V22, not v1's mirror
+    coat);
+  - uncoated, rougher cavities;
+  - fibre streaks through the latewood.
 * **Knots (v2.1):** UVLogQ is the log frame everywhere. Inside a knot (UVKnot's
   d < 0, per pixel) the ring radius is the knot's own (UVKnot's r_k), so the
   edge is a smooth line through the triangles, as sora_timber_v2.material_phase
@@ -19,6 +25,7 @@ Review renders only. Blender 5.2.
 """
 from __future__ import annotations
 
+import math
 import sys
 from pathlib import Path
 
@@ -36,6 +43,7 @@ SUPPLEMENT_RAISE_M = 0.000005
 
 def timber_material(name: str, preset: str, shared: dict, ring_width: float, fallback_maps: dict | None = None):
     P = dict(LD.PRESETS[preset])
+    P.update(V.FINISH_V22.get(preset, {}))      # v2.2: the satin wiped-urushi finish
     nb = L.NB(name)
     q = nb.uv("UVLogQ")
     zl, seed, _ = nb.vxyz(nb.uv("UVLogZ"))
@@ -54,7 +62,12 @@ def timber_material(name: str, preset: str, shared: dict, ring_width: float, fal
     nu = nb.add(nb.div(r, V.WANDER_RINGS_PER_UNIT * w), nb.mul(seed, 37.0))
     nv = nb.m("FRACT", nb.mul(seed, 7.31))
     var = nb.sep(LD._tex(nb, shared["RingNoise"], nb.xyz(nu, nv, 0.0)).outputs["Color"])[0]
-    phase = nb.add(nb.div(r, w), nb.mul(nb.sub(var, 0.5), V.WANDER_AMPLITUDE))
+    # v2.2: the year-to-year ring widths (sora_timber_v2.year_waves).
+    rho = nb.div(r, w)
+    phase = nb.add(rho, nb.mul(nb.sub(var, 0.5), V.WANDER_AMPLITUDE))
+    for period, a, c in V.YEAR_WAVES:
+        arg = nb.mul(nb.add(nb.add(nb.div(rho, period), nb.mul(seed, 7.0)), c), 2.0 * math.pi)
+        phase = nb.add(phase, nb.mul(nb.sin(arg), a))
     f = nb.m("FRACT", phase)
     ring = nb.m("FLOOR", phase)
     lwf = P["latewood"]
@@ -64,8 +77,12 @@ def timber_material(name: str, preset: str, shared: dict, ring_width: float, fal
     year = nb.sep(LD._tex(nb, shared["RingRandom"], nb.xyz(yu, yv, 0.0), closest=True).outputs["Color"])[0]
     lw = nb.mul(late, nb.add(0.6, nb.mul(year, 0.4)))
     early = nb.mixc(nb.mul(f, 0.5), P["early"], tuple(c * 0.88 for c in P["early"]))
-    base = nb.mixc(lw, early, P["late"])
-    tone = nb.add(nb.add(0.68, nb.mul(year, 0.12)), nb.add(nb.mul(fib, 0.12), nb.add(nb.mul(streak, 0.12), nb.mul(drift, 0.34))))
+    # v2.2: fibre streaks run through the latewood too.
+    late_c = nb.hsv(nb.rgb(P["late"]), v=nb.add(0.85, nb.mul(fib, V.FINISH_V22["late_fibre"])))
+    base = nb.mixc(lw, early, late_c)
+    tone = nb.add(nb.add(0.68, nb.mul(year, 0.12)),
+                  nb.add(nb.mul(fib, V.FINISH_V22["fibre_tone"]),
+                         nb.add(nb.mul(streak, V.FINISH_V22["streak_tone"]), nb.mul(drift, 0.34))))
     base = nb.hsv(base, v=tone)
     if fallback_maps:
         uv1 = nb.uv("UV1")
@@ -89,6 +106,7 @@ def timber_material(name: str, preset: str, shared: dict, ring_width: float, fal
     base = nb.mixc(nb.mul(cav, 0.65), base, (0.0, 0.0, 0.0))
     rough = nb.add(P["rough"], nb.add(nb.mul(lw, 0.06), nb.sub(nb.mul(soot, 0.15), nb.mul(edge, 0.12))))
     rough = nb.add(rough, nb.mul(nb.sub(fib, 0.5), 0.12))
+    rough = nb.add(rough, nb.mul(cav, V.FINISH_V22["cavity_rough"]))     # v2.2: crushed and cut cavities
     coat_rough = nb.clamp01(nb.add(P["coat_rough"], nb.sub(nb.mul(soot, 0.16), nb.mul(grime, 0.08))))
     coat_rough = nb.clamp01(nb.add(coat_rough, nb.mul(nb.sub(streak, 0.5), 0.10)))
     ridge = nb.mul(nb.smoothstep(f, 1.0 - lwf - 0.25, 1.0 - lwf + 0.05), nb.one_minus(nb.smoothstep(f, 0.82, 1.0)))
@@ -105,7 +123,8 @@ def timber_material(name: str, preset: str, shared: dict, ring_width: float, fal
     nb.feed(nb.bsdf.inputs["Base Color"], base)
     nb.feed(nb.bsdf.inputs["Roughness"], nb.clamp01(rough))
     nb.feed(nb.bsdf.inputs["Normal"], normal)
-    nb.feed(nb.bsdf.inputs["Coat Weight"], P["coat"])
+    coat_w = nb.mul(nb.one_minus(cav), P["coat"]) if V.FINISH_V22["cavity_uncoats"] else P["coat"]
+    nb.feed(nb.bsdf.inputs["Coat Weight"], coat_w)
     nb.feed(nb.bsdf.inputs["Coat Roughness"], coat_rough)
     nb.feed(nb.bsdf.inputs["Coat IOR"], 1.52)
     nb.feed(nb.bsdf.inputs["Coat Normal"], coat_normal)
