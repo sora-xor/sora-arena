@@ -11,6 +11,51 @@ production. Work runs in isolated worktrees, with a single coordinated Unreal
 and GPU rendering lane. The shared checkout is not a build or render workspace.
 The local coordination mailboxes record current ownership, commits and lane use.
 
+## October 25 verified campaign and pending encounter changes
+
+Exact `97c08a0` passes all 15 combined campaign/presentation tests and six
+additional defense regressions, with zero selected errors or warnings and
+actual editor EOF. This includes all twenty cache cases, nine Collector
+sheathing/input cases and the directed 133-beat playthrough. Authenticated CI
+`40158853811` passes all 98 source gates in five jobs, including 279 Rust tests
+and five explicit ignores. The tests remain assisted uncooked evidence.
+
+Both SM6 BowAim captures pass at 1280×720 and 1920×1080. All eight untouched
+originals were individually reviewed: the target stays clear and the temporary
+grip/stave remain left of the reticle, without visible near-plane clipping.
+The cube paw, proxy bow, broad bilingual panels and world still fail finished
+art quality. This closes the specific framing defect, not overall visual
+acceptance, authored bow admission or normal campaign play.
+
+The corrected nine-mesh timber import and fresh-process reopen pass at the
+same source: all 31 packages are saved and unchanged on readback, and all
+1,151 production Generated files retain their hashes. The old 31 packages are
+preserved in both the immutable archive and a retained namespace outside
+Content. The subsequent SM6 draw fails before its first screenshot: the capture
+mistakes an unregistered test console variable for an active override. Its
+original observation report records Disabled dynamic resolution and restores
+the original 75 percent control. Schema 2 now represents registration explicitly
+and checks the actual view's primary override as well as its static fractions.
+All 24 host tests pass; a corrected Metal draw is still required. SM5 was not
+run against the same faulty precondition. The saved material origin remains
+`97c08a0`; a newer capture source must not be described as a reimport.
+
+New encounter source is integrated for engine qualification: `1bf648c` adds
+Collatera's real ten-degree moving deck, directional pace and ten separate swept
+props with persistent blocked positions; `d38bd4a` adds nine mapped-input cane
+thrust cases; `87e54f6` resets the Collector diagnostic between cases. Independent
+source review and host checks pass, but these additions have no Unreal build
+or runtime result yet. The bridge's authored amphitheatre, final prop art,
+scrape audio and margin-call cover behavior remain open. The timber campaign
+binding changes only chapter seven's hash.
+
+Evidence is under `Saved/Qualification/2026-10-25/`: `combined-97c08a0-runtime-attempt1`,
+`defense-97c08a0-runtime-attempt1`, `ci-97c08a0`, `bow-sm6-97c08a0`,
+`timber-corrected-import-attempt1`, `timber-corrected-reopen-attempt1`,
+`timber-corrected-metal-sm6-attempt1` and
+`timber-corrected-sm6-resolution-failure-review`. The native bridge and latest
+package remain `10ad7dad` and `c655b6b`. The full release remains incomplete.
+
 ## October 25 campaign, first-person and Metal corrections
 
 At exact `e237b9f`, eight selected editor tests pass, including twenty
@@ -995,13 +1040,13 @@ history below. The release remains incomplete.
 | ID | Deliverable | Owner | Current state / completion evidence |
 | --- | --- | --- | --- |
 | T1 | Reproducible Mac development toolchain | Codex toolchain lane | UE 5.8.3 / CL 58210709 installed and identity checked on M2 Ultra. Xcode 26.1.1 / 17B100, SDK 26.1 and Metal 17B54 installed; doctor and editor build pass. Full imports/validators pass for 280 original-art, 345 CC0 and 267 audio packages, 27 VFX systems, the craft prop and 12 dojo-kit modules. Actual SM5 and SM6 captures pass on this M2 Ultra. Xcode 27 and global selection are preserved; that compiler has not been qualified for this project. |
-| G1 | Complete authored offline campaign mechanics | Codex gameplay lane | Directed eight-chapter/133-beat traversal and focused mechanics have source-bound editor evidence in the checkpoints above. Latest `67cc9a0` passes CargoUnload, BuntaLeadFear, KurimaruSpookDismount, Mount and Playthrough plus 43 gameplay source gates; `ec91382` separately passes seven cargo/horse/carry tests. Counter and visual rope are integrated. Earlier failed fixtures and their corrections remain recorded. Assisted NullRHI traversal does not qualify ordinary controls, pacing, final visuals or current packages. |
+| G1 | Complete authored offline campaign mechanics | Codex gameplay lane | Exact `97c08a0` passes15 combined campaign/presentation tests and six defense regressions, including the directed133-beat route. New Collatera deck/prop source and nine cane-thrust cases are integrated for engine qualification. Ordinary control/pacing, remaining authored mechanics and current packages remain open. |
 | G2 | Complete playable campaign spaces and encounters | Codex + Claude | Use authored layouts, patrols and encounters; verify traversal, collision, navigation, interaction reach, stealth and boss behavior. Verify all eight chapters and 133 beats with normal controls; headless shortcuts do not establish pacing or difficulty. |
 | U1 | Readable bilingual gameplay and accessible controls | Codex HUD lane | At clean `5f7958f`, the complete Metal SM6 HUD matrix passes all nine prepared scenes at both 1280×720 and 1920×1080, with zero selected-test errors/warnings. All 36 actual images were viewed and their hashes retained. Measured dark backing resolves the gold Examine text over bright bellows and objective labels over bright dojo surfaces, while ordinary Work remains above coaching. No blocking overlap or clipping appears in the matrix. Earlier `febb516` hidden-prompt and `495170d` low-contrast visual failures remain preserved. Both original logs received trace-server shutdown output after their capture manifests were written; reviews retain and bind the exact original prefix, appended suffix and final full log separately. The owned-stream runner at `977c12d` then passes one actual Metal SM6 BellowsGamepad capture at 1280×720: one selected test, zero errors/warnings, two original frames viewed, editor/runner exit zero and inherited-stream EOF true. Its manifest and completion receipt match the entire final raw log, including trace-server shutdown. The earlier wrong-filter invocation remains preserved as a failed launch with correctly retained exit 3. The runner also passes 47 CPU process/report/source tests. U1 remains open for normal-control play, dense bilingual screen coverage, small projected labels, accessibility, motion and packaged/platform qualification. Prepared stress scenes do not establish those gates. |
 | A1 | Unique timber kit and golden-hour Estate/dojo slice | Claude | Nanite policy integrated. Explicit material permutations and reimport resolve prior coarse sampling in same-source `2bb3e36` SM5/SM6 dojo frames; all twelve viewed. Repetitive box geometry, clipped light and placeholder props still fail photoreal acceptance. Claude’s chapter-one sun/sky presets are integrated at `e3b8aa5`, retaining existing intensities and default-off Mac volumetric fog; preset checks pass 20 tests with one skip. All three directed stealth tests pass at `aedfba0`. Paired 1920×1080 SM5/SM6 dojo capture tests pass at `184a7b6`, with zero selected errors/warnings; all twelve images were viewed. Warm direct sunlight and resolved texture are visible, while clipped white exterior/windows and lamp highlights, repeated motifs, box beams, crates and red cylinders still fail photoreal acceptance. Later `a8ecee6` establishes actual M2 Ultra SM6 Nanite draws for all twelve modules and 24 components, with 21,984 input triangles; its SM5 dark-room regression remains open. Unique per-placement timber binaries, dressing, provenance/fallbacks and photoreal acceptance remain open. Claude resumed on October 25 and reports completed timber verification and nine look-development renders; image review, ledger and a signed binary delivery are in progress. Uncommitted timber outputs total 128,480,373 bytes across 91 files and have not been admitted or runtime-qualified. M2 SM5 does not qualify M1. |
 | A2 | Complete character and first-person presentation | Claude | Nyaakoto, paws, sword/saya, clothing, fur and motion must pass [photoreal acceptance](art-direction/photoreal-acceptance.md) in actual gameplay and cinematics. Generated references and Blender images are source evidence only. |
 | A3 | Complete campaign/arena art, animation, audio and effects | Claude + Codex integration | Extend approved visual direction across every environment, character and encounter; complete dialogue presentation, cinematics, sound, music and effects. Review every asset's rights and ledger records. Missing original references remain explicit, rather than being claimed as matched. |
-| Q1 | Repeatable source validation and CI | Codex validation lane | Authenticated CI `40012841586` succeeds for exact `b71f4e8`: five jobs, 83 source gates and 279 Rust tests pass; five long Rust tests are explicitly ignored. Its tested merge has the same tree. Later HUD changes retain separate host evidence and still need actual runtime/CI qualification. Private raw assets, native execution, rendered art and release acceptance remain outside these checks. |
+| Q1 | Repeatable source validation and CI | Codex validation lane | Authenticated CI `40158853811` passes98 gates in five jobs at exact `97c08a0`;279 Rust tests pass and five are explicitly ignored. Tested/source trees match. Newer encounter and capture changes still require CI/runtime qualification. Private assets, rendered art and full native execution remain separate gates. |
 | N1 | Matching native kernel and Connect integration | Codex | Kernel ABI4 stages and passes 94 parity cases/99,043 ticks. Signed clean native `10ad7daddf` passes29/29 directed tests and has a fresh frozen ABI30 release build with its original sidecar. All29 frozen files and six consumer hashes were checked before staging; actual UE NativeLoader passes in the `56b95f3` editor and the `b4a02d1` packaged Metal client, with the exact staged library path. Strict package/artifact hashes verify before and after execution. These tests cover loading, binding, canonical JSON and hashing; signing, submission and finality are not tested. Earlier producer records remain preserved. Windows loading remains unverified. |
 | N2 | Complete native execution proof and real settlement | Codex | Bounded native `01d4e46` completes actual crate compilation/31 CPU tests and a 3,005,248-byte proof with separate verification and 55 negative cases, but its proof attempt fails the unchanged disk reserve. Signed `6fd03be8` adds Katana fallback, and `cd9263628d` adds final-tick death/account/FFA completion with independently authenticated standalone source evidence. Their actual crate/proofs remain unrun. No registered full Arena execution profile, full World/death/ability/terminal composition, full-size proof or settlement acceptance is established. Four-validator admission/dispute/settlement, market recovery and Connect signing/finality remain open; live funding/trading stay disabled. |
 | R1 | Windows and Mac release candidates | Codex | Latest completed Mac Development package `c655b6b`, native bridge `10ad7dad`, passes Game build, cook of 1,323 packages with zero cook errors/warnings, staging/signature checks, smoke, all 164 client tests and a fresh rendered Title check. Newer gameplay and art source remains uncooked. Earlier rejected packages and warning/failure records remain preserved in the dated checkpoints. Clean-machine install, normal campaign play, controller/accessibility, multiplayer recovery, Windows and actual M1 performance remain open; M2 results do not qualify M1. |

@@ -24,7 +24,7 @@ def metadata(sm6=True):
             "rhi": "Metal", "adapter": "synthetic, not hardware evidence", "null_rhi": False,
             "viewport": [WIDTH, HEIGHT], "fixture_origin": [1000000]*3, "meshes": [], "frames": []}
     control = {"screen_percentage": 75, "flags": 0x02000000, "set_by": "Scalability",
-               "dynamic_resolution_status": "Disabled", "test_interface_override": 0}
+               "dynamic_resolution_status": "Disabled", "test_interface_override_registered": False, "test_interface_override": None}
     meta['original_resolution_control'] = control
     meta['restored_resolution_control'] = copy.deepcopy(control)
     for i, name in enumerate(P.NAMES):
@@ -48,7 +48,7 @@ def metadata(sm6=True):
                 "final_view_observations": 1, "final_view_frame": len(meta["frames"])*100+11,
                 "final_post_process": copy.deepcopy(P.FINAL_POST_PROCESS), "final_show_flags": dict.fromkeys(P.EXCLUDED_SHOW_FLAGS, False),
                 "final_resolution": {**control, "screen_percentage": 100, "primary_fraction_upper_bound": 1,
-                                     "secondary_fraction": 1, "screen_percentage_show_flag": True,
+                                     "secondary_fraction": 1, "view_primary_fraction_override": -1, "screen_percentage_show_flag": True,
                                      "unscaled_view_rect": [0, 0, WIDTH, HEIGHT]},
                 "active_visualization": mode if mode != 'Lit' else 'None', "active_mode_id": 1 if mode != 'Lit' else -1,
                 "material_render_readback": {"proxy_present": True, "shader_map_valid": True, "shader_map_complete": True,
@@ -200,6 +200,7 @@ class ProbeEvidence(unittest.TestCase):
             for field, value in (('screen_percentage', 75), ('dynamic_resolution_status', 'Enabled'),
                     ('dynamic_resolution_status', 'Paused'), ('dynamic_resolution_status', 'DebugForceEnabled'),
                     ('test_interface_override', 1), ('primary_fraction_upper_bound', .75), ('primary_fraction_upper_bound', float('nan')),
+                    ('view_primary_fraction_override', .75), ('view_primary_fraction_override', 1), ('view_primary_fraction_override', float('nan')),
                     ('secondary_fraction', .5), ('unscaled_view_rect', [0, 0, WIDTH-1, HEIGHT]),
                     ('set_by', 'Console'), ('flags', 0x10000000)):
                 with self.subTest(sm6=sm6, field=field, value=value):
@@ -207,6 +208,22 @@ class ProbeEvidence(unittest.TestCase):
                     with self.assertRaises(ValueError): self.inspect(meta)
             meta = metadata(sm6); meta['frames'][-1].pop('final_resolution')
             with self.assertRaises(ValueError): self.inspect(meta)
+
+    def test_absent_test_cvar_is_explicit_and_active_or_unknown_controls_fail(self):
+        for registered, value in ((False, None), (True, 0)):
+            meta = metadata()
+            for frame in meta['frames']:
+                frame['final_resolution'].update(test_interface_override_registered=registered, test_interface_override=value)
+            self.assertTrue(self.inspect(meta)['nanite_draw_evidence'])
+        for registered, value in ((False, -1), (False, 0), (True, None), (True, -1), (True, 1), (True, False), (None, None)):
+            meta = metadata()
+            meta['frames'][0]['final_resolution'].update(test_interface_override_registered=registered, test_interface_override=value)
+            with self.assertRaises(ValueError): self.inspect(meta)
+        for key in ('test_interface_override_registered', 'test_interface_override', 'view_primary_fraction_override'):
+            meta = metadata(); meta['frames'][0]['final_resolution'].pop(key)
+            with self.assertRaises(ValueError): self.inspect(meta)
+        meta = metadata(); meta['schema'] = 'sora-arena.timber-probe.v1'
+        with self.assertRaises(ValueError): self.inspect(meta)
 
     def test_resolution_value_and_priority_must_both_restore(self):
         for field, value in (('screen_percentage', 100), ('flags', 0x10000000), ('set_by', 'Console')):

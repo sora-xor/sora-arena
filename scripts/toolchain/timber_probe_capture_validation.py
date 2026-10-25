@@ -14,7 +14,7 @@ import subprocess
 SPEC = importlib.util.spec_from_file_location("probe_nanite_pixels", Path(__file__).with_name("nanite_capture_validation.py"))
 PIXELS = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(PIXELS)
-SCHEMA = "sora-arena.timber-probe.v1"
+SCHEMA = "sora-arena.timber-probe.v2"
 SCOPE = "nine saved timber probe assets in an isolated fixture; not production placement, art or platform acceptance"
 ROOT = "/Game/Generated/Qualification/DojoTimberProbe/"
 NAMES = (
@@ -54,6 +54,15 @@ def require(value, reason):
 def finite_vector(value, length):
     return isinstance(value, list) and len(value) == length and all(
         type(v) in (int, float) and math.isfinite(v) for v in value)
+
+
+def inactive_test_override(resolution):
+    if "test_interface_override" not in resolution:
+        return False
+    registered = resolution.get("test_interface_override_registered")
+    value = resolution["test_interface_override"]
+    return ((registered is False and value is None) or
+            (registered is True and type(value) in (int, float) and value == 0))
 
 
 def identities(meta, project, commit):
@@ -170,10 +179,12 @@ def validate_metadata(meta, names, width, height):
         resolution = frame.get("final_resolution", {})
         require(resolution.get("screen_percentage") == 100 and resolution.get("flags") == original_resolution["flags"] and
                 resolution.get("set_by") == original_resolution["set_by"] and
-                resolution.get("dynamic_resolution_status") in ("Disabled", "Unsupported") and resolution.get("test_interface_override") == 0,
+                resolution.get("dynamic_resolution_status") in ("Disabled", "Unsupported") and inactive_test_override(resolution),
                 "final resolution control differs or dynamic/test scaling is active")
         require(all(type(resolution.get(key)) in (int, float) and math.isfinite(resolution[key]) and abs(resolution[key]-1) < 1e-6
                     for key in ("primary_fraction_upper_bound", "secondary_fraction")) and
+                type(resolution.get("view_primary_fraction_override")) in (int, float) and
+                math.isfinite(resolution["view_primary_fraction_override"]) and resolution["view_primary_fraction_override"] <= 0 and
                 resolution.get("unscaled_view_rect") == [0, 0, width, height] and type(resolution.get("screen_percentage_show_flag")) is bool,
                 "final static resolution fraction/viewport differs")
         if identity[1] == "full":

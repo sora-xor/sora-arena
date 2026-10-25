@@ -87,7 +87,11 @@ TSharedRef<FJsonObject> ResolutionControl()
     }
     O->SetStringField(TEXT("dynamic_resolution_status"),Status);
     const auto* Override=IConsoleManager::Get().FindConsoleVariable(TEXT("r.Test.OverrideScreenPercentageInterface"));
-    O->SetNumberField(TEXT("test_interface_override"),Override?Override->GetInt():-1);
+    // This test CVar is mentioned by SceneView.h but is not registered in
+    // this UE5.8 build. Absence is a separate observation, not a value of -1.
+    O->SetBoolField(TEXT("test_interface_override_registered"),Override!=nullptr);
+    if (Override) O->SetNumberField(TEXT("test_interface_override"),Override->GetInt());
+    else O->SetField(TEXT("test_interface_override"),MakeShared<FJsonValueNull>());
     return O;
 }
 // This callback runs on the game thread after the actual viewport view has
@@ -118,6 +122,7 @@ public:
             // disabled UE's legacy driver uses this same static primary fraction.
             Resolution->SetNumberField(TEXT("primary_fraction_upper_bound"),Driver?Driver->GetResolutionFractionsUpperBound()[GDynamicPrimaryResolutionFraction]:-1);
             Resolution->SetNumberField(TEXT("secondary_fraction"),Family.SecondaryViewFraction);
+            Resolution->SetNumberField(TEXT("view_primary_fraction_override"),View->SceneViewInitOptions.OverridePrimaryResolutionFraction);
             Resolution->SetBoolField(TEXT("screen_percentage_show_flag"),Family.EngineShowFlags.ScreenPercentage);
             const auto& Rect=View->UnscaledViewRect;
             Resolution->SetArrayField(TEXT("unscaled_view_rect"),{MakeShared<FJsonValueNumber>(Rect.Min.X),MakeShared<FJsonValueNumber>(Rect.Min.Y),
@@ -385,8 +390,12 @@ private:
         const auto Resolution=ResolutionControl(); const FString Dynamic=Resolution->GetStringField(TEXT("dynamic_resolution_status"));
         if (Resolution->GetNumberField(TEXT("screen_percentage"))!=100||
             (ScreenPercentage.Var->GetFlags()&ECVF_SetByMask)!=(ScreenPercentage.Flags&ECVF_SetByMask)||
-            (Dynamic!=TEXT("Disabled")&&Dynamic!=TEXT("Unsupported"))||Resolution->GetNumberField(TEXT("test_interface_override"))!=0)
-        { Fail(TEXT("Probe requires unchanged 100 percent control and inactive dynamic/test resolution overrides")); return; }
+            (Dynamic!=TEXT("Disabled")&&Dynamic!=TEXT("Unsupported"))||
+            (Resolution->GetBoolField(TEXT("test_interface_override_registered"))&&Resolution->GetNumberField(TEXT("test_interface_override"))!=0))
+        {
+            FString Observed; FJsonSerializer::Serialize(Resolution,TJsonWriterFactory<>::Create(&Observed));
+            Fail(TEXT("Probe requires unchanged 100 percent control and inactive dynamic/test resolution overrides: ")+Observed); return;
+        }
         FlushRenderingCommands(); const auto& Data=GetNaniteVisualizationData(); const bool Diagnostic=SM6&&(Mode()==1||Mode()==2);
         if ((Diagnostic&&(!Data.IsActive()||Data.GetActiveModeName()!=FName(Modes[Mode()])))||(!Diagnostic&&Data.IsActive())) { Fail(TEXT("Renderer has not selected requested visualization")); return; }
         if (!PC()->PlayerCameraManager->GetCameraLocation().Equals(CameraAt,.01)||!PC()->PlayerCameraManager->GetCameraRotation().Equals(CameraRotation,.001)||PC()->GetViewTarget()!=Camera.Get()) { Fail(TEXT("Actual probe camera mismatch")); return; }
@@ -472,7 +481,7 @@ private:
         for (const auto& P:PackageHashes) Unchanged=IFileManager::Get().FileSize(*P.Key)>0&&LexToString(FMD5Hash::HashFile(*P.Key))==P.Value&&Unchanged;
         Test.TestTrue(TEXT("Probe restores view/menu/HUD/profile/CVars and removes owned actors"),Restored); Test.TestTrue(TEXT("Saved probe package bytes remain unchanged"),Unchanged);
         if (Folder.IsEmpty()) return;
-        auto O=MakeShared<FJsonObject>(); O->SetStringField(TEXT("schema"),TEXT("sora-arena.timber-probe.v1")); O->SetStringField(TEXT("scope"),Scope);
+        auto O=MakeShared<FJsonObject>(); O->SetStringField(TEXT("schema"),TEXT("sora-arena.timber-probe.v2")); O->SetStringField(TEXT("scope"),Scope);
         O->SetBoolField(TEXT("sm6_requested"),SM6); O->SetBoolField(TEXT("nanite_eligible"),Eligible); O->SetStringField(TEXT("shader_platform"),Platform);
         O->SetStringField(TEXT("rhi"),GDynamicRHI?GDynamicRHI->GetName():TEXT("none")); O->SetBoolField(TEXT("null_rhi"),GUsingNullRHI); O->SetStringField(TEXT("adapter"),GRHIAdapterName);
         O->SetArrayField(TEXT("viewport"),{MakeShared<FJsonValueNumber>(Size.X),MakeShared<FJsonValueNumber>(Size.Y)}); O->SetArrayField(TEXT("fixture_origin"),Vec(Origin));

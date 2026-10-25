@@ -1,5 +1,13 @@
 # Offline campaign progression acceptance
 
+At exact `97c08a0`, all15 combined campaign/presentation tests and six defense
+regressions pass with zero selected errors/warnings and actual editor EOF.
+This includes the corrected chapter-six fixtures, twenty cache cases, nine
+Collector sheathing/input cases and directed133-beat traversal. Both BowAim
+viewports pass targeted proxy framing; overall artwork and ordinary play remain
+open. New moving-deck/prop behavior and the nine cane-thrust cases await engine
+qualification. See the [current checkpoint](../complete-release-plan.md#october-25-verified-campaign-and-pending-encounter-changes).
+
 The `f6b7a5f` chapter-six integration builds and passes six of eight directed
 tests. InfiltrationLoadout and Playthrough fail because their fixtures disregard
 the equip cooldown and mission carrying restrictions. `d338b0e` corrects both
