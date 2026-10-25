@@ -20,6 +20,8 @@ class ACharacter;
 class USkeletalMeshComponent;
 class UStaticMeshComponent;
 class UTextRenderComponent;
+class UWidgetComponent;
+class UFont;
 class UMaterialInterface;
 struct FSoraPracticeMap;
 struct FSoraChapter;
@@ -289,6 +291,8 @@ private:
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> KitPieces;
     void StageEpilogue(const FSoraBeat& Beat);
     UPROPERTY() TObjectPtr<UStaticMeshComponent> ArchivePage;
+    UPROPERTY() TObjectPtr<UWidgetComponent> ArchivePageText;
+    UPROPERTY() TObjectPtr<UFont> ArchivePageFont;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> ArchiveEastRack;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> ArchiveNorthGate;
     UPROPERTY() TObjectPtr<APointLight> ArchivePageLight;

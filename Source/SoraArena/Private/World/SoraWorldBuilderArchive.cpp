@@ -3,8 +3,51 @@
 #include "SoraArchiveRules.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/PointLightComponent.h"
+#include "Components/SpotLightComponent.h"
+#include "Components/WidgetComponent.h"
+#include "Engine/Font.h"
 #include "Engine/PointLight.h"
+#include "Engine/SpotLight.h"
 #include "Engine/World.h"
+#include "UI/SoraUIFont.h"
+#include "Widgets/Layout/SBorder.h"
+#include "Widgets/SBoxPanel.h"
+#include "Widgets/Text/STextBlock.h"
+
+namespace
+{
+// The authored household arithmetic is visible on the actual slate. Slate
+// uses the game's shipped Japanese font, so this remains text at every
+// viewport size rather than baked or generated lettering.
+TSharedRef<SWidget> FamilyRecord(UFont* Font)
+{
+    const auto Face=[Font](int32 Size)
+    { auto F=Font->GetLegacySlateFontInfo();F.Size=Size;return F; };
+    const FLinearColor Cyan(.30f,.82f,.88f),Muted(.22f,.50f,.54f);
+    auto Rows=SNew(SVerticalBox);
+    Rows->AddSlot().AutoHeight().Padding(0,0,0,8)
+        [SNew(STextBlock).Text(FText::FromString(TEXT("武家方記録"))).Font(Face(30)).ColorAndOpacity(Muted)];
+    Rows->AddSlot().AutoHeight().Padding(0,0,0,38)
+        [SNew(STextBlock).Text(FText::FromString(TEXT("鷲尾家"))).Font(Face(76)).ColorAndOpacity(Cyan)];
+    const auto Row=[&](const TCHAR* Label,const TCHAR* Value,int32 Size,float Bottom)
+    {
+        Rows->AddSlot().AutoHeight().Padding(0,0,0,Bottom)
+        [SNew(SHorizontalBox)
+            +SHorizontalBox::Slot().FillWidth(1)[SNew(STextBlock).Text(FText::FromString(Label)).Font(Face(Size)).ColorAndOpacity(Cyan)]
+            +SHorizontalBox::Slot().AutoWidth()[SNew(STextBlock).Text(FText::FromString(Value)).Font(Face(Size)).ColorAndOpacity(Cyan)]];
+    };
+    Row(TEXT("元本"),TEXT("120"),48,10);
+    Row(TEXT("利息"),TEXT("22"),48,10);
+    Row(TEXT("延滞金"),TEXT("36"),48,10);
+    Row(TEXT("手数料"),TEXT("52"),48,10);
+    Row(TEXT("返済"),TEXT("△40"),48,30);
+    Row(TEXT("残高"),TEXT("190"),76,24);
+    Row(TEXT("買取価格"),TEXT("30"),48,12);
+    Rows->AddSlot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(TEXT("単位：石"))).Font(Face(28)).ColorAndOpacity(Muted)];
+    return SNew(SBorder).Padding(50).BorderBackgroundColor(FLinearColor(.004f,.012f,.016f,1.f))[Rows];
+}
+constexpr float FamilyPageLumens=45.f;
+}
 
 void ASoraWorldBuilder::BuildArchive(const FSoraZone& Zone,const FSoraZone& Press)
 {
@@ -28,12 +71,44 @@ void ASoraWorldBuilder::BuildArchive(const FSoraZone& Zone,const FSoraZone& Pres
     // alone occupy the ring. These are collision proxies pending final art.
     for(int Side:{0,1})
     {
-        auto* Rack=Part(TEXT("ArchiveSlateRack"),FVector(Side?2540:60,900,180),FVector(120,1800,360),Slate,TEXT("Metal"));
+        auto* Rack=Part(TEXT("ArchiveSlateRack"),FVector(Side?2540:60,900,180),FVector(120,1800,360),Slate,TEXT(""));
         if(Side) { ArchiveEastRack=Rack; Rack->ComponentTags.Add(TEXT("ArchiveEastRack")); }
+        // The racks supply the authored ambient cyan light before the
+        // family page wakes. Lights sit above the duel's heads, not inside
+        // the staged rival's head as the old page point light did.
+        for(float Y:{250.f,900.f,1550.f})
+        {
+            const float X=Side?2425.f:175.f;
+            Part(TEXT("ArchiveRackLamp"),FVector(Side?2477:123,Y,300),FVector(4,75,30),FLinearColor(.06f,.24f,.27f),TEXT(""),false);
+            if(auto* Lamp=GetWorld()->SpawnActor<APointLight>(O+FVector(X,Y,300),FRotator::ZeroRotator))
+            {
+                auto* Light=Lamp->PointLightComponent.Get();
+                Light->SetIntensityUnits(ELightUnits::Lumens);Light->SetIntensity(450.f);
+                Light->SetLightColor(FLinearColor(.25f,.66f,.78f));Light->SetAttenuationRadius(1100.f);
+                Light->SetSourceRadius(45.f);Light->SetCastShadows(false);
+                Lamp->Tags.Add(TEXT("ArchiveRackLight"));DecorActors.Add(Lamp);
+            }
+        }
     }
-    ArchivePage=Part(TEXT("ArchiveWashioSlate"),FVector(2477,900,150),FVector(4,75,100),FLinearColor(.025f,.04f,.05f),TEXT("Metal"),false);
+    ArchivePage=Part(TEXT("ArchiveWashioSlate"),FVector(2477,900,150),FVector(4,75,100),FLinearColor(.015f,.025f,.03f),TEXT(""),false);
     ArchivePage->ComponentTags.Add(TEXT("ArchiveFamilyPage"));
-    ArchivePageLight=GetWorld()->SpawnActor<APointLight>(O+FVector(2440,900,150),FRotator::ZeroRotator);
+    ArchivePageFont=SoraUI::CreateUIFont(this);
+    ArchivePageText=NewObject<UWidgetComponent>(this);
+    ArchivePageText->SetupAttachment(RootComponent);
+    ArchivePageText->SetWidgetSpace(EWidgetSpace::World);
+    ArchivePageText->SetDrawSize(FVector2D(750,1000));ArchivePageText->SetPivot(FVector2D(.5f,.5f));
+    ArchivePageText->SetBlendMode(EWidgetBlendMode::Opaque);
+    ArchivePageText->SetBackgroundColor(FLinearColor(.004f,.012f,.016f,1.f));
+    ArchivePageText->SetTintColorAndOpacity(FLinearColor(.12f,.12f,.12f,1.f));
+    ArchivePageText->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    ArchivePageText->SetCanEverAffectNavigation(false);
+    ArchivePageText->SetRelativeLocation(O+FVector(2474,900,150));
+    ArchivePageText->SetRelativeRotation(FRotator(0,180,0));ArchivePageText->SetRelativeScale3D(FVector(.1f));
+    ArchivePageText->SetSlateWidget(FamilyRecord(ArchivePageFont));
+    ArchivePageText->SetVisibility(false);ArchivePageText->SetRedrawTime(1.f);
+    ArchivePageText->RegisterComponent();AddInstanceComponent(ArchivePageText);
+    ArchivePageText->ComponentTags.Add(TEXT("ArchiveFamilyRecord"));
+    ArchivePageLight=GetWorld()->SpawnActor<APointLight>(O+FVector(2415,855,205),FRotator::ZeroRotator);
     if(ArchivePageLight)
     {
         ArchivePageLight->Tags.Add(TEXT("ArchiveFamilyPageLight"));
@@ -50,6 +125,15 @@ void ASoraWorldBuilder::BuildArchive(const FSoraZone& Zone,const FSoraZone& Pres
     ArchiveNorthGate=Part(TEXT("ArchiveNorthDoor"),FVector(1300,1830,130),FVector(240,20,260),Timber,TEXT("Timber"));
     ArchiveNorthGate->ComponentTags.Add(TEXT("ArchiveNorthGate"));
     Part(TEXT("ArchiveHighWindow"),FVector(2100,1798,470),FVector(160,4,110),FLinearColor(.015f,.02f,.025f),TEXT("Timber"),false);
+    const FVector RimAt(2100,1750,470),RimLook(1400,900,130);
+    if(auto* Rim=GetWorld()->SpawnActor<ASpotLight>(O+RimAt,(RimLook-RimAt).Rotation()))
+    {
+        auto* Light=Rim->SpotLightComponent.Get();
+        Light->SetIntensityUnits(ELightUnits::Lumens);Light->SetIntensity(240.f);
+        Light->SetLightColor(FLinearColor(.56f,.67f,.82f));Light->SetAttenuationRadius(1900.f);
+        Light->SetInnerConeAngle(20.f);Light->SetOuterConeAngle(50.f);Light->SetCastShadows(true);
+        Rim->Tags.Add(TEXT("ArchiveWindowRim"));DecorActors.Add(Rim);
+    }
 
     // A physical connection across the current chapter layout. The long
     // landing is provisional architecture, not an authored final art claim.
@@ -94,11 +178,15 @@ void ASoraWorldBuilder::ShowArchivePage(const FSoraBeat& Beat,int32 Phase)
         ArchiveNorthGate->SetVisibility(Locked);
         ArchiveNorthGate->SetCollisionEnabled(Locked?ECollisionEnabled::QueryAndPhysics:ECollisionEnabled::NoCollision);
     }
-    if(IsValid(ArchivePage)) Tint(ArchivePage,Lit?FLinearColor(.12f,.72f,.82f):FLinearColor(.025f,.04f,.05f));
+    if(IsValid(ArchivePageText))
+    {
+        if(Lit&&!ArchivePageText->IsVisible()) ArchivePageText->RequestRedraw();
+        ArchivePageText->SetVisibility(Lit);
+    }
     if(IsValid(ArchivePageLight))
     {
         auto* Light=ArchivePageLight->PointLightComponent.Get();
-        Light->SetIntensity(Lit?450.f:0.f); Light->SetVisibility(Lit);
+        Light->SetIntensity(Lit?FamilyPageLumens:0.f); Light->SetVisibility(Lit);
     }
 }
 
@@ -110,10 +198,14 @@ void ASoraWorldBuilder::StageArchiveReveal(float Seconds)
     // A negative time only resets the rack, leaving the phase-derived light.
     if(Seconds<0) return;
     const bool Lit=Age>=0;
-    if(IsValid(ArchivePage)) Tint(ArchivePage,Lit?FLinearColor(.12f,.72f,.82f):FLinearColor(.025f,.04f,.05f));
+    if(IsValid(ArchivePageText))
+    {
+        if(Lit&&!ArchivePageText->IsVisible()) ArchivePageText->RequestRedraw();
+        ArchivePageText->SetVisibility(Lit);
+    }
     if(IsValid(ArchivePageLight))
     {
         auto* Light=ArchivePageLight->PointLightComponent.Get();
-        Light->SetIntensity(Lit?450.f:0.f);Light->SetVisibility(Lit);
+        Light->SetIntensity(Lit?FamilyPageLumens:0.f);Light->SetVisibility(Lit);
     }
 }

@@ -61,6 +61,7 @@ namespace SoraHUDPanels
 {
 void DrawTopBar(const FSoraHUDFrame& Frame);
 void DrawTitleCard(const FSoraHUDFrame& Frame, const FSoraChapter& Card);
+void DrawCinematicDialogue(const FSoraHUDFrame& Frame);
 void DrawObjective(const FSoraHUDFrame& Frame);
 // Exact wrapped objective rows must remain inside their allocated header panel.
 bool ObjectiveLayoutFits(const FSoraHUDFrame& Frame, FString& Why);

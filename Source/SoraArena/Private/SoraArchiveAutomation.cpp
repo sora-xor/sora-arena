@@ -16,6 +16,7 @@
 #include "GameFramework/PlayerController.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/WidgetComponent.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraArchivePostsTest,"SoraArena.Campaign.ArchivePosts",
     EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
@@ -81,8 +82,19 @@ bool PageIsLit(SoraFieldcraftAutomation::FBeatWorld& W,bool Expected)
 {
     auto* Page=FamilyPageLight(W);if(!Page) return false;
     auto* Light=Page->PointLightComponent.Get();
-    return W.Test.TestEqual(TEXT("The actual light visibility follows discovery"),Light->IsVisible(),Expected)&&
-        W.Test.TestEqual(TEXT("The actual light power follows discovery"),Light->Intensity,Expected?450.f:0.f);
+    TArray<UWidgetComponent*> Widgets;W.Mode()->Arena()->GetComponents(Widgets);
+    UWidgetComponent* Record=nullptr;int32 Count=0;
+    for(auto* Widget:Widgets) if(Widget->ComponentHasTag(TEXT("ArchiveFamilyRecord"))) { Record=Widget;++Count; }
+    bool Good=W.Test.TestEqual(TEXT("Exactly one world-space household record exists"),Count,1);
+    if(Record)
+    {
+        Good&=W.Test.TestEqual(TEXT("The actual record visibility follows discovery"),Record->IsVisible(),Expected);
+        Good&=W.Test.TestTrue(TEXT("The record is world-space and cannot obstruct the duel"),
+            Record->GetWidgetSpace()==EWidgetSpace::World&&Record->GetCollisionEnabled()==ECollisionEnabled::NoCollision);
+    }
+    Good&=W.Test.TestEqual(TEXT("The actual light visibility follows discovery"),Light->IsVisible(),Expected);
+    Good&=W.Test.TestTrue(TEXT("The page supplies light only after discovery"),Expected?Light->Intensity>0.f:Light->Intensity==0.f);
+    return Good;
 }
 }
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraArchiveFamilyPageTest,"SoraArena.Campaign.ArchiveFamilyPage",
@@ -147,6 +159,8 @@ bool FSoraArchiveFamilyPageTest::RunTest(const FString&)
         if(!AdvanceTo(SoraArchiveRules::SpeechStartSeconds+.05)) return false;
         const auto* Reveal=W.Campaign()->CurrentDialogueCue();
         TestTrue(TEXT("The family-page exchange follows impact and precedes the remembered lesson"),Reveal&&Reveal->Id==TEXT("ch06.b09.toranosuke.005"));
+        TestTrue(TEXT("The rival has cleared the household record before its numbers are spoken"),
+            Rival->GetActorLocation().Y-Zone.Rect.Min.Y>1050&&PageIsLit(W,true));
         if(!AdvanceTo(19.5)) return false;
         const auto* LateSave=Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(W.Slot,0));
         TestTrue(TEXT("The nearly complete cinematic still retains the phase-one checkpoint"),LateSave&&LateSave->CheckpointPhase==0);
@@ -167,7 +181,9 @@ bool FSoraArchiveFamilyPageTest::RunTest(const FString&)
             FMath::Abs(RivalRotation.Pitch)<.001&&FMath::Abs(RivalRotation.Roll)<.001);
         TestTrue(TEXT("Both characters return inside the duel ring before control resumes"),
             FMath::Abs(W.Hero()->GetActorLocation().X-Zone.Rect.Min.X-1400)<2&&
-            FMath::Abs(Rival->GetActorLocation().X-Zone.Rect.Min.X-1800)<2);
+            FMath::Abs(Rival->GetActorLocation().X-Zone.Rect.Min.X-1800)<2&&
+            FMath::Abs(W.Hero()->GetActorLocation().Y-Zone.Rect.Min.Y-900)<2&&
+            FMath::Abs(Rival->GetActorLocation().Y-Zone.Rect.Min.Y-900)<2);
         if(!TestFalse(TEXT("The authored reveal releases control"),W.Campaign()->IsDialogueBlocking())||!W.Tick(2)) return false;
         const auto* Memory=W.Campaign()->CurrentDialogueCue();
         TestTrue(TEXT("The remembered lesson follows the blocking exchange"),Memory&&Memory->Id==TEXT("ch06.b09.sekireisai.001"));

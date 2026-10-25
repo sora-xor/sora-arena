@@ -3,6 +3,7 @@
 #include "Components/PointLightComponent.h"
 #include "Components/SceneComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/WidgetComponent.h"
 #include "Engine/PointLight.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
@@ -187,6 +188,8 @@ void ASoraWorldBuilder::ClearArena()
     for(const auto& A:PickupLights) if(A) A->Destroy(); PickupLights.Reset();
     for(const auto& M:Pieces) if(M) M->DestroyComponent(); Pieces.Reset();
     WoodTargets.Reset(); WoodFloors.Reset(); WoodClapper=nullptr;
+    if(IsValid(ArchivePageText)) ArchivePageText->DestroyComponent();
+    ArchivePageText=nullptr; ArchivePageFont=nullptr;
     ArchivePage=nullptr; ArchivePageLight=nullptr; ArchiveNorthGate=nullptr; ArchiveEastRack=nullptr;
     RidgeAnchors.Reset(); RidgeOrigin=FVector2D::ZeroVector;
     SummitSpine=nullptr; SummitSeam=nullptr;

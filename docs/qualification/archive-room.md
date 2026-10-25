@@ -205,3 +205,59 @@ checks frozen scene/view state and records the actual player-camera cache in
 the raw log. Unique per-run folders preserve every original. This capture
 fixture is uncompiled and unrun; it is staging review, not ordinary combat,
 continuous animation quality, final art or packaged release evidence.
+
+## Corrected runtime and rejected rendered presentation
+
+At signed `714f490e`, both ArchiveFamilyPage and ArchiveRevealReset pass.
+The printed final rival pitch is -0.000053120 degrees with and without the
+preceding bark; the rack is zero. The original scalar tolerance was indeed
+below the engine's transform precision. The production scene is unchanged
+from `956a43ef`. Natural editor/wrapper exits are 0/0, all twenty files rehash
+and source/native/Config/Generated inputs remain unchanged. Runtime review:
+`5684df256a536cba71e63e6c20ed9ffba960cacd6a412efdc88846232d33beb7`.
+
+The same source completes all six 1920×1080 SM6 capture marks with the actual
+production camera, correct cues, frozen stills and natural exits 0/0. All 34
+evidence files and unchanged input freezes verify. Each original was viewed;
+visual acceptance is rejected. The opening is almost black. The lit family
+page is a clipped cyan-white rectangle without text, partly behind the rival
+and his equipment. The racks look mottled green. The header, objective,
+crosshair, weapon/health panels and coaching obscure the cinematic. The
+fixture's unnecessary million-health value also overflows its readout.
+Character proxies and weapon intersections remain visible. Rendered review:
+`116878f4f6db7c487beff1dd9cd86ba876bd15655d2b3af60d5df0d9d07aabf7`.
+
+The originals remain under
+`Saved/Screenshots/SoraArtReview/1920x1080/ArchiveReveal_6E5A234A8E453C7CA0D7E88604BF574F/`
+in the complete-game worktree. The first capture preflight rejected an
+unrelated Rust job before launch; that failure is retained separately. The
+successful local runner checks actual Unreal/Blender/shader job occupancy
+and retains the 30 GiB launch reserve and bounded non-signalling observer.
+
+Source CI run `40240662670` passes all 110 checks. All five artifacts and raw
+logs authenticate against the exact PR merge tree, which equals `714f490e`.
+Review: `e2ed80ad8431c62a37f9dd0ea6d936e9dc0915de3e9031e369a961a67205127b`.
+
+## Presentation correction candidate
+
+The new source hides combat panels during the actual reveal while preserving
+the player's subtitle and sound-caption settings. The artificial capture
+health override is removed. A world-space Slate panel uses the already
+shipped Japanese font for the authored Washio household arithmetic:
+120 + 22 + 36 + 52 − 40 = 190, with a purchase price of 30 koku. It appears
+with the existing discovery state and survives the phase-two reload contract.
+It has no collision and does not change the room's physical layout.
+
+Cyan rack lights and a high-window rim supply the chapter's specified
+moonless interior lighting. The family-page point is moved out of the rival's
+head and reduced to 45 lumens; the rack proxies use a plain graphite surface.
+After impact, the rival recoils 1.8 metres along the east aisle, clearing the
+page before its close-up and speech. Both characters still return to the
+central duel aisle at twenty seconds. The scene's light/record visibility
+and complete return position are covered by the existing runtime fixtures.
+
+This candidate is uncompiled and unrendered. Its light values, lettering,
+composition and material response require a fresh original-image review;
+these source edits do not establish visual acceptance. The scene remains
+procedural staging with proxy characters, no final strike/recoil animation,
+and unfinished audio. SM5, packages and ordinary duel play remain unqualified.

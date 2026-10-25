@@ -73,25 +73,29 @@ bool USoraCampaignDirector::TickArchiveReveal(float DeltaSeconds)
     const double Slam=FMath::SmoothStep(0.,1.,FMath::Clamp((T-.25)/(R::ImpactSeconds-.25),0.,1.));
     const double Recover=FMath::SmoothStep(0.,1.,FMath::Clamp((T-18.8)/1.2,0.,1.));
     const double X=FMath::Lerp(FMath::Lerp(2200.,2444.,Slam),1800.,Recover);
+    // Recoil to the side before the record close-up. The old mark left the
+    // rival's head and back-mounted equipment directly over the family page.
+    const double Recoil=FMath::SmoothStep(0.,1.,FMath::Clamp((T-R::ImpactSeconds)/1.8,0.,1.));
+    const double Y=FMath::Lerp(FMath::Lerp(900.,1080.,Recoil),900.,Recover);
     const double Lean=T<R::ImpactSeconds?Slam*18.:18.*FMath::Exp(-(T-R::ImpactSeconds)*2.);
     // The final reaction releases both characters back inside the authored
     // duel ring, along its clear central aisle between the four posts.
     Hero->SetActorLocation(ArchiveRevealOrigin+FVector(FMath::Lerp(2070.,1400.,Recover),900,
         Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2),false,nullptr,ETeleportType::TeleportPhysics);
-    Rival->SetActorLocationAndRotation(ArchiveRevealOrigin+FVector(X,900,Rival->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2),
+    Rival->SetActorLocationAndRotation(ArchiveRevealOrigin+FVector(X,Y,Rival->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2),
         FRotator(-Lean,180,0),false,nullptr,ETeleportType::TeleportPhysics);
     if(Mode().Arena()) Mode().Arena()->StageArchiveReveal(T);
     if(IsValid(ShotCamera))
     {
         FVector At,Look;
-        if(T<R::ImpactSeconds)
+        if(T<3.2)
         { At=FVector(1940,500,250);Look=FVector(2260,900,125); }
         else if(T<18.)
         {
-            const double Dolly=FMath::SmoothStep(0.,1.,(T-R::ImpactSeconds)/(18.-R::ImpactSeconds));
-            At=FMath::Lerp(FVector(2280,650,170),FVector(2310,700,155),Dolly);Look=FVector(2477,900,150);
+            const double Dolly=FMath::SmoothStep(0.,1.,(T-3.2)/(18.-3.2));
+            At=FMath::Lerp(FVector(2240,810,156),FVector(2270,825,153),Dolly);Look=FVector(2474,900,150);
         }
-        else { At=FVector(2200,640,160);Look=FVector(X,900,145); }
+        else { At=FVector(2200,640,160);Look=FVector(X,Y,145); }
         ShotCamera->SetActorLocationAndRotation(ArchiveRevealOrigin+At,(Look-At).Rotation());
     }
     // The 4.6-second physical prologue and 15.4 seconds of authored speech

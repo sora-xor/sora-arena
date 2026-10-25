@@ -24,11 +24,27 @@ combined final rack/rival rotation assertion fails in both queue cases; the
 remaining scene timing, camera, input and save assertions pass. The failed
 evidence is preserved and independently authenticated as
 `fbcd26a7e41dd5a47ede646f894dd32d5c3488aeb473a952fe2917119ccefbeb`.
-The fixture now records final angles and uses an explicit 0.001-degree limit
-consistent with engine transform precision. That correction and a six-frame
-capture of the actual scene camera await Unreal validation. Production scene
-code is unchanged by this follow-up. Final character animation, readable slate
-art, sound, rendered composition and ordinary duel play remain unfinished.
+The corrected `714f490e` passes both ArchiveFamilyPage and ArchiveRevealReset.
+The final rival pitch is -0.000053120 degrees in both queue cases and the rack
+is zero, confirming that the original assertion was below the engine setters'
+precision. Runtime review:
+`5684df256a536cba71e63e6c20ed9ffba960cacd6a412efdc88846232d33beb7`.
+
+Its six-frame 1920×1080 SM6 capture passes the functional camera/clock checks,
+but all six originals were reviewed and the presentation is rejected. The
+opening is nearly black, the lit slate clips to white without readable text,
+the rival and equipment obscure it, and combat HUD covers the scene. Review:
+`116878f4f6db7c487beff1dd9cd86ba876bd15655d2b3af60d5df0d9d07aabf7`.
+The next source candidate adds the authored Japanese household record to the
+physical slate, cyan rack lights and a high-window rim, moves the rival aside
+before the close-up, and retains only subtitles/captions during the scene.
+It also removes the capture's artificial million-health readout. These new
+presentation changes are uncompiled and unrendered. Final character animation,
+sound, art, ordinary duel play and package qualification remain unfinished.
+
+Source CI at `714f490e` passes all 110 checks in run `40240662670`; its tested
+merge tree matches the candidate. Independent review:
+`e2ed80ad8431c62a37f9dd0ea6d936e9dc0915de3e9031e369a961a67205127b`.
 
 Source CI at `956a43ef` passes all 110 checks, independently authenticated in
 run `40239701072` (review

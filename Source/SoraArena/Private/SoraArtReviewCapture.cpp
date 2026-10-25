@@ -675,7 +675,6 @@ void RunArchiveReveal(FAutomationTestBase* Test)
         // The fixture isolates staging; damage and AI holds are explicitly
         // directed, so these images are not ordinary duel-play evidence.
         Session->Rival->Hold(600000);
-        Session->Hero()->Health = Session->Hero()->MaxHealth = 1000000.f;
         ShowHUD(*M, true);
         Session->bLive = true;
 #if WITH_EDITOR

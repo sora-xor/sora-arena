@@ -1283,6 +1283,12 @@ bool SoraHUDPanels::BottomHUDLayoutFits(const FSoraHUDFrame& F,const ASoraPlayer
     return true;
 }
 
+void SoraHUDPanels::DrawCinematicDialogue(const FSoraHUDFrame& Frame)
+{
+    if(const auto* Cue=Frame.Mode.Campaign()->CurrentDialogueCue())
+        DrawLine(Frame,*Cue,Frame.H-24.f*Frame.S);
+}
+
 void SoraHUDPanels::DrawTitleCard(const FSoraHUDFrame& Frame,const FSoraChapter& Card)
 {
     ASoraHUD& HUD=Frame.HUD;

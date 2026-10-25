@@ -203,6 +203,15 @@ void ASoraHUD::DrawHUD()
         Label(FSoraCatalog::Get().Error,50,G->bEnglishSubtitles?135:110,.65,Frame.Ivory);
         return;
     }
+    // The mid-duel scene owns the camera while gameplay is held. Keep the
+    // player's subtitle/accessibility settings, without combat prompts or
+    // readouts obscuring the family record and the characters' reactions.
+    if(G->bCampaign&&G->Campaign()->IsArchiveRevealActive())
+    {
+        SoraHUDPanels::DrawCinematicDialogue(Frame);
+        SoraHUDPanels::DrawCaptions(Frame,P);
+        return;
+    }
     SoraHUDPanels::DrawTopBar(Frame);
     // A successful campaign result owns the page. Gameplay readouts, the
     // objective and arms wheel must not remain underneath or over its text.
