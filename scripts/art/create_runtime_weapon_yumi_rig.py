@@ -25,7 +25,9 @@ and sockets exactly as they are, and adds:
    - Every other vertex goes to the two limb joints either side of its arc
      position along the stave centreline, linear in arc.
 4. **The Draw action** (A_Weapon_18_Draw): frame i is draw fraction i/10, 11
-   keys. Each limb bone is posed from yumi_draw.shape_at(d): its joint's head
+   keys. The scene runs at 10 fps, so the take's time in seconds is the draw
+   fraction (0-1 s). The scene is named after the action, so the FBX take
+   (and Unreal's animation) is A_Weapon_18_Draw, not "Scene". Each limb bone is posed from yumi_draw.shape_at(d): its joint's head
    and its tangent's turn about Y. Tip_U and Tip_L move to the drawn grooves,
    and String_Nock to the drawn nock (-0.88, 0, 0.07).
 5. **Checks, on the evaluated (deformed) mesh at every key:**
@@ -289,6 +291,8 @@ def key_draw(arm, bind):
     act = arm.animation_data.action
     act.name = "A_Weapon_18_Draw"
     scene = bpy.context.scene
+    scene.name = "A_Weapon_18_Draw"           # the FBX take's name
+    scene.render.fps, scene.render.fps_base = 10, 1.0
     scene.frame_start, scene.frame_end = 0, len(FRACTIONS) - 1
     return keys
 
@@ -459,7 +463,8 @@ def main():
         "inputs": {rel(p): sha256(p) for p in (STATIC_FBX, ARROW_FBX, RECORD, HERE / "yumi_draw.py",
                                                 HERE / "create_runtime_weapon_yumi.py")},
         "versions": {"blender": bpy.app.version_string},
-        "draw": {"frames": "frame i = draw fraction i/10; drive the action's time from the draw fraction (0-1)",
+        "draw": {"frames": "frame i = draw fraction i/10 at 10 fps: the take A_Weapon_18_Draw's time in seconds is the "
+                           "draw fraction (0-1 s); drive the animation's time from it",
                  "full_draw_m": Y.DRAW_M, "nock_z_m": Y.NOCK_Z, "string_m": braced["string_m"],
                  "release": "back to brace (frame 0) in 0.03 s; no overshoot past brace (the string is unstretched)"},
         "bones": bones, "weights": counts, "keys": keys,
