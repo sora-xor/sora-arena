@@ -20,3 +20,9 @@ This is collision and placement work, not final art. Posts, racks, doors and
 ceiling use proxies. The north stair connection to the press catwalk remains
 unbuilt; both door faces remain on the closed room walls. Ordinary traversal,
 the actual duel, save/reload, rendering and packages still need qualification.
+
+The first engine run at `1248987` exposed a fixture error: it equipped weapon
+3 (the needle gun) while labelling it a katana. Both required swing-count
+assertions failed, so the post check was not accepted. The correction equips
+weapon 0, asserts its identity, and waits through the real equip recovery
+before mapped attack input. Runtime rerun remains pending.

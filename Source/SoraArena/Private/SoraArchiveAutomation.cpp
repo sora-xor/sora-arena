@@ -40,7 +40,8 @@ bool FSoraArchivePostsTest::RunTest(const FString&)
     if(Target->GetController()) Target->GetController()->SetActorTickEnabled(false);
     const float Half=Target->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
     Target->SetActorLocation(Post+FVector(85,0,Half+2));
-    if(!TestTrue(TEXT("The unlocked katana equips"),W.Hero()->GetEquipment()->EquipCampaignWeapon(3))) return false;
+    if(!TestTrue(TEXT("The unlocked katana equips"),W.Hero()->GetEquipment()->EquipCampaignWeapon(0))) return false;
+    if(!TestEqual(TEXT("Weapon zero is the equipped katana"),W.Hero()->WeaponId,0)||!W.Tick(20)) return false;
     W.Stand(Post+FVector(-85,0,0));W.LookAt(Target->GetActorLocation());
     int32 Swings=0;auto* Bus=USoraGameEvents::Get(W.Hero());
     if(!TestNotNull(TEXT("Production combat events are available"),Bus)) return false;
