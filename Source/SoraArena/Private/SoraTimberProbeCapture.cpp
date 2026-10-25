@@ -1,0 +1,372 @@
+#include "SoraGameMode.h"
+
+#if WITH_DEV_AUTOMATION_TESTS && WITH_EDITOR && !UE_BUILD_SHIPPING && !UE_BUILD_TEST
+#include "SoraFrontEnd.h"
+#include "World/SoraPresentationCapabilities.h"
+#include "AssetCompilingManager.h"
+#include "Camera/CameraActor.h"
+#include "Camera/CameraComponent.h"
+#include "Camera/PlayerCameraManager.h"
+#include "Components/PointLightComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "DataDrivenShaderPlatformInfo.h"
+#include "Dom/JsonObject.h"
+#include "DynamicRHI.h"
+#include "Engine/Engine.h"
+#include "Engine/GameViewportClient.h"
+#include "Engine/PointLight.h"
+#include "Engine/StaticMesh.h"
+#include "Engine/StaticMeshActor.h"
+#include "Engine/Texture.h"
+#include "Engine/World.h"
+#include "GameFramework/HUD.h"
+#include "GameFramework/PlayerController.h"
+#include "HAL/FileManager.h"
+#include "HAL/IConsoleManager.h"
+#include "Kismet/GameplayStatics.h"
+#include "Materials/MaterialInstance.h"
+#include "Materials/MaterialRenderProxy.h"
+#include "MaterialShared.h"
+#include "MeshDescription.h"
+#include "Misc/AutomationTest.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
+#include "Misc/SecureHash.h"
+#include "NaniteVisualizationData.h"
+#include "Rendering/NaniteResources.h"
+#include "RenderingThread.h"
+#include "RHIGlobals.h"
+#include "SceneInterface.h"
+#include "Serialization/JsonSerializer.h"
+#include "ShaderCompiler.h"
+#include "StaticMeshAttributes.h"
+#include "StaticMeshResources.h"
+#include "UnrealClient.h"
+
+// A separate fixture and schema: this does not relax the production dojo gate.
+// No asset saves, world rebuilds, material substitutions or r.Nanite overrides.
+// CPU source/resource observations are NEVER evidence of a visible Nanite draw.
+namespace SoraTimberProbeCapture
+{
+constexpr const TCHAR* Root=TEXT("/Game/Generated/Qualification/DojoTimberProbe/");
+constexpr const TCHAR* Scope=TEXT("nine saved timber probe assets in an isolated fixture; not production placement, art or platform acceptance");
+const TCHAR* Names[]={
+    TEXT("SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B18"),
+    TEXT("SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S1_B01"),
+    TEXT("SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S2_B15"),
+    TEXT("SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S1_B00"),
+    TEXT("SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S3_B13"),
+    TEXT("SM_DojoTimberColumn_MAC_Wall_09"),TEXT("SM_DojoTimberColumn_MAC_Open_02"),
+    TEXT("SM_DojoTimberRail_MAC_Nageshi_01"),TEXT("SM_DojoTimberRail_MAC_Nuki_01")};
+const TCHAR* Modes[]={TEXT("Lit"),TEXT("Mask"),TEXT("Triangles"),TEXT("Lit")};
+const FVector Origin(1000000,1000000,1000000);
+TArray<TSharedPtr<FJsonValue>> Vec(const FVector& V)
+{ return {MakeShared<FJsonValueNumber>(V.X),MakeShared<FJsonValueNumber>(V.Y),MakeShared<FJsonValueNumber>(V.Z)}; }
+TArray<TSharedPtr<FJsonValue>> UV(const FVector2f& V)
+{ return {MakeShared<FJsonValueNumber>(V.X),MakeShared<FJsonValueNumber>(V.Y)}; }
+struct FCVar
+{
+    IConsoleVariable* Var=nullptr; FString Value; EConsoleVariableFlags Flags=ECVF_Default;
+    bool Save(const TCHAR* Name) { Var=IConsoleManager::Get().FindConsoleVariable(Name); if (!Var) return false; Value=Var->GetString(); Flags=Var->GetFlags(); return true; }
+    void Set(const TCHAR* V) const { Var->Set(V,static_cast<EConsoleVariableFlags>(Flags&ECVF_SetByMask)); }
+    bool Restore() const { if (!Var) return true; Set(*Value); Var->SetFlags(Flags); return Var->GetString()==Value&&Var->GetFlags()==Flags; }
+};
+class FRun final:public IAutomationLatentCommand
+{
+public:
+    FRun(FAutomationTestBase& T,bool S):Test(T),SM6(S) {}
+    ~FRun() { Cleanup(); }
+    bool Update() override
+    {
+        if (!Started) { Started=true; Begin(); }
+        if (Failed||Step==Count()) { Cleanup(); return true; }
+        if (FPlatformTime::Seconds()-Start>360) { Fail(TEXT("Timber probe capture exceeded 360 seconds")); Cleanup(); return true; }
+        if (!M.IsValid()||!Camera.IsValid()||!PC()||!M->GetWorld()->IsPaused()) { Fail(TEXT("Lost paused fixture/camera")); return false; }
+        if (!Waiting&&FPlatformTime::Seconds()-Changed>=3) Capture();
+        return false;
+    }
+private:
+    FAutomationTestBase& Test; bool SM6=false,Started=false,Failed=false,Cleaned=false,BackedUp=false,Waiting=false,Eligible=false;
+    int32 Step=0,OldViewMode=0; double Start=0,Changed=0;
+    TWeakObjectPtr<ASoraGameMode> M; TWeakObjectPtr<ACameraActor> Camera;
+    TWeakObjectPtr<AActor> OldTarget; TWeakObjectPtr<AHUD> HUD;
+    TArray<TWeakObjectPtr<AActor>> Owned; TArray<TWeakObjectPtr<AStaticMeshActor>> Fixtures;
+    bool ShowHUD=true,WasPaused=false; SoraUI::EScreen OldScreen=SoraUI::EScreen::Title;
+    FEngineShowFlags OldFlags{ESFIM_Game}; FName OldNaniteMode;
+    FString Folder,Pending,Platform,Slots[3]; TArray<uint8> Profiles[3]; bool Existed[3]={};
+    FCVar Visualize,Composite,Edges,Shading; FDelegateHandle Screenshot;
+    FVector2D Size=FVector2D::ZeroVector; FVector CameraAt; FRotator CameraRotation;
+    TArray<TSharedPtr<FJsonValue>> Meshes,Frames,Packages,Inputs;
+    TMap<FString,FString> PackageHashes;
+    int32 PerMesh() const { return SM6?4:2; }
+    int32 Count() const { return 9*PerMesh(); }
+    int32 Index() const { return Step/PerMesh(); }
+    int32 Mode() const { return SM6?Step%4:0; }
+    bool Detail() const { return Step%PerMesh()==PerMesh()-1; }
+    APlayerController* PC() const { return M.IsValid()?UGameplayStatics::GetPlayerController(M.Get(),0):nullptr; }
+    UGameViewportClient* Viewport() const { return M.IsValid()?M->GetWorld()->GetGameViewport():nullptr; }
+    void Fail(const TCHAR* Text) { if (!Failed) Test.AddError(Text); Failed=true; }
+    FString CVar(const TCHAR* N) const { const auto* V=IConsoleManager::Get().FindConsoleVariable(N); return V?V->GetString():TEXT("absent"); }
+    TSharedRef<FJsonObject> State() const
+    {
+        auto O=MakeShared<FJsonObject>();
+        for (const TCHAR* N:{TEXT("r.Nanite"),TEXT("r.Nanite.ProxyRenderMode"),TEXT("r.Nanite.Visualize"),TEXT("r.Nanite.Visualize.Composite"),
+            TEXT("r.Nanite.Visualize.EdgeDetect"),TEXT("r.Nanite.Visualize.DebugShading"),TEXT("r.ScreenPercentage"),TEXT("r.AntiAliasingMethod")}) O->SetStringField(N,CVar(N));
+        return O;
+    }
+    void Begin()
+    {
+        Start=FPlatformTime::Seconds();
+        for (const auto& C:GEngine->GetWorldContexts()) if (C.WorldType==EWorldType::Game&&C.World()) M=Cast<ASoraGameMode>(C.World()->GetAuthGameMode());
+        if (!M.IsValid()||!PC()||!PC()->PlayerCameraManager||!Viewport()||!M->GetWorld()->Scene||!M->FrontEnd()||GUsingNullRHI||
+            !GDynamicRHI||FString(GDynamicRHI->GetName())!=TEXT("Metal")) { Fail(TEXT("Timber probe requires a real Metal editor-game scene")); return; }
+        OldScreen=M->FrontEnd()->Screen();
+        if (!M->bMenu||!M->GetWorld()->IsPaused()||OldScreen!=SoraUI::EScreen::Title)
+        { Fail(TEXT("Start probe in a disposable paused Title session")); return; }
+        const EShaderPlatform P=M->GetWorld()->Scene->GetShaderPlatform();
+        if (!FDataDrivenShaderPlatformInfo::IsValid(P)) { Fail(TEXT("Invalid actual shader platform")); return; }
+        Platform=FDataDrivenShaderPlatformInfo::GetName(P).ToString(); Eligible=SoraPresentation::UsesNaniteEnvironment(M->GetWorld());
+        if ((SM6&&(Platform!=TEXT("METAL_SM6")||!Eligible))||(!SM6&&(Platform!=TEXT("METAL_SM5")||Eligible)))
+        { Fail(TEXT("Actual Metal scene does not match separately requested SM6/SM5 test")); return; }
+        Viewport()->GetViewportSize(Size);
+        if (Size!=FVector2D(1280,720)&&Size!=FVector2D(1920,1080)) { Fail(TEXT("Probe requires 1280x720 or 1920x1080")); return; }
+        Slots[0]=M->SaveSlotName; Slots[1]=M->ControlSlotName; Slots[2]=M->SettingsSlotName;
+        for (int I=0;I<3;++I)
+        {
+            Existed[I]=UGameplayStatics::DoesSaveGameExist(Slots[I],0);
+            if (Existed[I]&&!UGameplayStatics::LoadDataFromSlot(Profiles[I],Slots[I],0)) { Fail(TEXT("Could not preserve profile bytes")); return; }
+        }
+        WasPaused=M->GetWorld()->IsPaused(); OldTarget=PC()->GetViewTarget(); HUD=PC()->GetHUD(); if (HUD.IsValid()) ShowHUD=HUD->bShowHUD;
+        OldViewMode=Viewport()->ViewModeIndex; OldFlags=Viewport()->EngineShowFlags; OldNaniteMode=Viewport()->GetCurrentNaniteVisualizationMode(); BackedUp=true;
+        GetNaniteVisualizationData();
+        if (!Visualize.Save(TEXT("r.Nanite.Visualize"))||!Composite.Save(TEXT("r.Nanite.Visualize.Composite"))||!Edges.Save(TEXT("r.Nanite.Visualize.EdgeDetect"))||!Shading.Save(TEXT("r.Nanite.Visualize.DebugShading")))
+        { Fail(TEXT("Missing Nanite visualization controls")); return; }
+        Folder=FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()/TEXT("Screenshots/SoraTimberProbe")/FGuid::NewGuid().ToString(EGuidFormats::Digits));
+        IFileManager::Get().MakeDirectory(*Folder,true);
+        InventoryFiles(); if (Failed) return;
+        // Hide only the front end. bMenu and pause stay set throughout: no
+        // campaign checkpoint, game clock, input mode or production actor changes.
+        M->FrontEnd()->Hide(); if (HUD.IsValid()) HUD->bShowHUD=false;
+        Camera=M->GetWorld()->SpawnActor<ACameraActor>(); if (!Camera.IsValid()) { Fail(TEXT("Could not spawn fixture camera")); return; }
+        Owned.Add(Camera.Get()); auto* Cam=Camera->GetCameraComponent(); Cam->SetFieldOfView(35.f); Cam->PostProcessBlendWeight=1.f;
+        auto& PP=Cam->PostProcessSettings;
+        PP.bOverride_AutoExposureMethod=true; PP.AutoExposureMethod=AEM_Manual;
+        PP.bOverride_AutoExposureApplyPhysicalCameraExposure=true; PP.AutoExposureApplyPhysicalCameraExposure=true;
+        PP.bOverride_CameraISO=true; PP.CameraISO=100;
+        PP.bOverride_CameraShutterSpeed=true; PP.CameraShutterSpeed=60;
+        PP.bOverride_DepthOfFieldFstop=true; PP.DepthOfFieldFstop=2.8f;
+        PP.bOverride_AutoExposureBias=true; PP.AutoExposureBias=0;
+        PP.bOverride_DepthOfFieldScale=true; PP.DepthOfFieldScale=0;
+        PC()->SetViewTarget(Camera.Get());
+        for (int I=0;I<2;++I)
+        {
+            auto* L=M->GetWorld()->SpawnActor<APointLight>(); if (!L) { Fail(TEXT("Could not spawn fixture light")); return; } Owned.Add(L);
+            L->GetLightComponent()->SetMobility(EComponentMobility::Movable);
+            L->SetActorLocation(Origin+(I?FVector(-400,-200,100):FVector(350,-350,550)));
+            auto* Light=CastChecked<UPointLightComponent>(L->GetLightComponent());
+            Light->SetIntensityUnits(ELightUnits::Lumens); Light->SetIntensity(I?5000000.f:20000000.f); Light->SetAttenuationRadius(5000.f);
+            Light->SetSourceRadius(100.f); Light->SetLightColor(I?FLinearColor(.72f,.82f,1.f):FLinearColor(1.f,.86f,.68f));
+        }
+        for (int I=0;I<9;++I)
+        {
+            const FString Path=FString(Root)+Names[I]+TEXT(".")+Names[I]; auto* Mesh=LoadObject<UStaticMesh>(nullptr,*Path);
+            if (!Mesh) { Fail(TEXT("Reviewed saved probe mesh is absent")); return; }
+            auto* A=M->GetWorld()->SpawnActor<AStaticMeshActor>(); if (!A) { Fail(TEXT("Could not spawn probe mesh")); return; }
+            Owned.Add(A); Fixtures.Add(A); auto* C=A->GetStaticMeshComponent(); C->SetMobility(EComponentMobility::Movable);
+            C->SetCollisionEnabled(ECollisionEnabled::NoCollision); C->SetStaticMesh(Mesh); A->SetActorHiddenInGame(true);
+            const auto B=Mesh->GetBounds(); const FVector E=B.BoxExtent;
+            const FVector Axis=E.X>=E.Y&&E.X>=E.Z?FVector::ForwardVector:E.Y>=E.Z?FVector::RightVector:FVector::UpVector;
+            const FQuat Rotation=FQuat::FindBetweenNormals(Axis,FVector::UpVector); const double Scale=250./E.GetMax();
+            if (!FMath::IsFinite(Scale)||Scale<=0) { Fail(TEXT("Invalid mesh bounds")); return; }
+            A->SetActorTransform(FTransform(Rotation,Origin-Rotation.RotateVector(B.Origin*Scale),FVector(Scale)));
+        }
+        FAssetCompilingManager::Get().FinishAllCompilation(); if (GShaderCompilingManager) GShaderCompilingManager->FinishAllCompilation();
+        for (int I=0;I<9;++I) Observe(I);
+        if (Failed) return;
+        Screenshot=FScreenshotRequest::OnScreenshotRequestProcessed().AddRaw(this,&FRun::Captured); Switch();
+    }
+    void InventoryFiles()
+    {
+        const FString Directory=FPaths::ConvertRelativePathToFull(FPaths::ProjectContentDir()/TEXT("Generated/Qualification/DojoTimberProbe"));
+        TArray<FString> Files; IFileManager::Get().FindFilesRecursive(Files,*Directory,TEXT("*"),true,false); Files.Sort(); int Assets=0;
+        for (const FString& File:Files)
+        {
+            const FString Ext=FPaths::GetExtension(File); if (Ext!=TEXT("uasset")&&Ext!=TEXT("uexp")&&Ext!=TEXT("ubulk")) continue;
+            Assets+=Ext==TEXT("uasset"); const FString Hash=LexToString(FMD5Hash::HashFile(*File)); PackageHashes.Add(File,Hash);
+            auto O=MakeShared<FJsonObject>(); O->SetStringField(TEXT("path"),File); O->SetNumberField(TEXT("bytes"),double(IFileManager::Get().FileSize(*File))); O->SetStringField(TEXT("md5"),Hash); Packages.Add(MakeShared<FJsonValueObject>(O));
+        }
+        if (Assets!=31) { Fail(TEXT("Probe must contain exactly the reviewed 31 saved packages")); return; }
+        for (const TCHAR* Relative:{TEXT("Source/SoraArena/Private/SoraTimberProbeCapture.cpp"),TEXT("scripts/unreal/import_nyaagyu_dojo_timbers.py"),TEXT("scripts/unreal/dojo_timber_admission.py"),TEXT("scripts/unreal/dojo_nanite.py")})
+        {
+            const FString File=FPaths::ConvertRelativePathToFull(FPaths::ProjectDir()/Relative); auto O=MakeShared<FJsonObject>();
+            if (IFileManager::Get().FileSize(*File)<=0) { Fail(TEXT("Missing capture/importer provenance input")); return; }
+            O->SetStringField(TEXT("path"),Relative); O->SetNumberField(TEXT("bytes"),double(IFileManager::Get().FileSize(*File)));
+            O->SetStringField(TEXT("md5"),LexToString(FMD5Hash::HashFile(*File))); Inputs.Add(MakeShared<FJsonValueObject>(O));
+        }
+    }
+    void Observe(int I)
+    {
+        auto* C=Fixtures[I]->GetStaticMeshComponent(); auto* Mesh=C->GetStaticMesh().Get(); auto O=MakeShared<FJsonObject>();
+        O->SetStringField(TEXT("name"),Names[I]); O->SetStringField(TEXT("mesh"),Mesh->GetPathName());
+        O->SetStringField(TEXT("kind"),I<5?TEXT("dense_nanite_source"):TEXT("authored_conventional_pool"));
+        O->SetStringField(TEXT("sm5_interpretation"),I<5?TEXT("generated_dense_asset_fallback; not authored M1 pool"):TEXT("authored conventional pool; not M1 hardware qualification"));
+        O->SetStringField(TEXT("component"),C->GetPathName()); O->SetBoolField(TEXT("has_nanite_data"),Mesh->HasValidNaniteData());
+        if (Mesh->HasValidNaniteData()) O->SetBoolField(TEXT("has_platform_fallback"),Mesh->HasNaniteFallbackMesh(M->GetWorld()->Scene->GetShaderPlatform()));
+        O->SetBoolField(TEXT("authoring_nanite_enabled"),Mesh->IsNaniteEnabled());
+        O->SetBoolField(TEXT("disallow_nanite"),C->IsDisallowNanite()); O->SetBoolField(TEXT("force_disable_nanite"),C->IsForceDisableNanite());
+        const auto* R=Mesh->GetRenderData();
+        O->SetNumberField(TEXT("nanite_input_triangles"),R&&R->NaniteResourcesPtr.IsValid()?R->NaniteResourcesPtr->NumInputTriangles:0);
+        O->SetNumberField(TEXT("nanite_input_vertices"),R&&R->NaniteResourcesPtr.IsValid()?R->NaniteResourcesPtr->NumInputVertices:0);
+        O->SetNumberField(TEXT("lod0_render_triangles"),R&&R->LODResources.Num()?R->LODResources[0].GetNumTriangles():0);
+        O->SetStringField(TEXT("resource_scope"),TEXT("CPU source/resource counts; not visible draw or GPU triangle counts"));
+        const auto Bounds=C->CalcBounds(C->GetComponentTransform()); O->SetArrayField(TEXT("bounds_origin"),Vec(Bounds.Origin)); O->SetArrayField(TEXT("bounds_extent"),Vec(Bounds.BoxExtent));
+        O->SetArrayField(TEXT("fixture_scale"),Vec(C->GetComponentScale()));
+        TArray<TSharedPtr<FJsonValue>> Materials;
+        for (int J=0;J<C->GetNumMaterials();++J)
+        {
+            auto P=MakeShared<FJsonObject>(); auto* Mat=C->GetMaterial(J); const auto* MI=Cast<UMaterialInstance>(Mat);
+            P->SetStringField(TEXT("material"),GetPathNameSafe(Mat)); P->SetStringField(TEXT("parent"),MI?GetPathNameSafe(MI->Parent):TEXT("none"));
+            if (!Mat||!MI) { Fail(TEXT("Saved probe material instance missing")); return; }
+            auto Textures=MakeShared<FJsonObject>(); auto Scalars=MakeShared<FJsonObject>(); TArray<FMaterialParameterInfo> Infos; TArray<FGuid> Ids;
+            Mat->GetAllTextureParameterInfo(Infos,Ids);
+            for (const auto& Info:Infos) { UTexture* T=nullptr; if (Mat->GetTextureParameterValue(Info,T)) Textures->SetStringField(Info.Name.ToString(),GetPathNameSafe(T)); }
+            Infos.Reset(); Ids.Reset(); Mat->GetAllScalarParameterInfo(Infos,Ids);
+            for (const auto& Info:Infos) { float V=0; if (Mat->GetScalarParameterValue(Info,V)) Scalars->SetNumberField(Info.Name.ToString(),V); }
+            TArray<UTexture*> Used; Mat->GetUsedTextures(Used);
+            TArray<TSharedPtr<FJsonValue>> UsedPaths; for (const auto* T:Used) UsedPaths.Add(MakeShared<FJsonValueString>(GetPathNameSafe(T)));
+            P->SetArrayField(TEXT("used_textures"),UsedPaths);
+            P->SetObjectField(TEXT("textures"),Textures); P->SetObjectField(TEXT("scalars"),Scalars); Materials.Add(MakeShared<FJsonValueObject>(P));
+        }
+        O->SetArrayField(TEXT("materials"),Materials);
+        const FMeshDescription* D=Mesh->GetNumSourceModels()>0&&Mesh->IsMeshDescriptionValid(0)?Mesh->GetMeshDescription(0):nullptr;
+        if (!D||D->VertexInstances().Num()>3000000) { Fail(TEXT("Source mesh UV observations absent or exceed bounded 3M vertex instances")); return; }
+        const auto UVs=FStaticMeshConstAttributes(*D).GetVertexInstanceUVs();
+        if (!UVs.IsValid()||UVs.GetNumChannels()<4) { Fail(TEXT("Saved source mesh lacks UV2/UV3")); return; }
+        O->SetNumberField(TEXT("source_triangles"),D->Triangles().Num()); O->SetNumberField(TEXT("uv_channels"),UVs.GetNumChannels());
+        TArray<TSharedPtr<FJsonValue>> Channels;
+        for (int Channel=2;Channel<=3;++Channel)
+        {
+            FVector2f Min(FLT_MAX,FLT_MAX),Max(-FLT_MAX,-FLT_MAX); int32 N=0; TArray<TSharedPtr<FJsonValue>> Samples;
+            const int32 Stride=FMath::Max(1,D->VertexInstances().Num()/8);
+            for (const FVertexInstanceID Id:D->VertexInstances().GetElementIDs())
+            {
+                const FVector2f V=UVs.Get(Id,Channel); if (!FMath::IsFinite(V.X)||!FMath::IsFinite(V.Y)) { Fail(TEXT("Nonfinite saved UV")); return; }
+                Min.X=FMath::Min(Min.X,V.X); Min.Y=FMath::Min(Min.Y,V.Y); Max.X=FMath::Max(Max.X,V.X); Max.Y=FMath::Max(Max.Y,V.Y);
+                if (N%Stride==0&&Samples.Num()<8) { auto S=MakeShared<FJsonObject>(); S->SetNumberField(TEXT("vertex_instance"),Id.GetValue()); S->SetArrayField(TEXT("uv"),UV(V)); Samples.Add(MakeShared<FJsonValueObject>(S)); } ++N;
+            }
+            auto U=MakeShared<FJsonObject>(); U->SetNumberField(TEXT("channel"),Channel); U->SetNumberField(TEXT("scanned_vertex_instances"),N);
+            U->SetArrayField(TEXT("min"),UV(Min)); U->SetArrayField(TEXT("max"),UV(Max)); U->SetArrayField(TEXT("samples"),Samples); Channels.Add(MakeShared<FJsonValueObject>(U));
+        }
+        O->SetStringField(TEXT("uv_scope"),TEXT("saved LOD0 MeshDescription UV2/UV3, no unflip or shader correction; complete min/max and at most eight samples/channel"));
+        O->SetArrayField(TEXT("uv_observations"),Channels); Meshes.Add(MakeShared<FJsonValueObject>(O));
+    }
+    void Switch()
+    {
+        for (int I=0;I<Fixtures.Num();++I) Fixtures[I]->SetActorHiddenInGame(I!=Index());
+        const auto B=Fixtures[Index()]->GetStaticMeshComponent()->CalcBounds(Fixtures[Index()]->GetActorTransform());
+        const double HalfVertical=FMath::Atan(FMath::Tan(FMath::DegreesToRadians(17.5))*Size.Y/Size.X);
+        const FVector Aim=Detail()?Origin+FVector(0,0,225):Origin;
+        const double Radius=Detail()?FMath::Max(35.,FMath::Max(B.BoxExtent.X,B.BoxExtent.Y)*1.5):B.SphereRadius;
+        const double Distance=1.15*Radius/FMath::Sin(HalfVertical);
+        CameraAt=Aim+FVector(1,-2,.7).GetSafeNormal()*Distance; CameraRotation=(Aim-CameraAt).Rotation();
+        Camera->SetActorLocationAndRotation(CameraAt,CameraRotation); PC()->PlayerCameraManager->UpdateCamera(0.f);
+        Viewport()->SetViewMode(VMI_Lit); Viewport()->SetCurrentNaniteVisualizationMode(NAME_None);
+        // Fixture-only viewport state; production components/lights remain untouched.
+        Viewport()->EngineShowFlags.SetFog(false); Viewport()->EngineShowFlags.SetAtmosphere(false); Viewport()->EngineShowFlags.SetSkyLighting(false);
+        const bool Diagnostic=SM6&&(Mode()==1||Mode()==2);
+        Visualize.Set(Diagnostic?Modes[Mode()]:TEXT("off")); Composite.Set(TEXT("1")); Edges.Set(TEXT("0")); Shading.Set(TEXT("0"));
+        Viewport()->EngineShowFlags.SetVisualizeNanite(Diagnostic); Changed=FPlatformTime::Seconds();
+    }
+    void Capture()
+    {
+        FlushRenderingCommands(); const auto& Data=GetNaniteVisualizationData(); const bool Diagnostic=SM6&&(Mode()==1||Mode()==2);
+        if ((Diagnostic&&(!Data.IsActive()||Data.GetActiveModeName()!=FName(Modes[Mode()])))||(!Diagnostic&&Data.IsActive())) { Fail(TEXT("Renderer has not selected requested visualization")); return; }
+        if (!PC()->PlayerCameraManager->GetCameraLocation().Equals(CameraAt,.01)||!PC()->PlayerCameraManager->GetCameraRotation().Equals(CameraRotation,.001)||PC()->GetViewTarget()!=Camera.Get()) { Fail(TEXT("Actual probe camera mismatch")); return; }
+        int Visible=0; for (const auto& A:Fixtures) Visible+=A.IsValid()&&!A->IsHidden();
+        if (Visible!=1||Fixtures[Index()]->IsHidden()) { Fail(TEXT("Probe requires exactly one visible owned mesh")); return; }
+        auto F=MakeShared<FJsonObject>(); const FString View=Detail()?TEXT("detail"):TEXT("full"); const FString Name=FString(Names[Index()])+TEXT("-")+View+TEXT("-")+Modes[Mode()];
+        F->SetStringField(TEXT("name"),Name); F->SetStringField(TEXT("mesh_name"),Names[Index()]); F->SetStringField(TEXT("view"),View); F->SetStringField(TEXT("mode"),Modes[Mode()]);
+        F->SetArrayField(TEXT("camera"),Vec(CameraAt)); F->SetArrayField(TEXT("rotation"),Vec(FVector(CameraRotation.Pitch,CameraRotation.Yaw,CameraRotation.Roll)));
+        F->SetNumberField(TEXT("fov"),PC()->PlayerCameraManager->GetFOVAngle()); F->SetNumberField(TEXT("visible_fixture_meshes"),Visible);
+        F->SetNumberField(TEXT("request_frame"),double(GFrameCounter)); F->SetNumberField(TEXT("settle_seconds"),FPlatformTime::Seconds()-Changed);
+        F->SetBoolField(TEXT("paused"),M->GetWorld()->IsPaused()); F->SetBoolField(TEXT("hud_hidden"),!HUD.IsValid()||!HUD->bShowHUD);
+        F->SetStringField(TEXT("active_visualization"),Data.GetActiveModeName().ToString()); F->SetNumberField(TEXT("active_mode_id"),Data.GetActiveModeID());
+        F->SetBoolField(TEXT("show_visualize_nanite"),Viewport()->EngineShowFlags.VisualizeNanite); F->SetObjectField(TEXT("cvars"),State());
+        // Observe the renderer's base-material proxy resolution on its owning
+        // thread, separately from visible Nanite pixels. Preserve originals if
+        // this resolves a default shader; archive validation then fails it.
+        struct FShader { bool Proxy=false,Fallback=false,Default=false,Valid=false,Complete=false; FString Asset; } Shader;
+        const auto* Material=Fixtures[Index()]->GetStaticMeshComponent()->GetMaterial(0);
+        const FMaterialRenderProxy* Proxy=Material?Material->GetRenderProxy():nullptr;
+        const ERHIFeatureLevel::Type Feature=M->GetWorld()->GetFeatureLevel();
+        ENQUEUE_RENDER_COMMAND(SoraProbeMaterialObservation)([Proxy,Feature,&Shader](FRHICommandListImmediate&)
+        {
+            Shader.Proxy=Proxy!=nullptr; if (!Proxy) return;
+            const FMaterialRenderProxy* ResolvedProxy=nullptr; const FMaterial& Resolved=Proxy->GetMaterialWithFallback(Feature,ResolvedProxy);
+            Shader.Fallback=ResolvedProxy!=Proxy; Shader.Default=Resolved.IsDefaultMaterial(); Shader.Asset=Resolved.GetAssetName();
+            const auto* Map=Resolved.GetRenderingThreadShaderMap(); Shader.Valid=Map&&Map->IsValidForRendering(); Shader.Complete=Resolved.IsRenderingThreadShaderMapComplete();
+        });
+        FlushRenderingCommands(); auto ShaderJson=MakeShared<FJsonObject>();
+        ShaderJson->SetBoolField(TEXT("proxy_present"),Shader.Proxy); ShaderJson->SetBoolField(TEXT("used_fallback_proxy"),Shader.Fallback);
+        ShaderJson->SetBoolField(TEXT("default_material"),Shader.Default); ShaderJson->SetBoolField(TEXT("shader_map_valid"),Shader.Valid);
+        ShaderJson->SetBoolField(TEXT("shader_map_complete"),Shader.Complete); ShaderJson->SetStringField(TEXT("resource_asset"),Shader.Asset);
+        ShaderJson->SetStringField(TEXT("scope"),TEXT("render-thread base material proxy resolution; not a draw count or visualization override identity"));
+        F->SetObjectField(TEXT("material_render_readback"),ShaderJson);
+        Frames.Add(MakeShared<FJsonValueObject>(F)); Pending=Folder/(Name+TEXT(".png")); Waiting=true; FScreenshotRequest::RequestScreenshot(Pending,false,false);
+    }
+    void Captured()
+    {
+        if (!Waiting) return;
+        if (IFileManager::Get().FileSize(*Pending)<=0) { Fail(TEXT("Original probe screenshot missing")); return; }
+        Frames.Last()->AsObject()->SetStringField(TEXT("file"),FPaths::GetCleanFilename(Pending)); Frames.Last()->AsObject()->SetNumberField(TEXT("screenshot_processed_frame"),double(GFrameCounter));
+        UE_LOG(LogTemp,Display,TEXT("SORA_TIMBER_PROBE_FRAME %s"),*Pending); Waiting=false; Pending.Reset(); ++Step; if (Step<Count()) Switch();
+    }
+    void Cleanup()
+    {
+        if (Cleaned) return; Cleaned=true; if (Waiting) FScreenshotRequest::Reset(); FScreenshotRequest::OnScreenshotRequestProcessed().Remove(Screenshot);
+        bool Restored=true; for (const FCVar* C:{&Visualize,&Composite,&Edges,&Shading}) Restored=C->Restore()&&Restored;
+        if (BackedUp&&!M.IsValid()) Restored=false;
+        if (BackedUp&&M.IsValid())
+        {
+            if (PC()&&OldTarget.IsValid()) PC()->SetViewTarget(OldTarget.Get()); else Restored=false;
+            if (HUD.IsValid()) HUD->bShowHUD=ShowHUD;
+            if (OldScreen==SoraUI::EScreen::Title) M->FrontEnd()->ShowTitle(); else M->FrontEnd()->ShowMain();
+            if (Viewport()) { Viewport()->SetViewMode(static_cast<EViewModeIndex>(OldViewMode)); Viewport()->EngineShowFlags=OldFlags; Viewport()->SetCurrentNaniteVisualizationMode(OldNaniteMode); } else Restored=false;
+            UGameplayStatics::SetGamePaused(M.Get(),WasPaused);
+            Restored=Restored&&M->bMenu&&M->FrontEnd()->Screen()==OldScreen&&M->GetWorld()->IsPaused()==WasPaused&&PC()&&PC()->GetViewTarget()==OldTarget.Get()&&
+                (!HUD.IsValid()||HUD->bShowHUD==ShowHUD)&&Viewport()&&Viewport()->ViewModeIndex==OldViewMode&&Viewport()->GetCurrentNaniteVisualizationMode()==OldNaniteMode&&
+                Viewport()->EngineShowFlags.VisualizeNanite==OldFlags.VisualizeNanite&&M->SaveSlotName==Slots[0]&&M->ControlSlotName==Slots[1]&&M->SettingsSlotName==Slots[2];
+            for (int I=0;I<3;++I)
+            {
+                TArray<uint8> Bytes; const bool Exists=UGameplayStatics::DoesSaveGameExist(Slots[I],0);
+                // No gameplay/profile calls occur in this fixture. Detect any
+                // unexpected mutation before restoring the exact original bytes.
+                const bool Same=Exists==Existed[I]&&(!Exists||(UGameplayStatics::LoadDataFromSlot(Bytes,Slots[I],0)&&Bytes==Profiles[I]));
+                Restored=Same&&Restored;
+                if (!Same) { if (Existed[I]) UGameplayStatics::SaveDataToSlot(Profiles[I],Slots[I],0); else if (Exists) UGameplayStatics::DeleteGameInSlot(Slots[I],0); }
+            }
+        }
+        for (auto& A:Owned) if (A.IsValid()) Restored=A->Destroy()&&Restored;
+        bool Unchanged=true;
+        for (const auto& P:PackageHashes) Unchanged=IFileManager::Get().FileSize(*P.Key)>0&&LexToString(FMD5Hash::HashFile(*P.Key))==P.Value&&Unchanged;
+        Test.TestTrue(TEXT("Probe restores view/menu/HUD/profile/CVars and removes owned actors"),Restored); Test.TestTrue(TEXT("Saved probe package bytes remain unchanged"),Unchanged);
+        if (Folder.IsEmpty()) return;
+        auto O=MakeShared<FJsonObject>(); O->SetStringField(TEXT("schema"),TEXT("sora-arena.timber-probe.v1")); O->SetStringField(TEXT("scope"),Scope);
+        O->SetBoolField(TEXT("sm6_requested"),SM6); O->SetBoolField(TEXT("nanite_eligible"),Eligible); O->SetStringField(TEXT("shader_platform"),Platform);
+        O->SetStringField(TEXT("rhi"),GDynamicRHI?GDynamicRHI->GetName():TEXT("none")); O->SetBoolField(TEXT("null_rhi"),GUsingNullRHI); O->SetStringField(TEXT("adapter"),GRHIAdapterName);
+        O->SetArrayField(TEXT("viewport"),{MakeShared<FJsonValueNumber>(Size.X),MakeShared<FJsonValueNumber>(Size.Y)}); O->SetArrayField(TEXT("fixture_origin"),Vec(Origin));
+        O->SetArrayField(TEXT("meshes"),Meshes); O->SetArrayField(TEXT("frames"),Frames); O->SetNumberField(TEXT("frame_count"),Frames.Num()); O->SetArrayField(TEXT("asset_files"),Packages); O->SetArrayField(TEXT("source_inputs"),Inputs);
+        O->SetStringField(TEXT("lighting"),TEXT("two temporary point lights, key 20M lm warm/fill 5M lm cool; manual ISO100 1/60 f2.8, exposure bias0; fog/atmosphere/skylight viewport disabled"));
+        O->SetBoolField(TEXT("restored"),Restored); O->SetBoolField(TEXT("packages_unchanged"),Unchanged); O->SetBoolField(TEXT("passed"),!Failed&&!Test.HasAnyErrors()&&Step==Count());
+        O->SetStringField(TEXT("acceptance"),TEXT("original paired pixels and human geometry/material review required; no GPU counters inferred; SM5 generated fallback differs from authored pool"));
+        FString Json; FJsonSerializer::Serialize(O,TJsonWriterFactory<>::Create(&Json)); Test.TestTrue(TEXT("Writes original probe observation report"),FFileHelper::SaveStringToFile(Json,*(Folder/TEXT("capture.json"))));
+    }
+};
+}
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraTimberProbeSM6Test,"SoraCapture.TimberProbe.SM6",EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraTimberProbeSM6Test::RunTest(const FString& Parameters)
+{ (void)Parameters; FAutomationTestFramework::Get().EnqueueLatentCommand(MakeShared<SoraTimberProbeCapture::FRun>(*this,true)); return true; }
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraTimberProbeSM5Test,"SoraCapture.TimberProbe.SM5",EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraTimberProbeSM5Test::RunTest(const FString& Parameters)
+{ (void)Parameters; FAutomationTestFramework::Get().EnqueueLatentCommand(MakeShared<SoraTimberProbeCapture::FRun>(*this,false)); return true; }
+#endif
