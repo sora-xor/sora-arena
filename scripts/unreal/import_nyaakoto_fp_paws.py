@@ -2,7 +2,8 @@
 
 Run (UE 5.8, headless, by the holder of the shared engine lane), after
 create_nyaakoto_fp_paws.py has built the FBX:
-  scripts/toolchain/run-editor-script.sh scripts/unreal/import_nyaakoto_fp_paws.py FP_PAWS_UE_READY [log]
+  scripts/toolchain/run-editor-script.sh scripts/unreal/import_nyaakoto_fp_paws.py FP_PAWS_UE_READY [log] \
+      [-- out=Saved/NyaakotoFPPaws/Unreal/<readback>.json]
 
 It imports into /Game/Generated/Qualification/NyaakotoFPPaws/ only:
 - **The mesh:** SM_NyaakotoFP_PawL_Yumi from Production/, checked against
@@ -20,7 +21,9 @@ It imports into /Game/Generated/Qualification/NyaakotoFPPaws/ only:
 - **Usage flags:** none is used with a skeletal mesh. The paw is static and
   hangs from the bow's Grip_L socket.
 
-It reads back to Saved/NyaakotoFPPaws/Unreal/readback.json the mesh's
+It reads back to Saved/NyaakotoFPPaws/Unreal/readback.json (or the out= path,
+relative to the project, written exclusively so a rerun never writes over
+earlier evidence) the mesh's
 triangles, slots, bounds, vertex-colour presence and each material's
 compile statistics. Asset readback only: not a render or an admission.
 """
@@ -46,6 +49,7 @@ PADS = SRC / "Textures"
 HERO = ROOT / "Content/SourceArt/Characters/Hero/PBR"
 DEST = "/Game/Generated/Qualification/NyaakotoFPPaws"
 OUT = ROOT / "Saved/NyaakotoFPPaws/Unreal"
+OPTS = dict(a.split("=", 1) for a in sys.argv[1:] if "=" in a)
 NAME = "SM_NyaakotoFP_PawL_Yumi"
 SLOTS = ("M_NyaakotoFP_FurSkin", "M_NyaakotoFP_PawPad", "M_NyaakotoFP_FurCards", "M_NyaakotoFP_KoteSilk",
          "M_NyaakotoFP_KoteUrushi", "M_NyaakotoFP_CordVermilion", "M_NyaakotoFP_MonGold")
@@ -456,6 +460,12 @@ readback = {
 }
 if not readback["has_vertex_colours"]:
     fail("the tabby vertex colours did not import")
-OUT.mkdir(parents=True, exist_ok=True)
-(OUT / "readback.json").write_text(json.dumps(readback, indent=1) + "\n")
+if "out" in OPTS:
+    target = ROOT / OPTS["out"]
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with open(target, "x", encoding="utf-8") as fh:
+        fh.write(json.dumps(readback, indent=1) + "\n")
+else:
+    OUT.mkdir(parents=True, exist_ok=True)
+    (OUT / "readback.json").write_text(json.dumps(readback, indent=1) + "\n")
 unreal.log("FP_PAWS_UE_READY " + json.dumps({k: readback[k] for k in ("vertices", "has_vertex_colours", "slots")}))
