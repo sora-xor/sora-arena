@@ -53,13 +53,18 @@ later zones and failing the existing climb/flood baseline. The correction
 extends the hall six metres into its existing thirty-metre gap, preserving
 all other zone coordinates. Four host-only moat checks (including the
 unchanged baseline) and the six press contract checks pass on the corrected
-data. The three new engine fixtures (`PressHall`, `PressInspection`,
-`PressNoiseEmission`) remain unrun.
+data. Five engine fixtures (`PressHall`, `PressInspection`, `PressNoiseEmission`,
+`PressDieLamps`, `PressCheckpointReload`) are prepared and remain unrun.
+The reload fixture saves after an actual held jam and a swept arrow impact,
+destroys the test world, and resumes the same save in a new world. It requires
+all machines and lamps restored, no old inspection or suspicion delivered,
+and exactly one encounter clock advancing. These are pending assertions, not
+observed runtime results.
 
 This is still a functional blockout. The north-west catwalk/ladder entry,
 elevated enforcer, authored 45/30-second patrol loops, die-lamp suspicion after
 five seconds in actual play, synchronized stamp audio/music, final machines and dressing,
-ordinary stealth difficulty, fresh-world save reload, full campaign regression
+ordinary stealth difficulty, fresh-world save reload execution, full campaign regression
 and current packages remain open. The entry is explicitly provisional floor
 access; neither these host checks nor the prepared engine fixtures establish
 complete campaign or release acceptance.

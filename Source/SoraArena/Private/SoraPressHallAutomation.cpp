@@ -40,6 +40,31 @@ AActor* Block(FBeatWorld& W,const FVector& At,const FVector& Half)
     Box->SetCollisionResponseToAllChannels(ECR_Block); Box->RegisterComponent(); Actor->SetActorLocation(At);
     return Actor;
 }
+bool ArrowAtLamp(FBeatWorld& W,int Index)
+{
+    auto* Lamp=W.Fieldcraft()->Lamps().IsValidIndex(Index)?W.Fieldcraft()->Lamps()[Index].Get():nullptr;
+    if(!W.Test.TestNotNull(TEXT("The arrow has a die-lamp target"),Lamp)) return false;
+    const FTransform Launch(FRotator(0,90,0),Lamp->Glow()+FVector(0,-100,0));
+    auto* Arrow=W.World->GetTestWorld()->SpawnActorDeferred<ASoraProjectile>(ASoraProjectile::StaticClass(),Launch,
+        W.Hero(),W.Hero(),ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+    if(!W.Test.TestNotNull(TEXT("A real arrow is released toward the lens"),Arrow)) return false;
+    Arrow->bArrow=true; Arrow->WeaponId=18; Arrow->Velocity=FVector(0,1000,49);
+    Arrow->FinishSpawning(Launch);
+    for(int I=0;I<20&&Lamp->IsLit();++I) if(!W.Tick(1)) return false;
+    return W.Test.TestFalse(TEXT("The swept arrow impact extinguishes the lens"),Lamp->IsLit());
+}
+bool Reload(FBeatWorld& W)
+{
+    W.Fieldcraft()->OnEvent.Remove(W.EventsHandle);
+    W.World->DestroyTestWorld(true); W.World->ForwardErrorMessages(&W.Test); W.World.Reset();
+    W.World=MakeUnique<FSoraAutomationWorld>();
+    if(!W.World->Start(W.Slot)||!W.World->Tick(1)||!W.World->EnableKeyInput()||
+        !W.Press(EKeys::Enter)||!W.Press(EKeys::Enter)||!W.Press(EKeys::Enter)) return false;
+    W.Events.Reset();
+    W.EventsHandle=W.Fieldcraft()->OnEvent.AddLambda([&W](FName Event) { W.Events.Add(Event.ToString()); });
+    return W.Test.TestTrue(TEXT("The saved press checkpoint opens in a fresh world"),
+        W.Campaign()->ActiveBeat()==10&&W.Fieldcraft()->PressRunning(1));
+}
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraPressHallTest,"SoraArena.Campaign.PressHall",
@@ -210,14 +235,7 @@ bool FSoraPressLampTest::RunTest(const FString& Parameters)
                  FSoraHit::Blast(Lamp->Glow(),1)})
         SoraDamage::Strike(Lamp,100,Hit,FVector::ForwardVector,Contact,W.Hero()->GetController(),W.Hero());
     TestTrue(TEXT("Melee, a bullet and a blast leave the die lamp lit"),Lamp->IsLit());
-    const FTransform Launch(FRotator(0,90,0),Lamp->Glow()+FVector(0,-100,0));
-    auto* Arrow=W.World->GetTestWorld()->SpawnActorDeferred<ASoraProjectile>(ASoraProjectile::StaticClass(),Launch,
-        W.Hero(),W.Hero(),ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
-    if(!TestNotNull(TEXT("A real arrow is released toward the lens"),Arrow)) return false;
-    Arrow->bArrow=true; Arrow->WeaponId=18; Arrow->Velocity=FVector(0,1000,49);
-    Arrow->FinishSpawning(Launch);
-    for(int I=0;I<20&&Lamp->IsLit();++I) if(!W.Tick(1)) return false;
-    if(!TestFalse(TEXT("The swept arrow impact extinguishes the lens"),Lamp->IsLit())) return false;
+    if(!ArrowAtLamp(W,0)) return false;
     const int64 OutAt=Craft->PressClock();
     if(!W.Tick(120)) return false;
     TestTrue(TEXT("Neither guard becomes suspicious before five seconds"),
@@ -247,5 +265,45 @@ bool FSoraPressLampTest::RunTest(const FString& Parameters)
             TestTrue(TEXT("Retry discards the previous lamp notice"),Brain->State()==SoraStealthRules::EState::Unaware);
     AddInfo(TEXT("Directed collision and delay fixture with sight/hearing isolated. It does not qualify ordinary bow aiming, art or encounter difficulty."));
     return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraPressReloadTest,"SoraArena.Campaign.PressCheckpointReload",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraPressReloadTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;
+    using namespace SoraPressAutomation;
+    if(!FSoraCatalog::Get().Load()) return false;
+    FBeatWorld W(*this,TEXT("PressCheckpointReload"),5,10);
+    if(!W.Start()) return false;
+    W.Harden(); FreezeGuards(W);
+    if(!TestTrue(TEXT("Mapped Interact is available"),W.Hero()->RemapCombatAction(TEXT("Interact"),EKeys::G))) return false;
+    W.Stand(FVector(W.BeatData().Space.Objectives[0],0),90);
+    if(!W.Tick(2)||!W.Hold(EKeys::G,270)) return false;
+    if(!TestTrue(TEXT("The original world has one jam and an unfinished inspection"),
+        W.Campaign()->TaskProgress().Done==1&&!W.Fieldcraft()->PressRunning(1)&&
+        !W.Fieldcraft()->PressInspectionArrived(0))) return false;
+    if(!ArrowAtLamp(W,0)) return false;
+    W.Campaign()->SaveProgress();
+    if(!Reload(W)) return false;
+    W.Harden(); FreezeGuards(W);
+    auto* Craft=W.Fieldcraft();
+    TestEqual(TEXT("Fresh checkpoint load starts with no completed jams"),W.Campaign()->TaskProgress().Done,0);
+    for(int I=0;I<8;++I) TestTrue(TEXT("Fresh checkpoint load starts every press"),Craft->PressRunning(I));
+    for(int I=0;I<3;++I)
+    {
+        TestTrue(TEXT("Fresh checkpoint restores each die lamp"),Craft->Lamps()[I]->IsLit());
+        TestFalse(TEXT("Fresh checkpoint has no old inspection arrival"),Craft->PressInspectionArrived(I));
+        TestFalse(TEXT("Fresh checkpoint has no old missed deadline"),Craft->PressInspectionOverdue(I));
+    }
+    const int64 Start=Craft->PressClock();
+    if(!W.Tick(360)) return false;
+    TestTrue(TEXT("The new world advances one clock for six seconds"),FMath::Abs(Craft->PressClock()-Start-6000)<=1);
+    for(TActorIterator<ASoraEnemy> It(W.World->GetTestWorld());It;++It)
+        if(auto* Brain=Cast<ASoraEnemyController>(It->GetController()))
+            TestTrue(TEXT("No old-world lamp notice reaches fresh guards"),Brain->State()==SoraStealthRules::EState::Unaware);
+    TestFalse(TEXT("No old silent-machine errand survives world destruction"),W.Events.Contains(TEXT("ai_event:press_silent")));
+    AddInfo(TEXT("Actual save and world recreation; checkpoint semantics restart this beat. Directed fixture, with guards frozen."));
+    return !HasAnyErrors();
 }
 #endif
