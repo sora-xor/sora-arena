@@ -22,10 +22,10 @@ void USoraCampaignDirector::BindHorseGrenadier(ASoraEnemy& Enemy,int32 Wave)
 void USoraCampaignDirector::ResetHorseShells()
 {
     ++HorseShellGeneration;
-    if(HorseGrenadier.IsValid()) HorseGrenadier->CancelHorseShell();
-    HorseGrenadier.Reset();
-    // Detach before Destroy: callbacks must see a retired session and no pending shots.
+    const auto Grenadier=HorseGrenadier; HorseGrenadier.Reset();
+    // Detach every old reference before warning or projectile Destroy callbacks.
     const auto Shots=MoveTemp(HorseShells); HorseShells.Reset();
+    if(Grenadier.IsValid()) Grenadier->CancelHorseShell();
     for(const auto& Shot:Shots) if(Shot.IsValid()) Shot->Destroy();
 }
 AActor* USoraCampaignDirector::HorseShellQuarry(const ASoraEnemy& Enemy,FVector& Landing) const

@@ -538,6 +538,7 @@ void USoraCampaignDirector::CompleteActiveBeat()
     ASoraGameMode& M=Mode();
     const FSoraChapter& Chapter=*ActiveChapter();
     if(!Chapter.Beats.IsValidIndex(BeatIndex)) return;
+    if(!HorseWithdrawalReady()) return;
     const int32 Index=BeatIndex;
     SoraBeatRules::FProgress Next=BeatState;
     if(!SoraBeatRules::CompleteBeat(Next,Chapter.Rules.GetData(),Chapter.Rules.Num(),Index)) return;
@@ -697,7 +698,7 @@ void USoraCampaignDirector::TickComponent(float DeltaTime,ELevelTick TickType,FA
     const bool bWasBlocking=bDialogueHeld;
     TickDialogue(DeltaTime);
     if(ActiveBeatData()!=Beat||bWasBlocking||bDialogueHeld) return;
-    if(TickWoodTransit()||TickLiftGallery(DeltaTime)) return;
+    if(TickHorseWithdrawal(DeltaTime)||TickWoodTransit()||TickLiftGallery(DeltaTime)) return;
     TickSealCut();
     TickBeat(DeltaTime);
 }
@@ -933,7 +934,7 @@ void USoraCampaignDirector::Progressed(int32 PermilleBefore)
 void USoraCampaignDirector::QueueWaves(unsigned Waves)
 {
     const FSoraBeat* Beat=ActiveBeatData();
-    if(!Beat||Waves==0u) return;
+    if(!Beat||Waves==0u||bHorseWithdrawal) return;
     const uint64 Generation=PodGeneration;
     for(int32 Wave=0;Wave<Beat->Waves.Num();++Wave)
     {
@@ -1138,7 +1139,7 @@ void USoraCampaignDirector::SpawnCast(bool bKeepPupil)
 void USoraCampaignDirector::SpawnPending()
 {
     const FSoraBeat* Beat=ActiveBeatData();
-    if(!Beat) return;
+    if(!Beat||bHorseWithdrawal) return;
     for(int32 Alive=LiveWaveOpponents();!Pending.IsEmpty()&&Alive<Task.MaxAlive;)
     {
         const FPendingSpawn Next=Pending[0];

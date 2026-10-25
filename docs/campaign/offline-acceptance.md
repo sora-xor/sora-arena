@@ -1210,3 +1210,27 @@ this source checkpoint does not supersede the earlier failed images.
 The reservation is scoped to `IsArcheryLesson()`. General bow use, especially
 the b08 wood clapper, is still **unqualified/open** for HUD clearance. Wood
 NullRHI gameplay tests provide no evidence about that view.
+
+## Horse-defense withdrawal source candidate
+
+The 150-second ch02.b06 task now has a visible outro for living registered
+wave members. It cancels pending pods and horse shells, sends survivors by
+ordinary enemy navigation to the named west-gate courtyard approach
+`ps_gate_yard_start` (-2300, 0, 0), and waits for actual grounded arrival
+within 220 cm and the authored retreat bark before Kohagi's back-gate-clear
+line and the next cinematic. The approach is inside the existing collision
+wall; this does not claim passage through the exterior gate. No timer,
+blocked-path flag, teleport or artificial kill credit completes withdrawal.
+With no survivors, the original immediate transition remains. Menus pause
+the outro; ordinary damage can still defeat a survivor or the hero, and
+checkpoint retry cancels and resets it.
+
+The strict source contract and generated chapter validation pass locally.
+`SoraArena.Campaign.HorseWithdrawalMovement` stages the real arrivals with
+combat frozen, then releases actual controllers against a physical blocking
+wall and along the real route; it checks pause, completion, bark ordering and
+no manufactured kill credit. `HorseWithdrawalRetry` checks ordinary defeat,
+no replacement spawn and real checkpoint restart. These new Unreal fixtures
+and the production change have **not yet been built or run**. They do not
+inherit the earlier pod/horse-shell runtime results. Final retreat animation,
+ordinary defense pacing and rendered acceptance remain open.

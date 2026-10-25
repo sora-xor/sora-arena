@@ -8,6 +8,20 @@ remains a historical recovery record. This is a progress record, not a claim
 that the release is complete. Backward compatibility,
 legacy formats, aliases, and fallback decoders are prohibited.
 
+## 2026-10-25 visible withdrawal source candidate
+
+The horse defense now has source for a visible retreat to the navigable
+west-gate courtyard approach, using surviving registered enemies and ordinary
+AI movement. It waits for actual grounded arrival and the retreat bark before
+Kohagi's line; blocked paths and timeouts cannot stand in for arrival.
+Pending arrivals/shells are cancelled with state detached before destruction
+callbacks. Held treatment remains available during the outro, while the won
+defense clock stays fixed. Ten selected host-check groups pass on the initial
+candidate, and six affected groups pass after the cleanup/treatment changes;
+the new Unreal movement/pause/obstruction/retry tests remain unrun
+while Claude owns the engine lane. Earlier runtime passes below do not
+qualify this production change.
+
 ## 2026-10-25 pod arrivals and horse-defense shells
 
 Exact `bf58810` builds and passes fifteen of sixteen directed Unreal tests,

@@ -109,6 +109,8 @@ public:
     // way; the pawn's own tick then winds it up, strikes and recovers.
     void DisruptWindAim(int32 Milliseconds);
     bool TryAttack(ASoraCharacterBase& Target, float Distance);
+    void SetCampaignWithdrawal(bool Active);
+    bool IsCampaignWithdrawing() const { return bCampaignWithdrawing; }
     // Only the registered pod-B grenadier receives this encounter binding.
     void BindHorseShell(USoraCampaignDirector& Director,uint64 Generation);
     bool HasHorseShellAssignment() const { return bHorseShellBound; }
@@ -229,6 +231,7 @@ private:
     void TickHorseShell();
     void AdvanceHorseShellClock();
     bool bHorseShellBound=false;
+    bool bCampaignWithdrawing=false;
     TWeakObjectPtr<USoraCampaignDirector> HorseShellDirector;
     uint64 HorseShellGeneration=0;
     SoraHorseShellRules::FState HorseShellClock;

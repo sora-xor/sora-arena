@@ -619,6 +619,7 @@ struct FSoraBeatSpace
     FSoraFoundryDefenseSpace FoundryDefense;
     bool bHorseTreatment=false;
     bool bHorseShell=false;
+    bool bHorseWithdrawal=false;
     FSoraHelmSpace Helm;
     FSoraBridgeSpace Bridge;
     FSoraWindSpace Wind;

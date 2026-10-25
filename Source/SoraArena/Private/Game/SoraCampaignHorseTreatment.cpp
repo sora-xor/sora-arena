@@ -73,6 +73,9 @@ FString USoraCampaignDirector::HorseTreatmentText(bool English) const
     const auto Key=SoraUI::ActionKey(this,TEXT("Interact"));
     FString Text=English?FString::Printf(TEXT("Protect the pack horses %d / 150 s | Hold %s for 2 s to treat +60 HP"),TaskState.Progress/1000,*Key.English):
         FString::Printf(TEXT("荷馬を守る %d / 150 秒 | %s を2秒長押しで手当て（体力＋60）"),TaskState.Progress/1000,*Key.Japanese);
+    if(HorseWithdrawalActive()) Text=English?
+        FString::Printf(TEXT("The enemies are withdrawing | Hold %s for 2 s to treat +60 HP"),*Key.English):
+        FString::Printf(TEXT("敵が後退している | %s を2秒長押しで手当て（体力＋60）"),*Key.Japanese);
     for(int32 Index=0;Index<TreatmentRules::Horses;++Index)
     {
         const int32 Wait=FMath::DivideAndRoundUp(Treatment.Cooldown[Index],1000);

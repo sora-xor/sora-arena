@@ -1435,6 +1435,7 @@ beats:
     repair_interact: {kind: treat_horse, hold_s: 2.0, heal: 60, cooldown_s: 20}
   x_hazards:
   - {kind: drop_pod_impact, telegraph: amber_ring, radius_cm: 350, windup_ms: 2500, damage: 60, hits_allies: true}
+  x_withdrawal: {muster: ps_gate_yard_start, arrival_cm: 220, pace_permille: 750, event: "event:horse_defense_withdrawal", bark: ch02.b02.enforcer.009}
   max_alive: 6
   waves:
   - enemies:
@@ -1466,6 +1467,9 @@ beats:
   - 'on': progress_at:0.5
     lines: [ch02.b06.sekireisai.005]
     mode: radio
+  - 'on': event:horse_defense_withdrawal
+    lines: [ch02.b02.enforcer.009]
+    mode: ambient
   - 'on': beat_complete
     lines: [ch02.b06.kohagi.006]
     mode: ambient

@@ -298,6 +298,11 @@ void ASoraEnemy::HaltActions()
     { HorseShellLastWorldSeconds=GetWorld()->GetTimeSeconds(); return; }
     CancelAttack();
 }
+void ASoraEnemy::SetCampaignWithdrawal(bool Active)
+{
+    bCampaignWithdrawing=Active;
+    if(Active) CancelAttack();
+}
 void ASoraEnemy::DisruptWindAim(int32 Milliseconds)
 {
     if(!Kind||Kind->Behavior!=ESoraEnemyBehavior::Drone) return;
@@ -305,7 +310,7 @@ void ASoraEnemy::DisruptWindAim(int32 Milliseconds)
 }
 bool ASoraEnemy::TryAttack(ASoraCharacterBase& Target,float Distance)
 {
-    if(bHorseShellBound) return false;
+    if(bHorseShellBound||bCampaignWithdrawing) return false;
     if(!Kind||Phase!=EPhase::Idle||IsStaggered()||IsTurnLocked()||!Target.IsAlive()||Now()<NextAttackAt) return false;
     const int32 Facing=SoraDamage::FacingMilli(*this,Target.GetActorLocation());
     for(int32 Index=0;Index<AttackSet().Num();++Index)

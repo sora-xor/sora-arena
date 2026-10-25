@@ -1275,7 +1275,14 @@
       "damage": 60,
       "hits_allies": true
      }
-    ]
+    ],
+    "withdrawal": {
+     "muster": "ps_gate_yard_start",
+     "arrival_cm": 220,
+     "pace_permille": 750,
+     "event": "event:horse_defense_withdrawal",
+     "bark": "ch02.b02.enforcer.009"
+    }
    }
   },
   {
@@ -5326,6 +5333,20 @@
    "mode": "radio",
    "lines": [
     "ch02.b06.sekireisai.005"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b06",
+   "on": "event:horse_defense_withdrawal",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b02.enforcer.009"
    ],
    "source": "dialogue",
    "repeatable": false,
@@ -11787,6 +11808,20 @@
       2500
      ],
      "contact": "armed_sphere_with_cover"
+    },
+    "horse_withdrawal": {
+     "muster": "ps_gate_yard_start",
+     "arrival_cm": 220,
+     "pace_permille": 750,
+     "event": "event:horse_defense_withdrawal",
+     "bark": "ch02.b02.enforcer.009",
+     "floor_cm": [
+      -2300,
+      0,
+      0
+     ],
+     "floor_tolerance_cm": 30,
+     "completion": "arrived_survivors_and_finished_bark"
     }
    },
    {

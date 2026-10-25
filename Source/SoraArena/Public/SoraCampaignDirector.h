@@ -242,6 +242,7 @@ public:
     AActor* PodWarning(int32 Wave) const { return PodWarnings.IsValidIndex(Wave)?PodWarnings[Wave].Get():nullptr; }
     bool IsHorseTreatment() const;
     bool IsHorseShellDefense() const;
+    bool HorseWithdrawalActive() const { return bHorseWithdrawal; }
     bool HorseShellSession(uint64 Generation) const;
     AActor* HorseShellQuarry(const ASoraEnemy& Enemy,FVector& Landing) const;
     bool RegisterHorseShell(ASoraProjectile& Projectile,uint64 Generation);
@@ -418,6 +419,12 @@ private:
     uint64 HorseShellGeneration=0;
     TWeakObjectPtr<ASoraEnemy> HorseGrenadier;
     TArray<TWeakObjectPtr<ASoraProjectile>> HorseShells;
+    bool bHorseWithdrawal=false,bHorseWithdrawalReady=false;
+    int32 HorseWithdrawalBark=INDEX_NONE;
+    TArray<TWeakObjectPtr<ASoraEnemy>> HorseWithdrawalEnemies;
+    bool HorseWithdrawalReady();
+    bool TickHorseWithdrawal(float DeltaSeconds);
+    void ResetHorseWithdrawal();
     void ResetHorseShells();
     void BindHorseGrenadier(ASoraEnemy& Enemy,int32 Wave);
     unsigned PodQueued=0;

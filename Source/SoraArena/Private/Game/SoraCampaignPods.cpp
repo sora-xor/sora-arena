@@ -18,11 +18,13 @@ void USoraCampaignDirector::EndPlay(const EEndPlayReason::Type Reason)
 }
 void USoraCampaignDirector::ResetPods()
 {
-    ResetHorseShells();
     ++PodGeneration; PodQueued=0;
-    for(auto& Warning:PodWarnings) if(IsValid(Warning)) Warning->Destroy();
-    PodWarnings.Reset();
+    const auto Warnings=MoveTemp(PodWarnings); PodWarnings.Reset();
     for(int I=0;I<Pod::Count;++I) { PodState[I]={}; PodClocks[I].Reset(); }
+    ResetHorseWithdrawal();
+    ResetHorseShells();
+    // All old state is detached before Destroy can reenter and start a new session.
+    for(const auto& Warning:Warnings) if(IsValid(Warning)) Warning->Destroy();
 }
 void USoraCampaignDirector::ActivatePod(int32 Wave)
 {

@@ -53,7 +53,9 @@ These fixtures freeze unrelated combat, give the hero extra health, and
 stage combat poses in a clear estate aisle. They do not prove an unassisted
 150-second defense or navigation all the way from the pod to firing range.
 Pod descent art, finished horses, the final warning effect and the authored
-withdrawal on completion remain separate unfinished work.
+withdrawal on completion remain separate unfinished work. A newer withdrawal
+source candidate is documented in `docs/campaign/offline-acceptance.md`; its
+Unreal build and runtime tests remain unrun.
 
 ## October 25 runtime evidence
 

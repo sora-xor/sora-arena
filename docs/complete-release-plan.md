@@ -11,6 +11,31 @@ production. Work runs in isolated worktrees, with a single coordinated Unreal
 and GPU rendering lane. The shared checkout is not a build or render workspace.
 The local coordination mailboxes record current ownership, commits and lane use.
 
+## October 25 visible withdrawal source candidate
+
+Chapter-two defense source now stages surviving registered enemies retreating
+through the real courtyard toward `ps_gate_yard_start`. That point is inside
+the existing collision wall; no exterior-gate passage is claimed. At the
+existing 150-second task boundary, pending pod members and horse shells retire
+and survivors receive normal navigation errands at 75% movement input.
+Completion waits for grounded feet within 220 cm of the approach and the
+authored retreat bark, then raises Kohagi's back-gate-clear line. No timeout,
+partial-path stop, teleport or manufactured kill credit can finish it. With
+no survivors, the existing immediate transition remains. Menus hold movement;
+ordinary damage/retry and held horse treatment remain available.
+
+The current-only authoring/normalizer/runtime contract and generated chapter
+are updated, including the chapter-bound timber manifest. Ten selected host
+groups pass on the initial candidate, with a later cleanup ordering review
+detaching old pod/shot state before destruction callbacks and preserving held
+treatment during the outro. Six affected groups pass after those changes.
+New Unreal cases cover a real obstruction,
+movement, pause, bark ordering, unchanged kill credit, damage and checkpoint
+retry. The production change and these new fixtures are **not yet built or
+run in Unreal**. Claude retains the engine/Blender lane; its new bow rig rebuild
+has exited zero and exported playback review is in progress. No new art,
+package or release acceptance is claimed.
+
 ## October 25 pod arrivals and horse-defense shells
 
 The authored chapter-two pods now warn for 2.5 active seconds, apply one
