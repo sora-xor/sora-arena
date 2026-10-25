@@ -1760,42 +1760,45 @@ bool LoseDefendedTarget(FAutomationTestBase& Test, FState& State)
     if (!Test.TestTrue(TEXT("The defence has targets to keep"), Rules.TargetCount > 0 &&
         (Rules.FailMask & SoraBeatRules::FailBit(SoraBeatRules::EFail::TargetDestroyed)) != 0u))
         return Fail(Test, State, Where(State) + TEXT(" keeps no target"));
-    // An opponent standing at a target wears it down, a whole point at a time.
-    const TArray<ASoraEnemy*> Foes = LiveEnemies(State);
-    if (!Test.TestFalse(TEXT("The defence's first wave is on the field"), Foes.IsEmpty()))
-        return Fail(Test, State, Where(State) + TEXT(" has no opponent to besiege its targets"));
-    const FVector Target = ASoraWorldBuilder::Floor(Director->ActiveSpace()->Targets[0], 120.f);
-    Foes[0]->SetActorLocation(Target + FVector(0, 250, 0), false, nullptr, ETeleportType::TeleportPhysics);
-    Foes[0]->SetActorTickEnabled(false);
-    const int32 Whole = Director->TaskProgress().TargetHp[0];
-    if (!Advance(Test, State, 60))
-        return false;
-    bool bOk = Test.TestTrue(TEXT("An opponent at a target wears it down"), Director->TaskProgress().TargetHp[0] < Whole &&
-        Director->TaskProgress().TargetHp[0] >= Whole - 2 * SoraBeatRules::SiegeHpPerSecond);
-    Foes[0]->SetActorTickEnabled(true);
-    UGameplayStatics::ApplyDamage(Foes[0], Foes[0]->Health, Player(State)->GetController(), Player(State), UDamageType::StaticClass());
-    if (!Advance(Test, State))
-        return false;
-    // The siege is repaired back to whole at the defended position before the target is tested.
-    FVector Position;
-    if (!Director->ObjectiveAnchor(Position))
-        return Fail(Test, State, Where(State) + TEXT(" has no defended position"));
-    MoveTo(State, Position);
-    if (!Advance(Test, State))
-        return false;
-    GameMode->Interact(Player(State));
-    bOk &= Test.TestEqual(TEXT("A repair makes the besieged target whole"), Director->TaskProgress().TargetHp[0], Rules.TargetHp[0]);
-    bOk &= Test.TestFalse(TEXT("A wounded target is no failure"), Director->DamageDefendedTarget(0, Rules.TargetHp[0] / 2));
-    // A repair at the defended position mends a quarter of it.
+    if(!Test.TestTrue(TEXT("The defended horses use the authored held-treatment contract"),Director->IsHorseTreatment())) return false;
+    // This assisted campaign route seeds target injuries and clears the active
+    // opponents through the existing defeat path. Real enemy attacks belong
+    // to encounter fixtures; proximity alone is not treated as a shell hit.
+    for(int Frame=0;Frame<240&&LiveEnemies(State).IsEmpty();++Frame)
+        if(!Advance(Test,State,1)) return false;
+    if(!Test.TestFalse(TEXT("The defence's first arrival reaches the field"),LiveEnemies(State).IsEmpty())||
+       !ClearField(Test,State,Beat)) return false;
+    bool bOk=Test.TestFalse(TEXT("A small seeded injury is no failure"),Director->DamageDefendedTarget(0,10));
     FVector Anchor;
-    if (!Director->ObjectiveAnchor(Anchor))
-        return Fail(Test, State, Where(State) + TEXT(" has no defended position"));
-    MoveTo(State, Anchor);
-    if (!Advance(Test, State))
-        return false;
+    if(!Director->ObjectiveAnchor(Anchor)) return Fail(Test,State,Where(State)+TEXT(" has no defended position"));
+    MoveTo(State,Anchor);
+    if(!Advance(Test,State)) return false;
     GameMode->Interact(Player(State));
-    bOk &= Test.TestEqual(TEXT("A repair mends the wounded target"), Director->TaskProgress().TargetHp[0],
-        Rules.TargetHp[0] / 2 + Rules.TargetHp[0] / 4);
+    bOk &= Test.TestEqual(TEXT("The generic anchor cannot instantly repair a horse"),Director->TaskProgress().TargetHp[0],390);
+    auto* TreatmentTarget=Director->TreatmentHorse(0);
+    if(!Test.TestNotNull(TEXT("The canonical first defended horse exists"),TreatmentTarget)) return false;
+    MoveTo(State,TreatmentTarget->GetActorLocation()+FVector(-180,0,0));
+    if(!Advance(Test,State,4)||!WaitForDialogue(Test,State)) return false;
+    FKey InteractKey;
+    for(const auto& Key:Player(State)->GetActionKeys(TEXT("Interact")))
+        if(!Key.IsGamepadKey()) { InteractKey=Key; break; }
+    if(!Test.TestTrue(TEXT("Horse treatment has a mapped keyboard action"),InteractKey.IsValid())) return false;
+    const auto Treat=[&]()
+    {
+        if(!State.World->InjectKey(InteractKey,IE_Pressed)) return false;
+        const bool Advanced=Advance(Test,State,125);
+        const bool Released=State.World->InjectKey(InteractKey,IE_Released);
+        return Advanced&&Released;
+    };
+    if(!Treat()) return false;
+    bOk &= Test.TestEqual(TEXT("A two-second hold caps the injured horse at four hundred"),Director->TaskProgress().TargetHp[0],400);
+    bOk &= Test.TestFalse(TEXT("A wounded target is no failure"),Director->DamageDefendedTarget(0,200));
+    if(!Treat()) return false;
+    bOk &= Test.TestEqual(TEXT("An immediate second hold cannot bypass the horse cooldown"),Director->TaskProgress().TargetHp[0],200);
+    for(int Frame=0;Frame<1500&&Director->HorseTreatmentState().Cooldown[0]>0;++Frame)
+        if(!Advance(Test,State,1)) return false;
+    if(!Test.TestEqual(TEXT("The authored per-horse cooldown expires"),Director->HorseTreatmentState().Cooldown[0],0)||!Treat()) return false;
+    bOk &= Test.TestEqual(TEXT("A fresh two-second hold mends exactly sixty HP"),Director->TaskProgress().TargetHp[0],260);
     bOk &= Test.TestTrue(TEXT("A destroyed target fails the defence"), Director->DamageDefendedTarget(0, Rules.TargetHp[0]) &&
         GameMode->bDefeated && GameMode->InputState() == SoraInput::Result);
     ++State.Failures;
