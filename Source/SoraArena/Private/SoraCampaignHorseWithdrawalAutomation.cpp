@@ -82,7 +82,8 @@ bool FSoraHorseWithdrawalMovementTest::RunTest(const FString& Parameters)
     if(!Wall) return false;
     Wall->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics); Wall->SetCollisionResponseToAllChannels(ECR_Block);
     Wall->SetCanEverAffectNavigation(true);
-    ON_SCOPE_EXIT { if(IsValid(Barrier)&&!Barrier->IsActorBeingDestroyed()) Barrier->Destroy(); };
+    TWeakObjectPtr<AActor> BarrierRef=Barrier;
+    ON_SCOPE_EXIT { if(BarrierRef.IsValid()&&!BarrierRef->IsActorBeingDestroyed()) BarrierRef->Destroy(); };
     for(const auto& E:Survivors) FreezeBody(*E.Get(),false);
     int Fired=0,Completed=0; bool ArrivedAtComplete=false,NoCreditAtComplete=false;
     auto* Bus=USoraGameEvents::Get(W.Hero());

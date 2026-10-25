@@ -1219,7 +1219,9 @@ ordinary enemy navigation to the named west-gate courtyard approach
 `ps_gate_yard_start` (-2300, 0, 0), and waits for actual grounded arrival
 within 220 cm and the authored retreat bark before Kohagi's back-gate-clear
 line and the next cinematic. The approach is inside the existing collision
-wall; this does not claim passage through the exterior gate. No timer,
+wall; this does not claim passage through the exterior gate. Six separate
+arrival stations inside the approach keep the front rank from blocking
+later survivors. Each errand has a 30 cm acceptance radius. No timer,
 blocked-path flag, teleport or artificial kill credit completes withdrawal.
 With no survivors, the original immediate transition remains. Menus pause
 the outro; ordinary damage can still defeat a survivor or the hero, and

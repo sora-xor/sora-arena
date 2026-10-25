@@ -20,7 +20,9 @@ existing 150-second task boundary, pending pod members and horse shells retire
 and survivors receive normal navigation errands at 75% movement input.
 Completion waits for grounded feet within 220 cm of the approach and the
 authored retreat bark, then raises Kohagi's back-gate-clear line. No timeout,
-partial-path stop, teleport or manufactured kill credit can finish it. With
+partial-path stop, teleport or manufactured kill credit can finish it. Six
+separate stations inside that approach prevent a shared stopping circle from
+forming a queue; each has 30 cm navigation acceptance. With
 no survivors, the existing immediate transition remains. Menus hold movement;
 ordinary damage/retry and held horse treatment remain available.
 

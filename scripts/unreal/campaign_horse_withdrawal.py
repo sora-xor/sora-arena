@@ -6,6 +6,7 @@ BARK = 'ch02.b02.enforcer.009'
 AUTHORING = dict(muster='ps_gate_yard_start', arrival_cm=220, pace_permille=750,
                  event=EVENT, bark=BARK)
 GOAL = [-2300, 0, 0]
+SLOTS = [[-130,-100],[-130,100],[0,-100],[0,100],[130,-100],[130,100]]
 
 
 def contract(beat, record, layout):
@@ -19,6 +20,7 @@ def contract(beat, record, layout):
             points[0]['place'] != 'pl_estate_night' or not same(points[0]['positions_cm'], [GOAL])):
         raise ValueError('horse withdrawal must use the navigable named gate approach')
     return dict(**AUTHORING, floor_cm=GOAL, floor_tolerance_cm=30,
+                slots_cm=SLOTS, slot_acceptance_cm=30,
                 completion='arrived_survivors_and_finished_bark')
 
 

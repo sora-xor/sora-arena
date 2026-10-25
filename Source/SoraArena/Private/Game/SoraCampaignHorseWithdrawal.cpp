@@ -33,6 +33,8 @@ bool USoraCampaignDirector::HorseWithdrawalReady()
             if(const auto* Wave=EnemyWaves.Find(TWeakObjectPtr<const ASoraEnemy>(Enemy.Get())); Wave&&*Wave!=INDEX_NONE)
                 Survivors.Add(Enemy.Get());
     if(Survivors.IsEmpty()) return true;
+    if(Survivors.Num()>R::Slots)
+    { UE_LOG(LogTemp,Error,TEXT("SORA horse withdrawal: more survivors than the authored six-enemy cap")); return false; }
     const int32 Bark=ActiveChapter()->Dialogue.IndexOfByPredicate([](const FSoraDialogueCue& Cue)
         { return Cue.Id==TEXT("ch02.b02.enforcer.009"); });
     if(Bark==INDEX_NONE)
@@ -50,14 +52,19 @@ bool USoraCampaignDirector::HorseWithdrawalReady()
     bHorseWithdrawal=true; HorseWithdrawalBark=Bark; HorseWithdrawalEnemies=MoveTemp(Survivors);
     FinishedLines.Remove(Bark);
     const auto Walking=HorseWithdrawalEnemies;
+    int32 Slot=0;
     for(const auto& Weak:Walking)
         if(auto* Enemy=Weak.Get(); IsValid(Enemy)&&!Enemy->IsActorBeingDestroyed()&&Enemy->IsAlive())
         {
             Enemy->SetCampaignWithdrawal(true);
             if(PodGeneration!=ExpectedGeneration||!bHorseWithdrawal||ActiveBeatData()!=Beat) return false;
             if(auto* Brain=Cast<ASoraEnemyController>(Enemy->GetController()))
-                Brain->SetErrand(FVector(R::GoalX,R::GoalY,R::GoalZ+Enemy->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()),
-                    FVector(-1,0,0),R::PacePermille/1000.f,0,false,false,R::ArrivalCm);
+                // Separate stations let later survivors pass the front rank;
+                // a common large acceptance circle can form an impassable queue.
+                Brain->SetErrand(FVector(R::GoalX+R::Offsets[Slot][0],R::GoalY+R::Offsets[Slot][1],
+                    R::GoalZ+Enemy->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()),
+                    FVector(-1,0,0),R::PacePermille/1000.f,0,false,false,R::SlotAcceptanceCm);
+            ++Slot;
         }
     if(auto* Arena=Mode().Arena()) Arena->ShowObjective(nullptr);
     Fire(TEXT("event:horse_defense_withdrawal"),INDEX_NONE,true);

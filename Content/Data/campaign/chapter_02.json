@@ -11821,6 +11821,33 @@
       0
      ],
      "floor_tolerance_cm": 30,
+     "slots_cm": [
+      [
+       -130,
+       -100
+      ],
+      [
+       -130,
+       100
+      ],
+      [
+       0,
+       -100
+      ],
+      [
+       0,
+       100
+      ],
+      [
+       130,
+       -100
+      ],
+      [
+       130,
+       100
+      ]
+     ],
+     "slot_acceptance_cm": 30,
      "completion": "arrived_survivors_and_finished_bark"
     }
    },
