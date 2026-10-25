@@ -22,6 +22,12 @@ bool Dialogue(FBeatWorld& W)
     for(int I=0;I<1800&&W.Campaign()->IsDialogueBlocking();++I) if(!W.Tick(1)) return false;
     return W.Test.TestFalse(TEXT("Authored relay dialogue releases control"),W.Campaign()->IsDialogueBlocking());
 }
+bool RebindInteract(FBeatWorld& W)
+{
+    return Dialogue(W)&&W.Press(EKeys::Escape)&&
+        W.Test.TestTrue(TEXT("The controls menu rebinds Interact"),W.Hero()->RemapCombatAction(TEXT("Interact"),EKeys::G))&&
+        W.Press(EKeys::Escape);
+}
 void FreezeGuards(FBeatWorld& W)
 {
     for(TActorIterator<ASoraEnemy> It(W.World->GetTestWorld());It;++It)
@@ -118,7 +124,7 @@ bool FSoraRelayScanTest::RunTest(const FString& Parameters)
     if(!FSoraCatalog::Get().Load()) return false;
     FBeatWorld W(*this,TEXT("RelayScan"),5,3);if(!W.Start()) return false;
     W.Harden();FreezeGuards(W);auto* C=W.Campaign();
-    if(!Dialogue(W)||!W.Hero()->RemapCombatAction(TEXT("Interact"),EKeys::G)) return false;
+    if(!RebindInteract(W)) return false;
     Place(W,C->RelayWorkLocation(1));if(!W.Tick(3)) return false;
     FSoraPatrolRoute Route;Route.Points={C->RelayWorkLocation(1)+FVector(300,0,90)};
     FSoraEnemyTuning Tune;Tune.SightCm=1;Tune.DarkSightCm=0;Tune.HearingCm=0;
@@ -165,7 +171,7 @@ bool FSoraRelayGalleryTest::RunTest(const FString& Parameters)
     if(!FSoraCatalog::Get().Load()) return false;
     FBeatWorld W(*this,TEXT("RelayGallery"),5,3);if(!W.Start()) return false;
     W.Harden();FreezeGuards(W);auto* C=W.Campaign();const FVector O(W.BeatData().Space.RelayRoom.Origin,0);
-    if(!Dialogue(W)||!W.Hero()->RemapCombatAction(TEXT("Interact"),EKeys::G)) return false;
+    if(!RebindInteract(W)) return false;
     Place(W,O+FVector(75,850,0));if(!W.Tick(3)) return false;
     if(!Walk(W,0,[&]{return Feet(*W.Hero()).Z>=399&&W.Hero()->GetActorLocation().X>=O.X+520;})) return false;
     if(!Walk(W,0,[&]{return W.Hero()->GetActorLocation().X>=O.X+1000;})) return false;
@@ -190,7 +196,7 @@ bool FSoraRelayInspectionTest::RunTest(const FString& Parameters)
     W.Harden();FreezeGuards(W);auto* C=W.Campaign();auto* Craft=W.Fieldcraft();
     // Frozen original guards are taken out of the inspection candidate pool.
     for(TActorIterator<ASoraEnemy> It(W.World->GetTestWorld());It;++It) if(It->ArchetypeId()==TEXT("auditor")) It->Destroy();
-    if(!Dialogue(W)||!W.Hero()->RemapCombatAction(TEXT("Interact"),EKeys::G)||!Pull(W,2)) return false;
+    if(!RebindInteract(W)||!Pull(W,2)) return false;
     const FVector O(W.BeatData().Space.RelayRoom.Origin,0);FSoraPatrolRoute Route;
     Route.Points={O+FVector(300,500,90)};Route.bThreeDimensional=true;
     FSoraEnemyTuning Tune;Tune.SightCm=1;Tune.DarkSightCm=0;Tune.HearingCm=0;
@@ -217,7 +223,7 @@ bool FSoraRelayExitTest::RunTest(const FString& Parameters)
     if(!FSoraCatalog::Get().Load()) return false;
     FBeatWorld W(*this,TEXT("RelayExit"),5,3);if(!W.Start()) return false;
     W.Harden();FreezeGuards(W);auto* C=W.Campaign();
-    if(!Dialogue(W)||!W.Hero()->RemapCombatAction(TEXT("Interact"),EKeys::G)) return false;
+    if(!RebindInteract(W)) return false;
     const FVector Exit=C->RelayWorkLocation(3);
     Place(W,Exit);if(!W.Tick(3)||!W.Press(EKeys::G)) return false;
     TestTrue(TEXT("The east door cannot complete before the three nodes"),C->ActiveBeat()==3&&!C->RelayOffline());
