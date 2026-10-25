@@ -47,11 +47,15 @@ import unreal
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from sora_engine_pin import require_running_engine  # noqa: E402
+import dojo_timber_admission as admission  # noqa: E402
 
 require_running_engine("Nyaagyu dojo timbers import")
 ROOT = Path(unreal.Paths.project_dir()).resolve()
 KIT = ROOT / "Content/SourceArt/Environment/NyaagyuDojoTimbers"
-CACHE = Path(os.environ.get("SORA_ART_CACHE", str(ROOT / "Local/ArtCache"))) / "NyaagyuDojoTimbers"
+# SORA_ART_CACHE moves the whole art cache: the evidence and the dense FBX it
+# vouches for. Manifest and evidence keys stay Local/ArtCache/... either way.
+ART_CACHE = admission.cache_root(ROOT, os.environ)
+CACHE = ART_CACHE / "NyaagyuDojoTimbers"
 DEST = "/Game/Generated/Environment/DojoTimbers"
 TEX = f"{DEST}/Textures"
 
@@ -370,13 +374,13 @@ def fbx_options(nanite: bool):
     return options
 
 
-def verified(path: Path, digest: str, evidence: dict, label: str):
-    """The file is the one the generator's build/--verify run wrote for ``digest``."""
-    rel = path.relative_to(ROOT).as_posix()
-    entry = evidence["fbx"].get(rel)
-    require(entry is not None, f"{label}: no rebuild evidence for {rel} (run the generator, or its --verify)")
-    require(entry["digest"] == digest, f"{label}: rebuilt geometry digest differs from the manifest")
-    require(path.is_file() and sha(path) == entry["sha256"], f"{label}: {rel} is not the file that run wrote")
+def verified(key: str, digest: str, evidence: dict, label: str) -> Path:
+    """The file behind ``key`` (under ART_CACHE for Local/ArtCache/ keys) is the
+    one the generator's build/--verify run wrote for ``digest``."""
+    try:
+        return admission.check_evidence(ROOT, ART_CACHE, key, digest, evidence, label)
+    except admission.AdmissionError as error:
+        require(False, str(error))
 
 
 def import_mesh(fbx: Path, name: str, nanite: bool):
@@ -411,8 +415,7 @@ def import_mesh(fbx: Path, name: str, nanite: bool):
 
 def import_placement(rec, parent, evidence, preset="column_fukiurushi"):
     name = rec["asset"]
-    fbx = ROOT / rec["cache_fbx"]
-    verified(fbx, rec["digest"], evidence, name)
+    fbx = verified(rec["cache_fbx"], rec["digest"], evidence, name)
     mesh = import_mesh(fbx, name, True)
     mi = instance(f"MI_{name}", parent)
     apply_preset(mi, preset)
@@ -427,7 +430,7 @@ def import_pool(rec, parent, evidence, preset="column_fukiurushi"):
     name = rec["asset"]
     fbx = ROOT / rec["fallback_fbx"]
     require(fbx.is_file() and sha(fbx) == rec["fallback_fbx_sha256"], f"{name}: committed fallback FBX changed")
-    verified(fbx, rec["digest"], evidence, name)
+    verified(rec["fallback_fbx"], rec["digest"], evidence, name)
     mesh = import_mesh(fbx, name, False)
     maps = {}
     for kind in ("NormalDX", "Masks"):
@@ -449,18 +452,10 @@ def load_binding(manifests):
     """The campaign binding: the chapter files and manifests the placements were checked against."""
     path = KIT / "campaign_binding.json"
     require(path.is_file(), "no campaign_binding.json (run python3 scripts/art/bind_dojo_timbers.py)")
-    binding = json.loads(path.read_text())
-    require(binding.get("schema") == "sora-dojo-timber-campaign-binding-v1", "unknown campaign binding schema")
-    require(sha(ROOT / binding["binder"]) == binding["binder_sha256"], "the binder changed since the binding")
-    require(sorted(binding["manifests"]) == sorted(manifests), "the binding covers other manifests")
-    for rel, digest in binding["manifests"].items():
-        require(sha(ROOT / rel) == digest, f"{rel} changed since the binding")
-    chapters = sorted(p.relative_to(ROOT).as_posix() for p in (ROOT / "Content/Data/campaign").glob("chapter_*.json"))
-    require(chapters == sorted(binding["campaign"]), "the chapter files are not the ones bound")
-    for rel, digest in binding["campaign"].items():
-        require(sha(ROOT / rel) == digest,
-                f"{rel} changed since the binding (rerun python3 scripts/art/bind_dojo_timbers.py)")
-    return binding
+    try:
+        return admission.check_binding(ROOT, json.loads(path.read_text()), manifests)
+    except admission.AdmissionError as error:
+        require(False, str(error))
 
 
 def load_kit(folder: Path, cache: Path):
