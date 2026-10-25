@@ -2,11 +2,13 @@
  "schema_version": 1,
  "asset": "SM_NyaakotoFP_PawL_Yumi",
  "generator": "scripts/art/create_nyaakoto_fp_paws.py",
- "generator_sha256": "118ea89cecf1417d72cc9c709a9216cc5cf912b65c1063692848b62cb3619b3a",
+ "generator_sha256": "aa9434396a4f5b6b580c1fabe5b235808eb6d5bbdf7866feb323383778abe434",
  "inputs": {
-  "scripts/art/nyaakoto_fp_paws.py": "40b400c5ca3448726e4f128ebf390af63938eeaae99caf277ae37ccc386bbe43",
+  "scripts/art/nyaakoto_fp_paws.py": "fb3a259904d74c8da0f5478a37530ae522a38c8e2ea048f0edecd08ba763911f",
   "scripts/art/nyaakoto_fp_kote.py": "53e7d67f3bddd4a945c2dafb575de7667ac0c70905e17f80a8210d1b49a3b34d",
   "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/FurCards/manifest.json": "0465e707d9ca9e7b363130cd77b12af9464dc49be75d84a1e21f009a9523f21c",
+  "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/FurShells/manifest.json": "88482f9150fd40566b8e3e610ec0aa4013c3700d6d099eaa36042018bbf56f5d",
+  "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/FurShells/T_NyaakotoFP_FurShells_Strands.png": "1a78f60bc58f8522a9f3aa1b4c5c881ab1403ff4a93e2aeb5f9dc7d388714b05",
   "Content/SourceArt/UI/SoraKamonMon/SM_SoraKamon.fbx": "9d51357d02516b5e9ed65459fae7e32fcc72bb6a14c1d8612ba4b356a78779e2",
   "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/SK_Weapon_18.fbx": "dd19ee99651d25f5fe4faa8ab296cf330ed0e2bcdfefc4292dbf9c824d84f181",
   "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/rig_record.json": "1966ea6c52c1bcc30ae336c7cec6b59e16335fee2bed1b8395faf436ef3b3e2a",
@@ -30,31 +32,31 @@
  "step_m": 0.0009,
  "counts": {
   "skin_triangles": 145668,
-  "fur_cards": 20292,
-  "fur_card_triangles": 162336,
+  "fur_mode": "shells",
   "kote_parts": 18,
   "kote_triangles": 95616,
   "mon_triangles": 392,
-  "build_s": 14.7,
-  "fur_skin_normal_weight": 0.75,
-  "fur_tip_width": 0.2,
-  "fur_occlusion": {
-   "p5": 0.0019,
-   "median": 0.9655,
-   "share_below_0.8": 0.2356
-  },
+  "build_s": 10.7,
   "coat_white": [
    0.742,
    0.693,
    0.617
   ],
   "undercoat": 0.72,
-  "export_triangles": 404012
+  "fur_shell_layers": 10,
+  "fur_shell_triangles": 288130,
+  "fur_shell_base_vertices": 16386,
+  "fur_shell_height_mm": {
+   "p5": 1.0,
+   "median": 1.2,
+   "p95": 3.0
+  },
+  "export_triangles": 529806
  },
  "material_slots": [
   "M_NyaakotoFP_FurSkin",
   "M_NyaakotoFP_PawPad",
-  "M_NyaakotoFP_FurCards",
+  "M_NyaakotoFP_FurShells",
   "M_NyaakotoFP_KoteSilk",
   "M_NyaakotoFP_KoteUrushi",
   "M_NyaakotoFP_CordVermilion",
@@ -64,70 +66,69 @@
   "skin_closed": true,
   "skin_min_clearance_mm": 0.15,
   "skin_contact_vertices": 4546,
-  "fur_tips_inside_bow": 0,
   "kote_parts_closed": true,
   "kote_min_clearance_mm": 51.26,
   "skin_outside_paw_l_envelope_share": 0.5715,
   "dewclaw_tip_below_arrow_mm": 3.2,
-  "fur_live_triangle_share": 0.99595,
-  "fur_front_min_cos_to_skin": 0.639,
-  "fur_shading_normal_max_deg_from_skin": 11.928,
+  "shells_min_clearance_mm": 0.4,
+  "shells_above_skin_share": 0.999854,
+  "shells_layers": 10,
   "fur_corner_normal_from_face_deg": {
-   "mean": 8.351,
-   "p90": 15.168,
-   "max": 40.825,
-   "corners": 485034
+   "mean": 5.263,
+   "p90": 8.612,
+   "max": 178.844,
+   "corners": 864390
   },
   "ok": true,
   "fbx_fur_corner_normal_from_face_deg": {
-   "mean": 8.449,
-   "p90": 15.199,
-   "max": 178.91,
-   "corners": 485610
+   "mean": 5.263,
+   "p90": 8.611,
+   "max": 178.844,
+   "corners": 864390
   }
  },
  "bounds_m": {
   "min": [
    -0.3337185,
-   -0.0335265,
+   -0.0338466,
    -0.1299672
   ],
   "max": [
-   0.0318577,
+   0.0322616,
    0.2042992,
-   0.0681678
+   0.0684715
   ]
  },
  "exports": {
   "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/Production/SM_NyaakotoFP_PawL_Yumi.fbx": {
-   "sha256": "64d02d64eea72983c9a2a2d235f5202d8ca37188b4ff610b54f0b88ce0893894",
-   "bytes": 58889692
+   "sha256": "c32195205a92e18f3f6d84912834134d298073570626c08a37844ed8845a7fab",
+   "bytes": 81667516
   },
   "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/Production/Nyaakoto_FP_PawL_Yumi.blend": {
-   "sha256": "201ca3316aa3b299221d99d116f1d2a275f792d289006f6d23b20d0427245f8c",
-   "bytes": 20418994
+   "sha256": "b806f5213e415a8dc3e5839f1ff8f62628476e5f8cd4ec8a5339a6e9a2c0774e",
+   "bytes": 25052668
   }
  },
  "renders": [
   {
    "file": "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/Production/Renders/SM_NyaakotoFP_PawL_Yumi_FirstPerson.png",
-   "sha256": "2245eef8ce69a0ce82c0a6a9aaa5c6a608a61f2521aa973219cfc4e8cff1f5bf",
-   "seconds": 7.4
+   "sha256": "a504806f143c31d0d5b506bce3b66e6a51b296c21060105c9b730f666bd9f9ea",
+   "seconds": 5.1
   },
   {
    "file": "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/Production/Renders/SM_NyaakotoFP_PawL_Yumi_ArcherClose.png",
-   "sha256": "36da44e4114b1a4a0ec3ffdcb997e810f7b89537f3bcf0b8415942d03786efed",
-   "seconds": 19.8
+   "sha256": "d791310824b95bd8eb307843ae224ac5bdd47f51fd045452ea65fa9cb49af7c4",
+   "seconds": 20.3
   },
   {
    "file": "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/Production/Renders/SM_NyaakotoFP_PawL_Yumi_LeftSide.png",
-   "sha256": "9093a67fa2bc4f8bdce8680c37b8a459810fdc4ca8bd0feba02faff25bf09c1b",
-   "seconds": 23.4
+   "sha256": "1358514f16fad833cbbb8a0a1318ccb3b2fbcedc3a8d1fe2e70a0bce00c158d8",
+   "seconds": 19.2
   },
   {
    "file": "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/Production/Renders/SM_NyaakotoFP_PawL_Yumi_FurMacro.png",
-   "sha256": "ae01440eee29148284ca49a4b62b174c8cc093a5aa349b1448db1a13d7f11e29",
-   "seconds": 51.1
+   "sha256": "36380384fd10ab904364bdc374458522f4240fd3a89697a0fd053dc43b5adac7",
+   "seconds": 72.5
   }
  ],
  "scope": "source asset and Blender review originals; not imported, admitted, rigged for motion or a photoreal claim. Fur is cards on a skin (first-person and Mac target), not strands."
