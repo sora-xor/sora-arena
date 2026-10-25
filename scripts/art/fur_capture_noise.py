@@ -2,6 +2,7 @@
 
   python3 scripts/art/fur_capture_noise.py Saved/YumiFP/<out> --out <result.json>
   python3 scripts/art/fur_capture_noise.py --compare Saved/YumiFP/<runup4> Saved/YumiFP/<auto> --out <result.json>
+  python3 scripts/art/fur_capture_noise.py --assets Saved/YumiFP/<before> Saved/YumiFP/<after> --out <result.json>
 
 Capture v3's fur read as white speckle. A candidate cause was HighResShot's
 four-frame run-up, too short for TSR to resolve dithered coverage
@@ -34,6 +35,17 @@ Per hold it reports:
   can change as the speckle smooths);
 - the residual of both runs on one common region, the intersection of the
   two selections.
+
+**The asset comparison** (--assets A B) is for two captures of the same holds
+with different paw assets, as v4 against v5 (NYAAKOTO_FP_FUR_V4.md).
+- **What must match:** every ASSET_SETUP_KEYS entry of the two manifests, and
+  for each hold they share its camera, hold, posed sockets and pose.
+- **The tolerance is ASSET_TOL_CM,** because a hold solved in another order
+  differs by about 1e-12 cm.
+- **What may differ:** the requested holds (only common ones are compared),
+  the study's digest (recorded) and the assets' bytes, which no manifest
+  holds.
+- It reports the same per-hold figures as --compare.
 
 **It fails** (exit 1, naming each problem), and never returns an empty
 measurement, when:
@@ -72,8 +84,29 @@ SETUP_KEYS = ("fov", "mesh_scale", "holds", "sockets_cm", "poses_component_cm", 
               "resolution", "cameras", "assessment_camera", "set_materials", "sun", "ev100", "exposure_bias")
 
 
+# What two captures of different paw assets must share (--assets): the capture's setup, and per common hold its
+# camera, hold, posed sockets and pose, numbers within ASSET_TOL_CM.
+ASSET_SETUP_KEYS = ("fov", "mesh_scale", "materials", "id_colours", "control", "ids_enabled", "resolution",
+                    "assessment_camera", "set_materials", "sun", "ev100", "exposure_bias", "highres_runup")
+ASSET_HOLD_KEYS = ("cameras", "holds", "sockets_cm", "poses_component_cm")
+ASSET_TOL_CM = 1e-9
+
+
 class NoiseError(Exception):
     pass
+
+
+def _close(x, y, tol):
+    """x and y alike, their numbers within tol (booleans and everything else exactly)."""
+    if isinstance(x, dict) and isinstance(y, dict):
+        return x.keys() == y.keys() and all(_close(x[k], y[k], tol) for k in x)
+    if isinstance(x, list) and isinstance(y, list):
+        return len(x) == len(y) and all(_close(u, v, tol) for u, v in zip(x, y))
+    if isinstance(x, bool) or isinstance(y, bool):
+        return x is y
+    if isinstance(x, (int, float)) and isinstance(y, (int, float)):
+        return abs(x - y) <= tol
+    return x == y
 
 
 def box(x, r):
@@ -202,21 +235,48 @@ def run_noise(run: Path) -> dict:
             "scope": "a measurement of capture noise in the fur, for a controlled comparison; not a gate"}
 
 
+def _pair(ia, ib, holds):
+    """Per hold: each run's own selection, and both on the intersection of their fur selections."""
+    out = {}
+    for hold in holds:
+        (rgb_a, ids_a), (rgb_b, ids_b) = ia[hold], ib[hold]
+        fur_a, lum_a, _bow = masks(rgb_a, ids_a)
+        fur_b, lum_b, _bow = masks(rgb_b, ids_b)
+        common = fur_a & fur_b
+        out[hold] = {"a": hold_noise(rgb_a, ids_a), "b": hold_noise(rgb_b, ids_b), "common_pixels": int(common.sum()),
+                     "a_on_common": residual_stats(lum_a, common), "b_on_common": residual_stats(lum_b, common)}
+    return out
+
+
+def compare_assets(run_a: Path, run_b: Path) -> dict:
+    """Two captures of the same holds with different paw assets: per common hold, as compare_runs reports."""
+    (ma, da, ia), (mb, db, ib) = load_run(run_a), load_run(run_b)
+    common = [h for h in ma["requested_holds"] if h in mb["requested_holds"]]
+    if not common:
+        raise NoiseError(f"{run_a} and {run_b} have no hold in common")
+    differ = [k for k in ASSET_SETUP_KEYS if ma.get(k) != mb.get(k)]
+    for hold in common:
+        for k in ASSET_HOLD_KEYS:
+            a, b = ma.get(k), mb.get(k)
+            if not (isinstance(a, dict) and isinstance(b, dict) and _close(a.get(hold), b.get(hold), ASSET_TOL_CM)):
+                differ.append(f"{k}[{hold}]")
+    if differ:
+        raise NoiseError(f"{run_a} and {run_b} differ in {differ}: not one setup")
+    return {"schema_version": 2, "generator": "scripts/art/fur_capture_noise.py", "compare_assets": True,
+            "a": {"run": str(run_a), "manifest_sha256": hashlib.sha256(da).hexdigest()},
+            "b": {"run": str(run_b), "manifest_sha256": hashlib.sha256(db).hexdigest()},
+            "tolerance_cm": ASSET_TOL_CM, "study_same": ma.get("study") == mb.get("study"),
+            "holds": _pair(ia, ib, common),
+            "scope": "two paw assets under one setup: a measurement of capture noise in the fur, not a gate"}
+
+
 def compare_runs(run_a: Path, run_b: Path) -> dict:
     """Two runs identical but for their run-up: per hold, each run's own selection, and both on their intersection."""
     (ma, da, ia), (mb, db, ib) = load_run(run_a), load_run(run_b)
     differ = [k for k in SETUP_KEYS if ma.get(k) != mb.get(k)]
     if differ:
         raise NoiseError(f"{run_a} and {run_b} differ in {differ}, not only in their run-up")
-    holds = {}
-    for hold in ma["requested_holds"]:
-        (rgb_a, ids_a), (rgb_b, ids_b) = ia[hold], ib[hold]
-        fur_a, lum_a, _bow = masks(rgb_a, ids_a)
-        fur_b, lum_b, _bow = masks(rgb_b, ids_b)
-        common = fur_a & fur_b
-        holds[hold] = {"a": hold_noise(rgb_a, ids_a), "b": hold_noise(rgb_b, ids_b),
-                       "common_pixels": int(common.sum()),
-                       "a_on_common": residual_stats(lum_a, common), "b_on_common": residual_stats(lum_b, common)}
+    holds = _pair(ia, ib, ma["requested_holds"])
     return {"schema_version": 2, "generator": "scripts/art/fur_capture_noise.py", "compare": True,
             "a": {"run": str(run_a), "manifest_sha256": hashlib.sha256(da).hexdigest(),
                   "highres_runup": ma.get("highres_runup")},
@@ -230,23 +290,25 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("run", type=Path, nargs="?")
     ap.add_argument("--compare", type=Path, nargs=2, metavar=("RUN_A", "RUN_B"))
+    ap.add_argument("--assets", type=Path, nargs=2, metavar=("RUN_A", "RUN_B"))
     ap.add_argument("--out", type=Path, required=True)
     a = ap.parse_args(argv)
-    if (a.run is None) == (a.compare is None):
-        print("FUR_NOISE_FAILED: give one run, or --compare RUN_A RUN_B", file=sys.stderr)
+    if [a.run is not None, a.compare is not None, a.assets is not None].count(True) != 1:
+        print("FUR_NOISE_FAILED: give one run, --compare RUN_A RUN_B or --assets RUN_A RUN_B", file=sys.stderr)
         return 1
     if a.out.exists():
         print(f"FUR_NOISE_FAILED: {a.out} exists; a result is never overwritten", file=sys.stderr)
         return 1
     try:
-        result = run_noise(a.run) if a.run is not None else compare_runs(*a.compare)
+        result = (run_noise(a.run) if a.run is not None else compare_runs(*a.compare) if a.compare is not None
+                  else compare_assets(*a.assets))
     except NoiseError as exc:
         print(f"FUR_NOISE_FAILED: {exc}", file=sys.stderr)
         return 1
     with open(a.out, "x", encoding="utf-8") as f:
         f.write(json.dumps(result, indent=1) + "\n")
     for hold, r in result["holds"].items():
-        if result.get("compare"):
+        if result.get("compare") or result.get("compare_assets"):
             ca, cb = r["a_on_common"], r["b_on_common"]
             print(f"{hold}: own selections {r['a']['fur']['pixels']} / {r['b']['fur']['pixels']} px; on the common "
                   f"{r['common_pixels']} px, residual {ca.get('residual_mean', float('nan')):.4f} (A) vs "

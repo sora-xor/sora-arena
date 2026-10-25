@@ -180,5 +180,55 @@ class Compare(unittest.TestCase):
             self.assertTrue(json.loads(out.read_text())["compare"])
 
 
+class Assets(unittest.TestCase):
+    def test_two_assets_are_measured_on_their_common_region(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            before, after = write_run(tmp, "before"), write_run(tmp, "after", speckled=False)
+            r = F.compare_assets(before, after)
+            self.assertEqual(sorted(r["holds"]), ["paw", "rest"])
+            h = r["holds"]["rest"]
+            self.assertEqual(h["a_on_common"]["pixels"], h["b_on_common"]["pixels"])
+            self.assertGreater(h["a_on_common"]["residual_mean"], h["b_on_common"]["residual_mean"])
+            self.assertTrue(r["study_same"])
+
+    def test_a_hold_solved_in_another_order_is_the_same_hold(self):
+        # v5 solved right_cheek_clear first and v4 fourth: its values differ by about 1e-12 cm.
+        with tempfile.TemporaryDirectory() as tmp:
+            a = write_run(tmp, "a")
+            b = write_run(tmp, "b", holds={"rest": {"anchor": [45 + 2e-12, -15, -12]}, "paw": {"camera": {}}},
+                          study={"sha256": "t"})
+            r = F.compare_assets(a, b)
+            self.assertFalse(r["study_same"])
+
+    def test_a_different_setup_is_refused(self):
+        for key, value in (("ev100", 12.0), ("highres_runup", {"r.HighResScreenshotDelay": 32}),
+                           ("cameras", {"rest": {"fov": 60}}),
+                           ("holds", {"rest": {"anchor": [45.001, -15, -12]}, "paw": {"camera": {}}})):
+            with self.subTest(key=key), tempfile.TemporaryDirectory() as tmp:
+                a, b = write_run(tmp, "a"), write_run(tmp, "b", **{key: value})
+                with self.assertRaises(F.NoiseError) as cm:
+                    F.compare_assets(a, b)
+                self.assertIn(key, str(cm.exception))
+
+    def test_only_the_holds_both_ran_are_compared(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            a = write_run(tmp, "a")
+            b = write_run(tmp, "b", requested_holds=["rest"])
+            self.assertEqual(sorted(F.compare_assets(a, b)["holds"]), ["rest"])
+            c = write_run(tmp, "c", requested_holds=["paw"], eye_view_holds=[])
+            d = write_run(tmp, "d", requested_holds=["rest"])
+            with self.assertRaises(F.NoiseError):
+                F.compare_assets(c, d)
+
+    def test_the_command_compares_assets_and_takes_one_mode(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            a, b = write_run(tmp, "a"), write_run(tmp, "b", speckled=False)
+            out = Path(tmp) / "assets.json"
+            self.assertEqual(F.main(["--assets", str(a), str(b), "--out", str(out)]), 0)
+            self.assertTrue(json.loads(out.read_text())["compare_assets"])
+            self.assertEqual(F.main(["--assets", str(a), str(b), "--compare", str(a), str(b), "--out",
+                                     str(Path(tmp) / "x.json")]), 1)
+
+
 if __name__ == "__main__":
     unittest.main()

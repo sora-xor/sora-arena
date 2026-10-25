@@ -1,9 +1,12 @@
 # The first-person paw's fur, v4: opaque clumps, fringed tips, skin-lit cards
 
-**Status (2026-10-25):** source and rebuilt assets, made during root's
-bounded fur and paw lane. Its capture is below once it has run. A fur
-diagnostic and candidate: not art acceptance, an admission or a photoreal
-claim.
+**Status (2026-10-25):** source, rebuilt assets and capture v5, made during
+root's bounded fur and paw lane. It is a fur diagnostic and candidate: not
+art acceptance, an admission or a photoreal claim.
+
+**Result:** the dither speckle is down by 40 % to 47 %, measured in
+Unreal. What remains is a flatter, whiter coat with angular card gaps
+(below).
 
 ## The defect
 
@@ -106,8 +109,84 @@ holds, the cameras and the exposure.
   - the shading normals are unit and within 20° of it;
   - the odd rows' UVs are reversed.
 
-## The capture
+## The run (2026-10-25, root's bounded lane)
 
-**Planned:** right_cheek_clear and paw, 1920 x 1080, runup=auto, IDs for the
-eye view, into a fresh directory. The camera and exposure are v4's, and v4's
-originals stay as they are.
+Each step's command, PIDs, logs and exits are in `Saved/W18Rebuild/s20-s25*`
+and the mailbox note of 20:58 UTC.
+
+1. **The atlas:** generated deterministically, byte-identical to the
+   reviewed draft. Its ledger is rewritten, and v3 is archived.
+2. **Blender, attempt 0:** stopped at its own FBX check.
+   - That check re-imported the FBX through Blender's importer, which read
+     the cards' corners at 0.45° off their faces.
+   - The file itself holds 8.46°, against v3's 1.86°. The check measured the
+     importer, not the export.
+   - It now parses the FBX's bytes with Blender's own
+     `io_scene_fbx.parse_fbx` (0b2fac1).
+   - Attempt 0's FBX and logs are kept.
+3. **Blender, attempt 1:** passed, exit 0.
+   - Counts as v3's: 404,012 triangles, 20,292 cards.
+   - Fronts all outward (worst cos 0.639), normals within 11.9° of the skin.
+   - Corners 8.352° off their faces as built, 8.456° in the FBX.
+   - Signed 6f81938, with its ledger. v3's production files are archived.
+4. **The Unreal import** (`--rhi`): passed, editor 0, wrapper 0. The fur
+   section's corners read back 8.32° off their faces, so the import kept
+   the custom normals. Bounds error 5e-6 cm, all materials compiled.
+5. **The fresh-editor material check:**
+   - Attempt 0 could not write over step 9's read-only record (wrapper 1).
+   - It now takes an exclusive `out=` (d6021af).
+   - Attempt 1 passed with no problems.
+6. **Capture v5** (`Saved/YumiFP/v5_fur`): right_cheek_clear and paw, 1920 x
+   1080, runup=auto, IDs.
+   - Editor 0, wrapper 0; it exited by itself 8 s after its marker.
+   - Cameras, exposure, sun, set and material bindings are v4's. The solved
+     right_cheek_clear differs from v4's by at most 3.4e-12 cm.
+
+## Capture v5 against v4 (runup=auto)
+
+**The reticle:** right_cheek_clear's ID pass still shows no bow, arrow or paw
+pixel in the 0.12 disc.
+
+**The fur's speckle** (`fur_capture_noise --assets`, new for this
+comparison; `Saved/W18Rebuild/s25_fur_assets_v4auto_v5.json`):
+- The common region is the intersection of the two runs' fur selections.
+- It checks first that each common hold's camera, hold, posed sockets and
+  pose match within 1e-9 cm, beside the setup.
+
+| hold | fur pixels, v4 / v5 | own residual, v4 / v5 | common-region residual, v4 / v5 | fur / bow |
+| --- | --- | --- | --- | --- |
+| right_cheek_clear (eye view) | 7,266 / 7,630 | 0.0216 / 0.0133 | 0.0216 / 0.0130 (**-39.7 %**) | 4.1x / 2.5x |
+| paw (close-up) | 271,445 / 279,556 | 0.0166 / 0.0092 | 0.0166 / 0.0088 (**-46.8 %**) | - |
+
+For scale, the run-up comparison of v4's two runs moved the same measure by
+-2.4 % to +1.3 %.
+
+**The coat's form** (`Saved/W18Rebuild/s25_fur_form_v4auto_v5.json`): it is
+brighter and a little flatter.
+
+| hold | mean luminance, v4 / v5 | form contrast (15 px), v4 / v5 |
+| --- | --- | --- |
+| right_cheek_clear | 0.746 / 0.815 | 0.074 / 0.069 |
+| paw | 0.788 / 0.825 | 0.053 / 0.047 |
+
+**What the originals show:**
+- The close-up has lost v4's dark pepper of dither specks, and the strands
+  read as directional streaks.
+- The patchwork of flat, angular card shapes with darker gaps between them
+  remains, its edges now crisper.
+- At the eye view the paw is a smoother but flat white.
+- Root's reading of the Blender originals applies here too: broad opaque
+  strips, comb-like edges, a flat white paw and a glossy sleeve.
+
+## What is left, for a later lane
+
+- **Form and volume:**
+  - coat-depth occlusion per card (a lower card darker), not only per
+    texel from root to tip;
+  - a white nearer real white fur's albedo, so form shading shows.
+- **The angular gaps:** the skin under the cards shows as grey wedges. Bring
+  the skin's colour to the coat's mean, or close the gaps.
+- **Comb-like fringes:** less regular hair spacing and lengths in each
+  strand's fringe.
+- **The sleeve's gloss:** the kote silk's broad highlights, a separate
+  material defect.
