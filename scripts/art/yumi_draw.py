@@ -722,13 +722,13 @@ def summary(tl):
                 b = r.get("clip_box")
                 if b:
                     ph["clip_box"] = clip_box([(b[0], b[2]), (b[1], b[3])], ph["clip_box"])
-            if not r["visible"]:
-                if phase == "hold" and name in MANDATORY_ANY:
-                    ph["hidden_frames"] += 1
-                continue
+            # The nearest approach and the time inside the radius count
+            # whatever the visibility (a reticle-covering part is never skipped).
             ph["nearest"] = min(ph["nearest"], r.get("nearest_conservative", 9.0))
             if r.get("nearest_conservative", 9.0) < clear:
                 ph["inside_s"] = round(ph["inside_s"] + dt, 4)
+            if not r["visible"] and phase == "hold" and name in MANDATORY_ANY:
+                ph["hidden_frames"] += 1
     return out
 
 
@@ -825,48 +825,121 @@ def _point_tri_dist(P):
     return np.where(inside, 0.0, dist)
 
 
-def assess_mesh(verts_m, tris, rest, state, contract):
-    """A mesh part in the pose: visibility, the exact nearest approach of its
-    projected triangles to the reticle (half-heights), and near-plane cuts
-    inside the frame (triangles crossing the plane whose cut lies on screen)."""
+def _clip_near(T, near_x):
+    """Sutherland-Hodgman against the near plane x = near_x, per triangle
+    (n, 3, 3) in eye space. Returns the in-front triangles (m, 3, 3), each
+    crossing triangle's remainder included, and the cut segments (k, 2, 3)
+    where crossing triangles meet the plane."""
     import numpy as np
+    front = T[..., 0] > near_x
+    count = front.sum(1)
+    keep = [T[count == 3]]
+    cuts = []
+    for tri, f in zip(T[(count == 1) | (count == 2)], front[(count == 1) | (count == 2)]):
+        def hit(p, q):
+            t = (near_x - p[0]) / (q[0] - p[0])
+            return p + (q - p) * t
+        if f.sum() == 1:
+            i = int(np.nonzero(f)[0][0])
+            a, b, c = tri[i], tri[(i + 1) % 3], tri[(i + 2) % 3]
+            i1, i2 = hit(a, b), hit(a, c)
+            keep.append(np.array([[a, i1, i2]]))
+        else:
+            i = int(np.nonzero(~f)[0][0])
+            c, a, b = tri[i], tri[(i + 1) % 3], tri[(i + 2) % 3]
+            i1, i2 = hit(a, c), hit(b, c)
+            keep.append(np.array([[a, b, i2], [a, i2, i1]]))
+        cuts.append((i1, i2))
+    tris = np.concatenate(keep) if keep else np.zeros((0, 3, 3))
+    return tris, (np.array(cuts) if cuts else np.zeros((0, 2, 3)))
+
+
+def _segments_cross(p1, p2, q1, q2):
+    """Whether segments p1-p2 and q1-q2 (each (n, 2), broadcastable) intersect."""
+    import numpy as np
+
+    def orient(a, b, c):
+        return (b[..., 0] - a[..., 0]) * (c[..., 1] - a[..., 1]) - (b[..., 1] - a[..., 1]) * (c[..., 0] - a[..., 0])
+    d1, d2 = orient(q1, q2, p1), orient(q1, q2, p2)
+    d3, d4 = orient(p1, p2, q1), orient(p1, p2, q2)
+    return (np.sign(d1) != np.sign(d2)) & (np.sign(d3) != np.sign(d4))
+
+
+def _tris_hit_rect(P, ax):
+    """Which 2D triangles P (m, 3, 2) overlap the rectangle [-ax, ax] x [-1, 1]:
+    a vertex inside, a rectangle corner inside the triangle, or crossing edges."""
+    import numpy as np
+    inside_v = ((np.abs(P[..., 0]) <= ax) & (np.abs(P[..., 1]) <= 1.0)).any(1)
+    corners = np.array([[-ax, -1.0], [ax, -1.0], [ax, 1.0], [-ax, 1.0]])
+    hit = inside_v.copy()
+    for c in corners:
+        hit |= _point_tri_dist(P - c) == 0.0
+    for i in range(3):
+        a, b = P[:, i], P[:, (i + 1) % 3]
+        for k in range(4):
+            hit |= _segments_cross(a, b, corners[k][None, :], corners[(k + 1) % 4][None, :])
+    return hit
+
+
+def _clip_segment_to_rect(a, b, ax):
+    """Liang-Barsky: the part of segment a-b (2D) inside [-ax, ax] x [-1, 1], or None."""
+    t0, t1 = 0.0, 1.0
+    d = (b[0] - a[0], b[1] - a[1])
+    for p, q in ((-d[0], a[0] + ax), (d[0], ax - a[0]), (-d[1], a[1] + 1.0), (d[1], 1.0 - a[1])):
+        if abs(p) < 1e-15:
+            if q < 0:
+                return None
+            continue
+        t = q / p
+        if p < 0:
+            t0 = max(t0, t)
+        else:
+            t1 = min(t1, t)
+        if t0 > t1:
+            return None
+    return (a[0] + d[0] * t0, a[1] + d[1] * t0), (a[0] + d[0] * t1, a[1] + d[1] * t1)
+
+
+def assess_eye(T, screen):
+    """Eye-space triangles T (n, 3, 3) against the first-person camera:
+    - triangles clipped at the near plane, every in-front remainder kept;
+    - visibility, as real overlap of each projected triangle with the frame;
+    - the exact nearest approach to the reticle (half-heights);
+    - near-plane cuts, each crossing triangle's cut segment clipped to the
+      frame, counted when any part of it is on screen.
+    Codex's review of f1433a7: crossing triangles were dropped, visibility was
+    tested at vertices, and a cut counted only by its endpoints."""
+    import numpy as np
+    near_x = screen.near / screen.scale
+    out = {"triangles": int(len(T)), "in_front": round(float((T[..., 0] > near_x).mean()), 4) if len(T) else 0.0}
+    tris, cuts = _clip_near(np.asarray(T, np.float64), near_x)
+    ax = screen.aspect
+    uv = np.stack([tris[..., 1] / tris[..., 0] / screen.tan_h * ax, tris[..., 2] / tris[..., 0] / screen.tan_v], -1)
+    vis = _tris_hit_rect(uv, ax) if len(uv) else np.zeros(0, bool)
+    out["visible"] = bool(vis.any())
+    if len(uv):
+        dist = _point_tri_dist(uv)
+        out["nearest_half_heights"] = round(float(dist.min()), 4)
+        out["nearest_conservative"] = out["nearest_half_heights"]         # exact: no sampling margin
+    n_cuts, ends = 0, []
+    for c0, c1 in cuts:
+        a = (c0[1] / near_x / screen.tan_h * ax, c0[2] / near_x / screen.tan_v)
+        b = (c1[1] / near_x / screen.tan_h * ax, c1[2] / near_x / screen.tan_v)
+        seg = _clip_segment_to_rect(a, b, ax)
+        if seg is not None:
+            n_cuts += 1
+            ends += [(e[0] / ax, e[1]) for e in seg]                   # back to unscaled u
+    out["near_clip_in_frame"] = n_cuts
+    out["clip_points"] = [tuple(round(c, 3) for c in e) for e in ends[:4]]
+    out["clip_box"] = clip_box(ends)
+    return out
+
+
+def assess_mesh(verts_m, tris, rest, state, contract):
+    """A mesh part in the pose (bow metres, placed by place_many): assess_eye."""
     screen = F.Screen(contract["camera"])
     E = place_many(rest, verts_m, contract["mesh_scale"], state)
-    near_x = screen.near / screen.scale
-    T = E[tris]                                       # (T, 3, 3)
-    front = T[..., 0] > near_x
-    full = front.all(1)
-    out = {"triangles": int(len(tris)), "in_front": round(float(front.mean()), 4)}
-    W = T[full]
-    uv = np.stack([W[..., 1] / W[..., 0] / screen.tan_h * screen.aspect, W[..., 2] / W[..., 0] / screen.tan_v], -1)
-    on = ((np.abs(uv[..., 0]) <= screen.aspect) & (np.abs(uv[..., 1]) <= 1.0)).any(1)
-    out["visible"] = bool(on.any())
-    if full.any():
-        dist = _point_tri_dist(uv)
-        i = int(np.argmin(dist))
-        out["nearest_half_heights"] = round(float(dist[i]), 4)
-        out["nearest_conservative"] = out["nearest_half_heights"]          # exact: no sampling margin
-    # Triangles crossing the near plane: their cut segments, projected.
-    cross = front.any(1) & ~full
-    cuts, where, every = 0, [], []
-    for tri in T[cross]:
-        pts = []
-        for i0 in range(3):
-            p, q = tri[i0], tri[(i0 + 1) % 3]
-            if (p[0] > near_x) != (q[0] > near_x):
-                t = (near_x - p[0]) / (q[0] - p[0])
-                c = p + (q - p) * t
-                pts.append((float(c[1] / near_x / screen.tan_h), float(c[2] / near_x / screen.tan_v)))
-        inside = [(u, v) for u, v in pts if abs(u) <= 1.0 and abs(v) <= 1.0]
-        if inside:
-            cuts += 1
-            every += inside
-            if len(where) < 4:
-                where.append(tuple(round(c, 3) for c in inside[0]))
-    out["near_clip_in_frame"] = cuts
-    out["clip_points"] = where                       # display examples only
-    out["clip_box"] = clip_box(every)
-    return out
+    return assess_eye(E[tris], screen)
 
 
 def timeline_mesh(contract=None, rig=None, release_at=1.2, end=1.8, fps=60.0,

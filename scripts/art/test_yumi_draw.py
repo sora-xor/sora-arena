@@ -208,6 +208,49 @@ class FirstPerson(unittest.TestCase):
         self.assertIn("not a continuous-time bound", Y.timeline(fps=10.0, end=0.2)["scope"])
 
 
+class MeshChecker(unittest.TestCase):
+    """assess_eye on exact eye-space triangles: Codex's three counterexamples
+    to f1433a7 (yumi-b55fe81-independent-review/checker-reproductions.json)."""
+
+    @classmethod
+    def setUpClass(cls):
+        import numpy as np
+        cls.np = np
+        cls.screen = Y.F.Screen(contract()["camera"])
+
+    def test_a_triangle_covering_the_viewport_with_every_vertex_outside_is_visible(self):
+        T = self.np.array([[[100.0, -1000.0, -1000.0], [100.0, 1000.0, -1000.0], [100.0, 0.0, 2000.0]]])
+        r = Y.assess_eye(T, self.screen)
+        self.assertTrue(r["visible"])
+        self.assertEqual(r["nearest_half_heights"], 0.0)
+
+    def test_a_near_cut_across_the_screen_counts_although_its_ends_are_off_screen(self):
+        # One vertex in front, two behind: its cut runs u -1.83 to +1.83 at v 0.
+        T = self.np.array([[[30.0, 0.0, 0.0], [5.0, -40.0, 0.0], [5.0, 40.0, 0.0]]])
+        r = Y.assess_eye(T, self.screen)
+        self.assertEqual(r["near_clip_in_frame"], 1)
+        u0, u1, v0, v1 = r["clip_box"]
+        self.assertAlmostEqual(u0, -1.0, places=9)
+        self.assertAlmostEqual(u1, 1.0, places=9)
+        self.assertAlmostEqual(v0, 0.0, places=9)
+
+    def test_a_crossing_triangles_remainder_is_kept(self):
+        # Two vertices in front on screen, one behind; the remainder covers the reticle at x 27.5 cm.
+        T = self.np.array([[[50.0, -10.0, -10.0], [50.0, 10.0, -10.0], [5.0, 0.0, 10.0]]])
+        r = Y.assess_eye(T, self.screen)
+        self.assertTrue(r["visible"])
+        self.assertEqual(r["nearest_half_heights"], 0.0)
+        self.assertEqual(r["near_clip_in_frame"], 1)
+
+    def test_summary_counts_time_inside_the_radius_whatever_the_visibility(self):
+        tl = {"clear_radius": 0.12, "fps": 30.0, "release_at": 1.0,
+              "frames": [{"t": 0.7, "draw": 1.0, "parts": {"arrow": {"visible": False, "nearest_conservative": 0.0,
+                                                                     "near_clip_in_frame": 0, "clip_box": None}}}]}
+        sm = Y.summary(tl)
+        self.assertGreater(sm["arrow"]["hold"]["inside_s"], 0.0)
+        self.assertEqual(sm["arrow"]["hold"]["nearest"], 0.0)
+
+
 class EmittedGeometry(unittest.TestCase):
     """The built rig (b55fe81) and the committed arrow, as triangles."""
 
@@ -245,7 +288,7 @@ class EmittedGeometry(unittest.TestCase):
         self.assertEqual(sm["arrow"]["hold"]["near_clip_frames"], 0)
         # Reported residual: the real feathers cross the near plane at the
         # frame's bottom-left corner briefly in the draw (draw about 0.64-0.69).
-        self.assertEqual(sm["arrow"]["draw"]["near_clip_frames"], 1)    # at this test's 30 fps (3 at 60 fps)
+        self.assertEqual(sm["arrow"]["draw"]["near_clip_frames"], 2)    # at this test's 30 fps (3 at 60 fps), cut segments clipped to the frame
         u0, u1, v0, v1 = sm["arrow"]["draw"]["clip_box"]
         self.assertTrue(u1 <= -0.9 and v1 <= -0.85, sm["arrow"]["draw"]["clip_box"])
 
