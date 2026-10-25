@@ -438,7 +438,9 @@ finish_compilation()
 if bound_materials(mesh) != WANT_BOW_MATERIALS:
     fail(f"bow slots bound {bound_materials(mesh)} after the sockets, not {WANT_BOW_MATERIALS}")
 assets.save_loaded_asset(mesh)
-# The package on disk must name the instance and no longer the engine's default.
+# Supporting evidence only (Codex): the package on disk must name the instance and
+# no longer the engine's default. Bytes don't prove the slot. The proof is the
+# fresh-editor readback, verify_yumi_rig_materials.py, run before any capture.
 _package = package_file(mesh.get_path_name())
 _bytes = _package.read_bytes()
 bow_package_binds = {"package": rel(_package), "names_instance": all(

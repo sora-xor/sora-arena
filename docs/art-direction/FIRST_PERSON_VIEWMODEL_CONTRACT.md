@@ -259,10 +259,15 @@ rest/drawn mesh swap.
     declares it `transient`; `SetMaterials` waits for the build,
     SkeletalMesh.cpp:733-740).
     - **The fix, not yet run:** finish compilation, bind through
-      `set_materials`, and check the binding before and after the save. The
-      saved package must name the instance and not the default; the readback
-      records both. The arrow was bound correctly all along: its static slot
-      uses `set_material`.
+      `set_materials`, and check the binding in memory before and after the
+      save. The saved package must name the instance and not the default.
+      That byte check is supporting evidence only.
+    - **The proof:** `scripts/unreal/verify_yumi_rig_materials.py`, in a
+      fresh editor before any capture. It reads back every slot of the bow,
+      the arrow and the paw from disk, and what spawned components draw. None
+      may be an engine default.
+    - The arrow was bound correctly all along: its static slot uses
+      `set_material`.
 - **The first lit first-person originals** (`scripts/unreal/render_yumi_fp_review.py`,
   `Saved/YumiFP/`, editor review originals only):
   - **Attempt 0:** failed. `update_animation_in_editor` can't be set as a
