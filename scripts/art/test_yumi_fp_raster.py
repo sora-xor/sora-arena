@@ -92,5 +92,65 @@ class Rig(unittest.TestCase):
         self.assertEqual(res["bow"]["in_disc"], c["cpu_raster"]["in_disc"]["bow"])       # as the study records
 
 
+class AgainstACapture(unittest.TestCase):
+    """validate_against_capture on a synthetic run: the raster's own masks painted as an ID image."""
+
+    W, H = 480, 270
+
+    @classmethod
+    def setUpClass(cls):
+        import hashlib
+        import tempfile
+
+        from PIL import Image
+
+        cls.rig = Y.load_rig()
+        c = json.loads(STUDY.read_text(encoding="utf-8"))["root_control"]
+        cls.cam = c["camera"]
+        cls.hold = {"anchor": list(c["anchor_cm"]), "rot": list(c["rotation_deg"]), "draw": 1.0}
+        cls.res = R.hold_pixels(cls.rig, cls.hold["anchor"], cls.hold["rot"], c["mesh_scale"], cls.cam, cls.W, cls.H)
+        img = np.zeros((cls.H, cls.W, 3), np.uint8)
+        for part, colour in (("paw", (0, 0, 255)), ("arrow", (0, 255, 0)), ("bow", (255, 0, 0))):   # the bow in front
+            img[cls.res[part]["mask"]] = colour
+        cls.tmp = tempfile.TemporaryDirectory()
+        run = Path(cls.tmp.name)
+        Image.fromarray(img).save(run / "root_ids.png")
+        digest = hashlib.sha256((run / "root_ids.png").read_bytes()).hexdigest()
+        (run / "manifest.json").write_text(json.dumps({
+            "resolution": [cls.W, cls.H], "mesh_scale": c["mesh_scale"], "eye_view_holds": ["root"],
+            "id_files": {"root": "root_ids.png"}, "files": {"root_ids.png": digest}, "holds": {"root": cls.hold}}))
+        cls.capture = run
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.tmp.cleanup()
+
+    def test_its_own_masks_match_exactly_where_nothing_is_hidden(self):
+        v = R.validate_against_capture(self.rig, self.capture, self.cam)["root"]
+        self.assertEqual(v["union"]["iou"], 1.0)
+        self.assertEqual(v["union"]["pixels"][0], v["union"]["pixels"][1])
+        # The bow, painted in front, is never hidden: every count agrees, and the control's stave is in the disc.
+        self.assertEqual(v["bow"]["iou"], 1.0)
+        self.assertEqual(v["bow"]["in_disc"][0], v["bow"]["in_disc"][1])
+        self.assertGreater(v["bow"]["in_disc"][1], 0)
+        self.assertEqual(v["bow"]["clearance"][0], v["bow"]["clearance"][1])
+        # A part behind it loses the overlap in the ID image, so its IoU is below 1.
+        self.assertLess(v["paw"]["pixels"][1], v["paw"]["pixels"][0])
+        self.assertLess(v["paw"]["iou"], 1.0)
+
+    def test_an_id_image_not_the_manifests_is_refused(self):
+        import shutil
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp:
+            run = Path(tmp)
+            shutil.copy(self.capture / "manifest.json", run / "manifest.json")
+            data = bytearray((self.capture / "root_ids.png").read_bytes())
+            data[-20] ^= 1                                                   # one bit in the image's last chunk
+            (run / "root_ids.png").write_bytes(bytes(data))
+            with self.assertRaises(ValueError):
+                R.validate_against_capture(self.rig, run, self.cam)
+
+
 if __name__ == "__main__":
     unittest.main()

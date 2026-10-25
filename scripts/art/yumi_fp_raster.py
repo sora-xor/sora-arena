@@ -159,3 +159,54 @@ def hold_pixels(rig, anchor, rot, scale, camera, width, height, draw=1.0):
                      "mask": m}
     out["disc_pixels"] = int(d.sum())
     return out
+
+
+def _iou(a, b):
+    union = int((a | b).sum())
+    return float((a & b).sum() / union) if union else 1.0
+
+
+def validate_against_capture(rig, run, camera, holds=None):
+    """The CPU raster beside a capture's ID images, from the capture's own record (render_yumi_fp_review.py).
+
+    - **What is rasterised:** each eye-view hold (or ``holds``), at the anchor, rotation and draw its manifest
+      records, with the manifest's mesh scale and resolution. ``camera``: the study's camera (FOV, aspect, near
+      plane, reticle radius).
+    - **What it is compared with:** the hold's ID image, classified as analyse_yumi_fp_review counts it. Its bytes
+      must be the ones the manifest records, and its size the resolution, or ValueError.
+    - **What it returns, per hold:** the union's IoU and [rasterised, captured] pixels. Per part: [rasterised,
+      captured] pixels, pixels in the disc and clearance (half-heights; inf when nothing is covered), and the
+      part's IoU. A part's IoU is lower than the union's wherever parts overlap, because the raster counts a
+      hidden part and an ID image shows only the front one."""
+    import hashlib
+    import io
+    import json
+
+    from PIL import Image
+
+    import analyse_yumi_fp_review as A
+
+    run = Path(run)
+    manifest = json.loads((run / "manifest.json").read_text(encoding="utf-8"))
+    width, height = manifest["resolution"]
+    d = disc(width, height, camera["reticle_clear_radius"])
+    out = {}
+    for hold in holds if holds is not None else manifest["eye_view_holds"]:
+        name = manifest["id_files"][hold]
+        data = (run / name).read_bytes()
+        if hashlib.sha256(data).hexdigest() != manifest["files"].get(name):
+            raise ValueError(f"{run / name}: its bytes are not the ones the manifest records")
+        with Image.open(io.BytesIO(data)) as im:
+            cls = A.classify(np.asarray(im.convert("RGB"), dtype=np.float64) / 255.0)
+        if cls.shape != (height, width):
+            raise ValueError(f"{run / name} is {cls.shape[1]} x {cls.shape[0]}, not the recorded {width} x {height}")
+        h = manifest["holds"][hold]
+        res = hold_pixels(rig, h["anchor"], h["rot"], manifest["mesh_scale"], camera, width, height, h["draw"])
+        cpu = res["bow"]["mask"] | res["arrow"]["mask"] | res["paw"]["mask"]
+        row = {"union": {"iou": _iou(cpu, cls > 0), "pixels": [int(cpu.sum()), int((cls > 0).sum())]}}
+        for k, part in enumerate(A.PARTS, start=1):
+            m, r = cls == k, res[part]
+            row[part] = {"pixels": [r["pixels"], int(m.sum())], "in_disc": [r["in_disc"], int((m & d).sum())],
+                         "clearance": [r["clearance"], clearance(m, width, height)], "iou": _iou(r["mask"], m)}
+        out[hold] = row
+    return out

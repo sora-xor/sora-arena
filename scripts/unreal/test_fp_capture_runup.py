@@ -2,14 +2,14 @@
 
 Run: python3 -m unittest scripts/unreal/test_fp_capture_runup.py
 
-A candidate cause of capture v3's speckled fur is HighResShot's default
+A candidate cause of capture v3's speckled fur was HighResShot's default
 four-frame run-up, too short for TSR to resolve dithered coverage
-(render_yumi_fp_review.highres_runup). These pin that the capture sets
+(render_yumi_fp_review.highres_runup). Capture v4's controlled comparison
+did not support it in that pair. These pin that the capture sets
 r.HighResScreenshotDelay from r.TSR.History.SampleCount (or to an explicit
 runup=<n> for a controlled comparison), and that its manifest records the
-values. The engine part pins the installed source the reasoning rests on,
-and is skipped where the engine source is not installed. Not proof of the
-cause: only the controlled capture comparison can show it.
+values, as v4's two runs did. The engine part pins the installed source the
+reasoning rests on, and is skipped where the engine source is not installed.
 """
 from __future__ import annotations
 

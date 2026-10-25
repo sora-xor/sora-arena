@@ -138,9 +138,9 @@
    "validation": "docs/art-direction/YUMI_FP_RETICLE_STUDY.md (capture v3's bow in the disc: 1,330 / 4,956 px captured, 1,309 / 5,025 px rasterised)"
   },
   "limitations": [
-   "A review candidate from CPU geometry, not a capture: its ID pass must confirm the disc before anything else.",
+   "A review candidate from CPU geometry. Capture v4's ID pass confirmed it in both runs (2026-10-25): no bow, arrow or paw pixel in the disc, bow clearance 0.138 half-heights as rasterised. A candidate, not admitted.",
    "Root's left-side screen boxes do not admit it, as they do not admit right_cheek; they are recorded, not relaxed.",
-   "Its physical reading depends on where the first-person eye point is (YUMI_FP_RETICLE_STUDY.md).",
+   "Eye space is one centred virtual viewpoint, the player's Eye component at (4, 0, 64) cm on the capsule (root, 2026-10-25). Whether the anchor fits the cat hero's anatomy is not established here, and no human eye spacing is used for it (YUMI_FP_RETICLE_STUDY.md).",
    "Kyudo's own aim lets the bow cover part of the target; a clear reticle is a stylisation for play.",
    "Only full draw; root's viewmodels.json and the runtime pose contract are unchanged."
   ]

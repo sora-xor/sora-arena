@@ -3,12 +3,14 @@
   python3 scripts/art/fur_capture_noise.py Saved/YumiFP/<out> --out <result.json>
   python3 scripts/art/fur_capture_noise.py --compare Saved/YumiFP/<runup4> Saved/YumiFP/<auto> --out <result.json>
 
-Capture v3's fur read as white speckle. A candidate cause is HighResShot's
+Capture v3's fur read as white speckle. A candidate cause was HighResShot's
 four-frame run-up, too short for TSR to resolve dithered coverage
 (render_yumi_fp_review.highres_runup). This measures the symptom, so a
 controlled comparison can test that cause: the same hold shot with runup=4
-and with runup=auto, nothing else changed. It is a measurement, not a gate:
-real fur has texture, and no threshold here says what is good.
+and with runup=auto, nothing else changed. Capture v4 ran it, and the longer
+run-up did not resolve the speckle in that pair (highres_runup). It is a
+measurement, not a gate: real fur has texture, and no threshold here says
+what is good.
 
 **Per hold:**
 - **The fur pixels:** bright and unsaturated (luminance above FUR_MIN_LUMINANCE,

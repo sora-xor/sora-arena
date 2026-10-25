@@ -11,8 +11,18 @@ root's bounded handback (`Saved/ExitProbe/handoff.*`).
   signalled.
 
 **What that shows:** the hand-off path exits cleanly in this engine,
-consistent with the mechanism below. **The capture itself has not yet run
-with the fix,** so its cause stays provisional until it does.
+consistent with the mechanism below.
+
+**Then capture v4 ran with the fix, twice** (`e56651a`, 20:06Z and 20:09Z,
+`Saved/YumiFP/capture_v4_runup_auto.*` and `capture_v4_runup_4.*`).
+- Each editor logged `YUMI_FP_REVIEW_COMPLETE`, then `LogExit: Exiting.` two
+  frames later.
+- Each exited by itself, 5 and 6 s after its marker: editor 0, wrapper 0,
+  natural EOF. Nothing was sampled or signalled.
+- Captures v2 and v3 of the same script quit in the same frame, and both
+  hung. So the hand-off fixes this capture's exit.
+- The mechanism below is the source-traced account. The negative control
+  that would show it at runtime was not run.
 
 **The negative control was not run;** root judged v2 and v3 sufficient.
 
@@ -132,5 +142,6 @@ exits.
    - The expected result is the hang, with the v2 and v3 stack.
    - This shows the cause, not the fix.
 3. **Capture v4,** with the reviewed capture changes of the time:
-   `UE --editor scripts/unreal/render_yumi_fp_review.py YUMI_FP_REVIEW_COMPLETE Saved/YumiFP/capture_v4.log -- holds=... res=1920x1080 out=v4`
+   `UE --editor scripts/unreal/render_yumi_fp_review.py YUMI_FP_REVIEW_COMPLETE Saved/YumiFP/capture_v4_<runup>.log -- holds=rest,root,right_cheek,right_cheek_clear,paw res=1920x1080 out=v4_<runup> ids=1 runup=<auto|4>`
    - It passes on the same natural exit as the probe, beside its own gates.
+   - **Ran twice on 2026-10-25, and passed both times** (above).

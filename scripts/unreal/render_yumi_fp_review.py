@@ -295,12 +295,18 @@ def highres_runup(option="auto"):
     don't carry over: TSR's history restarts at the new size. TSR keeps at most r.TSR.History.SampleCount samples
     per pixel (default 16, at most 32; TemporalSuperResolution.cpp:44-50).
 
-    **A candidate cause, not a proven one.** Dithered coverage needs that history to resolve, and the fur cards'
-    DitherOpacityMask and the ID pass's dithered fur mask both use it. Four frames would leave it raw, which would
-    explain capture v3's white speckle: its fur's high-frequency residual is 4.1 to 4.6 times the urushi stave's
-    in the eye-view holds (scripts/art/fur_capture_noise.py). A controlled comparison has to show it: the same hold shot with runup=4 and
-    with runup=auto, nothing else changed. The fur cards' own geometry (flat overlapping blades at macro range) is a
-    separate defect, which no run-up changes.
+    **The candidate it was set for, tested in capture v4 and not supported in that pair.** Dithered coverage needs
+    that history to resolve, and the fur cards' DitherOpacityMask and the ID pass's dithered fur mask both use it.
+    Four frames could have left it raw, which would have explained capture v3's white speckle: its fur's
+    high-frequency residual is 4.1 to 4.6 times the urushi stave's in the eye-view holds
+    (scripts/art/fur_capture_noise.py).
+    - Capture v4 shot the same five holds twice, nothing changed but this run-up: runup=4 (v3's condition) and
+      runup=auto (32 frames; Saved/YumiFP/v4_runup_4 and v4_runup_auto).
+    - On each hold's common fur region, the residual changed by -2.4 % to +1.3 %, and it stays about four times
+      the stave's (Saved/W18Rebuild/s18_fur_compare_v4.json). So the longer run-up did not resolve the speckle.
+    - That pair does not rule out temporal-history causes in general.
+    - The fur cards' own geometry and material (flat, overlapping blades at macro range) are a separate defect,
+      which no run-up changes.
 
     runup=auto: two frames per history sample, to fill it with margin. runup=<n>: exactly n frames (4 is the
     engine's default, v3's condition). The values set are read back, or the capture refuses."""
