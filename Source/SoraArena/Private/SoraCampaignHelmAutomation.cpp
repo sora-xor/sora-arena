@@ -1,5 +1,6 @@
 #include "SoraGameMode.h"
 #if WITH_DEV_AUTOMATION_TESTS
+#include "SoraEnemy.h"
 #include "SoraFieldcraftTestWorld.h"
 #include "SoraHelmAutomation.h"
 #include "SoraSettings.h"
