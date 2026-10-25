@@ -31,6 +31,7 @@ import unreal
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from sora_engine_pin import require_running_engine  # noqa: E402
+import sora_cloth_admission as cloth_admission  # noqa: E402
 
 require_running_engine("SORA craft import")
 ROOT = Path(unreal.Paths.project_dir()).resolve()
@@ -265,7 +266,9 @@ def flat_master():
     return m
 
 
-# The cloth props' hardware slots (Blender review stand-ins) -> flat instances.
+# The cloth props' slots: the hemp takes M_SoraCloth, the hardware (Blender
+# review stand-ins) flat instances.
+CLOTH_SLOT = "M_Maku_Hemp"
 CLOTH_FLAT = {
     "M_Maku_Pole": ((0.012, 0.010, 0.009), 0.10, 0.0),     # roiro lacquer
     "M_Maku_Gilt": ((1.0, 0.77, 0.34), 0.26, 1.0),         # fire-gilt copper
@@ -273,24 +276,31 @@ CLOTH_FLAT = {
 }
 
 
+def admit(check, *args):
+    try:
+        return check(*args)
+    except cloth_admission.AdmissionError as error:
+        require(False, str(error))
+
+
 def import_cloth(folder: Path, record: dict):
-    """A cloth prop (create_sora_maku.py): two-sided hemp plus flat hardware."""
+    """A cloth prop (create_sora_maku.py): two-sided hemp plus flat hardware.
+
+    The mesh must carry exactly its record's declared slots, each once, before
+    any texture or material is imported; a wrong mesh is deleted again."""
     name = record["asset"]
     require(record.get("svg_sha256") == SORA_SVG_SHA256, f"{name}: SORA mark pin")
+    declared = admit(cloth_admission.check_declared, record.get("material_slots"),
+                     (CLOTH_SLOT, *CLOTH_FLAT), CLOTH_SLOT)
     fbx = ROOT / record["fbx"]
     require(fbx.is_file() and sha(fbx) == record["fbx_sha256"], f"{name}: FBX changed")
-    tex_folder = f"{DEST}/{folder.name}/Textures"
-    assets.make_directory(tex_folder)
     kinds = {"BaseColor": "BaseColor", "Transmission": "Mask", "WeaveNormalDX": "Normal"}
-    textures = {}
-    for key, kind in kinds.items():
+    sources = {}
+    for key in kinds:
         entry = record["textures"][key]
         path = ROOT / entry["file"]
         require(path.is_file() and sha(path) == entry["sha256"], f"{name}: {entry['file']} changed")
-        textures[key] = import_texture(path, tex_folder, kind)
-    cloth = cloth_master({"BaseColor": textures["BaseColor"], "Transmission": textures["Transmission"],
-                          "WeaveNormal": textures["WeaveNormalDX"]})
-    flat = flat_master()
+        sources[key] = path
     task = unreal.AssetImportTask()
     task.filename = str(fbx)
     task.destination_path = PROPS
@@ -300,36 +310,47 @@ def import_cloth(folder: Path, record: dict):
     task.save = True
     task.options = fbx_options()
     tools.import_asset_tasks([task])
-    mesh = assets.load_asset(f"{PROPS}/{name}")
+    mesh_path = f"{PROPS}/{name}"
+    mesh = assets.load_asset(mesh_path)
     require(isinstance(mesh, unreal.StaticMesh), f"{name}: static mesh import failed")
+    imported = [str(slot.get_editor_property("material_slot_name"))
+                for slot in mesh.get_editor_property("static_materials")]
+    try:
+        imported = cloth_admission.check_imported(declared, imported)
+    except cloth_admission.AdmissionError as error:
+        assets.delete_asset(mesh_path)
+        require(False, f"{name}: {error}")
+    tex_folder = f"{DEST}/{folder.name}/Textures"
+    assets.make_directory(tex_folder)
+    textures = {key: import_texture(path, tex_folder, kinds[key]) for key, path in sources.items()}
+    cloth = cloth_master({"BaseColor": textures["BaseColor"], "Transmission": textures["Transmission"],
+                          "WeaveNormal": textures["WeaveNormalDX"]})
+    flat = flat_master() if set(declared) - {CLOTH_SLOT} else None
     instances = {}
-    hemp_name = f"MI_{name.removeprefix('SM_')}_Hemp"
-    hemp_path = f"{DEST}/{folder.name}/{hemp_name}"
-    hemp = assets.load_asset(hemp_path) if assets.does_asset_exist(hemp_path) else tools.create_asset(
-        hemp_name, f"{DEST}/{folder.name}", unreal.MaterialInstanceConstant, unreal.MaterialInstanceConstantFactoryNew())
-    lib.set_material_instance_parent(hemp, cloth)
-    lib.set_material_instance_texture_parameter_value(hemp, "BaseColorMap", textures["BaseColor"])
-    lib.set_material_instance_texture_parameter_value(hemp, "TransmissionMap", textures["Transmission"])
-    lib.set_material_instance_texture_parameter_value(hemp, "WeaveNormalMap", textures["WeaveNormalDX"])
-    assets.save_loaded_asset(hemp)
-    instances["M_Maku_Hemp"] = hemp
-    for slot, (col, rough, metal) in CLOTH_FLAT.items():
-        path = f"{DEST}/{folder.name}/MI_{slot.removeprefix('M_')}"
-        mi = assets.load_asset(path) if assets.does_asset_exist(path) else tools.create_asset(
-            f"MI_{slot.removeprefix('M_')}", f"{DEST}/{folder.name}", unreal.MaterialInstanceConstant,
-            unreal.MaterialInstanceConstantFactoryNew())
-        lib.set_material_instance_parent(mi, flat)
-        lib.set_material_instance_vector_parameter_value(mi, "BaseColor", unreal.LinearColor(*col, 1))
-        lib.set_material_instance_scalar_parameter_value(mi, "Roughness", rough)
-        lib.set_material_instance_scalar_parameter_value(mi, "Metallic", metal)
+    for slot in declared:
+        if slot == CLOTH_SLOT:
+            mi_name, parent = f"MI_{name.removeprefix('SM_')}_Hemp", cloth
+        else:
+            mi_name, parent = f"MI_{slot.removeprefix('M_')}", flat
+        mi_path = f"{DEST}/{folder.name}/{mi_name}"
+        mi = assets.load_asset(mi_path) if assets.does_asset_exist(mi_path) else tools.create_asset(
+            mi_name, f"{DEST}/{folder.name}", unreal.MaterialInstanceConstant, unreal.MaterialInstanceConstantFactoryNew())
+        lib.set_material_instance_parent(mi, parent)
+        if slot == CLOTH_SLOT:
+            lib.set_material_instance_texture_parameter_value(mi, "BaseColorMap", textures["BaseColor"])
+            lib.set_material_instance_texture_parameter_value(mi, "TransmissionMap", textures["Transmission"])
+            lib.set_material_instance_texture_parameter_value(mi, "WeaveNormalMap", textures["WeaveNormalDX"])
+        else:
+            col, rough, metal = CLOTH_FLAT[slot]
+            lib.set_material_instance_vector_parameter_value(mi, "BaseColor", unreal.LinearColor(*col, 1))
+            lib.set_material_instance_scalar_parameter_value(mi, "Roughness", rough)
+            lib.set_material_instance_scalar_parameter_value(mi, "Metallic", metal)
         assets.save_loaded_asset(mi)
         instances[slot] = mi
-    for index, slot in enumerate(mesh.get_editor_property("static_materials")):
-        slot_name = str(slot.get_editor_property("material_slot_name"))
-        require(slot_name in instances, f"{name}: unexpected slot {slot_name}")
-        mesh.set_material(index, instances[slot_name])
+    for index, slot in enumerate(imported):
+        mesh.set_material(index, instances[slot])
     assets.save_loaded_asset(mesh)
-    unreal.log(f"SORA_CRAFT_PROP_READY: {name} cloth, {len(instances)} slots")
+    unreal.log(f"SORA_CRAFT_PROP_READY: {name} cloth, {len(imported)} slots: {', '.join(imported)}")
     return name
 
 
