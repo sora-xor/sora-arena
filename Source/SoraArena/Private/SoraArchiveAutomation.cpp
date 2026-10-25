@@ -87,8 +87,9 @@ bool FSoraArchiveFamilyPageTest::RunTest(const FString&)
 {
     using SoraFieldcraftAutomation::FBeatWorld;
     if(!FSoraCatalog::Get().Load()) return false;
+    for(const bool WithBark:{false,true})
     {
-        FBeatWorld W(*this,TEXT("ArchiveFamilyPage"),5,8);
+        FBeatWorld W(*this,WithBark?TEXT("ArchiveFamilyPageQueued"):TEXT("ArchiveFamilyPage"),5,8);
         if(!W.Start()||!PageIsLit(W,false)) return false;
         W.Harden();
         ASoraBoss* Rival=nullptr;
@@ -97,17 +98,20 @@ bool FSoraArchiveFamilyPageTest::RunTest(const FString&)
         Rival->Hold(600000);
         for(int I=0;I<1800&&W.Campaign()->LinesQueued()>0;++I) if(!W.Tick(1)) return false;
         if(!TestTrue(TEXT("The opening lines finish before the phase fixture"),W.Campaign()->LinesQueued()==0)) return false;
+        if(WithBark) W.Campaign()->RaiseBeatEvent(TEXT("pattern:kesa_combo"));
         // Directed phase setup using the same generic story-damage path as
         // Boss.ToranosukeSteel. This is not a player combat/difficulty claim.
         UGameplayStatics::ApplyDamage(Rival,Rival->MaxHealth*.5f,nullptr,W.Hero(),UDamageType::StaticClass());
         if(!W.Tick(2)||!TestEqual(TEXT("Actual opponent health enters the family-page phase"),W.Campaign()->ActivePhase(),1)||
             !PageIsLit(W,true)) return false;
+        const auto* BeforeReveal=Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(W.Slot,0));
+        if(!TestTrue(TEXT("Quitting before or during the reveal still resumes before the exchange"),
+            BeforeReveal&&BeforeReveal->CheckpointChapter==5&&BeforeReveal->CheckpointBeat==8&&BeforeReveal->CheckpointPhase==0)) return false;
+        if(WithBark) TestFalse(TEXT("A prior combat bark has not yet started the blocking exchange"),W.Campaign()->IsDialogueBlocking());
+        for(int I=0;I<600&&!W.Campaign()->IsDialogueBlocking();++I) if(!W.Tick(1)) return false;
         TestTrue(TEXT("The family-page dialogue holds combat"),W.Campaign()->IsDialogueBlocking()&&!W.Hero()->CanPlay());
         const auto* Reveal=W.Campaign()->CurrentDialogueCue();
         TestTrue(TEXT("The family-page exchange precedes the remembered lesson"),Reveal&&Reveal->Id==TEXT("ch06.b09.toranosuke.005"));
-        const auto* BeforeReveal=Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(W.Slot,0));
-        if(!TestTrue(TEXT("Quitting during the reveal still resumes before the exchange"),
-            BeforeReveal&&BeforeReveal->CheckpointChapter==5&&BeforeReveal->CheckpointBeat==8&&BeforeReveal->CheckpointPhase==0)) return false;
         for(int I=0;I<1800&&W.Campaign()->IsDialogueBlocking();++I) if(!W.Tick(1)) return false;
         if(!TestFalse(TEXT("The authored reveal releases control"),W.Campaign()->IsDialogueBlocking())||!W.Tick(2)) return false;
         const auto* Memory=W.Campaign()->CurrentDialogueCue();

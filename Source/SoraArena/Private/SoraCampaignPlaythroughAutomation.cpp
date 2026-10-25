@@ -1685,7 +1685,15 @@ bool PlayPhases(FAutomationTestBase& Test, FState& State)
                 if(!Advance(Test,State,1,FrameSeconds)) return false;
             if(!Advance(Test,State,2,FrameSeconds)) return false;
         }
-        if(Beat.Id==TEXT("ch06.b09")&&(!WaitForDialogue(Test,State)||!Advance(Test,State,2,FrameSeconds))) return false;
+        if(Beat.Id==TEXT("ch06.b09"))
+        {
+            // Opening/bark lines may still precede the reveal in the queue.
+            // Let the actual exchange and memory finish, never clear them.
+            for(int32 Frame=0;Frame<3600&&Campaign(State)->LinesQueued()>0;++Frame)
+                if(!Advance(Test,State,1,FrameSeconds)) return false;
+            if(!Test.TestEqual(TEXT("Archive phase dialogue finishes"),Campaign(State)->LinesQueued(),0)||
+                !Advance(Test,State,2,FrameSeconds)) return false;
+        }
         if (!Test.TestEqual(*(Context + TEXT(" begins")), Campaign(State)->ActivePhase(), Phase) || !ExpectCheckpoint(Test, State))
             return Fail(Test, State, Context + TEXT(" was not saved"));
         ++State.PhaseReloads;

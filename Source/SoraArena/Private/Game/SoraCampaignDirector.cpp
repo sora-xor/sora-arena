@@ -722,7 +722,8 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
     SaveArrivedSummitPhase();
     // The archive's family-page checkpoint belongs after its blocking reveal.
     // Quitting or dying during the exchange must still restore phase one.
-    if(PendingArchivePhaseSave!=INDEX_NONE&&!IsDialogueBlocking())
+    if(PendingArchivePhaseSave!=INDEX_NONE&&!IsDialogueBlocking()&&
+        FinishedLines.Contains(ActiveChapter()->LineIndex(TEXT("ch06.b09.toranosuke.006"))))
     {
         const bool Ready=Beat.Id==TEXT("ch06.b09")&&BeatPhase==PendingArchivePhaseSave;
         PendingArchivePhaseSave=INDEX_NONE;

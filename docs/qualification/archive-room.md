@@ -70,3 +70,9 @@ by the phase-two lesson; other encounters retain their order. The fixture
 checks both subtitle identities. The assisted campaign waits for that real
 blocking exchange before expecting its phase save. This remains dialogue
 staging; the authored twenty-second cinematic and rack impact are not finished.
+
+The pending save requires the final family-page line to have actually
+finished, including when a prior nonblocking combat bark precedes the reveal.
+The prepared fixture covers both queue states. The campaign regression lets
+the real queued lines finish before checking the new save; it does not clear
+or skip dialogue. Both paths remain unrun at this source checkpoint.
