@@ -79,10 +79,19 @@ class FirstPerson(unittest.TestCase):
         self.assertGreaterEqual(sm["arrow"]["hold"]["nearest"], 0.12)
 
     def test_volumes_not_sockets(self):
-        # The grip socket alone clears the radius at -3 cm; only the stave's volume shows the intrusion.
-        fp = Y.footprint("bow.drawn")
+        # At the old -3 cm anchor the Grip_L socket clears the radius, but the
+        # stave's volume does not; the authored contract (-5 cm) clears both.
+        contract = json.loads(Y.F.CONTRACT.read_text())
+        self.assertEqual(contract["poses"]["bow.drawn"]["rest"]["anchor_cm"], [60.0, -5.0, -9.5])
+        self.assertTrue(Y.footprint("bow.drawn", contract=contract)["clear"])
+        old = json.loads(json.dumps(contract))
+        old["poses"]["bow.drawn"]["rest"]["anchor_cm"][1] = -3.0
+        fp = Y.footprint("bow.drawn", contract=old)
         self.assertFalse(fp["clear"])
         self.assertLess(fp["stave"]["nearest_half_heights"], fp["clear_radius"])
+        screen = Y.F.Screen(old["camera"])
+        pts, _q = Y.F.place(old["poses"]["bow.drawn"]["rest"], {"Grip_L": (0.0, 0.0, 0.0)}, "Grip_L", old["mesh_scale"])
+        self.assertGreaterEqual(screen.reticle_distance(pts["Grip_L"]), screen.clear)
 
 
 if __name__ == "__main__":
