@@ -95,11 +95,17 @@ drawing the kit's four floor tiles.
   `pl_suisha_goya` and `pl_gogura`, with 195 columns and 705 rails. They draw
   the MAC pool until `--halls all` is built and imported. So across the estate,
   not every timber has its own log.
-- **Campaign drift:** the halls come from the chapter files as of this build;
-  the ledger records their hashes. In the integration branch's later chapter
-  data (`c139192`) the chapter-1 hall is unchanged, but the smithy hall moved
-  to x 38800–42400, so its unbuilt placements take new names. Nothing built is
-  affected. The manifests pin the generator scripts, not the chapter files.
+- **Campaign binding:** the halls come from the chapter files. The manifests'
+  `coverage` is as of the build, and the manifests pin only the generator
+  scripts. `campaign_binding.json` (`scripts/art/bind_dojo_timbers.py`, pure
+  Python) pins every chapter file's SHA-256, lists the current halls with
+  their coverage, and refuses to bind if a built log no longer fits its hall.
+  The importer refuses a binding older than the chapter files. Rerun the
+  binder after any campaign edit; it writes nothing for `--check`.
+- **Integration data:** against the integration branch's later chapter data
+  (`c139192`), the binder finds the chapter-1 hall unchanged. The smithy hall
+  moved to x 38800–42400, so its unbuilt placements take new names. Nothing
+  built is affected, and coverage stays 65/260 columns and 235/940 rails.
 
 ## Sizes
 
