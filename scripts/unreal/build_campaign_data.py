@@ -813,6 +813,13 @@ def normalize_task(beat):
             seconds = block["hold_s"] if "hold_s" in block else len(points) * block["per_point_s"]
             task.update(goal="hold", duration_ms=whole_ms(seconds, f"{where}.hold"), contest=block["contest"],
                         decay_permille=permille(block.get("decay_per_s", 0), f"{where}.hold.decay_per_s"))
+            # With an authored hold_s the points are ancillary work (the
+            # kitchen fires). Without it, every point is the timed objective.
+            if points and "hold_s" not in block:
+                if len(points) > 8 or len(set(points)) != len(points) or block["contest"] != "pause":
+                    fail(where, "point holds need distinct desks, per_point_s and pause contest")
+                task["objectives"] = list(points)
+                task["objective_hold_ms"] = [whole_ms(block["per_point_s"], f"{where}.hold.per_point_s")] * len(points)
         elif name == "crank":
             task["crank_coop"] = cooperation(beat, fail)
             task["crank_player"] = player_work(beat, fail)

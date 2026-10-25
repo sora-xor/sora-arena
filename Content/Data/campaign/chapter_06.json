@@ -2121,7 +2121,11 @@
     "fail_events": {
      "player_died": "player_died"
     },
-    "objectives": [],
+    "objectives": [
+     "desk_tagata",
+     "desk_machikata",
+     "desk_shokukata"
+    ],
     "lines_event": null,
     "closing_event": null,
     "exit_event": null,
@@ -2206,7 +2210,11 @@
     "carry_weapons": [],
     "pickup_hold_ms": 0,
     "unload_hold_ms": 0,
-    "objective_hold_ms": [],
+    "objective_hold_ms": [
+     30000,
+     30000,
+     30000
+    ],
     "equipment_weapons": [
      0,
      3,
@@ -11520,7 +11528,20 @@
      31696,
      0
     ],
-    "objectives": [],
+    "objectives": [
+     [
+      31120,
+      0
+     ],
+     [
+      31120,
+      -364
+     ],
+     [
+      31120,
+      364
+     ]
+    ],
     "pickups": [],
     "dropoffs": [],
     "targets": [],

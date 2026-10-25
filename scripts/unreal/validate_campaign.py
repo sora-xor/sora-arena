@@ -949,6 +949,12 @@ def validate(catalog, campaign, chapters, legacy, roster):
             check_dropoff_capacity(beat)
             check_crank_player(beat)
             check_rhythm_steps(beat)
+            if beat["id"] == "ch06.b08":
+                task = beat["task"]
+                require(task["objectives"] == ["desk_tagata", "desk_machikata", "desk_shokukata"] and
+                        task["objective_hold_ms"] == [30000, 30000, 30000] and task["duration_ms"] == 90000 and
+                        task["goal"] == "hold" and task["contest"] == "pause" and task["pause_when_seen"],
+                        "ch06.b08: three separate thirty-second desk copies with guarded work required")
             unlocks += [(weapon, beat["id"]) for weapon in beat["unlocks"]["weapons"]]
             mechanics += beat["unlocks"]["mechanics"]
             if beat["optional"] and (beat["unlocks"]["weapons"] or beat["unlocks"]["mechanics"]):
@@ -1400,6 +1406,20 @@ def self_test(catalog, campaign, chapters, legacy, roster):
     def party_without_escort(data):
         space(data, 1, "ch02.b02")["fieldcraft"]["party"] = [dict(space(data, 2, "ch03.b07")["fieldcraft"]["party"][0])]
 
+    def copies_without_desks(data):
+        task = beat(data, "ch06.b08")["task"]
+        task["objectives"], task["objective_hold_ms"] = [], []
+        space(data, 5, "ch06.b08")["objectives"] = []
+
+    def copies_one_desk_repeated(data):
+        beat(data, "ch06.b08")["task"]["objectives"][2] = "desk_tagata"
+
+    def copies_shortened(data):
+        beat(data, "ch06.b08")["task"]["objective_hold_ms"][1] = 29999
+
+    def copies_ignore_guards(data):
+        beat(data, "ch06.b08")["task"]["pause_when_seen"] = False
+
     validate(*copy.deepcopy((catalog, campaign, chapters, legacy, roster)))
     mutations = (anchor_in_wall, short_route, missing_volume, zones_collide, lost_collectible, unlabelled_step,
                  cinematic_with_closing_anchor, dialogue_without_closing_anchor, cinematic_with_cache,
@@ -1414,7 +1434,8 @@ def self_test(catalog, campaign, chapters, legacy, roster):
                  unbound_key_token, bracketed_control,
                  lamp_in_wall, climb_around_the_face, ally_joins_no_wave, party_without_escort, volley_rank_short,
                  net_wave_without_drones, netters_beyond_the_wave, crossing_off_the_road, drop_heard_past_the_rules,
-                 fire_outside_the_hold, stakes_out_of_order)
+                 fire_outside_the_hold, stakes_out_of_order,
+                 copies_without_desks, copies_one_desk_repeated, copies_shortened, copies_ignore_guards)
     for mutate in mutations:
         data = copy.deepcopy((catalog, campaign, chapters, legacy, roster))
         mutate(data)

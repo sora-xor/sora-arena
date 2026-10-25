@@ -113,6 +113,19 @@ bool USoraCampaignDirector::ObjectivePoint(FVector& Location,bool& bInteract) co
     case SoraBeatRules::EGoal::Exit:
         return !TaskState.Reached&&At(Space.Exit.Center,false);
     case SoraBeatRules::EGoal::Hold:
+        if(Task.HoldPointCount>0)
+        {
+            if(IsCopying()) return At(Space.Objectives[CopyDesk],true);
+            int32 Nearest=INDEX_NONE;
+            double Distance=TNumericLimits<double>::Max();
+            for(int32 Point=0;Point<Task.HoldPointCount;++Point)
+                if(TaskState.HoldProgress[Point]<Task.HoldPointMs)
+                {
+                    const double D=Mode().Hero()?FVector::DistSquared2D(Mode().Hero()->GetActorLocation(),FVector(Space.Objectives[Point],0)):Point;
+                    if(D<Distance) { Nearest=Point;Distance=D; }
+                }
+            return Nearest!=INDEX_NONE&&At(Space.Objectives[Nearest],true);
+        }
         // A guttered cook-fire wants the hero's hand before the hold goes on.
         if(const USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this); Fieldcraft&&Fieldcraft->FiresOut()>0)
             for(int32 Fire=0;Fire<Fieldcraft->Active()->Fires.Points.Num();++Fire)
@@ -500,6 +513,8 @@ void USoraCampaignDirector::ShowKit()
     FSoraKitView View;
     View.ProgressPermille=SoraBeatRules::ProgressPermille(TaskState,Task);
     View.Step=TaskState.Step;
+    for(int32 Point=0;Point<Task.HoldPointCount;++Point)
+        View.HoldProgressPermille.Add(SoraBeatRules::Ratio(TaskState.HoldProgress[Point],Task.HoldPointMs));
     View.BellowsNotches=SoraBeatRules::CrankFlameNotches(TaskState,Task);
     View.BellowsFoot=IsWorkingCrank()?BellowsTreads.LatchedSide:0;
     View.Strokes=Task.Goal==SoraBeatRules::EGoal::Steps?TaskState.Done:0;
@@ -655,11 +670,11 @@ float USoraCampaignDirector::CarryPace() const
 bool USoraCampaignDirector::CanHold(int32 WeaponId,bool bNotify)
 {
     if(!Mode().bCampaign||WeaponId<0||WeaponId>=SoraBeatRules::WeaponCount) return true;
-    if(HelmOccupiesHands()||CrankOccupiesHands()||FoundryOccupiesHands()||HorseTreatmentOccupiesHands())
+    if(HelmOccupiesHands()||CrankOccupiesHands()||FoundryOccupiesHands()||HorseTreatmentOccupiesHands()||IsCopying())
     {
         if(bNotify)
         {
-            if(FoundryOccupiesHands()||HorseTreatmentOccupiesHands()) Notify(SoraText::Line(NSLOCTEXT("SoraArena.Campaign","FoundryHands","作業中は両手を使う。手を離せば武器を使える。")),3.f);
+            if(FoundryOccupiesHands()||HorseTreatmentOccupiesHands()||IsCopying()) Notify(SoraText::Line(NSLOCTEXT("SoraArena.Campaign","FoundryHands","作業中は両手を使う。手を離せば武器を使える。")),3.f);
             else Notify(SoraText::Line(NSLOCTEXT("SoraArena.Campaign","CrankHands","両手で輪を回している。手を離せば武器を使える。")),3.f);
         }
         return false;

@@ -54,6 +54,13 @@ for chapter in chapters:
 assert chapters[-1]["beats"][-1]["id"] == "ch08.b18"
 assert any(line["speaker"] == "banker" for line in chapters[-1]["lines"])
 assert any(beat["type"] == "boss" and beat["params"]["boss"] == "boss_val_amort" for beat in chapters[-1]["beats"])
+copy = next(beat for beat in chapters[5]["beats"] if beat["id"] == "ch06.b08")
+assert copy["task"]["objectives"] == copy["params"]["hold"]["interact_points"] == ["desk_tagata", "desk_machikata", "desk_shokukata"]
+assert copy["task"]["objective_hold_ms"] == [30000] * 3 and copy["task"]["duration_ms"] == 90000
+assert copy["task"]["pause_when_seen"] and copy["task"]["contest"] == "pause"
+# Kitchen fires remain ancillary to their own authored two-minute volume hold.
+kitchen = next(beat for beat in chapters[2]["beats"] if beat["id"] == "ch03.b14")
+assert not kitchen["task"]["objectives"] and kitchen["task"]["duration_ms"] == 120000
 # The Unreal director runs the beats, saves and chapter advance through the
 # same host-tested rules, and the chapter-one dojo lessons through SoraDojoRules.
 director = (ROOT / "Source/SoraArena/Private/Game/SoraCampaignDirector.cpp").read_text()
@@ -149,6 +156,9 @@ def task_fields(task):
     for name, key, default in scalars:
         if task[key] != default:
             fields.append(f"T.{name} = {task[key]};")
+    if task["goal"] == "hold" and task["objectives"]:
+        assert len(set(task["objective_hold_ms"])) == 1
+        fields += [f"T.HoldPointCount = {len(task['objectives'])};", f"T.HoldPointMs = {task['objective_hold_ms'][0]};"]
     for name, key in (("Skippable", "skippable"), ("AnchorAfterLines", "anchor_after_lines"),
                       ("PauseWhenSeen", "pause_when_seen"),
                       ("HorseDownRetries", "horse_down_retries"), ("FlankBouts", "flank_bouts")):

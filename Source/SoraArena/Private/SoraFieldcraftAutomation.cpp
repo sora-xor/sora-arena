@@ -593,7 +593,7 @@ bool FSoraFieldcraftCandleTest::RunTest(const FString& Parameters)
     if (!TestTrue(TEXT("The desks are the objective"), Campaign->ObjectiveAnchor(Anchor)))
         return false;
     W.Stand(Anchor);
-    if (!W.Tick(2))
+    if (!W.Tick(2) || !W.World->InjectKey(EKeys::E, IE_Pressed) || !W.Tick(1))
         return false;
     int32 Before = Campaign->TaskProgress().Progress;
     if (!W.Tick(120))
@@ -607,6 +607,7 @@ bool FSoraFieldcraftCandleTest::RunTest(const FString& Parameters)
         return false;
     const int32 Cupped = Campaign->TaskProgress().Progress - Before;
     W.World->InjectKey(EKeys::LeftControl, IE_Released);
+    W.World->InjectKey(EKeys::E, IE_Released);
     TestTrue(TEXT("Cupped, the copying goes at half pace"), Open > 0 && FMath::Abs(Cupped * 2 - Open) <= 20);
     return true;
 }

@@ -8,6 +8,35 @@ remains a historical recovery record. This is a progress record, not a claim
 that the release is complete. Backward compatibility,
 legacy formats, aliases, and fallback decoders are prohibited.
 
+## 2026-10-25 separate desk copies and reviewed CPU evidence
+
+Chapter six's three copying desks now have separate 30-second held interactions
+in source, replacing one stand-at-anchor 90-second timer. Releasing the mapped
+key, leaving the desk, damage, pause and blocking dialogue free the hands;
+partial copies persist until checkpoint retry. Guards pause work, and the
+cupped candle retains its half-rate effect. All three distinct copies are
+required. Host progression checks pass all 133 authored tasks and both routes
+through eight chapters; content validation rejects 65 malformed variants.
+The new directed Unreal test and adapted Candle test have not run yet. The
+writing desks are functional proxy geometry; the authored hall layout and
+final art remain open.
+
+Fresh native `cd9263628d` now independently passes the actual crate's 46 CPU
+tests with four proof tests ignored. The retained binary, five natural-EOF
+phases, exact test inventory and 254 bounded layouts are verified. One compiler
+dead-code warning remains. Its separate proof plan is sealed against those
+inputs but has not launched; production bridge `10ad7dad` is unchanged.
+
+Authenticated CI at `d3f19bf` passes 107 gates in five jobs, including 279 Rust
+passes and five ignores. Moving the unchanged Fern02 buffer to LFS clears the
+last ledger warning: zero ledger errors or warnings. Ten raw workflow warning
+lines repeat one Node20 deprecation message. This CI predates the desk changes.
+Claude's four revised paw originals improve the silhouette but still show fur
+card edges and glossy cloth/arrow materials. Canonical raw bow rotation still
+fails its original bound on eight samples; the separate snap model passes,
+its cause is unlocated, and codec defaults are inferred static evidence.
+None of these results completes the game or accepts final art.
+
 ## 2026-10-25 rendered withdrawal and fresh native constraints
 
 Exact `5d02f3b` passes its Metal SM6 720p live withdrawal capture after a

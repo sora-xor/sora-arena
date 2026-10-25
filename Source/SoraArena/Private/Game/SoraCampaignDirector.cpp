@@ -123,6 +123,7 @@ void USoraCampaignDirector::HeroDamaged(const FSoraDamagedEvent& Event)
     if(!ActiveBeatData()||Event.Victim!=M.Hero()) return;
     CancelFoundryWork();
     CancelHorseTreatment();
+    CancelCopying();
     if(bPryingCarryGate) bCarryGateHit=true;
     if(IsHelmHold()) CancelHelm();
     StopPlayerCrank();
@@ -454,6 +455,7 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     ResetFoundry();
     ResetHorseTreatment();
     ResetHelm();
+    CancelCopying();
     SpineCut={}; SpineReadyMs=0; bSpinePromptShown=false; bSpineMutoRaised=false;
     BulkheadHold={}; BulkheadClock.Reset();
     PendingSummitPhaseSave=INDEX_NONE;
@@ -732,7 +734,7 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
         Fire(TEXT("ai_event:first_rear_reach"));
     Step.CrankHelpers=CrankHelpers();
     Step.CrankDecayMultiplier=LiftDecayMultiplier();
-    if(!TickHelm(Step)) SoraBeatRules::Tick(TaskState,Task,Step);
+    if(!TickHelm(Step)&&!TickCopyDesk(Step)) SoraBeatRules::Tick(TaskState,Task,Step);
     if(M.bDefeated) return;
     TickPods(DeltaSeconds);
     if(ActiveBeatData()!=&Beat||M.bDefeated) return;
@@ -896,6 +898,7 @@ void USoraCampaignDirector::TickHeldWork(int32 DeltaMs,float DeltaSeconds)
 }
 float USoraCampaignDirector::HeldWorkProgress() const
 {
+    if(IsCopying()) return static_cast<float>(TaskState.HoldProgress[CopyDesk])/Task.HoldPointMs;
     if(HorseTreatmentOccupiesHands()) return float(Treatment.HeldMs)/SoraHorseTreatmentRules::HoldMs;
     if(FoundryOccupiesHands()) return float(Foundry.HeldMs)/SoraFoundryDefenseRules::Need(Foundry.Work);
     if(IsHelmHold()&&Helm.Working) return static_cast<float>(Helm.HeldMs)/ActiveSpace()->Helm.Contract.WorkMs;
@@ -1221,6 +1224,7 @@ void USoraCampaignDirector::ClearEncounter()
     BulkheadHold={}; BulkheadClock.Reset();
     CancelHelm();
     Helm={};
+    CancelCopying();
     ResetWind();
     CloseStealthZone();
     if(USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this)) Fieldcraft->Clear();
@@ -1407,6 +1411,7 @@ void USoraCampaignDirector::HandleFailure(SoraBeatRules::ERetry Outcome,const FS
     ResetPods();
     CancelFoundryWork();
     CancelHorseTreatment();
+    CancelCopying();
     CancelBulkheadHold();
     M.bDefeated=true;
     ClearDialogue();
@@ -1518,6 +1523,7 @@ bool USoraCampaignDirector::HeroAtTask() const
     const FSoraBeatSpace* Space=ActiveSpace();
     if(!Space) return false;
     if(IsHelmHold()) return Mode().Hero()&&Mode().Hero()->GetCharacterMovement()->IsMovingOnGround()&&InHelmFloor(Mode().Hero()->GetActorLocation());
+    if(Task.HoldPointCount>0) return IsCopying()&&AtCopyDesk(CopyDesk);
     if(Task.Goal==SoraBeatRules::EGoal::Hold) return Near(ASoraWorldBuilder::Floor(Space->Anchor),SoraCampaignReach::Hold);
     // The escorted party walks while the hero keeps up and all of it is free,
     // standing and in the open (SoraFieldcraftRules::PartyWalks).
@@ -1531,6 +1537,7 @@ bool USoraCampaignDirector::HeroAtTask() const
 }
 bool USoraCampaignDirector::Contested() const
 {
+    if(Task.HoldPointCount>0) return CopyDeskContested();
     const FSoraBeatSpace* Space=ActiveSpace();
     if(Task.Goal!=SoraBeatRules::EGoal::Hold||!Space) return false;
     const FVector Anchor=ASoraWorldBuilder::Floor(Space->Anchor);
@@ -1759,6 +1766,7 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
     const FSoraBeat* Beat=ActiveBeatData();
     if(!Beat||M.bChapterComplete) return;
     if(InteractHelm(Player)) return;
+    if(InteractCopyDesk(Player)) return;
     if(InteractWind(Player)) return;
     if(InteractEpilogue(Player)) return;
     if(InteractRecovery(Player)) return;
@@ -2213,6 +2221,7 @@ FString USoraCampaignDirector::ObjectiveText() const
     if(IsHorseTreatment()) return HorseTreatmentText(false);
     if(IsFoundryDefense()) return FoundryText(false);
     if(IsHelmHold()) return HelmText(false);
+    if(Task.HoldPointCount>0) return CopyDeskText(false);
     if(IsBulkheadCapture()&&AwaitingCapture()) return BulkheadText().Japanese;
     if(NeedsCarryGate()) return TEXT("蔵の封印で操作を長押しし、槍の石突でこじ開ける");
     if(NeedsEquipmentRecovery()) return AtRecoveryBottom()?TEXT("包みの前で操作を 3 秒長押しし、弓に弦を張る"):
@@ -2259,6 +2268,7 @@ FString USoraCampaignDirector::ObjectiveTextEnglish() const
     if(IsHorseTreatment()) return HorseTreatmentText(true);
     if(IsFoundryDefense()) return FoundryText(true);
     if(IsHelmHold()) return HelmText(true);
+    if(Task.HoldPointCount>0) return CopyDeskText(true);
     if(IsBulkheadCapture()&&AwaitingCapture()) return BulkheadText().English;
     if(NeedsCarryGate()) return TEXT("Hold Interact at the granary seal to pry it off with the spear butt");
     if(NeedsEquipmentRecovery()) return AtRecoveryBottom()?TEXT("Hold Interact at the bundle for 3 seconds to string the bow"):

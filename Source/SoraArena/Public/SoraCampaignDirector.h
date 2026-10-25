@@ -267,6 +267,8 @@ public:
     bool AtHelmWheel() const;
     bool HelmOccupiesHands() const { return IsHelmHold()&&Helm.Working; }
     void CancelHelm();
+    bool IsCopying() const { return CopyDesk >= 0; }
+    void CancelCopying();
     bool IsHoisting() const { return HeldWork == EHeldWork::Hoist; }
     bool IsUnloadingCargo() const { return HeldWork == EHeldWork::CargoUnload; }
     void CancelCargoUnload();
@@ -518,6 +520,12 @@ private:
     bool InteractHelm(ASoraPlayerCharacter& Player);
     bool InHelmFloor(const FVector& At) const;
     FString HelmText(bool English) const;
+    int32 CopyDesk=INDEX_NONE;
+    bool InteractCopyDesk(ASoraPlayerCharacter& Player);
+    bool TickCopyDesk(SoraBeatRules::FTick Step);
+    bool AtCopyDesk(int32 Index) const;
+    bool CopyDeskContested() const;
+    FString CopyDeskText(bool English) const;
     enum class EHeldWork : uint8 { None, Hoist, Objective, CargoUnload };
     EHeldWork HeldWork=EHeldWork::None;
     int32 HeldPoint=INDEX_NONE;

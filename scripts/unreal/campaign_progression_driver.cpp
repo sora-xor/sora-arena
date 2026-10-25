@@ -620,6 +620,73 @@ static void TestProduction()
     Expect(TaskComplete(State, Hold) && !Tick(State, Hold, At(3000, true, true)) && State.Progress == Hold.DurationMs,
         "hold: a held ground decayed once its time was held");
 
+    FTask Copy = Make(EType::ProductionTask, EGoal::Hold, ETask::Hold);
+    Copy.HoldPointCount = 3; Copy.HoldPointMs = 30000; Copy.DurationMs = 90000;
+    Copy.Contest = EContest::Pause; Copy.PauseWhenSeen = true;
+    State = Begin(Copy, "copy desks");
+    FTick Desk = At(15000, true); Desk.HoldPoint = 2;
+    Tick(State, Copy, Desk);
+    Expect(State.HoldProgress[2] == 15000 && State.Progress == 15000 && State.Done == 0,
+        "copy desks: the player may start at any desk");
+    for (int Refusal = 0; Refusal < 5; ++Refusal)
+    {
+        FTick Paused = Desk;
+        if (Refusal == 0) Paused.AtTask = false;
+        if (Refusal == 1) Paused.Seen = true;
+        if (Refusal == 2) Paused.Contested = true;
+        if (Refusal == 3) Paused.HoldPoint = -1;
+        if (Refusal == 4) Paused.HoldPoint = 3;
+        Tick(State, Copy, Paused);
+        Expect(State.Progress == 15000 && State.HoldProgress[2] == 15000,
+            "copy desks: leaving, release, sight, contest and invalid desks preserve but do not advance work");
+    }
+    Desk.DeltaMs = 60000;
+    Tick(State, Copy, Desk); Tick(State, Copy, Desk);
+    Expect(State.Progress == 30000 && State.Done == 1 && State.PointsMask == 4u && !TaskComplete(State, Copy),
+        "copy desks: excess time and repeat interaction never spill to other desks or count a desk twice");
+    Desk.HoldPoint = 0; Desk.DeltaMs = 1; Desk.RatePermille = 500;
+    Tick(State, Copy, Desk);
+    Desk.HoldPoint = 1; Tick(State, Copy, Desk);
+    Expect(State.Progress == 30000 && State.HoldRateCarry[0] == 500 && State.HoldRateCarry[1] == 500,
+        "copy desks: fractional cupped-candle work stays at its own desk");
+    Desk.HoldPoint = 0; Tick(State, Copy, Desk);
+    Expect(State.Progress == 30001 && State.HoldProgress[0] == 1 && State.HoldProgress[1] == 0,
+        "copy desks: resuming recovers that desk's fractional work only");
+    Desk.DeltaMs = 60000;
+    Tick(State, Copy, Desk);
+    Expect(State.Done == 2 && !TaskComplete(State, Copy), "copy desks: two completed desks cannot finish three copies");
+    Desk.HoldPoint = 1; Tick(State, Copy, Desk);
+    Expect(State.Done == 3 && State.Progress == 90000 && State.PointsMask == 7u && TaskComplete(State, Copy),
+        "copy desks: all three distinct copies finish the task");
+    State = StartTask(Copy, 0);
+    Expect(State.Progress == 0 && State.Done == 0 && State.HoldProgress[2] == 0 && State.HoldRateCarry[1] == 0,
+        "copy desks: checkpoint retry restarts all copies");
+    State.Progress = Copy.DurationMs;
+    Expect(!TaskComplete(State, Copy), "copy desks: a forged aggregate cannot substitute for the three copies");
+    for (int Invalid = 0; Invalid < 7; ++Invalid)
+    {
+        FTask Bad = Copy;
+        if (Invalid == 0) Bad.HoldPointCount = MaxPoints + 1;
+        if (Invalid == 1) Bad.HoldPointMs = 0;
+        if (Invalid == 2) --Bad.DurationMs;
+        if (Invalid == 3) Bad.HoldPointCount = 0;
+        if (Invalid == 4) Bad.Contest = EContest::Decay;
+        if (Invalid == 5) Bad.Goal = EGoal::Survive;
+        if (Invalid == 6) Bad.HoldPointMs = MaxClockMs;
+        Expect(!TaskValid(Bad), "copy desks: malformed point count, duration, goal or contest rejected");
+    }
+    for (const int FrameMs : {1, 3, 7, 17, 33, 250})
+    {
+        State = StartTask(Copy, 0);
+        for (int Point = 0; Point < 3; ++Point)
+        {
+            FTick Frame = At(FrameMs, true); Frame.HoldPoint = Point; Frame.RatePermille = 500;
+            for (int Ms = 0; Ms < 6000; Ms += FrameMs) Tick(State, Copy, Frame);
+            Expect(State.HoldProgress[Point] == ((6000 + FrameMs - 1) / FrameMs * FrameMs) / 2,
+                "copy desks: each candle clock is independent of the frame rate");
+        }
+    }
+
     FTask Crank = Make(EType::ProductionTask, EGoal::Turns, ETask::Crank);
     Crank.StaminaPerTurn = 6;
     Crank.Count = 3;
@@ -1585,7 +1652,13 @@ static bool Act(FTaskState& State, const FTask& Task, const std::string& Where)
     case EGoal::Exit:
         return (State.Progress < 900 && Travel(State, Task, State.Progress + 100)) || Reach(State, Task) ||
             Tick(State, Task, At(500));
-    case EGoal::Hold: return Tick(State, Task, At(500, true));
+    case EGoal::Hold:
+    {
+        FTick Step = At(500, true);
+        for (int Point = 0; Point < Task.HoldPointCount; ++Point)
+            if (State.HoldProgress[Point] < Task.HoldPointMs) { Step.HoldPoint = Point; break; }
+        return Tick(State, Task, Step);
+    }
     case EGoal::Turns:
     {
         Tick(State, Task, At((Task.MinTurnMs + Task.MaxTurnMs) / 2));

@@ -226,6 +226,22 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
         KitFill=KitShape(TEXT("HelmHoldFill"),KitCube,KitAnchor+FVector(0,0,2),FVector(.01,KitHoldSize.Y/100,.012),KitGold);
         KitFill->ComponentTags.Add(TEXT("HelmHoldFill"));
     }
+    else if(KitWork==TEXT("hold")&&Beat.Task.HoldPointCount>0)
+    {
+        for(int32 Point=0;Point<Space.Objectives.Num();++Point)
+        {
+            // Leave the interaction point clear in front of the writing desk.
+            const FVector P=Floor(Space.Objectives[Point],Space.HeightCm)+FVector(0,110,0);
+            auto* Top=KitShape(TEXT("CopyDesk"),KitCube,P+FVector(0,0,68),FVector(1.2,.8,.08),KitTimber,TEXT("Timber"),true);
+            Top->ComponentTags.Add(TEXT("CopyDesk"));
+            for(int32 X:{-1,1}) for(int32 Y:{-1,1})
+                KitShape(TEXT("CopyDeskLeg"),KitCube,P+FVector(X*50,Y*30,32),FVector(.07,.07,.64),KitTimber,TEXT("Timber"),true);
+            KitShape(TEXT("LedgerPages"),KitCube,P+FVector(0,-8,74),FVector(.48,.32,.04),FLinearColor(.78,.72,.56));
+            auto* Mark=KitShape(TEXT("LedgerCopy"),KitCube,P+FVector(37,-8,74),FVector(.22,.3,.03),KitDim);
+            Mark->ComponentTags.Add(TEXT("LedgerCopy"));
+            KitStations.Add(Mark);
+        }
+    }
     else if(KitWork==TEXT("hold"))
     {
         // The ground to hold: its edge posts, a dark ring and a fill that grows.
@@ -362,6 +378,12 @@ void ASoraWorldBuilder::ShowKit(const FSoraKitView& View)
     {
         KitWheel->SetRelativeRotation(FRotator(Progress*360.f*8.f,0,90));
         KitGauge->SetRelativeLocation(KitAnchor+FVector(0,-420,10.f+300.f*Progress));
+    }
+    else if(KitWork==TEXT("hold")&&!View.HoldProgressPermille.IsEmpty())
+    {
+        for(int32 Point=0;Point<KitStations.Num()&&Point<View.HoldProgressPermille.Num();++Point)
+            Tint(KitStations[Point],View.HoldProgressPermille[Point]>=1000?KitTeal:
+                View.HoldProgressPermille[Point]>0?KitGold:KitDim);
     }
     else if(KitWork==TEXT("hold")&&KitFill)
     {

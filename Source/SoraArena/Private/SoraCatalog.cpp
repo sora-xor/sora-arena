@@ -239,6 +239,14 @@ bool ReadTask(const FJsonObject& O, const FString& TypeName, FSoraBeat& Beat)
         if (!Row.IsValid() || !Row->TryGetNumber(Number) || !Whole(Number, Hold) || Hold < 0) return false;
         Beat.ObjectiveHoldMs.Add(Hold);
     }
+    if (T.Goal == EGoal::Hold && !Beat.Objectives.IsEmpty())
+    {
+        T.HoldPointCount = Beat.Objectives.Num();
+        T.HoldPointMs = Beat.ObjectiveHoldMs[0];
+        for (const int32 Hold : Beat.ObjectiveHoldMs) if (Hold != T.HoldPointMs) return false;
+    }
+    if (Beat.Id == TEXT("ch06.b08") && (T.HoldPointCount != 3 || T.HoldPointMs != 30000 ||
+        Beat.Objectives != TArray<FString>{TEXT("desk_tagata"), TEXT("desk_machikata"), TEXT("desk_shokukata")})) return false;
     const FJsonRows* GuardRows = Rows(O, TEXT("guards"));
     if (!GuardRows) return false;
     for (const auto& Row : *GuardRows)

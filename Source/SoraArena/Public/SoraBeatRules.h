@@ -361,6 +361,10 @@ struct FTask
     // second, or for a crank permille of the turns required per second.
     EContest Contest = EContest::None;
     int DecayPermille = 0;
+    // A copying hold is worked separately at every named desk. Other holds
+    // keep their ordinary volume clock (both values zero).
+    int HoldPointCount = 0;
+    int HoldPointMs = 0;
     // A crank's rate band as turn intervals: faster slips, slower lets it decay.
     int MinTurnMs = 0;
     int MaxTurnMs = 0;
@@ -458,6 +462,8 @@ struct FTaskState
     // A hold worked at a reduced rate (a cupped candle): thousandths of a
     // millisecond not yet counted.
     int RateCarry = 0;
+    int HoldProgress[MaxPoints] = {};
+    int HoldRateCarry[MaxPoints] = {};
     int Step = 0;
     int StepDone = 0;
     int RhythmCarry = 0;
@@ -504,6 +510,8 @@ struct FTick
     int CrankHelpers = 0;
     // Live physical cutter contact on the lift hawser; ordinary cranks use 1.
     int CrankDecayMultiplier = 1;
+    // The desk whose Interact is held, or -1. Time never spills to another desk.
+    int HoldPoint = -1;
 };
 
 constexpr int Bits(unsigned Mask)
@@ -652,8 +660,12 @@ constexpr bool GoalMet(const FTaskState& State, const FTask& Task)
     case EGoal::Deliveries: return Task.Count > 0 && State.Done >= Task.Count;
     case EGoal::Lessons:
         return (State.Forms & Task.LessonMask) == Task.LessonMask && State.Done >= Task.Count && SoraMaaiRules::Complete(State.Maai,Task.Maai);
-    case EGoal::Survive:
-    case EGoal::Hold: return Task.DurationMs > 0 && State.Progress >= Task.DurationMs;
+    case EGoal::Survive: return Task.DurationMs > 0 && State.Progress >= Task.DurationMs;
+    case EGoal::Hold:
+        if (Task.HoldPointCount > MaxPoints) return false;
+        for (int Point = 0; Point < Task.HoldPointCount; ++Point)
+            if (State.HoldProgress[Point] != Task.HoldPointMs) return false;
+        return Task.DurationMs > 0 && State.Progress >= Task.DurationMs;
     case EGoal::OpponentDown: return State.OpponentPermille <= 0 && (Task.Defeat != EDefeat::Capture || State.Captured);
     case EGoal::Turns: return Task.Count > 0 && State.Progress >= Task.Count * Permille;
     // An escort without a route (PathCm 0) cannot arrive.
@@ -789,7 +801,26 @@ constexpr bool Tick(FTaskState& State, const FTask& Task, FTick Step)
         State.Progress = State.Progress + Delta > Task.DurationMs ? Task.DurationMs : State.Progress + Delta;
         break;
     case EGoal::Hold:
-        if (Step.Contested && Task.Contest == EContest::Decay)
+        if (Task.HoldPointCount > 0)
+        {
+            const int Point = Step.HoldPoint;
+            if (Point < 0 || Point >= Task.HoldPointCount || Point >= MaxPoints ||
+                !Step.AtTask || Watched || Step.Contested || State.HoldProgress[Point] >= Task.HoldPointMs) break;
+            const long long Paced = State.HoldRateCarry[Point] + static_cast<long long>(Delta) *
+                (Step.RatePermille < 0 ? 0 : Step.RatePermille > Permille ? Permille : Step.RatePermille);
+            const int Filled = static_cast<int>(Paced / Permille);
+            const int Left = Task.HoldPointMs - State.HoldProgress[Point];
+            const int Added = Filled < Left ? Filled : Left;
+            State.HoldProgress[Point] += Added;
+            State.Progress += Added;
+            State.HoldRateCarry[Point] = Filled < Left ? static_cast<int>(Paced % Permille) : 0;
+            if (State.HoldProgress[Point] == Task.HoldPointMs)
+            {
+                State.PointsMask |= 1u << Point;
+                ++State.Done;
+            }
+        }
+        else if (Step.Contested && Task.Contest == EContest::Decay)
             Decay(State, Task, Task.DurationMs, Delta);
         else if (Step.AtTask && !Watched && !(Step.Contested && Task.Contest == EContest::Pause))
         {
@@ -1382,6 +1413,11 @@ constexpr bool PointsValid(int Count)
 // wave, phase and step can be met.
 constexpr bool TaskValid(const FTask& Task)
 {
+    if (Task.HoldPointCount < 0 || Task.HoldPointCount > MaxPoints ||
+        (Task.HoldPointCount == 0 ? Task.HoldPointMs != 0 :
+            Task.Type != EType::ProductionTask || Task.Task != ETask::Hold || Task.Goal != EGoal::Hold ||
+            Task.HoldPointMs <= 0 || Task.HoldPointMs > MaxClockMs / Task.HoldPointCount ||
+            Task.DurationMs != Task.HoldPointCount * Task.HoldPointMs || Task.Contest != EContest::Pause || Task.DecayPermille != 0)) return false;
     if (Task.Task == ETask::Crank)
     {
         if (Task.StaminaPerTurn < 1 || Task.StaminaPerTurn > 100 ||

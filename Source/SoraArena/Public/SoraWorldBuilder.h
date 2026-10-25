@@ -32,6 +32,7 @@ struct FSoraKitView
 {
     // The task's progress, 0-1000: water risen, a lift or a hold filled.
     int32 ProgressPermille = 0;
+    TArray<int32> HoldProgressPermille;
     // A manufacture's current step, and how many strokes are done in all.
     int32 Step = 0;
     int32 Strokes = 0;

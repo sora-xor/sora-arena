@@ -22,6 +22,7 @@
 #include "SoraSummitAutomation.h"
 #include "SoraBulkheadAutomation.h"
 #include "SoraCarryAutomation.h"
+#include "SoraCopyDeskAutomation.h"
 #include "SoraEnemy.h"
 #include "SoraEnemyController.h"
 #include "SoraEquipmentComponent.h"
@@ -1150,6 +1151,14 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
                 return false;
             if (Rules.Goal == EGoal::Hold && !TendFires(Test, State))
                 return false;
+            if(Rules.HoldPointCount>0)
+            {
+                int32 Point=0;
+                while(Point<Rules.HoldPointCount&&Director->TaskProgress().HoldProgress[Point]>=Rules.HoldPointMs) ++Point;
+                if(Point>=Rules.HoldPointCount||!SoraCopyDeskAutomation::Copy(*State.World,Point))
+                    return Fail(Test,State,TEXT("Each desk must be copied through held Interact"));
+                continue;
+            }
             if(Director->HelmNeedsTrim()&&!SoraHelmAutomation::Correct(*State.World))
                 return Fail(Test,State,TEXT("The helm requires its actual wheel correction"));
             Standing.Reset();
