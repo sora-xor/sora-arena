@@ -403,7 +403,10 @@ class DojoNaniteTests(unittest.TestCase):
         self.assertIn('set_base_material_usage(parent, unreal.MaterialUsage.MATUSAGE_NANITE, True)', text)
         self.assertIn('SORA_DOJO_NANITE_IMPORT', text)
         manifest = json.loads((HERE.parents[1] / "Content/SourceArt/Environment/NyaagyuDojoKit/manifest.json").read_text())
-        self.assertEqual(len(manifest["modules"]), 12)
+        self.assertCountEqual([module["asset"] for module in manifest["modules"]], [
+            "SM_DojoBay_Panel", "SM_DojoBay_Renji", "SM_DojoBay_RenjiHigh", "SM_DojoBay_Shoji", "SM_DojoBay_DoorOpen",
+            "SM_DojoColumn", "SM_DojoRail_Nageshi", "SM_DojoRail_Cornice", "SM_DojoRail_Koshi", "SM_DojoRail_Nuki",
+            "SM_DojoFloor_0", "SM_DojoFloor_1", "SM_DojoFloor_2", "SM_DojoFloor_3", "SM_DojoCeiling", "SM_DojoKamiza"])
         self.assertTrue(all(lod["triangles"] > 0 for module in manifest["modules"] for lod in module["lods"]))
 
 

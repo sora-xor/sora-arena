@@ -7,14 +7,14 @@
   "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/manifest.json": "a7cce7ca1b1a1ed00839c83acf0113826bf40a0a9267ca3ea1fd27475b4f3717"
  },
  "campaign": {
-  "Content/Data/campaign/chapter_01.json": "df14f05d6ec8925f847da5c27cfd210951129bfa8c647fb8c4893adf92b32870",
-  "Content/Data/campaign/chapter_02.json": "f07544462ab1e0293e1e822a2476fc35b1a347899ae74def22d203d8291518b2",
-  "Content/Data/campaign/chapter_03.json": "0f63b3e700f5fdfff941fc60e0afc2cd8658b03583f0e19c2a55a7446090afe3",
-  "Content/Data/campaign/chapter_04.json": "c11cacff48d9bc46ef01b44618574e9870d6257f2075ec22dfecd31a4f61e40e",
-  "Content/Data/campaign/chapter_05.json": "cbb8dd6374394d8c4e92c4460c5cea3475d2d653050357642d5dc162a3274baa",
-  "Content/Data/campaign/chapter_06.json": "a05def8e1440360b9a4524d72e2653a1f1a527011fd2c0eb6f7db9d29ec10b3a",
-  "Content/Data/campaign/chapter_07.json": "687a858df467792694980564132f570664700579d5e10b3bf83bb324d023f244",
-  "Content/Data/campaign/chapter_08.json": "3048c41ed408cfc8d4ba573d6a6772adcda378cda6fb1ba4d80f1b1756774278"
+  "Content/Data/campaign/chapter_01.json": "c5718808288d45f44dcaa746528b35b1fb277a6bdfd3c6837a2ed4a767d06b9c",
+  "Content/Data/campaign/chapter_02.json": "49d4c1b9a5e5a175f7d9483661f527dd279b2ee251418b8271bd6f1327797179",
+  "Content/Data/campaign/chapter_03.json": "a567baae3c48fb3b0310e85dd0dc424bbed8c7ce9927598f56ed0c651656a80e",
+  "Content/Data/campaign/chapter_04.json": "3c6c7accf103168ccc9d98ed97cfbfcb2caa5c89d185b81a70d9a10522c006a4",
+  "Content/Data/campaign/chapter_05.json": "1ec287f9cc4487245688129f3e79d59da4eb54e5ff4d35ac944064d7e6cb889d",
+  "Content/Data/campaign/chapter_06.json": "3fba577dbd5510221b0379e613c587c6210a20796f3736ea3605d52994a658c2",
+  "Content/Data/campaign/chapter_07.json": "9e72534c1a791ea3c903ede1b2647f9ecc932b5515fc55ee9460392749436e08",
+  "Content/Data/campaign/chapter_08.json": "12f2face5aa59cbfbc676782d6beba8e40742090160be8c0156850e9756aed06"
  },
  "halls": [
   {
@@ -36,9 +36,9 @@
   },
   {
    "rect": [
-    35000,
+    38800,
     -1300,
-    38600,
+    42400,
     1300
    ],
    "zones": [

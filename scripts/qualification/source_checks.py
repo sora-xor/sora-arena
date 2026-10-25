@@ -130,6 +130,8 @@ def checks(python: str = sys.executable) -> list[Check]:
         ("cargo-capture-evidence", "scripts/toolchain/test_cargo_capture.py"),
         ("nanite-draw-evidence", "scripts/toolchain/test_nanite_capture.py"),
         ("dojo-nanite-import", "scripts/unreal/test_dojo_nanite.py"),
+        ("dojo-timber-admission", "scripts/unreal/test_dojo_timber_admission.py"),
+        ("sora-cloth-admission", "scripts/unreal/test_sora_cloth_admission.py"),
         ("mac-candidate-guards", "scripts/toolchain/test_mac_candidate.py"),
         ("automation-report-guards", "scripts/toolchain/test_packaged_report.py"),
         ("capture-log-completion", "scripts/toolchain/test_logged_process.py"),
@@ -147,6 +149,8 @@ def checks(python: str = sys.executable) -> list[Check]:
     unit("assets", "source-images-tests", "scripts/unreal/test_source_images.py")
     script("assets", "asset-ledger", "scripts/assets/validate_asset_ledger.py", "--json")
     script("assets", "asset-notices", "scripts/assets/generate_asset_notices.py", "--check")
+    unit("assets", "dojo-timber-binding", "scripts/art/test_bind_dojo_timbers.py")
+    script("assets", "dojo-timber-binding-current", "scripts/art/bind_dojo_timbers.py", "--check")
     for name in ("asset_ledger", "fetch_cc0", "fetch_cat_base_v6_sources", "lane_records"):
         unit("assets", name.replace("_", "-") + "-tests", f"scripts/assets/tests/test_{name}.py")
     script("audio", "audio-data", "scripts/audio/validate_audio_data.py")
