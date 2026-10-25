@@ -1,10 +1,16 @@
 # Press stamp masking and silent-machine inspection
 
-This is an unqualified source candidate for chapter 6, beat 11. It has not
-been compiled or exercised in Unreal. The existing copying-desk regression
-remains pinned to `56bdcfe` in a different worktree while the native proof
-cohort runs. No local compiler, Unreal or Blender process was launched for
-this change during that cohort.
+This is a source candidate for chapter 6, beat 11, integrated at signed
+`2b911eab06cc9253be81a37202e8e387d32c5040`. It has not been compiled or
+exercised in Unreal. Its exact-source CI run
+[40217693425](https://github.com/sora-xor/sora-arena/actions/runs/40217693425)
+passes all 108 checks in five jobs. Artifact hashes, raw logs, the signed source
+and unchanged tested tree were independently verified; review digest
+`3840c1a61a85c6d518a75bddfc505af4c8ceced1714423a45382903e357f876f`.
+No local compiler, Unreal or Blender job ran for this source during the native
+cohort. The prior `56bdcfe` copying/candle/assisted-campaign regression has since
+passed. Claude now owns the engine/Blender slot; press runtime checks follow
+its return. Source CI does not establish the pending Unreal behavior.
 
 The previous encounter credited three four-second held objectives, but had
 no running presses, stamp masking or silent-machine inspection. The candidate
@@ -72,7 +78,8 @@ station, pause/inspection priority and a fifty-second physical obstruction.
 Their senses are isolated; ordinary encounter behavior still needs its own
 execution evidence. Neither fixture has run yet. The portable schedule tests
 cover early and late arrivals, a full-period obstruction, and 30/60/144 Hz
-partitions; local compilation remains queued behind the native proof run.
+partitions and pass in the exact `2b911ea` Linux CI run. The Unreal
+controller and its actual movement remain uncompiled and unrun.
 
 Floor chatter and the lift exit now carry an explicit floor-height bound.
 The exit cannot be pre-credited while a master is still running, or activated

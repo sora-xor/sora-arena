@@ -8,6 +8,34 @@ remains a historical recovery record. This is a progress record, not a claim
 that the release is complete. Backward compatibility,
 legacy formats, aliases, and fallback decoders are prohibited.
 
+## October 25 completed bounded proof and desk regression
+
+Signed native `cd9263628d` completes its retained-binary final-tick-death proof
+cohort: one 3,666,144-byte proof verifies separately; all 90 public-input,
+two corrupt/truncated and eleven actual-prover cases reject as required.
+Both phases exit zero with natural stream EOF, no guard breaches and unchanged
+source. All 116 archived files independently verify. This remains an
+unregistered two-player/two-tick relation; full World/Core execution,
+network settlement and performance are open. The production bridge stays
+`10ad7dad`. See the [native proof record](qualification/native-final-death.md).
+
+Exact game `56bdcfe` builds in 20.56 seconds and passes CopyDesks, Candle and
+the assisted 133-beat Playthrough, including the new visibility obstruction
+case. All three selected reports have zero errors/warnings, natural
+editor/wrapper exits zero, unchanged inputs and 20 authenticated files.
+The pre-initialization diagnostic lines are preserved separately in the
+[desk record](qualification/copy-desks.md). These results precede the press
+candidate. Signed `2b911ea` now passes all 108 source CI checks; its ten Unreal
+fixtures remain pending, as described in the [press record](qualification/press-hall.md).
+
+Claude has the engine/Blender slot for its accepted timber, bow and paw rebuild
+sequence. Its scoped bow-ledger correction passes eighteen independently
+reproduced host tests and three retained regression probes; all sixteen raw
+inputs verify. Its wrapper now restricts the exit-one exception to the full
+editor, with eleven independently reproduced fake-engine fixtures. These host
+results do not admit generated geometry, materials or final art. The release
+remains incomplete.
+
 ## 2026-10-25 separate desk copies and reviewed CPU evidence
 
 Chapter six's three copying desks now have separate 30-second held interactions,

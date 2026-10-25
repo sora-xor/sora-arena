@@ -11,6 +11,34 @@ production. Work runs in isolated worktrees, with a single coordinated Unreal
 and GPU rendering lane. The shared checkout is not a build or render workspace.
 The local coordination mailboxes record current ownership, commits and lane use.
 
+## October 25 completed bounded proof and desk regression
+
+Signed native `cd9263628d` completes its retained-binary final-tick-death proof
+cohort: one 3,666,144-byte proof verifies separately; all 90 public-input,
+two corrupt/truncated and eleven actual-prover cases reject as required.
+Both phases exit zero with natural stream EOF, no guard breaches and unchanged
+source. All 116 archived files independently verify. This remains an
+unregistered two-player/two-tick relation; full World/Core execution,
+network settlement and performance are open. The production bridge stays
+`10ad7dad`. See the [native proof record](qualification/native-final-death.md).
+
+Exact game `56bdcfe` builds in 20.56 seconds and passes CopyDesks, Candle and
+the assisted 133-beat Playthrough, including the new visibility obstruction
+case. All three selected reports have zero errors/warnings, natural
+editor/wrapper exits zero, unchanged inputs and 20 authenticated files.
+The pre-initialization diagnostic lines are preserved separately in the
+[desk record](qualification/copy-desks.md). These results precede the press
+candidate. Signed `2b911ea` now passes all 108 source CI checks; its ten Unreal
+fixtures remain pending, as described in the [press record](qualification/press-hall.md).
+
+Claude has the engine/Blender slot for its accepted timber, bow and paw rebuild
+sequence. Its scoped bow-ledger correction passes eighteen independently
+reproduced host tests and three retained regression probes; all sixteen raw
+inputs verify. Its wrapper now restricts the exit-one exception to the full
+editor, with eleven independently reproduced fake-engine fixtures. These host
+results do not admit generated geometry, materials or final art. The release
+remains incomplete.
+
 ## October 25 press-hall source candidate
 
 A separate source candidate adds the eight authored press positions, separate
@@ -1426,7 +1454,7 @@ history below. The release remains incomplete.
 | A3 | Complete campaign/arena art, animation, audio and effects | Claude + Codex integration | Extend approved visual direction across every environment, character and encounter; complete dialogue presentation, cinematics, sound, music and effects. Review every asset's rights and ledger records. Missing original references remain explicit, rather than being claimed as matched. |
 | Q1 | Repeatable source validation and CI | Codex validation lane | Authenticated CI `40201884816` passes all 107 gates in five jobs at exact `d3f19bf`; 279 Rust tests pass and five are explicitly ignored. Tested/source trees match; all five artifact digests and raw logs are verified. The unchanged Fern02 buffer now uses LFS: ledger zero errors/warnings; ten raw Node20 warning lines remain. CI `025cb32` fails one stale chapter binding, corrected without layout changes; `4fa637f` CI is pending review. Private assets, rendered art and full native execution remain separate gates. |
 | N1 | Matching native kernel and Connect integration | Codex | Kernel ABI4 stages and passes 94 parity cases/99,043 ticks. Signed clean native `10ad7daddf` passes29/29 directed tests and has a fresh frozen ABI30 release build with its original sidecar. All29 frozen files and six consumer hashes were checked before staging; actual UE NativeLoader passes in the `56b95f3` editor and the `b4a02d1` packaged Metal client, with the exact staged library path. Strict package/artifact hashes verify before and after execution. These tests cover loading, binding, canonical JSON and hashing; signing, submission and finality are not tested. Earlier producer records remain preserved. Windows loading remains unverified. |
-| N2 | Complete native execution proof and real settlement | Codex | Bounded native `01d4e46` completes actual crate compilation/31 CPU tests and a 3,005,248-byte proof with separate verification and 55 negative cases, but its proof attempt fails the unchanged disk reserve. Signed `6fd03be8` adds Katana fallback, and `cd9263628d` adds final-tick death/account/FFA completion with independently authenticated standalone source evidence. Fresh `cd9263628d` passes 18 provenance tests, 70 standalone constraints, exact regeneration of four final-death fixture files, and 46 actual-crate CPU tests with four ignored proofs. The actual adapter covers 254 layouts, at most 3,803,712 bytes; independent CPU review and the unchanged retained binary are sealed into the pending proof plan. Two earlier runner failures and the successful observer retry remain preserved. Fresh native proof cohort is running from the reviewed retained binary; no result yet. Historical outputs are partly missing, with no cause inferred. No registered full Arena execution profile, full World/death/ability/terminal composition, full-size proof or settlement acceptance is established. Four-validator admission/dispute/settlement, market recovery and Connect signing/finality remain open; live funding/trading stay disabled. |
+| N2 | Complete native execution proof and real settlement | Codex | Bounded native `01d4e46` completes actual crate compilation/31 CPU tests and a 3,005,248-byte proof with separate verification and 55 negative cases, but its proof attempt fails the unchanged disk reserve. Signed `6fd03be8` adds Katana fallback, and `cd9263628d` adds final-tick death/account/FFA completion with independently authenticated standalone source evidence. Fresh `cd9263628d` passes 18 provenance tests, 70 standalone constraints, exact regeneration of four final-death fixture files, and 46 actual-crate CPU tests with four ignored proofs. The actual adapter covers 254 layouts, at most 3,803,712 bytes; independent CPU review and the unchanged retained binary are sealed into the completed proof plan. Two earlier runner failures and the successful observer retry remain preserved. Fresh native proof cohort completes: one separately verified 3,666,144-byte proof, 92 verifier rejections and eleven actual-prover Constraint rejections, natural EOF zero and 116 files independently verified. This remains an unregistered two-player/two-tick relation. Historical outputs are partly missing, with no cause inferred. No registered full Arena execution profile, full World/death/ability/terminal composition, full-size proof or settlement acceptance is established. Four-validator admission/dispute/settlement, market recovery and Connect signing/finality remain open; live funding/trading stay disabled. |
 | R1 | Windows and Mac release candidates | Codex | Latest completed Mac Development package `c655b6b`, native bridge `10ad7dad`, passes Game build, cook of 1,323 packages with zero cook errors/warnings, staging/signature checks, smoke, all 164 client tests and a fresh rendered Title check. Newer gameplay and art source remains uncooked. Earlier rejected packages and warning/failure records remain preserved in the dated checkpoints. Clean-machine install, normal campaign play, controller/accessibility, multiplayer recovery, Windows and actual M1 performance remain open; M2 results do not qualify M1. |
 | R2 | Complete release acceptance | Codex + user visual review | Close every gate below, review unresolved defects, and deliver identifiable packages and their source/evidence. No milestone is completed by relabeling prototype content or weakening a gate. |
 

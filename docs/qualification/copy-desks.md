@@ -1,7 +1,7 @@
 # Chapter-six copying desks
 
-At signed `4fa637fec37e8e760d1cbc614d72ab0de645c2a6`, the Mac editor builds
-in 21.87 seconds and passes `SoraArena.Campaign.CopyDesks`,
+At signed `56bdcfed2dbebbb0217cf2f3a48799b5e59c2b4c`, the Mac editor builds
+in 20.56 seconds and passes `SoraArena.Campaign.CopyDesks`,
 `SoraArena.Fieldcraft.Candle` and `SoraArena.Campaign.Playthrough` together.
 All three have zero selected errors or warnings. Editor and wrapper exit zero
 with stream EOF; source, native inputs, Config and Content/Generated remain
@@ -70,15 +70,23 @@ errors or warnings. Ten raw workflow warning lines repeat one Node20
 deprecation. The independent review digest is
 `64801dd64a8f2ce4928b19093f72f465958381e4186193407c09545cf6e1aa7e`.
 
-## Unqualified obstruction correction
+## Obstruction regression at 56bdcfe
 
 The later source checks a visibility ray from the eye to just above the actual
 ledger before starting and on every working tick. A wall or closed door refuses
 admission; an obstruction appearing during copying frees the hands and retains
 partial work. Removing it requires a new mapped press. The directed fixture
 now checks both admission and interruption with a physical visibility blocker.
-This correction has not yet been built or run in Unreal and is not covered by
-the earlier `4fa637f` pass.
+Exact `56bdcfe` now builds and passes the three selected tests with natural
+editor/wrapper exits zero and unchanged source/native/Config/Generated inputs.
+CopyDesks takes 2.230940 seconds, Candle 0.200620 seconds and the assisted
+Playthrough 31.656906 seconds. All 20 archived files independently verify;
+the review digest is
+`a9578b45824f9433587bf36a0c465bcab42f5ca29f5fc10fc4602473637c7eda`.
+Nineteen startup `Condition failed` messages occur before engine initialization,
+as in the preceding `4fa637f` run; both original logs and the comparison are
+retained. The three selected test reports have zero errors and warnings.
+This run predates the press candidate and does not qualify that encounter.
 
 ## Remaining work
 
