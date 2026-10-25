@@ -14,7 +14,8 @@ struct FSoraHit;
 // and staggers its attacker; a held guard takes the attack's chip; bullets,
 // arrows and blasts from the front are halved; his own blast is never guarded.
 // A landed heavy blow may push him back or stagger him. With his blade
-// sheathed he guards nothing, but a guard pressed just before a committed cut
+// being sheathed or fully sheathed he guards nothing. Once fully sheathed,
+// a guard pressed just before a committed cut
 // that allows it lands is 無刀取り: he takes the blade and the blow misses.
 // 転 (marobashi) rolls him to an opponent's flank: Left or Right with Jump
 // within SoraCombatRules::MarobashiWindowMs of an awase on it, or in the

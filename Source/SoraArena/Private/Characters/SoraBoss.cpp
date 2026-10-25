@@ -1257,7 +1257,7 @@ void ASoraBoss::StrikeBlow(ASoraCharacterBase& Target)
         Hit.HeroStaggerMs = Attack.HeroStaggerMs;
         Hit.MutoWindowMs = Attack.bMuto && Info->bMutoFinisher ? MutoWindowMs() : 0;
         const auto* Player = Cast<ASoraPlayerCharacter>(&Target);
-        const bool bGuarding = Player && Player->GetEquipment()->IsGuardHeld() && !Player->GetEquipment()->IsSheathed();
+        const bool bGuarding = Player && Player->GetEquipment()->IsGuardHeld() && !Player->GetEquipment()->IsSheathing();
         Resolved.Target = &Target;
         Resolved.Damage = StrikeHero(Target, Attack.Damage, Hit, Run.LockedDirection);
         Resolved.bHit = Resolved.Damage > 0;

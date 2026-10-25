@@ -241,9 +241,14 @@ FBossLayout MeasureBoss(const FSoraHUDFrame& F,float Width,bool Compact=false)
         const auto* Hero=Cast<ASoraPlayerCharacter>(F.HUD.GetOwningPawn());
         if(Attack->bMuto&&Info->bMutoFinisher)
         {
-            const bool Sheathed=Hero&&Hero->GetEquipment()->IsSheathing();
-            Pair(Sheathed?TEXT("納刀済 ― 斬撃の寸前に［防御］で無刀取り"):TEXT("［納刀］で納め、斬撃の寸前に［防御］で無刀取り"),
-                Sheathed?TEXT("Sheathed: [Guard] just before the cut lands for mutō-dori"):TEXT("[Sheathe], then [Guard] just before the cut lands for mutō-dori"),.36f,.32f,F.Gold);
+            const auto* Kit=Hero?Hero->GetEquipment():nullptr;
+            const FText Hint=Kit&&Kit->IsSheathed()
+                ?NSLOCTEXT("SoraArena.HUD","Boss.MutoReady","納刀済 ― 斬撃の寸前に［防御］で無刀取り")
+                :Kit&&Kit->IsSheathing()
+                    ?NSLOCTEXT("SoraArena.HUD","Boss.MutoSheathing","納刀中……まだ無刀取りはできない")
+                    :NSLOCTEXT("SoraArena.HUD","Boss.MutoDrawn","［納刀］で納め、斬撃の寸前に［防御］で無刀取り");
+            const auto Line=SoraText::Line(Hint);
+            Pair(Line.Japanese,Line.English,.36f,.32f,F.Gold);
         }
         else if(Attack->MarobashiMs>0)
             Pair(TEXT("転 ― 着く寸前に 左右＋［跳躍］で脇へ"),TEXT("Marobashi: Left/Right + [Jump] just before it lands to reach the flank"),.36f,.32f,F.Gold);

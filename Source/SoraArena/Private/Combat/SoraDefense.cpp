@@ -75,9 +75,11 @@ bool SoraDefense::AdmitHero(ASoraPlayerCharacter& Hero, float& Damage, FSoraHit&
         Damage = 0.f;
         return false;
     }
+    // Starting to sheathe already occupies the blade: an unfinished motion
+    // cannot fall back to drawn-blade awase when mutō-dori is not ready.
     // Nobody guards against his own blast.
     const bool bSelf = SoraDamage::AttackerOf(Causer) == &Hero;
-    const Rules::FGuard Guard{Kit->IsGuardHeld() && !bSheathed && Rules::BlastDefensible(bSelf), HeldMs,
+    const Rules::FGuard Guard{Kit->IsGuardHeld() && !Kit->IsSheathing() && Rules::BlastDefensible(bSelf), HeldMs,
         FMath::FloorToInt32(Kit->GuardReserve()), Facing};
     const Rules::FOutcome Outcome = Rules::Defend(Guard, Hit.Attack(FMath::RoundToInt32(Damage)));
     Hit.Defense = Outcome.Defense;
