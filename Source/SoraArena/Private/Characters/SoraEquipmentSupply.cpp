@@ -26,12 +26,12 @@ int32 USoraEquipmentComponent::RestockUnlocked(unsigned Weapons)
         if(!SoraHistoricalArms::IsMelee(Id)) Caps[Id]=FSoraCatalog::Get().Weapon(Id).Magazine;
     return SoraSupplyRules::Restock(AmmoByWeapon.GetData(),Caps,Count,Weapons,Hero()->WeaponId,Ammo);
 }
-int32 USoraEquipmentComponent::GrantArrows(int32 Amount,unsigned Weapons)
+int32 USoraEquipmentComponent::GrantArrows(int32 Amount,unsigned Weapons,bool bRefill)
 {
     if(!CanRestock()) return -1;
     constexpr int32 Count=SoraBeatRules::WeaponCount;
     int Caps[Count]{};
     Caps[SoraGalleryRules::ArrowWeapon]=FSoraCatalog::Get().Weapon(SoraGalleryRules::ArrowWeapon).Magazine;
     return SoraSupplyRules::AddAmmo(AmmoByWeapon.GetData(),Caps,Count,Weapons,Hero()->WeaponId,Ammo,
-        SoraGalleryRules::ArrowWeapon,Amount);
+        SoraGalleryRules::ArrowWeapon,Amount,bRefill);
 }

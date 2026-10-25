@@ -769,9 +769,13 @@ bool FSoraCatalog::LoadCampaign()
                 }
                 TArray<FString> Rewards;
                 if (!Strings(Rows(*Params, TEXT("rewards")), Rewards)) return Bad(FString::Printf(TEXT("beat %s has invalid rewards"), *Beat.Id));
-                // Collectibles enter the codex. The seized gallery also
-                // declares a finite arrow pickup; other pickup contracts
-                // remain owned by their chapter implementations.
+                TArray<const TCHAR*> RewardTokens;
+                for(const FString& Reward:Rewards) RewardTokens.Add(*Reward);
+                if(!SoraCacheRewardRules::Read(*Beat.Id,RewardTokens.GetData(),RewardTokens.Num(),Beat.CacheArrows))
+                    return Bad(FString::Printf(TEXT("beat %s has an invalid arrow-cache reward"),*Beat.Id));
+                // The five earlier arrow caches and seized gallery retain
+                // distinct authored add/refill and durable claim contracts.
+                // Hayago and firearm reserves remain chapter-owned work.
                 for (const FString& Reward : Rewards)
                 {
                     const int32 Item = C.Collectibles.IndexOfByPredicate([&](const FSoraCollectible& Candidate) { return Candidate.Id == Reward; });
@@ -796,6 +800,22 @@ bool FSoraCatalog::LoadCampaign()
             Collectible.Beats.Reset();
             for (int32 Beat = 0; Beat < C.Beats.Num(); ++Beat)
                 if (C.Beats[Beat].Rewards.Contains(Item)) Collectible.Beats.Add(Beat);
+        }
+        for(int32 Index=0;Index<C.Beats.Num();++Index)
+        {
+            const auto& Beat=C.Beats[Index];
+            if(!SoraCacheRewardRules::Find(*Beat.Id)) continue;
+            // Reusing codex state is valid only for an optional cache whose
+            // nonempty set of finds is exclusive to that cache.
+            if(!Beat.CacheArrows.Enabled()||!C.Rules[Index].Optional||!Beat.Has(SoraBeatRules::EGoal::Cache)||
+                Beat.Rewards.IsEmpty()) return Bad(TEXT("arrow rewards require an optional cache with exclusive finds"));
+            TSet<int32> Unique;
+            for(const int32 Item:Beat.Rewards)
+            {
+                if(Unique.Contains(Item)||C.Collectibles[Item].Beats.Num()!=1)
+                    return Bad(TEXT("arrow-cache finds must be unique and exclusive"));
+                Unique.Add(Item);
+            }
         }
         const TSharedPtr<FJsonObject> Space = Child(*Data, TEXT("space"));
         if (!Space || !LoadSpace(*Space, C)) return false;

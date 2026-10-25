@@ -4,15 +4,17 @@
 // use fills existing magazines to catalog caps; repeated full use does nothing.
 namespace SoraSupplyRules
 {
-// A finite pickup adds only its declared amount to one unlocked magazine.
+// A finite pickup adds its declared amount, or refills to its declared target,
+// in one unlocked magazine. A refill never removes ammunition above its target.
 // Full use consumes no inventory space; the caller owns the saved claim.
-inline int AddAmmo(int* Stored,const int* Caps,int Count,unsigned Unlocked,int Held,int& Ammo,int Weapon,int Amount)
+inline int AddAmmo(int* Stored,const int* Caps,int Count,unsigned Unlocked,int Held,int& Ammo,int Weapon,int Amount,bool Refill=false)
 {
     if(!Stored||!Caps||Weapon<0||Weapon>=Count||Weapon>=32||Amount<=0||
         (Unlocked&(1u<<Weapon))==0||Caps[Weapon]<=0) return -1;
     const int Before=Weapon==Held?Ammo:Stored[Weapon];
     if(Before<0||Before>Caps[Weapon]) return -1;
-    const int Added=Amount<Caps[Weapon]-Before?Amount:Caps[Weapon]-Before;
+    const int Wanted=Refill?(Amount>Before?Amount-Before:0):Amount;
+    const int Added=Wanted<Caps[Weapon]-Before?Wanted:Caps[Weapon]-Before;
     Stored[Weapon]=Before+Added;
     if(Weapon==Held) Ammo=Stored[Weapon];
     return Added;

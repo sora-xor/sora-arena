@@ -95,6 +95,7 @@ def checks(python: str = sys.executable) -> list[Check]:
     unit("gameplay", "ridge-wind", "scripts/unreal/test_ridge_wind.py")
     unit("gameplay", "spire-data", "scripts/unreal/test_spire_data.py")
     unit("gameplay", "supply-rules", "scripts/unreal/test_supply_rules.py")
+    unit("gameplay", "cache-rewards", "scripts/unreal/test_cache_rewards.py")
     unit("gameplay", "gallery-rules", "scripts/unreal/test_gallery_rules.py")
     unit("gameplay", "wood-rules", "scripts/unreal/test_wood_rules.py")
     unit("gameplay", "flood-rules", "scripts/unreal/test_flood_rules.py")

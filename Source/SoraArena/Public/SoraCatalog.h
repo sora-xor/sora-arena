@@ -8,6 +8,7 @@
 #include "SoraRegistry.h"
 #include "SoraSpireRules.h"
 #include "SoraHelmRules.h"
+#include "SoraCacheRewardRules.h"
 
 struct FSoraWeapon
 {
@@ -757,6 +758,7 @@ struct FSoraBeat
     TMap<FString, SoraBeatRules::EFail> FailEvents;
     // Collectibles associated with an explore beat; wood POIs claim them separately.
     TArray<int32> Rewards;
+    SoraCacheRewardRules::FArrows CacheArrows;
     int32 GalleryArrowReward=0;
     TArray<FSoraExplorePoi> Pois;
     FSoraBeatSpace Space;

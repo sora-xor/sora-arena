@@ -559,6 +559,7 @@ private:
     void FinishChapter();
     void CompleteOptional(int32 Index);
     bool ClaimGalleryArrows(int32 Index);
+    bool ClaimCacheArrows(int32 Index);
     void Collect(int32 Beat);
     void UpdateObjective();
     void TickBeat(float DeltaSeconds);
