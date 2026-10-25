@@ -4,7 +4,7 @@ Run (UE 5.8, headless, by the holder of the shared engine lane), in its own
 editor process after import_runtime_weapon_yumi_rig.py and
 import_nyaakoto_fp_paws.py, and before any first-person capture:
   scripts/toolchain/run-editor-script.sh scripts/unreal/verify_yumi_rig_materials.py \
-      YUMI_RIG_MATERIALS_OK Saved/YumiRig/material_check.log
+      YUMI_RIG_MATERIALS_OK Saved/YumiRig/material_check.log [-- out=Saved/YumiRig/<record>.json]
 
 The first lit capture drew the bow in /Engine/EngineMaterials/WorldGridMaterial
 (Saved/YumiFP/v2). Its importer edited copies: an unreal.Array hands out a
@@ -33,7 +33,11 @@ editor loads each asset from disk and reads two things.
     override fails;
   - no part draws an engine default.
 
-Writes Saved/YumiRig/material_check.json, with every path read. Then it prints
+Writes Saved/YumiRig/material_check.json, with every path read, or the out=
+path relative to the project. An out= record is written exclusively, never
+over earlier evidence. (Fur v4's check of 2026-10-25 failed on its first try
+writing over step 9's record, which had been made read-only:
+Saved/W18Rebuild/s23_material_check_v4.attempt0.*.) Then it prints
 YUMI_RIG_MATERIALS_OK, or raises naming what differs, as the importers do.
 """
 from __future__ import annotations
@@ -52,6 +56,7 @@ import fp_material_bindings as B  # noqa: E402
 
 ROOT = Path(unreal.Paths.project_dir()).resolve()
 OUT = ROOT / "Saved/YumiRig/material_check.json"
+OPTS = dict(a.split("=", 1) for a in sys.argv[1:] if "=" in a)
 ACTORS = unreal.get_editor_subsystem(unreal.EditorActorSubsystem)
 
 
@@ -96,8 +101,14 @@ def main():
         record["assets"][asset_path] = B.as_json(slots, drawn)
         problems += B.check(asset_path, slots, drawn, want)
     record["problems"] = problems
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(json.dumps(record, indent=1) + "\n")
+    if "out" in OPTS:
+        out = ROOT / OPTS["out"]
+        out.parent.mkdir(parents=True, exist_ok=True)
+        with open(out, "x", encoding="utf-8") as f:
+            f.write(json.dumps(record, indent=1) + "\n")
+    else:
+        OUT.parent.mkdir(parents=True, exist_ok=True)
+        OUT.write_text(json.dumps(record, indent=1) + "\n")
     if problems:
         fail("; ".join(problems))
     unreal.log("YUMI_RIG_MATERIALS_OK " + json.dumps({a: [r["material"] for r in v["component"]]
