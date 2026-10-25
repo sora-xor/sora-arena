@@ -28,6 +28,9 @@ struct FSoraPatrolRoute
     // combat take priority; a blocked station never counts as visited.
     UPROPERTY() int32 PeriodMs = 0;
     UPROPERTY() bool bThreeDimensional = false;
+    // Authored flat catwalk segments: validate capsule clearance and floor
+    // support locally when the rasterized navmesh disconnects a narrow strip.
+    UPROPERTY() bool bSupportedSegments = false;
     UPROPERTY() FVector PauseFacing=FVector::ZeroVector;
 };
 
@@ -159,6 +162,7 @@ private:
     bool ChoosePosition(const ASoraEnemy& Enemy, const FVector& Threat, bool bRetreat);
     bool Claimed(const FVector& Spot) const;
     EMove WalkTo(ASoraEnemy& Enemy, const FVector& Goal, float Speed, float Acceptance, int32 NowMs,bool bStrict3D=false);
+    EMove WalkSupportedSegment(ASoraEnemy& Enemy,const FVector& Goal,float Speed);
     EMove FlyTo(ASoraEnemy& Enemy, const FVector& Goal, float Speed, float Acceptance, int32 NowMs,bool bVolume=false);
     // One move request at Here: true once the walk has made no progress for
     // SoraStealthRules::StuckMs; the next request starts a fresh clock.

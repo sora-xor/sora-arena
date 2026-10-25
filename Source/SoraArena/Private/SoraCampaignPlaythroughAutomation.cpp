@@ -7,6 +7,7 @@
 #if WITH_DEV_AUTOMATION_TESTS
 #include "SoraAutomationWorld.h"
 #include "SoraArmsRules.h"
+#include "Combat/SoraStealth.h"
 #include "SoraBoss.h"
 #include "SoraCampaignDirector.h"
 #include "SoraCampaignRules.h"
@@ -577,19 +578,47 @@ bool WorkAtAnchor(FAutomationTestBase& Test, FState& State)
             State.World->InjectKey(EKeys::A,IE_Released)&&State.World->InjectKey(EKeys::D,IE_Pressed)&&
             State.World->InjectKey(EKeys::D,IE_Released)&&State.World->InjectKey(EKeys::E,IE_Released);
     }
-    Mode(State)->Interact(Player(State));
+    const auto* WorkBeat=Director->ActiveBeatData();
+    const bool bPress=WorkBeat&&WorkBeat->Space.PressHall.bEnabled;
+    if(bPress)
+    {
+        const int Objective=Director->TaskProgress().Done;
+        const auto P=Objective<3?SoraPressRules::Centers[SoraPressRules::Master[Objective]]:SoraPressRules::FPoint{4000,370};
+        const FVector Handle=FVector(WorkBeat->Space.PressHall.Origin,0)+FVector(P.X,P.Y-170,110);
+        bool Ready=false;
+        for(float Offset:{0.f,120.f,-120.f})
+        {
+            MoveTo(State,Anchor+FVector(Offset,0,0));
+            const FRotator Facing=(Handle-Player(State)->GetCamera()->GetComponentLocation()).Rotation();
+            Player(State)->GetController()->SetControlRotation(Facing);
+            Player(State)->FaceRotation(FRotator(0,Facing.Yaw,0),0);
+            Player(State)->GetCamera()->SetWorldRotation(Facing);
+            if(!Advance(Test,State,3)||!WaitForDialogue(Test,State)) return false;
+            auto* Stealth=USoraStealth::Get(Player(State));
+            if(USoraFieldcraft::Get(Player(State))->CanWorkPress(Objective)&&(!Stealth||!Stealth->DragTarget(*Player(State))))
+            { Ready=true;break; }
+        }
+        if(!Test.TestTrue(TEXT("A press work spot has a grounded handle view without body-drag priority"),Ready)||
+            !State.World->InjectKey(EKeys::E,IE_Pressed)) return false;
+        if(Objective<3&&!Test.TestTrue(TEXT("The player's actual interaction starts the press hold"),Director->HeldWorkProgress()>=0.f))
+        { State.World->InjectKey(EKeys::E,IE_Released);return false; }
+    }
+    else Mode(State)->Interact(Player(State));
     if (Director->HeldWorkProgress() < 0.f)
+    {
+        if(bPress) State.World->InjectKey(EKeys::E,IE_Released);
         return true;
+    }
     // Worked once its point is marked done, or the beat it finished has moved on.
     const int32 BeatBefore = Director->ActiveBeat();
     const unsigned Before = Director->TaskProgress().PointsMask;
     const int32 DeliveredBefore=Director->TaskProgress().Done;
     const auto Worked = [&]() { return Director->ActiveBeat() != BeatBefore || Director->TaskProgress().PointsMask != Before ||
         Director->TaskProgress().Done != DeliveredBefore; };
-    State.World->InjectKey(EKeys::E, IE_Pressed);
+    if(!bPress) State.World->InjectKey(EKeys::E, IE_Pressed);
     bool bHeld = true;
-    for (int32 Quarter = 0; Quarter < 40 && bHeld && !Worked(); ++Quarter)
-        bHeld = Advance(Test, State, 1, .25f);
+    for (int32 Frame = 0; Frame < (bPress?600:40) && bHeld && !Worked(); ++Frame)
+        bHeld = Advance(Test, State, 1, bPress?FrameSeconds:.25f);
     if(!Worked())
     {
         Test.AddInfo(FString::Printf(TEXT("Held objective diagnostic: anchor=%s hero=%s velocity=%s grounded=%d key=%d held=%.3f dialogue=%d done=%d mask=%u"),

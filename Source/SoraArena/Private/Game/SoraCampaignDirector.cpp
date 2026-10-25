@@ -1069,6 +1069,7 @@ ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int
         Route.PeriodMs=SoraPressRules::PatrolPeriod(GuardIndex);
         Route.PauseMs=SoraPressRules::PatrolDwell(GuardIndex);
         Route.bThreeDimensional=true;
+        Route.bSupportedSegments=GuardIndex==SoraPressRules::CatwalkGuard;
         if(GuardIndex<2) Route.PauseFacing=FVector(0,1,0);
         Post=Route.Points[0]+FVector(0,0,30);
     }

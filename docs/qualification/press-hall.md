@@ -38,8 +38,22 @@ master while the hero remained grounded and Interact stayed held. The run
 exited naturally with editor 3/wrapper 1; all source and generated inputs
 remained unchanged. Review SHA-256:
 `e74ceb09c09e1e2b4dc00ab160d4ee165729d4a8b253ba99e828fd944a6f64a4`.
-The next candidate adds collision/path diagnostics for those two failures;
-it does not yet claim a correction.
+The diagnostic follow-up at signed `5a183a4` reproduced both failures.
+The guard had an unobstructed southward capsule sweep, but navigation returned
+only a partial path ending at local (4140,2188,410). The candidate now follows
+the authored flat catwalk segments with ordinary movement, capsule sweeps and
+floor-support checks. It uses a 20 cm arrival radius at narrow corners and
+never advances a blocked segment. A physical barrier fixture checks that it
+waits and resumes before completing the circuit. This does not change the
+120 cm walkway or the project's global navigation resolution.
+
+The campaign fixture now faces the handle, finds an unobstructed work position
+without body-drag priority, and presses the actual mapped interaction instead
+of starting the press through GameMode directly. Press holds use 60 Hz ticks
+so their physical state is observed at the same cadence as the focused tests.
+These changes are not yet compiled or run; no successful fix is claimed yet.
+The diagnostic run's review SHA-256 is
+`14a3227e1e31e83824fbd1ddb4f7c2dcfe8de4636ebfe54a6e861442616435ac`.
 
 The implementation description below records intended behavior; where it
 says execution is pending, these dated results take precedence. Prior Linux

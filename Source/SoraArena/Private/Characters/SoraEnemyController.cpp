@@ -657,7 +657,11 @@ void ASoraEnemyController::Patrol(ASoraEnemy& Enemy, float Dt, int32 NowMs)
         else
             RouteIndex = (RouteIndex + 1) % Route.Points.Num();
     }
-    if (WalkTo(Enemy, Route.Points[RouteIndex], SoraEnemyBrain::PatrolSpeed, 70.f, NowMs,Route.bThreeDimensional) != EMove::Moving)
+    const EMove Move=Route.bSupportedSegments
+        ?WalkSupportedSegment(Enemy,Route.Points[RouteIndex],SoraEnemyBrain::PatrolSpeed)
+        :WalkTo(Enemy,Route.Points[RouteIndex],SoraEnemyBrain::PatrolSpeed,70.f,NowMs,Route.bThreeDimensional);
+    if(Move==EMove::Blocked&&Route.bSupportedSegments) return;
+    if (Move != EMove::Moving)
     {
         bPaused = true;
         PauseUntilMs = NowMs + Route.PauseMs;
@@ -665,6 +669,32 @@ void ASoraEnemyController::Patrol(ASoraEnemy& Enemy, float Dt, int32 NowMs)
         return;
     }
     Face(Enemy, Heading, Dt, 5.f);
+}
+
+ASoraEnemyController::EMove ASoraEnemyController::WalkSupportedSegment(ASoraEnemy& Enemy,const FVector& Goal,float Speed)
+{
+    auto* Move=Enemy.GetCharacterMovement();
+    const FVector Here=Enemy.GetActorLocation();
+    const auto* Capsule=Enemy.GetCapsuleComponent();
+    const float Half=Capsule->GetScaledCapsuleHalfHeight();
+    const auto Stop=[&](EMove Result) { Move->StopMovementImmediately();return Result; };
+    if(!Move->IsMovingOnGround()||FMath::Abs(Here.Z-Goal.Z)>15.f) return Stop(EMove::Blocked);
+    // A 70 cm arrival radius cuts the inside of a 120 cm corner. Twenty
+    // centimetres keeps the ordinary 34 cm capsule inside either strip.
+    if(FVector::Dist2D(Here,Goal)<=20.f) return Stop(EMove::Arrived);
+    const FVector Direction=(Goal-Here).GetSafeNormal2D();
+    const FVector Next=Here+Direction*FMath::Min(60.f,float(FVector::Dist2D(Here,Goal)));
+    FCollisionQueryParams Query(SCENE_QUERY_STAT(SupportedPatrol),false,&Enemy);
+    FHitResult Hit;
+    if(GetWorld()->SweepSingleByChannel(Hit,Here,Next,FQuat::Identity,ECC_Pawn,
+        FCollisionShape::MakeCapsule(Capsule->GetScaledCapsuleRadius(),Half),Query)) return Stop(EMove::Blocked);
+    const FVector Foot=Next-FVector(0,0,Half);
+    if(!GetWorld()->LineTraceSingleByChannel(Hit,Foot+FVector(0,0,30),Foot-FVector(0,0,30),ECC_Visibility,Query)||
+        Hit.ImpactNormal.Z<Move->GetWalkableFloorZ()||FMath::Abs(Hit.ImpactPoint.Z-(Goal.Z-Half-2.f))>5.f)
+        return Stop(EMove::Blocked);
+    Heading=Direction;
+    Enemy.AddMovementInput(Direction,Speed);
+    return EMove::Moving;
 }
 
 void ASoraEnemyController::ScheduledPatrol(ASoraEnemy& Enemy,float Dt,int32 NowMs)

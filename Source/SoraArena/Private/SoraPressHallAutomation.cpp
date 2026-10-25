@@ -42,6 +42,7 @@ ASoraEnemy* SpawnPatrolFixture(FBeatWorld& W,int GuardIndex)
     }
     Route.PeriodMs=Press::PatrolPeriod(GuardIndex); Route.PauseMs=Press::PatrolDwell(GuardIndex);
     Route.bThreeDimensional=true; if(GuardIndex<2) Route.PauseFacing=FVector(0,1,0);
+    Route.bSupportedSegments=GuardIndex==Press::CatwalkGuard;
     FSoraEnemyTuning Tune; Tune.SightCm=1; Tune.DarkSightCm=0; Tune.HearingCm=0;
     auto* Guard=ASoraEnemy::SpawnArchetype(*W.World->GetTestWorld(),GuardIndex<2?TEXT("auditor"):GuardIndex==5?TEXT("drone"):TEXT("enforcer_rifle"),GuardIndex,
         Route.Points[0],FRotator::ZeroRotator,&Route,&Tune);
@@ -451,6 +452,11 @@ bool FSoraPressCatwalkPatrolTest::RunTest(const FString& Parameters)
         Route.Points.Add(Origin+FVector(Point.X,Point.Y,490));
     auto* Guard=SpawnPatrolFixture(W,Press::CatwalkGuard);
     if(!TestNotNull(TEXT("The route fixture has a living rifle enforcer"),Guard)||!W.Tick(60)) return false;
+    AActor* Barrier=Block(W,Origin+FVector(4140,1900,500),FVector(60,10,100));
+    if(!TestNotNull(TEXT("The catwalk patrol obstruction spawns"),Barrier)||!W.Tick(900)) return false;
+    TestTrue(TEXT("The patrol waits on its actual segment before a blocking wall"),
+        Feet(*Guard).Y>Origin.Y+1940&&Feet(*Guard).Y<Origin.Y+2050&&FMath::Abs(Feet(*Guard).Z-400)<5);
+    Barrier->Destroy();
     bool Reached[4]={}; bool Supported=true;
     for(int Frame=0;Frame<9000;++Frame)
     {
