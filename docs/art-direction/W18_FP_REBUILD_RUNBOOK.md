@@ -92,6 +92,8 @@ root's review of the originals, never a ledger's.
      - **The metric report's ledger entry** (an explicit W18-scoped exception):
        - The runtime-weapons manifest records `metric_report.json`'s bytes and hash. That one global metadata record changes only because W18's row and the summary did.
        - It is updated only with the scoped gate passing again, on the archived report before step 2 and the file now. The scoped update records the before and after.
+       - Both record runs above add `--metric-before Saved/W18Rebuild/Archive/s2_static/Content/SourceArt/Weapons/Runtime/metric_report.json --metric-log Saved/W18Rebuild/s2_validate.log --metric-validator-exit 1 --metric-expected-failures 3,11,13,16`.
+       - The tool re-runs `check_scoped_validation.compare` with W18's build record and the validator's source. Its manifest entry must be the report before (or already the report now), or it fails (`test_record_runtime_weapon.MetricException`).
        - No other weapon's entry or output is refreshed.
        - At integration, root applies the same reviewed W18 row and summary to root's validated baseline, and updates that one hash.
      - **The rig:** regenerate `W18_Yumi/Rig/manifest.ledger.json` (`scripts/assets/write_own_ledger.py`, its original arguments, after the rebuilt files are staged).

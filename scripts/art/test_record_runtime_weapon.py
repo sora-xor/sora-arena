@@ -279,5 +279,96 @@ class Provenance(RecordFixture):
         self.assertTrue(self.run_record(check=True)[0])
 
 
+class MetricException(RecordFixture):
+    """Root's W18-scoped metadata exception: metric_report.json's one manifest entry moves to the report the
+    targeted validation wrote, only with check_scoped_validation passing again on the report before and the
+    report now. The reports, build record and log are test_check_scoped_validation's, the validator its real
+    source."""
+
+    def setUp(self):
+        super().setUp()
+        import test_check_scoped_validation as SV
+
+        self.SV = SV
+        rec = dict(SV.REC, id=18, key="W18_Yumi", builder=GENS[0], library=GENS[1], renders=[], sources=[SRC])
+        put(self.root, f"{RT}/W18_Yumi/build_record.json", json.dumps(rec).encode())
+        put(self.root, R.VALIDATOR_REL, SV.VALIDATOR_TEXT.encode("utf-8"))
+        self.report_before = SV.G.serialise(SV.before_doc())
+        self.report_after = SV.G.serialise(SV.rebuilt())
+        put(self.root, "Archive/metric_report.json", self.report_before)
+        put(self.root, R.METRIC_REL, self.report_after)
+        put(self.root, "validate.log", SV.LOG.encode())
+        doc = json.loads((self.root / RT / "manifest.json").read_text())
+        doc["files"].append({"file": R.METRIC_REL, **R.digest(self.report_before)})
+        (self.root / RT / "manifest.json").write_text(json.dumps(doc, ensure_ascii=False, indent=1) + "\n")
+        self.before = doc
+        self.before_text = (self.root / RT / "manifest.json").read_text()
+        self.metric = {"before": self.root / "Archive/metric_report.json", "log": self.root / "validate.log",
+                       "validator_exit": 1, "expected_failures": [3, 11, 13, 16]}
+
+    def entry(self, doc):
+        return next(e for e in doc["files"] if e["file"] == R.METRIC_REL)
+
+    def unrelated(self, doc):
+        return [e for e in doc["files"] if not is_w18(e["file"]) and e["file"] != R.METRIC_REL]
+
+    def test_the_entry_moves_to_the_report_now_and_nothing_else_does(self):
+        self.run_record(metric=self.metric)
+        a = self.after()
+        self.assertEqual(self.entry(a), {"file": R.METRIC_REL, **R.digest(self.report_after)})
+        self.assertEqual(self.unrelated(a), self.unrelated(self.before))   # stale ones still stale, in place
+        self.assertEqual([e["file"] for e in a["files"]], sorted(e["file"] for e in a["files"]))
+        (u,) = a["scoped_updates"]
+        x = u["metadata_exception"]
+        self.assertEqual((x["before"], x["after"]), (R.digest(self.report_before), R.digest(self.report_after)))
+        self.assertEqual((x["validator_exit"], x["failing_rows"]), (1, [3, 11, 13, 16]))
+        self.assertEqual(x["checks_new_since_the_reviewed_row"], ["normal_tilt_mean"])
+        self.assertIn("W18-scoped metadata exception", x["rule"])
+
+    def test_a_refusing_gate_fails_in_both_modes_and_writes_nothing(self):
+        doc = self.SV.rebuilt()
+        doc["weapons"]["4"]["checks"][0]["measured"] = 0.5            # another row changed
+        put(self.root, R.METRIC_REL, self.SV.G.serialise(doc))
+        for check in (True, False):
+            with self.assertRaises(R.RecordError) as ctx:
+                self.run_record(metric=self.metric, check=check)
+            self.assertIn("the scoped gate refuses", str(ctx.exception))
+        self.assertEqual((self.root / RT / "manifest.json").read_text(), self.before_text)
+
+    def test_an_entry_that_is_not_the_report_before_fails(self):
+        doc = json.loads(self.before_text)
+        self.entry(doc).update(bytes=1, sha256="f" * 64)
+        (self.root / RT / "manifest.json").write_text(json.dumps(doc, ensure_ascii=False, indent=1) + "\n")
+        text = (self.root / RT / "manifest.json").read_text()
+        with self.assertRaises(R.RecordError) as ctx:
+            self.run_record(metric=self.metric)
+        self.assertIn("is neither the report before", str(ctx.exception))
+        self.assertEqual((self.root / RT / "manifest.json").read_text(), text)
+
+    def test_check_then_record_then_it_matches_and_a_rerun_adds_nothing(self):
+        self.assertTrue(self.run_record(metric=self.metric, check=True)[0])
+        self.assertEqual((self.root / RT / "manifest.json").read_text(), self.before_text)
+        self.run_record(metric=self.metric)
+        text = (self.root / RT / "manifest.json").read_text()
+        self.assertFalse(self.run_record(metric=self.metric, check=True)[0])
+        self.assertFalse(self.run_record(metric=self.metric)[0])
+        self.assertEqual((self.root / RT / "manifest.json").read_text(), text)
+
+    def test_without_the_options_the_entry_is_kept_as_it_is(self):
+        self.run_record()
+        a = self.after()
+        self.assertEqual(self.entry(a), self.entry(self.before))     # the report before, though the file changed
+        self.assertNotIn("metadata_exception", a["scoped_updates"][0])
+
+    def test_a_later_change_to_the_report_never_matches(self):
+        self.run_record(metric=self.metric)
+        put(self.root, R.METRIC_REL, self.report_after.replace(b'"seconds": 9.4', b'"seconds": 9.5'))
+        with self.assertRaises(R.RecordError):
+            self.run_record(metric=self.metric, check=True)
+
+    def test_partial_options_are_refused_before_anything_is_read(self):
+        self.assertEqual(R.main(["--weapon", "18", "--metric-log", str(self.root / "validate.log")]), 1)
+
+
 if __name__ == "__main__":
     unittest.main()
