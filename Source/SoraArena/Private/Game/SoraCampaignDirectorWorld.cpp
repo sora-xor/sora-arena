@@ -137,8 +137,9 @@ bool USoraCampaignDirector::ObjectivePoint(FVector& Location,bool& bInteract) co
     case SoraBeatRules::EGoal::OpponentDown:
         if(IsSpineCapture()&&SoraBeatRules::AwaitsCapture(TaskState,Task)&&Mode().Arena())
         { Location=Mode().Arena()->SummitSpinePoint(); bInteract=true; return true; }
-        // Other yielded bosses wait where they knelt for the hero's hand.
-        return SoraBeatRules::AwaitsCapture(TaskState,Task)&&At(CaptiveAt,true);
+        if(IsBulkheadCapture()&&SoraBeatRules::AwaitsCapture(TaskState,Task)&&Mode().Arena())
+        { Location=Mode().Arena()->BulkheadPoint(); bInteract=true; return true; }
+        return false;
     default:
         return false;
     }

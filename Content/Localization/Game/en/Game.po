@@ -132,6 +132,12 @@ msgctxt "SoraArena.Campaign,ArmsRecovered"
 msgid "刀と脇差、弓、矢十二本を取り戻した。縄で操作を長押しして上がる。"
 msgstr "Katana, wakizashi, bow and twelve arrows recovered. Hold Interact on the rope to climb out."
 
+#. Key:	BulkheadHold
+#: Source/SoraArena/Private/Game/SoraCampaignBulkhead.cpp
+msgctxt "SoraArena.Campaign,BulkheadHold"
+msgid "入口の隔壁レバーで {Key} を 2 秒長押しし、エスクロを封じ込めよう。"
+msgstr "Hold {Key} for 2 seconds at the entry bulkhead lever to seal Eskro in."
+
 #. Key:	BundleAtBottom
 #: Source/SoraArena/Private/Game/SoraCampaignRecovery.cpp
 msgctxt "SoraArena.Campaign,BundleAtBottom"

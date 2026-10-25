@@ -884,6 +884,18 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
                 B.Lift.GalleryExit!=B.Anchor+FVector2D(800,1800)||B.Entry!=B.Anchor+FVector2D(-650,0))
                 return Bad(Beat.Id+TEXT(" lift landings"));
         }
+        const auto Bulkhead=O->TryGetField(TEXT("bulkhead"));
+        B.bBulkhead=Beat.Id==TEXT("ch06.b13");
+        if(Bulkhead.IsValid()!=B.bBulkhead) return Bad(Beat.Id+TEXT(" bulkhead presence"));
+        if(B.bBulkhead)
+        {
+            if(Bulkhead->Type!=EJson::Array||Bulkhead->AsArray().Num()!=2) return Bad(Beat.Id+TEXT(" bulkhead point"));
+            for(const auto& Value:Bulkhead->AsArray())
+                if(!Value.IsValid()||Value->Type!=EJson::Number) return Bad(Beat.Id+TEXT(" bulkhead coordinates"));
+            if(!SpacePoint(Bulkhead,B.Bulkhead)||B.Zone<0||S.Zones[B.Zone].Id!=TEXT("pl_vault_core")||B.HeightCm!=0||B.EntryYaw!=0||
+                B.Bulkhead!=B.Entry+FVector2D(0,180)||!S.Zones[B.Zone].Rect.IsInside(B.Bulkhead+FVector2D(200,100))||
+                !S.Zones[B.Zone].Rect.IsInside(B.Bulkhead-FVector2D(50,100))) return Bad(Beat.Id+TEXT(" bulkhead entry relation"));
+        }
         const auto Recovery = O->TryGetField(TEXT("recovery"));
         const auto CarryGate = O->TryGetField(TEXT("carry_gate"));
         if (!CarryGate.IsValid() || (Task.CarryGateMs>0)!=(CarryGate->Type!=EJson::Null) ||

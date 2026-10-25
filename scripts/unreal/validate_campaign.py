@@ -416,6 +416,11 @@ def check_space(chapter, beats, rewards, labels, where):
             on_floor(index, point, f"{where} site {site}", 150)
     for beat, record in zip(beats, records):
         task, index, what = beat["task"], record["zone"], beat["id"]
+        check_capture_hold(beat, record)
+        if what == "ch06.b13":
+            require(index >= 0 and zones[index]["place"] == "pl_vault_core", f"{what}: bulkhead belongs to the vault")
+            on_floor(index, record["bulkhead"], f"{what} bulkhead", 50)
+            on_floor(index, [record["bulkhead"][0] + 140, record["bulkhead"][1]], f"{what} lever approach", 60)
         elevated_rect = None
         if what == "ch08.b12":
             elevated_rect = next(row["lift"]["gallery_rect"] for row in records if row["beat"] == "ch08.b11")
@@ -789,6 +794,27 @@ def check_cargo_unload(beat):
     require(type(seconds) in (int, float) and 0 < seconds <= (1 << 30) / 1000 and
             0 < value <= 1 << 30 and abs(seconds * 1000 - value) < 1e-6,
             f"{where}: cargo unload duration must preserve the authored positive whole milliseconds")
+
+
+def check_capture_hold(beat, record):
+    task, where = beat["task"], beat["id"]
+    expected = {"ch06.b13": ("boss_eskro", "interact:bulkhead_lever", 2000),
+                "ch08.b14": ("boss_val_amort", "interact:engine_spine", 1500)}.get(where)
+    duration = task.get("capture_hold_ms")
+    require(type(duration) is int, f"{where}: capture duration must be an integer")
+    if expected:
+        require(beat["type"] == "boss" and task["defeat"] == "capture" and
+                (task["opponent"], task["capture_event"], duration) == expected,
+                f"{where}: capture must preserve its own boss, interaction and authored hold")
+    else:
+        require(task["defeat"] != "capture" and task["capture_event"] is None and duration == 0,
+                f"{where}: no authored capture")
+    require(("bulkhead" in record) == (where == "ch06.b13"), f"{where}: bulkhead presence")
+    if where == "ch06.b13":
+        point = record["bulkhead"]
+        require(type(point) is list and len(point) == 2 and all(type(x) is int for x in point) and
+                point == [record["entry"][0], record["entry"][1] + 180] and record["entry"][2] == 0 and record["height_cm"] == 0,
+                f"{where}: lever belongs beside the vault entry on its floor")
 
 
 def check_dropoff_capacity(beat):

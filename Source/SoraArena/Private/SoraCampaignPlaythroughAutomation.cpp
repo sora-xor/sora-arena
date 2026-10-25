@@ -20,6 +20,7 @@
 #include "SoraFloodAutomation.h"
 #include "SoraSpireAutomation.h"
 #include "SoraSummitAutomation.h"
+#include "SoraBulkheadAutomation.h"
 #include "SoraCarryAutomation.h"
 #include "SoraEnemy.h"
 #include "SoraEnemyController.h"
@@ -715,7 +716,7 @@ bool ExpectLinesQueued(FAutomationTestBase& Test, FState& State, const FSoraChap
 // captured, not killed): it kneels upright where it fell and stays past a
 // fallen opponent's lifespan, and E from afar binds nothing. The final boss
 // ends only after the hero walks to the spine and holds the draw-cut; the
-// other captures use E beside the captive.
+// vault ends at its entry lever after a two-second held interaction.
 bool CaptureYielded(FAutomationTestBase& Test, FState& State, const FSoraBeat& Beat)
 {
     USoraCampaignDirector* Director = Campaign(State);
@@ -725,16 +726,20 @@ bool CaptureYielded(FAutomationTestBase& Test, FState& State, const FSoraBeat& B
             if (!It->IsAlive() && !It->IsActorBeingDestroyed() && Director->IsCaptive(**It))
                 Captive = *It;
     const bool Spine=Beat.CaptureEvent==TEXT("interact:engine_spine");
+    const bool Bulkhead=Beat.CaptureEvent==TEXT("interact:bulkhead_lever");
     FVector At;
     bool bOk = Test.TestNotNull(*(Beat.Id + TEXT(": the yielded boss stays where it fell")), Captive) &&
         Test.TestTrue(*(Beat.Id + TEXT(": the yielded boss kneels upright and does not leave")),
             FMath::Abs(Captive->GetActorRotation().Roll) < 1.f && Captive->GetLifeSpan() == 0.f) &&
         Test.TestTrue(*(Beat.Id + TEXT(": the authored capture interaction is the objective")),
             Director->ObjectiveAnchor(At) && Director->AnchorTakesInteract() && (Spine
-                ?At.Equals(Mode(State)->Arena()->SummitSpinePoint(),1.f):FVector::Dist2D(At,Captive->GetActorLocation())<1.f));
+                ?At.Equals(Mode(State)->Arena()->SummitSpinePoint(),1.f):
+                Bulkhead&&At.Equals(Mode(State)->Arena()->BulkheadPoint(),1.f)));
     if (!bOk)
         return Fail(Test, State, Beat.Id + TEXT(": the captured boss did not yield"));
-    MoveTo(State, FarAway(State));
+    // The bulkhead now stands beside the entry: that old "far away" point
+    // is within reach. Keep the distant refusal case on clear hall floor.
+    MoveTo(State, Bulkhead?Mode(State)->Arena()->BulkheadApproach()+FVector(600,0,0):FarAway(State));
     if (!Advance(Test, State, 150))
         return false;
     Mode(State)->Interact(Player(State));
@@ -745,12 +750,11 @@ bool CaptureYielded(FAutomationTestBase& Test, FState& State, const FSoraBeat& B
     {
         if(!SoraSummitAutomation::CutSpine(*State.World)) return Fail(Test,State,TEXT("The held spine cut is unreachable or incomplete"));
     }
-    else
+    else if(Bulkhead)
     {
-        MoveTo(State,At);
-        if(!Advance(Test,State,1)) return false;
-        Mode(State)->Interact(Player(State));
+        if(!SoraBulkheadAutomation::SealVault(*State.World)) return Fail(Test,State,TEXT("The held bulkhead lever is unreachable or incomplete"));
     }
+    else return Fail(Test,State,TEXT("No authored held capture helper"));
     bOk &= Test.TestTrue(*(Beat.Id + TEXT(": the capture interaction ends the fight")),
         !Director->AwaitingCapture() && (Director->ActiveBeat() != Index || Mode(State)->bChapterComplete));
     bOk &= ExpectLinesQueued(Test, State, ChapterData(State), Index, *Beat.CaptureEvent);

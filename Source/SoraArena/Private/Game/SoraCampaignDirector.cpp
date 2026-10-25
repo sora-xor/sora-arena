@@ -126,6 +126,7 @@ void USoraCampaignDirector::HeroDamaged(const FSoraDamagedEvent& Event)
     if(IsHelmHold()) CancelHelm();
     StopPlayerCrank();
     if(SpineCut.Active) SoraSummitRules::Interrupt(SpineCut);
+    if(BulkheadHold.Active) CancelBulkheadHold();
     CancelConstructCut();
     // A pupil's cut landed while the awase was still to be met: a guard
     // raised just after it is late.
@@ -308,6 +309,7 @@ bool USoraCampaignDirector::LoadSave()
 void USoraCampaignDirector::ResetRound()
 {
     ResetWind();
+    BulkheadHold={}; BulkheadClock.Reset();
     ASoraGameMode& M=Mode();
     ASoraWorldBuilder* WorldBuilder=M.Arena();
     const bool bCampaign=M.bCampaign;
@@ -451,6 +453,7 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     ResetFoundry();
     ResetHelm();
     SpineCut={}; SpineReadyMs=0; bSpinePromptShown=false; bSpineMutoRaised=false;
+    BulkheadHold={}; BulkheadClock.Reset();
     PendingSummitPhaseSave=INDEX_NONE;
     ResetCarryWork();
     StopPlayerCrank(false);
@@ -767,6 +770,8 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
     if(ActiveBeatData()!=&Beat) return;
     TickSpineCut(DeltaMs);
     if(ActiveBeatData()!=&Beat||M.bDefeated) return;
+    TickBulkhead(DeltaSeconds);
+    if(ActiveBeatData()!=&Beat||M.bDefeated) return;
     // Horses, a siege on defended targets, the escorted party and the task's kit.
     TickSpace(DeltaMs);
     if(ActiveBeatData()!=&Beat||M.bDefeated) return;
@@ -889,6 +894,8 @@ float USoraCampaignDirector::HeldWorkProgress() const
     if(IsHelmHold()&&Helm.Working) return static_cast<float>(Helm.HeldMs)/ActiveSpace()->Helm.Contract.WorkMs;
     if(SpineCut.Active&&ActiveBeatData()&&ActiveBeatData()->CaptureHoldMs>0)
         return static_cast<float>(SpineCut.HeldMs)/ActiveBeatData()->CaptureHoldMs;
+    if(BulkheadHold.Active&&ActiveBeatData()&&ActiveBeatData()->CaptureHoldMs>0)
+        return static_cast<float>(BulkheadHold.HeldMs)/ActiveBeatData()->CaptureHoldMs;
     if(bPryingCarryGate&&Task.CarryGateMs>0) return static_cast<float>(TaskState.CarryGateHeldMs)/Task.CarryGateMs;
     if(bStringingBow&&Task.RecoveryStringMs>0) return static_cast<float>(TaskState.RecoveryHeldMs)/Task.RecoveryStringMs;
     const FSoraBeat* Beat=ActiveBeatData();
@@ -1184,6 +1191,7 @@ bool USoraCampaignDirector::AwaitingCapture() const
 void USoraCampaignDirector::ClearEncounter()
 {
     ResetFoundry();
+    BulkheadHold={}; BulkheadClock.Reset();
     CancelHelm();
     Helm={};
     ResetWind();
@@ -1370,6 +1378,7 @@ void USoraCampaignDirector::HandleFailure(SoraBeatRules::ERetry Outcome,const FS
         break;
     }
     CancelFoundryWork();
+    CancelBulkheadHold();
     M.bDefeated=true;
     ClearDialogue();
     const bool bFell=Event==TEXT("player_died");
@@ -1726,6 +1735,7 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
     if(InteractRecovery(Player)) return;
     if(InteractCarryGate(Player)) return;
     if(InteractSpine()) return;
+    if(InteractBulkhead()) return;
     // A knocked-down conscript within reach: Interact held cuts its seal.
     if(BeginSealCut(Player)) return;
     if(InteractSupply(Player)) return;
@@ -1847,14 +1857,8 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
         break;
     }
     case SoraBeatRules::EGoal::OpponentDown:
-        // E at a yielded boss binds it: the capture's own interaction (the
-        // vault's bulkhead, the engine's spine) ends the fight.
-        if(!IsSpineCapture()&&SoraBeatRules::AwaitsCapture(TaskState,Task)&&Near(ASoraWorldBuilder::Floor(CaptiveAt),Reach)&&
-            (bWorked=SoraBeatRules::Capture(TaskState,Task)))
-        {
-            Fire(Beat->CaptureEvent);
-            Fire(TEXT("outro_cinematic"));
-        }
+        // Both authored captures consume Interact above. The yielded body
+        // has no instant interaction that can bypass either held ending.
         break;
     default:
         break;
@@ -1942,10 +1946,10 @@ void USoraCampaignDirector::OpponentDefeated(ASoraEnemy* Opponent)
         Fire(bBoss?TEXT("boss_defeated"):TEXT("duel_won"));
         if(SoraBeatRules::AwaitsCapture(TaskState,Task))
         {
-            // A captured boss yields where it stands and waits for the hero's hand.
-            Captive=Opponent; CaptiveAt=FVector2D(Opponent->GetActorLocation());
+            // A yielded boss persists while the hero completes its held ending.
+            Captive=Opponent;
             if(IsSpineCapture()) BeginSpineCapture();
-            else Notify(TEXT("相手は膝をついた。近づいて E で捕らえよ。"),TEXT("Your opponent yields. Go to them and press E to capture."),6.f);
+            else if(IsBulkheadCapture()) BeginBulkheadCapture();
             UpdateObjective();
         }
         else if(bBoss) Fire(TEXT("outro_cinematic"));
@@ -2179,6 +2183,7 @@ FString USoraCampaignDirector::ObjectiveText() const
     if(IsArcheryLesson()) return ArcheryText(false);
     if(IsFoundryDefense()) return FoundryText(false);
     if(IsHelmHold()) return HelmText(false);
+    if(IsBulkheadCapture()&&AwaitingCapture()) return BulkheadText().Japanese;
     if(NeedsCarryGate()) return TEXT("蔵の封印で操作を長押しし、槍の石突でこじ開ける");
     if(NeedsEquipmentRecovery()) return AtRecoveryBottom()?TEXT("包みの前で操作を 3 秒長押しし、弓に弦を張る"):
         TEXT("空井戸の縄で操作を長押しし、底の刀の包みを取り戻す");
@@ -2223,6 +2228,7 @@ FString USoraCampaignDirector::ObjectiveTextEnglish() const
     if(IsArcheryLesson()) return ArcheryText(true);
     if(IsFoundryDefense()) return FoundryText(true);
     if(IsHelmHold()) return HelmText(true);
+    if(IsBulkheadCapture()&&AwaitingCapture()) return BulkheadText().English;
     if(NeedsCarryGate()) return TEXT("Hold Interact at the granary seal to pry it off with the spear butt");
     if(NeedsEquipmentRecovery()) return AtRecoveryBottom()?TEXT("Hold Interact at the bundle for 3 seconds to string the bow"):
         TEXT("Hold Interact at the dry-well rope to recover the sword bundle below");

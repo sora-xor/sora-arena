@@ -106,6 +106,7 @@ def checks(python: str = sys.executable) -> list[Check]:
     unit("gameplay", "archery-rules", "scripts/unreal/test_archery_rules.py")
     unit("gameplay", "bow-aim-rules", "scripts/unreal/test_bow_aim_rules.py")
     unit("gameplay", "summit-data", "scripts/unreal/test_summit_data.py")
+    unit("gameplay", "bulkhead-capture", "scripts/unreal/test_bulkhead_capture.py")
     unit("gameplay", "summit-rules", "scripts/unreal/test_summit_rules.py")
     unit("gameplay", "construct-rules", "scripts/unreal/test_construct_rules.py")
     unit("gameplay", "epilogue-data", "scripts/unreal/test_epilogue_data.py")

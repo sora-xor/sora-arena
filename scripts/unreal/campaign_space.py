@@ -622,6 +622,14 @@ def derive_space(chapter, beats, places, collectibles, triggers, layout, fail):
     place_summit(beats, records, zones, fail)
     place_climb(beats, records, zones, fail)
     place_moat(beats, records, zones, pickups, fail)
+    for beat, record in zip(beats, records):
+        if beat["id"] == "ch06.b13":
+            # Chapter 6 §3 L8 puts the bulkhead lever beside the freight-lift
+            # entry. This is its functional placement in the current hall
+            # blockout, not a claim to the unbuilt circular chamber/lift art.
+            if beat["place"] != "pl_vault_core" or record["entry"][2] != 0:
+                fail(beat["id"], "bulkhead lever needs the vault's entry frame")
+            record["bulkhead"] = [record["entry"][0], record["entry"][1] + 180]
     result = {
         "frame": "Unreal world cm; origin at the arena centre; per-beat height_cm overrides floor z 0",
         "hub": chapter_map if hub else None,

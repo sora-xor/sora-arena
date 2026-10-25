@@ -433,6 +433,7 @@ void ASoraPlayerCharacter::InteractUp()
         G->Campaign()->CancelCargoUnload();
         G->Campaign()->CancelHelm();
         G->Campaign()->CancelSpineCut();
+        G->Campaign()->CancelBulkheadHold();
         G->Campaign()->CancelConstructCut();
         G->Campaign()->ReleaseWindBrace();
     }

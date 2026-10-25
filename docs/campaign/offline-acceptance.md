@@ -436,6 +436,21 @@ Host `test_summit_rules.py` checks coverage, clipping, width, stage boundaries
 and masks. Engine compilation, procedural collision cooking, rendering,
 navigation updates and runtime fixtures still require root qualification.
 
+The chapter-six bulkhead source candidate places a functional lever beside
+the current vault entry. Eskro at zero health waits for a mapped Interact
+hold of 2000 ms at that lever, with ground, facing, distance and collision
+checks; interacting beside his body no longer captures him. Release,
+damage, loss of reach/sight, pause or dialogue discards partial work and
+requires a new press. Partial holds are transient: retry/load restores the
+existing living boss phase checkpoint. `SoraArena.Campaign.BulkheadCapture`
+is prepared for mapped/rebound input, normal traversal, wrong-floor and wall
+rejection, interruptions, retry/load and once-only completion; the Playthrough
+helper now walks to and holds the lever. These Unreal checks remain unrun by
+the source lane. Host `test_bulkhead_capture.py` checks strict data admission,
+the authored 1999/2000 ms boundary and cancellation using production rules.
+The vault remains a rectangular blockout; its authored circular chamber,
+freight lift, flooding sump and bespoke lever animation remain art work.
+
 The held spine draw-cut source candidate preserves the take-alive outcome.
 After the 1.5 s disarm interval, the hero must walk onto the dais, face the
 south seam within 260 cm with a clear collision trace, and hold Interact for

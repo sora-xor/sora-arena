@@ -1,4 +1,5 @@
 #include "SoraCatalog.h"
+#include "SoraCaptureRules.h"
 #include "SoraCampaignRules.h"
 #include "SoraCatalogJson.h"
 #include "SoraCatalogRegistry.h"
@@ -86,6 +87,7 @@ bool ReadTask(const FJsonObject& O, const FString& TypeName, FSoraBeat& Beat)
         !Int(O, TEXT("max_alive"), T.MaxAlive) || !Int(O, TEXT("lesson_mask"), LessonMask) || LessonMask < 0 ||
         !O.TryGetBoolField(TEXT("flank_bouts"), T.FlankBouts) || !Named(O, TEXT("defeat"), Defeats, T.Defeat) ||
         !Nullable(O, TEXT("capture_event"), Beat.CaptureEvent) ||
+        !O.TryGetField(TEXT("capture_hold_ms")).IsValid() || O.TryGetField(TEXT("capture_hold_ms"))->Type!=EJson::Number ||
         !Int(O,TEXT("capture_hold_ms"),Beat.CaptureHoldMs) || Beat.CaptureHoldMs<0 || !Nullable(O, TEXT("carry_item"), Beat.CarryItem) ||
         !Named(O, TEXT("loss"), Losses, T.Loss) || !Int(O, TEXT("loss_limit"), T.LossLimit) ||
         !Named(O, TEXT("contest"), Contests, T.Contest) || !Int(O, TEXT("decay_permille"), T.DecayPermille) ||
@@ -162,8 +164,7 @@ bool ReadTask(const FJsonObject& O, const FString& TypeName, FSoraBeat& Beat)
     T.Task = TaskName.IsEmpty() ? ETask::None : Tasks[TaskName];
     // A capture names the interaction that binds its boss, and a carry what
     // it moves; nothing else does.
-    if ((T.Defeat == EDefeat::Capture) == Beat.CaptureEvent.IsEmpty() ||
-        (Beat.CaptureEvent==TEXT("interact:engine_spine"))!=(Beat.CaptureHoldMs>0) ||
+    if (!SoraCaptureRules::Valid(*Beat.Id,*Opponent,*Beat.CaptureEvent,Beat.CaptureHoldMs,T.Type==EType::Boss,T.Defeat==EDefeat::Capture) ||
         (T.Task == ETask::Carry) == Beat.CarryItem.IsEmpty() || (T.PickupHoldMs > 0 && T.Task != ETask::Carry))
         return false;
     const FJsonRows* RepRows = Rows(O, TEXT("form_reps"));

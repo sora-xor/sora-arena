@@ -609,6 +609,8 @@ struct FSoraBeatSpace
     FVector2D Anchor = FVector2D::ZeroVector;
     FVector2D Recovery = FVector2D::ZeroVector;
     FVector2D CarryGate = FVector2D::ZeroVector;
+    bool bBulkhead = false;
+    FVector2D Bulkhead = FVector2D::ZeroVector;
     TArray<FVector2D> Objectives;
     TArray<FVector2D> Pickups;
     TArray<FVector2D> Dropoffs;
