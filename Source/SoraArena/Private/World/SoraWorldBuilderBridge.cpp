@@ -19,6 +19,7 @@ void ASoraWorldBuilder::BuildBridge(const FSoraZone& Zone,int32 Index,const FSor
     // objective markers or the following beat's independent helm kit.
     const int32 First=Pieces.Num(),FirstActor=DecorActors.Num();
     BuildZone(Zone,Index);
+    BridgeCeilingCm=Zone.WallHeight;
     BridgeRoot=NewObject<USceneComponent>(this,MakeUniqueObjectName(this,USceneComponent::StaticClass(),TEXT("BridgeDeck")));
     BridgeRoot->SetMobility(EComponentMobility::Movable); BridgeRoot->SetupAttachment(RootComponent);
     BridgeRoot->SetRelativeLocation(FVector(Beat.Space.Bridge.Center,0));
@@ -29,7 +30,8 @@ void ASoraWorldBuilder::BuildBridge(const FSoraZone& Zone,int32 Index,const FSor
         Piece->AttachToComponent(BridgeRoot,FAttachmentTransformRules::KeepWorldTransform);
         // Dynamic mobility, but still a floor for the boss's WorldStatic ground trace.
         Piece->SetCollisionObjectType(ECC_WorldStatic);
-        if(Piece->GetName().Contains(TEXT("Cover"))) Piece->ComponentTags.Add(TEXT("BridgeCover"));
+        if(Piece->GetName().Contains(TEXT("Cover")))
+        { Piece->ComponentTags.Add(TEXT("BridgeCover")); MarginConsoles.Add(Piece); }
     }
     for(int32 N=FirstActor;N<DecorActors.Num();++N)
         if(auto* Actor=DecorActors[N].Get();Actor&&Actor->GetRootComponent())
@@ -47,6 +49,7 @@ void ASoraWorldBuilder::StageBridge(bool Active)
     // Beat teardown/checkpoint reset occurs before the next beat's placement.
     // During combat all motion is the moving base plus swept prop movement.
     if(BridgeRoot) BridgeRoot->SetRelativeRotation(FRotator::ZeroRotator);
+    StageMargin(bBridgeActive);
     if(!bBridgeActive) return;
     for(int32 N=0;N<SoraBridgeRules::Chairs+SoraBridgeRules::Pods;++N)
     {
@@ -63,7 +66,7 @@ void ASoraWorldBuilder::ClearBridge()
 {
     StageBridge(false);
     if(BridgeRoot) BridgeRoot->DestroyComponent();
-    BridgeRoot=nullptr;
+    BridgeRoot=nullptr; MarginConsoles.Reset(); MarginState={};
 }
 bool ASoraWorldBuilder::BeginBridgeSlide(ASoraBoss& Boss,int32 Attack,int32 Serial)
 {
@@ -87,6 +90,7 @@ void ASoraWorldBuilder::TickBridge(float DeltaSeconds)
     const auto* Mode=GetWorld()->GetAuthGameMode<ASoraGameMode>();
     if(!Mode||!Mode->IsPlaying()) return;
     const auto* Boss=Mode->Campaign()->CampaignBoss();
+    TickMargin(DeltaSeconds,Boss);
     if(!Boss||Boss->BossId()!=TEXT("boss_collatera")) return;
     // CharacterMovement's normal swept based movement transports feet and
     // keeps upright capsules. New adds need the same ordering as the hero.

@@ -786,6 +786,22 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
                 S.Zones[B.Zone].Place!=TEXT("pl_bridge")||S.Zones[B.Zone].Form!=TEXT("hall")||
                 S.Zones[B.Zone].Rect.GetSize()!=FVector2D(5600,4200)||B.Bridge.Center!=S.Zones[B.Zone].Rect.GetCenter())
                 return Bad(Beat.Id+TEXT(" physical bridge contract"));
+            const auto Margin=Child(*Bridge,TEXT("margin"));
+            const auto MarginExact=[&](const TCHAR* Key,int Expected)
+            { int Value=0; const auto V=Margin?Margin->TryGetField(Key):nullptr; return V&&V->Type==EJson::Number&&Int(*Margin,Key,Value)&&Value==Expected; };
+            if(!Margin||!MarginExact(TEXT("consoles"),15)||!MarginExact(TEXT("hits_to_destroy"),2)||
+                !MarginExact(TEXT("max_destroyed"),6)||!MarginExact(TEXT("targets"),3)||!MarginExact(TEXT("every_ms"),7000)||
+                !MarginExact(TEXT("warning_ms"),1500)||!MarginExact(TEXT("radius_cm"),250)||!MarginExact(TEXT("damage"),60)||
+                !MarginExact(TEXT("linger_ms"),6000)||S.Zones[B.Zone].Cover.Num()!=15)
+                return Bad(Beat.Id+TEXT(" margin-call contract"));
+            const int Rows[]={-1000,0,1000},Columns[]={-1550,-900,-300,400,1400};
+            for(int Idx=0;Idx<15;++Idx)
+            {
+                const auto& Cover=S.Zones[B.Zone].Cover[Idx];
+                if(Cover.Size!=FVector2D(80,300)||Cover.Height!=110||
+                    Cover.Center!=B.Bridge.Center+FVector2D(Rows[Idx/5],Columns[Idx%5]))
+                    return Bad(Beat.Id+TEXT(" physical margin console"));
+            }
             B.Bridge.bEnabled=true;
         }
         const auto WindField=O->TryGetField(TEXT("wind"));

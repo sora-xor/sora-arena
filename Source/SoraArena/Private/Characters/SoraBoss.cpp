@@ -1353,6 +1353,16 @@ void ASoraBoss::StrikeBeam(ASoraCharacterBase& Target, const FVector& Direction)
     StrikeHero(Target, Attack.Damage, Hit, Flat);
 }
 
+FHitResult ASoraBoss::RangedAimTrace(const ASoraCharacterBase& Target) const
+{
+    const FVector Eye=GetActorLocation()+FVector(0,0,SoraBossBody::EyeHeight*GetActorScale3D().Z);
+    const FVector Chest=Target.GetActorLocation()+FVector(0,0,SoraBossBody::ChestHeight);
+    FHitResult Line; FCollisionQueryParams Query(SCENE_QUERY_STAT(SoraBossRound),false,this);
+    IgnoreOwn(Query);
+    GetWorld()->LineTraceSingleByChannel(Line,Eye,Chest,ECC_Visibility,Query);
+    return Line;
+}
+
 void ASoraBoss::StrikeRound(ASoraCharacterBase& Target)
 {
     const FSoraBossAttack& Attack = AttackAt(Run.Attack);
@@ -1360,10 +1370,7 @@ void ASoraBoss::StrikeRound(ASoraCharacterBase& Target)
     const float Scale = GetActorScale3D().Z;
     const FVector EyePoint = GetActorLocation() + FVector(0.f, 0.f, SoraBossBody::EyeHeight * Scale);
     const FVector Chest = Target.GetActorLocation() + FVector(0.f, 0.f, SoraBossBody::ChestHeight);
-    FHitResult Line;
-    FCollisionQueryParams Query(SCENE_QUERY_STAT(SoraBossRound), false, this);
-    IgnoreOwn(Query);
-    GetWorld()->LineTraceSingleByChannel(Line, EyePoint, Chest, ECC_Visibility, Query);
+    const FHitResult Line=RangedAimTrace(Target);
     const bool bHolds = BossRules::LockHolds(FMath::RoundToInt32(FVector::Dist(Chest, Run.LockedPoint)), Attack.LockCm);
     AnnounceStrike(Run.Attack, Run.Serial);
     SoraDamage::Beam(GetWorld(), EyePoint, Run.LockedPoint, FLinearColor(1.f, .12f, .3f), 1.7f);
@@ -1531,6 +1538,10 @@ bool ASoraBoss::ZonePoints(int32 Index, int32 Serial, TArray<FVector>& Points) c
     const ASoraCharacterBase* Target = Hero();
     if (!Target)
         return false;
+    if(Attack.Id==TEXT("margin_call"))
+        if(const auto* Mode=GetWorld()->GetAuthGameMode<ASoraGameMode>();Mode&&Mode->Arena()&&Mode->Arena()->HasBridgeDeck())
+            if(const auto* Player=Cast<ASoraPlayerCharacter>(Target))
+                return PhaseNow==1&&Mode->Arena()->BridgeMarginPoints(*Player,Points);
     const FVector Feet = Target->GetActorLocation() - FVector(0.f, 0.f, Target->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
     const auto Around = [&](int32 Count, float Spread)
     {
@@ -1581,6 +1592,9 @@ void ASoraBoss::PlaceZones(int32 Index, int32 Serial, int32 WindupMs)
             Mode->Arena()->BeginBridgeSlide(*this,Index,Serial);
         return; // Never substitute an invisible stationary damage circle.
     }
+    if(Attack.Id==TEXT("margin_call"))
+        if(auto* Mode=GetWorld()->GetAuthGameMode<ASoraGameMode>();Mode&&Mode->Arena()&&Mode->Arena()->HasBridgeDeck())
+        { Mode->Arena()->BeginBridgeMargin(*this,Index,Serial); return; }
     if(Attack.Id==TEXT("amort_seizure_field"))
         if(auto* Mode=GetWorld()->GetAuthGameMode<ASoraGameMode>();Mode&&Mode->Arena()&&Mode->Arena()->BeginSeizure(*this,Index,Serial,WindupMs)) return;
     TArray<FVector> Points;

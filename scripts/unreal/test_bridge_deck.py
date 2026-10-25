@@ -24,7 +24,9 @@ class BridgeTests(unittest.TestCase):
         bridge = data['space']['beats'][12]['bridge']
         self.assertEqual(bridge, dict(center=[79400, 0], list_deg=10, uphill_permille=850,
                                      downhill_permille=1100, every_ms=6000, warning_ms=700,
-                                     damage=30, stagger_ms=600, chairs=6, pods=4, port=[0, -1]))
+                                     damage=30, stagger_ms=600, chairs=6, pods=4, port=[0, -1],
+                                     margin=dict(consoles=15, hits_to_destroy=2, max_destroyed=6, targets=3,
+                                                 every_ms=7000, warning_ms=1500, radius_cm=250, damage=60, linger_ms=6000)))
 
     def test_only_boss_bridge_owns_motion(self):
         for index, record in enumerate(self.data['space']['beats']):
