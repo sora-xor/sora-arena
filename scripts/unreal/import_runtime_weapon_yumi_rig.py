@@ -355,7 +355,15 @@ anim = assets.load_asset(anim_target)
 # bound the slot to /Engine/EngineMaterials/WorldGridMaterial and never
 # referenced MI_W18_Weapon. First-person capture attempt 2 (Saved/YumiFP/v2)
 # drew the bow in that grey grid.
-require_api(unreal.SkeletalMesh, "set_materials")
+#
+# Python reaches SetMaterials only through the materials attribute: the type
+# registry binds a property's BlueprintGetter and BlueprintSetter to its
+# attribute (PyWrapperTypeRegistry.cpp:1444-1445), and keeps those functions
+# out of the methods (PyGenUtil.cpp:1616-1621), so there is no set_materials.
+# set_editor_property writes the raw member (PyGenUtil::SetPropertyValue), the
+# path that bound WorldGridMaterial. The W18 rebuild's step 7 attempt 0
+# (Saved/W18Rebuild/ue_rig_import.log) stopped here on "lacks ['set_materials']".
+require_api(unreal.SkeletalMesh, "materials")
 finish_compilation()
 slots = mesh.get_editor_property("materials")
 slot_names = []
@@ -365,7 +373,7 @@ for slot in slots:
         fail(f"unexpected bow material slot {name}")
     slot.set_editor_property("material_interface", instance_for(name))
     slot_names.append(name)
-mesh.set_materials(slots)
+mesh.materials = slots                  # the attribute's setter is USkeletalMesh::SetMaterials
 if set(slot_names) != BOW_SLOTS:
     fail(f"bow slots {sorted(slot_names)} differ from {sorted(BOW_SLOTS)}")
 WANT_BOW_MATERIALS = {name: instance_for(name).get_path_name() for name in BOW_SLOTS}
