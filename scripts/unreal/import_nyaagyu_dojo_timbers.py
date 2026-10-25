@@ -333,9 +333,9 @@ def timber_master(name, shared, fallback: bool):
               world_position_shader_offset=unreal.WorldPositionIncludedOffsets.WPT_CAMERA_RELATIVE_NO_OFFSETS)
     # CustomInput is a reflected struct with no Python constructor arguments.
     inputs = []
-    for name in ("P", "H", "N"):
+    for input_name in ("P", "H", "N"):
         item = unreal.CustomInput()
-        item.set_editor_property("input_name", name)
+        item.set_editor_property("input_name", input_name)
         inputs.append(item)
     bump = g.n(unreal.MaterialExpressionCustom, code=BUMP_HLSL, output_type=unreal.CustomMaterialOutputType.CMOT_FLOAT3,
                description="SurfaceGradientBump", inputs=inputs)
