@@ -13,13 +13,19 @@ importing process. The bytes of its saved package are supporting evidence
 only. This is the proof: a new editor loads each asset from disk and reads
 two things.
 
-- **The assets' slots:** SK_Weapon_18's Materials (one slot, M_Weapon_18 ->
-  MI_W18_Weapon), SM_Weapon_18_Ya's static materials (MI_W18_Hane) and
-  SM_NyaakotoFP_PawL_Yumi's seven slots (each its own M_NyaakotoFP_*).
-- **The components:** a SkeletalMeshComponent and two StaticMeshComponents
-  given those meshes, in actors spawned into the editor world, which is
-  never saved. GetMaterials must return the same paths, and none may be an
-  engine default.
+- **The rows:** each asset's slots as ordered rows (index, slot name,
+  material path), and what a component given that asset draws, as ordered
+  rows (index, material path). The components are a SkeletalMeshComponent
+  and StaticMeshComponents in actors spawned into the editor world, which is
+  never saved.
+- **The check:** fp_material_bindings.check against the serialized
+  expectations (docs/art-direction/data/fp_material_bindings.json), the same
+  rows the capture's gate uses:
+  - each asset has exactly its expected slot count and names, each bound to
+    its expected material;
+  - each component index draws its asset's slot at that index, so a swapped
+    override fails;
+  - no part draws an engine default.
 
 Writes Saved/YumiRig/material_check.json, with every path read. Then it prints
 YUMI_RIG_MATERIALS_OK, or raises naming what differs, as the importers do.
@@ -36,26 +42,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from sora_engine_pin import require_running_engine  # noqa: E402
 
 require_running_engine("yumi rig material check")
+import fp_material_bindings as B  # noqa: E402
+
 ROOT = Path(unreal.Paths.project_dir()).resolve()
-RIG = "/Game/Generated/Qualification/W18YumiRig"
-PAWS = "/Game/Generated/Qualification/NyaakotoFPPaws"
 OUT = ROOT / "Saved/YumiRig/material_check.json"
-PAW_SLOTS = ("M_NyaakotoFP_FurSkin", "M_NyaakotoFP_PawPad", "M_NyaakotoFP_FurCards", "M_NyaakotoFP_KoteSilk",
-             "M_NyaakotoFP_KoteUrushi", "M_NyaakotoFP_CordVermilion", "M_NyaakotoFP_MonGold")
-WANT = {
-    "SK_Weapon_18": {"M_Weapon_18": f"{RIG}/MI_W18_Weapon.MI_W18_Weapon"},
-    "SM_Weapon_18_Ya": {"M_Weapon_18": f"{RIG}/MI_W18_Hane.MI_W18_Hane"},
-    "SM_NyaakotoFP_PawL_Yumi": {s: f"{PAWS}/{s}.{s}" for s in PAW_SLOTS},
-}
 ACTORS = unreal.get_editor_subsystem(unreal.EditorActorSubsystem)
 
 
 def fail(message):
     raise RuntimeError("yumi rig materials: " + message)
-
-
-def path(obj):
-    return obj.get_path_name() if obj else None
 
 
 def load(asset_path):
@@ -65,48 +60,42 @@ def load(asset_path):
     return asset
 
 
-def main():
-    record = {"scope": "fresh-editor readback of material bindings; not a render or an admission",
-              "assets": {}, "components": {}}
-    bow = load(f"{RIG}/SK_Weapon_18")
-    arrow = load(f"{RIG}/SM_Weapon_18_Ya")
-    paw = load(f"{PAWS}/SM_NyaakotoFP_PawL_Yumi")
-    record["assets"]["SK_Weapon_18"] = {str(s.get_editor_property("material_slot_name")):
-                                        path(s.get_editor_property("material_interface"))
-                                        for s in bow.get_editor_property("materials")}
-    for name, mesh in (("SM_Weapon_18_Ya", arrow), ("SM_NyaakotoFP_PawL_Yumi", paw)):
-        record["assets"][name] = {str(s.get_editor_property("material_slot_name")):
-                                  path(s.get_editor_property("material_interface"))
-                                  for s in mesh.get_editor_property("static_materials")}
-    # Components resolve what a level draws: the same paths, in slot order.
-    sk = ACTORS.spawn_actor_from_class(unreal.SkeletalMeshActor, unreal.Vector(0.0, 0.0, 0.0))
-    comp = sk.skeletal_mesh_component
-    if hasattr(comp, "set_skeletal_mesh_asset"):
-        comp.set_skeletal_mesh_asset(bow)
+def component_for(mesh):
+    """A component given ``mesh``, in a spawned actor (the editor world is never saved)."""
+    if isinstance(mesh, unreal.SkeletalMesh):
+        actor = ACTORS.spawn_actor_from_class(unreal.SkeletalMeshActor, unreal.Vector(0.0, 0.0, 0.0))
+        comp = actor.skeletal_mesh_component
+        if hasattr(comp, "set_skeletal_mesh_asset"):
+            comp.set_skeletal_mesh_asset(mesh)
+        else:
+            comp.set_skeletal_mesh(mesh)
     else:
-        comp.set_skeletal_mesh(bow)
-    record["components"]["SK_Weapon_18"] = [path(m) for m in comp.get_materials()]
-    spawned = [sk]
-    for name, mesh in (("SM_Weapon_18_Ya", arrow), ("SM_NyaakotoFP_PawL_Yumi", paw)):
-        a = ACTORS.spawn_actor_from_class(unreal.StaticMeshActor, unreal.Vector(0.0, 0.0, 0.0))
-        a.static_mesh_component.set_static_mesh(mesh)
-        record["components"][name] = [path(m) for m in a.static_mesh_component.get_materials()]
-        spawned.append(a)
-    for a in spawned:
-        ACTORS.destroy_actor(a)
+        actor = ACTORS.spawn_actor_from_class(unreal.StaticMeshActor, unreal.Vector(0.0, 0.0, 0.0))
+        comp = actor.static_mesh_component
+        comp.set_static_mesh(mesh)
+    return actor, comp
+
+
+def main():
+    expectations = B.load()
+    record = {"scope": "fresh-editor readback of material bindings; not a render or an admission",
+              "expectations": str(B.EXPECTATIONS.relative_to(ROOT)), "assets": {}}
+    problems = []
+    for asset_path, want in expectations.items():
+        mesh = load(asset_path)
+        slots = B.asset_rows(mesh)
+        actor, comp = component_for(mesh)
+        drawn = B.component_rows(comp)
+        ACTORS.destroy_actor(actor)
+        record["assets"][asset_path] = B.as_json(slots, drawn)
+        problems += B.check(asset_path, slots, drawn, want)
+    record["problems"] = problems
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(record, indent=1) + "\n")
-    problems = []
-    for name, want in WANT.items():
-        if record["assets"][name] != want:
-            problems.append(f"{name} slots {record['assets'][name]} != {want}")
-        if sorted(record["components"][name]) != sorted(want.values()):
-            problems.append(f"{name} component draws {record['components'][name]}")
-        if any(p is None or p.startswith("/Engine/") for p in record["components"][name]):
-            problems.append(f"{name} component draws an engine default: {record['components'][name]}")
     if problems:
         fail("; ".join(problems))
-    unreal.log("YUMI_RIG_MATERIALS_OK " + json.dumps(record["components"]))
+    unreal.log("YUMI_RIG_MATERIALS_OK " + json.dumps({a: [r["material"] for r in v["component"]]
+                                                       for a, v in record["assets"].items()}))
 
 
 main()

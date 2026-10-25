@@ -30,8 +30,10 @@ It builds a fresh uncooked level, /Game/ArtReview/YumiFP/L_YumiFP_<time>.
   incident-meter equation (calibration constant 250, ISO 100), under the
   look-development convention auto_exposure_bias = 1 - EV100
   (render_sora_lookdev.py).
-- **The material gate:** the bow and the arrow must draw their W18 instances,
-  and the paw only its own materials, as the components resolve them.
+- **The material gate:** fp_material_bindings.check, the same rows and
+  serialized expectations as verify_yumi_rig_materials.py. Each part's slots
+  must be exactly the expected names, each bound to its material, and each
+  component index must draw its asset's slot at that index.
 - **The pose gate:** the take is evaluated on the game thread
   (OverrideAnimationData ticks and refreshes the bones), and the posed Grip_R
   and Muzzle, in component space, must match the Blender review's
@@ -61,6 +63,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from sora_engine_pin import require_running_engine  # noqa: E402
 
 require_running_engine("Yumi first-person review")
+import fp_material_bindings as B  # noqa: E402
 ROOT = Path(unreal.Paths.project_dir()).resolve()
 ACTORS = unreal.get_editor_subsystem(unreal.EditorActorSubsystem)
 LEVELS = unreal.get_editor_subsystem(unreal.LevelEditorSubsystem)
@@ -250,17 +253,23 @@ class Viewmodel:
                 raise RuntimeError("yumi FP review: the paw did not attach to Grip_L")
         # What each part draws with, as the components resolve it, before any shot:
         # attempt 2 drew the bow in /Engine/EngineMaterials/WorldGridMaterial, its
-        # imported slot (import_runtime_weapon_yumi_rig.py: SetMaterials).
-        self.materials = {"bow": [m.get_path_name() for m in comp.get_materials()],
-                          "arrow": [m.get_path_name() for m in self.arrow.static_mesh_component.get_materials()]}
+        # imported slot (import_runtime_weapon_yumi_rig.py: SetMaterials). The rows
+        # and their check are verify_yumi_rig_materials.py's, against the same
+        # serialized expectations (fp_material_bindings).
+        expectations = B.load()
+        parts = [(f"{RIG}/SK_Weapon_18", self.mesh, comp),
+                 (f"{RIG}/SM_Weapon_18_Ya", self.arrow.static_mesh_component.get_editor_property("static_mesh"),
+                  self.arrow.static_mesh_component)]
         if self.paw is not None:
-            self.materials["paw"] = [m.get_path_name() for m in self.paw.static_mesh_component.get_materials()]
-        want = {"bow": {f"{RIG}/MI_W18_Weapon.MI_W18_Weapon"}, "arrow": {f"{RIG}/MI_W18_Hane.MI_W18_Hane"}}
-        for part, paths in want.items():
-            if set(self.materials[part]) != paths:
-                raise RuntimeError(f"yumi FP review: the {part} draws {self.materials[part]}, not {sorted(paths)}")
-        if self.paw is not None and not all(m.startswith(f"{PAWS}/M_NyaakotoFP_") for m in self.materials["paw"]):
-            raise RuntimeError(f"yumi FP review: the paw draws {self.materials['paw']}")
+            parts.append((f"{PAWS}/SM_NyaakotoFP_PawL_Yumi", self.paw.static_mesh_component.get_editor_property("static_mesh"),
+                          self.paw.static_mesh_component))
+        self.materials, problems = {}, []
+        for asset_path, mesh, component in parts:
+            slots, drawn = B.asset_rows(mesh), B.component_rows(component)
+            self.materials[asset_path] = B.as_json(slots, drawn)
+            problems += B.check(asset_path, slots, drawn, expectations[asset_path])
+        if problems:
+            raise RuntimeError("yumi FP review: material gate: " + "; ".join(problems))
 
     def pose(self, hold):
         """Hang the bow from Grip_L at the anchor, and hold the take at the draw fraction."""
