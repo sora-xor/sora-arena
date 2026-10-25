@@ -51,6 +51,15 @@ at four heights, HEIGHTS of the coat's. The material blends them by each
 shell's height (its vertex colour's alpha). Coverage, not distance, is
 stored so that mips average it correctly. Linear values, no sRGB.
 
+**v3: irregular clumps.** The Cycles review of v2's build
+(Saved/NyaakotoFPPaws/Archive/v7_attempt0_production) showed that the stripes
+were gone. But the clumps read as a regular knit or terry grain: even sizes
+in rows, each one outlined. So:
+- the clumps' layout is looser (CLUMP_MIN_SPACING 0.5, from 0.8), so their
+  sizes vary;
+- they converge less (0.45-0.8, from 0.7-0.9), so neighbours merge more;
+- the tint varies less per clump and more per tuft.
+
 **The composite measure** (composite_measure) is a CPU model of what the
 shader composites, recorded in the manifest. It models:
 - the shells' heights (nyaakoto_fp_paws.SHELLS) and the material's tents and
@@ -86,11 +95,12 @@ OUT = ROOT / "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/FurShells"
 NAME = "T_NyaakotoFP_FurShells_Strands.png"
 TINT_NAME = "T_NyaakotoFP_FurShells_Tint.png"
 SEED = 20261025
-VERSION = 2
+VERSION = 3
 SIZE = 1024
 TINT_SIZE = 512
 TILE_MM = 8.0                         # skin a texture tile spans (nyaakoto_fp_paws.SHELLS uv_tile_m)
-MIN_SPACING = 0.8                     # dart throwing's least distance, in spacings
+MIN_SPACING = 0.8                     # dart throwing's least distance, in spacings (the strands')
+CLUMP_MIN_SPACING = 0.5               # the clumps': looser, so clumps differ in size (v3; v2 0.8)
 STRAND_MM = 0.18                      # v1's strands: their centres' mean spacing
 STRAND_R0 = 0.58                      # a strand's base radius, in strand spacings
 STRAND_TAPER = 0.6                    # its radius closes as (1 - h / length)^STRAND_TAPER
@@ -99,17 +109,18 @@ CLUMP_MM = 1.2                        # clump centres' mean spacing
 CLUMP_LENGTH = (0.75, 1.25)           # a clump's length, as a share of the coat's height: the tallest pass the top
                                       # shell, so every shell draws some tips (at 0.55-1.0 the top shell drew none)
 TUFT_LENGTH = 0.6                     # how much of a clump's length the tuft field sets (the rest is its own)
-CONVERGE = (0.7, 0.9)                 # how far a clump's strands close on its centre by its tip
+CONVERGE = (0.45, 0.8)                # how far a clump's strands close on its centre by its tip (v3; v2 0.7-0.9)
 TUFT_WAVES = ((2, 1), (1, 2), (3, 1), (2, -3), (1, -2), (3, 2))   # the tuft field's waves, in cycles per tile
-TINT = {"tuft": 0.10, "clump": 0.05, "strand": 0.03}
+TINT = {"tuft": 0.12, "clump": 0.03, "strand": 0.03}   # v3; v2 0.10 / 0.05 / 0.03
 HEIGHTS = (0.15, 0.40, 0.65, 0.90)    # the four channels' heights, as shares of the coat's
 AA = 0.06                             # the soft edge, in strand spacings
 VIEWMODELS = ROOT / "Content/Data/viewmodels.json"
 
 
-def blue_noise(rng, spacing, count):
-    """Up to count wrapped dart-throwing points in the unit tile, at least MIN_SPACING x spacing apart."""
-    least = MIN_SPACING * spacing
+def blue_noise(rng, spacing, count, min_spacing=None):
+    """Up to count wrapped dart-throwing points in the unit tile, at least min_spacing (MIN_SPACING) x spacing
+    apart."""
+    least = (MIN_SPACING if min_spacing is None else min_spacing) * spacing
     pts = []
     tries = 0
     while len(pts) < count and tries < 200 * count:
@@ -136,7 +147,7 @@ def tuft_field(rng, size):
 def layout(rng):
     """The clumps and their strands: centres, lengths, convergence and tints; each strand's clump and offset."""
     sc, ss = CLUMP_MM / TILE_MM, STRAND_MM / TILE_MM
-    clumps = blue_noise(rng, sc, int(round(1.0 / (sc * sc))))
+    clumps = blue_noise(rng, sc, int(round(1.0 / (sc * sc))), CLUMP_MIN_SPACING)
     strands = blue_noise(rng, ss, int(round(1.0 / (ss * ss))))
     tuft = tuft_field(rng, TINT_SIZE)
     at = np.clip((clumps * TINT_SIZE).astype(int), 0, TINT_SIZE - 1)

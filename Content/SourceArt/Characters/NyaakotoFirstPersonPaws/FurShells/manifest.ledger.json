@@ -3,12 +3,12 @@
   "kind": "asset-ledger",
   "ledger_id": "own-NyaakotoFP_FurShells",
   "source": "project",
-  "purpose": "OWN record for the bow paw's shell-fur textures (v2): a tileable linear RGBA map whose four channels hold the coverage, at four heights of the coat, of blue-noise strands gathered into clumps that converge toward their tips, and a linear tint map of each strand's brightness, all placed by the seeded generator; no external image, scan or third-party texture. The Unreal use is the isolated qualification import (import_nyaakoto_fp_paws.py), not the game. The schema-2 manifest.json beside it is the build record, not this ledger.",
+  "purpose": "OWN record for the bow paw's shell-fur textures (v3): a tileable linear RGBA map whose four channels hold the coverage, at four heights of the coat, of blue-noise strands gathered into irregular clumps that converge toward their tips, and a linear tint map of each strand's brightness, all placed by the seeded generator; no external image, scan or third-party texture. The Unreal use is the isolated qualification import (import_nyaakoto_fp_paws.py), not the game. The schema-2 manifest.json beside it is the build record, not this ledger.",
   "generator": "scripts/assets/write_own_ledger.py",
   "records": [
     {
       "asset_id": "NyaakotoFP_FurShells",
-      "name": "Nyaakoto first-person bow paw: shell-fur strand and tint textures (v2, clumped strands)",
+      "name": "Nyaakoto first-person bow paw: shell-fur strand and tint textures (v3, irregular clumped strands)",
       "kind": "generated-art",
       "tier": "OWN",
       "license": "project-owned",
@@ -24,7 +24,7 @@
       "attribution_text": null,
       "changes": null,
       "access": "generated",
-      "acquired_at_utc": "2026-10-25T22:36:15Z",
+      "acquired_at_utc": "2026-10-25T22:55:59Z",
       "acquired_by": "agent",
       "storage": "repo-lfs",
       "used_by": [
@@ -40,13 +40,13 @@
       "files": [
         {
           "path": "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/FurShells/T_NyaakotoFP_FurShells_Strands.png",
-          "bytes": 575901,
-          "sha256": "1f8798566ee1897aea9efcd2fa8ac712968093ff2b89699d5d32db4d7cd1de2f"
+          "bytes": 691012,
+          "sha256": "989ff8533260d98b3d96e4cd9c1bab58d1e98395d311d61509ad441488d7bd74"
         },
         {
           "path": "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/FurShells/T_NyaakotoFP_FurShells_Tint.png",
-          "bytes": 34989,
-          "sha256": "71eb5553d02569d4bf55b4493913282242b41fdc0d7084774f1db99d08efd2bf"
+          "bytes": 35984,
+          "sha256": "84548d8d0f075af362115cae83f40d851ba5925b423c36e7c4f2d1e23ee50bf0"
         }
       ]
     }

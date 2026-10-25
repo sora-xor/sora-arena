@@ -97,11 +97,14 @@ On it, v1's texture under v6's shells varies in luminance by a coefficient of
   Unsmoothed, it steps by 1.2-2.0 mm.
 - The regions' plateaus keep their heights.
 
-**Clumped strands** (`create_nyaakoto_fp_shell_texture.py` v2):
+**Clumped strands** (`create_nyaakoto_fp_shell_texture.py` v3; v2 was its
+first draft, below):
 - **The structure:** v1's 1,975 strands per tile are now gathered into 44
-  clumps, 1.2 mm apart, on an 8 mm tile. Each strand belongs to its nearest
-  clump centre, and is drawn toward it with height, by a convergence of
-  0.7-0.9 per clump. So clumps taper to tips, and partings open between them.
+  clumps, 1.2 mm apart on average, on an 8 mm tile. The clumps are laid out
+  loosely (dart throwing at 0.5 of their spacing), so they differ in size.
+  Each strand belongs to its nearest clump centre, and is drawn toward it
+  with height, by a convergence of 0.45-0.8 per clump. So clumps taper to
+  tips, and partings open between them.
 - **The lengths:**
   - clumps run 0.75-1.25 of the coat's height, longer on a tileable tuft
     field a few millimetres across;
@@ -109,15 +112,25 @@ On it, v1's texture under v6's shells varies in luminance by a coefficient of
   - the tallest pass the top shell, so every shell draws some tips. A draft
     at 0.55-1.0 left the top shell empty: ten layers of overdraw for nine
     layers of coat.
-- **The coverage** at the four heights is 0.718 / 0.433 / 0.195 / 0.025
+- **The coverage** at the four heights is 0.733 / 0.466 / 0.215 / 0.025
   (v1: 0.742 / 0.383 / 0.107 / 0.007).
-- **A tint map:** each strand's brightness (linear, 512 x 512, mean 0.915),
-  darker in the tuft field's troughs, per clump and per strand. The shell
-  material multiplies the vertex colour by it, in both builds.
-- **On the composite model:** luminance varies by 0.050 in the eye view and
-  0.094 in the close-up, against v1's 0.015 and 0.044.
-- **Attempts kept:** two drafts were superseded before any use, the empty top
-  shell and tint seams where no strand reached
+- **A tint map:** each strand's brightness (linear, 512 x 512, mean 0.909),
+  darker in the tuft field's troughs (0.12), per clump (0.03) and per strand
+  (0.03). The shell material multiplies the vertex colour by it, in both
+  builds.
+- **On the composite model:** luminance varies by 0.053 in the eye view and
+  0.082 in the close-up, against v1's 0.015 and 0.044.
+- **v2, the first draft, and why it changed:**
+  - It was signed in 1f18f3ab and built once in Blender: 22:49:13-22:51:30
+    UTC, exit 0 (`s41_paw_v7.attempt0_regular_grain.*`;
+    `Saved/NyaakotoFPPaws/Archive/v7_attempt0_production`).
+  - Its Cycles reviews showed the stripes gone at every distance.
+  - But its clumps read as a regular knit or terry grain: even sizes in rows,
+    each one outlined. v2's clumps were laid out tighter (0.8 of their
+    spacing) and converged more (0.7-0.9), with more tint per clump (0.05).
+  - On the composite model it varied by 0.050 / 0.094.
+- **Attempts kept:** two drafts of v2 were superseded before any use, the
+  empty top shell and tint seams where no strand reached
   (`s40_shell_texture_v2.attempt*`). v6's texture is archived at
   `Saved/NyaakotoFPPaws/Archive/v6_furshells`.
 
@@ -125,7 +138,7 @@ On it, v1's texture under v6's shells varies in luminance by a coefficient of
 - v6's ten layers composited to 0.76 of TABBY white, the grey glove;
 - the shells' colour is now scaled so their far-field composite over the
   skin is the hero's white: 0.933 of TABBY white, as the cards' was in v5;
-- with v2's maps the gain is 1.240, and the brightest shell colour stays
+- with v3's maps the gain is 1.237, and the brightest shell colour stays
   under 1;
 - the deep shade is a little weaker (0.55 → 0.62), now that partings show
   the deeper layers.

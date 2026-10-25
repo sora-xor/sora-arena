@@ -1,6 +1,6 @@
 {
  "schema_version": 2,
- "version": 2,
+ "version": 3,
  "generator": "scripts/art/create_nyaakoto_fp_shell_texture.py",
  "seed": 20261025,
  "texture": {
@@ -11,7 +11,7 @@
   ],
   "mode": "RGBA",
   "colour_space": "linear",
-  "sha256": "1f8798566ee1897aea9efcd2fa8ac712968093ff2b89699d5d32db4d7cd1de2f"
+  "sha256": "989ff8533260d98b3d96e4cd9c1bab58d1e98395d311d61509ad441488d7bd74"
  },
  "tint": {
   "file": "T_NyaakotoFP_FurShells_Tint.png",
@@ -21,8 +21,8 @@
   ],
   "mode": "L",
   "colour_space": "linear",
-  "sha256": "71eb5553d02569d4bf55b4493913282242b41fdc0d7084774f1db99d08efd2bf",
-  "mean": 0.913
+  "sha256": "84548d8d0f075af362115cae83f40d851ba5925b423c36e7c4f2d1e23ee50bf0",
+  "mean": 0.9092
  },
  "tile_mm": 8.0,
  "heights": [
@@ -51,8 +51,8 @@
   ],
   "tuft_length": 0.6,
   "converge": [
-   0.7,
-   0.9
+   0.45,
+   0.8
   ],
   "tuft_waves": [
    [
@@ -82,31 +82,31 @@
   ]
  },
  "tint_spread": {
-  "tuft": 0.1,
-  "clump": 0.05,
+  "tuft": 0.12,
+  "clump": 0.03,
   "strand": 0.03
  },
  "mean_coverage": {
-  "R (h 0.15)": 0.7178,
-  "G (h 0.4)": 0.4333,
-  "B (h 0.65)": 0.1951,
-  "A (h 0.9)": 0.0253
+  "R (h 0.15)": 0.7331,
+  "G (h 0.4)": 0.4655,
+  "B (h 0.65)": 0.2147,
+  "A (h 0.9)": 0.0246
  },
  "far_field": {
-  "composite": 0.7526,
-  "white_gain": 1.2403,
+  "composite": 0.7547,
+  "white_gain": 1.2367,
   "target": 0.933
  },
  "composite_measure": {
   "eye_view": {
    "footprint_texels": 76,
-   "mean": 0.926,
-   "cv": 0.0503
+   "mean": 0.9285,
+   "cv": 0.0526
   },
   "paw_close_up": {
    "footprint_texels": 13,
-   "mean": 0.914,
-   "cv": 0.0937
+   "mean": 0.9217,
+   "cv": 0.0818
   }
  },
  "tileable": "wrapped: strand and clump distances and the discs wrap at the tile's edges",
