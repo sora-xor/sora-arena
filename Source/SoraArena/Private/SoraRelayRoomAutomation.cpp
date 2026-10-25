@@ -3,6 +3,7 @@
 #include "SoraFieldcraftTestWorld.h"
 #include "SoraEnemy.h"
 #include "SoraEnemyController.h"
+#include "World/SoraNavigation.h"
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 
@@ -181,6 +182,10 @@ bool FSoraRelayGalleryTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("A three-second hold from the traversed gallery disables the upper node"),C->RelayState().IsDisabled(2));
     if(!Walk(W,90,[&]{return W.Hero()->GetActorLocation().Y>=O.Y+850;})) return false;
     if(!Walk(W,180,[&]{return W.Hero()->GetActorLocation().X<=O.X+75;})) return false;
+    // Releasing W at the foot does not instantly settle a descending
+    // capsule. Let ordinary gravity finish the last step before asserting.
+    for(int I=0;I<120&&!W.Hero()->GetCharacterMovement()->IsMovingOnGround();++I) if(!W.Tick(1)) return false;
+    AddInfo(TEXT("Relay stair descent local feet: ")+(Feet(*W.Hero())-O).ToString());
     TestTrue(TEXT("Ordinary movement descends the stair to the floor"),Feet(*W.Hero()).Z<25);
     AddInfo(TEXT("Only the starting foot position is placed. Stair ascent, gallery approach and descent use ordinary W movement with frozen guards; visual quality and ordinary encounter difficulty remain open."));
     return true;
@@ -209,6 +214,26 @@ bool FSoraRelayInspectionTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("The actual auditor is assigned to the upper node"),Craft->RelayInspector()==Auditor);
     Wall->Destroy();
     for(int I=0;I<2400&&!Craft->RelayInspectionArrived(2);++I) if(!W.Tick(1)) return false;
+    if(!Craft->RelayInspectionArrived(2))
+    {
+        const auto* Brain=Cast<ASoraEnemyController>(Auditor->GetController());
+        AddInfo(FString::Printf(TEXT("Relay inspector local feet=%s velocity=%s mode=%d errand=%d reached=%d awareness=%d"),
+            *(Feet(*Auditor)-O).ToString(),*Auditor->GetVelocity().ToString(),int32(Auditor->GetCharacterMovement()->MovementMode),
+            Brain&&Brain->HasErrand(),Brain&&Brain->ErrandReached(),Brain?Brain->AwarenessPermille():-1));
+        TArray<FVector> Path;
+        if(const auto* Nav=USoraNavigation::Get(Auditor);Nav&&Nav->FindPath(Auditor->GetActorLocation(),
+            C->RelayWorkLocation(2)+FVector(0,0,Auditor->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2),*Auditor,Path))
+            for(const auto& Point:Path) AddInfo(TEXT("Relay inspector path local: ")+(Point-O).ToString());
+        for(const FVector Direction:{FVector(1,0,0),FVector(-1,0,0),FVector(0,1,0),FVector(0,-1,0)})
+        {
+            FHitResult Hit;FCollisionQueryParams Query(SCENE_QUERY_STAT(RelayInspectorDiagnostic),false,Auditor);
+            const auto* Capsule=Auditor->GetCapsuleComponent();
+            if(W.World->GetTestWorld()->SweepSingleByChannel(Hit,Auditor->GetActorLocation(),Auditor->GetActorLocation()+Direction*120,
+                FQuat::Identity,ECC_Pawn,FCollisionShape::MakeCapsule(Capsule->GetScaledCapsuleRadius(),Capsule->GetScaledCapsuleHalfHeight()),Query))
+                AddInfo(FString::Printf(TEXT("Relay sweep %s blocked by %s/%s at local %s"),
+                    *Direction.ToString(),*GetNameSafe(Hit.GetActor()),*GetNameSafe(Hit.GetComponent()),*(Hit.ImpactPoint-O).ToString()));
+        }
+    }
     TestTrue(TEXT("The auditor physically reaches the upper node after the route opens"),
         Craft->RelayInspectionArrived(2)&&FVector::Dist(Feet(*Auditor),C->RelayWorkLocation(2))<50);
     AddInfo(TEXT("Directed real-navigation fixture with a deaf, nearly blind auditor. Path obstruction, floor height and arrival are checked; ordinary detection remains separate."));

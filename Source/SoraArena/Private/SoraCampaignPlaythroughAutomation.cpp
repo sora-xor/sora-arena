@@ -561,10 +561,33 @@ bool WorkAtAnchor(FAutomationTestBase& Test, FState& State)
     {
         // This playthrough deliberately places the hero at controls. The
         // relay fixtures separately exercise ordinary stair traversal.
-        Player(State)->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-        Player(State)->SetActorLocation(Anchor+FVector(0,0,Player(State)->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2));
-        if(!Advance(Test,State,3)||!WaitForDialogue(Test,State)) return false;
         int Node=0;while(Node<4&&(Director->TaskProgress().PointsMask&(1u<<Node))) ++Node;
+        bool Ready=false;
+        const FVector Tangent=Node<2?FVector(0,60,0):FVector(15,0,0);
+        for(int Side:{0,1,-1})
+        {
+            Player(State)->GetCharacterMovement()->StopMovementImmediately();
+            Player(State)->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+            Player(State)->SetActorLocation(Anchor+Tangent*Side+FVector(0,0,Player(State)->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2));
+            if(Node<3)
+            {
+                const FRotator Facing=(Director->RelayNodeLocation(Node)-Player(State)->GetCamera()->GetComponentLocation()).Rotation();
+                Player(State)->GetController()->SetControlRotation(Facing);
+                Player(State)->FaceRotation(FRotator(0,Facing.Yaw,0),0);
+                Player(State)->GetCamera()->SetWorldRotation(Facing);
+            }
+            if(!Advance(Test,State,3)||!WaitForDialogue(Test,State)) return false;
+            auto* Stealth=USoraStealth::Get(Player(State));
+            if(Director->CanReachRelay(Node)&&(!Stealth||!Stealth->DragTarget(*Player(State)))) { Ready=true;break; }
+        }
+        if(!Test.TestTrue(TEXT("A relay work spot is grounded, visible and free of body-drag priority"),Ready))
+        {
+            Test.AddInfo(FString::Printf(TEXT("Relay work diagnostic: node=%d anchor=%s hero=%s reach=%d drag=%s mode=%d input=%d"),
+                Node,*Anchor.ToString(),*Player(State)->GetActorLocation().ToString(),Director->CanReachRelay(Node),
+                *GetNameSafe(USoraStealth::Get(Player(State))->DragTarget(*Player(State))),
+                int32(Player(State)->GetCharacterMovement()->MovementMode),int32(Mode(State)->InputState())));
+            return false;
+        }
         if(Node<3)
         {
             for(int Frame=0;Frame<3000&&(Director->RelayState().NodesLockedMs>0||
@@ -627,7 +650,12 @@ bool WorkAtAnchor(FAutomationTestBase& Test, FState& State)
     {
         if(!State.World->InjectKey(EKeys::E,IE_Pressed)) return false;
         if(Director->TaskProgress().Done<3&&!Test.TestTrue(TEXT("The player's actual interaction starts the relay hold"),Director->HeldWorkProgress()>=0.f))
-        { State.World->InjectKey(EKeys::E,IE_Released);return false; }
+        {
+            Test.AddInfo(FString::Printf(TEXT("Relay interaction diagnostic: done=%d disabled=%u held=%d phase=%d locked=%d input=%d key=%d"),
+                Director->TaskProgress().Done,Director->RelayState().Disabled,Director->RelayState().HeldNode,
+                Director->RelayState().PhaseMs,Director->RelayState().NodesLockedMs,int32(Mode(State)->InputState()),Player(State)->IsActionHeld(TEXT("Interact"))));
+            State.World->InjectKey(EKeys::E,IE_Released);return false;
+        }
     }
     else Mode(State)->Interact(Player(State));
     if (Director->HeldWorkProgress() < 0.f)
