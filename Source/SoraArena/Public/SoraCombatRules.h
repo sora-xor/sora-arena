@@ -233,6 +233,16 @@ constexpr int RearDamage(int Damage, int FacingMilli, int RearWeakPermille)
     return FromRear(FacingMilli) ? Share(Damage, RearWeakPermille) : Damage;
 }
 
+// Only the explicitly authored floor-contact rate omits vulnerability bonuses.
+// This changes no shield, barrier, invulnerability or defeat admission rules.
+enum class EEnvironmentalRate { None, MoltenChannel };
+constexpr int EnemyVulnerabilityDamage(int Damage,EHit Kind,EEnvironmentalRate Rate,
+                                      bool Staggered,int FacingMilli,int RearWeakPermille)
+{
+    return Kind==EHit::Hazard&&Rate==EEnvironmentalRate::MoltenChannel ? Damage :
+        RearDamage(StaggeredDamage(Damage,Staggered),FacingMilli,RearWeakPermille);
+}
+
 // A personal barrier soaks every hit, scaled by the weapon's permille, until
 // it breaks; the hit that breaks it does not carry through. After a quiet
 // spell it regenerates at a fixed rate. It is kept in thousandths of a point

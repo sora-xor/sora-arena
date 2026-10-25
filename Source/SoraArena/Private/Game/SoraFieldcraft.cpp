@@ -294,6 +294,7 @@ UStaticMeshComponent* USoraFieldcraft::Piece(const FString& Name, const TCHAR* M
 
 void USoraFieldcraft::Clear()
 {
+    ClearMolten();
     ClearClimbRoutes();
     ClearFlood();
     ClearMoat();
@@ -341,7 +342,7 @@ void USoraFieldcraft::Stage(const FSoraBeat& Beat)
 {
     Clear();
     ClimbSpace=Beat.Space.Climb.bEnabled?&Beat.Space.Climb:nullptr;
-    if (Beat.Space.Fieldcraft.IsEmpty() || !GetWorld()) return;
+    if ((Beat.Space.Fieldcraft.IsEmpty() && !Beat.Space.Molten.bEnabled) || !GetWorld()) return;
     Staged = &Beat.Space.Fieldcraft;
     BeatId = Beat.Id;
     FActorSpawnParameters Params;
@@ -354,6 +355,7 @@ void USoraFieldcraft::Stage(const FSoraBeat& Beat)
     FloodSpace=Beat.Space.Flood.bEnabled?&Beat.Space.Flood:nullptr;
     MoatSpace=Beat.Space.Moat.bEnabled?&Beat.Space.Moat:nullptr;
     StageWorld(Beat);
+    StageMolten(Beat);
     StageCompanions(Beat);
     StageFlood(Beat);
     StageMoat();
@@ -531,6 +533,7 @@ void USoraFieldcraft::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
     const auto* Mode = GetWorld() ? Cast<ASoraGameMode>(GetWorld()->GetAuthGameMode()) : nullptr;
+    if(Mode&&Mode->bDefeated&&MoltenSpace) ClearMolten();
     if (!Staged || !Mode || !Mode->IsPlaying() || Mode->bDeterministicPractice) return;
     const int32 DtMs = StepMs(DeltaTime);
     // An event one step raises may end the chapter, and with it the stage,
@@ -549,6 +552,7 @@ void USoraFieldcraft::Tick(float DeltaTime)
     if (Staged) TickCharge(DeltaTime, DtMs);
     if (Staged) TickCandle();
     if (Staged) TickLooks();
+    if (Staged) TickMolten(DtMs);
 }
 
 // ---------------------------------------------------------------------------

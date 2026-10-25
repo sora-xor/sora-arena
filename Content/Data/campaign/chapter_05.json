@@ -11748,7 +11748,63 @@
      "charge": null
     },
     "height_cm": 0,
-    "lift": null
+    "lift": null,
+    "molten_channels": {
+     "cycle_ms": 12000,
+     "warning_ms": 2000,
+     "flow_ms": 5000,
+     "player_dps": 35,
+     "burn_ms": 2000,
+     "burn_dps": 35,
+     "burn_rate_interpretation": "same_as_contact_nonstacking_refresh",
+     "enemy_dps": 60,
+     "destroy_enemy": "loom_automaton",
+     "environmental_kills_count": true,
+     "floor_z_cm": 0,
+     "channels": [
+      {
+       "center": [
+        68200,
+        -1000
+       ],
+       "size": [
+        2500,
+        80
+       ]
+      },
+      {
+       "center": [
+        68200,
+        -350
+       ],
+       "size": [
+        2500,
+        80
+       ]
+      },
+      {
+       "center": [
+        68200,
+        350
+       ],
+       "size": [
+        2500,
+        80
+       ]
+      },
+      {
+       "center": [
+        68200,
+        1000
+       ],
+       "size": [
+        2500,
+        80
+       ]
+      }
+     ],
+     "provisional_placement": true
+    }
    },
    {
     "beat": "ch05.b16",
