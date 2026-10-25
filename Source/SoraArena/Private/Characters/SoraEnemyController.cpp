@@ -722,7 +722,17 @@ ASoraEnemyController::EMove ASoraEnemyController::WalkSupportedSegment(ASoraEnem
     if(!GetWorld()->LineTraceSingleByChannel(Hit,Foot+FVector(0,0,StepLimit),Foot-FVector(0,0,StepLimit),ECC_Visibility,Query)||
         Hit.ImpactNormal.Z<Move->GetWalkableFloorZ()||
         (bSteps?FMath::Abs(Hit.ImpactPoint.Z-Foot.Z)>StepLimit:FMath::Abs(Hit.ImpactPoint.Z-(Goal.Z-Half-2.f))>5.f))
-        return Stop(EMove::Blocked);
+    {
+        if(!bSteps) return Stop(EMove::Blocked);
+        // At the foot of a stair the rounded capsule can still rest on a
+        // tread behind its centre. A point ray ahead then sees only the
+        // lower floor beyond step height, even though the actual capsule
+        // has walkable support. Use CharacterMovement's bounded capsule
+        // floor query before rejecting that descent; never invent support.
+        FFindFloorResult Floor;
+        Move->ComputeFloorDist(Next,StepLimit,StepLimit,Floor,Capsule->GetScaledCapsuleRadius());
+        if(!Floor.IsWalkableFloor()) return Stop(EMove::Blocked);
+    }
     Heading=Direction;
     Enemy.AddMovementInput(Direction,Speed);
     return EMove::Moving;
