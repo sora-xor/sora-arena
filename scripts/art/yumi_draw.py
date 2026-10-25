@@ -32,6 +32,13 @@ representation, and a check of the bow's volume, not just its sockets.
   included, frame by frame through draw, hold, release and return, in rest
   and both bobs. The presentation rest blends at the contract's blend_per_s,
   optionally following the draw (motion.bow_draw_presentation).
+* **timeline_mesh(...):** the same with the emitted geometry (MESH_SCOPE),
+  from the rig build's W18_rig_check_geometry.npz:
+  - the skinned bow (skinned(), its own weights and key deform matrices);
+  - the committed arrow's triangles, feathers included (arrow_at());
+  - exact projected point-to-triangle distances, and near-plane cuts from
+    clipped triangles;
+  - the paws stay envelopes until their meshes exist.
 """
 from __future__ import annotations
 
@@ -237,17 +244,23 @@ def string_segments(sockets):
 # 384819b found that the first version passed geometry behind the camera,
 # sampled open cylinders and four stave extrema, and stretched the string in
 # its release model.
-SCOPE = ("sampled design envelope, not the emitted or skinned asset: closed capsules and spheres for the arrow and "
-         "paws, the generator's rounded-rectangle stave section (POWER 4.6, 28 points, tip taper) inflated for the "
+SCOPE = ("sampled design envelope, not the emitted or skinned asset: closed capsules and spheres for the arrow "
+         "(shaft, nodes and silk, and the fletching to its vane tips) and the paws, the generator's rounded-rectangle stave section (POWER 4.6, 28 points, tip taper) inflated for the "
          "nigiri, rattan and hazu; point samples with a local spacing margin, visibility of the mandatory parts, and "
          "near-plane crossings inside the frame. The timeline is sampled at its fps in rest and the nominal bob "
          "extremes, not a continuous-time bound or the native camera path.")
 STAVE_SECTION_POINTS = 28
+ARROW_SHAFT_R = 0.0052             # shaft 4.6 mm, nodes and silk 5.05 mm
+ARROW_FLETCH_M = (0.025, 0.185)    # the vanes, from the nock (28-180 mm, with margin)
+ARROW_FLETCH_R = 0.0225            # vane tips 22.1 mm from the axis
 ENVELOPE_GRIP_M = 0.004            # the deerskin nigiri wound over the stave
 ENVELOPE_RATTAN_M = 0.0015         # rattan bands and lacquer
 ENVELOPE_HAZU = 1.10               # horn hazu, up to 6% wider than the stave (cap_rings) plus margin
 # Parts that must be visible (in front of the near plane and in the frame) in a pose.
 MANDATORY = {"bow.drawn": ("stave", "arrow", "paw_L"), "bow": ("stave", "paw_L")}
+# The full-draw parts summary() requires visible through the hold, under
+# either name the bow has ("stave" as an envelope, "bow" as emitted triangles).
+MANDATORY_ANY = ("stave", "bow", "arrow", "paw_L")
 
 
 def _lerp(a, b, t):
@@ -338,7 +351,17 @@ def parts(shape):
     nock, tip = shape.get("arrow", (s["Grip_R"], s["Muzzle"]))
     out = {"stave": [_stave_envelope(shape)]}
     out["string"] = [_capsule(a, b, 0.0031, n_along=60, n_round=8, n_cap=2) for a, b in string_segments(s)]
-    out["arrow"] = [_capsule(nock, tip, 0.0042, n_along=80, n_round=8, n_cap=3)]
+    # The whole arrow, conservatively (create_runtime_weapon_yumi.build_ya): the
+    # shaft with its nodes and silk (radius <= 5.05 mm), and the three vanes
+    # 28-180 mm from the nock reaching 22.1 mm with their geometry margin. The
+    # point's half-width (about 4.7 mm) is inside the shaft capsule.
+    ax = tuple(tip[i] - nock[i] for i in range(3))
+    L = math.sqrt(sum(c * c for c in ax))
+    t = tuple(c / L for c in ax)
+    f0 = tuple(nock[i] + t[i] * ARROW_FLETCH_M[0] for i in range(3))
+    f1 = tuple(nock[i] + t[i] * ARROW_FLETCH_M[1] for i in range(3))
+    out["arrow"] = [_capsule(nock, tip, ARROW_SHAFT_R, n_along=80, n_round=8, n_cap=3),
+                    _capsule(f0, f1, ARROW_FLETCH_R, n_along=16, n_round=16, n_cap=4)]
     out["paw_L"] = [_capsule(PAW_L["from"], PAW_L["to"], PAW_L["radius"]),
                     _capsule(PAW_L["from"], PAW_L["forearm_to"], PAW_L["forearm_radius"])]
     return out
@@ -363,7 +386,7 @@ def place_many(rest, points_m, scale, state=None):
 def assess(groups, rest, state, contract):
     """One part's projection, over its groups: visibility, nearest approach
     (with a local spacing margin), near-plane crossings inside the frame."""
-    out = {"in_front": 0.0, "visible": False, "near_clip_in_frame": 0, "clip_points": []}
+    out = {"in_front": 0.0, "visible": False, "near_clip_in_frame": 0, "clip_points": [], "clip_box": None}
     n = 0
     for rings in groups:
         r = _assess_group(rings, rest, state, contract)
@@ -373,6 +396,9 @@ def assess(groups, rest, state, contract):
         out["visible"] |= r["visible"]
         out["near_clip_in_frame"] += r["near_clip_in_frame"]
         out["clip_points"] += r["clip_points"]
+        if r["clip_box"]:
+            out["clip_box"] = clip_box([(r["clip_box"][0], r["clip_box"][2]), (r["clip_box"][1], r["clip_box"][3])],
+                                       out["clip_box"])
         if "nearest_conservative" in r and r["nearest_conservative"] < out.get("nearest_conservative", 9.0):
             for key in ("nearest_half_heights", "margin", "nearest_conservative"):
                 out[key] = r[key]
@@ -409,14 +435,27 @@ def _assess_group(rings, rest, state, contract):
                     "nearest_conservative": round(float(dist[i, j]) - margin, 4)})
     clipped, where = near_cuts(E, near_x, screen)
     out["near_clip_in_frame"] = clipped
-    out["clip_points"] = where[:4]
+    out["clip_points"] = where[:4]                   # display examples only
+    out["clip_box"] = clip_box(where)
     return out
+
+
+def clip_box(points, box=None):
+    """[u_min, u_max, v_min, v_max] over every cut point, merged into ``box``."""
+    if not points:
+        return box
+    us, vs = [p[0] for p in points], [p[1] for p in points]
+    b = [min(us), max(us), min(vs), max(vs)]
+    if box is None:
+        return b
+    return [min(box[0], b[0]), max(box[1], b[1]), min(box[2], b[2]), max(box[3], b[3])]
 
 
 def near_cuts(E, near_x, screen):
     """Near-plane crossings that fall inside the frame, for eye-space rings
     E (rings, points, 3): every edge round each closed ring (the last point
-    back to the first) and between consecutive rings. Returns (count, (u, v))."""
+    back to the first) and between consecutive rings. Returns (count, every
+    in-frame cut point (u, v)); clip_box() bounds them all."""
     import numpy as np
     clipped, where = 0, []
     for A, B in ((E, np.roll(E, -1, axis=1)), (E[:-1], E[1:])):
@@ -649,6 +688,9 @@ def timeline(contract=None, anchor_y=None, release_at=1.2, end=1.8, fps=60.0, st
                     worst["visible"] = worst["visible"] and r["visible"]
                     worst["near_clip_in_frame"] = max(worst["near_clip_in_frame"], r["near_clip_in_frame"])
                     worst["clip_points"] = (worst["clip_points"] + r["clip_points"])[:8]
+                    if r["clip_box"]:
+                        worst["clip_box"] = clip_box([(r["clip_box"][0], r["clip_box"][2]),
+                                                      (r["clip_box"][1], r["clip_box"][3])], worst["clip_box"])
                     if r.get("nearest_conservative", 9.0) < worst.get("nearest_conservative", 9.0):
                         for key in ("nearest_half_heights", "margin", "nearest_conservative"):
                             worst[key] = r[key]
@@ -672,16 +714,21 @@ def summary(tl):
         phase = "hold" if settled else ("draw" if fr["t"] < tl["release_at"] else "release")
         for name, r in fr["parts"].items():
             ph = out.setdefault(name, {}).setdefault(phase, {"nearest": 9.0, "inside_s": 0.0, "hidden_frames": 0,
-                                                             "near_clip_frames": 0})
+                                                             "near_clip_frames": 0, "clip_box": None})
+            # A cut inside the frame counts whether or not the rest of the part
+            # is visible (Codex's review of 4481327: it was skipped, 8 for 10).
+            if r["near_clip_in_frame"]:
+                ph["near_clip_frames"] += 1
+                b = r.get("clip_box")
+                if b:
+                    ph["clip_box"] = clip_box([(b[0], b[2]), (b[1], b[3])], ph["clip_box"])
             if not r["visible"]:
-                if phase == "hold" and name in MANDATORY["bow.drawn"]:
+                if phase == "hold" and name in MANDATORY_ANY:
                     ph["hidden_frames"] += 1
                 continue
             ph["nearest"] = min(ph["nearest"], r.get("nearest_conservative", 9.0))
             if r.get("nearest_conservative", 9.0) < clear:
                 ph["inside_s"] = round(ph["inside_s"] + dt, 4)
-            if r["near_clip_in_frame"]:
-                ph["near_clip_frames"] += 1
     return out
 
 
@@ -691,3 +738,196 @@ if __name__ == "__main__":
     print(json.dumps({"braced_sockets": br["sockets"], "string_m": br["string_m"], "drawn_k": dr["k"],
                       "drawn_sockets": dr["sockets"], "arrow": dr["arrow"],
                       "footprint_drawn": footprint("bow.drawn", dr), "footprint_rest": footprint("bow", br)}, indent=1))
+
+
+# ---------------------------------------------------------------------------
+# The emitted geometry: the built rig and the committed arrow
+# ---------------------------------------------------------------------------
+
+RIG_GEOMETRY = HERE.parents[1] / "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/W18_rig_check_geometry.npz"
+MESH_SCOPE = ("emitted geometry: the built rig's skinned bow triangles (its own weights and key deform matrices, "
+              "interpolated between keys) and the committed arrow's triangles; exact projected point-to-triangle "
+              "distances, triangles clipped at the near plane, cuts counted inside the frame. The paws are still "
+              "envelopes until their meshes exist. Sampled at the timeline's fps in rest and the nominal bob "
+              "extremes; not the native camera path.")
+
+
+def load_rig(path=None):
+    import numpy as np
+    z = np.load(path or RIG_GEOMETRY)
+    return {k: z[k] for k in z.files}
+
+
+def _deform_at(rig, d):
+    """The bones' deform matrices at draw fraction d: the keys interpolated,
+    angle about Y and translation, as a linear take between keys plays."""
+    import numpy as np
+    fr = rig["fractions"]
+    k = int(min(max(np.searchsorted(fr, d, side="right") - 1, 0), len(fr) - 2))
+    t = float((d - fr[k]) / (fr[k + 1] - fr[k]))
+    A, B = rig["deform"][k].astype(np.float64), rig["deform"][k + 1].astype(np.float64)
+    ang_a = np.arctan2(A[:, 0, 2], A[:, 0, 0])
+    ang_b = np.arctan2(B[:, 0, 2], B[:, 0, 0])
+    ang = ang_a + (ang_b - ang_a) * t
+    out = np.zeros_like(A)
+    c, s = np.cos(ang), np.sin(ang)
+    out[:, 0, 0], out[:, 0, 2], out[:, 2, 0], out[:, 2, 2] = c, s, -s, c
+    out[:, 1, 1] = 1.0
+    out[:, :3, 3] = A[:, :3, 3] + (B[:, :3, 3] - A[:, :3, 3]) * t
+    out[:, 3, 3] = 1.0
+    return out
+
+
+def skinned(rig, d):
+    """The bow's vertices at draw fraction d, by the rig's own weights (bow metres)."""
+    import numpy as np
+    M = _deform_at(rig, d)
+    rest = rig["rest"].astype(np.float64)
+    out = np.zeros_like(rest)
+    for k in range(2):
+        Mk = M[rig["bone_index"][:, k]]
+        p = np.einsum("nij,nj->ni", Mk[:, :3, :3], rest) + Mk[:, :3, 3]
+        out += rig["bone_weight"][:, k:k + 1].astype(np.float64) * p
+    return out
+
+
+def arrow_at(rig, nock, rest_pt):
+    """The committed arrow's vertices nocked at ``nock``, pointing at ``rest_pt`` (bow metres)."""
+    import numpy as np
+    d = np.asarray(rest_pt, np.float64) - np.asarray(nock, np.float64)
+    x = d / np.linalg.norm(d)
+    zup = np.array([0.0, 0.0, 1.0])
+    y = np.cross(zup, x)
+    y /= np.linalg.norm(y)
+    z = np.cross(x, y)
+    R = np.stack([x, y, z], 1)                       # arrow +X, +Y, +Z -> bow frame
+    return rig["arrow_verts"].astype(np.float64) @ R.T + np.asarray(nock, np.float64)
+
+
+def _point_tri_dist(P):
+    """Distance from the origin to each 2D triangle P (T, 3, 2): 0 inside."""
+    import numpy as np
+    a, b, c = P[:, 0], P[:, 1], P[:, 2]
+
+    def cross(o, p, q):
+        return (p[:, 0] - o[:, 0]) * (q[:, 1] - o[:, 1]) - (p[:, 1] - o[:, 1]) * (q[:, 0] - o[:, 0])
+    O = np.zeros_like(a)
+    d1, d2, d3 = cross(a, b, O), cross(b, c, O), cross(c, a, O)
+    inside = ((d1 >= 0) & (d2 >= 0) & (d3 >= 0)) | ((d1 <= 0) & (d2 <= 0) & (d3 <= 0))
+
+    def seg(p, q):
+        e = q - p
+        L2 = np.maximum(np.einsum("ij,ij->i", e, e), 1e-30)
+        t = np.clip(-np.einsum("ij,ij->i", p, e) / L2, 0.0, 1.0)
+        r = p + e * t[:, None]
+        return np.hypot(r[:, 0], r[:, 1])
+    dist = np.minimum(np.minimum(seg(a, b), seg(b, c)), seg(c, a))
+    return np.where(inside, 0.0, dist)
+
+
+def assess_mesh(verts_m, tris, rest, state, contract):
+    """A mesh part in the pose: visibility, the exact nearest approach of its
+    projected triangles to the reticle (half-heights), and near-plane cuts
+    inside the frame (triangles crossing the plane whose cut lies on screen)."""
+    import numpy as np
+    screen = F.Screen(contract["camera"])
+    E = place_many(rest, verts_m, contract["mesh_scale"], state)
+    near_x = screen.near / screen.scale
+    T = E[tris]                                       # (T, 3, 3)
+    front = T[..., 0] > near_x
+    full = front.all(1)
+    out = {"triangles": int(len(tris)), "in_front": round(float(front.mean()), 4)}
+    W = T[full]
+    uv = np.stack([W[..., 1] / W[..., 0] / screen.tan_h * screen.aspect, W[..., 2] / W[..., 0] / screen.tan_v], -1)
+    on = ((np.abs(uv[..., 0]) <= screen.aspect) & (np.abs(uv[..., 1]) <= 1.0)).any(1)
+    out["visible"] = bool(on.any())
+    if full.any():
+        dist = _point_tri_dist(uv)
+        i = int(np.argmin(dist))
+        out["nearest_half_heights"] = round(float(dist[i]), 4)
+        out["nearest_conservative"] = out["nearest_half_heights"]          # exact: no sampling margin
+    # Triangles crossing the near plane: their cut segments, projected.
+    cross = front.any(1) & ~full
+    cuts, where, every = 0, [], []
+    for tri in T[cross]:
+        pts = []
+        for i0 in range(3):
+            p, q = tri[i0], tri[(i0 + 1) % 3]
+            if (p[0] > near_x) != (q[0] > near_x):
+                t = (near_x - p[0]) / (q[0] - p[0])
+                c = p + (q - p) * t
+                pts.append((float(c[1] / near_x / screen.tan_h), float(c[2] / near_x / screen.tan_v)))
+        inside = [(u, v) for u, v in pts if abs(u) <= 1.0 and abs(v) <= 1.0]
+        if inside:
+            cuts += 1
+            every += inside
+            if len(where) < 4:
+                where.append(tuple(round(c, 3) for c in inside[0]))
+    out["near_clip_in_frame"] = cuts
+    out["clip_points"] = where                       # display examples only
+    out["clip_box"] = clip_box(every)
+    return out
+
+
+def timeline_mesh(contract=None, rig=None, release_at=1.2, end=1.8, fps=60.0,
+                  states=("rest", "bob_up_right", "bob_down_left"), pose_follows_draw=True):
+    """timeline() with the emitted geometry: the skinned bow (string included)
+    and the committed arrow as triangles; the paws as envelopes (MESH_SCOPE)."""
+    import numpy as np
+    contract = contract or F.json.loads(F.CONTRACT.read_text())
+    rig = rig or load_rig()
+    rest_pose, drawn_pose = contract["poses"]["bow"], contract["poses"]["bow.drawn"]
+    k = contract["motion"]["blend_per_s"]
+    a_rest = [float(v) for v in rest_pose["rest"]["anchor_cm"]]
+    r_rest = [float(v) for v in rest_pose["rest"]["rotation_deg"]]
+    a_drawn = [float(v) for v in drawn_pose["rest"]["anchor_cm"]]
+    r_drawn = [float(v) for v in drawn_pose["rest"]["rotation_deg"]]
+    anchor, rot = list(a_rest), list(r_rest)
+    tris = rig["tris"]
+    muzzle = braced()["sockets"]["Muzzle"]
+    frames = []
+    dt, t = 1.0 / fps, 0.0
+    held = None
+    while t <= end + 1e-9:
+        target_a, target_r = (a_drawn, r_drawn) if t < release_at else (a_rest, r_rest)
+        if pose_follows_draw and t < release_at:
+            g = draw_fraction(t, release_at)
+            target_a = [a_rest[i] + (a_drawn[i] - a_rest[i]) * g for i in range(3)]
+            target_r = [r_rest[i] + (r_drawn[i] - r_rest[i]) * g for i in range(3)]
+        f = 1.0 - math.exp(-k * dt)
+        anchor = [anchor[i] + (target_a[i] - anchor[i]) * f for i in range(3)]
+        rot = [rot[i] + (target_r[i] - rot[i]) * f for i in range(3)]
+        d = draw_fraction(t, release_at)
+        bow = skinned(rig, d)
+        nock = shape_at(d)["sockets"]["Grip_R"]
+        if t < release_at:
+            held = nock
+        flown = 0.0 if t < release_at else min((t - release_at) / 0.10, 1.0)
+        row = {"t": round(t, 4), "draw": round(d, 4), "parts": {}}
+        rest = {"anchor_cm": anchor, "rotation_deg": rot}
+        meshes = {"bow": (bow, tris)}
+        if t < release_at:
+            meshes["arrow"] = (arrow_at(rig, nock, muzzle), rig["arrow_tris"])
+        envelopes = {"paw_L": parts(shape_at(d))["paw_L"], "paw_R": _paw_r_rings(nock if t < release_at else held, flown)}
+        for state_name in states:
+            st = contract["envelopes"]["states"][state_name]
+            results = {n: assess_mesh(v, tr, rest, st, contract) for n, (v, tr) in meshes.items()}
+            results.update({n: assess(g, rest, st, contract) for n, g in envelopes.items()})
+            for n, r in results.items():
+                w = row["parts"].get(n)
+                if w is None:
+                    row["parts"][n] = dict(r)
+                    continue
+                w["visible"] = w["visible"] and r["visible"]
+                w["near_clip_in_frame"] = max(w["near_clip_in_frame"], r["near_clip_in_frame"])
+                w["clip_points"] = (w["clip_points"] + r["clip_points"])[:8]
+                if r["clip_box"]:
+                    w["clip_box"] = clip_box([(r["clip_box"][0], r["clip_box"][2]), (r["clip_box"][1], r["clip_box"][3])],
+                                             w["clip_box"])
+                if r.get("nearest_conservative", 9.0) < w.get("nearest_conservative", 9.0):
+                    for key in ("nearest_half_heights", "nearest_conservative"):
+                        w[key] = r[key]
+        frames.append(row)
+        t += dt
+    return {"scope": MESH_SCOPE, "clear_radius": contract["camera"]["reticle_clear_radius"], "fps": fps,
+            "release_at": release_at, "frames": frames}

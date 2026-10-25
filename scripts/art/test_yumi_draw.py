@@ -165,19 +165,20 @@ class FirstPerson(unittest.TestCase):
         tl = Y.timeline(contract=c, pose_follows_draw=True)
         sm = Y.summary(tl)
         self.assertEqual(set(sm), {"stave", "string", "arrow", "paw_L", "paw_R"})
+        residual = {("paw_R", "draw"): 10, ("arrow", "draw"): 10}
         for part, phases in sm.items():
             for phase, v in phases.items():
                 self.assertGreaterEqual(v["nearest"], 0.12, (part, phase, v))
                 self.assertEqual(v["inside_s"], 0.0, (part, phase))
                 self.assertEqual(v["hidden_frames"], 0, (part, phase))
-                if part != "paw_R":
-                    self.assertEqual(v["near_clip_frames"], 0, (part, phase))
-        # The residual, bounded and reported: the draw paw's forearm early in the
-        # draw, cut in the bottom-left region of the frame.
-        self.assertLessEqual(sm["paw_R"]["draw"]["near_clip_frames"], 10)
-        self.assertEqual(sm["paw_R"].get("release", {}).get("near_clip_frames", 0), 0)
-        corners = [pt for fr in tl["frames"] for pt in fr["parts"]["paw_R"]["clip_points"]]
-        self.assertTrue(corners and all(u <= -0.8 and v <= -0.7 for u, v in corners), corners)
+                self.assertEqual(v["near_clip_frames"], residual.get((part, phase), 0), (part, phase))
+        # The residual cuts, exact in count and bounded over every cut point
+        # (not display examples): early in the draw, the draw paw's forearm and
+        # the conservative fletching envelope, in the frame's bottom-left region.
+        u0, u1, v0, v1 = sm["paw_R"]["draw"]["clip_box"]
+        self.assertTrue(u1 <= -0.8 and v1 <= -0.7, sm["paw_R"]["draw"]["clip_box"])
+        u0, u1, v0, v1 = sm["arrow"]["draw"]["clip_box"]
+        self.assertTrue(u1 <= -0.75 and v1 <= -0.8, sm["arrow"]["draw"]["clip_box"])
 
     def test_todays_high_hold_puts_the_stave_in_the_clear_zone(self):
         sm = Y.summary(Y.timeline(anchor_y=-3.0, anchor_z=-9.5, pose_follows_draw=True, fps=30.0))
@@ -194,11 +195,59 @@ class FirstPerson(unittest.TestCase):
         mid = [pt for pt in cuts(ahead, "string") if abs(pt[0]) < 0.9 and abs(pt[1]) < 0.9]
         self.assertTrue(mid, cuts(ahead, "string"))
         self.assertEqual(cuts(follow, "string"), [])
-        self.assertTrue(all(u <= -0.8 and v <= -0.7 for u, v in cuts(follow, "paw_R")))
+
+    def test_summary_counts_every_cut_even_when_a_part_is_not_visible(self):
+        # Codex's review of 4481327: cuts were skipped on frames where the part was not visible.
+        tl = Y.timeline(pose_follows_draw=True)
+        direct = sum(1 for fr in tl["frames"] if fr["parts"]["paw_R"]["near_clip_in_frame"])
+        sm = Y.summary(tl)
+        self.assertEqual(sum(v["near_clip_frames"] for v in sm["paw_R"].values()), direct)
 
     def test_every_report_states_its_scope(self):
         self.assertIn("not the emitted or skinned asset", Y.footprint("bow.drawn")["scope"])
         self.assertIn("not a continuous-time bound", Y.timeline(fps=10.0, end=0.2)["scope"])
+
+
+class EmittedGeometry(unittest.TestCase):
+    """The built rig (b55fe81) and the committed arrow, as triangles."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.rig = Y.load_rig()
+
+    def test_the_rig_reproduces_the_static_bow_and_the_drawn_nock(self):
+        import numpy as np
+        self.assertLess(float(np.abs(Y.skinned(self.rig, 0.0) - self.rig["rest"]).max()), 1e-5)
+        i = list(self.rig["bones"]).index("String_Nock")
+        M = Y._deform_at(self.rig, 1.0)[i]
+        nock = M[:3, :3] @ np.array(Y.braced()["sockets"]["Grip_R"]) + M[:3, 3]
+        np.testing.assert_allclose(nock, (-Y.DRAW_M, 0.0, Y.NOCK_Z), atol=1e-5)
+        self.assertEqual(self.rig["arrow_verts"].shape[1], 3)
+        size = self.rig["arrow_verts"].max(0) - self.rig["arrow_verts"].min(0)
+        self.assertGreater(float(size[1]), 0.03)                 # the feathers, not a 4 mm shaft
+
+    def test_point_to_triangle_distance(self):
+        import numpy as np
+        P = np.array([[[-1.0, -1.0], [1.0, -1.0], [0.0, 1.0]],      # contains the origin
+                      [[1.0, 1.0], [2.0, 1.0], [1.0, 2.0]]])        # nearest corner at (1, 1)
+        d = Y._point_tri_dist(P)
+        self.assertEqual(float(d[0]), 0.0)
+        self.assertAlmostEqual(float(d[1]), 2 ** 0.5, places=12)
+
+    def test_the_kai_pose_clears_the_reticle_with_the_real_bow_and_arrow(self):
+        sm = Y.summary(Y.timeline_mesh(rig=self.rig, fps=30.0))
+        for part, phases in sm.items():
+            for phase, v in phases.items():
+                self.assertGreaterEqual(v["nearest"], 0.12, (part, phase, v))
+                self.assertEqual(v["hidden_frames"], 0, (part, phase))
+        for phase in sm["bow"]:
+            self.assertEqual(sm["bow"][phase]["near_clip_frames"], 0, phase)
+        self.assertEqual(sm["arrow"]["hold"]["near_clip_frames"], 0)
+        # Reported residual: the real feathers cross the near plane at the
+        # frame's bottom-left corner briefly in the draw (draw about 0.64-0.69).
+        self.assertEqual(sm["arrow"]["draw"]["near_clip_frames"], 1)    # at this test's 30 fps (3 at 60 fps)
+        u0, u1, v0, v1 = sm["arrow"]["draw"]["clip_box"]
+        self.assertTrue(u1 <= -0.9 and v1 <= -0.85, sm["arrow"]["draw"]["clip_box"])
 
 
 if __name__ == "__main__":
