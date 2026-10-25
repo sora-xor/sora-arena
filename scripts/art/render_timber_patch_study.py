@@ -44,6 +44,16 @@ and grazing views as well as in the material. This is that study.
     map (DX EXR, read here because Blender decodes its DWA compression).
     Poly Haven's normal strength is a processing choice, so slopes compare as
     an order of magnitude only.
+  - a render's slope is decoded by camera_normal_slope: Cycles' camera space
+    looks along +z, so a face toward the camera has z near -1. The render
+    must be unit normals facing the camera, or the study stops. Attempt 0
+    divided by +z clamped at 1e-3, which made every render slope 1000 times
+    its value; its scans' slopes were right.
+- **Re-analysis** (--reanalyse <attempt>): the slopes again from an attempt's
+  retained renders, each checked against the hash its study.json recorded.
+  Nothing is rendered, and nothing in the attempt is written: the result goes
+  to a new <attempt>_reanalysis<N>/slope_reanalysis.json, created
+  exclusively.
 - **Contact sheets:** one per patch, at the sugi pitch, every panel the same
   physical size. Left to right:
   - the hinoki crop and the sugi crop (base colour), each centred between
@@ -71,6 +81,7 @@ from mathutils import Vector
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
+import camera_normal_slope as CN  # noqa: E402
 import create_nyaagyu_dojo_rails as RG  # noqa: E402
 import create_nyaagyu_dojo_timbers as TG  # noqa: E402
 import create_runtime_weapon_lib as L  # noqa: E402
@@ -83,7 +94,7 @@ import sora_timber_v2 as V  # noqa: E402
 import timber_scan_reference as R  # noqa: E402
 
 GEN = "scripts/art/render_timber_patch_study.py"
-INPUTS = (GEN, "scripts/art/timber_scan_reference.py", "scripts/art/sora_timber_v2.py",
+INPUTS = (GEN, "scripts/art/camera_normal_slope.py", "scripts/art/timber_scan_reference.py", "scripts/art/sora_timber_v2.py",
           "scripts/art/dojo_timber_pilot.py", "scripts/art/sora_timber_lookdev_v2.py", "scripts/art/sora_timber_lookdev.py",
           "scripts/art/sora_timber_lib.py", "scripts/art/create_nyaagyu_dojo_rails.py",
           "scripts/art/create_nyaagyu_dojo_timbers.py", "docs/art-direction/data/timber_scan_reference.json")
@@ -112,6 +123,8 @@ def guard(path: Path) -> Path:
 
 def parse():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
+    if "--reanalyse" in argv:
+        return {"reanalyse": Path(argv[argv.index("--reanalyse") + 1])}
     o = {"cpu": "--cpu" in argv, "samples": 128, "raw": None}
     if "--samples" in argv:
         o["samples"] = int(argv[argv.index("--samples") + 1])
@@ -338,6 +351,55 @@ def slope_stats(slope, lum, mm):
     return {"windows": len(ring), "ring_band_rms": pct(ring), "fibre_band_rms": pct(fibre)}
 
 
+def render_slope_stats(npath, base_png, ax, mm):
+    """(normal check, slope statistics) of one normal render, over the windows its base-colour render keeps.
+    Across the grain is image x for the column (world x) and image y for the nuki (world z)."""
+    slope, check = CN.across_slope(CN.decode(read_pixels(npath)), "x" if ax == "x" else "y")
+    lum = R.srgb_to_linear(read_pixels(base_png)[..., :3].astype(np.float64)) @ R.REC709
+    return check, slope_stats(slope, lum, mm)
+
+
+def reanalyse(attempt: Path):
+    """The slopes again from a finished attempt's retained renders; see the module's Re-analysis."""
+    attempt = guard(attempt if attempt.is_absolute() else L.ROOT / attempt)
+    study_path = attempt / "study.json"
+    study_sha = L.sha256(study_path)
+    study = json.loads(study_path.read_text(encoding="utf-8"))
+    fine = min(study["pitch_mm"].values())
+    record = {"schema_version": 1, "generator": GEN, "inputs": {p: L.sha256(L.ROOT / p) for p in INPUTS},
+              "blender": bpy.app.version_string, "run_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+              "attempt": attempt.name, "study_sha256": study_sha,
+              "decode": "camera_normal_slope.across_slope: the across-grain component over -z (Cycles' camera space "
+                        "looks along +z), on unit normals facing the camera",
+              "scope": "a re-analysis of retained review renders: not an admission, not photoreal",
+              "scans": {a: study["scans"][a]["slope"] for a in SCANS}, "patches": {}}
+    for name, P in study["patches"].items():
+        Q = record["patches"][name] = {"across": P["across"], "variants": {}}
+        for vname in ("v23", "scan_contrast"):
+            files = {}
+            for label in (f"{vname}_Normal", f"{vname}_BaseColor_japanese_cedar_planks"):
+                r = P["renders"][label]
+                digest = L.sha256(L.ROOT / r["file"])
+                if digest != r["sha256"]:
+                    raise RuntimeError(f"patch study re-analysis: {r['file']} is {digest[:12]}..., its study recorded "
+                                       f"{r['sha256'][:12]}...")
+                files[label] = {"file": r["file"], "sha256": digest}
+            check, slope = render_slope_stats(L.ROOT / files[f"{vname}_Normal"]["file"],
+                                              L.ROOT / files[f"{vname}_BaseColor_japanese_cedar_planks"]["file"],
+                                              P["across"], fine)
+            Q["variants"][vname] = {"files": files, "normal_check": check, "slope": slope,
+                                    "attempt_slope": P["variants"][vname]["slope"]}
+            print("PATCH_REANALYSIS", name, vname, json.dumps({"normal_check": check, "slope": slope}), flush=True)
+    n = 0
+    while (OUT / f"{attempt.name}_reanalysis{n}").exists():
+        n += 1
+    out = guard(OUT / f"{attempt.name}_reanalysis{n}")
+    out.mkdir(exist_ok=False)
+    with open(guard(out / "slope_reanalysis.json"), "x", encoding="utf-8") as f:
+        f.write(json.dumps(record, indent=1) + "\n")
+    print("PATCH_REANALYSIS_READY", L.rel(out / "slope_reanalysis.json"), flush=True)
+
+
 def scan_inputs(raw, asset, mm):
     """A scan's linear base colour and its across-grain slope field from the DX normal map."""
     base = raw / "cc0/polyhaven" / asset
@@ -408,6 +470,9 @@ def save_sheet(panels, path: Path):
 
 def main():
     o = parse()
+    if "reanalyse" in o:
+        reanalyse(o["reanalyse"])
+        return
     scene = L.reset_scene()
     if o["cpu"]:
         scene.cycles.device = "CPU"
@@ -484,13 +549,10 @@ def main():
             nmat = emission_of(mat, "Normal", f"TP_{m.name}_{vname}_Normal")
             npath = shoot(f"{vname}_Normal", nmat, "Emission", fine, samples=16, view="Raw", exposure=0.0,
                           fmt="OPEN_EXR", depth="32")
-            n = read_pixels(npath)[..., :3].astype(np.float64) * 2.0 - 1.0
-            # Camera space: x right, y up, z toward the camera. Across the grain is x for the column, y for the nuki.
-            slope = (n[..., 0] if ax == "x" else n[..., 1]) / np.maximum(n[..., 2], 1e-3)
             base_png = out / name / f"{name}_{vname}_BaseColor_japanese_cedar_planks.png"
-            lum = R.srgb_to_linear(read_pixels(base_png)[..., :3].astype(np.float64)) @ R.REC709
+            normal_check, slope = render_slope_stats(npath, base_png, ax, fine)
             P["variants"][vname] = {"base_colour": {f"{k:.4f}": v for k, v in measured[vname].items()},
-                                    "slope": slope_stats(slope, lum, fine)}
+                                    "normal_check": normal_check, "slope": slope}
             print("PATCH_VARIANT", name, vname, json.dumps({k: measured[vname][fine].get(k) for k in (
                 "apparent_ring_spacing_mm", "contrast_p95_over_p5", "early_over_late_luminance",
                 "fibre_over_ring_rms")}), flush=True)
