@@ -23,11 +23,16 @@ Actual movement/obstruction/pause/arrival pass. Two failures expose the next
 cinematic hiding Kohagi's gate-clear call and a fixture expecting a dead body
 to vanish before its normal two-second expiry. The source now lets the full
 call finish before the cinematic, even with no surviving enemies; the cleanup
-fixture checks immediate deactivation and eventual expiry. The corrected
-thirteen-test rerun is pending. The failed run remains preserved. CI at
-`ac54ab8` passes all 106 source gates; this is not runtime acceptance of the
-later correction. Root owns the engine lane; Claude fixes visually rejected
-wood and bow weights in source.
+fixture checks immediate deactivation and eventual expiry. Exact `0adc081`
+builds and passes all thirteen selected Unreal tests, including three
+withdrawal cases and the assisted full campaign. Zero selected errors and one
+external HTTP connectivity timeout are retained. Actual editor/wrapper exits
+are zero; source/native/Config/Generated are unchanged. The failed run remains
+preserved. Rendered readability and ordinary play are still unqualified. CI at
+exact `0adc081` passes all 106 source gates in five jobs, independently verified
+against artifact digests and raw logs; 279 Rust tests pass and five are ignored.
+The existing asset-ledger and workflow warnings are retained. The engine lane has returned to Claude for the corrected
+bow rebuild; the revised wood still fails visual review.
 
 ## 2026-10-25 pod arrivals and horse-defense shells
 

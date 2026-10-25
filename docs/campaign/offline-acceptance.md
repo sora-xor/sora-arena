@@ -1241,6 +1241,11 @@ cinematic masks Kohagi's call. The retry fixture also expects a defeated body
 to disappear before its ordinary two-second lifetime. The source correction
 holds the cinematic until the actual call finishes, and the fixture verifies
 that any remaining body is dead, noncolliding and then expires. A third case
-checks the call when all enemies are already defeated. The corrected source
-and fixtures await their engine rerun. Final retreat animation,
+checks the call when all enemies are already defeated. Exact `0adc081` builds
+and passes all thirteen selected Unreal tests, including those three cases
+and the assisted full campaign, with zero selected errors and one external
+HTTP connectivity timeout warning. Actual editor/wrapper exits are zero and
+source/native/Config/Generated remain unchanged. These are NullRHI state and
+movement results; actual subtitle pixels and ordinary defense play remain
+unqualified. Final retreat animation,
 ordinary defense pacing and rendered acceptance remain open.
