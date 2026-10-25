@@ -6,6 +6,10 @@ Run (Blender 5.2.2):
 It imports Rig/SK_Weapon_18.fbx as exported, and checks that it comes back
 with one armature of the rig record's bones (28), one skinned mesh and the 0-10 Draw take named
 A_Weapon_18_Draw (imported without Blender's default one-frame offset).
+The FBX is in centimetres (the rig record's "fbx") and this scene is in
+metres, so Blender's importer puts the unit, 0.01, on the armature object and
+nothing else. The review requires exactly that and records it; world
+positions are then metres, as the checker's are.
 Then it renders five states, Workbench (studio light, flat grey, outlines),
 1600 x 1000. The states are braced, quarter, half, three-quarter and full
 draw; the quarters lie between keys, so they show the exported take's own
@@ -43,6 +47,7 @@ FBX = ROOT / "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/SK_Weapon_18.fbx"
 
 
 PLAYBACK_QUARTERS = (0.0, 0.25, 0.5, 0.75)
+FBX_UNIT_IN_SCENE = 0.01            # a centimetre FBX imported into this metre scene
 # Braced, half and full, and the take between keys (Codex's review of the
 # schema-2 attempt: the nocking point and both tips at each state, and the
 # exported take's intermediate playback).
@@ -115,10 +120,12 @@ def playback(scene, arm, mesh, act, out):
     key_frames = sorted({round(kp.co[0], 6) for fc in curves for kp in fc.keyframe_points})
     modes = sorted({pb.rotation_mode for pb in arm.pose.bones})
     path = out / "W18_rig_playback_blender.npz"
+    # bones are world matrices: the armature object's unit scale (armature_world)
+    # times each bone's armature-space pose.
     np.savez_compressed(path, times=np.array(times), full_times=np.array(full), bones=bones,
                         bone_names=np.array(names), verts=verts, interpolation=np.array(interpolation),
                         key_frames=np.array(key_frames), rotation_modes=np.array(modes),
-                        blender=np.array(bpy.app.version_string))
+                        armature_world=np.array(arm.matrix_world), blender=np.array(bpy.app.version_string))
     report = {"file": path.name, "times": len(times), "vertex_frames": len(full), "vertices": len(mesh.data.vertices),
               "interpolation": interpolation, "key_frames": key_frames, "rotation_modes": modes,
               "fcurves": len(curves)}
@@ -140,14 +147,22 @@ def main():
     arm, mesh = arms[0], meshes[0]
     act = arm.animation_data.action if arm.animation_data else None
     rng = tuple(int(f) for f in act.frame_range) if act else None
+    aw = arm.matrix_world
     report = {"bones": len(arm.data.bones), "mesh": mesh.name, "vertices": len(mesh.data.vertices),
               "action": act.name if act else None, "frame_range": rng,
-              "skinned": any(m.type == "ARMATURE" for m in mesh.modifiers)}
+              "skinned": any(m.type == "ARMATURE" for m in mesh.modifiers),
+              "armature_world": [[round(c, 9) for c in row] for row in aw]}
     print("YUMI_RIG_REVIEW_IMPORT", json.dumps(report), flush=True)
-    want_bones = len(json.loads((FBX.parent / "rig_record.json").read_text())["bones"])
-    if (report["bones"] != want_bones or rng != (0, 10) or not report["skinned"]
+    rig = json.loads((FBX.parent / "rig_record.json").read_text())
+    if (report["bones"] != len(rig["bones"]) or rng != (0, 10) or not report["skinned"]
             or not (act and act.name.endswith("A_Weapon_18_Draw"))):
         raise SystemExit(f"review: the round trip lost the rig: {report}")
+    # The unit, and nothing else, on the armature object: no turn, no offset.
+    off = max(abs(aw[i][j] - (FBX_UNIT_IN_SCENE if i == j else 0.0)) / FBX_UNIT_IN_SCENE
+              for i in range(3) for j in range(3))
+    if rig["fbx"]["units"] != "centimetres" or off > 1e-6 or aw.translation.length > 1e-9:
+        raise SystemExit(f"review: the armature imported at {report['armature_world']}, not the centimetre unit "
+                         f"{FBX_UNIT_IN_SCENE} alone")
     scene = bpy.context.scene
     playback(scene, arm, mesh, act, out)
     scene.render.engine = "BLENDER_WORKBENCH"

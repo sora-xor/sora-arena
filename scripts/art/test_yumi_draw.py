@@ -275,6 +275,46 @@ class EmittedGeometry(unittest.TestCase):
     PLAYBACK_BLENDER = ROOT / "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/W18_rig_playback_blender.npz"
     PLAYBACK_TOL_M = 1e-5               # 0.01 mm bound; measured 0.55 um (FBX keys are float32)
     PLAYBACK_TOL_RAD = 1e-5
+    # The playback's 41 times: every key, quarter point and midpoint, in frames and in seconds.
+    PLAYBACK_FRAMES = tuple(f + q for f in range(10) for q in (0.0, 0.25, 0.5, 0.75)) + (10.0,)
+    PLAYBACK_TIMES = tuple(f / 10 + q / 10 for f in range(10) for q in (0.0, 0.25, 0.5, 0.75)) + (1.0,)
+    FBX_UNIT_IN_BLENDER = 0.01          # the centimetre FBX in the review's metre scene
+    SCALE_TOL = 1e-5                    # a bone scale off 1 beyond float32 noise (1.2e-7); a unit factor gives 100
+    QUAT_NORM_TOL = 1e-6                # float32 quaternions, normalised; read back to 9 decimals
+    PLAYBACK_UNREAL = ROOT / "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/W18_rig_unreal_readback.json"
+    # Unreal's RAW playback blends the same float32 keys as Blender's, the same
+    # way (each bone's local translation lerped and rotation nlerped, under the
+    # fixed Grip), so Blender's bound holds, in centimetres.
+    UNREAL_RAW_TOL = (100.0 * PLAYBACK_TOL_M, PLAYBACK_TOL_RAD)
+    # One engine rule on top of that, which the test models rather than
+    # tolerates. A bone whose evaluated local transform Equals its reference
+    # pose within UE_KINDA_SMALL_NUMBER (FTransform::Equals: every translation,
+    # quaternion and scale component within 1e-4) comes back as the reference
+    # pose exactly; AnimSequencerDataModel.cpp:1389 holds that rule. Import
+    # attempt 8 of 2026-10-25 showed it on 10 samples: LimbU_01 to 0.225 s,
+    # LimbL_01 at 0.025 s (5.9e-5 rad). Each snapped sample sat within
+    # 8.9e-5 cm of its reference, and every other sample 1.06e-4 cm or more
+    # away.
+    REFERENCE_SNAP_TOL = 1e-4
+    # COMPRESSED adds the codec's own bound. ACL keeps three virtual vertices,
+    # at DefaultVirtualVertexDistance d along each bone's axes, within
+    # ErrorThreshold e (cm) of its source pose (ACLImpl.cpp; no bone here has a
+    # skeleton socket or a key end-effector name, so d is the default for all).
+    # For small turns that bounds a bone's head within 1.94e and its turn
+    # within 1.63e/d; 2e and 2e/d are used. The source pose may itself carry the
+    # snap above: at most sqrt(3) x 1e-4 cm, and a turn of 4 asin(1e-4) rad
+    # (every quaternion component within 1e-4).
+    # The codec must be this one, with these settings, either read back or left
+    # at the class defaults by its asset (AnimBoneCompressionCodec_ACLBase.cpp:71-74,
+    # AnimBoneCompressionCodec_ACL.cpp:27-28): no keyframe stripping.
+    ACL_SETTINGS = "/ACLPlugin/ACLAnimBoneCompressionSettings.ACLAnimBoneCompressionSettings"
+    ACL_CODEC = "AnimBoneCompressionCodec_ACL"
+    ACL_DEFAULTS = {"error_threshold": ("ErrorThreshold", 0.01),
+                    "default_virtual_vertex_distance": ("DefaultVirtualVertexDistance", 3.0),
+                    "keyframe_stripping_proportion": ("KeyframeStrippingProportion", 0.0),
+                    "keyframe_stripping_threshold": ("KeyframeStrippingThreshold", 0.0)}
+    UNREAL_COMPRESSED_TOL = (UNREAL_RAW_TOL[0] + 2 * 0.01 + math.sqrt(3.0) * REFERENCE_SNAP_TOL,
+                             UNREAL_RAW_TOL[1] + 2 * 0.01 / 3.0 + 4.0 * math.asin(REFERENCE_SNAP_TOL))
 
     @classmethod
     def setUpClass(cls):
@@ -308,25 +348,181 @@ class EmittedGeometry(unittest.TestCase):
         self.assertEqual(z["interpolation"].tolist(), ["LINEAR"])
         self.assertEqual(z["key_frames"].tolist(), [float(f) for f in range(11)])
         self.assertEqual(z["bone_names"].tolist(), list(self.rig["bones"]))
+        self.assertEqual(z["times"].tolist(), list(self.PLAYBACK_FRAMES))
+        # The FBX is in centimetres (the rig record's "fbx") and the review's
+        # scene in metres: Blender's importer puts 0.01 on the armature object,
+        # and nothing may turn, move or otherwise scale it.
+        A = z["armature_world"]
+        unit = float(np.cbrt(np.linalg.det(A[:3, :3])))
+        self.assertAlmostEqual(unit, self.FBX_UNIT_IN_BLENDER, delta=1e-9)
+        np.testing.assert_allclose(A[:3, :3] / unit, np.eye(3), atol=1e-6)
+        self.assertLess(float(np.linalg.norm(A[:3, 3])), 1e-9)
         for t, V in zip(z["full_times"], z["verts"]):
             err = float(np.linalg.norm(V - Y.skinned(self.rig, t / 10.0), axis=1).max())
             self.assertLess(err, self.PLAYBACK_TOL_M, f"vertices at frame {t}: {err:.2e} m")
+        # World bone matrices are the unit times each bone's pose; divided out,
+        # no bone may carry a scale of its own.
+        bones = z["bones"].copy()
+        bones[..., :3, :3] /= unit
+        dev = float(np.abs(np.linalg.norm(bones[..., :3, :3], axis=-2) - 1.0).max())
+        self.assertLess(dev, self.SCALE_TOL, f"a bone's basis is {dev:.2e} off unit length")
         P0 = self.rig["pose"][0][:, :3, :3]
-        B0 = z["bones"][0][:, :3, :3]
-        for t, B in zip(z["times"], z["bones"]):
+        B0 = bones[0][:, :3, :3]
+        for t, B in zip(z["times"], bones):
             P = Y._deform_at(self.rig, t / 10.0) @ self.rig["bind"]
             head = float(np.linalg.norm(B[:, :3, 3] - P[:, :3, 3], axis=1).max())
             self.assertLess(head, self.PLAYBACK_TOL_M, f"bone heads at frame {t}: {head:.2e} m")
             # Each turn from the braced key, so the importer's own bone axes cancel.
             turn_imported = B[:, :3, :3] @ np.transpose(B0, (0, 2, 1))
             turn_checker = P[:, :3, :3] @ np.transpose(P0, (0, 2, 1))
-            # The angle between them from the antisymmetric part: Blender's
-            # float32 matrices are orthonormal only to ~6e-6, which arccos
-            # of the trace near 1 inflates to ~1.7e-3 rad.
+            # The angle between them from the antisymmetric part: arccos of the
+            # trace near 1 inflates float32 noise (it read 1.7e-3 rad for bases
+            # then ~6e-6 off orthonormal, before Grip pointed along +Y).
             D = np.transpose(turn_imported, (0, 2, 1)) @ turn_checker
             axis = np.stack([D[:, 2, 1] - D[:, 1, 2], D[:, 0, 2] - D[:, 2, 0], D[:, 1, 0] - D[:, 0, 1]], 1) / 2.0
             ang = float(np.arctan2(np.linalg.norm(axis, axis=1), (np.trace(D, axis1=1, axis2=2) - 1.0) / 2.0).max())
             self.assertLess(ang, self.PLAYBACK_TOL_RAD, f"bone turns at frame {t}: {ang:.2e} rad")
+
+    def test_unreal_plays_the_exported_take_as_the_checker_interpolates(self):
+        # The exported FBX imported into Unreal (import_runtime_weapon_yumi_rig.py),
+        # its AnimPose read at keys, quarter points and midpoints, raw and
+        # compressed, against _deform_at. Unreal = 100 x (x, -y, z) cm from
+        # Blender metres, so a Blender turn R appears as M R M, M = diag(1, -1, 1).
+        # Each bone's row is [x, y, z, qx, qy, qz, qw, sx, sy, sz], component space.
+        import json
+        import numpy as np
+        r = json.loads(self.PLAYBACK_UNREAL.read_text())
+        names = list(self.rig["bones"])
+        times = list(self.PLAYBACK_TIMES)
+        self.assertEqual(len(times), 41)
+        self.assertEqual(sorted(r["skeleton_bones"]), sorted(names))
+        self.assertEqual(r["times_s"], times)
+        take = r["take"]
+        self.assertAlmostEqual(float(take["length_s"]), 1.0, places=6)
+        self.assertEqual((take["frames"], take["keys"]), (10, 11))
+        self.assert_the_compressed_bound_applies(take["compression"])
+        record = json.loads((self.PLAYBACK_UNREAL.parents[1] / "rig_record.json").read_text())
+        parent = {b["name"]: b["parent"] for b in record["bones"]}
+        self.assertEqual({parent[n] for n in names if n != "Grip"}, {"Grip"})
+        self.assertIsNone(parent["Grip"])
+        M = np.diag([1.0, -1.0, 1.0])
+
+        def qmat(q):
+            x, y, z, w = q
+            return np.array([[1 - 2 * (y * y + z * z), 2 * (x * y - w * z), 2 * (x * z + w * y)],
+                             [2 * (x * y + w * z), 1 - 2 * (x * x + z * z), 2 * (y * z - w * x)],
+                             [2 * (x * z - w * y), 2 * (y * z + w * x), 1 - 2 * (x * x + y * y)]])
+
+        def quat(R):
+            """(x, y, z, w) of a rotation matrix (Shepperd)."""
+            t = float(np.trace(R))
+            if t > max(R[0, 0], R[1, 1], R[2, 2]):
+                w = math.sqrt(1.0 + t) / 2.0
+                return np.array([(R[2, 1] - R[1, 2]) / (4 * w), (R[0, 2] - R[2, 0]) / (4 * w),
+                                 (R[1, 0] - R[0, 1]) / (4 * w), w])
+            i = int(np.argmax([R[0, 0], R[1, 1], R[2, 2]]))
+            j, k = (i + 1) % 3, (i + 2) % 3
+            s = math.sqrt(1.0 + R[i, i] - R[j, j] - R[k, k]) * 2.0
+            q = np.zeros(4)
+            q[i], q[j], q[k], q[3] = s / 4.0, (R[j, i] + R[i, j]) / s, (R[k, i] + R[i, k]) / s, (R[k, j] - R[j, k]) / s
+            return q
+
+        def turn(A, B):
+            D = A.T @ B
+            ax = np.array((D[2, 1] - D[1, 2], D[0, 2] - D[2, 0], D[1, 0] - D[0, 1])) / 2.0
+            return math.atan2(float(np.linalg.norm(ax)), (float(np.trace(D)) - 1.0) / 2.0)
+
+        def complete(label, bones_of_rows):
+            # Every bone in every row, ten finite numbers each, unit quaternions
+            # and unit scales, before any error is measured: a truncated or
+            # partial readback fails here instead of passing by omission.
+            for at, bones in bones_of_rows:
+                self.assertEqual(sorted(bones), sorted(names), f"{label} {at}")
+                for n in names:
+                    self.assertEqual(len(bones[n]), 10, f"{label} {at} {n}")
+            a = np.array([[bones[n] for n in names] for _at, bones in bones_of_rows], np.float64)
+            self.assertTrue(np.isfinite(a).all(), label)
+            q = float(np.abs(np.linalg.norm(a[..., 3:7], axis=-1) - 1.0).max())
+            self.assertLess(q, self.QUAT_NORM_TOL, f"{label}: a quaternion's norm is off 1 by {q:.2e}")
+            s = float(np.abs(a[..., 7:10] - 1.0).max())
+            self.assertLess(s, self.SCALE_TOL, f"{label}: a bone's scale is off 1 by {s:.2e}")
+            return a
+
+        ref = complete("reference", [("pose", r["reference_cm"])])[0]
+        head = float(np.linalg.norm(ref[:, :3] - 100.0 * (self.rig["bind"][:, :3, 3] @ M), axis=1).max())
+        self.assertLess(head, self.UNREAL_RAW_TOL[0], f"reference heads {head:.2e} cm")
+        samples = {}
+        for label in ("RAW", "COMPRESSED"):
+            rows = r["samples"][label]
+            self.assertIsInstance(rows, list, label)
+            self.assertEqual([row["t"] for row in rows], times, label)
+            samples[label] = complete(label, [(row["t"], row["bones"]) for row in rows])
+        # Unreal evaluates the raw data, silently, when compressed data is
+        # missing (UAnimSequence::ShouldUseRawDataForPoseExtraction), so the
+        # compressed rows must be the codec's own (compared by head: a
+        # quaternion and its negation are one turn).
+        self.assertGreater(float(np.abs(samples["COMPRESSED"][..., :3] - samples["RAW"][..., :3]).max()), 0.0)
+
+        # The checker's pose in Unreal's component space, built on Unreal's own
+        # reference pose: heads 100 M p, turns M (P P0^T) M from the reference
+        # rotation. Every bone's parent is Grip, which never moves.
+        g = names.index("Grip")
+        RG, TG = qmat(ref[g, 3:7]), ref[g, :3]
+        P0 = self.rig["pose"][0][:, :3, :3]
+        expected, snapped = [], set()
+        for t in times:
+            P = Y._deform_at(self.rig, t) @ self.rig["bind"]
+            pose = []
+            for i, n in enumerate(names):
+                T, R = 100.0 * (M @ P[i, :3, 3]), M @ (P[i, :3, :3] @ P0[i].T) @ M @ qmat(ref[i, 3:7])
+                Rr, Tr = qmat(ref[i, 3:7]), ref[i, :3]
+                local = (RG.T @ (T - TG), quat(RG.T @ R))
+                local_ref = (RG.T @ (Tr - TG), quat(RG.T @ Rr))
+                same = (float(np.abs(local[0] - local_ref[0]).max()) <= self.REFERENCE_SNAP_TOL
+                        and min(float(np.abs(local[1] - local_ref[1]).max()),
+                                float(np.abs(local[1] + local_ref[1]).max())) <= self.REFERENCE_SNAP_TOL)
+                if same and i != g:
+                    snapped.add((n, t))
+                pose.append((T, R, Tr, Rr, same))
+            expected.append(pose)
+        for label, (tol_cm, tol_rad) in (("RAW", self.UNREAL_RAW_TOL), ("COMPRESSED", self.UNREAL_COMPRESSED_TOL)):
+            a = samples[label]
+            worst_head = worst_turn = 0.0
+            for k, t in enumerate(times):
+                for i in range(len(names)):
+                    T, R, Tr, Rr, same = expected[k][i]
+                    if label == "RAW" and same:
+                        T, R = Tr, Rr                     # the reference snap, modelled
+                    worst_head = max(worst_head, float(np.linalg.norm(a[k, i, :3] - T)))
+                    worst_turn = max(worst_turn, turn(qmat(a[k, i, 3:7]), R))
+            self.assertLess(worst_head, tol_cm, f"{label} bone heads {worst_head:.2e} cm")
+            self.assertLess(worst_turn, tol_rad, f"{label} bone turns {worst_turn:.2e} rad")
+        # The modelled snap is the one observed: exactly the raw samples equal to
+        # the reference pose are the ones within its tolerance.
+        raw = samples["RAW"]
+
+        def at_reference(k, i):
+            q, qr = raw[k, i, 3:7], ref[i, 3:7]
+            return (float(np.abs(raw[k, i, :3] - ref[i, :3]).max()) < 1e-6
+                    and min(float(np.abs(q - qr).max()), float(np.abs(q + qr).max())) < 1e-6)
+        observed = {(n, t) for k, t in enumerate(times) if t > 0.0 for i, n in enumerate(names)
+                    if n != "Grip" and at_reference(k, i)}
+        self.assertEqual(observed, {s for s in snapped if s[1] > 0.0})
+
+    def assert_the_compressed_bound_applies(self, compression):
+        """UNREAL_COMPRESSED_TOL is derived for ACL at its defaults: the readback
+        must report that codec, and each setting either read back at that value
+        or left unserialized by the settings asset (so the class default holds)."""
+        self.assertEqual(compression["settings"], self.ACL_SETTINGS)
+        self.assertEqual([c["class"] for c in compression["codecs"]], [self.ACL_CODEC])
+        codec = compression["codecs"][0]
+        serialized = compression["package"]["settings_serialized"]
+        for key, (prop, want) in self.ACL_DEFAULTS.items():
+            got = codec[key]
+            if isinstance(got, str) and got.startswith("unreadable"):
+                self.assertNotIn(prop, serialized, f"{key} is overridden in the settings asset but unreadable")
+            else:
+                self.assertAlmostEqual(float(got), want, delta=1e-6 * max(1.0, want), msg=key)
 
     def test_the_rig_reproduces_the_static_bow_and_the_drawn_nock(self):
         import numpy as np

@@ -13,7 +13,8 @@ and sockets exactly as they are, and adds:
    bounds and SOCKET_ empties against W18's build record.
 2. **The armature.** Its object is named "Armature", so Unreal adds no root.
    There are 28 bones:
-   - Grip, the root at Grip_L;
+   - Grip, the root at Grip_L, pointing along +Y so that its rest frame is
+     the armature's;
    - LimbU_01-12 and LimbL_01-08 at yumi_draw.bone_joints of the braced
      shape, each a child of Grip;
    - the string's seven (yumi_draw.string_frames): Tip_L and Tip_U at the
@@ -52,7 +53,10 @@ and sockets exactly as they are, and adds:
    A failure raises before export.
 6. **Outputs:**
    - Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/SK_Weapon_18.fbx: the
-     armature, the skinned mesh and the action, baked;
+     armature, the skinned mesh and the action, baked, in centimetres. It is
+     an export-only copy of the metre rig: every length x100, no scale on any
+     node, and a header unit of 1 cm (export_centimetres). Everything else,
+     the record included, stays in metres;
    - rig_record.json: bones and binds, every key's pose, the weight summary,
      the sockets on their bones for Unreal's skeleton, the checks, and the
      input and output hashes;
@@ -97,6 +101,9 @@ STRETCH_ABS_M = 0.001           # ...or 1 mm, whichever is larger; past both, th
 SECTION_TOL_M = 0.0003          # a string vertex's distance from the string's axis may change this much
 TOL_STAVE_M = 0.0025            # deformed stave vertex against the solved section
 TOL_STRING_M = 0.0002           # string vertex off its straight segment (beyond its radius)
+FBX_CM = 100.0                  # the FBX's centimetres per metre of the rig (export_centimetres)
+FBX_COPY_TOL_M = 1e-5           # the centimetre copy against the metre rig: float32 recomputation, ~1e-6 m
+FBX_SCALE_TOL = 1e-5            # a scale or basis in the written FBX may leave 1 by float32 noise (~1e-7) only
 ARROW_FBX = W18 / "SM_Weapon_18_Ya.fbx"
 
 
@@ -188,7 +195,14 @@ def build_armature(bind, sockets):
     bpy.context.view_layer.objects.active = arm
     bpy.ops.object.mode_set(mode="EDIT")
     eb = arm_data.edit_bones.new("Grip")
-    eb.head, eb.tail = Vector((0.0, 0.0, 0.0)), Vector((0.0, 0.0, 0.05))
+    # Along +Y, the bow plane's normal: Grip's rest frame is the armature's
+    # (identity), and every child, lying in the XZ plane, is square to it.
+    # Along the bow (+Z), the lower limb's bones were nearly anti-parallel to
+    # their parent, the singular case of Blender's bone-roll matrix. Their
+    # rest bases came out up to 9.4e-6 off unit length in the centimetre FBX
+    # (v3c attempt 0) and 4.6e-6 in v3b's metres.
+    eb.head, eb.tail = Vector((0.0, 0.0, 0.0)), Vector((0.0, 0.05, 0.0))
+    eb.roll = 0.0
     grip = eb
     for limb in ("upper", "lower"):
         joints = bind[limb]
@@ -375,6 +389,11 @@ def key_draw(arm, bind):
             pb = arm.pose.bones[name]
             bind_m = arm.data.bones[name].matrix_local
             pb.matrix = Matrix.Translation(head) @ rot @ bind_m.to_3x3().to_4x4()
+            # The setter decomposes a float32 product and reads a scale a few
+            # ppm off 1. Scale is not keyed, so the last key's would ride every
+            # frame of the take: the v3b FBX's scale keys reached 1.0000058,
+            # nearly constant per bone over its 11 keys.
+            pb.scale = (1.0, 1.0, 1.0)
         bpy.context.view_layer.update()
         for pb in arm.pose.bones:
             pb.keyframe_insert("location", frame=frame)
@@ -513,7 +532,161 @@ def socket_frames(arm, bone, mesh_frame):
             "bone_bind_matrix": [[round(c, 7) for c in row] for row in b.matrix_local]}
 
 
-def export(obj, arm, path):
+def _fcurves(act):
+    """Every F-curve of an action, layered (Blender 5) or not."""
+    if hasattr(act, "layers"):
+        return [fc for layer in act.layers for strip in layer.strips for bag in strip.channelbags for fc in bag.fcurves]
+    return list(act.fcurves)
+
+
+def evaluate_keys(obj, arm):
+    """The deformed vertices and every bone's armature-space matrix at each key (numpy)."""
+    import numpy as np
+    scene = bpy.context.scene
+    names = [b.name for b in arm.data.bones]
+    verts, poses = [], []
+    for frame in range(len(FRACTIONS)):
+        scene.frame_set(frame)
+        dg = bpy.context.evaluated_depsgraph_get()
+        ev = obj.evaluated_get(dg)
+        me = ev.to_mesh()
+        co = np.zeros(len(me.vertices) * 3)
+        me.vertices.foreach_get("co", co)
+        ev.to_mesh_clear()
+        verts.append(co.reshape(-1, 3))
+        poses.append([np.array(arm.pose.bones[n].matrix) for n in names])
+    scene.frame_set(0)
+    return np.array(verts), np.array(poses)
+
+
+def to_centimetres(obj, arm):
+    """Every length of the built rig x FBX_CM, in place: the mesh, each bone's
+    head and tail (its roll kept) and every location key with its handles.
+    Turns, weights and the identity objects stay as they are."""
+    import numpy as np
+    for what, m in (("the armature", arm.matrix_world), ("the mesh", obj.matrix_world),
+                    ("the mesh's parent inverse", obj.matrix_parent_inverse)):
+        if max(abs(m[i][j] - (i == j)) for i in range(4) for j in range(4)) > 0.0:
+            raise RuntimeError(f"yumi rig: {what} is not the identity; the centimetre copy scales data only")
+    me = obj.data
+    co = np.zeros(len(me.vertices) * 3)
+    me.vertices.foreach_get("co", co)
+    me.vertices.foreach_set("co", co * FBX_CM)
+    me.update()
+    bpy.ops.object.select_all(action="DESELECT")
+    arm.select_set(True)
+    bpy.context.view_layer.objects.active = arm
+    bpy.ops.object.mode_set(mode="EDIT")
+    for eb in arm.data.edit_bones:
+        roll = eb.roll
+        eb.head, eb.tail = eb.head * FBX_CM, eb.tail * FBX_CM
+        eb.roll = roll
+    bpy.ops.object.mode_set(mode="OBJECT")
+    scaled = 0
+    for fc in _fcurves(arm.animation_data.action):
+        if fc.data_path.endswith(".location"):
+            for kp in fc.keyframe_points:
+                kp.co = (kp.co[0], kp.co[1] * FBX_CM)
+                kp.handle_left = (kp.handle_left[0], kp.handle_left[1] * FBX_CM)
+                kp.handle_right = (kp.handle_right[0], kp.handle_right[1] * FBX_CM)
+            fc.update()
+            scaled += 1
+    if scaled != 3 * len(arm.pose.bones):
+        raise RuntimeError(f"yumi rig: {scaled} location curves for {len(arm.pose.bones)} bones")
+    units = bpy.context.scene.unit_settings
+    units.system, units.scale_length = "METRIC", 1.0 / FBX_CM
+
+
+def read_fbx(path):
+    """The written FBX, read back with Blender's own binary parser: the header's
+    units and frame rate, the takes, every model node's scale, the bind pose's
+    and the clusters' bases, the vertices, and the baked keys' times,
+    translations and scales."""
+    import numpy as np
+    from io_scene_fbx import parse_fbx
+    root, version = parse_fbx.parse(str(path), use_namedtuple=True)
+    ktime = 141120000 if version >= 8000 else 46186158000          # FBX ticks per second
+
+    def child(elem, name):
+        return next(c for c in elem.elems if c.id == name)
+
+    def props(elem):
+        p = next((c for c in elem.elems if c.id == b"Properties70"), None)
+        return {} if p is None else {c.props[0]: c.props[4:] for c in p.elems}
+
+    def basis(m):
+        m = np.array(m, np.float64).reshape(4, 4)
+        return float(np.abs(np.linalg.norm(m[:3, :3], axis=1) - 1.0).max())
+
+    header = props(child(root, b"GlobalSettings"))
+    objects = child(root, b"Objects").elems
+    models = [o for o in objects if o.id == b"Model"]
+    node_scale = max(abs(c - 1.0) for o in models for c in props(o).get(b"Lcl Scaling", (1.0, 1.0, 1.0)))
+    binds = [basis(child(pn, b"Matrix").props[0]) for o in objects if o.id == b"Pose"
+             for pn in o.elems if pn.id == b"PoseNode"]
+    clusters = [basis(child(o, k).props[0]) for o in objects if o.id == b"Deformer" and o.props[2] == b"Cluster"
+                for k in (b"Transform", b"TransformLink")]
+    meshes = [np.array(child(o, b"Vertices").props[0], np.float64).reshape(-1, 3) for o in objects
+              if o.id == b"Geometry" and o.props[2] == b"Mesh"]
+    kind = {o.props[0]: o.props[1].split(b"\x00\x01")[0] for o in objects if o.id == b"AnimationCurveNode"}
+    parents = {}
+    for c in child(root, b"Connections").elems:
+        parents.setdefault(c.props[1], []).append(c.props[2])
+    keys = {b"T": [], b"S": []}
+    key_times = set()
+    for o in objects:
+        if o.id == b"AnimationCurve":
+            values = np.array(child(o, b"KeyValueFloat").props[0], np.float64)
+            key_times.add(tuple(round(k / ktime, 9) for k in child(o, b"KeyTime").props[0]))
+            for p in parents.get(o.props[0], ()):
+                if kind.get(p) in keys:
+                    keys[kind[p]].append(values)
+    t, s = np.concatenate(keys[b"T"]), np.concatenate(keys[b"S"])
+    takes = [(e.props[0].decode(), [round(k / ktime, 9) for k in child(e, b"LocalTime").props])
+             for e in child(root, b"Takes").elems if e.id == b"Take"]
+    return {"unit_scale_factor": header[b"UnitScaleFactor"][0],
+            "original_unit_scale_factor": header[b"OriginalUnitScaleFactor"][0],
+            "time_mode": header[b"TimeMode"][0], "frame_rate": header[b"CustomFrameRate"][0],
+            "takes": takes, "key_times_s": [list(k) for k in sorted(key_times)],
+            "model_nodes": len(models), "node_scale_max_dev": node_scale,
+            "bind_pose_nodes": len(binds), "bind_basis_max_dev": max(binds),
+            "clusters": len(clusters) // 2, "cluster_basis_max_dev": max(clusters),
+            "meshes": len(meshes), "vertices": int(len(meshes[0])),
+            "vertex_min_cm": [round(c, 6) for c in meshes[0].min(0)],
+            "vertex_max_cm": [round(c, 6) for c in meshes[0].max(0)],
+            "translation_keys": int(t.size), "translation_key_max_abs_cm": float(np.abs(t).max()),
+            "scale_keys": int(s.size), "scale_key_max_dev": float(np.abs(s - 1.0).max())}
+
+
+def export_centimetres(obj, arm, path):
+    """Write SK_Weapon_18.fbx from a centimetre copy of the metre rig, made in
+    place: the last use of obj and arm, after the record's metres are taken.
+
+    Unreal folds the armature node into the root bone, so a unit factor on any
+    node becomes a bone scale (UE imports 2-6 of 2026-10-25, kept in
+    Saved/YumiRig/Unreal):
+    - All Local put Blender's x100 on the armature node: every bone at scale 100;
+    - FBX Units Scale left the node at 1 and declared metres, and Unreal's unit
+      conversion put the x100 back on the root node;
+    - import_uniform_scale multiplies the root bone as well
+      (FbxSkeletalMeshImport.cpp:1406-1415 in UE 5.8.3, root's reading).
+    So the file carries centimetres and says so, and leaves an importer nothing
+    to convert. With the scene's unit at 0.01 m, All Local's factor,
+    100 x float32(0.01) = 0.99999998, is exactly 1.0 in mathutils' float32
+    matrix, and the header's unit is 1 (cm). The copy must deform as 100 x the
+    metre rig at every key, and the written file must read back with unit 1,
+    unit scales and bases, the copy's vertices and the rig's translations."""
+    import numpy as np
+    verts_m, poses_m = evaluate_keys(obj, arm)
+    to_centimetres(obj, arm)
+    verts_cm, poses_cm = evaluate_keys(obj, arm)
+    copy = {"vertex_max_diff_m": float(np.linalg.norm(verts_cm / FBX_CM - verts_m, axis=2).max()),
+            "bone_head_max_diff_m": float(np.linalg.norm(poses_cm[..., :3, 3] / FBX_CM - poses_m[..., :3, 3],
+                                                         axis=2).max()),
+            "bone_basis_max_diff": float(np.abs(poses_cm[..., :3, :3] - poses_m[..., :3, :3]).max())}
+    if (max(copy["vertex_max_diff_m"], copy["bone_head_max_diff_m"]) > FBX_COPY_TOL_M
+            or copy["bone_basis_max_diff"] > FBX_SCALE_TOL):
+        raise RuntimeError(f"yumi rig: the centimetre copy does not deform as the metre rig: {copy}")
     bpy.ops.object.select_all(action="DESELECT")
     obj.select_set(True)
     arm.select_set(True)
@@ -526,6 +699,38 @@ def export(obj, arm, path):
                              bake_anim=True, bake_anim_use_all_bones=True, bake_anim_use_nla_strips=False,
                              bake_anim_use_all_actions=False, bake_anim_force_startend_keying=True,
                              bake_anim_step=1.0, bake_anim_simplify_factor=0.0)
+    got = read_fbx(path)
+    rest_cm = np.array([v.co[:] for v in obj.data.vertices], np.float64)
+    want_bounds = [round(c, 6) for c in rest_cm.min(0)] + [round(c, 6) for c in rest_cm.max(0)]
+    # Bone translations are keyed in Grip's frame, an axis permutation of the
+    # armature's, so their largest magnitude is the rig's largest head coordinate.
+    want_t = FBX_CM * float(np.abs(poses_m[..., :3, 3]).max())
+    problems = []
+    if got["unit_scale_factor"] != 1.0 or got["original_unit_scale_factor"] != 1.0:
+        problems.append("the header's unit is not 1 cm")
+    # One take, A_Weapon_18_Draw, 0-1 s at 10 fps (FBX TimeMode 14, custom),
+    # every curve keyed at the 11 draw fractions.
+    if ((got["time_mode"], got["frame_rate"]) != (14, 10.0) or got["takes"] != [("A_Weapon_18_Draw", [0.0, 1.0])]
+            or got["key_times_s"] != [[round(d, 9) for d in FRACTIONS]]):
+        problems.append(f"the take is not A_Weapon_18_Draw, 0-1 s keyed at 10 fps: {got['time_mode']}, "
+                        f"{got['frame_rate']} fps, {got['takes']}, {got['key_times_s']}")
+    for k in ("node_scale_max_dev", "bind_basis_max_dev", "cluster_basis_max_dev", "scale_key_max_dev"):
+        if got[k] > FBX_SCALE_TOL:
+            problems.append(f"{k} {got[k]:.2e}")
+    if got["meshes"] != 1 or got["vertices"] != len(rest_cm) or max(
+            abs(a - b) for a, b in zip(got["vertex_min_cm"] + got["vertex_max_cm"], want_bounds)) > 1e-5:
+        problems.append("the vertices are not the centimetre copy's")
+    if abs(got["translation_key_max_abs_cm"] - want_t) > FBX_CM * FBX_COPY_TOL_M:
+        problems.append(f"the largest translation key is {got['translation_key_max_abs_cm']:.4f} cm, "
+                        f"the rig's {want_t:.4f} cm")
+    if problems:
+        raise RuntimeError(f"yumi rig: the written FBX fails: {problems}: {got}")
+    return {"units": "centimetres", "per_metre": FBX_CM,
+            "how": "export-only copy of the metre rig: mesh, bone heads and tails and location keys x100, identity "
+                   "objects, scene unit 0.01 m, All Local with apply_unit_scale (factor 1.0 in float32)",
+            "scene_unit_scale_length": bpy.context.scene.unit_settings.scale_length,
+            "copy_against_metres": copy, "read_back": got,
+            "tolerances": {"copy_m": FBX_COPY_TOL_M, "scale_and_basis": FBX_SCALE_TOL}}
 
 
 def check_geometry(obj, arm, record):
@@ -555,10 +760,14 @@ def check_geometry(obj, arm, record):
         for i, n in enumerate(names):
             pose[frame, i] = np.array(arm.pose.bones[n].matrix)   # armature space = local to Grip (identity)
     scene.frame_set(0)
-    # The arrow, as committed, in its own frame.
+    # The arrow, as committed, in its own frame. Blender's FBX import sets the
+    # scene's frame rate from the file (24 fps here), so the take's 10 fps is
+    # put back: v3c attempt 1, which exported after this, wrote a 0.417 s take.
+    timing = (scene.render.fps, scene.render.fps_base, scene.frame_start, scene.frame_end)
     before = set(bpy.data.objects)
     bpy.ops.import_scene.fbx(filepath=str(ARROW_FBX), axis_forward="-Y", axis_up="Z", global_scale=1.0,
                              use_custom_normals=True, use_image_search=False)
+    scene.render.fps, scene.render.fps_base, scene.frame_start, scene.frame_end = timing
     new = [o for o in bpy.data.objects if o not in before]
     ya = [o for o in new if o.type == "MESH"]
     if len(ya) != 1:
@@ -610,12 +819,21 @@ def main():
     if failures:
         raise SystemExit("yumi rig: " + "; ".join(failures))
     OUT.mkdir(parents=True, exist_ok=True)
-    fbx = OUT / "SK_Weapon_18.fbx"
-    export(obj, arm, fbx)
+    # Everything in metres is taken first: the export's centimetre copy is made in place.
     geo, geo_summary = check_geometry(obj, arm, record)
     print("YUMI_RIG_GEOMETRY", json.dumps(geo_summary), flush=True)
     bones = [{"name": b.name, "parent": b.parent.name if b.parent else None, "head": [round(c, 7) for c in b.head_local],
               "tail": [round(c, 7) for c in b.tail_local]} for b in arm.data.bones]
+    # Each socket in both frames (Codex's review of b55fe81): the mesh
+    # (armature) frame as the static bow's record has it, and the bone-local
+    # offset Unreal's skeleton socket needs, from the bone's own bind
+    # matrix. Copying a mesh-frame offset onto a bone puts Muzzle 102.86 mm off.
+    socket_record = {name: socket_frames(arm, bone, sockets[name])
+                     for name, bone in (("Grip_L", "Grip"), ("Muzzle", "Grip"), ("Grip_R", "String_Nock"),
+                                        ("String_Upper", "Tip_U"), ("String_Lower", "Tip_L"))}
+    fbx = OUT / "SK_Weapon_18.fbx"
+    fbx_summary = export_centimetres(obj, arm, fbx)
+    print("YUMI_RIG_FBX", json.dumps(fbx_summary), flush=True)
     rig = {
         # 3: the string's seven turning bones round a fillet at the nock (28 bones).
         "schema_version": 3, "check_geometry_schema": Y.RIG_SCHEMA,
@@ -628,14 +846,9 @@ def main():
                            "draw fraction (0-1 s); drive the animation's time from it",
                  "full_draw_m": Y.DRAW_M, "nock_z_m": Y.NOCK_Z, "string_m": braced["string_m"],
                  "release": "back to brace (frame 0) in 0.03 s; no overshoot past brace (the string is unstretched)"},
-        "bones": bones, "weights": counts, "keys": keys,
-        # Each socket in both frames (Codex's review of b55fe81): the mesh
-        # (armature) frame as the static bow's record has it, and the bone-local
-        # offset Unreal's skeleton socket needs, from the bone's own bind
-        # matrix. Copying a mesh-frame offset onto a bone puts Muzzle 102.86 mm off.
-        "sockets": {name: socket_frames(arm, bone, sockets[name])
-                    for name, bone in (("Grip_L", "Grip"), ("Muzzle", "Grip"), ("Grip_R", "String_Nock"),
-                                       ("String_Upper", "Tip_U"), ("String_Lower", "Tip_L"))},
+        "bones": bones, "weights": counts, "keys": keys, "sockets": socket_record,
+        # The FBX alone is in centimetres; every length above is metres.
+        "fbx": fbx_summary,
         "axes": record["axes"], "static_bounds_m": [round(c, 6) for c in size],
         "checks": results,
         "stretch_gate": {"ratio": STRETCH_RATIO, "growth_m": STRETCH_ABS_M, "applies_to": "every face, no exception",

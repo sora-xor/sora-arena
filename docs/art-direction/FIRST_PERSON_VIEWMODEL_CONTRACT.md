@@ -169,7 +169,11 @@ frames (0.17 s) early in the draw.
 rest/drawn mesh swap.
 
 - **Bones (28):**
-  - one Grip root;
+  - one Grip root along +Y, the bow plane's normal. Its rest frame is the
+    armature's, and every other bone, lying in the bow's plane, is square to
+    it. Along the bow (+Z), the lower limb's bones sat in the singular case of
+    Blender's bone-roll matrix, and their rest bases came out up to 9.4e-6 off
+    unit length;
   - 12 bones along the upper limb and 8 along the lower;
   - the string's seven (`yumi_draw.string_frames`):
     - Tip_L and Tip_U in the horn hazu, each turning with its straight
@@ -201,8 +205,37 @@ rest/drawn mesh swap.
   each bone's local translation linearly and its rotation by normalised lerp.
   `yumi_draw._deform_at` does the same. Against the exported FBX as Blender
   plays it, at the keys, quarter points and midpoints, it agrees within
-  0.55 µm (`Rig/Review/W18_rig_playback_blender.npz`). Unreal's playback is
-  read back separately.
+  0.71 µm and 8.2e-7 rad (`Rig/Review/W18_rig_playback_blender.npz`).
+- **The FBX is in centimetres.** It is an export-only copy of the metre rig:
+  the mesh, every bone's head and tail and every location key ×100. No node
+  carries a scale, and the header unit is 1 cm. Everything else, the rig
+  record included, stays in metres.
+  - **Why:** Unreal folds the armature node into the root bone, so a unit
+    factor on any node, or Unreal's own unit conversion or import scale, gave
+    every bone scale 100 or 10000 (imports 2–6, `data/yumi_rig_ue_imports.json`).
+  - **Build checks:** the copy deforms as the metre rig within 0.70 µm. The
+    build reads its own FBX back and refuses unless the unit is 1 and the node
+    scales, bind and cluster bases are within 1e-5 of 1. The take must be one
+    10 fps take of 0–1 s.
+  - **Blender's round trip:** the import puts the 0.01 unit on the armature
+    object and nothing else.
+- **In Unreal 5.8.3** (`scripts/unreal/import_runtime_weapon_yumi_rig.py`, an
+  isolated namespace; `Rig/Review/W18_rig_unreal_readback.json`):
+  - **Reference pose:** every bone at scale 1 within 1e-7, heads within 8e-6 cm.
+  - **Sockets:** five bow sockets on their bones, and the arrow's two from its
+    FBX's `SOCKET_` nodes.
+  - **The take:** 1.0 s, 11 keys at 10 fps, linear.
+  - **Raw playback:** it agrees with `_deform_at` within 6.1e-5 cm and
+    1.1e-6 rad, given one engine rule. A bone whose evaluated local transform
+    `Equals` its reference pose within 1e-4 per component comes back as the
+    reference pose (`AnimSequencerDataModel.cpp:1389`; LimbU_01 near brace,
+    LimbL_01 at 0.025 s). The test models that rule, and asserts it snaps
+    exactly the samples the model predicts.
+  - **Compressed playback:** ACL at its defaults (0.01 cm error, 3 cm virtual
+    vertices) stays within its bound: 8.7e-3 cm and 3.3e-3 rad, against 0.021 cm
+    and 7.1e-3 rad.
+  - **Not yet established:** this is asset readback only, not a capture or a
+    gameplay admission.
 - **Check geometry:** only `sora-yumi-rig-check-v3` (bind and per-key pose
   matrices of the 28-bone rig) is accepted. Earlier rigs are archived
   evidence, never admitted:
