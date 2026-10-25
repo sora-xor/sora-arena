@@ -27,6 +27,7 @@ compile statistics. Asset readback only: not a render or an admission.
 
 import hashlib
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -375,6 +376,53 @@ if bounds_error > 0.01:
     fail(f"bounds {got_origin} +- {got_extent} cm differ from the build's {want_origin} +- {want_extent} cm")
 
 
+def card_normal_readback(sample_every=8):
+    """The imported fur cards' normals against their own triangles, from the mesh's render data, every
+    sample_every-th triangle: each corner normal's angle from its face, as create_nyaakoto_fp_paws.checks measures
+    the built arrays and the FBX's round trip.
+
+    v4 bends each card's normals toward the skin, so they sit a few degrees off their faces. A normal the import
+    recomputed would sit on its face. The angle is taken from |cos|, so it does not depend on the winding
+    convention; same_side_share records the convention."""
+    sub = unreal.get_editor_subsystem(unreal.StaticMeshEditorSubsystem)
+    sections = [s for s in range(mesh.get_num_sections(0))
+                if bound[sub.get_lod_material_slot(mesh, 0, s)] == "M_NyaakotoFP_FurCards"]
+    if len(sections) != 1:
+        fail(f"the fur cards have {len(sections)} sections in LOD 0")
+    verts, tris, normals, _uvs, _tangents = unreal.ProceduralMeshLibrary.get_section_from_static_mesh(
+        mesh, 0, sections[0])
+    angles, same = [], 0
+    for t in range(0, len(tris) // 3, sample_every):
+        idx = (tris[3 * t], tris[3 * t + 1], tris[3 * t + 2])
+        a, b, c = (verts[i] for i in idx)
+        e1, e2 = (b.x - a.x, b.y - a.y, b.z - a.z), (c.x - a.x, c.y - a.y, c.z - a.z)
+        fx, fy, fz = e1[1] * e2[2] - e1[2] * e2[1], e1[2] * e2[0] - e1[0] * e2[2], e1[0] * e2[1] - e1[1] * e2[0]
+        area2 = math.sqrt(fx * fx + fy * fy + fz * fz)
+        if area2 < 1e-12:                                   # cut strands leave degenerate quads
+            continue
+        for i in idx:
+            n = normals[i]
+            nn = math.sqrt(n.x * n.x + n.y * n.y + n.z * n.z) or 1.0
+            cos = (fx * n.x + fy * n.y + fz * n.z) / (area2 * nn)
+            same += cos > 0
+            angles.append(math.degrees(math.acos(min(1.0, abs(cos)))))
+    if not angles:
+        fail("the fur cards' section has no triangle to read back")
+    angles.sort()
+    return {"section": sections[0], "triangles": len(tris) // 3, "sampled_corners": len(angles),
+            "sample_every": sample_every, "mean": sum(angles) / len(angles),
+            "p90": angles[int(0.9 * (len(angles) - 1))], "max": angles[-1], "same_side_share": same / len(angles)}
+
+
+cards = card_normal_readback()
+built = record["checks"].get("fbx_round_trip_fur_corner_normal_from_face_deg")
+if built is None:
+    fail("build_record.json has no FBX round trip of the card normals (a pre-v4 build)")
+if abs(cards["mean"] - built["mean"]) > 1.0:
+    fail(f"the imported card normals sit {cards['mean']:.2f} deg off their faces on average, the FBX's "
+         f"{built['mean']:.2f}: the import did not keep them")
+
+
 def mesh_query(name, *args):
     """A StaticMeshEditorSubsystem query (UE 5.x), else the older library; None if neither has it."""
     for owner in (unreal.get_editor_subsystem(unreal.StaticMeshEditorSubsystem) if hasattr(
@@ -393,6 +441,7 @@ readback = {
     "slots": bound, "bounds_cm": {"origin": [b.origin.x, b.origin.y, b.origin.z],
                                   "extent": [b.box_extent.x, b.box_extent.y, b.box_extent.z]},
     "bounds_error_cm": round(bounds_error, 6), "materials": stats,
+    "fur_card_normals": {"unreal": cards, "fbx_round_trip": built},
     "custom_data": "engine defaults: UE 5.8 hides CustomData0/1 from Python, so the silk's cloth fuzz is 1.0 "
                    "(asked 0.4; v3 lowers its fuzz colour instead). The kote's lacquer no longer uses clear coat: "
                    "one default-lit lobe at roughness 0.25, as the Blender source has it",

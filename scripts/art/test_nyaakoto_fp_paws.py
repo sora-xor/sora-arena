@@ -170,6 +170,33 @@ class Fur(unittest.TestCase):
             d = np.linalg.norm(self.fur["roots"][:, None, :] - self.m["verts"][pads][None, ::7, :], axis=2).min(1)
             self.assertGreater(float(np.percentile(d, 1)), 0.0005)
 
+    def test_every_card_faces_out_from_the_skin(self):
+        # v4: the front, by winding, is the side a viewer sees. Cut strands leave degenerate quads, skipped.
+        V, T, K = self.fur["verts"], self.fur["tris"], P.FUR["segments"]
+        face = np.cross(V[T[:, 1]] - V[T[:, 0]], V[T[:, 2]] - V[T[:, 0]])
+        area = np.linalg.norm(face, axis=1)
+        live = area > 1e-14
+        card = (np.arange(len(T)) % (self.fur["cards"] * K)) // K      # tris: each quad's first halves, then seconds
+        cos = np.einsum("ij,ij->i", face[live] / area[live, None], self.fur["root_normals"][card[live]])
+        self.assertGreater(int(live.sum()), 0.99 * len(T))
+        self.assertGreater(float(cos.min()), 0.0)
+
+    def test_shading_normals_lean_to_the_skin(self):
+        # Bent 0.75 of the way from the card's own normal: unit, and close to the skin's at the card's root.
+        nrm, K = self.fur["normals"], P.FUR["segments"]
+        self.assertEqual(nrm.shape, self.fur["verts"].shape)
+        self.assertTrue(np.allclose(np.linalg.norm(nrm, axis=1), 1.0, atol=1e-9))
+        skin = np.repeat(self.fur["root_normals"], 2 * (K + 1), axis=0)
+        cos = np.einsum("ij,ij->i", nrm, skin)
+        self.assertGreater(float(cos.min()), math.cos(math.radians(20.0)))
+
+    def test_odd_atlas_rows_run_root_at_the_top(self):
+        # create_nyaakoto_fp_fur_textures v4 flips its odd rows, so every card's tip meets the atlas's middle.
+        K = P.FUR["segments"]
+        uv = self.fur["uv"].reshape(self.fur["cards"], K + 1, 2, 2)
+        self.assertEqual(sorted(set(np.round(uv[:, 0, :, 1].ravel(), 9))), [0.0, 1.0])
+        self.assertTrue(np.allclose(uv[:, -1, :, 1], 0.5))
+
 
 class Kote(unittest.TestCase):
     @classmethod

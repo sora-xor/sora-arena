@@ -88,9 +88,10 @@ def rel(path: Path) -> str:
 
 # --- Meshes -------------------------------------------------------------------------
 
-def make_mesh(name, verts, tris, uv=None, colour=None, mat_index=None, smooth=True):
+def make_mesh(name, verts, tris, uv=None, colour=None, mat_index=None, smooth=True, normals=None):
     """A mesh object from numpy arrays: from_pydata (robust across Blender
-    versions), then per-loop UV0, per-point colour and per-face slots."""
+    versions), then per-loop UV0, per-point colour, per-face slots and, when
+    given, per-vertex custom normals."""
     me = bpy.data.meshes.new(name)
     tris = np.asarray(tris, np.int64)
     me.from_pydata(np.asarray(verts, np.float64).tolist(), [], tris.tolist())
@@ -106,6 +107,10 @@ def make_mesh(name, verts, tris, uv=None, colour=None, mat_index=None, smooth=Tr
         col.data.foreach_set("color", rgba.ravel())
     if smooth:
         me.shade_smooth()
+    if normals is not None:
+        # Per-vertex custom normals (Mesh.normals_split_custom_set_from_vertices, as Blender 5.2's own glTF
+        # importer sets them). The FBX exporter then writes corner normals (export_fbx_bin: normals_domain).
+        me.normals_split_custom_set_from_vertices(np.asarray(normals, np.float64).tolist())
     me.update()
     obj = bpy.data.objects.new(name, me)
     bpy.context.scene.collection.objects.link(obj)
@@ -268,7 +273,8 @@ def build(step):
     bpy.ops.object.mode_set(mode="OBJECT")
     skin.data.uv_layers.active.name = "UV0"
     skin.select_set(False)
-    cards = make_mesh("PawL_FurCards", fur["verts"], fur["tris"], uv=fur["uv"], colour=fur["colour"])
+    cards = make_mesh("PawL_FurCards", fur["verts"], fur["tris"], uv=fur["uv"], colour=fur["colour"],
+                      normals=fur["normals"])
     cards.data.materials.append(mats["fur"])
     kote = []
     for part in parts:
@@ -279,16 +285,42 @@ def build(step):
     objs = [skin, cards] + kote + [mon_obj]
     info = {"skin_triangles": int(len(m["tris"])), "fur_cards": int(fur["cards"]), "fur_card_triangles": int(len(fur["tris"])),
             "kote_parts": len(parts), "kote_triangles": int(sum(len(p["tris"]) for p in parts)),
-            "mon_triangles": len(mon_obj.data.polygons), "build_s": round(t1 - t0, 1)}
+            "mon_triangles": len(mon_obj.data.polygons), "build_s": round(t1 - t0, 1),
+            "fur_skin_normal_weight": P.FUR["skin_normal"]}
     return m, fur, parts, objs, info
 
 
+def card_normal_angles(verts, tris, normals):
+    """Each card corner's normal against its triangle's face, in degrees, skipping degenerate triangles (cut
+    strands): v4's bent normals sit a few degrees off their faces, where a recomputed normal sits on them."""
+    face = np.cross(verts[tris[:, 1]] - verts[tris[:, 0]], verts[tris[:, 2]] - verts[tris[:, 0]])
+    area = np.linalg.norm(face, axis=1)
+    live = area > 1e-14
+    unit = face[live] / area[live, None]
+    cos = np.concatenate([np.einsum("ij,ij->i", unit, normals[tris[live, c]]) for c in range(3)])
+    return np.degrees(np.arccos(np.clip(cos, -1.0, 1.0)))
+
+
+def angle_stats(deg):
+    return {"mean": round(float(deg.mean()), 3), "p90": round(float(np.percentile(deg, 90)), 3),
+            "max": round(float(deg.max()), 3), "corners": int(deg.size)}
+
+
 def checks(m, fur, parts):
-    """Fit against the bow and the checker's design envelope; closure of every solid part."""
+    """Fit against the bow and the checker's design envelope; closure of every solid part; the cards' fronts
+    and shading normals (v4)."""
     skel = m["skeleton"]
     V = m["verts"]
     g = P.grip_sdf(V)
     tips = P.grip_sdf(fur["tips"])
+    FV, FT, K = fur["verts"], fur["tris"], P.FUR["segments"]
+    face = np.cross(FV[FT[:, 1]] - FV[FT[:, 0]], FV[FT[:, 2]] - FV[FT[:, 0]])
+    area = np.linalg.norm(face, axis=1)
+    live = area > 1e-14
+    card = (np.arange(len(FT)) % (fur["cards"] * K)) // K
+    front = np.einsum("ij,ij->i", face[live] / area[live, None], fur["root_normals"][card[live]])
+    skin = np.repeat(fur["root_normals"], 2 * (K + 1), axis=0)
+    bent = np.degrees(np.arccos(np.clip(np.einsum("ij,ij->i", fur["normals"], skin), -1.0, 1.0)))
     env = P.round_cone(V, np.array((-0.004, 0.0, -0.055)), np.array((-0.004, 0.0, 0.062)), 0.036, 0.036)
     out = {
         "skin_closed": P.is_closed_manifold(m["tris"]),
@@ -300,10 +332,51 @@ def checks(m, fur, parts):
         "skin_outside_paw_l_envelope_share": round(float((env > 0).mean()), 4),
         "dewclaw_tip_below_arrow_mm": round((P.ARROW_PASS[2] - P.ARROW_SHAFT_R - float(
             skel["chains"]["I"][0][-1][2] + skel["chains"]["I"][1][-1])) * 1e3, 2),
+        "fur_live_triangle_share": round(float(live.mean()), 5),
+        "fur_front_min_cos_to_skin": round(float(front.min()), 4),
+        "fur_shading_normal_max_deg_from_skin": round(float(bent.max()), 3),
+        "fur_corner_normal_from_face_deg": angle_stats(card_normal_angles(FV, FT, fur["normals"])),
     }
     out["ok"] = (out["skin_closed"] and out["skin_min_clearance_mm"] >= 0.1 and out["fur_tips_inside_bow"] == 0
-                 and out["kote_parts_closed"] and out["kote_min_clearance_mm"] > 0)
+                 and out["kote_parts_closed"] and out["kote_min_clearance_mm"] > 0
+                 and out["fur_front_min_cos_to_skin"] > 0 and out["fur_shading_normal_max_deg_from_skin"] <= 20.0)
     return out
+
+
+def fbx_card_normals(path, slot="M_NyaakotoFP_FurCards"):
+    """The exported FBX's fur-card corners, re-imported with their custom normals: each corner normal's angle from
+    its triangle's face, as checks() measured it on the built arrays and the Unreal readback measures it."""
+    before = set(bpy.data.objects)
+    bpy.ops.import_scene.fbx(filepath=str(path), use_custom_normals=True, use_image_search=False)
+    new = [o for o in bpy.data.objects if o not in before]
+    try:
+        obj = next(o for o in new if o.type == "MESH")
+        me = obj.data
+        fur = [i for i, s in enumerate(obj.material_slots) if s.material and s.material.name.split(".")[0] == slot]
+        if len(fur) != 1:
+            raise SystemExit(f"fp paws: the re-imported FBX has {len(fur)} {slot} slots")
+        n_poly, n_loop = len(me.polygons), len(me.loops)
+        mat = np.empty(n_poly, np.int32)
+        me.polygons.foreach_get("material_index", mat)
+        total = np.empty(n_poly, np.int32)
+        me.polygons.foreach_get("loop_total", total)
+        if (total != 3).any():
+            raise SystemExit("fp paws: the re-imported FBX is not all triangles")
+        pn = np.empty(n_poly * 3)
+        me.polygon_normals.foreach_get("vector", pn)
+        cn = np.empty(n_loop * 3)
+        me.corner_normals.foreach_get("vector", cn)
+        sel = mat == fur[0]
+        pn, cn = pn.reshape(-1, 3)[sel], cn.reshape(-1, 3, 3)[sel]
+        live = np.linalg.norm(pn, axis=1) > 0.5
+        cos = np.einsum("ij,ikj->ik", pn[live], cn[live]).ravel()
+        return angle_stats(np.degrees(np.arccos(np.clip(cos, -1.0, 1.0))))
+    finally:
+        for o in new:
+            data = o.data if o.type == "MESH" else None
+            bpy.data.objects.remove(o, do_unlink=True)
+            if data is not None and data.users == 0:
+                bpy.data.meshes.remove(data)
 
 
 def export(objs, path):
@@ -315,6 +388,12 @@ def export(objs, path):
         bpy.context.scene.collection.objects.link(c)
         dup.append(c)
     for c in dup:
+        # Every part carries custom normals into the join, its own where it had none, so the fur cards' survive
+        # it beside parts that never had any.
+        if not c.data.has_custom_normals:
+            cn = np.empty(len(c.data.loops) * 3)
+            c.data.corner_normals.foreach_get("vector", cn)
+            c.data.normals_split_custom_set(cn.reshape(-1, 3).tolist())
         c.select_set(True)
     bpy.context.view_layer.objects.active = dup[0]
     bpy.ops.object.join()
@@ -472,6 +551,13 @@ def main():
     fbx = OUT / f"{NAME}.fbx"
     slots, tris, bounds = export(objs, fbx)
     print("FP_PAWS_EXPORTED", rel(fbx), tris, "triangles", slots, flush=True)
+    # The FBX carries the built normals: re-imported, the card corners sit off their faces as the arrays do.
+    trip = fbx_card_normals(fbx)
+    built = chk["fur_corner_normal_from_face_deg"]
+    chk["fbx_round_trip_fur_corner_normal_from_face_deg"] = trip
+    print("FP_PAWS_FBX_NORMALS", json.dumps({"built": built, "fbx": trip}), flush=True)
+    if abs(trip["mean"] - built["mean"]) > 0.5:
+        raise SystemExit(f"fp paws: the FBX's card normals ({trip}) are not the built ones ({built})")
     renders = review(objs, a["samples"]) if a["review"] else []
     blend = OUT / "Nyaakoto_FP_PawL_Yumi.blend"
     bpy.ops.wm.save_as_mainfile(filepath=str(blend), compress=True)

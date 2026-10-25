@@ -507,6 +507,19 @@ def mesh_bow_paw(step=0.0006, smooth=6):
 # lie along the skin. Narrower cards, denser (60 -> 80 per cm2, 1.0-1.7 ->
 # 0.8-1.3 mm), clumped less (0.45 -> 0.25) and rolled less (14 -> 10
 # degrees). The dewclaw's hair is shorter (3.0-4.5 -> 2.2-3.2 mm).
+# v4 (capture v4, Saved/YumiFP/v4_*, and root's review: "coarse, blade-like,
+# noisy"). The layout is unchanged; how a card shades and faces changes:
+# - **Shading normals:** each card vertex's normal is bent skin_normal (0.75)
+#   of the way to the skin's normal at its root. v3 exported each card's own
+#   face normal, so overlapping cards at slightly different angles lit as
+#   separate flat facets, the "blades". A short coat lit by its skin's form
+#   reads as one surface.
+# - **Front faces outward:** v3's winding faced the skin, so the side a viewer
+#   sees was a back face that a two-sided material shades with its normal
+#   flipped. Now the visible side is the front, with the bent normal as it is.
+# - **Odd atlas rows run root at the top** (create_nyaakoto_fp_fur_textures.py
+#   v4), so their v is reversed here: tips abut tips in the atlas, and a mip
+#   never pulls a neighbour's opaque root into a tip.
 FUR = {
     "seed": 20261025,
     "per_cm2": 80,                       # clumps per square centimetre of furred skin
@@ -525,6 +538,7 @@ FUR = {
     "ruff_m": (0.000, 0.022),            # the wrist ruff: from the carpus back toward the forearm
     "sleeve_from_m": -0.026,             # roots stop this far behind the carpus, under the kote's cuff
     "tiles": (8, 2),                     # atlas columns, rows
+    "skin_normal": 0.75,                 # how far each card vertex's shading normal is bent to the skin's (v4)
 }
 TABBY = {"white": (0.86, 0.85, 0.82), "grey": (0.50, 0.50, 0.50), "stripe": (0.20, 0.20, 0.21),
          "period_m": 0.015, "white_from_knuckles_m": -0.010}
@@ -596,7 +610,7 @@ def tabby_colour(p, skel):
 
 
 def fur_cards(mesh, field, keep_out=grip_sdf, cfg=FUR):
-    """Fur cards on a skin mesh: (verts, tris, uvs, colours, card count).
+    """Fur cards on a skin mesh: verts, tris (front faces out), uvs, colours, shading normals and the card count.
 
     Roots are area-sampled on furred triangles away from contact. Each strand
     starts along its nearest bone's distal direction in the skin's tangent
@@ -703,20 +717,27 @@ def fur_cards(mesh, field, keep_out=grip_sdf, cfg=FUR):
     cols, rows = cfg["tiles"]
     tile = rng.integers(0, cols * rows, m)
     tu, tv = (tile % cols) / cols, (tile // cols) / rows
+    flip = (tile // cols) % 2 == 1                          # odd atlas rows run root at the top
     verts = np.zeros((m, K + 1, 2, 3))
     uvs = np.zeros((m, K + 1, 2, 2))
+    normals = np.zeros((m, K + 1, 2, 3))
     for k in range(K + 1):
         t = pts[:, min(k + 1, K)] - pts[:, max(k - 1, 0)]
         t /= np.maximum(np.linalg.norm(t, axis=1, keepdims=True), 1e-12)
         b = np.cross(t, n)
         b /= np.maximum(np.linalg.norm(b, axis=1, keepdims=True), 1e-12)
-        nb = np.cross(b, t)
+        nb = np.cross(b, t)                                  # the untwisted card's normal, out from the skin
         b = b * np.cos(twist)[:, None] + nb * np.sin(twist)[:, None]
+        face = np.cross(b, t)                                # the twisted card's: its front, outward
         w = width * (1.0 - 0.45 * k / K) * 0.5
         verts[:, k, 0] = pts[:, k] - b * w[:, None]
         verts[:, k, 1] = pts[:, k] + b * w[:, None]
-        uvs[:, k, 0] = np.stack([tu, tv + (k / K) / rows], 1)
-        uvs[:, k, 1] = np.stack([tu + 1.0 / cols, tv + (k / K) / rows], 1)
+        frac = np.where(flip, 1.0 - k / K, k / K)
+        uvs[:, k, 0] = np.stack([tu, tv + frac / rows], 1)
+        uvs[:, k, 1] = np.stack([tu + 1.0 / cols, tv + frac / rows], 1)
+        shade = (1.0 - cfg["skin_normal"]) * face + cfg["skin_normal"] * n
+        shade /= np.maximum(np.linalg.norm(shade, axis=1, keepdims=True), 1e-12)
+        normals[:, k, 0] = normals[:, k, 1] = shade
     # A card's edges, not only its strand, stay out of the bow: an edge vertex
     # that would enter it slides back toward the strand until it is clear.
     flat = verts.reshape(-1, 3)
@@ -731,10 +752,12 @@ def fur_cards(mesh, field, keep_out=grip_sdf, cfg=FUR):
     quads = []
     for k in range(K):
         a, b = 2 * k, 2 * k + 1
-        quads.append(np.stack([base[:, 0] + a, base[:, 0] + a + 2, base[:, 0] + b + 2, base[:, 0] + b], 1))
+        # Left, right, then up the strand: the front faces out (b x t), the side a viewer sees.
+        quads.append(np.stack([base[:, 0] + a, base[:, 0] + b, base[:, 0] + b + 2, base[:, 0] + a + 2], 1))
     quads = np.stack(quads, 1).reshape(-1, 4)
     tris = np.concatenate([quads[:, [0, 1, 2]], quads[:, [0, 2, 3]]])
     colour = tabby_colour(pts[:, 0], skel)
     vcol = np.repeat(colour[:, None, :], 2 * (K + 1), 1).reshape(-1, 3)
     return {"verts": verts.reshape(-1, 3), "tris": tris, "uv": uvs.reshape(-1, 2), "colour": vcol, "cards": m,
-            "roots": pts[:, 0], "tips": pts[:, -1], "attempted": count}
+            "normals": normals.reshape(-1, 3), "root_normals": n, "roots": pts[:, 0], "tips": pts[:, -1],
+            "attempted": count}

@@ -1,5 +1,5 @@
 {
- "schema_version": 3,
+ "schema_version": 4,
  "generator": "scripts/art/create_nyaakoto_fp_fur_textures.py",
  "seed": 20261025,
  "atlas": {
@@ -9,9 +9,26 @@
    256,
    512
   ],
-  "uv": "root at each tile's bottom (v up)"
+  "uv": "even rows root at the tile's bottom (v up), odd rows root at its top: tips abut tips",
+  "strands_per_tile": [
+   7,
+   12
+  ],
+  "root_overlap": [
+   1.5,
+   2.1
+  ],
+  "tip_v": [
+   0.7,
+   1.0
+  ],
+  "clump": 0.3,
+  "hairs_per_strand": [
+   4,
+   9
+  ]
  },
- "provenance": "original and procedural: every hair drawn by this script from its seed; no external image, scan or third-party texture",
+ "provenance": "original and procedural: every strand drawn by this script from its seed; no external image, scan or third-party texture",
  "maps": {
   "Albedo": {
    "file": "T_NyaakotoFP_FurCards_Albedo.png",
@@ -21,7 +38,7 @@
    ],
    "mode": "RGBA",
    "note": "sRGB colour; A = hair coverage (opacity mask)",
-   "sha256": "3bb60d857fe8b5f0550bb3a2859925baf33b92348b9e2625c36c202bd4038659"
+   "sha256": "c264421907db224cada2987943480c548b24369dc67e29c99e3bd1cf4ed1200e"
   },
   "NormalDX": {
    "file": "T_NyaakotoFP_FurCards_NormalDX.png",
@@ -30,8 +47,8 @@
     1024
    ],
    "mode": "RGB",
-   "note": "tangent space, DirectX (green down): each hair's cylinder across its width",
-   "sha256": "f7e3124d29009a9ac41501255e24801ef19588ca58a730d833464160ce01b635"
+   "note": "tangent space, DirectX (green down): each strand's and hair's cylinder across its width",
+   "sha256": "c7a1ffd9a6358a7c7f35e63e8d44cfe85876467b2c2ea21b780db8ab32d0cfb0"
   },
   "Masks": {
    "file": "T_NyaakotoFP_FurCards_Masks.png",
@@ -40,8 +57,95 @@
     1024
    ],
    "mode": "RGB",
-   "note": "linear: R root-to-tip, G per-hair random, B depth in the clump (1 front)",
-   "sha256": "c3624e07edc2003c3d60c3c2149fd6c90f8496d6789b646dcefff2e9c6dbe10a"
+   "note": "linear: R root-to-tip, G per-strand random, B depth in the clump (1 front)",
+   "sha256": "c33d649cbbcbfd939234bca7285b00f27ff3c15d643635eb23ce250cf015d0c0"
+  }
+ },
+ "dither_measure": {
+  "clip": 0.33,
+  "tile_px": [
+   256,
+   512
+  ],
+  "views_pixel_mm": {
+   "eye_view": 0.4434647741994828,
+   "paw_close_up": 0.07825759486334133
+  },
+  "cards_mm": {
+   "digit": [
+    0.7875000000000001,
+    2.4749999999999996
+   ],
+   "dorsal": [
+    0.7875000000000001,
+    4.6875
+   ]
+  },
+  "base_level": {
+   "partial_share": 0.10906527825331101,
+   "mean_alpha": 0.6543176464006012
+  },
+  "at": {
+   "eye_view/digit": {
+    "footprint_texels": {
+     "along": 91.73897551116575,
+     "across": 144.16124723183185
+    },
+    "dithered_share": 0.48815902859970195,
+    "solid_share": 0.511840971400298,
+    "speckle_variance": 0.07094697342086453,
+    "expected_coverage": 0.7460958664338929,
+    "alpha_quartiles": [
+     0.39051414345931557,
+     0.8430010893246217,
+     0.990930928530833
+    ]
+   },
+   "eye_view/dorsal": {
+    "footprint_texels": {
+     "along": 48.43817906989551,
+     "across": 144.16124723183185
+    },
+    "dithered_share": 0.46845687441625333,
+    "solid_share": 0.5315431255837466,
+    "speckle_variance": 0.06937368545189142,
+    "expected_coverage": 0.762557130532381,
+    "alpha_quartiles": [
+     0.427950396014894,
+     0.8640312953885154,
+     0.9967876270878433
+    ]
+   },
+   "paw_close_up/digit": {
+    "footprint_texels": {
+     "along": 16.189045886881118,
+     "across": 25.43992925081318
+    },
+    "dithered_share": 0.3690306099518548,
+    "solid_share": 0.6309693900481452,
+    "speckle_variance": 0.060459687913314006,
+    "expected_coverage": 0.7956331640982944,
+    "alpha_quartiles": [
+     0.4969803921566927,
+     0.9999999999999818,
+     1.0
+    ]
+   },
+   "paw_close_up/dorsal": {
+    "footprint_texels": {
+     "along": 8.547816228273229,
+     "across": 25.43992925081318
+    },
+    "dithered_share": 0.3682605266957671,
+    "solid_share": 0.6317394733042329,
+    "speckle_variance": 0.060429121016356224,
+    "expected_coverage": 0.7961511144542606,
+    "alpha_quartiles": [
+     0.49763834422674136,
+     1.0,
+     1.0
+    ]
+   }
   }
  }
 }
