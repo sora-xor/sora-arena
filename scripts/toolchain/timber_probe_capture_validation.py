@@ -14,7 +14,7 @@ import subprocess
 SPEC = importlib.util.spec_from_file_location("probe_nanite_pixels", Path(__file__).with_name("nanite_capture_validation.py"))
 PIXELS = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(PIXELS)
-SCHEMA = "sora-arena.timber-probe.v2"
+SCHEMA = "sora-arena.timber-probe.v3"
 SCOPE = "nine saved timber probe assets in an isolated fixture; not production placement, art or platform acceptance"
 ROOT = "/Game/Generated/Qualification/DojoTimberProbe/"
 NAMES = (
@@ -26,6 +26,7 @@ NAMES = (
     "SM_DojoTimberColumn_MAC_Wall_09", "SM_DojoTimberColumn_MAC_Open_02",
     "SM_DojoTimberRail_MAC_Nageshi_01", "SM_DojoTimberRail_MAC_Nuki_01")
 INPUTS = ("Source/SoraArena/Private/SoraTimberProbeCapture.cpp",
+          "Source/SoraArena/Private/World/SoraCaptureReadiness.h",
           "scripts/unreal/import_nyaagyu_dojo_timbers.py",
           "scripts/unreal/dojo_timber_admission.py", "scripts/unreal/dojo_nanite.py")
 TEXTURES = tuple("Textures/T_" + n.removeprefix("SM_") + "_" + suffix
@@ -158,15 +159,35 @@ def validate_metadata(meta, names, width, height):
         name = "-".join(identity)
         require(frame.get("name") == name and frame.get("file") == name + ".png" and frame["file"] in names, "frame-to-original association differs")
         require(frame.get("paused") is True and frame.get("hud_hidden") is True and frame.get("visible_fixture_meshes") == 1 and frame.get("settle_seconds", 0) >= 3, "fixture not isolated, paused, hidden or settled")
-        shader = frame.get("material_render_readback", {})
-        require(all(shader.get(k) is True for k in ("proxy_present", "shader_map_valid", "shader_map_complete")) and
-                all(shader.get(k) is False for k in ("used_fallback_proxy", "default_material")) and bool(shader.get("resource_asset")),
-                "render-thread base material resolved absent, incomplete or fallback shader")
+        expected_material = "M_SoraTimberNanite" if NAMES.index(identity[0]) < 5 else "M_SoraTimber"
+        def ready_shader(shader):
+            return (isinstance(shader, dict) and
+                    all(shader.get(k) is True for k in ("proxy_present", "shader_map_valid", "shader_map_complete")) and
+                    all(shader.get(k) is False for k in ("used_fallback_proxy", "default_material")) and
+                    shader.get("resource_asset") == expected_material)
+        shader, pre = frame.get("material_render_readback", {}), frame.get("material_pre_request_readback", {})
+        require(ready_shader(shader) and ready_shader(pre),
+                "base material proxy before/after screenshot resolved absent, incomplete, fallback or wrong master")
+        require(pre.get("observation_stage") == "before_screenshot_request" and pre.get("observation_frame") == frame.get("request_frame") and
+                shader.get("observation_stage") == "after_screenshot_processed" and shader.get("observation_frame") == frame.get("screenshot_processed_frame"),
+                "base proxy observations do not bracket the saved screenshot view")
+        readiness = frame.get("material_readiness", {})
+        first_ready = readiness.get("first_ready_observation", {})
+        require(type(readiness.get("polls")) is int and type(readiness.get("rejected")) is int and
+                0 <= readiness["rejected"] <= readiness["polls"]-2 and readiness.get("deadline_seconds") == 30 and
+                type(readiness.get("elapsed_seconds")) in (int, float) and 3 <= readiness["elapsed_seconds"] < 30 and
+                ready_shader(first_ready) and first_ready.get("observation_stage") == "visible_readiness_poll" and
+                type(readiness.get("first_ready_frame")) in (int, float) and
+                previous < first_ready.get("observation_frame", -1) == readiness["first_ready_frame"] < frame.get("request_frame", -1),
+                "material did not become ready on two distinct visible frames within its deadline")
+        last = readiness.get("last_observation", {})
+        require(ready_shader(last) and last.get("observation_stage") == "visible_readiness_poll" and
+                last.get("observation_frame") == frame.get("request_frame"), "last readiness observation is not the request-frame proxy")
         require(finite_vector(frame.get("camera"), 3) and finite_vector(frame.get("rotation"), 3) and abs(frame.get("fov", 0)-35) < .01, "missing actual camera")
         require(type(frame.get("request_frame")) in (int, float) and previous < frame["request_frame"] <= frame.get("screenshot_processed_frame", -1), "invalid screenshot frame chronology")
         previous = frame["screenshot_processed_frame"]
         require(frame.get("final_view_observations") == 1 and type(frame.get("final_view_frame")) in (int, float) and
-                frame["request_frame"] <= frame["final_view_frame"] <= previous, "final blended settings are not bound to exactly one screenshot view")
+                frame["request_frame"] < frame["final_view_frame"] == previous, "final blended settings are not bound to exactly one screenshot view")
         final = frame.get("final_post_process", {})
         for key, expected_value in FINAL_POST_PROCESS.items():
             actual_value = final.get(key)

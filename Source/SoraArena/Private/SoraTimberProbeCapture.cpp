@@ -3,6 +3,7 @@
 #if WITH_DEV_AUTOMATION_TESTS && WITH_EDITOR && !UE_BUILD_SHIPPING && !UE_BUILD_TEST
 #include "SoraFrontEnd.h"
 #include "World/SoraPresentationCapabilities.h"
+#include "World/SoraCaptureReadiness.h"
 #include "AssetCompilingManager.h"
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
@@ -69,43 +70,49 @@ TArray<TSharedPtr<FJsonValue>> UV(const FVector2f& V)
 { return {MakeShared<FJsonValueNumber>(V.X),MakeShared<FJsonValueNumber>(V.Y)}; }
 TArray<TSharedPtr<FJsonValue>> Color(const FVector4& V)
 { return {MakeShared<FJsonValueNumber>(V.X),MakeShared<FJsonValueNumber>(V.Y),MakeShared<FJsonValueNumber>(V.Z),MakeShared<FJsonValueNumber>(V.W)}; }
-TSharedRef<FJsonObject> ResolutionControl()
+struct FResolutionControls
 {
-    auto O=MakeShared<FJsonObject>(); const auto* V=IConsoleManager::Get().FindConsoleVariable(TEXT("r.ScreenPercentage"));
-    O->SetNumberField(TEXT("screen_percentage"),V?V->GetFloat():-1);
-    O->SetNumberField(TEXT("flags"),V?uint32(V->GetFlags()):0);
-    O->SetStringField(TEXT("set_by"),V?GetConsoleVariableSetByName(V->GetFlags()):TEXT("absent"));
-    FDynamicResolutionStateInfos Dynamic; GEngine->GetDynamicResolutionCurrentStateInfos(Dynamic);
-    const TCHAR* Status=TEXT("unknown");
-    switch (Dynamic.Status)
+    // Cache absence as well as presence once per fixture. Repeated queries of
+    // the unregistered test CVar cause UE5.8's frequent-lookup warning.
+    IConsoleVariable* Screen=IConsoleManager::Get().FindConsoleVariable(TEXT("r.ScreenPercentage"));
+    IConsoleVariable* Override=IConsoleManager::Get().FindConsoleVariable(TEXT("r.Test.OverrideScreenPercentageInterface"));
+    TSharedRef<FJsonObject> Read() const
     {
-        case EDynamicResolutionStatus::Unsupported: Status=TEXT("Unsupported"); break;
-        case EDynamicResolutionStatus::Disabled: Status=TEXT("Disabled"); break;
-        case EDynamicResolutionStatus::Paused: Status=TEXT("Paused"); break;
-        case EDynamicResolutionStatus::Enabled: Status=TEXT("Enabled"); break;
-        case EDynamicResolutionStatus::DebugForceEnabled: Status=TEXT("DebugForceEnabled"); break;
+        auto O=MakeShared<FJsonObject>(); const auto* V=Screen;
+        O->SetNumberField(TEXT("screen_percentage"),V?V->GetFloat():-1);
+        O->SetNumberField(TEXT("flags"),V?uint32(V->GetFlags()):0);
+        O->SetStringField(TEXT("set_by"),V?GetConsoleVariableSetByName(V->GetFlags()):TEXT("absent"));
+        FDynamicResolutionStateInfos Dynamic; GEngine->GetDynamicResolutionCurrentStateInfos(Dynamic);
+        const TCHAR* Status=TEXT("unknown");
+        switch (Dynamic.Status)
+        {
+            case EDynamicResolutionStatus::Unsupported: Status=TEXT("Unsupported"); break;
+            case EDynamicResolutionStatus::Disabled: Status=TEXT("Disabled"); break;
+            case EDynamicResolutionStatus::Paused: Status=TEXT("Paused"); break;
+            case EDynamicResolutionStatus::Enabled: Status=TEXT("Enabled"); break;
+            case EDynamicResolutionStatus::DebugForceEnabled: Status=TEXT("DebugForceEnabled"); break;
+        }
+        O->SetStringField(TEXT("dynamic_resolution_status"),Status);
+        // This test CVar is mentioned by SceneView.h but is not registered in
+        // this UE5.8 build. Absence is a separate observation, not a value of -1.
+        O->SetBoolField(TEXT("test_interface_override_registered"),Override!=nullptr);
+        if (Override) O->SetNumberField(TEXT("test_interface_override"),Override->GetInt());
+        else O->SetField(TEXT("test_interface_override"),MakeShared<FJsonValueNull>());
+        return O;
     }
-    O->SetStringField(TEXT("dynamic_resolution_status"),Status);
-    const auto* Override=IConsoleManager::Get().FindConsoleVariable(TEXT("r.Test.OverrideScreenPercentageInterface"));
-    // This test CVar is mentioned by SceneView.h but is not registered in
-    // this UE5.8 build. Absence is a separate observation, not a value of -1.
-    O->SetBoolField(TEXT("test_interface_override_registered"),Override!=nullptr);
-    if (Override) O->SetNumberField(TEXT("test_interface_override"),Override->GetInt());
-    else O->SetField(TEXT("test_interface_override"),MakeShared<FJsonValueNull>());
-    return O;
-}
+};
 // This callback runs on the game thread after the actual viewport view has
 // blended its unbound volumes and owned camera. It only observes the one view
 // whose screenshot request matches the original file; no synthetic CalcSceneView.
 class FViewObservation final:public FSceneViewExtensionBase
 {
-    FViewport* Viewport; FSceneInterface* Scene;
+    FViewport* Viewport; FSceneInterface* Scene; FResolutionControls Resolution;
     TSharedPtr<FJsonObject> Frame; FString File; int32 Observations=0;
 protected:
     bool IsActiveThisFrame_Internal(const FSceneViewExtensionContext& Context) const override
     { return Frame.IsValid()&&Context.Viewport==Viewport; }
 public:
-    FViewObservation(const FAutoRegister& Register,FViewport* V,FSceneInterface* S):FSceneViewExtensionBase(Register),Viewport(V),Scene(S) {}
+    FViewObservation(const FAutoRegister& Register,FViewport* V,FSceneInterface* S,const FResolutionControls& R):FSceneViewExtensionBase(Register),Viewport(V),Scene(S),Resolution(R) {}
     void Arm(const TSharedRef<FJsonObject>& F,const FString& Path) { Frame=F; File=Path; Observations=0; Frame->SetNumberField(TEXT("final_view_observations"),0); }
     void Disarm() { Frame.Reset(); File.Reset(); }
     void BeginRenderViewFamily(FSceneViewFamily& Family) override
@@ -117,17 +124,17 @@ public:
             if (!View||!View->bIsGameView||View->bIsSceneCapture||View->bIsReflectionCapture||!View->IsPrimarySceneView()) continue;
             Frame->SetNumberField(TEXT("final_view_observations"),++Observations);
             Frame->SetNumberField(TEXT("final_view_frame"),double(Family.FrameCounter));
-            auto Resolution=ResolutionControl(); const auto* Driver=Family.GetScreenPercentageInterface();
+            auto ResolutionState=Resolution.Read(); const auto* Driver=Family.GetScreenPercentageInterface();
             // Public upper bound, not a GPU measurement. With dynamic resolution
             // disabled UE's legacy driver uses this same static primary fraction.
-            Resolution->SetNumberField(TEXT("primary_fraction_upper_bound"),Driver?Driver->GetResolutionFractionsUpperBound()[GDynamicPrimaryResolutionFraction]:-1);
-            Resolution->SetNumberField(TEXT("secondary_fraction"),Family.SecondaryViewFraction);
-            Resolution->SetNumberField(TEXT("view_primary_fraction_override"),View->SceneViewInitOptions.OverridePrimaryResolutionFraction);
-            Resolution->SetBoolField(TEXT("screen_percentage_show_flag"),Family.EngineShowFlags.ScreenPercentage);
+            ResolutionState->SetNumberField(TEXT("primary_fraction_upper_bound"),Driver?Driver->GetResolutionFractionsUpperBound()[GDynamicPrimaryResolutionFraction]:-1);
+            ResolutionState->SetNumberField(TEXT("secondary_fraction"),Family.SecondaryViewFraction);
+            ResolutionState->SetNumberField(TEXT("view_primary_fraction_override"),View->SceneViewInitOptions.OverridePrimaryResolutionFraction);
+            ResolutionState->SetBoolField(TEXT("screen_percentage_show_flag"),Family.EngineShowFlags.ScreenPercentage);
             const auto& Rect=View->UnscaledViewRect;
-            Resolution->SetArrayField(TEXT("unscaled_view_rect"),{MakeShared<FJsonValueNumber>(Rect.Min.X),MakeShared<FJsonValueNumber>(Rect.Min.Y),
+            ResolutionState->SetArrayField(TEXT("unscaled_view_rect"),{MakeShared<FJsonValueNumber>(Rect.Min.X),MakeShared<FJsonValueNumber>(Rect.Min.Y),
                 MakeShared<FJsonValueNumber>(Rect.Width()),MakeShared<FJsonValueNumber>(Rect.Height())});
-            Frame->SetObjectField(TEXT("final_resolution"),Resolution);
+            Frame->SetObjectField(TEXT("final_resolution"),ResolutionState);
             auto O=MakeShared<FJsonObject>(); const auto& P=View->FinalPostProcessSettings;
 #define PROBE_SETTING(Name) O->SetNumberField(TEXT(#Name),P.Name)
             PROBE_SETTING(AutoExposureMethod); PROBE_SETTING(AutoExposureApplyPhysicalCameraExposure); PROBE_SETTING(AutoExposureBias);
@@ -178,6 +185,9 @@ private:
     FEngineShowFlags OldFlags{ESFIM_Game}; FName OldNaniteMode;
     FString Folder,Pending,Platform,Slots[3]; TArray<uint8> Profiles[3]; bool Existed[3]={};
     FCVar Visualize,Composite,Edges,Shading,ScreenPercentage; FDelegateHandle Screenshot;
+    FResolutionControls Resolution;
+    SoraCaptureReadiness::FGate Readiness;
+    TSharedPtr<FJsonObject> FirstReadiness,LastReadiness,FirstReadyReadiness,LastRejectedReadiness;
     TSharedPtr<FJsonObject> OriginalResolution;
     TSharedPtr<FViewObservation,ESPMode::ThreadSafe> ViewObservation;
     FVector2D Size=FVector2D::ZeroVector; FVector CameraAt; FRotator CameraRotation;
@@ -226,7 +236,7 @@ private:
         GetNaniteVisualizationData();
         if (!Visualize.Save(TEXT("r.Nanite.Visualize"))||!Composite.Save(TEXT("r.Nanite.Visualize.Composite"))||!Edges.Save(TEXT("r.Nanite.Visualize.EdgeDetect"))||!Shading.Save(TEXT("r.Nanite.Visualize.DebugShading"))||!ScreenPercentage.Save(TEXT("r.ScreenPercentage")))
         { Fail(TEXT("Missing visualization or resolution controls")); return; }
-        OriginalResolution=ResolutionControl(); ScreenPercentage.Set(TEXT("100"));
+        OriginalResolution=Resolution.Read(); ScreenPercentage.Set(TEXT("100"));
         if (ScreenPercentage.Var->GetFloat()!=100.f) { Fail(TEXT("Could not establish 100 percent probe screen percentage")); return; }
         Folder=FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()/TEXT("Screenshots/SoraTimberProbe")/FGuid::NewGuid().ToString(EGuidFormats::Digits));
         IFileManager::Get().MakeDirectory(*Folder,true);
@@ -262,7 +272,7 @@ private:
         PP.bOverride_WhiteTemp=true; PP.WhiteTemp=6500;
         PP.bOverride_WhiteTint=true; PP.WhiteTint=0;
         PC()->SetViewTarget(Camera.Get());
-        ViewObservation=FSceneViewExtensions::NewExtension<FViewObservation>(Viewport()->Viewport,M->GetWorld()->Scene);
+        ViewObservation=FSceneViewExtensions::NewExtension<FViewObservation>(Viewport()->Viewport,M->GetWorld()->Scene,Resolution);
         for (int I=0;I<2;++I)
         {
             auto* L=M->GetWorld()->SpawnActor<APointLight>(); if (!L) { Fail(TEXT("Could not spawn fixture light")); return; } Owned.Add(L);
@@ -301,7 +311,7 @@ private:
             auto O=MakeShared<FJsonObject>(); O->SetStringField(TEXT("path"),File); O->SetNumberField(TEXT("bytes"),double(IFileManager::Get().FileSize(*File))); O->SetStringField(TEXT("md5"),Hash); Packages.Add(MakeShared<FJsonValueObject>(O));
         }
         if (Assets!=31) { Fail(TEXT("Probe must contain exactly the reviewed 31 saved packages")); return; }
-        for (const TCHAR* Relative:{TEXT("Source/SoraArena/Private/SoraTimberProbeCapture.cpp"),TEXT("scripts/unreal/import_nyaagyu_dojo_timbers.py"),TEXT("scripts/unreal/dojo_timber_admission.py"),TEXT("scripts/unreal/dojo_nanite.py")})
+        for (const TCHAR* Relative:{TEXT("Source/SoraArena/Private/SoraTimberProbeCapture.cpp"),TEXT("Source/SoraArena/Private/World/SoraCaptureReadiness.h"),TEXT("scripts/unreal/import_nyaagyu_dojo_timbers.py"),TEXT("scripts/unreal/dojo_timber_admission.py"),TEXT("scripts/unreal/dojo_nanite.py")})
         {
             const FString File=FPaths::ConvertRelativePathToFull(FPaths::ProjectDir()/Relative); auto O=MakeShared<FJsonObject>();
             if (IFileManager::Get().FileSize(*File)<=0) { Fail(TEXT("Missing capture/importer provenance input")); return; }
@@ -384,16 +394,80 @@ private:
         const bool Diagnostic=SM6&&(Mode()==1||Mode()==2);
         Visualize.Set(Diagnostic?Modes[Mode()]:TEXT("off")); Composite.Set(TEXT("1")); Edges.Set(TEXT("0")); Shading.Set(TEXT("0"));
         Viewport()->EngineShowFlags.SetVisualizeNanite(Diagnostic); Changed=FPlatformTime::Seconds();
+        Readiness={}; Readiness.Started=Changed; FirstReadiness.Reset(); LastReadiness.Reset(); FirstReadyReadiness.Reset(); LastRejectedReadiness.Reset();
+    }
+    struct FShader
+    {
+        bool Proxy=false,Fallback=false,Default=false,Valid=false,Complete=false; FString Asset;
+        bool Ready() const { return Proxy&&!Fallback&&!Default&&Valid&&Complete&&!Asset.IsEmpty(); }
+    };
+    FShader ObserveShader() const
+    {
+        FShader Shader;
+        const auto* Material=Fixtures[Index()]->GetStaticMeshComponent()->GetMaterial(0);
+        const FMaterialRenderProxy* Proxy=Material?Material->GetRenderProxy():nullptr;
+        const ERHIFeatureLevel::Type Feature=M->GetWorld()->GetFeatureLevel();
+        ENQUEUE_RENDER_COMMAND(SoraProbeMaterialObservation)([Proxy,Feature,&Shader](FRHICommandListImmediate&)
+        {
+            Shader.Proxy=Proxy!=nullptr; if (!Proxy) return;
+            // UE5.8 assigns the out pointer only on fallback; successful
+            // resolution leaves it unchanged (MaterialRenderProxy.cpp).
+            const FMaterialRenderProxy* ResolvedProxy=Proxy; const FMaterial& Resolved=Proxy->GetMaterialWithFallback(Feature,ResolvedProxy);
+            Shader.Fallback=ResolvedProxy!=Proxy; Shader.Default=Resolved.IsDefaultMaterial(); Shader.Asset=Resolved.GetAssetName();
+            const auto* Map=Resolved.GetRenderingThreadShaderMap(); Shader.Valid=Map&&Map->IsValidForRendering(); Shader.Complete=Resolved.IsRenderingThreadShaderMapComplete();
+        });
+        FlushRenderingCommands(); return Shader;
+    }
+    TSharedRef<FJsonObject> ShaderJson(const FShader& Shader,const TCHAR* Stage) const
+    {
+        auto ShaderJson=MakeShared<FJsonObject>();
+        ShaderJson->SetBoolField(TEXT("proxy_present"),Shader.Proxy); ShaderJson->SetBoolField(TEXT("used_fallback_proxy"),Shader.Fallback);
+        ShaderJson->SetBoolField(TEXT("default_material"),Shader.Default); ShaderJson->SetBoolField(TEXT("shader_map_valid"),Shader.Valid);
+        ShaderJson->SetBoolField(TEXT("shader_map_complete"),Shader.Complete); ShaderJson->SetStringField(TEXT("resource_asset"),Shader.Asset);
+        ShaderJson->SetStringField(TEXT("scope"),TEXT("CPU render-thread base proxy observation bracketing the screenshot view; not GPU shader identity, a draw count or visualization override identity"));
+        ShaderJson->SetStringField(TEXT("observation_stage"),Stage);
+        ShaderJson->SetNumberField(TEXT("observation_frame"),double(GFrameCounter));
+        return ShaderJson;
+    }
+    TSharedRef<FJsonObject> ReadinessJson() const
+    {
+        auto O=MakeShared<FJsonObject>(); O->SetNumberField(TEXT("polls"),Readiness.Polls); O->SetNumberField(TEXT("rejected"),Readiness.Rejected);
+        O->SetNumberField(TEXT("first_ready_frame"),double(Readiness.FirstReadyFrame)); O->SetNumberField(TEXT("deadline_seconds"),SoraCaptureReadiness::FGate::DeadlineSeconds);
+        O->SetNumberField(TEXT("elapsed_seconds"),FPlatformTime::Seconds()-Changed);
+        if (FirstReadiness.IsValid()) O->SetObjectField(TEXT("first_observation"),FirstReadiness);
+        if (LastReadiness.IsValid()) O->SetObjectField(TEXT("last_observation"),LastReadiness);
+        if (FirstReadyReadiness.IsValid()) O->SetObjectField(TEXT("first_ready_observation"),FirstReadyReadiness);
+        if (LastRejectedReadiness.IsValid()) O->SetObjectField(TEXT("last_rejected_observation"),LastRejectedReadiness);
+        O->SetStringField(TEXT("scope"),TEXT("two consecutive distinct-frame ready proxy observations after visibility; time-sliced completion processing; not rendered-pixel proof"));
+        return O;
     }
     void Capture()
     {
-        const auto Resolution=ResolutionControl(); const FString Dynamic=Resolution->GetStringField(TEXT("dynamic_resolution_status"));
-        if (Resolution->GetNumberField(TEXT("screen_percentage"))!=100||
+        // Visibility can schedule shader work after Begin's initial compile.
+        // Do not block on FinishAllCompilation in this polling path.
+        if (FPlatformTime::Seconds()-Changed>=SoraCaptureReadiness::FGate::DeadlineSeconds)
+        { Fail(TEXT("Visible timber material was not ready within 30 seconds; pending readiness observations retained")); return; }
+        if (Readiness.HasFrame&&GFrameCounter<=Readiness.LastFrame) return;
+        // UE5.8's registered shader manager forwards this to
+        // ProcessAsyncResults(true,false): time sliced, no global-shader wait.
+        FAssetCompilingManager::Get().ProcessAsyncTasks(true);
+        const FShader Shader=ObserveShader();
+        const auto Observation=ShaderJson(Shader,TEXT("visible_readiness_poll"));
+        LastReadiness=Observation; if (!FirstReadiness.IsValid()) FirstReadiness=Observation;
+        const bool Ready=Shader.Ready()&&Shader.Asset==(Index()<5?TEXT("M_SoraTimberNanite"):TEXT("M_SoraTimber"));
+        if (!Ready) { LastRejectedReadiness=Observation; FirstReadyReadiness.Reset(); }
+        else if (!Readiness.HasReady) FirstReadyReadiness=Observation;
+        const auto Admission=Readiness.Observe(FPlatformTime::Seconds(),GFrameCounter,Ready);
+        if (Admission==SoraCaptureReadiness::EResult::TimedOut)
+        { Fail(TEXT("Visible timber material readiness deadline expired; observations retained")); return; }
+        if (Admission!=SoraCaptureReadiness::EResult::Capture) return;
+        const auto ResolutionState=Resolution.Read(); const FString Dynamic=ResolutionState->GetStringField(TEXT("dynamic_resolution_status"));
+        if (ResolutionState->GetNumberField(TEXT("screen_percentage"))!=100||
             (ScreenPercentage.Var->GetFlags()&ECVF_SetByMask)!=(ScreenPercentage.Flags&ECVF_SetByMask)||
             (Dynamic!=TEXT("Disabled")&&Dynamic!=TEXT("Unsupported"))||
-            (Resolution->GetBoolField(TEXT("test_interface_override_registered"))&&Resolution->GetNumberField(TEXT("test_interface_override"))!=0))
+            (ResolutionState->GetBoolField(TEXT("test_interface_override_registered"))&&ResolutionState->GetNumberField(TEXT("test_interface_override"))!=0))
         {
-            FString Observed; FJsonSerializer::Serialize(Resolution,TJsonWriterFactory<>::Create(&Observed));
+            FString Observed; FJsonSerializer::Serialize(ResolutionState,TJsonWriterFactory<>::Create(&Observed));
             Fail(*(TEXT("Probe requires unchanged 100 percent control and inactive dynamic/test resolution overrides: ")+Observed)); return;
         }
         FlushRenderingCommands(); const auto& Data=GetNaniteVisualizationData(); const bool Diagnostic=SM6&&(Mode()==1||Mode()==2);
@@ -409,28 +483,8 @@ private:
         F->SetBoolField(TEXT("paused"),M->GetWorld()->IsPaused()); F->SetBoolField(TEXT("hud_hidden"),!HUD.IsValid()||!HUD->bShowHUD);
         F->SetStringField(TEXT("active_visualization"),Data.GetActiveModeName().ToString()); F->SetNumberField(TEXT("active_mode_id"),Data.GetActiveModeID());
         F->SetBoolField(TEXT("show_visualize_nanite"),Viewport()->EngineShowFlags.VisualizeNanite); F->SetObjectField(TEXT("cvars"),State());
-        // Observe the renderer's base-material proxy resolution on its owning
-        // thread, separately from visible Nanite pixels. Preserve originals if
-        // this resolves a default shader; archive validation then fails it.
-        struct FShader { bool Proxy=false,Fallback=false,Default=false,Valid=false,Complete=false; FString Asset; } Shader;
-        const auto* Material=Fixtures[Index()]->GetStaticMeshComponent()->GetMaterial(0);
-        const FMaterialRenderProxy* Proxy=Material?Material->GetRenderProxy():nullptr;
-        const ERHIFeatureLevel::Type Feature=M->GetWorld()->GetFeatureLevel();
-        ENQUEUE_RENDER_COMMAND(SoraProbeMaterialObservation)([Proxy,Feature,&Shader](FRHICommandListImmediate&)
-        {
-            Shader.Proxy=Proxy!=nullptr; if (!Proxy) return;
-            // UE5.8 assigns the out pointer only on fallback; successful
-            // resolution leaves it unchanged (MaterialRenderProxy.cpp).
-            const FMaterialRenderProxy* ResolvedProxy=Proxy; const FMaterial& Resolved=Proxy->GetMaterialWithFallback(Feature,ResolvedProxy);
-            Shader.Fallback=ResolvedProxy!=Proxy; Shader.Default=Resolved.IsDefaultMaterial(); Shader.Asset=Resolved.GetAssetName();
-            const auto* Map=Resolved.GetRenderingThreadShaderMap(); Shader.Valid=Map&&Map->IsValidForRendering(); Shader.Complete=Resolved.IsRenderingThreadShaderMapComplete();
-        });
-        FlushRenderingCommands(); auto ShaderJson=MakeShared<FJsonObject>();
-        ShaderJson->SetBoolField(TEXT("proxy_present"),Shader.Proxy); ShaderJson->SetBoolField(TEXT("used_fallback_proxy"),Shader.Fallback);
-        ShaderJson->SetBoolField(TEXT("default_material"),Shader.Default); ShaderJson->SetBoolField(TEXT("shader_map_valid"),Shader.Valid);
-        ShaderJson->SetBoolField(TEXT("shader_map_complete"),Shader.Complete); ShaderJson->SetStringField(TEXT("resource_asset"),Shader.Asset);
-        ShaderJson->SetStringField(TEXT("scope"),TEXT("render-thread base material proxy resolution; not a draw count or visualization override identity"));
-        F->SetObjectField(TEXT("material_render_readback"),ShaderJson);
+        F->SetObjectField(TEXT("material_pre_request_readback"),ShaderJson(Shader,TEXT("before_screenshot_request")));
+        F->SetObjectField(TEXT("material_readiness"),ReadinessJson());
         Frames.Add(MakeShared<FJsonValueObject>(F)); Pending=Folder/(Name+TEXT(".png")); Waiting=true;
         ViewObservation->Arm(F,Pending); FScreenshotRequest::RequestScreenshot(Pending,false,false);
     }
@@ -438,9 +492,25 @@ private:
     {
         if (!Waiting) return;
         if (IFileManager::Get().FileSize(*Pending)<=0) { Fail(TEXT("Original probe screenshot missing")); return; }
-        Frames.Last()->AsObject()->SetStringField(TEXT("file"),FPaths::GetCleanFilename(Pending)); Frames.Last()->AsObject()->SetNumberField(TEXT("screenshot_processed_frame"),double(GFrameCounter));
+        const auto Frame=Frames.Last()->AsObject();
+        Frame->SetStringField(TEXT("file"),FPaths::GetCleanFilename(Pending)); Frame->SetNumberField(TEXT("screenshot_processed_frame"),double(GFrameCounter));
+        // The pixels have been saved. Observe the same base proxy again after
+        // that view, retaining both endpoints rather than assigning the old
+        // pre-request observation to the next screenshot frame.
+        const FShader FinalShader=ObserveShader();
+        Frame->SetObjectField(TEXT("material_render_readback"),ShaderJson(FinalShader,TEXT("after_screenshot_processed")));
         if (ViewObservation.IsValid()) ViewObservation->Disarm();
-        UE_LOG(LogTemp,Display,TEXT("SORA_TIMBER_PROBE_FRAME %s"),*Pending); Waiting=false; Pending.Reset(); ++Step; if (Step<Count()) Switch();
+        double ViewFrame=-1,ViewCount=0;
+        const bool SameView=Frame->TryGetNumberField(TEXT("final_view_frame"),ViewFrame)&&Frame->TryGetNumberField(TEXT("final_view_observations"),ViewCount)&&
+            ViewCount==1&&ViewFrame==double(GFrameCounter);
+        // Acknowledgement means the original exists, not that it passed. Emit
+        // before admission so failure archives retain this last saved image.
+        UE_LOG(LogTemp,Display,TEXT("SORA_TIMBER_PROBE_FRAME %s"),*Pending);
+        if (!SameView||!FinalShader.Ready()||FinalShader.Asset!=Frame->GetObjectField(TEXT("material_pre_request_readback"))->GetStringField(TEXT("resource_asset")))
+        {
+            Waiting=false; Fail(TEXT("Saved timber original has no matching final view or its final base proxy is unready/changed; original and both observations retained")); return;
+        }
+        Waiting=false; Pending.Reset(); ++Step; if (Step<Count()) Switch();
     }
     void Cleanup()
     {
@@ -481,17 +551,22 @@ private:
         for (const auto& P:PackageHashes) Unchanged=IFileManager::Get().FileSize(*P.Key)>0&&LexToString(FMD5Hash::HashFile(*P.Key))==P.Value&&Unchanged;
         Test.TestTrue(TEXT("Probe restores view/menu/HUD/profile/CVars and removes owned actors"),Restored); Test.TestTrue(TEXT("Saved probe package bytes remain unchanged"),Unchanged);
         if (Folder.IsEmpty()) return;
-        auto O=MakeShared<FJsonObject>(); O->SetStringField(TEXT("schema"),TEXT("sora-arena.timber-probe.v2")); O->SetStringField(TEXT("scope"),Scope);
+        auto O=MakeShared<FJsonObject>(); O->SetStringField(TEXT("schema"),TEXT("sora-arena.timber-probe.v3")); O->SetStringField(TEXT("scope"),Scope);
         O->SetBoolField(TEXT("sm6_requested"),SM6); O->SetBoolField(TEXT("nanite_eligible"),Eligible); O->SetStringField(TEXT("shader_platform"),Platform);
         O->SetStringField(TEXT("rhi"),GDynamicRHI?GDynamicRHI->GetName():TEXT("none")); O->SetBoolField(TEXT("null_rhi"),GUsingNullRHI); O->SetStringField(TEXT("adapter"),GRHIAdapterName);
         O->SetArrayField(TEXT("viewport"),{MakeShared<FJsonValueNumber>(Size.X),MakeShared<FJsonValueNumber>(Size.Y)}); O->SetArrayField(TEXT("fixture_origin"),Vec(Origin));
         O->SetArrayField(TEXT("meshes"),Meshes); O->SetArrayField(TEXT("frames"),Frames); O->SetNumberField(TEXT("frame_count"),Frames.Num()); O->SetArrayField(TEXT("asset_files"),Packages); O->SetArrayField(TEXT("source_inputs"),Inputs);
         if (OriginalResolution.IsValid()) O->SetObjectField(TEXT("original_resolution_control"),OriginalResolution);
-        O->SetObjectField(TEXT("restored_resolution_control"),ResolutionControl());
+        O->SetObjectField(TEXT("restored_resolution_control"),Resolution.Read());
+        if (Failed&&Step<Count()) { O->SetNumberField(TEXT("pending_step"),Step); O->SetObjectField(TEXT("pending_readiness"),ReadinessJson()); }
         O->SetStringField(TEXT("lighting"),TEXT("two temporary point lights, key 20M lm warm/fill 5M lm cool; manual ISO100 1/60 f2.8, bias0; directional/fog/atmosphere/sky/GI/reflection excluded; neutral global grade and no bloom/AO; final screenshot-view settings recorded, no photometric calibration"));
         O->SetBoolField(TEXT("restored"),Restored); O->SetBoolField(TEXT("packages_unchanged"),Unchanged); O->SetBoolField(TEXT("passed"),!Failed&&!Test.HasAnyErrors()&&Step==Count());
         O->SetStringField(TEXT("acceptance"),TEXT("original paired pixels and human geometry/material review required; no GPU counters inferred; SM5 generated fallback differs from authored pool"));
-        FString Json; FJsonSerializer::Serialize(O,TJsonWriterFactory<>::Create(&Json)); Test.TestTrue(TEXT("Writes original probe observation report"),FFileHelper::SaveStringToFile(Json,*(Folder/TEXT("capture.json"))));
+        FString Json; FJsonSerializer::Serialize(O,TJsonWriterFactory<>::Create(&Json));
+        const FString ReportPath=Folder/TEXT("capture.json"); const bool Saved=FFileHelper::SaveStringToFile(Json,*ReportPath);
+        Test.TestTrue(TEXT("Writes original probe observation report"),Saved);
+        // Also locates a deadline failure that produced no PNG at all.
+        if (Saved) UE_LOG(LogTemp,Display,TEXT("SORA_TIMBER_PROBE_REPORT %s"),*ReportPath);
     }
 };
 }
