@@ -180,6 +180,21 @@ def sha256(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
+def imported_assets():
+    """Every file of the imported namespaces the capture draws, the W18 rig's and the paws', by SHA-256.
+
+    This is what the parts actually were. Their material paths alone cannot show it: root's review of capture v6
+    found the run-up comparison accepting v5 and v6, whose paw bytes differ, because their setups and paths
+    matched."""
+    out = {}
+    for ns in (RIG, PAWS):
+        folder = ROOT / "Content" / ns[len("/Game/"):]
+        for p in sorted(folder.rglob("*")):
+            if p.is_file():
+                out[p.relative_to(ROOT).as_posix()] = sha256(p)
+    return out
+
+
 def plain_material(name, colour, rough):
     """A constant-albedo review material in the level's folder, rebuilt each run."""
     folder = LEVEL.rsplit("/", 1)[0]
@@ -660,7 +675,7 @@ def main():
                             "assessment_camera": {k: CONTROL["camera"][k] for k in (
                                 "first_person_fov_deg", "aspect", "near_plane_cm", "reticle_clear_radius")},
                             "set_materials": SET_MATERIALS, "sun": SUN, "ev100": ev100, "exposure_bias": 1.0 - ev100,
-                            "highres_runup": runup,
+                            "highres_runup": runup, "assets_sha256": imported_assets(),
                             "scope": "editor review originals: not the native first-person renderer or an admission"}
                 (out / "manifest.json").write_text(json.dumps(manifest, indent=1) + "\n")
                 finish(f"YUMI_FP_REVIEW_COMPLETE: {len(status['written'])} captures in {out}")

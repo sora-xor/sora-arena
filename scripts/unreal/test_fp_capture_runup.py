@@ -52,6 +52,14 @@ class Capture(unittest.TestCase):
     def test_the_default_is_auto(self):
         self.assertIn('"runup": "auto"', self.text)
 
+    def test_the_manifest_binds_the_imported_assets_by_content(self):
+        # Root's review of capture v6: a controlled run needs the parts' bytes, not only their material paths.
+        fn = next(n for n in ast.walk(self.tree) if isinstance(n, ast.FunctionDef) and n.name == "imported_assets")
+        src = ast.get_source_segment(self.text, fn)
+        for needle in ("for ns in (RIG, PAWS):", "rglob(\"*\")", "sha256(p)"):
+            self.assertIn(needle, src)
+        self.assertIn('"assets_sha256": imported_assets()', self.text)
+
 
 @unittest.skipUnless(CLIENT.is_file(), "the UE 5.8 engine source is not installed")
 class Engine(unittest.TestCase):

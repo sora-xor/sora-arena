@@ -10,8 +10,8 @@ colour, occlusion, taper, fringes, curl and sleeve all changed together.
 - **The fur barely changes.** The close-up's gaps read grey-brown rather
   than pale, and its form contrast rose by about 15 %. The eye view stays a
   flat bright white, and the angular patchwork of cards remains.
-- **The high-frequency residual rose** by 10-18 %. That measure cannot tell
-  speckle from the variation added on purpose.
+- **The high-frequency residual rose** by 9.9-18.9 %. That measure cannot
+  tell speckle from the variation added on purpose.
 - Details below.
 
 ## What v5 answers
@@ -131,6 +131,9 @@ mailbox note of 21:26 UTC.
 
 The comparison uses `fur_capture_noise --assets`, fixed in a036f59 to root's
 review, whose probes it now refuses. It passed its setup checks.
+- It is an asset comparison only. v5 and v6 predate content binding
+  (assets_sha256), so no tool here can show which imported files differ; the
+  ledgers and build records do.
 
 **The reticle:** right_cheek_clear's ID pass still shows no bow, arrow or
 paw pixel in the 0.12 disc.
@@ -139,8 +142,8 @@ paw pixel in the 0.12 disc.
 
 | hold | fur pixels, v5 / v6 | own residual, v5 / v6 | common-region residual, v5 / v6 | fur / bow |
 | --- | --- | --- | --- | --- |
-| right_cheek_clear | 7,630 / 7,541 | 0.0133 / 0.0157 | 0.0132 / 0.0156 (+18 %) | 2.5x / 2.9x |
-| paw | 279,556 / 274,438 | 0.0092 / 0.0098 | 0.0089 / 0.0098 (+10 %) | - |
+| right_cheek_clear | 7,630 / 7,541 | 0.0133 / 0.0157 | 0.0132 / 0.0156 (+18.9005 %) | 2.5x / 2.9x |
+| paw | 279,556 / 274,438 | 0.0092 / 0.0098 | 0.0089 / 0.0098 (+9.8516 %) | - |
 
 The residual rose. The occlusion, the colour's variation, the soft card
 edges and the irregular fringes all add high-frequency content on purpose,

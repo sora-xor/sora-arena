@@ -84,7 +84,9 @@ SETUP = {"fov": 70.0, "mesh_scale": 0.75,
          "resolution": [80, 60], "cameras": {"rest": CAMERA, "paw": dict(CAMERA, field_of_view_deg=32.0)},
          "assessment_camera": {"reticle_clear_radius": 0.12},
          "set_materials": {"floor": ["M_Floor", [0.09, 0.055, 0.035], 0.22]}, "sun": {"lux": 20000.0},
-         "ev100": 12.97, "exposure_bias": -11.97}
+         "ev100": 12.97, "exposure_bias": -11.97,
+         "assets_sha256": {"Content/Generated/Qualification/NyaakotoFPPaws/SM_Paw.uasset": "a" * 64,
+                           "Content/Generated/Qualification/W18YumiRig/SK_Weapon_18.uasset": "b" * 64}}
 
 
 def setup(**changes):
@@ -208,6 +210,23 @@ class Compare(unittest.TestCase):
             self.assertEqual(F.main(["--compare", str(a), str(b), "--out", str(out)]), 0)
             self.assertTrue(json.loads(out.read_text())["compare"])
 
+    def test_a_controlled_run_binds_its_assets_by_content(self):
+        # Root's review of capture v6: matching setups and material paths accepted v5 and v6, whose paw bytes differ.
+        changed = setup()
+        changed["assets_sha256"]["Content/Generated/Qualification/NyaakotoFPPaws/SM_Paw.uasset"] = "c" * 64
+        with tempfile.TemporaryDirectory() as tmp:
+            a = write_run(tmp, "a", runup=4)
+            b = write_run(tmp, "b", runup=32, speckled=False, base=changed)
+            with self.assertRaises(F.NoiseError) as cm:
+                F.compare_runs(a, b)
+            self.assertIn("assets_sha256", str(cm.exception))
+        with tempfile.TemporaryDirectory() as tmp:                     # runs from before the binding
+            a = write_run(tmp, "a", runup=4, base=setup(assets_sha256=None))
+            b = write_run(tmp, "b", runup=32, speckled=False, base=setup(assets_sha256=None))
+            with self.assertRaises(F.NoiseError) as cm:
+                F.compare_runs(a, b)
+            self.assertIn("no assets_sha256", str(cm.exception))
+
     def test_a_key_absent_from_both_runs_is_no_match(self):
         # As --assets (root's review of 148c5c1): an absent key, or an intact post-ID readback missing from both.
         for case, change, needle in (("ev100 deleted from both", {"ev100": None}, "ev100"),
@@ -296,6 +315,17 @@ class Assets(unittest.TestCase):
             with self.assertRaises(F.NoiseError) as cm:
                 F.compare_assets(a, b)
             self.assertIn("materials_after_id_pass[rest]", str(cm.exception))
+
+    def test_it_names_the_assets_that_differ_where_both_runs_bind_them(self):
+        paw = "Content/Generated/Qualification/NyaakotoFPPaws/SM_Paw.uasset"
+        changed = setup()
+        changed["assets_sha256"][paw] = "c" * 64
+        with tempfile.TemporaryDirectory() as tmp:
+            a = write_run(tmp, "a")
+            b = write_run(tmp, "b", speckled=False, base=changed)
+            self.assertEqual(F.compare_assets(a, b)["assets"], {"bound": True, "differ": [paw]})
+            c = write_run(tmp, "c", speckled=False, base=setup(assets_sha256=None))
+            self.assertFalse(F.compare_assets(a, c)["assets"]["bound"])
 
     def test_the_command_compares_assets_and_takes_one_mode(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -29,6 +29,15 @@ what is good.
 two runs that differ only in their run-up. Every SETUP_KEYS entry of the two
 manifests must be equal: the holds, cameras, poses, assets' materials,
 exposure, sun and set. Otherwise it refuses.
+- **Content hashes too** (assets_sha256: every file of the imported
+  namespaces the capture draws, render_yumi_fp_review.imported_assets).
+  Root's review of capture v6 found this mode accepting v5 and v6, whose paw
+  bytes differ, because their setups and material paths matched. So without
+  content hashes it could not establish a controlled run.
+- Runs captured before that binding (v4's run-up pair, v5, v6) are now
+  refused. v4's pair rests instead on its freeze records
+  (Saved/W18Rebuild/s15_freeze_*: the namespaces hashed before and after
+  each run).
 
 Per hold it reports:
 - each run's own threshold-selected fur pixels and residual (the selection
@@ -46,6 +55,8 @@ with different paw assets, as v4 against v5 (NYAAKOTO_FP_FUR_V4.md).
   the study's digest (recorded) and the assets' bytes, which no manifest
   holds.
 - It reports the same per-hold figures as --compare.
+- Where both runs bind their assets (assets_sha256), it lists which imported
+  files differ. Otherwise it says that this is not recorded.
 
 **Before either comparison measures anything** (root's review of 148c5c1,
 whose --assets accepted four malformed copies of v5):
@@ -93,7 +104,8 @@ CONTROL_FLOOR = 1.0 / 255.0             # a control residual below one 8-bit ste
 # name.
 SETUP_KEYS = ("fov", "mesh_scale", "holds", "sockets_cm", "poses_component_cm", "materials", "materials_after_id_pass",
               "solved", "id_colours", "control", "study", "requested_holds", "ids_enabled", "eye_view_holds",
-              "resolution", "cameras", "assessment_camera", "set_materials", "sun", "ev100", "exposure_bias")
+              "resolution", "cameras", "assessment_camera", "set_materials", "sun", "ev100", "exposure_bias",
+              "assets_sha256")
 
 
 # What two captures of different paw assets must share (--assets): the capture's setup, and per common hold its
@@ -147,6 +159,8 @@ VALID = {
     "solved": lambda v: isinstance(v, dict), "materials_after_id_pass": lambda v: isinstance(v, dict),
     "study": lambda v: isinstance(v, dict) and isinstance(v.get("sha256"), str) and bool(v["sha256"]),
     "requested_holds": lambda v: _names(v) and bool(v), "eye_view_holds": lambda v: _names(v),
+    "assets_sha256": lambda v: _filled(v) and all(isinstance(k, str) and isinstance(h, str) and len(h) == 64
+                                                  for k, h in v.items()),
 }
 
 
@@ -358,10 +372,17 @@ def compare_assets(run_a: Path, run_b: Path) -> dict:
                 differ.append(f"{k}[{hold}]")
     if differ:
         raise NoiseError(f"{run_a} and {run_b} differ in {differ}: not one setup")
+    bound = all(VALID["assets_sha256"](m.get("assets_sha256")) for m in (ma, mb))
+    if bound:
+        fa, fb = ma["assets_sha256"], mb["assets_sha256"]
+        assets = {"bound": True, "differ": sorted(k for k in set(fa) | set(fb) if fa.get(k) != fb.get(k))}
+    else:
+        assets = {"bound": False, "note": "a run predates content binding (render_yumi_fp_review imported_assets): "
+                                          "which assets differ is not recorded"}
     return {"schema_version": 2, "generator": "scripts/art/fur_capture_noise.py", "compare_assets": True,
             "a": {"run": str(run_a), "manifest_sha256": hashlib.sha256(da).hexdigest()},
             "b": {"run": str(run_b), "manifest_sha256": hashlib.sha256(db).hexdigest()},
-            "tolerance_cm": ASSET_TOL_CM, "study_same": ma.get("study") == mb.get("study"),
+            "tolerance_cm": ASSET_TOL_CM, "study_same": ma.get("study") == mb.get("study"), "assets": assets,
             "holds": _pair(ia, ib, common),
             "scope": "two paw assets under one setup: a measurement of capture noise in the fur, not a gate"}
 
