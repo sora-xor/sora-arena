@@ -116,6 +116,9 @@ def hall_layout(rect):
             for name, wood, group in names:
                 out[name] = {"rect": list(rect), "side": side, "bay": index, "kind": wood, "group": group,
                              "seed": int(hashlib.sha256(name.encode()).hexdigest()[:8], 16)}
+                if group == "rails":
+                    width_m = (((x1-x0) if side % 2 == 0 else (y1-y0)) / counts[side]) / 100.0
+                    out[name]["length_m"] = round(width_m if wood in ("Nageshi", "Cornice") else width_m-.24, 5)
             index += 4 if kind == 5 else 1
     return out
 
@@ -214,6 +217,8 @@ def placement_coverage(meta, project, commit=None):
                         any(row.get(k) != ref[k] for k in ("rect", "side", "bay", "kind", "seed")) or
                         ("name" in row and row["name"] != name)):
                     raise ValueError(f"timber manifest placement differs from chapter layout: {name}")
+                if ref["group"] == "rails" and number(row, "length_m") != ref["length_m"]:
+                    raise ValueError(f"timber rail length differs from chapter bay: {name}")
                 built[name] = ref
         rows = []
         for rect, uses in sorted(halls.items()):

@@ -444,7 +444,11 @@ class TimberBinding(unittest.TestCase):
         self.assertEqual(N.placement_transform(row, 700)["location"], [8000, -1300, 0])
         row = layout["SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B00"]
         self.assertEqual(row["seed"], 3819177482)
+        self.assertEqual(row["length_m"], 1.8)
         self.assertEqual(N.placement_transform(row, 350)["location"], [8090, -1300, 0])
+        self.assertEqual(layout["SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B00"]["length_m"], 1.56)
+        self.assertEqual(layout["SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S1_B00"]["length_m"], 1.85714)
+        self.assertEqual(layout["SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B00"]["length_m"], 1.61714)
 
     def test_missing_one_or_all_observed_placements_cannot_pass(self):
         self.meta["meshes"].pop(); self.reject("missing runtime timber placements: 1")
@@ -502,6 +506,17 @@ class TimberBinding(unittest.TestCase):
             self.write(N.BINDING, self.binding); self.refresh(); self.reject("differs from chapter layout")
         self.write(N.BINDING, b'{"schema":"a","schema":"b"}'); self.refresh()
         self.reject("duplicate binding JSON key")
+
+    def test_missing_invalid_or_wrong_rail_length_fails_even_with_fresh_hashes(self):
+        path = N.MANIFESTS[1]; original = json.loads((self.root/path).read_text())
+        for length in (None, True, float("nan"), "1.8", 999, 1.80001):
+            with self.subTest(length=length):
+                manifest = copy.deepcopy(original)
+                if length is None: manifest["placements"][0].pop("length_m")
+                else: manifest["placements"][0]["length_m"] = length
+                self.write(path, manifest); self.binding["manifests"][path] = self.sha(path)
+                self.write(N.BINDING, self.binding); self.refresh()
+                self.reject("length")
 
     def test_duplicate_unexpected_malformed_or_missing_manifest_placements_fail(self):
         path = N.MANIFESTS[0]; original = json.loads((self.root/path).read_text())

@@ -74,8 +74,10 @@ Binding SHA256 values must agree with those sources. The independent layout
 model is pinned to the reviewed binder/helper/rail-generator hashes; a changed
 layout algorithm requires a new source review. It does not execute the binder.
 Manifest placements must have unique names and the chapter-derived rectangle,
-side, bay, kind and deterministic seed. The binding's hall and estate totals
-are recomputed; observed meshes never supply the expected set.
+side, bay, kind and deterministic seed. Rail length must equal the current
+side's bay width in metres, minus 0.24 m for koshi/nuki, rounded to five decimal
+places as in the pinned generator. The binding's hall and estate totals are
+recomputed; observed meshes never supply the expected set.
 
 The fixed camera scope is **chapter_01.json / pl_tsumagizaka_dojo**, rectangle
 `[8000,-1300,11600,1300]`. In SM6, all 65 unique columns and 235 unique rails
