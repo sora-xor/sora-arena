@@ -45,9 +45,12 @@ const TCHAR* Phases[]={TEXT("steady"),TEXT("positive"),TEXT("negative"),TEXT("re
 struct FFrame
 {
     FVector2D Reticle,Projected,Target;
-    FVector Camera,Ray;
+    FVector Camera,Ray,PresentationRay;
     FRotator Rotation,Offset;
     FQuat Bow;
+    FString PresentationPose;
+    float WorldFOV=0,FirstPersonFOV=0;
+    bool FallbackBow=false;
     uint64 Number=0;
     double Age=0,Wall=0,World=0;
     bool Drawing=false,Held=false;
@@ -188,17 +191,23 @@ private:
         auto* Kit=Hero()->GetEquipment(); auto* Camera=Hero()->GetCamera();
         Last.Reticle=Center; Last.Camera=Camera->GetComponentLocation(); Last.Rotation=PC()->GetControlRotation();
         Last.Ray=Kit->BowAimDirection(); Last.Offset=Kit->BowAimOffset(); Last.Bow=Hero()->GetViewmodel()->GetRelativeRotation().Quaternion();
+        const FMinimalViewInfo View=SoraViewmodelPresentation::CameraView(*Camera);
+        Last.PresentationRay=(View.TransformWorldToFirstPerson(View.Location+Hero()->GetViewmodel()->GetForwardVector()*10000.f,true)-View.Location).GetSafeNormal();
+        Last.PresentationPose=Hero()->GetViewmodel()->PresentationPose(); Last.FallbackBow=Hero()->GetViewmodel()->UsesFallbackBowPresentation();
+        Last.WorldFOV=View.FOV; Last.FirstPersonFOV=View.FirstPersonFOV;
         Last.Number=GFrameCounter; Last.World=M->GetWorld()->GetTimeSeconds(); Last.Age=Last.World-DrawWorld; Last.Wall=FPlatformTime::Seconds()-DrawWall;
         Last.Drawing=Kit->IsBowDrawing(); Last.Held=PC()->PlayerInput->IsPressed(FireKey); Last.Ammo=Kit->Ammo;
         if(!PC()->ProjectWorldLocationToScreen(Last.Camera+Last.Ray*10000.f,Last.Projected)||
             !PC()->ProjectWorldLocationToScreen(C()->ArcheryTarget(0)->GetActorLocation(),Last.Target)||
             !Last.Camera.Equals(FixedCamera,.1)||!Last.Rotation.Equals(FixedRotation,.001)||
             !Camera->GetComponentRotation().Equals(FixedRotation,.001)||
-            !Last.Bow.Equals(Last.Offset.Quaternion()*FRotator(Last.Drawing?-15:0,0,0).Quaternion(),1e-5)||
+            !Last.FallbackBow||Last.Bow.ContainsNaN()||
+            Last.PresentationPose!=(Last.Drawing?TEXT("bow.drawn"):TEXT("bow"))||
+            (Last.Drawing&&!Last.PresentationRay.Equals(Last.Ray,1e-5))||
             FVector2D::Distance(Center,Last.Projected)>.25||M->GetWorld()->IsPaused()||
             !FMath::IsNearlyEqual(M->GetWorld()->GetWorldSettings()->GetEffectiveTimeDilation(),1.f)||
             !FMath::IsNearlyEqual(Hero()->CustomTimeDilation,1.f))
-        { Fail(TEXT("Live reticle projection, fixed camera or ordinary world-clock invariant failed")); return; }
+        { Fail(TEXT("Live reticle/presentation direction, fixed camera or ordinary world-clock invariant failed")); return; }
         if(!PendingFile.IsEmpty()) return;
         const bool Ready=Phase==0?(Last.Age>=1&&Last.Age<4.65&&Last.Drawing&&Last.Held&&Last.Offset.IsZero()):
             Phase==1?(Last.Drawing&&Last.Held&&Last.Offset.Pitch>.10&&Last.Offset.Yaw>.20):
@@ -238,6 +247,12 @@ private:
         Array(TEXT("rotation"),{Sample.Rotation.Pitch,Sample.Rotation.Yaw,Sample.Rotation.Roll});
         Array(TEXT("offset_degrees"),{Sample.Offset.Pitch,Sample.Offset.Yaw}); Array(TEXT("ray"),{Sample.Ray.X,Sample.Ray.Y,Sample.Ray.Z});
         Array(TEXT("bow_quat"),{Sample.Bow.X,Sample.Bow.Y,Sample.Bow.Z,Sample.Bow.W});
+        Json->SetStringField(TEXT("presentation_pose"),Sample.PresentationPose);
+        Json->SetNumberField(TEXT("presentation_schema_version"),1);
+        Json->SetStringField(TEXT("presentation_admission"),TEXT("existing primitive fallback; direction invariant only, authored framing/arrow pixels unqualified"));
+        Json->SetBoolField(TEXT("fallback_bow"),Sample.FallbackBow);
+        Array(TEXT("presentation_projected_direction"),{Sample.PresentationRay.X,Sample.PresentationRay.Y,Sample.PresentationRay.Z});
+        Json->SetNumberField(TEXT("world_fov"),Sample.WorldFOV); Json->SetNumberField(TEXT("first_person_fov"),Sample.FirstPersonFOV);
         if(Phase==2)
         {
             // Keep the observed render sample and actual release separate.

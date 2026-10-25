@@ -1,7 +1,7 @@
 {
  "schema_version": 2,
  "kind": "sora-first-person-viewmodels",
- "status": "A4 contract v2, revised for root's review of 3d01352. No runtime code reads it yet. scripts/art/check_viewmodel_framing.py checks the framing as pinhole math on socket points; that is not visual acceptance, and paw-mesh pixels and near-plane geometry need real captures. See docs/art-direction/FIRST_PERSON_VIEWMODEL_CONTRACT.md",
+ "status": "A4 contract v2. Guarded first-person runtime reads this table for admitted meshes and the explicitly labelled primitive bow fallback. Authored 18-20 and approximate hero sockets remain unadmitted. scripts/art/check_viewmodel_framing.py checks framing as pinhole math on socket points; that is not visual acceptance, and paw-mesh pixels and near-plane geometry need real captures. See docs/art-direction/FIRST_PERSON_VIEWMODEL_CONTRACT.md",
  "scope": "First person only. USoraViewmodelComponent also serves world-visible opponents and practice participants; their Build() and KernelPose() transforms stay exactly as today, independent of this contract.",
  "frame": "Eye space of ASoraCharacterBase::Eye (the WeaponRoot parent): X forward, Y right, Z up, centimetres; rotations are FRotator degrees [pitch, yaw, roll]. anchor_cm is where the pose's anchor socket sits; the mesh hangs from that socket.",
  "camera": {
@@ -28,6 +28,7 @@
  "aim_presentation": {
   "note": "BowAimOffset rotates the gameplay ray in the world camera (94 degrees). The same angle on the 70-degree first-person camera lands about 1.5 times further from the centre. The presentation-only correction points the drawn arrow line at the screen point where the HUD ray lands: direction (1, u * tan(fp/2), v * tan(fp/2) / aspect) for that point (u, v). The gameplay ray is unchanged.",
   "check_offsets_deg": [[2.0, 0.0], [0.0, 2.0], [4.0, -3.0], [6.0, 4.0]],
+  "check_offsets_scope": "These are large-angle stress cases. Current gameplay sway amplitudes are 0.18 degrees pitch and 0.28 degrees yaw; runtime uses the actual camera projection rather than the nominal FOV pair above.",
   "tolerance": 0.02
  },
  "envelopes": {

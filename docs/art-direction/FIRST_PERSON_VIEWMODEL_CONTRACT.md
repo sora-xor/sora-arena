@@ -1,10 +1,38 @@
 # First-person viewmodel contract (A4), v2
 
 **Status:** contract v2, revised for root's review of `3d01352`
-(`viewmodel-contract-3d01352-review`). It is source-only: no runtime code
-reads it yet, and nothing is validated in Unreal. The checker is pinhole math
+(`viewmodel-contract-3d01352-review`), with the gear truth correction in
+`47d81a5`. Guarded first-person runtime now reads the table; this source candidate
+has not been built or validated in Unreal. The checker is pinhole math
 on socket points. Paw-mesh pixels, near-plane clipping of real geometry and
 the look need real first-person captures.
+
+The implementation applies the contract only after a loaded weapon mesh has its
+expected package identity, geometry, generated materials, and finite full imported
+`Grip_R`, `Grip_L` and `Muzzle` sockets. It recenters the mesh using the anchor's
+translation while preserving every socket's rotation and scale for attachment
+readback. The approximate katana/bokken/carbine sockets do not qualify. Authored
+weapons 18–20 remain disabled pending separate import/original capture admission.
+No paw or carried-gear assets are created by this implementation.
+
+The existing primitive bow has a separately labelled presentation fallback. Its
+actual `YumiGrip` center `(7,0,-5)` is the pivot; its geometry is unchanged. The
+table moves that pivot through rest, drawn and reload states. This does not prove
+the fallback matches authored framing or that arrow pixels meet the reticle.
+`SoraCapture.BowAim.Live` records that distinction and checks the current native
+first-person projected direction independently from the unchanged HUD/shot ray.
+
+Runtime correction reads the actual camera's `FMinimalViewInfo` and calls
+`TransformFirstPersonToWorld` rather than assuming the nominal 94°/70° FOV pair.
+Only rest/action/anchor transitions blend. The live aim direction remains current
+on the first transition frame. The contract's 2–6° aim inputs are stress cases;
+gameplay sway is bounded at 0.18° pitch and 0.28° yaw.
+
+Pending engine checks: `SoraArena.Presentation.ViewmodelContract`,
+`SoraArena.Presentation.ViewmodelProjection`,
+`SoraArena.Presentation.ViewmodelBowTransitions`, the existing `BowAimSway` and
+`BowAimCancellation` tests, and fresh 720p/1080p `SoraCapture.BowAim.Live` originals.
+Host framing checks remain a source model, not rendered acceptance.
 
 ## Root's decisions, as applied
 
