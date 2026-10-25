@@ -4,7 +4,8 @@ Run: python3 -m unittest scripts/unreal/test_measure_fp_fur_cost.py
 
 - csv_summary keeps the GPU and thread-time columns, takes their median and
   quartiles over the frames, skips cells that are not numbers, and stops at
-  the trailing metadata row (a CSV profile repeats its header after it).
+  the trailing metadata row. A header row repeated before it is not a frame
+  (cost_v7.json's frames 121 counted one; its samples are 120).
 - png_size reads a PNG's IHDR and refuses anything else.
 """
 from __future__ import annotations
@@ -23,6 +24,7 @@ CSV = ("EVENTS,FrameTime,GameThreadTime,GPU/Total,GPU/Translucency,DrawCall/Opaq
        "Exclude,18.0,6.0,5.0,1.5,11,b\n"
        ",17.0,5.5,4.5,,12,c\n"
        ",15.0,4.5,3.5,0.5,13,d\n"
+       "EVENTS,FrameTime,GameThreadTime,GPU/Total,GPU/Translucency,DrawCall/Opaque,Other\n"
        "[HasHeaderRowAtEnd],1,[platform],Mac\n"
        "EVENTS,FrameTime,GameThreadTime,GPU/Total,GPU/Translucency,DrawCall/Opaque,Other\n")
 

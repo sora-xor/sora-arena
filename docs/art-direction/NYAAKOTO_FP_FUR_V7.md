@@ -1,10 +1,19 @@
 # The first-person paw's fur, v7: the white mitt, a smooth coat height, and clumped strands
 
-**Status (2026-10-25):** source and CPU checks, under root's bounded lane
-for the v8 capture (its handbacks of 22:05 and 22:44 UTC). The build,
-import, material check, cost check and capture v8 follow below once run.
-This is a candidate: not art acceptance, an admission, a performance
-acceptance or a photoreal claim.
+**Status (2026-10-25):** source, rebuilt assets, a GPU cost check and capture
+v8 (`Saved/YumiFP/v8_fur`), under root's bounded lane for the v8 capture.
+The lane was returned at 23:15 UTC. This is a candidate: not art
+acceptance, an admission, a performance acceptance or a photoreal claim.
+
+**Result, qualified** (two asset versions, one capture each):
+- **The contours are gone** in both views, as are the tabby's stripes.
+- **The coat is brighter:** mean luminance 0.719 → 0.759 in the eye view and
+  0.662 → 0.709 in the close-up.
+- **The close-up** now shows a clumped coat lying along the flow, where v7's
+  was felt. Its clumps can read as feathery or scaled.
+- **The eye view** is cleaner but still reads mostly smooth at its scale.
+- **No speckle came back:** the high-frequency residual fell further.
+- Details below.
 
 ## What capture v7 showed
 
@@ -192,3 +201,148 @@ The tests:
   - the height changes smoothly, but steps without the smoothing;
   - the far field is the hero's white.
 - `test_fp_fur_overdraw` (4) and `test_measure_fp_fur_cost` (3), both new.
+
+## The run (2026-10-25)
+
+Each command, PID, log and exit is in `Saved/W18Rebuild/s41-s51*` and the
+mailbox note of 23:15 UTC.
+
+| step | when (UTC) | exits | record |
+| --- | --- | --- | --- |
+| Blender, attempt 0 (the v2 textures) | 22:49:13-22:51:30 | 0 | `s41_paw_v7.attempt0_regular_grain.*`; `Archive/v7_attempt0_production` |
+| Blender (v3) | 23:04:18-23:06:31 | 0 | `s43_paw_v7.*`; signed b9ef0365 |
+| the Unreal import | 23:07:37-23:08:21 | editor 0, wrapper 0 | `readback_v7.json` |
+| the fresh-editor material check | 23:08:42-23:09:04 | 0 / 0, no problems | `material_check_v7.json` |
+| the cost check | 23:09:27-23:11:00 | 0 / 0; it exited by itself 6 s after its marker | `Cost/cost_v7.json`, six CSVs |
+| capture v8 | 23:12:21-23:12:52 | 0 / 0; it exited by itself 3 s after its marker | `s50_v8_fur_outputs.sha256` |
+
+**Preserved first:**
+- v6's paw production is at `Archive/v6_paw_production`;
+- the imported namespace capture v7 drew is at `Archive/v6_ue_namespace`.
+  Its 21 files are the ones v7's manifest binds.
+
+**The build:**
+- 529,806 triangles, the same topology as v6;
+- the white gain 1.2367;
+- the shells at least 0.40 mm clear of the bow and 99.987 % above the skin;
+- the FBX normals as built.
+
+**The import's readback:**
+- The shell section's normals are 4.76° off their faces (FBX 4.78°).
+- The shell material is 1,786 pixel and 357 vertex instructions, with 2
+  pixel texture samples (v6: 1,781 pixel instructions; the tint multiply
+  adds 5). The opaque fur skin's is 212. That is an instruction ratio, not a
+  runtime cost.
+
+**The freezes** around capture v8 agree: head b9ef0365, no tracked change,
+and the imported namespaces unchanged. The editor saved its own settings
+under `Saved/Config` during the session.
+
+## The cost check, as measured
+
+The cost check ran in the editor, in the capture's own scene. Its viewport
+was 969 x 545, so these are not 1920 x 1080 times. Each state is 120 valid
+samples: the JSON's frames 121 counted a repeated header row, which the
+fixed parser no longer counts.
+
+The translucency pass (`GPU/Translucency`), median (p25-p75), ms:
+
+| hold | the shells | the same shells, unlit, opacity 0 | the paw hidden |
+| --- | --- | --- | --- |
+| right_cheek_clear | 2.108 (2.001-2.188) | 0.085 (0-0.147) | 0 |
+| paw | 2.527 (2.377-2.572) | 0.049 (0-0.115) | 0 |
+
+The whole frame (`GPUTime`), median (p25-p75), ms:
+
+| hold | the shells | the clear shells | the paw hidden |
+| --- | --- | --- | --- |
+| right_cheek_clear | 11.96 (10.24-13.58) | 11.61 (10.04-12.84) | 10.56 (9.36-11.89) |
+| paw | 11.71 (10.56-12.88) | 11.37 (9.82-12.38) | 10.95 (9.19-12.73) |
+
+The lit and clear shells differ by only 0.35 and 0.34 ms in the whole frame,
+with wide, overlapping spreads. So the pass medians are not whole-frame
+savings. The editor's frames were bound by its game thread, about 12.3 ms of
+a 13.9 ms frame.
+
+**The shell material's instructions per translucency lighting mode**
+(compiled copies, not timed):
+
+| lighting mode | pixel instructions |
+| --- | --- |
+| Surface ForwardShading (as built) | 1,786 |
+| Surface TranslucencyVolume | 1,229 |
+| Volumetric directional | 410 |
+| Volumetric non-directional | 384 |
+| Volumetric non-directional per vertex | 337 |
+| the clear control | 150 |
+
+**What this does not show** (root's review of the run):
+- The clear control changes the opacity, the lighting and the shader
+  together. So it does not isolate equal-work overdraw.
+- Two holds cannot establish a fixed plus per-fragment model.
+
+The close-up has about 32 times the eye view's shell fragments, yet its pass
+took only 0.42 ms more. A large per-frame cost of the lit translucent
+material would explain that, but it is a hypothesis, not a finding. Nor does
+the run show that fewer layers would save little.
+
+**The next measurements**, for a later lane:
+- time the shells under the cheaper lighting modes;
+- an equal-work control: the same shader and opacity with fewer layers;
+- times at 1920 x 1080.
+
+## Capture v8 against v7
+
+The comparison is `fur_capture_noise --assets`, an asset comparison.
+- **The setup is matched:** holds, cameras, sockets, poses, resolution,
+  exposure, sun, set and run-up are equal.
+- **The assets differ, as bound:** v8 binds 33 files (the tint map is new)
+  and v7 32. 22 differ, all in the paw's namespace. The rig's are identical.
+- **No paw slot changed.**
+
+**The reticle:** right_cheek_clear's ID pass shows no bow, arrow or paw
+pixel in the 0.12 disc.
+
+**The fur's high-frequency residual** (`s51_fur_assets_v7_v8.json`):
+
+| hold | common pixels | residual, v7 / v8 | fur / bow, v7 / v8 |
+| --- | --- | --- | --- |
+| right_cheek_clear | 7,739 | 0.00316 / 0.00245 (-22.51 %) | 0.61x / 0.52x |
+| paw | 278,882 | 0.00179 / 0.00163 (-9.06 %) | - |
+
+**The coat's form** (`s51_fur_form_v7_v8.json`; over both runs' fur
+selections, as v6/v7's):
+
+| hold | mean luminance, v7 / v8 | form contrast (15 px), v7 / v8 | p10, v7 / v8 |
+| --- | --- | --- | --- |
+| right_cheek_clear | 0.719 / 0.759 | 0.087 / 0.084 | 0.607 / 0.668 |
+| paw | 0.662 / 0.709 | 0.081 / 0.074 | 0.544 / 0.600 |
+
+**What the originals show:**
+- **The eye view:**
+  - v7's grey contour lines are gone, and the paw is a clean white with soft
+    form shading;
+  - the clumps are about 2 px here, so at this scale it still reads mostly
+    smooth, glove-like in form.
+- **The close-up:**
+  - the stripe bands are gone;
+  - the coat shows overlapping tufts with soft partings along the flow,
+    fine streaks, and a fuzzier silhouette at the knuckle;
+  - it no longer reads as felt, but its clumps can read as feathery or
+    scaled.
+- **Unchanged:** the pink pad at the grip's edge, and the kote's cloth and
+  cord.
+
+**The CPU fragment count** at v8's poses (`s51_overdraw_v8.json`) equals the
+count at v7's: 89,514 (eye) and 2,908,447 (close-up).
+
+## What is left, for a later lane
+
+These are candidates, not started.
+- **Root's review of the v7 build's Cycles originals:** dense grooves at
+  macro and archer scale, and smooth highlights on the cloth and the cords.
+- **The eye view's smoothness:** larger tufts, or guard hairs or fins along
+  the silhouette, would give it structure at 0.44 mm per pixel.
+- **The close-up's feathery read:** softer partings, more variation in
+  length, and less regular clump outlines.
+- **The cost:** the next measurements above.

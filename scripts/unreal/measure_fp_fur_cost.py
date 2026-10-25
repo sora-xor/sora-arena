@@ -62,8 +62,8 @@ CSV_STABLE_TICKS = 10          # a CSV's size must hold this many ticks before i
 def csv_summary(text):
     """A CSV profile's per-frame columns: {"frames": n, "columns_total": n, "columns": [...], "stats": {column:
     {median, p25, p75, n}}}, for every column whose name holds "GPU" and for TIME_COLUMNS ("columns" lists those
-    found). Rows after the data (the trailing "[HasHeaderRowAtEnd]" metadata and repeated header) and cells that are
-    not numbers are skipped."""
+    found). A frame is a row with at least one of those columns a number, so a repeated header row is not one. Rows
+    after the data (the trailing "[HasHeaderRowAtEnd]" metadata) and cells that are not numbers are skipped."""
     rows = list(csv.reader(io.StringIO(text)))
     if not rows:
         return {"frames": 0, "columns_total": 0, "columns": [], "stats": {}}
@@ -76,12 +76,17 @@ def csv_summary(text):
             break
         if len(row) < len(header):
             continue
-        frames += 1
+        numbers = {}
         for i in keep:
             try:
-                values[header[i]].append(float(row[i]))
+                numbers[header[i]] = float(row[i])
             except ValueError:
                 pass
+        if not numbers:                  # a repeated header row (cost_v7.json counted one as its 121st frame)
+            continue
+        frames += 1
+        for name, v in numbers.items():
+            values[name].append(v)
     out = {}
     for name, v in values.items():
         if not v:
