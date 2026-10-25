@@ -103,5 +103,63 @@ class Holds(unittest.TestCase):
         self.assertAlmostEqual(H.segment_behind((20, 0, 0), (0, 0, 0), 10.0), 0.5)
 
 
+class CheekHold(unittest.TestCase):
+    """cheek_hold, the general cheek construction (a nock target and a cant), and the study's
+    right_cheek_clear candidate built with it (YUMI_FP_RETICLE_STUDY.md)."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.study = json.loads(STUDY.read_text(encoding="utf-8"))
+        cls.arrow_bytes = ARROW.read_bytes()
+        full = json.loads(cls.arrow_bytes.decode("utf-8"))["states"]["Full"]
+        cls.grip_r, cls.muzzle = cm(full["nock_m"]), cm(full["muzzle_m"])
+        c = cls.study["root_control"]
+        cls.scale = c["mesh_scale"]
+        cls.rc = H.right_cheek(tuple(c["anchor_cm"]), tuple(c["rotation_deg"]), cls.scale, cls.grip_r, cls.muzzle)
+
+    def test_right_cheek_is_its_case_of_no_cant(self):
+        h = H.cheek_hold(self.rc["target_nock"], 0.0, self.scale, self.grip_r, self.muzzle)
+        for a, b in zip(h["anchor"] + h["rot"], self.rc["anchor"] + self.rc["rot"]):
+            self.assertAlmostEqual(a, b, places=9)
+
+    def test_the_rotator_round_trips(self):
+        for rot in ((0.0, 0.0, 0.0), (0.17, -1.44, 0.0), (12.0, -33.0, 21.0), (-40.0, 170.0, -95.0)):
+            self.assertTrue(all(abs(a - b) < 1e-9 for a, b in zip(H.rotator_of(H.rotation(*rot)), rot)), rot)
+
+    def test_the_arrow_stays_on_the_aim_and_the_nock_on_its_target_at_any_cant(self):
+        for target in ((-5.77, 3.1, -4.5), (-5.77, 6.0, -4.5), (-8.0, 5.0, -7.0)):
+            for cant in (-15.0, 0.0, 10.0):
+                h = H.cheek_hold(target, cant, self.scale, self.grip_r, self.muzzle)
+                self.assertLess(max(abs(m) for m in h["aim_miss_cm"]), 1e-9)
+                self.assertLess(math.dist(h["posed"]["Grip_R"], target), 1e-9)
+
+    def test_a_positive_cant_tilts_the_bows_top_to_the_right(self):
+        up0 = H.rotation(*H.cheek_hold(self.rc["target_nock"], 0.0, self.scale, self.grip_r, self.muzzle)["rot"])[2]
+        up = H.rotation(*H.cheek_hold(self.rc["target_nock"], 10.0, self.scale, self.grip_r, self.muzzle)["rot"])[2]
+        self.assertAlmostEqual(math.degrees(math.asin(up[1])) - math.degrees(math.asin(up0[1])), 10.0, delta=0.2)
+
+    def test_the_study_candidate_is_this_construction_from_the_committed_sockets(self):
+        c = self.study["right_cheek_clear"]
+        import hashlib
+        self.assertEqual(c["sockets_source_sha256"], hashlib.sha256(self.arrow_bytes).hexdigest())
+        self.assertEqual((c["nock_target_cm"][0], c["nock_target_cm"][2]),
+                         (self.rc["target_nock"][0], self.rc["target_nock"][2]))   # the control's nock X and Z kept
+        self.assertEqual((c["nock_target_cm"][1], c["cant_right_deg"]), (6.0, 0.0))
+        h = H.cheek_hold(tuple(c["nock_target_cm"]), c["cant_right_deg"], self.scale, self.grip_r, self.muzzle,
+                         tuple(c["aim_cm"]))
+        for a, b in zip(list(h["anchor"]) + list(h["rot"]), c["anchor_cm"] + c["rotation_deg"]):
+            self.assertAlmostEqual(a, b, places=9)
+
+    def test_roots_left_side_boxes_do_not_admit_the_candidate_either(self):
+        # Recorded, not relaxed: like right_cheek, the candidate's grip and Muzzle lie right of root's boxes.
+        c, ctl = self.study["right_cheek_clear"], self.study["root_control"]
+        cam = ctl["camera"]
+        aspect = cam["aspect"][0] / cam["aspect"][1]
+        h = H.cheek_hold(tuple(c["nock_target_cm"]), c["cant_right_deg"], self.scale, self.grip_r, self.muzzle)
+        for name in ("Grip_L", "Muzzle"):
+            self.assertFalse(H.in_box(H.screen_uv(h["posed"][name], cam["first_person_fov_deg"], aspect),
+                                      ctl["screen"][name]), name)
+
+
 if __name__ == "__main__":
     unittest.main()

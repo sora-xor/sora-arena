@@ -92,6 +92,48 @@ def right_cheek(control_anchor, control_rot, scale, grip_r_cm, muzzle_cm, aim=AI
             "aim_miss_cm": aim_miss(posed["Grip_R"], posed["Muzzle"], aim)}
 
 
+def rotator_of(rows):
+    """The FRotator (pitch, yaw, roll) in degrees whose rotation() rows are ``rows``, for |pitch| < 90."""
+    (xx, xy, xz), (_yx, _yy, yz), (_zx, _zy, zz) = rows
+    pitch = math.degrees(math.asin(max(-1.0, min(1.0, xz))))
+    yaw = math.degrees(math.atan2(xy, xx))
+    roll = math.degrees(math.atan2(-yz, zz))
+    return pitch, yaw, roll
+
+
+def turn_about(rows, axis, angle_deg):
+    """The rows after a right-handed turn of ``angle_deg`` about the eye-space ``axis`` (Rodrigues)."""
+    ax, ay, az = _unit(axis)
+    s, c = math.sin(math.radians(angle_deg)), math.cos(math.radians(angle_deg))
+    q = ((c + ax * ax * (1 - c), ax * ay * (1 - c) - az * s, ax * az * (1 - c) + ay * s),
+         (ay * ax * (1 - c) + az * s, c + ay * ay * (1 - c), ay * az * (1 - c) - ax * s),
+         (az * ax * (1 - c) - ay * s, az * ay * (1 - c) + ax * s, c + az * az * (1 - c)))
+    return tuple(tuple(sum(q[i][k] * r[k] for k in range(3)) for i in range(3)) for r in rows)
+
+
+def cheek_hold(nock_target, cant_right_deg, scale, grip_r_cm, muzzle_cm, aim=AIM_CM):
+    """A full-draw hold with its posed nock on ``nock_target`` and the arrow line through ``aim``.
+
+    - Roll 0: the bow is turned until the posed nock-to-Muzzle line points from the target at the aim
+      (solve_aim).
+    - Then it is canted about that line by ``cant_right_deg``: the bow's top tilts that many degrees to the
+      archer's right. Eye space is X forward, Y right, Z up, so that is a right-handed turn of -cant_right_deg
+      about the forward line. The arrow line, the axis of the turn, stays through the aim.
+    - The anchor puts the posed nock on the target.
+    right_cheek is the case of the mirrored control nock and no cant."""
+    d_mesh = tuple(m - g for m, g in zip(muzzle_cm, grip_r_cm))
+    line = tuple(aim[i] - nock_target[i] for i in range(3))
+    pitch, yaw = solve_aim(d_mesh, line)
+    rows = turn_about(rotation(pitch, yaw, 0.0), line, -cant_right_deg)
+    rot = rotator_of(rows)
+    nock_rel = apply(rotation(*rot), tuple(scale * c for c in grip_r_cm))
+    anchor = tuple(nock_target[i] - nock_rel[i] for i in range(3))
+    posed = {"Grip_R": place(anchor, rot, scale, grip_r_cm), "Muzzle": place(anchor, rot, scale, muzzle_cm),
+             "Grip_L": tuple(anchor)}
+    return {"anchor": anchor, "rot": rot, "target_nock": tuple(nock_target), "cant_right_deg": cant_right_deg,
+            "posed": posed, "aim_miss_cm": aim_miss(posed["Grip_R"], posed["Muzzle"], aim)}
+
+
 def screen_uv(p, fov_h_deg, aspect):
     """Pinhole screen coordinates in half-widths and half-heights, as check_viewmodel_framing.Screen.uv."""
     tan_h = math.tan(math.radians(fov_h_deg / 2.0))

@@ -27,6 +27,10 @@ It builds a fresh uncooked level, /Game/ArtReview/YumiFP/L_YumiFP_<time>.
     mirrors its Y, and turns the bow so the arrow line passes through
     (2000, 0, 0). The manifest records the solve and its difference from
     Codex's candidate.
+  - right_cheek_clear: the study's clear-reticle candidate, right_cheek's
+    construction with its nock target 6.0 cm right of the eye
+    (yumi_fp_holds.cheek_hold; YUMI_FP_RETICLE_STUDY.md), solved the same way.
+    It is not in the default holds.
   - paw: a closer three-quarter view of the paw on the grip.
   (The earlier proposed "kai", Y -6, moves farther left: it is not a
   right-cheek fix, and is dropped.)
@@ -127,6 +131,9 @@ HOLDS = {
     "root": {"anchor": list(CONTROL["anchor_cm"]), "rot": list(CONTROL["rotation_deg"]), "draw": 1.0},
     # Solved from the posed full-draw sockets at capture time (yumi_fp_holds.right_cheek).
     "right_cheek": {"solve": "right_cheek", "draw": 1.0},
+    # The study's clear-reticle candidate: right_cheek's construction with its own nock target and cant
+    # (yumi_fp_holds.cheek_hold), also solved from the posed sockets.
+    "right_cheek_clear": {"solve": "cheek", "draw": 1.0},
     "paw": {"anchor": list(CONTROL["anchor_cm"]), "rot": list(CONTROL["rotation_deg"]), "draw": 1.0,
             "camera": {"loc": [36.0, -10.0, -2.0], "look_at": list(CONTROL["anchor_cm"]), "fov": 32.0}},
 }
@@ -426,22 +433,30 @@ class Viewmodel:
         self.comp.override_animation_data(self.anim, False, False, draw, 0.0)
 
     def solve(self, hold):
-        """right_cheek from the sockets this mesh actually poses at full draw (rebuilt ones after a rebuild)."""
+        """A solved hold from the sockets this mesh actually poses at full draw (rebuilt ones after a rebuild):
+        right_cheek, or a study cheek candidate (nock target and cant) by yumi_fp_holds.cheek_hold."""
         self.evaluate(1.0)
         grip_r, muzzle = self.component_socket("Grip_R"), self.component_socket("Muzzle")
-        rc = H.right_cheek(tuple(CONTROL["anchor_cm"]), tuple(CONTROL["rotation_deg"]), MESH_SCALE, grip_r, muzzle)
-        cand = STUDY["right_cheek"]["codex_candidate"]
+        if HOLDS[hold]["solve"] == "right_cheek":
+            rc = H.right_cheek(tuple(CONTROL["anchor_cm"]), tuple(CONTROL["rotation_deg"]), MESH_SCALE, grip_r,
+                               muzzle)
+            cand = STUDY["right_cheek"]["codex_candidate"]
+            vs = "vs_codex_candidate"
+        else:
+            cand = STUDY[hold]
+            rc = H.cheek_hold(tuple(cand["nock_target_cm"]), float(cand["cant_right_deg"]), MESH_SCALE, grip_r,
+                              muzzle, tuple(cand["aim_cm"]))
+            vs = "vs_study"
         rc["component_cm"] = {"Grip_R": grip_r, "Muzzle": muzzle}
-        rc["vs_codex_candidate"] = {
-            "anchor_cm": [a - b for a, b in zip(rc["anchor"], cand["anchor_cm"])],
-            "rotation_deg": [a - b for a, b in zip(rc["rot"], cand["rotation_deg"])]}
+        rc[vs] = {"anchor_cm": [a - b for a, b in zip(rc["anchor"], cand["anchor_cm"])],
+                  "rotation_deg": [a - b for a, b in zip(rc["rot"], cand["rotation_deg"])]}
         HOLDS[hold].update(anchor=list(rc["anchor"]), rot=list(rc["rot"]))
         self.solved[hold] = rc
 
     def pose(self, hold):
         """Hang the bow from Grip_L at the anchor, and hold the take at the draw fraction."""
         h = HOLDS[hold]
-        if h.get("solve") == "right_cheek":
+        if h.get("solve") in ("right_cheek", "cheek"):
             self.solve(hold)
         self.bow.set_actor_scale3d(unreal.Vector(MESH_SCALE, MESH_SCALE, MESH_SCALE))
         self.bow.set_actor_rotation(frotator(h["rot"]), False)

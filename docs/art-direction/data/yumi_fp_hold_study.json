@@ -80,5 +80,69 @@
     "Only full draw; draw transition and nocking remain unreviewed."
    ]
   }
+ },
+ "right_cheek_clear": {
+  "rule": "right_cheek's construction with one change: the full-draw nock target 6.0 cm right of the eye instead of the control's mirrored 3.11 cm (the control's nock X and Z kept, no cant). That is the least lateral change, on a 0.5 cm grid, at which the whole skinned bow (string included), the arrow and the paw clear the reticle's 0.12 disc by at least 5 px at 1920 x 1080 (yumi_fp_raster, validated against capture v3)",
+  "nock_target_cm": [
+   -5.769999473861986,
+   6.0,
+   -4.487487571287388
+  ],
+  "cant_right_deg": 0.0,
+  "aim_cm": [
+   2000.0,
+   0.0,
+   0.0
+  ],
+  "anchor_cm": [
+   59.97230204971197,
+   4.3466065033901895,
+   -9.591150877431854
+  ],
+  "rotation_deg": [
+   0.17058947590651996,
+   -1.440702245693795,
+   -0.0
+  ],
+  "sockets_source": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/W18_rig_review_arrow.json",
+  "sockets_source_sha256": "9db5f60feca6645f1fa26cf12f99459a57742bfeb7346f469ffdb1771129237e",
+  "rig_geometry_sha256": "4ad4656d1f4d37b4651d85f836238acb575d874a605028619862fbf69ae980d8",
+  "cpu_raster": {
+   "resolution": [
+    1920,
+    1080
+   ],
+   "disc_pixels": 13200,
+   "in_disc": {
+    "bow": 0,
+    "arrow": 0,
+    "paw": 0
+   },
+   "clearance_half_heights": {
+    "bow": 0.138,
+    "arrow": 0.259,
+    "paw": 0.2803
+   },
+   "right_cheek_for_comparison": {
+    "in_disc": {
+     "bow": 5025,
+     "arrow": 0,
+     "paw": 0
+    },
+    "clearance_half_heights": {
+     "bow": 0.0195,
+     "arrow": 0.1894,
+     "paw": 0.2141
+    }
+   },
+   "validation": "docs/art-direction/YUMI_FP_RETICLE_STUDY.md (capture v3's bow in the disc: 1,330 / 4,956 px captured, 1,309 / 5,025 px rasterised)"
+  },
+  "limitations": [
+   "A review candidate from CPU geometry, not a capture: its ID pass must confirm the disc before anything else.",
+   "Root's left-side screen boxes do not admit it, as they do not admit right_cheek; they are recorded, not relaxed.",
+   "Its physical reading depends on where the first-person eye point is (YUMI_FP_RETICLE_STUDY.md).",
+   "Kyudo's own aim lets the bow cover part of the target; a clear reticle is a stylisation for play.",
+   "Only full draw; root's viewmodels.json and the runtime pose contract are unchanged."
+  ]
  }
 }
