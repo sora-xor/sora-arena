@@ -134,12 +134,10 @@ class Rebuild(unittest.TestCase):
     SOURCES = ("scripts/art/create_runtime_weapon_yumi.py", "scripts/art/yumi_nigiri.py", "scripts/art/yumi_ya.py",
                "scripts/art/create_runtime_weapon_lib.py", "scripts/art/yumi_draw.py")
 
-    @unittest.expectedFailure
     def test_the_rig_was_built_from_the_current_w18_sources(self):
-        """STALE, on purpose. The W18 nigiri and ya source changed, and the
-        rebuild needs the Blender lane. The committed static bow, its LODs,
-        its atlas and the rig all predate the change. Remove this marker in
-        the rebuild's commit: from then this test must pass."""
+        """The rig record pins every source the bow comes from, at the bytes
+        on disk. It was an expected failure until the W18 rebuild (runbook
+        step 3, 2026-10-25) rebuilt the static bow and the rig from them."""
         import hashlib
         import json
         rec = json.loads(self.RIG_RECORD.read_text(encoding="utf-8"))

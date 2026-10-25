@@ -1062,11 +1062,11 @@
      "expected": 0.0,
      "tol": 0.004,
      "pass": true,
-     "coverage": 0.5715
+     "coverage": 0.5792
     },
     {
      "name": "SM_Weapon_18_fbx_bounds_parity_m",
-     "measured": 0.0,
+     "measured": 6.274418033747065e-10,
      "expected": 0.0,
      "tol": 0.0001,
      "pass": true
@@ -1074,9 +1074,9 @@
     {
      "name": "SM_Weapon_18_lod_triangles",
      "measured": [
-      30600,
-      12852,
-      4896
+      68716,
+      28860,
+      10994
      ],
      "budget_lod0": 80000,
      "pass": true
@@ -1087,11 +1087,11 @@
      "expected": 0.0,
      "tol": 0.004,
      "pass": true,
-     "coverage": 0.0985
+     "coverage": 0.0944
     },
     {
      "name": "SM_Weapon_18_Ya_fbx_bounds_parity_m",
-     "measured": 1.6851131063450042e-08,
+     "measured": 1.7233653486908862e-08,
      "expected": 0.0,
      "tol": 0.0001,
      "pass": true
@@ -1099,16 +1099,23 @@
     {
      "name": "SM_Weapon_18_Ya_lod_triangles",
      "measured": [
-      3902,
-      1638,
-      624
+      5502,
+      2310,
+      880
      ],
      "budget_lod0": 80000,
      "pass": true
     },
     {
+     "name": "normal_tilt_mean",
+     "measured": 0.0435,
+     "expected_min": 0.04,
+     "pass": true,
+     "covered_texels_mean": 0.054
+    },
+    {
      "name": "texel_density_p05_px_per_m",
-     "measured": 3138.1,
+     "measured": 2943.8,
      "expected_min": 1024.0,
      "pass": true
     },
@@ -1290,6 +1297,6 @@
   "passed": 17,
   "validator": "scripts/art/create_runtime_weapon_validation.py",
   "blender": "5.2.2 LTS",
-  "seconds": 28.0
+  "seconds": 4.5
  }
 }

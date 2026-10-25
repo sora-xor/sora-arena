@@ -68,29 +68,56 @@ class Skin(unittest.TestCase):
         a, b = P.grip_ab(0.0)
         self.assertEqual((P.GRIP_WRAP["a"], P.GRIP_WRAP["b"]), (float(a), float(b)))
 
-    @unittest.expectedFailure
     def test_the_rigs_nigiri_is_the_envelope_the_skin_is_carved_to(self):
-        """STALE until the W18 rebuild, on purpose. The committed rig still has
-        the first wrap: tilted turns up to about 4.6 mm off the stave,
-        overhanging its underlay. The paw is now carved to the rebuilt wrap's
-        envelope. Remove the marker with the rebuild: from then this test must
-        pass.
+        """The rebuilt rig's wrap is the envelope the paw is carved to. This
+        was an expected failure until the W18 rebuild (runbook step 3,
+        2026-10-25): the first wrap's tilted turns stood up to about 4.6 mm
+        off the stave, overhanging its underlay.
 
-        - No rig vertex lies more than CARVE_GAP outside the envelope, so the
-          carved skin never enters the leather.
+        - Over the strip's reach (yumi_nigiri.reach), where grip_ab adds the
+          strip to the envelope, no rig vertex lies more than CARVE_GAP
+          outside it, so the carved skin never enters the leather.
         - In every 4 mm across the strip's covered span, the strip's crest
           reaches the envelope within CARVE_GAP, so the paw never floats on
-          it."""
+          it.
+
+        The domain was |z| < 0.11 m until the rebuild's step 5 (root's review
+        of s5_envelope_diag.txt, 2026-10-25). That window was chosen, not
+        derived, and reached what the envelope does not model: the nearest
+        rattan band below the grip (0.867 mm, unchanged since before the
+        rebuild), and the underlay's end rings at +/-GRIP_HALF with one
+        hand-wobbled strip vertex past the reach (up to 0.338 mm), all 3.6 mm
+        or more from the skin. test_no_bow_vertex_lies_inside_the_carved_paw
+        covers the bow's whole nearby extent directly."""
         import yumi_draw as YD
         import yumi_nigiri as NG
         V = self._rig()
-        V = V[np.abs(V[:, 2]) < 0.11]
+        lo, hi = NG.reach(YD.GRIP_HALF)
+        V = V[(V[:, 2] >= lo) & (V[:, 2] <= hi)]
+        self.assertGreater(len(V), 0)
         d = P.grip_sdf(V)
+        self.assertTrue(np.isfinite(d).all())
         self.assertLessEqual(float(d.max()), P.CARVE_GAP)
         lo, hi = NG.covered_span(YD.GRIP_HALF)
         for z0 in np.arange(lo, hi - 0.004, 0.004):
             sl = (V[:, 2] >= z0) & (V[:, 2] < z0 + 0.004)
+            self.assertGreater(int(sl.sum()), 0, f"z {z0:.3f}")
             self.assertGreaterEqual(float(d[sl].max()), -P.CARVE_GAP, f"z {z0:.3f}")
+
+    def test_no_bow_vertex_lies_inside_the_carved_paw(self):
+        """Vertex-sampled non-penetration over the bow's nearby extent
+        (GRIP_Z): the carved paw's own SDF is positive at every rig vertex of
+        the bow there (the string and the arrow lie outside _rig's box).
+
+        This samples the rig's vertices. It is not proof that no triangle's
+        surface crosses the skin between them: the renders and the engine
+        capture remain the visual check."""
+        V = self._rig()
+        V = V[(V[:, 2] >= P.GRIP_Z[0]) & (V[:, 2] <= P.GRIP_Z[1])]
+        self.assertGreater(len(V), 0)
+        s = P.paw_sdf(V, self.skel)[0]
+        self.assertTrue(np.isfinite(s).all())
+        self.assertGreater(float(s.min()), 0.0)
 
     def test_the_arrow_rests_on_the_dewclaw(self):
         pts, r = self.skel["chains"]["I"]

@@ -5,13 +5,16 @@
  "skeleton": "SK_Weapon_18_Skeleton",
  "action": "A_Weapon_18_Draw",
  "generator": "scripts/art/create_runtime_weapon_yumi_rig.py",
- "generator_sha256": "bc083b09ffe522f02b0e013421c357f04320caf7eebf8b3406d1dffb4b182852",
+ "generator_sha256": "43b4404290d68db4df5baa5e01ab1a72c60bfa430aaa0085920e958361a52e22",
  "inputs": {
-  "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18.fbx": "96ffd4ac042e9dd4a39290c34c4fd855dc47f57b4c09428fe005f3cecd55df39",
-  "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_Ya.fbx": "3fbec542158e1aa6a7fd20b36a4cb12ed749a2a4296a96c59637476560604b40",
-  "Content/SourceArt/Weapons/Runtime/W18_Yumi/build_record.json": "e598a0df54d4ec06ab9bdff59f8ed0b812b8576729ea17aa87cf85ec20b83fe8",
+  "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18.fbx": "d3d67dac213822ebf5428b9135e2be49cba286bb9ceaae574dd97127bd046571",
+  "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_Ya.fbx": "78d0334bf0d460a5de3b2be5e2b7d7cedc33e6f2d25273eddb58b9a501ef5de7",
+  "Content/SourceArt/Weapons/Runtime/W18_Yumi/build_record.json": "82ab8c54ab675a23dd9b37ceb986f9eca99e70af4e4a55785613ad29e59896ec",
   "scripts/art/yumi_draw.py": "de360fd3eaa25f5f08e9222c4d5ec6954d9809ab2e898def4ba4035d4d19f71f",
-  "scripts/art/create_runtime_weapon_yumi.py": "5c4c6b6a082f67483b152af72921258dfcdc15d20a7fac241353fc40ed78d9f3"
+  "scripts/art/create_runtime_weapon_yumi.py": "4f56e1669c9c58867d76ae23cf7addcb9728c03fd9f9f7534d9468f3f67edde9",
+  "scripts/art/yumi_nigiri.py": "083bbb9ee8738a69837bd7873bca8b835a3de93f13870852f454eadf29c6fe7d",
+  "scripts/art/yumi_ya.py": "fd800c38f9c75bff87b489d64bd650ce498315b1c57a1c6298264605a379a008",
+  "scripts/art/create_runtime_weapon_lib.py": "7312e9f2c21532b99f38b332505ec085f9860c0b310026de573903cd51262338"
  },
  "versions": {
   "blender": "5.2.2 LTS"
@@ -419,7 +422,7 @@
  ],
  "weights": {
   "string": 1598,
-  "stave": 29276,
+  "stave": 32856,
   "string_loops": 0
  },
  "keys": [
@@ -4902,15 +4905,15 @@
    "clusters": 28,
    "cluster_basis_max_dev": 2.1881268164047896e-07,
    "meshes": 1,
-   "vertices": 30874,
+   "vertices": 34454,
    "vertex_min_cm": [
     -18.608635,
-    -1.823814,
+    -1.805552,
     -70.796677
    ],
    "vertex_max_cm": [
-    1.675816,
-    1.824899,
+    1.657089,
+    1.808879,
     145.305954
    ],
    "translation_keys": 957,
@@ -4925,8 +4928,8 @@
  },
  "axes": "+X line of action, +Z up, +Y wielder's left (Unreal: -Y)",
  "static_bounds_m": [
-  0.202845,
-  0.036487,
+  0.202657,
+  0.036144,
   2.161026
  ],
  "checks": [
@@ -5084,10 +5087,10 @@
  },
  "scope": "rig built on the committed static mesh; deformed vertices checked at the 11 keys in Blender. Not imported, not drawn in the engine, not visually qualified.",
  "check_geometry": {
-  "bow_vertices": 30874,
-  "bow_triangles": 61556,
-  "arrow_vertices": 2209,
-  "arrow_triangles": 4382,
+  "bow_vertices": 34454,
+  "bow_triangles": 68716,
+  "arrow_vertices": 2769,
+  "arrow_triangles": 5502,
   "arrow_bounds_m": [
    0.982,
    0.037913,
@@ -5096,12 +5099,12 @@
  },
  "exports": {
   "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/SK_Weapon_18.fbx": {
-   "sha256": "23f73efce9a2115ae7546a5941796645cd7a53a40300da59a29ba569a360e1ab",
-   "bytes": 7539180
+   "sha256": "dd19ee99651d25f5fe4faa8ab296cf330ed0e2bcdfefc4292dbf9c824d84f181",
+   "bytes": 8476396
   },
   "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/W18_rig_check_geometry.npz": {
-   "sha256": "6b6eedfa708c3a478cc966ad1fae50712ec773840c05a8d817bcdce277705826",
-   "bytes": 694780
+   "sha256": "4ad4656d1f4d37b4651d85f836238acb575d874a605028619862fbf69ae980d8",
+   "bytes": 771259
   }
  }
 }
