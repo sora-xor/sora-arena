@@ -27,15 +27,48 @@ test incorrectly demands a new hold from the reset objective count.
 These two failures are retained, with natural editor 3/wrapper 1; review:
 `c3792459cc9f2da348ac55755c69ea1f27b8c3e966065895176cb5e8a5d4bf45`.
 
-The next candidate follows only the inspector's authored stair/gallery legs
-with normal character movement and a support check at each next step. The
-walking capsule still handles collision and step-up; actual arrival is
-required, and a blocking wall cannot count as inspection. Ground approaches
-keep navigation. The fixture also checks the return down to the floor post.
-The campaign test now decides whether to expect a hold from the objective
-before pressing, so completing the exit is accepted. These latest changes
-are not yet compiled or run. Claude owns the engine lane for two controlled
-art captures while root prepares the source fix.
+At `63651ce`, 22 of 23 selected fixtures pass, including the assisted full
+campaign, all press fixtures, the lamp's delayed notice, and a fresh-world
+reload of the actual completed relay save. The inspector reaches the blocked
+upper approach, waits, and inspects after removal; only its return fails.
+The failed run has natural editor 3/wrapper 1 and unchanged inputs; review:
+`bd3194d91101a6aa83750f3d1bec25a2d4f81bf1790736bc3f712a1dd58c1327`.
+
+The return trace at `c8a749e` locates it at feet (118.656,800.207,49.324),
+still supported by a stair tread behind the rounded capsule. A point ray
+ahead missed that support and rejected the descent. `2a791a4` falls back to
+CharacterMovement's bounded capsule floor query. The complete inspection,
+player gallery route, press catwalk patrol, general patrol and horse withdrawal
+all pass with natural exits zero. Review:
+`6ebfd6753280b02ecdfe9793c2d8a199a2f482c03cd212cd601b2f65e57de476`.
+An intermediate diagnostic build at `947ce49` failed due to a controller
+variable outside its scope; no tests ran. That build is retained separately.
+
+The actual staged patrol fixture at `f7fd0fd` finds two further defects:
+the gallery guard stalls when starting its alternate stair circuit, and the
+drone catches on the north control approach. The floor guard completes its
+50-second circuit. The failed fixture is retained with review:
+`4c1f67c3b6e6fdf2573e7b5aab1dae1e5ee5c8739d7de0644e27e3e1f56cf6d6`.
+
+At `c3bb27a`, the gallery patrol follows its supported stair segments using
+ordinary capsule movement. The drone follows a 1.2 m orbit around the column
+at the unchanged z=5 m; the unused front 60 cm of the maintenance approach
+and corresponding side rails are removed to leave flight clearance. The
+player's existing grounded work position remains supported and reachable.
+The flight follows short authored segments, preserving swept collision and
+actual arrival instead of free-flight sidestep steering.
+
+All ten selected fixtures pass: relay patrol cadence and blockage, gallery,
+inspection and controls; press cadence, blockage and catwalk; general patrol;
+and horse withdrawal. The ground/gallery/drone periods are exactly
+50,000/40,000/30,000 active milliseconds, with no missed deadlines. The gallery
+stays at feet z=402 cm on the first lap, and reaches 46.838 cm before returning
+upstairs on the alternate lap. A physical barrier prevents the drone gaining
+any visit or circuit for 35 seconds; removal allows its next visit while
+retaining the missed-deadline flag. Menu pause preserves patrol time. Inputs
+and all 20 evidence files verify, with natural editor/wrapper exits zero.
+The hero is held outside detection range: this is movement qualification,
+not ordinary stealth difficulty. The eight host relay-contract tests also pass.
 
 The previous room credited three generic held points. This candidate binds
 the portable relay reducer to mapped Interact input, grounded floor height,
@@ -66,12 +99,12 @@ The ground enforcer is scheduled on a fifty-second circuit; the gallery
 enforcer alternates a gallery circuit with a stair excursion, each forty
 seconds; the drone is scheduled at five metres on a thirty-second orbit.
 The existing patrol scheduler retains missed deadlines and cannot advance
-through an obstructed station. Actual navigation and cadence remain untested.
+through an obstructed station. These routes now have the directed runtime evidence above.
 
 After all nodes and the floor-level east exit are completed, saved chapter
 progress limits drone callouts to twenty metres and fixes moat searchlight
-headings on later visits. This checkpoint-derived behavior has not yet been
-exercised in Unreal. The assisted full playthrough now explicitly places
+headings on later visits. The actual completion save reloads with the offline flag; the resulting
+drone communication and moat lighting effects still need runtime checks. The assisted full playthrough now explicitly places
 the hero on the upper control's floor and waits for a real safe scan window;
 it is not an ordinary-input playthrough. At integration, the fixture also
 clears attacking guards through its existing assisted combat path and waits
@@ -98,22 +131,22 @@ changed. The subsequent exact-source run `40225482561` for `e0ef5e9` passed all
 109 checks. Its archived review is
 `9a8636083ac6d333047a4617df228c25d5e973e0ef2ad67a04244e8bf7ab502d`.
 
-Prepared Unreal fixtures: `RelayControls`, `RelayScan`, `RelayGallery`,
+Implemented Unreal fixtures: `RelayControls`, `RelayScan`, `RelayGallery`,
 `RelayInspection`, `RelayExit` and `RelayLookout`, under `SoraArena.Campaign`. They isolate
 control mapping, obstruction, height, scan penalties, delayed reinforcement,
 stair movement, auditor arrival, completion and checkpoint reset. Most freeze
 guard AI or use an inspector with isolated senses; they do not establish
-ordinary encounter difficulty. Their assertions are prospective until run.
+ordinary encounter difficulty. Their current runtime results are recorded above.
 
 The shell now has a physical west crawl aperture, east doorway and upper
 north slatted window at the authored 5.5 metre height. Kohagi is staged on a
 solid outside perch facing into that window, with her existing undetectable,
 noncombat role. The generated contract rejects changing her role or returning
 her to the generic entry position. Her current standing animation is a
-placeholder for the authored prone lookout pose. These changes are unrun.
+placeholder for the authored prone lookout pose. The opening, support, facing and noncombat-role assertions pass; the pose remains unfinished.
 
 Known unfinished work: the room remains primitive blockout geometry, the
 turret/annex materials and openings are not authored final art, Kohagi's prone
 animation is missing, and there is no rendered, ordinary-play, Mac/Windows package or performance
-qualification. Lamp notices, alternating patrol cadence, restored-checkpoint
-effects and the complete encounter still need dedicated runtime evidence.
+qualification. Restored-checkpoint communication/lighting effects and the
+complete ordinary encounter still need dedicated runtime evidence.

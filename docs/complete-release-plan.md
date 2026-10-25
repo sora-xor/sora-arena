@@ -11,40 +11,36 @@ production. Work runs in isolated worktrees, with a single coordinated Unreal
 and GPU rendering lane. The shared checkout is not a build or render workspace.
 The local coordination mailboxes record current ownership, commits and lane use.
 
-## October 26 relay runtime and press regression status
+## October 26 relay movement, saved state and capture status
 
-The complete release remains unfinished. The current functional work is the
-relay inspector's upper route and its assisted campaign exit assertion;
-Claude is independently comparing bow poses and fur capture run-up in its
-art worktree. These results supersede older pending-runtime statements below.
+The complete release remains unfinished. The assisted 133-beat campaign,
+all eleven press fixtures, relay controls/scan/gallery/lookout, lamp notices
+and a fresh-world reload of the actual completed relay save pass at
+`63651ce`. The inspector's return failure is repaired by `2a791a4`, which
+uses the actual capsule's floor support at the stair foot. The inspector
+climbs, waits at an obstruction, inspects after removal and returns to its
+floor post; four related movement regressions also pass.
 
-All eleven press fixtures pass on exact `ae5bee6`, alongside CopyDesks and
-Candle. The catwalk guard completes its circuit through normal movement,
-waits at a physical barrier and resumes after removal. The net interruption
-fixture verifies cancellation, natural net expiry and the requirement for a
-fresh interaction. The full assisted campaign passed on `a6f9046` before
-relay integration. This establishes directed behavior, not ordinary combat,
-stealth difficulty, visual quality or a current packaged release.
+Actual staged patrols exposed two further route defects. At `c3bb27a` the
+gallery guard completes its alternating stair circuits at 40 seconds, the
+ground guard at 50 seconds and the drone at 30 seconds. A smaller orbit and
+shortened unused maintenance-platform tip preserve the drone's five-metre
+height while clearing the column and railings. Real collision blocks its
+progress, and removing an obstacle resumes the next physical visit without
+hiding the missed deadline. All ten selected movement/control regressions
+pass with natural editor/wrapper exits zero and unchanged inputs. Source CI
+at `14fc6fa` independently passes all 109 checks. Exact commits, failures and
+limits are in the [relay record](qualification/relay-room.md). Drone marking
+and later moat lighting after relay completion still need runtime checks.
 
-The first integrated relay runtime at `ae5bee6` passes Controls, Scan, Exit
-and Lookout; seventeen of twenty selected fixtures succeed. The gallery
-fixture also passes at `2ddd15d` after allowing ordinary stair descent to
-finish landing. The inspector stalls near the top of the stair, and the
-campaign fixture incorrectly expects a hold after the relay exit advances
-to the next beat. The prepared correction follows authored supported stair
-waypoints using the walking capsule, retains actual arrival and obstruction
-requirements, and checks the return to the floor post. Its Unreal execution
-is pending while Claude holds the engine lane. Original failed runs and
-signed source hashes remain in the [relay record](qualification/relay-room.md).
-
-Art remains WIP. The repaired material assignment has fresh editor readback;
-the prior lit bow/paw capture still failed during teardown. A minimal
-multi-frame exit probe now exits naturally at editor 0/wrapper 0, but a real
-capture must independently confirm it. The bow's existing aimed poses cover
-part of the fixed reticle disc, and fur cards, cloth, wrapping and arrow
-finish remain unresolved. The new right-cheek candidate and the controlled
-four-frame/longer-run-up comparison do not change the runtime pose contract.
-No latest art has been admitted into the release.
+Claude's two v4 bow/paw captures at `e56651a` both complete and exit naturally
+at editor 0/wrapper 0 on METAL_SM6. Root independently verifies the original
+files, material readback, unchanged rig/paw assets and ID pixels. The new
+review pose clears the fixed reticle disc; the runtime pose is unchanged.
+The 32-frame versus four-frame capture warm-up changes fur residual by only
+about 1–2% on common image regions and does not resolve its coarse, noisy
+appearance. Fur geometry, cloth, wrapping and arrow finish remain WIP.
+These diagnostics do not admit final art, animation or performance.
 
 The latest completed Mac package remains `c655b6b` and the production native
 bridge remains `10ad7dad`. Current-source packages, M1 and Windows behavior,
