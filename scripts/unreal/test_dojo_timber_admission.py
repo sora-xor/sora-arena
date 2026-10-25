@@ -8,10 +8,14 @@ scripts/unreal/import_nyaagyu_dojo_timbers.py.
 from __future__ import annotations
 
 import hashlib
+import ast
 import json
 import sys
 import tempfile
 import unittest
+import time
+from types import SimpleNamespace
+from unittest.mock import Mock
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -134,6 +138,166 @@ class Binding(unittest.TestCase):
     def test_other_manifests_reject(self):
         with self.assertRaisesRegex(A.AdmissionError, "other manifests"):
             self.check({**self.binding, "manifests": {MANIFESTS[0]: digest(b"columns")}})
+
+
+class Probe(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.root = Path(self.tmp.name)
+        self.manifests = {MANIFESTS[0]: {"pool": [{"asset": "ColumnPool"}], "placements": [{"asset": "Column"}]},
+                          MANIFESTS[1]: {"pool": [{"asset": "RailPool"}], "placements": [{"asset": "Rail"}]}}
+        for rel, value in self.manifests.items():
+            write(self.root / rel, json.dumps(value).encode())
+        self.binding_path = self.root / "Content/SourceArt/Environment/NyaagyuDojoTimbers/campaign_binding.json"
+        write(self.binding_path, b"binding")
+        self.spec = {"schema": A.PROBE_SCHEMA, "base_source_commit": "a" * 40,
+                     "manifest_sha256": {rel: A.sha(self.root / rel) for rel in self.manifests},
+                     "binding_sha256": A.sha(self.binding_path), "assets": ["Column", "RailPool"]}
+
+    def check(self, spec=None):
+        return A.check_probe(self.root, self.spec if spec is None else spec, self.manifests)
+
+    def test_explicit_selection(self):
+        self.assertEqual(self.check(), {"Column", "RailPool"})
+
+    def test_empty_unknown_duplicate_or_nonlist_selection_rejects(self):
+        for names in ([], ["missing"], ["Column", "Column"], "Column", [1], [""], ["Column*"]):
+            with self.subTest(names=names), self.assertRaises(A.AdmissionError):
+                self.check({**self.spec, "assets": names})
+
+    def test_schema_and_destination_injection_reject(self):
+        for spec in ({**self.spec, "schema": "old"}, {**self.spec, "destination": "/Game/Generated/Environment/DojoTimbers"},
+                     {**self.spec, "base_source_commit": "6e951e5"}, None, [], {}):
+            with self.subTest(spec=spec), self.assertRaises(A.AdmissionError):
+                A.check_probe(self.root, spec, self.manifests)
+
+    def test_stale_source_binding_and_manifest_set_reject(self):
+        with self.assertRaisesRegex(A.AdmissionError, "other manifests"):
+            self.check({**self.spec, "manifest_sha256": {}})
+        with self.assertRaisesRegex(A.AdmissionError, "manifest changed"):
+            self.check({**self.spec, "manifest_sha256": {rel: "0" * 64 for rel in self.manifests}})
+        write(self.binding_path, b"new binding")
+        with self.assertRaisesRegex(A.AdmissionError, "binding changed"):
+            self.check()
+
+    def test_duplicate_manifest_names_reject(self):
+        self.manifests[MANIFESTS[1]]["pool"][0]["asset"] = "Column"
+        with self.assertRaisesRegex(A.AdmissionError, "duplicate asset in probe manifests"):
+            self.check()
+
+    def test_selection_cannot_expand_to_bulk(self):
+        names = [f"Column{i}" for i in range(17)]
+        self.manifests[MANIFESTS[0]]["placements"] = [{"asset": name} for name in names]
+        with self.assertRaisesRegex(A.AdmissionError, "limited to 16"):
+            self.check({**self.spec, "assets": names})
+
+    def importer_functions(self):
+        # Execute real boundary functions with editor fakes; never load Unreal.
+        path = Path(__file__).with_name("import_nyaagyu_dojo_timbers.py")
+        parsed = ast.parse(path.read_text())
+        functions = [node for node in parsed.body if isinstance(node, ast.FunctionDef)]
+        ns = {"__file__": str(path), "Path": Path, "json": json, "time": time, "hashlib": hashlib,
+              "admission": A, "ROOT": self.root, "KIT": self.root / "kit", "CACHE": self.root / "cache",
+              "DEST": "/Game/Generated/Environment/DojoTimbers", "PROBE_REPORT": None,
+              "unreal": SimpleNamespace(log=Mock()), "assets": Mock()}
+        exec(compile(ast.Module(body=functions, type_ignores=[]), str(path), "exec"), ns)
+        ns["load_kit"] = lambda folder, cache: (self.manifests[MANIFESTS[1] if folder.name == "Rails" else MANIFESTS[0]], {})
+        ns["load_binding"] = Mock(return_value={})
+        ns["create_materials"] = Mock(side_effect=AssertionError("asset write reached"))
+        return ns
+
+    def test_bad_selection_rejected_before_editor_mutation(self):
+        ns = self.importer_functions()
+        spec_path = write(self.root / "probe.json", json.dumps({**self.spec, "assets": ["unknown"]}).encode())
+        with self.assertRaisesRegex(A.AdmissionError, "unknown probe assets"):
+            ns["run_probe"](spec_path)
+        self.assertEqual(ns["assets"].mock_calls, [])
+        ns["create_materials"].assert_not_called()
+        self.assertEqual(ns["DEST"], "/Game/Generated/Environment/DojoTimbers")
+        report = json.loads(next((self.root / "Saved").rglob("report.json")).read_text())
+        self.assertEqual(report["status"], "failed")
+        self.assertIn("unknown probe assets", report["error"])
+
+    def test_existing_probe_registry_or_disk_blocks_all_writes(self):
+        for disk in (False, True):
+            with self.subTest(disk=disk):
+                ns = self.importer_functions()
+                ns["assets"].list_assets.return_value = [] if disk else [A.PROBE_DEST + "/old"]
+                if disk:
+                    write(self.root / "Content/Generated/Qualification/DojoTimberProbe/old.uasset", b"old")
+                spec_path = write(self.root / "probe.json", json.dumps(self.spec).encode())
+                with self.assertRaisesRegex(RuntimeError, "destination is occupied"):
+                    ns["run_probe"](spec_path)
+                ns["create_materials"].assert_not_called()
+                self.assertEqual(len(ns["assets"].mock_calls), 1)
+
+    def test_bad_slot_stops_before_material_assignment(self):
+        ns = self.importer_functions()
+        class Mesh:
+            def get_editor_property(self, prop):
+                return [SimpleNamespace(get_editor_property=lambda prop: "WrongSlot")]
+        ns["unreal"] = SimpleNamespace(AssetImportTask=SimpleNamespace, StaticMesh=Mesh)
+        ns["tools"] = SimpleNamespace(import_asset_tasks=Mock())
+        ns["assets"].load_asset.return_value = Mesh()
+        ns["fbx_options"] = Mock(return_value=None)
+        ns["verified"] = Mock(return_value=self.root / "mesh.fbx")
+        ns["instance"] = Mock(side_effect=AssertionError("MI assignment reached"))
+        ns["PROBE_REPORT"] = {"assets": [{}]}
+        with self.assertRaisesRegex(A.AdmissionError, "one M_Timber"):
+            ns["import_placement"]({"asset": "Column", "cache_fbx": "mesh.fbx", "digest": "x"}, None, {})
+        ns["instance"].assert_not_called()
+        self.assertEqual(ns["PROBE_REPORT"]["assets"][0]["slot_names"], ["WrongSlot"])
+
+    def test_slot_count_and_name(self):
+        A.check_slots(["M_Timber"])
+        for names in ([], ["M_Timber", "M_Timber"], ["Other"], ["M_Timber", "Other"]):
+            with self.subTest(names=names), self.assertRaises(A.AdmissionError):
+                A.check_slots(names)
+
+    def readback_fixture(self, resource_triangles=120, uv_channels=4):
+        ns = self.importer_functions()
+        values = {"enabled": True, "fallback_target": "relative", "fallback_relative_error": 1.0}
+        build = {"use_full_precision_u_vs": True, "remove_degenerates": False, "generate_lightmap_u_vs": False,
+                 "recompute_normals": False, "recompute_tangents": True, "use_mikk_t_space": True}
+        ns["unreal"] = SimpleNamespace(NaniteFallbackTarget=SimpleNamespace(RELATIVE_ERROR="relative"))
+        ns["meshes"] = SimpleNamespace(get_lod_build_settings=lambda mesh, lod: SimpleNamespace(get_editor_property=build.__getitem__),
+                                       get_lod_count=lambda mesh: 1, get_lod_material_slot=lambda *args: 0)
+        mesh = SimpleNamespace(get_editor_property=lambda key: SimpleNamespace(get_editor_property=values.__getitem__),
+                               get_num_triangles=lambda lod: 40, get_num_vertices=lambda lod: 80,
+                               get_num_tex_coords=lambda lod: uv_channels, get_num_sections=lambda lod: 1,
+                               get_num_nanite_triangles=lambda: resource_triangles, get_num_nanite_vertices=lambda: 100,
+                               get_material=lambda slot: SimpleNamespace(get_path_name=lambda: ns["DEST"] + "/MI_Column.MI_Column"))
+        ns["PROBE_REPORT"] = {"assets": [{"manifest_source_triangles": 120}]}
+        return ns, mesh
+
+    def test_readback_keeps_source_fallback_and_nanite_counts_separate(self):
+        ns, mesh = self.readback_fixture()
+        ns["probe_readback"](mesh, {"asset": "Column", "triangles": 120}, True)
+        row = ns["PROBE_REPORT"]["assets"][0]
+        self.assertEqual((row["manifest_source_triangles"], row["actual_lod0_triangles"], row["nanite_triangles"]),
+                         (120, 40, 120))
+
+    def test_enabled_without_resources_or_wrong_count_rejects_and_records(self):
+        for triangles, message in ((0, "no built Nanite resources"), (121, "input triangle count differs")):
+            with self.subTest(triangles=triangles):
+                ns, mesh = self.readback_fixture(resource_triangles=triangles)
+                with self.assertRaisesRegex(RuntimeError, message):
+                    ns["probe_readback"](mesh, {"asset": "Column", "triangles": 120}, True)
+                row = ns["PROBE_REPORT"]["assets"][0]
+                self.assertTrue(row["nanite_enabled"])
+                self.assertEqual(row["nanite_triangles"], triangles)
+
+    def test_missing_log_uv_channel_rejects(self):
+        ns, mesh = self.readback_fixture(uv_channels=3)
+        with self.assertRaisesRegex(RuntimeError, "four timber UV channels"):
+            ns["probe_readback"](mesh, {"asset": "Column", "triangles": 120}, True)
+
+    def test_production_does_not_run_probe_resource_checks(self):
+        ns = self.importer_functions()
+        mesh = Mock()
+        ns["probe_readback"](mesh, {}, True)
+        self.assertEqual(mesh.mock_calls, [])
 
 
 if __name__ == "__main__":

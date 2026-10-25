@@ -2,6 +2,15 @@
 
 Run: scripts/toolchain/run-editor-script.sh scripts/unreal/import_nyaagyu_dojo_timbers.py NYAAGYU_DOJO_TIMBERS_READY
 
+For a bounded import, set SORA_DOJO_TIMBER_PROBE_SPEC to a JSON file with
+schema sora-arena.dojo-timber-probe.v1, base_source_commit, manifest_sha256,
+binding_sha256 and an explicit assets list (1-16 known, distinct names).
+This forces the empty /Game/Generated/Qualification/DojoTimberProbe namespace,
+uses the same import functions, and emits NYAAGYU_DOJO_TIMBER_PROBE_READY.
+Saved/Qualification/DojoTimberProbe/<time_ns>/report.json records failures and
+actual resources separately from manifest counts. A passing import is not
+fresh-process saved-resource or rendered-draw qualification.
+
 Reads Content/SourceArt/Environment/NyaagyuDojoTimbers/manifest.json (written by
 scripts/art/create_nyaagyu_dojo_timbers.py) and the local evidence that the
 dense meshes in Local/ArtCache/NyaagyuDojoTimbers were rebuilt to the
@@ -42,6 +51,7 @@ import json
 import os
 from pathlib import Path
 import sys
+import time
 
 import unreal
 
@@ -58,6 +68,7 @@ ART_CACHE = admission.cache_root(ROOT, os.environ)
 CACHE = ART_CACHE / "NyaagyuDojoTimbers"
 DEST = "/Game/Generated/Environment/DojoTimbers"
 TEX = f"{DEST}/Textures"
+PROBE_REPORT = None
 
 tools = unreal.AssetToolsHelpers.get_asset_tools()
 assets = unreal.EditorAssetLibrary
@@ -395,6 +406,13 @@ def import_mesh(fbx: Path, name: str, nanite: bool):
     tools.import_asset_tasks([task])
     mesh = assets.load_asset(f"{DEST}/{name}")
     require(isinstance(mesh, unreal.StaticMesh), f"{name}: import failed")
+    slots = [str(slot.get_editor_property("material_slot_name"))
+             for slot in mesh.get_editor_property("static_materials")]
+    if PROBE_REPORT is not None:
+        PROBE_REPORT["assets"][-1]["slot_names"] = slots
+        PROBE_REPORT["assets"][-1]["slot_count"] = len(slots)
+    # Validate the imported source before either caller assigns material slot 0.
+    admission.check_slots(slots)
     build = meshes.get_lod_build_settings(mesh, 0)
     build.set_editor_property("use_full_precision_u_vs", True)
     build.set_editor_property("remove_degenerates", False)
@@ -413,6 +431,49 @@ def import_mesh(fbx: Path, name: str, nanite: bool):
     return mesh
 
 
+def probe_readback(mesh, rec, nanite):
+    """Observe the saved mesh only in probe mode; no production settings change."""
+    if PROBE_REPORT is None:
+        return
+    row = PROBE_REPORT["assets"][-1]
+    settings = mesh.get_editor_property("nanite_settings")
+    build = meshes.get_lod_build_settings(mesh, 0)
+    build_expected = {"use_full_precision_u_vs": True, "remove_degenerates": False,
+                      "generate_lightmap_u_vs": False, "recompute_normals": False,
+                      "recompute_tangents": True, "use_mikk_t_space": True}
+    row.update({"actual_lod0_triangles": mesh.get_num_triangles(0),
+                "actual_lod0_vertices": mesh.get_num_vertices(0),
+                "uv_channels": mesh.get_num_tex_coords(0),
+                "lod_count": meshes.get_lod_count(mesh),
+                "sections": mesh.get_num_sections(0),
+                "nanite_enabled": bool(settings.get_editor_property("enabled")),
+                "nanite_triangles": mesh.get_num_nanite_triangles(),
+                "nanite_vertices": mesh.get_num_nanite_vertices(),
+                "build_settings": {key: build.get_editor_property(key) for key in build_expected},
+                "fallback_target": str(settings.get_editor_property("fallback_target")),
+                "fallback_relative_error": settings.get_editor_property("fallback_relative_error"),
+                "material": mesh.get_material(0).get_path_name() if mesh.get_material(0) else None})
+    row["section_material_slots"] = [meshes.get_lod_material_slot(mesh, 0, section)
+                                     for section in range(row["sections"])]
+    require(row["lod_count"] == 1 and row["sections"] == 1 and row["section_material_slots"] == [0],
+            f"{rec['asset']}: unexpected LOD/section layout")
+    require(row["uv_channels"] == 4 and row["actual_lod0_vertices"] > 0 and row["actual_lod0_triangles"] > 0,
+            f"{rec['asset']}: empty geometry or missing four timber UV channels")
+    require(row["build_settings"] == build_expected, f"{rec['asset']}: build settings changed")
+    require(row["nanite_enabled"] == nanite, f"{rec['asset']}: Nanite enablement changed")
+    if nanite:
+        require(row["nanite_triangles"] > 0 and row["nanite_vertices"] > 0,
+                f"{rec['asset']}: no built Nanite resources")
+        require(row["nanite_triangles"] == rec["triangles"], f"{rec['asset']}: Nanite input triangle count differs")
+        require(settings.get_editor_property("fallback_target") == unreal.NaniteFallbackTarget.RELATIVE_ERROR and
+                row["fallback_relative_error"] == 1.0, f"{rec['asset']}: fallback settings changed")
+    else:
+        require(row["actual_lod0_triangles"] == rec["fallback_triangles"],
+                f"{rec['asset']}: conventional triangle count differs")
+    require(row["material"] == f"{DEST}/MI_{rec['asset']}.MI_{rec['asset']}",
+            f"{rec['asset']}: assigned material differs")
+
+
 def import_placement(rec, parent, evidence, preset="column_fukiurushi"):
     name = rec["asset"]
     fbx = verified(rec["cache_fbx"], rec["digest"], evidence, name)
@@ -423,6 +484,7 @@ def import_placement(rec, parent, evidence, preset="column_fukiurushi"):
     assets.save_loaded_asset(mi)
     mesh.set_material(0, mi)
     assets.save_loaded_asset(mesh)
+    probe_readback(mesh, rec, True)
     return name, rec["triangles"]
 
 
@@ -445,6 +507,7 @@ def import_pool(rec, parent, evidence, preset="column_fukiurushi"):
     assets.save_loaded_asset(mi)
     mesh.set_material(0, mi)
     assets.save_loaded_asset(mesh)
+    probe_readback(mesh, rec, False)
     return name, rec["fallback_triangles"]
 
 
@@ -469,11 +532,7 @@ def load_kit(folder: Path, cache: Path):
     return manifest, evidence
 
 
-def main():
-    manifest, evidence = load_kit(KIT, CACHE)
-    binding = load_binding(["Content/SourceArt/Environment/NyaagyuDojoTimbers/manifest.json",
-                            "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/manifest.json"])
-    coverage = binding["coverage"]
+def create_materials(manifest):
     assets.make_directory(TEX)
     shared = {}
     for kind, entry in manifest["shared_textures"].items():
@@ -484,6 +543,91 @@ def main():
     shared["DefaultMasks"] = assets.load_asset("/Engine/EngineResources/Black")
     base = timber_master("M_SoraTimber", shared, True)
     nanite = timber_master("M_SoraTimberNanite", shared, False)
+    return base, nanite
+
+
+def run_probe(spec_path):
+    """One isolated, explicitly selected import using the production functions."""
+    global DEST, TEX, PROBE_REPORT
+    output = ROOT / "Saved/Qualification/DojoTimberProbe" / str(time.time_ns()) / "report.json"
+    PROBE_REPORT = {"schema": "sora-arena.dojo-timber-import-probe.v1", "status": "failed",
+                    "destination": admission.PROBE_DEST, "assets": [], "runtime_draw_qualified": False,
+                    "saved_reopen_qualified": False, "importer_sha256": sha(Path(__file__))}
+    started = time.perf_counter()
+    try:
+        spec_path = Path(spec_path)
+        spec = json.loads(spec_path.read_text())
+        PROBE_REPORT.update({"spec_file": str(spec_path), "spec_sha256": sha(spec_path), "spec": spec})
+        columns, column_evidence = load_kit(KIT, CACHE)
+        rails, rail_evidence = load_kit(KIT / "Rails", CACHE / "Rails")
+        manifests = {"Content/SourceArt/Environment/NyaagyuDojoTimbers/manifest.json": columns,
+                     "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/manifest.json": rails}
+        load_binding(list(manifests))
+        wanted = admission.check_probe(ROOT, spec, manifests)
+        # Both registry and disk are checked: no overwrite of an earlier probe.
+        present = assets.list_assets(admission.PROBE_DEST, recursive=True, include_folder=False)
+        disk = ROOT / "Content/Generated/Qualification/DojoTimberProbe"
+        require(not present and not any(p.is_file() for p in disk.rglob("*")), "probe destination is occupied")
+        selected = []
+        for manifest, evidence in ((columns, column_evidence), (rails, rail_evidence)):
+            for group, is_nanite in (("pool", False), ("placements", True)):
+                for rec in manifest[group]:
+                    if rec["asset"] not in wanted:
+                        continue
+                    key = rec["cache_fbx"] if is_nanite else rec["fallback_fbx"]
+                    source = verified(key, rec["digest"], evidence, rec["asset"])
+                    if not is_nanite:
+                        require(sha(source) == rec["fallback_fbx_sha256"], f"{rec['asset']}: fallback changed")
+                        for entry in rec["fallback_maps"].values():
+                            require(sha(ROOT / entry["file"]) == entry["sha256"], f"{rec['asset']}: map changed")
+                    row = {"asset": rec["asset"], "requested_nanite": is_nanite,
+                           "manifest_source_triangles": rec["triangles"] if is_nanite else rec["fallback_triangles"],
+                           "source_key": key, "resolved_source": str(source), "source_sha256": sha(source),
+                           "geometry_digest": rec["digest"], "status": "pending"}
+                    selected.append((rec, evidence, is_nanite, row))
+        for entry in columns["shared_textures"].values():
+            require(sha(ROOT / entry["file"]) == entry["sha256"], "shared texture changed")
+        PROBE_REPORT["evidence_sha256"] = {str(CACHE / "evidence.json"): sha(CACHE / "evidence.json"),
+                                           str(CACHE / "Rails/evidence.json"): sha(CACHE / "Rails/evidence.json")}
+        # Every selection, source and destination check above precedes asset writes.
+        DEST, TEX = admission.PROBE_DEST, admission.PROBE_DEST + "/Textures"
+        base, nanite = create_materials(columns)
+        for rec, evidence, is_nanite, row in selected:
+            PROBE_REPORT["assets"].append(row)
+            tick = time.perf_counter()
+            try:
+                (import_placement if is_nanite else import_pool)(rec, nanite if is_nanite else base, evidence)
+                row["status"] = "passed"
+            except Exception as error:
+                row.update({"status": "failed", "error": str(error)})
+                raise
+            finally:
+                row["import_seconds"] = time.perf_counter() - tick
+        require(assets.save_directory(DEST, only_if_is_dirty=False, recursive=True), "probe directory save failed")
+        PROBE_REPORT["packages"] = assets.list_assets(DEST, recursive=True, include_folder=False)
+        PROBE_REPORT["status"] = "passed"
+    except Exception as error:
+        PROBE_REPORT["error"] = str(error)
+        raise
+    finally:
+        PROBE_REPORT["elapsed_seconds"] = time.perf_counter() - started
+        output.parent.mkdir(parents=True, exist_ok=False)
+        output.write_text(json.dumps(PROBE_REPORT, indent=2, allow_nan=False) + "\n")
+        unreal.log(f"NYAAGYU_DOJO_TIMBER_PROBE_REPORT: {output}")
+    unreal.log(f"NYAAGYU_DOJO_TIMBER_PROBE_READY: {len(PROBE_REPORT['assets'])} meshes; report {output}")
+
+
+def main():
+    # Explicit mode avoids relying on __name__ in Unreal's ExecutePythonScript.
+    if "SORA_DOJO_TIMBER_PROBE_SPEC" in os.environ:
+        require(bool(os.environ["SORA_DOJO_TIMBER_PROBE_SPEC"]), "empty probe spec path")
+        run_probe(os.environ["SORA_DOJO_TIMBER_PROBE_SPEC"])
+        return
+    manifest, evidence = load_kit(KIT, CACHE)
+    binding = load_binding(["Content/SourceArt/Environment/NyaagyuDojoTimbers/manifest.json",
+                            "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/manifest.json"])
+    coverage = binding["coverage"]
+    base, nanite = create_materials(manifest)
     pool = [import_pool(rec, base, evidence) for rec in manifest["pool"]]
     placed = [import_placement(rec, nanite, evidence) for rec in manifest["placements"]]
     report = [f"columns: {len(placed)} placement logs ({coverage['columns_with_own_log']} of "
