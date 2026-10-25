@@ -326,6 +326,8 @@ class TimberMaterialInputs(unittest.TestCase):
                 self.props[key] = value
             def get_name(self):
                 return self.kind
+            def get_editor_property(self, key):
+                return self.props[key]
         class PublicUnreal(SimpleNamespace):
             def __getattr__(self, name):
                 if name.startswith("MaterialExpression"):
@@ -340,7 +342,8 @@ class TimberMaterialInputs(unittest.TestCase):
             MaterialProperty=SimpleNamespace(MP_BASE_COLOR="BaseColor", MP_ROUGHNESS="Roughness",
                                              MP_NORMAL="Normal", MP_MATERIAL_ATTRIBUTES="Attributes"),
             MaterialShadingModel=SimpleNamespace(MSM_CLEAR_COAT="ClearCoat"),
-            MaterialSamplerType=SimpleNamespace(SAMPLERTYPE_LINEAR_COLOR="linear", SAMPLERTYPE_MASKS="masks", SAMPLERTYPE_NORMAL="normal"),
+            MaterialSamplerType=SimpleNamespace(SAMPLERTYPE_LINEAR_COLOR="linear", SAMPLERTYPE_LINEAR_GRAYSCALE="linear_grayscale",
+                                                SAMPLERTYPE_MASKS="masks", SAMPLERTYPE_NORMAL="normal"),
             MaterialVectorCoordTransformSource=SimpleNamespace(TRANSFORMSOURCE_TANGENT="tangent"),
             MaterialVectorCoordTransform=SimpleNamespace(TRANSFORM_WORLD="world"),
             WorldPositionIncludedOffsets=SimpleNamespace(WPT_CAMERA_RELATIVE_NO_OFFSETS="camera_relative"),
@@ -365,7 +368,7 @@ class TimberMaterialInputs(unittest.TestCase):
         assets = SimpleNamespace(does_asset_exist=lambda path: True, load_asset=lambda path: material, save_loaded_asset=Mock())
         path = Path(__file__).with_name("import_nyaagyu_dojo_timbers.py")
         parsed = ast.parse(path.read_text())
-        selected = [n for n in parsed.body if isinstance(n, (ast.ClassDef, ast.FunctionDef)) and n.name in ("Graph", "require", "timber_master")]
+        selected = [n for n in parsed.body if isinstance(n, (ast.ClassDef, ast.FunctionDef)) and n.name in ("Graph", "require", "timber_master", "import_texture", "create_materials")]
         ns = {"unreal": unreal, "lib": lib, "assets": assets, "DEST": A.PROBE_DEST, "BUMP_HLSL": "unchanged source shader"}
         exec(compile(ast.Module(body=selected, type_ignores=[]), str(path), "exec"), ns)
         shared = {key: Node(key) for key in ("Fibre", "RingNoise", "RingRandom", "DefaultNormal", "DefaultMasks")}
@@ -395,6 +398,96 @@ class TimberMaterialInputs(unittest.TestCase):
                 self.assertEqual("NormalMap" in params, fallback)
                 self.assertEqual("MasksMap" in params, fallback)
                 assets.save_loaded_asset.assert_called_once_with(material)
+
+    def test_real_texture_import_settings_match_every_master_sampler(self):
+        # Execute create_materials/import_texture as well as both real graph
+        # builders. UE's sampler contract depends on texture compression/SRGB,
+        # not merely the graph's declared sampler enum. This is CPU validation,
+        # not shader compilation or a material rendering test.
+        ns, shared, material, nodes, _, assets = self.graph()
+        unreal = ns["unreal"]
+        unreal.AssetImportTask = SimpleNamespace
+        unreal.Texture2D = type(shared["Fibre"])
+        unreal.TextureCompressionSettings = SimpleNamespace(
+            TC_NORMALMAP="normal", TC_MASKS="masks", TC_GRAYSCALE="grayscale")
+        unreal.TextureMipGenSettings = SimpleNamespace(TMGS_NO_MIPMAPS="no_mips")
+        unreal.TextureFilter = SimpleNamespace(TF_BILINEAR="bilinear", TF_NEAREST="nearest")
+        unreal.TextureGroup = SimpleNamespace(TEXTUREGROUP_WORLD="world")
+        shared["DefaultNormal"].props.update(compression_settings="normal", srgb=False)
+        black = type(material)("Black")
+        black.props.update(compression_settings="default", srgb=True)
+        imported = {}
+        def import_tasks(tasks):
+            for task in tasks:
+                imported[task.destination_path + "/" + task.destination_name] = type(material)(task.destination_name)
+        def load(path):
+            if path.endswith("/DefaultNormal"):
+                return shared["DefaultNormal"]
+            if path.endswith("/Black"):
+                return black
+            return imported.get(path, material)
+        assets.load_asset = load
+        assets.make_directory = Mock()
+        ns["tools"] = SimpleNamespace(import_asset_tasks=import_tasks)
+        ns["TEX"] = A.PROBE_DEST + "/Textures"
+        ns["sha"] = lambda path: digest(path.read_bytes())
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            ns["ROOT"] = root
+            manifest = {"shared_textures": {}}
+            actual = json.loads((Path(__file__).resolve().parents[2] /
+                "Content/SourceArt/Environment/NyaagyuDojoTimbers/manifest.json").read_text())
+            for kind, entry in actual["shared_textures"].items():
+                path = write(root / (kind + ".png"), b"CPU fixture; no texture decoding")
+                manifest["shared_textures"][kind] = {"file": path.name,
+                    "sha256": digest(path.read_bytes()), "kind": entry["kind"]}
+            ns["create_materials"](manifest)
+        samples = [n for n in nodes if "sampler_type" in n.props]
+        self.assertEqual(len(samples), 10)  # four shared per master + two baked
+        for node in samples:
+            texture = node.props["texture"]
+            compression, srgb = texture.props["compression_settings"], texture.props["srgb"]
+            expected = {"normal": "normal", "masks": "masks",
+                        "grayscale": "grayscale" if srgb else "linear_grayscale",
+                        "default": "color" if srgb else "linear"}[compression]
+            with self.subTest(texture=texture.kind, parameter=node.props.get("parameter_name")):
+                self.assertEqual(node.props["sampler_type"], expected)
+                self.assertFalse(srgb)
+        default = next(n.props["texture"] for n in samples if n.props.get("parameter_name") == "MasksMap")
+        self.assertIs(default, imported[ns["TEX"] + "/Fibre"])
+        self.assertEqual(len(imported), 3)  # default adds no package/input
+        self.assertEqual(imported[ns["TEX"] + "/RingNoise"].props["filter"], "bilinear")
+        self.assertEqual(imported[ns["TEX"] + "/RingRandom"].props["filter"], "nearest")
+
+    def test_vertex_and_baked_masks_preserve_all_four_channel_values(self):
+        # UE5.8 MaterialExpressions.cpp declares RGB as output zero on both
+        # nodes; MaterialEditingLibrary resolves named R/G/B/A to scalars.
+        # Model those output widths so alpha-from-default-RGB cannot pass.
+        rgba = (0.13, 0.27, 0.59, 0.83)
+        for fallback in (False, True):
+            ns, shared, _, nodes, _, _ = self.graph()
+            ns["timber_master"]("M_SoraTimber", shared, fallback)
+            source = next(n for n in nodes if
+                (n.props.get("parameter_name") == "MasksMap" if fallback else
+                 n.kind == "MaterialExpressionVertexColor"))
+            masks = [n for n in nodes if n.kind == "MaterialExpressionComponentMask"
+                     and n.inputs[""][0] is source]
+            self.assertEqual(len(masks), 4)
+            values = []
+            for node in masks:
+                output = node.inputs[""][1]
+                outputs = {"": rgba[:3], "RGB": rgba[:3],
+                           **{c: (v,) for c, v in zip("RGBA", rgba)}}
+                if fallback:
+                    outputs["RGBA"] = rgba  # VertexColor has no RGBA output
+                self.assertIn(output, outputs)
+                available = outputs[output]
+                selected = [i for i, c in enumerate("rgba") if node.props[c]]
+                self.assertTrue(all(i < len(available) for i in selected),
+                                f"{source.kind}.{output or 'default RGB'} cannot supply {selected}")
+                self.assertEqual(len(selected), 1)
+                values.append(available[selected[0]])
+            self.assertEqual(tuple(values), rgba)
 
     def test_missing_clearcoat_attribute_rejects_before_save(self):
         ns, shared, _, _, _, assets = self.graph(missing_pin="ClearCoat")

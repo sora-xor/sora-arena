@@ -198,6 +198,9 @@ def select_tests(suite: unittest.TestSuite, excluded: tuple[str, ...]) -> unitte
 
 def unit_tests(relative: str) -> int:
     path = ROOT / relative
+    # File-based loading must also resolve repository-qualified imports, just
+    # as `python -m unittest` does when launched from the repository root.
+    sys.path.insert(0, str(ROOT))
     sys.path.insert(0, str(path.parent))
     spec = importlib.util.spec_from_file_location("sora_source_test", path)
     if spec is None or spec.loader is None:

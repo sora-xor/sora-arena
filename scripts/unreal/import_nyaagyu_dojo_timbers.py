@@ -178,11 +178,11 @@ class Graph:
         return self.append(self.mask(uv, "r"),
                            self.one(unreal.MaterialExpressionOneMinus, self.mask(uv, "g")))
 
-    def sample_blender(self, tex, uv):
+    def sample_blender(self, tex, uv, sampler):
         """Sample a shared PNG at a computed Blender (V-up) coordinate."""
-        return self.sample(tex, self.flip_v(uv))
+        return self.sample(tex, self.flip_v(uv), sampler)
 
-    def sample(self, tex, uv, sampler=unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR, name=None):
+    def sample(self, tex, uv, sampler, name=None):
         cls = unreal.MaterialExpressionTextureSampleParameter2D if name else unreal.MaterialExpressionTextureSample
         props = {"texture": tex, "sampler_type": sampler}
         if name:
@@ -248,10 +248,12 @@ def timber_master(name, shared, fallback: bool):
     # Decode before scaling: flip_v(k * imported_uv) is not k * source_uv.
     uv0 = g.flip_v(g.n(unreal.MaterialExpressionTextureCoordinate, coordinate_index=0))
     tile = g.scalar("FibreTileMeters", 0.25)
-    fibre = g.sample_blender(shared["Fibre"], g.op(unreal.MaterialExpressionDivide, uv0, tile))
+    fibre = g.sample_blender(shared["Fibre"], g.op(unreal.MaterialExpressionDivide, uv0, tile),
+                             unreal.MaterialSamplerType.SAMPLERTYPE_MASKS)
     fib = g.mask(fibre, "r")
     streak = g.mask(fibre, "g")
-    drift = g.mask(g.sample_blender(shared["Fibre"], g.op(unreal.MaterialExpressionMultiply, uv0, 0.11)), "b")
+    drift = g.mask(g.sample_blender(shared["Fibre"], g.op(unreal.MaterialExpressionMultiply, uv0, 0.11),
+                                   unreal.MaterialSamplerType.SAMPLERTYPE_MASKS), "b")
     # Fibres deviate: the ring radius wanders by a quarter millimetre.
     r = g.op(unreal.MaterialExpressionAdd, g.one(unreal.MaterialExpressionLength, uvq),
              g.op(unreal.MaterialExpressionMultiply, g.op(unreal.MaterialExpressionSubtract, streak, 0.5), 0.00025))
@@ -262,7 +264,8 @@ def timber_master(name, shared, fallback: bool):
     nu = g.op(unreal.MaterialExpressionAdd, g.op(unreal.MaterialExpressionDivide, r, six_w),
               g.op(unreal.MaterialExpressionMultiply, seed, 37.0))
     nv = g.one(unreal.MaterialExpressionFrac, g.op(unreal.MaterialExpressionMultiply, seed, 7.31))
-    var = g.mask(g.sample_blender(shared["RingNoise"], g.append(nu, nv)), "r")
+    var = g.mask(g.sample_blender(shared["RingNoise"], g.append(nu, nv),
+                                 unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_GRAYSCALE), "r")
     phase = g.op(unreal.MaterialExpressionAdd, g.op(unreal.MaterialExpressionDivide, r, w),
                  g.op(unreal.MaterialExpressionMultiply, g.op(unreal.MaterialExpressionSubtract, var, 0.5), 3.0))
     f = g.one(unreal.MaterialExpressionFrac, phase)
@@ -270,7 +273,8 @@ def timber_master(name, shared, fallback: bool):
     yu = g.op(unreal.MaterialExpressionDivide, g.op(unreal.MaterialExpressionAdd, ring,
                                                      g.op(unreal.MaterialExpressionMultiply, seed, 101.0)), 256.0)
     yv = g.one(unreal.MaterialExpressionFrac, g.op(unreal.MaterialExpressionMultiply, seed, 3.7))
-    year = g.mask(g.sample_blender(shared["RingRandom"], g.append(yu, yv)), "r")
+    year = g.mask(g.sample_blender(shared["RingRandom"], g.append(yu, yv),
+                                  unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_GRAYSCALE), "r")
     one = g.const(1.0)
     onset = g.op(unreal.MaterialExpressionSubtract, one, lwf)
     late = g.smooth(g.op(unreal.MaterialExpressionSubtract, onset, 0.07), g.op(unreal.MaterialExpressionAdd, onset, 0.03), f)
@@ -297,14 +301,16 @@ def timber_master(name, shared, fallback: bool):
                      g.op(unreal.MaterialExpressionAdd, g.op(unreal.MaterialExpressionMultiply, streak, 0.12),
                           g.op(unreal.MaterialExpressionMultiply, drift, 0.34))))
     base = g.op(unreal.MaterialExpressionMultiply, base, tone)
-    # Masks: baked (fallback, UV1) or vertex colours (Nanite).
+    # Masks: baked (fallback, UV1) or vertex colours (Nanite). Both expression
+    # types default to RGB; their named A output is required for the knot mask.
+    # Each named channel is scalar, so select its first (R) component below.
     if fallback:
         uv1 = g.n(unreal.MaterialExpressionTextureCoordinate, coordinate_index=1)
         msk = g.sample(shared["DefaultMasks"], uv1, unreal.MaterialSamplerType.SAMPLERTYPE_MASKS, name="MasksMap")
-        cav, wear, soot, knot = (g.mask(msk, c) for c in ("r", "g", "b", "a"))
+        cav, wear, soot, knot = (g.mask(msk, "r", a_out=c) for c in ("R", "G", "B", "A"))
     else:
         vc = g.n(unreal.MaterialExpressionVertexColor)
-        cav, wear, soot, knot = (g.mask(vc, c) for c in ("r", "g", "b", "a"))
+        cav, wear, soot, knot = (g.mask(vc, "r", a_out=c) for c in ("R", "G", "B", "A"))
     # Wear: below 0.5 the hand's grime and polish (darker, glossier), above
     # 0.5 the lacquer rubbed through on the arris (lighter, bare wood).
     grime = g.one(unreal.MaterialExpressionSaturate, g.op(unreal.MaterialExpressionMultiply, wear, 2.0))
@@ -570,7 +576,11 @@ def create_materials(manifest):
         require(path.is_file() and sha(path) == entry["sha256"], f"shared texture {kind} changed")
         shared[kind] = import_texture(path, path.stem, entry["kind"])
     shared["DefaultNormal"] = assets.load_asset("/Engine/EngineMaterials/DefaultNormal")
-    shared["DefaultMasks"] = assets.load_asset("/Engine/EngineResources/Black")
+    # The parent must compile before any MI overrides it. Black is a Color
+    # texture, incompatible with a Masks sampler. Reuse the imported Masks
+    # texture as a type-correct default; every pool MI supplies its own baked
+    # RGBA MasksMap in import_pool. No extra package or source input is added.
+    shared["DefaultMasks"] = shared["Fibre"]
     base = timber_master("M_SoraTimber", shared, True)
     nanite = timber_master("M_SoraTimberNanite", shared, False)
     return base, nanite
