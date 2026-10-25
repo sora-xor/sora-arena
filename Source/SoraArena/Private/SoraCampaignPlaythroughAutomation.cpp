@@ -1342,30 +1342,34 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
     return NoteUnlocks(Test, State, Beat.Id, Rule) && Advance(Test, State, 1);
 }
 
-// Nyaakoto holds only what the campaign has unlocked, and every arm it has
-// unlocked he can take up with his own keys.
+// Inventory unlocks survive mission carrying restrictions. Direct selection,
+// group keys and the wheel admit an arm only when both conditions hold.
 bool ExpectWeapon(FAutomationTestBase& Test, FState& State, int32 WeaponId, bool bUnlocked)
 {
     ASoraPlayerCharacter* Hero = Player(State);
     USoraEquipmentComponent* Kit = Hero->GetEquipment();
     const int32 Held = Hero->WeaponId;
-    // Chapter three begins with only the wakizashi. Its unlock is still
-    // checked here, but returning from that check cannot equip the lost kit.
+    // A mission may restrict the kit. Returning from the check must also
+    // respect the current carrying permission.
     const int32 ReturnWeapon = Campaign(State)->CanHold(0,false) ? 0 : Held;
     if (!Holdable(WeaponId))
         return Fail(Test, State, FString::Printf(TEXT("Weapon %d has no campaign slot"), WeaponId));
+    const bool bPermitted = Campaign(State)->CanHold(WeaponId,false);
+    const bool bCanEquip = bUnlocked && bPermitted;
     const bool bEquipped = Kit->EquipCampaignWeapon(WeaponId);
-    const FString What = FString::Printf(TEXT("%s: weapon %d %s"), *Where(State), WeaponId, bUnlocked ? TEXT("equips") : TEXT("stays locked"));
-    bool bOk = Test.TestEqual(*What, bEquipped, bUnlocked) && Test.TestEqual(*(What + TEXT(" (held)")), Hero->WeaponId, bUnlocked ? WeaponId : Held);
-    if (!bUnlocked)
+    const FString What = FString::Printf(TEXT("%s: weapon %d %s"), *Where(State), WeaponId,
+        bCanEquip ? TEXT("equips") : bUnlocked ? TEXT("remains outside the mission loadout") : TEXT("stays locked"));
+    bool bOk = Test.TestEqual(*(What + TEXT(" (inventory unlock)")), Campaign(State)->IsWeaponUnlocked(WeaponId), bUnlocked);
+    bOk &= Test.TestEqual(*What, bEquipped, bCanEquip);
+    bOk &= Test.TestEqual(*(What + TEXT(" (held)")), Hero->WeaponId, bCanEquip ? WeaponId : Held);
+    if (!bCanEquip)
         bOk &= Test.TestTrue(*(What + TEXT(" with a notice")), Mode(State)->NoticeTime > 0.f && !Mode(State)->NoticeEnglish.IsEmpty());
     // Back to the available weapon, after the equip delay.
     if (!Advance(Test, State, 20) || (bEquipped && !Kit->EquipCampaignWeapon(ReturnWeapon)))
         return Fail(Test, State, What + TEXT(": could not return to the available weapon"));
-    // Every unlocked arm is in reach of the player's own keys: its group key,
-    // pressed until it comes up, and a place on the arms wheel's ring.
+    // Every unlocked, permitted arm is in reach of the player's own keys.
     const int32 Group = SoraArmsRules::GroupOf(WeaponId);
-    if (bUnlocked)
+    if (bCanEquip)
     {
         int32 Presses = 0;
         for (; Presses < SoraArmsRules::GroupStart[Group + 1] - SoraArmsRules::GroupStart[Group] && Hero->WeaponId != WeaponId; ++Presses)
@@ -1376,17 +1380,26 @@ bool ExpectWeapon(FAutomationTestBase& Test, FState& State, int32 WeaponId, bool
             return Fail(Test, State, What + TEXT(": could not return to the available weapon"));
     }
     else
+    {
+        for (int32 Presses = 0; Presses < SoraArmsRules::GroupStart[Group + 1] - SoraArmsRules::GroupStart[Group]; ++Presses)
+        {
+            Hero->SelectArmsGroup(Group);
+            bOk &= Test.TestTrue(*(What + TEXT(" is refused by its group key")), Hero->WeaponId != WeaponId);
+        }
         bOk &= Test.TestFalse(*(What + TEXT(" is not on the arms wheel")), SoraArmsRules::Holds(Hero->HoldableArms(), WeaponId));
+        if (!Advance(Test, State, 20) || !Kit->EquipCampaignWeapon(ReturnWeapon))
+            return Fail(Test, State, What + TEXT(": could not return to the available weapon"));
+    }
     return (bOk || Fail(Test, State, What)) && Advance(Test, State, 20);
 }
 
 // Each holdable arm after the dojo is refused while the beat that hands it
-// over is still ahead, and equips from that beat on (at the first moment the
-// hero's paws are free: out of the saddle, with no load): the yari in
+// over is still ahead, and equips once unlocked and permitted (at the first
+// moment the hero's paws are free: out of the saddle, with no load): the yari in
 // ch02.b03 itself, before the beat completes and keeps it.
 bool CheckArms(FAutomationTestBase& Test, FState& State)
 {
-    const USoraCampaignDirector* Director = Campaign(State);
+    USoraCampaignDirector* Director = Campaign(State);
     if (Director->ChapterId == 0 || Director->IsMounted() || Director->TaskProgress().Carrying)
         return true;
     unsigned Seen = FSoraCatalog::Get().EarlierWeapons(1);
@@ -1407,7 +1420,7 @@ bool CheckArms(FAutomationTestBase& Test, FState& State)
                     ++State.ArmsRefused;
                     State.ArmsLocked.Add(WeaponId);
                 }
-                else if (bInPlay && State.ArmsLocked.Contains(WeaponId))
+                else if (bInPlay && Director->CanHold(WeaponId,false) && State.ArmsLocked.Contains(WeaponId))
                 {
                     if (!ExpectWeapon(Test, State, WeaponId, true))
                         return false;
@@ -2060,11 +2073,16 @@ bool FSoraCampaignPlaythroughTest::RunTest(const FString& Parameters)
             Test.TestEqual(TEXT("The kanna-nagashi checkpoint is restored in a fresh world"), S.WorldsStarted, Worlds + 1) &&
             RaiseAlarm(Test, S) && FinishChapter(Test, S);
     });
-    // The vault: the foundry's arc carbine is carried in, and the optional
-    // armory's cache gives the phantom SMG.
+    // The vault: earlier firearms and polearms stay unlocked but cannot be
+    // carried in; the yumi remains unstrung at b02. The optional armory later
+    // gives the Phantom. All beats and cache grants still play through.
     Step(this, State, [](FAutomationTestBase& Test, FState& S)
     {
-        return PlayUntil(Test, S, 1) && ExpectWeapon(Test, S, 1, true) && FinishChapter(Test, S);
+        return PlayUntil(Test, S, 1) &&
+            Test.TestFalse(TEXT("Infiltration b02 forbids the earlier rifle, yari and unstrung yumi"),
+                Campaign(S)->CanHold(1,false)||Campaign(S)->CanHold(19,false)||Campaign(S)->CanHold(18,false)) &&
+            ExpectWeapon(Test, S, 1, true) &&
+            ExpectWeapon(Test, S, 19, true) && ExpectWeapon(Test, S, 18, true) && FinishChapter(Test, S);
     });
     // The flagship: the armory's phantom SMG is carried in, so the war
     // council's grant adds nothing; the seized vault's cache holds the dojo's
@@ -2121,7 +2139,7 @@ bool FSoraCampaignPlaythroughTest::RunTest(const FString& Parameters)
         bOk &= Test.TestEqual(TEXT("The weapons unlock in the authored order"), FString::Join(S.WeaponOrder, TEXT(" ")), FString::Join(Weapons, TEXT(" ")));
         bOk &= Test.TestEqual(TEXT("The mechanics unlock in the authored order"), FString::Join(S.MechanicOrder, TEXT(" ")), FString::Join(Mechanics, TEXT(" ")));
         bOk &= Test.TestEqual(TEXT("Each holdable arm after the dojo is refused before its beat"), S.ArmsRefused, GatedArms());
-        bOk &= Test.TestEqual(TEXT("Each holdable arm after the dojo equips from its beat on"), S.ArmsEquipped, GatedArms());
+        bOk &= Test.TestEqual(TEXT("Each holdable arm after the dojo equips once unlocked and permitted"), S.ArmsEquipped, GatedArms());
         bOk &= Test.TestTrue(TEXT("An arm is taken up in the beat that hands it over, before the beat completes"), S.ArmsInTheirBeat > 0);
         // Every beat was played, and every task goal the chapters author.
         const FSoraCatalog& Data = FSoraCatalog::Get();
