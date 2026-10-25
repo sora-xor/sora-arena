@@ -412,7 +412,10 @@ class BowCaptureTests(unittest.TestCase):
                         draw_age_s=[1, 5.6, 6.8, 6.82][index], wall_elapsed_s=[1.1, 5.7, 6.9, 6.92][index],
                         drawing=index < 3, attack_held=index < 3, ammo=12 if index < 3 else 11,
                         reticle=center, projected=center.copy(), target=[80, 45], camera=[0, 0, 152], rotation=[0, 0, 0],
-                        offset_degrees=offset, ray=[1, 0, 0], bow_quat=[0, 0, 0, 1])
+                        offset_degrees=offset, ray=[1, 0, 0], bow_quat=[0, 0, 0, 1],
+                        presentation_schema_version=1, fallback_bow=True,
+                        presentation_pose="bow.drawn" if index < 3 else "bow",
+                        presentation_projected_direction=[1, 0, 0], world_fov=94, first_person_fov=70)
             if phase == "negative":
                 meta["shot_ray"] = meta["ray"].copy()
                 meta.update(sample_world_s=100, release_world_s=100, release_delay_s=0,
@@ -436,6 +439,19 @@ class BowCaptureTests(unittest.TestCase):
             with self.subTest(changed=changed):
                 with self.assertRaises(ValueError):
                     VERIFY.bow_capture_validation.verify_frame(changed, pixels, 160, 90)
+
+    def test_presentation_requires_current_native_direction_and_explicit_fallback(self):
+        meta, png = self.observations()[1]
+        for changes in ({"presentation_schema_version": None}, {"fallback_bow": False},
+                        {"presentation_pose": "bow"}, {"presentation_projected_direction": [1, .02, 0]},
+                        {"presentation_projected_direction": [2, 0, 0]}, {"world_fov": 0},
+                        {"first_person_fov": float("nan")}):
+            with self.subTest(changes=changes), self.assertRaises(ValueError):
+                VERIFY.bow_capture_validation.verify_frame(dict(meta, **changes), png, 160, 90)
+        frames = [(m, VERIFY.bow_capture_validation.verify_frame(m, image, 160, 90)) for m, image in self.observations()]
+        frames[1][0]["first_person_fov"] = 80
+        with self.assertRaisesRegex(ValueError, "camera FOV"):
+            VERIFY.bow_capture_validation.verify_sequence(frames)
 
     def test_shot_recenter_missing_phase_and_camera_motion_are_rejected(self):
         data = self.observations()

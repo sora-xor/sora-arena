@@ -84,8 +84,12 @@ bool FSoraBowAimSwayTest::RunTest(const FString& Parameters)
             if(Age<4.65-1e-5&&!TestTrue(TEXT("No aim movement during draw or four full-draw seconds"),Offset.IsZero())) return false;
             if(!TestTrue(TEXT("The observed ray follows the same provisional profile on all difficulties"),
                 FMath::IsNearlyEqual(Offset.Pitch,Expected.Pitch,1e-5)&&FMath::IsNearlyEqual(Offset.Yaw,Expected.Yaw,1e-5))) return false;
-            if(!TestTrue(TEXT("Visible bow pose receives the same local aim rotation"),Hero->GetViewmodel()->GetRelativeRotation().Quaternion().Equals(
-                Offset.Quaternion()*FRotator(-15,0,0).Quaternion(),1e-5))) return false;
+            const FMinimalViewInfo View=SoraViewmodelPresentation::CameraView(*Hero->GetCamera());
+            const FVector BowDirection=Hero->GetViewmodel()->GetForwardVector();
+            const FVector ProjectedDirection=(View.TransformWorldToFirstPerson(View.Location+BowDirection*10000.f,true)-View.Location).GetSafeNormal();
+            if(!TestTrue(TEXT("Fallback draw uses the drawn pose and native FP direction follows the current gameplay ray without lag"),
+                Hero->GetViewmodel()->UsesFallbackBowPresentation()&&Hero->GetViewmodel()->PresentationPose()==TEXT("bow.drawn")&&
+                ProjectedDirection.Equals(Kit->BowAimDirection(),1e-5))) return false;
         }
         UE_LOG(LogTemp,Display,TEXT("Bow actual hold difficulty=%d full_at=%.6f sway_at=%.6f offset=%s input=%d ammo=%d"),
             Difficulty,FullAt,SwayAt,*Kit->BowAimOffset().ToString(),int32(W.Mode()->InputState()),Kit->Ammo);

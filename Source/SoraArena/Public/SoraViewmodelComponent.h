@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Components/SceneComponent.h"
+#include "SoraViewmodelPresentation.h"
 #include "SoraViewmodelComponent.generated.h"
 class UStaticMeshComponent;
 
@@ -16,10 +17,27 @@ public:
     // Rest offset from the eye.
     static FVector RestLocation() { return FVector(40,18,-18); }
     void Build(int32 WeaponId, bool bDojoBokken, bool bFirstPerson);
-    // Walking bob and action tilt, rotated by the bow's visible local aim.
-    void Sway(float LifeTime, float Moving, float Pitch, float Roll, const FRotator& AimOffset);
+    // State/rest smoothing is visual only; the current gameplay ray is never delayed.
+    void Sway(float DeltaSeconds,float LifeTime,float Moving,bool bReloading,bool bStrike,
+        bool bSprint,bool bBowDrawing,const FMinimalViewInfo& View,const FVector& GameplayRay);
     // A kernel snapshot's charge lift, or the reload tilt.
     void KernelPose(float Windup, bool bReloading);
+    bool UsesAuthoredPresentation() const { return bAuthoredPresentation; }
+    bool UsesFallbackBowPresentation() const { return bFallbackBowPresentation; }
+    bool HasPresentationPose() const { return bPresentationReady; }
+    const FString& PresentationPose() const { return ActivePose; }
+    // Full imported socket rotation/scale is retained for future authored paws.
+    bool PresentationSocketWorld(FName Socket,FTransform& Transform) const;
 private:
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> Parts;
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> PrimaryMesh;
+    bool bFirstPersonMode=false,bPresentationReady=false,bAuthoredPresentation=false,bFallbackBowPresentation=false;
+    int32 PresentationWeapon=INDEX_NONE;
+    FString ActivePose;
+    FVector SmoothedAnchor=FVector::ZeroVector;
+    FQuat SmoothedRest=FQuat::Identity;
+    float SmoothedPitch=0,SmoothedRoll=0,SmoothedLift=0;
+    void BeginPresentation(bool bFallbackBow);
+    void Present(float DeltaSeconds,float LifeTime,float Moving,float Pitch,float Roll,float Lift,
+        bool bDrawn,const FMinimalViewInfo* View,const FVector& GameplayRay);
 };

@@ -108,6 +108,16 @@ def verify_frame(meta, data, width, height):
         raise ValueError("invalid/compressed live bow clock observation")
     pitch, yaw = vector(meta, "offset_degrees", 2)
     drawing = phase != "released"
+    if (meta.get("presentation_schema_version") != 1 or meta.get("fallback_bow") is not True
+            or meta.get("presentation_pose") != ("bow.drawn" if drawing else "bow")):
+        raise ValueError("bow presentation observation is absent or has the wrong admission/state")
+    presentation = vector(meta, "presentation_projected_direction", 3)
+    if abs(math.hypot(*presentation) - 1) > 1e-5 or (drawing and math.dist(presentation, meta["ray"]) > 1e-5):
+        raise ValueError("native first-person presentation direction differs from the current gameplay ray")
+    for field in ("world_fov", "first_person_fov"):
+        value = meta.get(field)
+        if type(value) not in (int, float) or not math.isfinite(value) or not 0 < value < 180:
+            raise ValueError("bow presentation requires actual camera FOV observations")
     if meta.get("drawing") is not drawing or meta.get("attack_held") is not drawing or meta.get("ammo") != (12 if drawing else 11):
         raise ValueError("bow capture lost real held input or finite ammunition")
     valid = {"steady": .65 <= age < 4.65 and pitch == yaw == 0,
@@ -151,6 +161,8 @@ def verify_sequence(frames):
     for index, (meta, pixels) in enumerate(ordered):
         if math.dist(meta["camera"], base["camera"]) > .1 or math.dist(meta["rotation"], base["rotation"]) > .001:
             raise ValueError("bow capture moved the fixed camera between phases")
+        if any(abs(meta[key] - base[key]) > 1e-5 for key in ("world_fov", "first_person_fov")):
+            raise ValueError("bow capture changed camera FOV between phases")
         if index and any(meta[key] <= ordered[index - 1][0][key] for key in ("frame", "draw_age_s", "wall_elapsed_s")):
             raise ValueError("bow frames did not advance through normal live time")
     positive, negative, released = (pair[1]["center"] for pair in ordered[1:])
