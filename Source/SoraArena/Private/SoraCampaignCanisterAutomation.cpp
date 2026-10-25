@@ -49,12 +49,17 @@ bool Tap(FBeatWorld& W)
 { return W.World->InjectKey(Fire(W),IE_Pressed)&&Tick(W,1)&&W.World->InjectKey(Fire(W),IE_Released)&&Tick(W,2); }
 bool Walk(FBeatWorld& W,FVector2D At)
 {
+    const FVector Started=W.Hero()->GetActorLocation();
     for(int I=0;I<1800&&FVector2D::Distance(FVector2D(W.Hero()->GetActorLocation()),At)>15;++I)
     {
         W.Look((FVector(At,0)-W.Hero()->GetActorLocation()).GetSafeNormal2D().Rotation());
         if(!W.World->InjectKey(EKeys::W,IE_Pressed)||!Tick(W,1)) return false;
     }
     if(!W.World->InjectKey(EKeys::W,IE_Released)||!Tick(W,12)) return false;
+    const FVector End=W.Hero()->GetActorLocation();
+    W.Test.AddInfo(FString::Printf(TEXT("Canister walk: start=(%s) target=(%.1f,%.1f) end=(%s) distance=%.3f grounded=%d input=%d"),
+        *Started.ToString(),At.X,At.Y,*End.ToString(),FVector2D::Distance(FVector2D(End),At),
+        W.Hero()->GetCharacterMovement()->IsMovingOnGround(),int32(W.Mode()->InputState())));
     return W.Test.TestTrue(TEXT("Mapped walk reaches the open hangar aisle with collision"),
         FVector2D::Distance(FVector2D(W.Hero()->GetActorLocation()),At)<45&&W.Hero()->GetActorEnableCollision());
 }
@@ -96,7 +101,11 @@ bool FSoraCanisterShotsTest::RunTest(const FString& Parameters)
     { if(E.Victim==W.Hero()&&Cast<ASoraFuelCanister>(E.Causer.Get())) PlayerDamage+=E.Amount; });
     const auto Died=Bus->OnDied.AddLambda([&](const FSoraDiedEvent& E) { if(E.Victim==W.Hero()) ++Deaths; });
     ON_SCOPE_EXIT { Bus->OnDetonated.Remove(Burst); Bus->OnWeaponFired.Remove(Shot); Bus->OnDamaged.Remove(Hurt); Bus->OnDied.Remove(Died); };
-    if(!Kit->EquipCampaignWeapon(3)||!Tick(W,30)||!Walk(W,FVector2D(39000,-1650))||!Walk(W,FVector2D(40550,-1050))) return false;
+    // The gallery staircase occupies local x=[850,1150], y=[409,1211].
+    // The former (39000,-1650) target was inside its raised side. Walk around
+    // the foot at y=1400 before entering the canister aisle at y=1200.
+    if(!Kit->EquipCampaignWeapon(3)||!Tick(W,30)||!Walk(W,FVector2D(38400,-850))||
+       !Walk(W,FVector2D(40550,-850))||!Walk(W,FVector2D(40550,-1050))) return false;
     // Physical approach must stop at the actual canister capsule, not pass
     // through the visual mesh before a shot has disabled its collision.
     W.Look(FRotator(0,0,0));
