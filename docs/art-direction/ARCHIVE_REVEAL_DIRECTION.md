@@ -240,3 +240,58 @@ lighting slice does not depend on it.
 
 **For this pass:** floating weapons stay as they are, or are hidden from the
 archive's shots. No new offset is guessed (root's 23:08 note).
+
+## 8. Correction after f51c2236 (slice 1b)
+
+**From root's six f51c2236 originals** (`ArchiveReveal_018E28CC…`: 01_Wide
+`36761d0a…` to 06_Return `a4526f0b…`; root's review `ba02b3aa…`).
+
+**What f51c2236 fixed:**
+- the record reads near-white, with its amber 30, above the subtitles;
+- the interrupted shelf marks no longer overpower it;
+- the reaction face reads;
+- the bright return wall is gone.
+
+**Below the targets** (root's figures):
+- the frame means are 0.046-0.075 and the p99s 0.29-0.57, under section 1's
+  0.10-0.16 and 0.70-0.85;
+- the local hierarchy is right, so the fix is light on the characters, not
+  exposure or a brighter room.
+
+**The characters, measured on the PNGs** (sRGB luminance):
+
+| shot | region | median | p90 |
+| --- | --- | --- | --- |
+| 01_Wide | the rival's body | 0.031 | 0.110 |
+| 01_Wide | the rival's head | 0.009 | 0.086 |
+| 01_Wide | the hero's back | 0.012 | 0.141 |
+| 06_Return | the far rival | 0.029 | 0.168 |
+| 06_Return | the near hero | 0.095 | 0.194 |
+
+They are lit only by the racks' side spill. Fronts and faces are black.
+
+**The correction**, on a lighting channel the room does not receive:
+1. **A rim on each character in the wides** (01, 02, 06):
+   - a spot from behind the character, relative to the camera, motivated by
+     the window: about 9,500 K, a 20-25° cone, shadowed;
+   - so that its edge on head, ears and shoulders reaches 0.35-0.50.
+2. **A soft fill from the camera's side:**
+   - one large rect light per wide, cyan-shifted to the racks' colour (the
+     bounce they would give);
+   - so that the characters' lit side reaches a median of 0.08-0.12 and a
+     p90 of 0.25-0.35, and faces a p90 of at least 0.30;
+   - unshadowed.
+3. **The window:**
+   - replace the soft emissive blob with a dark timber lattice (格子) over a
+     night-sky plane at 0.05-0.08;
+   - add a faint shaft that lands as a soft pool of 0.08-0.12 on the ring's
+     floor, where the duellists stand.
+
+   It is the scene's only exterior light, so it should read as a window.
+
+**Kept:** the exposure, the record's hierarchy, the racks and the room. With
+these lights the frame means should rise toward section 1's targets. That is
+to be measured in the next capture, not assumed.
+
+**The floating straight katana and the rigid poses** belong to
+`THIRD_PERSON_GRIP_CONTRACT.md`. Slice A of it is in progress.
