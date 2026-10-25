@@ -6,7 +6,11 @@ Reads Content/SourceArt/Environment/NyaagyuDojoTimbers/manifest.json (written by
 scripts/art/create_nyaagyu_dojo_timbers.py) and the local evidence that the
 dense meshes in Local/ArtCache/NyaagyuDojoTimbers were rebuilt to the
 manifest's canonical geometry digests (the generator's build or --verify run).
-Without matching evidence nothing is imported.
+Without matching evidence nothing is imported. Nor without a current
+campaign_binding.json (scripts/art/bind_dojo_timbers.py): the placements are
+named from the estate halls in Content/Data/campaign, so a chapter file that
+changed since the binding stops the import until the binder reruns and
+confirms no built log went stale.
 
 * Placements (SM6): each dense FBX becomes SM_DojoTimberColumn_<rect>_S<side>_B<bay>
   with Nanite on and Unreal's generated fallback, bound to an instance of
@@ -441,6 +445,24 @@ def import_pool(rec, parent, evidence, preset="column_fukiurushi"):
     return name, rec["fallback_triangles"]
 
 
+def load_binding(manifests):
+    """The campaign binding: the chapter files and manifests the placements were checked against."""
+    path = KIT / "campaign_binding.json"
+    require(path.is_file(), "no campaign_binding.json (run python3 scripts/art/bind_dojo_timbers.py)")
+    binding = json.loads(path.read_text())
+    require(binding.get("schema") == "sora-dojo-timber-campaign-binding-v1", "unknown campaign binding schema")
+    require(sha(ROOT / binding["binder"]) == binding["binder_sha256"], "the binder changed since the binding")
+    require(sorted(binding["manifests"]) == sorted(manifests), "the binding covers other manifests")
+    for rel, digest in binding["manifests"].items():
+        require(sha(ROOT / rel) == digest, f"{rel} changed since the binding")
+    chapters = sorted(p.relative_to(ROOT).as_posix() for p in (ROOT / "Content/Data/campaign").glob("chapter_*.json"))
+    require(chapters == sorted(binding["campaign"]), "the chapter files are not the ones bound")
+    for rel, digest in binding["campaign"].items():
+        require(sha(ROOT / rel) == digest,
+                f"{rel} changed since the binding (rerun python3 scripts/art/bind_dojo_timbers.py)")
+    return binding
+
+
 def load_kit(folder: Path, cache: Path):
     """A kit manifest whose generator and inputs are unchanged, with clean rebuild evidence."""
     manifest = json.loads((folder / "manifest.json").read_text())
@@ -454,6 +476,9 @@ def load_kit(folder: Path, cache: Path):
 
 def main():
     manifest, evidence = load_kit(KIT, CACHE)
+    binding = load_binding(["Content/SourceArt/Environment/NyaagyuDojoTimbers/manifest.json",
+                            "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/manifest.json"])
+    coverage = binding["coverage"]
     assets.make_directory(TEX)
     shared = {}
     for kind, entry in manifest["shared_textures"].items():
@@ -466,8 +491,8 @@ def main():
     nanite = timber_master("M_SoraTimberNanite", shared, False)
     pool = [import_pool(rec, base, evidence) for rec in manifest["pool"]]
     placed = [import_placement(rec, nanite, evidence) for rec in manifest["placements"]]
-    report = [f"columns: {len(placed)} placement logs ({manifest['coverage']['with_own_log']} of "
-              f"{manifest['coverage']['estate_placements']} estate placements), {len(pool)} pool"]
+    report = [f"columns: {len(placed)} placement logs ({coverage['columns_with_own_log']} of "
+              f"{coverage['columns']} estate placements), {len(pool)} pool"]
     triangles = sum(t for _, t in placed)
     # The bay rails (create_nyaagyu_dojo_rails.py), when built: same two sets.
     if (KIT / "Rails/manifest.json").is_file():
@@ -475,8 +500,8 @@ def main():
         rail_pool = [import_pool(rec, base, rail_evidence) for rec in rails["pool"]]
         rail_placed = [import_placement(rec, nanite, rail_evidence) for rec in rails["placements"]]
         triangles += sum(t for _, t in rail_placed)
-        report.append(f"rails: {len(rail_placed)} placement logs ({rails['coverage']['with_own_log']} of "
-                      f"{rails['coverage']['estate_rail_placements']}), {len(rail_pool)} pool")
+        report.append(f"rails: {len(rail_placed)} placement logs ({coverage['rails_with_own_log']} of "
+                      f"{coverage['rails']}), {len(rail_pool)} pool")
     # The floor tiles (create_nyaagyu_dojo_floor.py): boards unique within a tile.
     if (KIT / "Floor/manifest.json").is_file():
         floor, floor_evidence = load_kit(KIT / "Floor", CACHE / "Floor")

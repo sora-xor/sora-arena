@@ -1,0 +1,89 @@
+{
+ "schema": "sora-dojo-timber-campaign-binding-v1",
+ "binder": "scripts/art/bind_dojo_timbers.py",
+ "binder_sha256": "e7d46d8dc356c1e428ae8d175e50bd162d9f42a19c058a4b7fd193c89535efd3",
+ "manifests": {
+  "Content/SourceArt/Environment/NyaagyuDojoTimbers/manifest.json": "216db7a78cbcfb77cb371e31e9686a06cf82fec04c1af20e624ec6d2798b583e",
+  "Content/SourceArt/Environment/NyaagyuDojoTimbers/Rails/manifest.json": "a7cce7ca1b1a1ed00839c83acf0113826bf40a0a9267ca3ea1fd27475b4f3717"
+ },
+ "campaign": {
+  "Content/Data/campaign/chapter_01.json": "df14f05d6ec8925f847da5c27cfd210951129bfa8c647fb8c4893adf92b32870",
+  "Content/Data/campaign/chapter_02.json": "f07544462ab1e0293e1e822a2476fc35b1a347899ae74def22d203d8291518b2",
+  "Content/Data/campaign/chapter_03.json": "0f63b3e700f5fdfff941fc60e0afc2cd8658b03583f0e19c2a55a7446090afe3",
+  "Content/Data/campaign/chapter_04.json": "c11cacff48d9bc46ef01b44618574e9870d6257f2075ec22dfecd31a4f61e40e",
+  "Content/Data/campaign/chapter_05.json": "cbb8dd6374394d8c4e92c4460c5cea3475d2d653050357642d5dc162a3274baa",
+  "Content/Data/campaign/chapter_06.json": "a05def8e1440360b9a4524d72e2653a1f1a527011fd2c0eb6f7db9d29ec10b3a",
+  "Content/Data/campaign/chapter_07.json": "687a858df467792694980564132f570664700579d5e10b3bf83bb324d023f244",
+  "Content/Data/campaign/chapter_08.json": "3048c41ed408cfc8d4ba573d6a6772adcda378cda6fb1ba4d80f1b1756774278"
+ },
+ "halls": [
+  {
+   "rect": [
+    8000,
+    -1300,
+    11600,
+    1300
+   ],
+   "zones": [
+    "chapter_01.json:pl_tsumagizaka_dojo",
+    "chapter_02.json:pl_bugugura",
+    "chapter_04.json:pl_shoya_yashiki"
+   ],
+   "columns": 65,
+   "columns_with_own_log": 65,
+   "rails": 235,
+   "rails_with_own_log": 235
+  },
+  {
+   "rect": [
+    35000,
+    -1300,
+    38600,
+    1300
+   ],
+   "zones": [
+    "chapter_01.json:pl_dojo_smithy"
+   ],
+   "columns": 65,
+   "columns_with_own_log": 0,
+   "rails": 235,
+   "rails_with_own_log": 0
+  },
+  {
+   "rect": [
+    45200,
+    -1300,
+    48800,
+    1300
+   ],
+   "zones": [
+    "chapter_04.json:pl_suisha_goya"
+   ],
+   "columns": 65,
+   "columns_with_own_log": 0,
+   "rails": 235,
+   "rails_with_own_log": 0
+  },
+  {
+   "rect": [
+    51800,
+    -1300,
+    55400,
+    1300
+   ],
+   "zones": [
+    "chapter_04.json:pl_gogura"
+   ],
+   "columns": 65,
+   "columns_with_own_log": 0,
+   "rails": 235,
+   "rails_with_own_log": 0
+  }
+ ],
+ "coverage": {
+  "columns": 260,
+  "columns_with_own_log": 65,
+  "rails": 940,
+  "rails_with_own_log": 235
+ }
+}
