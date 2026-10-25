@@ -8,6 +8,21 @@ remains a historical recovery record. This is a progress record, not a claim
 that the release is complete. Backward compatibility,
 legacy formats, aliases, and fallback decoders are prohibited.
 
+## 2026-10-25 shader readiness and encounter mechanics
+
+Exact `0c7961d` passes ten of eleven directed encounter tests. Casting channels,
+zero-life nets, bridge/prop behavior, destructible Margin Call cover, Collatera,
+helm and Playthrough pass; MarginLinger fails its physical-cover assertion.
+A fixture approach correction with exact diagnostics is integrated but unrun.
+The same source passes all 36 SM6 and 18 SM5 timber captures on M2 Ultra with
+zero selected errors or warnings. Initial fallback materials are rejected
+before capture, and both observation endpoints resolve the proper masters.
+Nine original images were reviewed; this closes the capture-readiness defect,
+not final art or other-platform qualification. Horse treatment is integrated
+with seven passing host-check groups and pending engine tests. CI at `dfbf1b9`
+passes all 100 source gates. The [current evidence and limits](complete-release-plan.md#october-25-shader-readiness-and-encounter-mechanics)
+retain the failed test, saved-asset origin, rejected art and remaining mechanics.
+
 ## 2026-10-25 verified campaign and current integration
 
 Exact `97c08a0` passes15 combined editor tests, six defense regressions and all98
