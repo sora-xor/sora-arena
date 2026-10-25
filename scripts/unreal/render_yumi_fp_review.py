@@ -3,7 +3,7 @@
 Run in the pinned editor with a renderer, after import_runtime_weapon_yumi_rig.py
 (and import_nyaakoto_fp_paws.py, unless paws=0):
   scripts/toolchain/run-editor-script.sh --editor scripts/unreal/render_yumi_fp_review.py \
-      YUMI_FP_REVIEW_COMPLETE -- holds=rest,root,right_cheek,paw res=1920x1080 out=YumiFP [ids=0]
+      YUMI_FP_REVIEW_COMPLETE -- holds=rest,root,right_cheek,paw res=1920x1080 out=YumiFP [ids=0] [runup=auto|<n>]
 
 It builds a fresh uncooked level, /Game/ArtReview/YumiFP/L_YumiFP_<time>.
 - **The camera:** at the origin, looking down +X, the eye of the first-person
@@ -139,7 +139,7 @@ SOLVE_TOL_CM = 1e-2
 
 def parse_args():
     opts = {"holds": "rest,root,right_cheek,paw", "res": "1920x1080", "out": "YumiFP", "paws": "1", "ev": "",
-            "ids": "1"}
+            "ids": "1", "runup": "auto"}
     for arg in sys.argv[1:]:
         if "=" in arg:
             k, v = arg.split("=", 1)
@@ -274,6 +274,44 @@ def build_level():
 def metered_ev100():
     """The incident-meter exposure for the sun: EV100 = log2(E / 2.5)."""
     return math.log2(SUN["lux"] / 2.5)
+
+
+# Run-up frames HighResShot renders per TSR history sample, before it saves.
+RUNUP_PER_HISTORY_SAMPLE = 2
+
+
+def highres_runup(option="auto"):
+    """Set how many frames HighResShot renders at the shot's own size before saving (r.HighResScreenshotDelay).
+
+    HighResShot draws into its own viewport at the requested size, and only for r.HighResScreenshotDelay frames,
+    "to allow temporal effects to converge" (UnrealClient.cpp:1685-1714; default 4). The viewport's settle frames
+    don't carry over: TSR's history restarts at the new size. TSR keeps at most r.TSR.History.SampleCount samples
+    per pixel (default 16, at most 32; TemporalSuperResolution.cpp:44-50).
+
+    **A candidate cause, not a proven one.** Dithered coverage needs that history to resolve, and the fur cards'
+    DitherOpacityMask and the ID pass's dithered fur mask both use it. Four frames would leave it raw, which would
+    explain capture v3's white speckle: its fur's high-frequency residual is 4.1 to 4.6 times the urushi stave's
+    in the eye-view holds (scripts/art/fur_capture_noise.py). A controlled comparison has to show it: the same hold shot with runup=4 and
+    with runup=auto, nothing else changed. The fur cards' own geometry (flat overlapping blades at macro range) is a
+    separate defect, which no run-up changes.
+
+    runup=auto: two frames per history sample, to fill it with margin. runup=<n>: exactly n frames (4 is the
+    engine's default, v3's condition). The values set are read back, or the capture refuses."""
+    samples = unreal.SystemLibrary.get_console_variable_float_value("r.TSR.History.SampleCount")
+    if not samples >= 8.0:                     # 0 means the variable was not found; TSR's own minimum is 8
+        raise RuntimeError(f"yumi FP review: r.TSR.History.SampleCount reads {samples!r}")
+    if option == "auto":
+        frames = int(math.ceil(RUNUP_PER_HISTORY_SAMPLE * samples))
+    elif option.isdigit() and int(option) >= 1:
+        frames = int(option)
+    else:
+        raise RuntimeError(f"yumi FP review: runup={option!r} is not auto or a positive frame count")
+    unreal.SystemLibrary.execute_console_command(world(), f"r.HighResScreenshotDelay {frames}")
+    got = unreal.SystemLibrary.get_console_variable_int_value("r.HighResScreenshotDelay")
+    if got != frames:
+        raise RuntimeError(f"yumi FP review: r.HighResScreenshotDelay reads {got}, not the {frames} set")
+    return {"option": option, "r.TSR.History.SampleCount": samples, "r.HighResScreenshotDelay": frames,
+            "per_history_sample": RUNUP_PER_HISTORY_SAMPLE if option == "auto" else None}
 
 
 def exposure(ev100, volume=None, ids=False):
@@ -537,6 +575,7 @@ def main():
     out = ROOT / "Saved/YumiFP" / opts["out"]
     out.mkdir(parents=True, exist_ok=True)
     env = build_level()
+    runup = highres_runup(opts["runup"])
     ev100 = float(opts["ev"]) if opts["ev"] else metered_ev100()
     volume = exposure(ev100)
     vm = Viewmodel(opts["paws"] != "0")
@@ -600,6 +639,7 @@ def main():
                             "assessment_camera": {k: CONTROL["camera"][k] for k in (
                                 "first_person_fov_deg", "aspect", "near_plane_cm", "reticle_clear_radius")},
                             "set_materials": SET_MATERIALS, "sun": SUN, "ev100": ev100, "exposure_bias": 1.0 - ev100,
+                            "highres_runup": runup,
                             "scope": "editor review originals: not the native first-person renderer or an admission"}
                 (out / "manifest.json").write_text(json.dumps(manifest, indent=1) + "\n")
                 finish(f"YUMI_FP_REVIEW_COMPLETE: {len(status['written'])} captures in {out}")

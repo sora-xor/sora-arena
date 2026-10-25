@@ -1,9 +1,20 @@
 # The full editor's exit hang after a first-person capture
 
 **Status:** a source-only study (2026-10-25), done while root held the
-engine lane. The fix is in `render_yumi_fp_review.py`. **It is not yet run.**
-Only the controlled runs below, once the lane is returned, can show a clean
-exit.
+engine lane. The fix is in `render_yumi_fp_review.py`.
+
+**Run 1 of the plan, the handoff probe (`0922b47`), passed** at 19:38Z on
+root's bounded handback (`Saved/ExitProbe/handoff.*`).
+- The full editor logged its marker at frame 61 and `Exiting.` at frame 63,
+  then exited by itself 3 s after the marker.
+- Editor exit 0, wrapper exit 0, natural EOF. Nothing was sampled or
+  signalled.
+
+**What that shows:** the hand-off path exits cleanly in this engine,
+consistent with the mechanism below. **The capture itself has not yet run
+with the fix,** so its cause stays provisional until it does.
+
+**The negative control was not run;** root judged v2 and v3 sufficient.
 
 ## What happened
 
@@ -110,9 +121,9 @@ exits.
    `UE --editor scripts/unreal/probe_editor_exit.py EDITOR_EXIT_PROBE_DONE Saved/ExitProbe/handoff.log -- mode=handoff`
    - **It passes** when the marker is logged and the editor then exits by
      itself, with a natural EOF.
-   - Its status is recorded as it is. A self-quitting full editor has exited
-     1, which the wrapper accepts only in `--editor`; that is reported as
-     "editor exit 1, wrapper exit 0".
+   - Its status is recorded as it is. Earlier self-quitting full editors
+     exited 1, which the wrapper accepts only in `--editor`, reported as
+     "editor exit 1, wrapper exit 0". The probe exited 0.
    - **If it is still running 60 s after the marker:** sample it, preserve
      everything, ask before any signal, and stop. The fix would be wrong.
 2. **The negative control** (`mode=same_frame_quit`), only if root wants the
