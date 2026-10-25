@@ -1906,6 +1906,62 @@ static void ExpectUnlockOrder(const FUnlockLog& Log, bool Completist)
     Expect(Completist ? Moved == 0 : Moved == 1, "the skipper's route moves other than the one optional pickup");
 }
 
+static void TestInfiltrationEquipment()
+{
+    const auto& Plan=Chapters[5];
+    FTask Tasks[MaxBeats]={}; ChapterTasks[5](Tasks);
+    FEntry Entry{};
+    for(int Chapter=0;Chapter<5;++Chapter)
+    {
+        Entry.Weapons|=ChapterWeapons(Chapters[Chapter].Beats,Chapters[Chapter].Count,true);
+        Entry.Mechanics|=ChapterMechanics(Chapters[Chapter].Beats,Chapters[Chapter].Count);
+        Entry.Flags|=ChapterFlags(Chapters[Chapter].Beats,Chapters[Chapter].Count);
+    }
+    // Chapter select includes earlier optional weapons. The mission still
+    // leaves those firearms and polearms behind, without deleting unlocks.
+    Expect((Entry.Weapons&(1u<<1))!=0u && (Entry.Weapons&(1u<<19))!=0u,
+        "infiltration fixture lacks earlier firearm/polearm unlocks");
+    for(bool OpenOptional:{false,true})
+    {
+        FProgress Progress{0u,0u,Entry.Weapons,Entry.Mechanics,Entry.Flags,false};
+        for(int Index=0;Index<Plan.Count;++Index)
+        {
+            const auto& Task=Tasks[Index];
+            auto State=StartTask(Task,0);
+            unsigned Expected=(1u<<0)|(1u<<4);
+            if(Index>=2) Expected|=1u<<18;
+            if(Index>=4) Expected|=1u<<3;
+            if(Index>=6) Expected|=1u<<13;
+            if(Index>=9) Expected|=1u<<10;
+            Expect(Task.EquipmentMask==Expected && Task.RecoveryWeapons==0u && Task.RecoveryStringMs==0,
+                "infiltration checkpoint has wrong carried arms or blocking bow recovery");
+            const auto Retried=RetryTask(State,Task);
+            const unsigned Unlocked=InPlayWeapons(Progress,Plan.Beats,Plan.Count,Index);
+            for(int Weapon=0;Weapon<WeaponCount;++Weapon)
+            {
+                const bool Allowed=(Expected&(1u<<Weapon))!=0u;
+                Expect(EquipmentAllows(State,Task,Weapon)==Allowed &&
+                    EquipmentAllows(Retried,Task,Weapon)==Allowed,
+                    "infiltration start/retry lost mission restrictions");
+            }
+            Expect(EquipmentReady(State,Task),"non-blocking bow setup became a recovery hold");
+            Expect(((Unlocked&(1u<<3))!=0u)==(Index>=4),"Needle did not unlock at required b05 entry");
+            Expect(((Unlocked&(1u<<13))!=0u)==(OpenOptional&&Index>6),
+                "Phantom unlocked before optional cache completion or vanished afterward");
+            if(Plan.Beats[Index].Optional && !OpenOptional) continue;
+            Expect(CompleteBeat(Progress,Plan.Beats,Plan.Count,Index),"infiltration route cannot complete");
+        }
+        const auto& Next=Chapters[6];
+        // The existing skipped-cache auto-grant belongs to ch07.b01 completion.
+        FProgress NextProgress{0u,0u,Progress.WeaponsMask,Progress.MechanicsMask,Progress.FlagsMask,false};
+        Expect(((InPlayWeapons(NextProgress,Next.Beats,Next.Count,0)&(1u<<13))!=0u)==OpenOptional,
+            "chapter7 granted the skipped Phantom before its authored auto-grant");
+        Expect(CompleteBeat(NextProgress,Next.Beats,Next.Count,0) &&
+            (NextProgress.WeaponsMask&(1u<<13))!=0u,"skipped Phantom not granted at authored chapter7 boundary");
+    }
+    std::cout << "chapter 6: entry/select permissions, all beat retries, non-blocking b03 bow, b05 Needle and optional SMG boundary passed\n";
+}
+
 static void TestAuthoredCarryDifficulty()
 {
     FTask Tasks[MaxBeats] = {};
@@ -2045,6 +2101,7 @@ int main()
     TestDefeatsAndLessons();
     TestBossAndStealth();
     TestEquipmentRecovery();
+    TestInfiltrationEquipment();
     TestProduction();
     TestDecayFrames();
     TestCooperativeCranks();
