@@ -557,6 +557,23 @@ bool WorkAtAnchor(FAutomationTestBase& Test, FState& State)
     MoveTo(State, Anchor);
     if (!Advance(Test, State, 1))
         return false;
+    if(Director->IsRelayRoom())
+    {
+        // This playthrough deliberately places the hero at controls. The
+        // relay fixtures separately exercise ordinary stair traversal.
+        Player(State)->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+        Player(State)->SetActorLocation(Anchor+FVector(0,0,Player(State)->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2));
+        if(!Advance(Test,State,3)||!WaitForDialogue(Test,State)) return false;
+        int Node=0;while(Node<4&&(Director->TaskProgress().PointsMask&(1u<<Node))) ++Node;
+        if(Node<3)
+        {
+            for(int Frame=0;Frame<3000&&(Director->RelayState().NodesLockedMs>0||
+                Director->RelayState().SafeRemainingMs(Node)<3300);++Frame)
+                if(!Advance(Test,State,1)) return false;
+            if(!Test.TestTrue(TEXT("The relay scan leaves time for the full pull"),
+                Director->RelayState().NodesLockedMs==0&&Director->RelayState().SafeRemainingMs(Node)>=3300)) return false;
+        }
+    }
     if(Director->ActiveTask().AlternateTreads)
     {
         // The bellows wave nets the boy beside this station. Interact gives
@@ -581,6 +598,8 @@ bool WorkAtAnchor(FAutomationTestBase& Test, FState& State)
     }
     const auto* WorkBeat=Director->ActiveBeatData();
     const bool bPress=WorkBeat&&WorkBeat->Space.PressHall.bEnabled;
+    const bool bRelay=Director->IsRelayRoom();
+    const bool bMappedHold=bPress||bRelay;
     if(bPress)
     {
         const int Objective=Director->TaskProgress().Done;
@@ -604,10 +623,16 @@ bool WorkAtAnchor(FAutomationTestBase& Test, FState& State)
         if(Objective<3&&!Test.TestTrue(TEXT("The player's actual interaction starts the press hold"),Director->HeldWorkProgress()>=0.f))
         { State.World->InjectKey(EKeys::E,IE_Released);return false; }
     }
+    else if(bRelay)
+    {
+        if(!State.World->InjectKey(EKeys::E,IE_Pressed)) return false;
+        if(Director->TaskProgress().Done<3&&!Test.TestTrue(TEXT("The player's actual interaction starts the relay hold"),Director->HeldWorkProgress()>=0.f))
+        { State.World->InjectKey(EKeys::E,IE_Released);return false; }
+    }
     else Mode(State)->Interact(Player(State));
     if (Director->HeldWorkProgress() < 0.f)
     {
-        if(bPress) State.World->InjectKey(EKeys::E,IE_Released);
+        if(bMappedHold) State.World->InjectKey(EKeys::E,IE_Released);
         return true;
     }
     // Worked once its point is marked done, or the beat it finished has moved on.
@@ -616,10 +641,10 @@ bool WorkAtAnchor(FAutomationTestBase& Test, FState& State)
     const int32 DeliveredBefore=Director->TaskProgress().Done;
     const auto Worked = [&]() { return Director->ActiveBeat() != BeatBefore || Director->TaskProgress().PointsMask != Before ||
         Director->TaskProgress().Done != DeliveredBefore; };
-    if(!bPress) State.World->InjectKey(EKeys::E, IE_Pressed);
+    if(!bMappedHold) State.World->InjectKey(EKeys::E, IE_Pressed);
     bool bHeld = true;
-    for (int32 Frame = 0; Frame < (bPress?600:40) && bHeld && !Worked(); ++Frame)
-        bHeld = Advance(Test, State, 1, bPress?FrameSeconds:.25f);
+    for (int32 Frame = 0; Frame < (bMappedHold?600:40) && bHeld && !Worked(); ++Frame)
+        bHeld = Advance(Test, State, 1, bMappedHold?FrameSeconds:.25f);
     if(!Worked())
     {
         Test.AddInfo(FString::Printf(TEXT("Held objective diagnostic: anchor=%s hero=%s velocity=%s grounded=%d key=%d held=%.3f dialogue=%d done=%d mask=%u"),
@@ -1264,7 +1289,7 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
             if(!ClearField(Test,State,Index)||!FreeConscripts(Test,State)||
                 !Test.TestTrue(TEXT("Granary seal is pried through real movement and held input"),SoraCarryAutomation::PrySeal(*State.World))) return false;
         }
-        if(Beat.Space.PressHall.bEnabled)
+        if(Beat.Space.PressHall.bEnabled||Beat.Space.RelayRoom.bEnabled)
         {
             // This assisted campaign checks progression, not surviving a
             // stationary hold under fire. A seizure net correctly cancels
@@ -1274,7 +1299,7 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
             auto* Effects=USoraCombatEffects::Get(Player(State));
             for(int32 Frame=0;Frame<600&&Effects&&Effects->IsRooted(Player(State));++Frame)
                 if(!Advance(Test,State,1,FrameSeconds)) return false;
-            if(!Test.TestTrue(TEXT("The press patrol is cleared and any seizure net expires naturally"),
+            if(!Test.TestTrue(TEXT("The work station's patrol is cleared and any seizure net expires naturally"),
                 LiveEnemies(State).IsEmpty()&&(!Effects||!Effects->IsRooted(Player(State))))) return false;
         }
         bool bSlipTested = false, bMissTested = false, bLoadTested = false;

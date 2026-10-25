@@ -13,6 +13,7 @@
 #include "SoraHorseTreatmentRules.h"
 #include "SoraPodRules.h"
 #include "SoraMillisecondClock.h"
+#include "SoraRelayRules.h"
 #include "SoraCampaignDirector.generated.h"
 class ACameraActor;
 class UStaticMeshComponent;
@@ -238,6 +239,13 @@ public:
     // pickup (ch03.b05's 釣瓶, waiting while a guard watches) or an objective
     // worked with Interact held (a charge planted, a relay node pulled).
     float HeldWorkProgress() const;
+    bool IsRelayRoom() const;
+    // Derived from saved chapter progress, including a checkpoint reload.
+    bool RelayOffline() const;
+    const SoraRelayRules::FState& RelayState() const { return Relay; }
+    FVector RelayNodeLocation(int32 Node) const;
+    FVector RelayWorkLocation(int32 Node) const;
+    bool CanReachRelay(int32 Objective) const;
     const SoraPodRules::FArrival& PodArrival(int32 Wave) const { check(Wave>=0&&Wave<SoraPodRules::Count); return PodState[Wave]; }
     AActor* PodWarning(int32 Wave) const { return PodWarnings.IsValidIndex(Wave)?PodWarnings[Wave].Get():nullptr; }
     bool IsHorseTreatment() const;
@@ -544,6 +552,12 @@ private:
     bool TakeLooseLoad(ASoraPlayerCharacter& Hero);
     bool WorkObjectiveAt(int32 Objective);
     void TickHeldWork(int32 DeltaMs,float DeltaSeconds);
+    SoraRelayRules::FState Relay;
+    FSoraMillisecondClock RelayClock;
+    int32 RelayCatchAgeMs=0;
+    void TickRelay(float DeltaSeconds);
+    bool InteractRelay();
+    void RelayCaught(int32 AgeMs=0);
     enum class ERecoveryClimb : uint8 { None, Enter, Down, Up, Exit };
     ERecoveryClimb RecoveryClimb=ERecoveryClimb::None;
     bool bStringingBow=false;

@@ -46,7 +46,9 @@ void ASoraWorldBuilder::BuildCampaign(const FSoraChapter& Chapter)
             { return B.Space.Zone==Index&&B.Space.Moat.bEnabled; });
         const FSoraBeat* Bridge=Chapter.Beats.FindByPredicate([Index](const FSoraBeat& B)
             { return B.Space.Zone==Index&&B.Space.Bridge.bEnabled; });
-        if(Bridge) BuildBridge(Space.Zones[Index],Index,*Bridge); else if(Moat) BuildMoat(*Moat); else if(Climb) BuildClimb(*Climb); else if(Wind) BuildWindSpace(*Wind); else if(Flood) BuildFlood(*Flood); else if(Spire) BuildSpire(*Spire); else if(Summit) BuildSummit(*Summit); else BuildZone(Space.Zones[Index],Index,Recovery);
+        const FSoraBeat* Relay=Chapter.Beats.FindByPredicate([Index](const FSoraBeat& B)
+            { return B.Space.Zone==Index&&B.Space.RelayRoom.bEnabled; });
+        if(Relay) BuildRelayRoom(*Relay); else if(Bridge) BuildBridge(Space.Zones[Index],Index,*Bridge); else if(Moat) BuildMoat(*Moat); else if(Climb) BuildClimb(*Climb); else if(Wind) BuildWindSpace(*Wind); else if(Flood) BuildFlood(*Flood); else if(Spire) BuildSpire(*Spire); else if(Summit) BuildSummit(*Summit); else BuildZone(Space.Zones[Index],Index,Recovery);
     }
     BuildChapterWood(Chapter);
     NodePositions.Reset(); Nodes.Reset(); SiteEffects.Reset(); SiteRestoredColors.Reset();
@@ -56,6 +58,16 @@ void ASoraWorldBuilder::BuildCampaign(const FSoraChapter& Chapter)
         const FVector P=Floor(Space.Sites[Site]);
         const int32 Zone=Space.ZoneAt(P);
         NodePositions.Add(P);
+        if(Chapter.Beats.ContainsByPredicate([Zone](const FSoraBeat& B)
+            { return B.Space.Zone==Zone&&B.Space.RelayRoom.bEnabled; }))
+        {
+            // The relay column and switches own this site's physical work.
+            // A second generic production pedestal would obstruct the exit.
+            Nodes.SetNum(Site+1);SiteEffects.SetNum(Site+1);SiteRestoredColors.SetNum(Site+1);
+            Nodes[Site]=Box(TEXT("RelaySiteMarker"),P+FVector(0,0,1),FVector(40,40,2),FLinearColor(.1f,.2f,.2f),false);
+            SiteEffects[Site]=nullptr;SiteRestoredColors[Site]=FLinearColor(.07f,.62f,.53f);
+            continue;
+        }
         SiteStructure(Site,P,Chapter.Sites[Site].Kind,Space.Zones.IsValidIndex(Zone)?ZoneStyleMap(Space.Zones[Zone].Style):Chapter.Map,Accent);
     }
     // The hero stands a capsule's height above the floor at the first beat's entry.

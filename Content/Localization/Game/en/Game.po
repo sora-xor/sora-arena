@@ -953,6 +953,30 @@ msgctxt "SoraArena.Fieldcraft,NoStones"
 msgid "礫がない。崩れた石垣で拾おう。"
 msgstr "No stones. Pick some up from the broken rampart."
 
+#. Key:	RelayCaught
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,RelayCaught"
+msgid "走査に捕まった　警戒が高まった"
+msgstr "The scan caught you. Suspicion increased."
+
+#. Key:	RelayGap
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,RelayGap"
+msgid "走査の隙　残り {Seconds} 秒　{Key} を三秒長押し"
+msgstr "Scan gap: {Seconds} seconds. Hold {Key} for three seconds."
+
+#. Key:	RelayLocked
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,RelayLocked"
+msgid "中継器の封鎖　残り {Seconds} 秒"
+msgstr "Relay locked: {Seconds} seconds remaining"
+
+#. Key:	RelayWait
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,RelayWait"
+msgid "走査中　光が外れるまで待て"
+msgstr "Scanning. Wait for the light to pass."
+
 #. Key:	Release
 #: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
 msgctxt "SoraArena.Fieldcraft,Release"

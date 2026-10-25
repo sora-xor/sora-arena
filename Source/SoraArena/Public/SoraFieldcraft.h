@@ -235,6 +235,8 @@ public:
     bool PressInspectionArrived(int32 Objective) const;
     bool PressInspectionOverdue(int32 Objective) const;
     ASoraEnemy* PressInspector(int32 Objective) const;
+    bool RelayInspectionArrived(int32 Node) const;
+    ASoraEnemy* RelayInspector() const;
     int32 MoltenClock() const { return MoltenClockMs; }
     int32 MoltenBurnLeft(const ASoraCharacterBase& Body) const;
     const FSoraFieldcraft* Active() const { return Staged; }
@@ -367,6 +369,25 @@ public:
 protected:
     virtual bool DoesSupportWorldType(const EWorldType::Type WorldType) const override;
 private:
+    const FSoraRelayRoom* RelayRoom=nullptr;
+    TArray<TWeakObjectPtr<UStaticMeshComponent>> RelayNodes;
+    TArray<TWeakObjectPtr<UStaticMeshComponent>> RelayFan;
+    TWeakObjectPtr<APointLight> RelayGlow;
+    int64 RelayRoomMs=0;
+    int64 RelayLampOutMs[2]={-1,-1};
+    bool RelayLampNoticed[2]={false,false};
+    TWeakObjectPtr<ASoraEnemy> RelayAuditor;
+    int32 RelayInspecting=INDEX_NONE;
+    unsigned RelayInspected=0;
+    int64 RelayArrivedMs=-1;
+    TArray<FVector> RelayInspectionPath;
+    int32 RelayInspectionLeg=0;
+    int32 RelayInspectionAtLeg=0;
+    void StageRelayRoom(const FSoraBeat& Beat);
+    void ClearRelayRoom();
+    void TickRelayRoom(int32 DeltaMs);
+    void RelayLampExtinguished(int32 Index);
+    void TickRelayInspection();
     const FSoraPressHall* PressHall=nullptr;
     int64 PressClockMs=0;
     double PressCarryMs=0;

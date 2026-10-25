@@ -216,8 +216,9 @@ void USoraFieldcraft::TickSearchlights(int32 DtMs)
         else
         {
             State.LockedMs = FMath::Max(0, State.LockedMs - DtMs);
-            const float Bearing = Row.Yaw + Craft::BeamMilliDeg(Row.Rules, LightClockMs, Index * (Row.Rules.PeriodMs / 2)) / 1000.f;
-            At = State.LockedMs > 0 ? State.LockedAt : FVector(Row.At, 0.f) + FRotator(0.f, Bearing, 0.f).Vector() * Row.ReachCm;
+            const bool bRelayOffline=MoatSpace&&Campaign&&Campaign->RelayOffline();
+            const float Bearing = Row.Yaw + Craft::BeamMilliDeg(Row.Rules, bRelayOffline?0:LightClockMs, Index * (Row.Rules.PeriodMs / 2)) / 1000.f;
+            At = !bRelayOffline&&State.LockedMs > 0 ? State.LockedAt : FVector(Row.At, 0.f) + FRotator(0.f, Bearing, 0.f).Vector() * Row.ReachCm;
             At.Z = MoatSpace ? 2.f : FloodSpace ? FloodSurfaceAt(At)+2.f : (Staged->bWater && Staged->Water.Area.Contains(At) ? Layout::WaterLevel : 0.f) + 2.f;
             From = FVector(Row.At, Row.HeightCm);
         }

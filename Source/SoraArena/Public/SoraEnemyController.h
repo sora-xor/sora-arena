@@ -22,6 +22,9 @@ struct FSoraPatrolRoute
 {
     GENERATED_BODY()
     UPROPERTY() TArray<FVector> Points;
+    // A second circuit with the same start, used on alternate completed laps.
+    // Switching never skips an obstructed station or teleports the guard.
+    UPROPERTY() TArray<FVector> AlternatePoints;
     UPROPERTY() bool bPingPong = false;
     UPROPERTY() int32 PauseMs = 1500;
     // Optional scheduled circuit, in active patrol time. Distractions and
@@ -82,6 +85,9 @@ public:
     // A changed object makes a calm guard investigate its position, without
     // exposing the player's position or turning an auditor's alarm on.
     void NoticeTampering(const FVector& Where);
+    // A relay sensor's exact evidence impulse. Its first suspicious report
+    // does not turn an auditor's ordinary object inspection into an alarm.
+    void SensorEvidence(const FVector& Where,int32 SuspicionPermille);
     // A guard's start in a zone that has just opened (SoraStealthRules::Posted).
     void EnterZone(bool bCarriedOver);
     // On a patrol or post rather than in a hunting wave: the stealth zone's guard.

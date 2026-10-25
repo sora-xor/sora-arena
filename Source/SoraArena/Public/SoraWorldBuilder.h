@@ -139,6 +139,7 @@ public:
     void BuildFlood(const FSoraBeat& Beat);
     void BuildMoat(const FSoraBeat& Beat);
     void BuildClimb(const FSoraBeat& Beat);
+    void BuildRelayRoom(const FSoraBeat& Beat);
     void StageKit(const FSoraChapter& Chapter, int32 Beat);
     void ShowKit(const FSoraKitView& View);
     void ClearKit();

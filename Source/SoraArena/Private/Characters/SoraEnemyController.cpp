@@ -224,6 +224,18 @@ void ASoraEnemyController::NoticeTampering(const FVector& Where)
     Enter(*Enemy,Previous,WorldMs());
 }
 
+void ASoraEnemyController::SensorEvidence(const FVector& Where,int32 SuspicionPermille)
+{
+    auto* Enemy=GetPawn<ASoraEnemy>();
+    if(!Enemy||!Enemy->IsAlive()||bHunting||SuspicionPermille<=0) return;
+    const auto Previous=Mind.State;
+    Stealth::FSenses Senses{};
+    Senses.NoiseImpulse=FMath::Clamp(SuspicionPermille,0,1000);
+    Mind=Stealth::Step(Mind,Senses,0,Vigilance());
+    LastKnown=Where;ClearErrand();
+    if(Mind.State!=Previous) Enter(*Enemy,Previous,WorldMs());
+}
+
 Stealth::FVigilance ASoraEnemyController::Vigilance() const
 {
     // A hunting wave never obeys a zone.
@@ -571,12 +583,16 @@ void ASoraEnemyController::CallOut(const ASoraEnemy& Enemy) const
     const USoraStealth* Zone = bHunting ? nullptr : USoraStealth::Get(this);
     const bool bLecterns = Zone && Zone->IsZoneActive() && !Zone->AlarmPoints().IsEmpty();
     const int32 Alarm = Enemy.Archetype() && !bLecterns ? Enemy.Archetype()->AlarmRadiusCm : 0;
+    const auto* Mode=Cast<ASoraGameMode>(GetWorld()->GetAuthGameMode());
+    const bool bLocalDrone=Enemy.ArchetypeId()==TEXT("drone")&&Mode&&Mode->bCampaign&&
+        Mode->Campaign()&&Mode->Campaign()->RelayOffline();
     for (TActorIterator<ASoraEnemyController> It(GetWorld()); It; ++It)
     {
         const APawn* Ally = It->GetPawn();
         if (*It == this || !Ally)
             continue;
         const int32 Distance = FMath::RoundToInt32(FVector::Dist(Ally->GetActorLocation(), Enemy.GetActorLocation()));
+        if(bLocalDrone&&Distance>2000) continue;
         if (Distance > FMath::Max(Alarm, Stealth::NoiseRadiusCm(Stealth::ENoise::Callout)))
             continue;
         const bool bMuffled = Alarm <= 0 && Occluded(Enemy.GetActorLocation(), Ally->GetActorLocation(), Ally);
@@ -719,7 +735,16 @@ void ASoraEnemyController::ScheduledPatrol(ASoraEnemy& Enemy,float Dt,int32 NowM
         PauseYaw=Route.PauseFacing.IsNearlyZero()?Enemy.GetActorRotation().Yaw:Route.PauseFacing.Rotation().Yaw;
     // Actual arrival is required at the scheduled release. Blocked does not
     // advance; the late flag survives even if the obstruction clears later.
+    const int32 PreviousCycles=PatrolLoop.Cycles;
     SoraPatrolRules::Step(PatrolLoop,Count,Route.PeriodMs,PatrolClock.Advance(Dt),Move==EMove::Arrived);
+    if(PatrolLoop.Cycles!=PreviousCycles&&!Route.AlternatePoints.IsEmpty()&&
+        SoraPatrolRules::Valid(Route.AlternatePoints.Num(),Route.PeriodMs,Route.PauseMs)&&
+        Route.Points[0].Equals(Route.AlternatePoints[0],1.f))
+    {
+        Swap(Route.Points,Route.AlternatePoints);
+        PatrolLoop.Visited=1u;
+        ClearPath();
+    }
     if(Move==EMove::Arrived) LookAround(Enemy,PauseYaw,20.f,Dt,NowMs);
     else Face(Enemy,Heading,Dt,5.f);
 }

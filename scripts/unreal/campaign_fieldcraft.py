@@ -311,7 +311,11 @@ def _surfaces(beat, layout, roofs, fail):
             step = crouch = _i(mult * 1000)
             edge = 0 if entry.get("silent_edge") else None
         for name in names:
-            area = layout.area(name, PATCH_CM.get(kind, (420, 420)))
+            if beat['id']=='ch06.b04' and name in ('vol_bell_clappers_1','vol_bell_clappers_2'):
+                x,y,_,_=layout.rect
+                area={'center':[x+1600,y+(830 if name.endswith('_1') else 280)],'size':[300,200]}
+            else:
+                area = layout.area(name, PATCH_CM.get(kind, (420, 420)))
             if area is None:
                 fail(where, f"no room on the floor for {name}")
             height = roofs.get(name, 0)

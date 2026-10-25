@@ -47,6 +47,9 @@ bool USoraCampaignDirector::ObjectivePoint(FVector& Location,bool& bInteract) co
     if(!Beat||Mode().bChapterComplete||bWoodTransit) return false;
     if(HelmNeedsTrim()) { Location=HelmWheelPoint(); bInteract=true; return true; }
     if(IsToriiEpilogue()) return EpilogueObjective(Location,bInteract);
+    if(IsRelayRoom())
+        for(int I=0;I<4;++I) if(!(TaskState.PointsMask&(1u<<I)))
+        { Location=RelayWorkLocation(I);bInteract=true;return true; }
     if(IsArcheryLesson()) { Location=ArcheryLine(); bInteract=false; return !AtArcheryLine(); }
     if(bLiftGallery) { bInteract=false; return LiftExitPoint(Location); }
     if(Beat->Space.Moat.bEnabled)

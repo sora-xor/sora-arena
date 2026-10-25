@@ -112,13 +112,14 @@ void ASoraLamp::Build(const FSoraLamp& Data, int32 InIndex)
     const bool bKamado = Data.Kind == TEXT("kamado");
     const bool bStrip = Data.Kind == TEXT("strip") || Data.Kind == TEXT("arch");
     const bool bDie = Data.Kind == TEXT("die");
+    const bool bRelay = Data.Id==TEXT("l_worklamp_se")||Data.Id==TEXT("l_worklamp_nw");
     bArrowOnly=bDie;
-    GlowHeight = bDie ? 420.f : bFlood ? 520.f : bBrazier ? 95.f : bKamado ? 40.f : bStrip ? 230.f : 160.f;
+    GlowHeight = bRelay ? 300.f : bDie ? 420.f : bFlood ? 520.f : bBrazier ? 95.f : bKamado ? 40.f : bStrip ? 230.f : 160.f;
     Intensity = bFlood ? 9000.f : bDie ? 4500.f : bBrazier || bKamado ? 5200.f : bStrip ? 1800.f : 3200.f;
     // Warm 行灯 and fires at about 1900 K; the Credit House's lamps cold.
-    const FLinearColor LightColor = bDie ? FLinearColor::MakeFromColorTemperature(5500.f) :
+    const FLinearColor LightColor = bRelay ? FLinearColor(.45f,.8f,1.f) : bDie ? FLinearColor::MakeFromColorTemperature(5500.f) :
         bFlood ? FLinearColor(.78f, .9f, 1.f) : bStrip ? FLinearColor(.2f, .9f, 1.f) : FLinearColor(1.f, .62f, .3f);
-    LitColor=bDie?LightColor:FLinearColor(1.f,.62f,.25f);
+    LitColor=bDie||bRelay?LightColor:FLinearColor(1.f,.62f,.25f);
     FActorSpawnParameters Params;
     Params.Owner = this;
     Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -144,7 +145,13 @@ void ASoraLamp::Build(const FSoraLamp& Data, int32 InIndex)
     };
     // The lamp's body stands on the floor under its light.
     const FVector Base = FVector::ZeroVector;
-    if (bDie)
+    if(bRelay)
+    {
+        Add(TEXT("RelayLampPost"),Layout::Cylinder,FVector(0,0,150),FVector(.1f,.1f,3.f),FLinearColor(.08f,.1f,.12f),Layout::Metal);
+        Add(TEXT("RelayLampSwitch"),Layout::Cube,FVector(12,0,100),FVector(.2f,.3f,.3f),FLinearColor(.15f,.3f,.35f));
+        Flame=Add(TEXT("RelayWorkLamp"),Layout::Cube,FVector(0,0,300),FVector(.5f,.5f,.15f),LightColor);
+    }
+    else if (bDie)
     {
         // A hanging, shootable die lamp clears the 3.5 m press crown.
         Add(TEXT("DieHanger"),Layout::Cylinder,FVector(0,0,660),FVector(.05f,.05f,4.8f),FLinearColor(.14f,.16f,.18f),Layout::Metal);
@@ -319,6 +326,7 @@ UStaticMeshComponent* USoraFieldcraft::Piece(const FString& Name, const TCHAR* M
 
 void USoraFieldcraft::Clear()
 {
+    ClearRelayRoom();
     ClearPressHall();
     ClearMolten();
     for(const auto& Canister:FuelCanisters) if(IsValid(Canister)) Canister->Destroy();
@@ -370,7 +378,7 @@ void USoraFieldcraft::Stage(const FSoraBeat& Beat)
 {
     Clear();
     ClimbSpace=Beat.Space.Climb.bEnabled?&Beat.Space.Climb:nullptr;
-    if ((Beat.Space.Fieldcraft.IsEmpty() && !Beat.Space.Molten.bEnabled && Beat.Space.FuelCanisters.IsEmpty() && !Beat.Space.PressHall.bEnabled) || !GetWorld()) return;
+    if ((Beat.Space.Fieldcraft.IsEmpty() && !Beat.Space.Molten.bEnabled && Beat.Space.FuelCanisters.IsEmpty() && !Beat.Space.PressHall.bEnabled && !Beat.Space.RelayRoom.bEnabled) || !GetWorld()) return;
     Staged = &Beat.Space.Fieldcraft;
     BeatId = Beat.Id;
     FActorSpawnParameters Params;
@@ -386,6 +394,7 @@ void USoraFieldcraft::Stage(const FSoraBeat& Beat)
     StageMolten(Beat);
     StageCanisters(Beat);
     StagePressHall(Beat);
+    StageRelayRoom(Beat);
     StageCompanions(Beat);
     StageFlood(Beat);
     StageMoat();
@@ -541,10 +550,13 @@ void USoraFieldcraft::StageCompanions(const FSoraBeat& Beat)
     for (int32 Index = 0; Index < F.Allies.Num(); ++Index)
     {
         const FSoraCompanionSpec& Spec = F.Allies[Index];
-        const FVector At=ClimbSpace&&Spec.Id==TEXT("npc_kohagi")?
+        const bool bRelayLookout=RelayRoom&&Spec.Id==TEXT("npc_kohagi");
+        const FVector At=bRelayLookout?
+            FVector(RelayRoom->Origin,0)+FVector(SoraRelayRules::Lookout.X,SoraRelayRules::Lookout.Y,SoraRelayRules::Lookout.Z):
+            ClimbSpace&&Spec.Id==TEXT("npc_kohagi")?
             FVector(ClimbSpace->Origin,90)+ClimbSpace->Corner.Points[0]:
             Layout::Floor(Spec.At, MoatSpace?SoraMoatRules::SurfaceCenter:FloodSpace&&Spec.Id==TEXT("npc_kohagi")?290.f:90.f);
-        ASoraCompanion* Companion = GetWorld()->SpawnActor<ASoraCompanion>(At, FRotator(0.f, Beat.Space.EntryYaw, 0.f), Params);
+        ASoraCompanion* Companion = GetWorld()->SpawnActor<ASoraCompanion>(At, FRotator(0.f, bRelayLookout?-90.f:Beat.Space.EntryYaw, 0.f), Params);
         if (!Companion) continue;
         Companion->Init(Spec, Index);
         Allies.Add(Companion);
@@ -585,6 +597,7 @@ void USoraFieldcraft::Tick(float DeltaTime)
     if (Staged) TickLooks();
     if (Staged) TickMolten(DtMs);
     if (Staged) TickPressHall(DtMs);
+    if (Staged) TickRelayRoom(DtMs);
 }
 
 // ---------------------------------------------------------------------------
@@ -614,7 +627,10 @@ USoraFieldcraft::FHold USoraFieldcraft::WorkAt(const FVector& Where) const
         }
     for (int32 Door = 0; Door < DoorsOpen.Num(); ++Door)
         if (!DoorsOpen[Door]) Consider(Layout::Floor(Staged->Releases[Door].At), EHoldKind::Release, Door, nullptr, Staged->Releases[Door].HoldMs);
-    for (int32 Lamp = 0; Lamp < LampStates.Num(); ++Lamp)
+    const auto* Player=Hero();
+    const bool bRelayLampReach=!RelayRoom||(Player&&Player->GetCharacterMovement()->IsMovingOnGround()&&
+        FMath::Abs(Where.Z-Player->GetCapsuleComponent()->GetScaledCapsuleHalfHeight())<=45.f);
+    for (int32 Lamp = 0; bRelayLampReach&&Lamp < LampStates.Num(); ++Lamp)
         if (LampStates[Lamp].Lit && Staged->Lamps[Lamp].Snuff == FSoraLamp::ESnuff::Hold)
             Consider(Layout::Floor(Staged->Lamps[Lamp].At), EHoldKind::Snuff, Lamp, nullptr, Staged->Lamps[Lamp].HoldMs);
     // A net to cut by hand (not from the saddle), and a guttered cook-fire to relight.
@@ -664,7 +680,9 @@ void USoraFieldcraft::TickHolds(int32 DtMs)
     else At = Layout::Floor(Staged->Lamps[Holding.Index].At);
     // The work holds only while Interact stays down beside it.
     const bool bHeld = Player && Player->IsActionHeld(TEXT("Interact")) &&
-        FVector::Dist2D(At, Player->GetActorLocation()) < Layout::WorkReach + 60.f;
+        FVector::Dist2D(At, Player->GetActorLocation()) < Layout::WorkReach + 60.f&&
+        (!RelayRoom||Holding.Kind!=EHoldKind::Snuff||(Player->GetCharacterMovement()->IsMovingOnGround()&&
+            FMath::Abs(Player->GetActorLocation().Z-Player->GetCapsuleComponent()->GetScaledCapsuleHalfHeight())<=45.f));
     if (!bHeld) { Holding = FHold(); return; }
     // A companion counts the hand on it in its own rules (TickCompanions), a net in its own (TickNets).
     if (Holding.Kind == EHoldKind::Companion || Holding.Kind == EHoldKind::NetCut) return;
@@ -813,6 +831,7 @@ bool USoraFieldcraft::SnuffLamp(int32 Index)
         return false;
     if (IsValid(LampActors[Index])) LampActors[Index]->SetLit(false);
     PressLampExtinguished(Index);
+    RelayLampExtinguished(Index);
     Raise(TEXT("lamp_out:") + Staged->Lamps[Index].Id);
     return true;
 }

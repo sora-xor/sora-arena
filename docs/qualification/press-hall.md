@@ -73,7 +73,11 @@ PressNetInterruption fixture applies the real timed root effect, checks
 cancellation, natural release and refusal to resume until a fresh press.
 It isolates net impact from targeting; neither fixture establishes ordinary
 stealth difficulty. The temporary gameplay traces are removed. These latest
-fixture changes are not yet compiled or run.
+fixture changes passed at signed `a6f9046`: Playthrough, PressHall and
+PressNetInterruption all succeeded with zero selected errors/warnings. Build
+time was 18.30 seconds; editor and wrapper exited naturally with status 0.
+All source, native, generated and configuration inputs were unchanged. Review:
+`890ddd6b0c7bea5de2b443b89eb1df11f3bedc3c47884d59089381210ae885d3`.
 
 The implementation description below records intended behavior; where it
 says execution is pending, these dated results take precedence. Prior Linux

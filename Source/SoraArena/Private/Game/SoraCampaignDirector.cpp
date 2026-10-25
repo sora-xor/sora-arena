@@ -239,6 +239,7 @@ void USoraCampaignDirector::StealthDetected(const FSoraStealthDetection& Detecti
         Fire(TEXT("ai_event:detected"));
         return;
     }
+    if(IsRelayRoom()) Relay.Detect(RelayCatchAgeMs);
     RaiseBeatEvent(TEXT("alert_state:alert"));
 }
 void USoraCampaignDirector::StealthAlarm(ASoraEnemy* By)
@@ -312,6 +313,7 @@ bool USoraCampaignDirector::LoadSave()
 }
 void USoraCampaignDirector::ResetRound()
 {
+    Relay={};RelayClock.Reset();RelayCatchAgeMs=0;
     ResetWind();
     BulkheadHold={}; BulkheadClock.Reset();
     ASoraGameMode& M=Mode();
@@ -469,6 +471,7 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     ClockCarryMs=0.f; IdleMs=0; bLinesStarted=false; bCrankSlack=false; ActiveCrankHelpers=0; bCrankHelperRetreating=false; bLiftGallery=false; bDetected=false; CinematicSeconds=0.f;
     VolumesEntered.Reset(); TackSteps=0; TackRefused=0; Frightening.Reset(); BeatEvents.Reset(); WhistleAt=-1.0;
     HeldWork=EHeldWork::None; HeldPoint=INDEX_NONE; HeldMs=0; bHeldWatched=false;
+    Relay={};RelayClock.Reset();RelayCatchAgeMs=0;
     CargoClock.Reset();
     Scheduled.Reset(); bWorkWasSeen=false; GuardStates.Reset(); EventRaises.Reset();
     AwaseAtMs=INDEX_NONE; LateHitAt=-1.0; BoutOffset=0;
@@ -775,6 +778,7 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
     TickEquipmentRecovery(DeltaMs);
     TickCarryWork(DeltaMs);
     TickHeldWork(DeltaMs,DeltaSeconds);
+    TickRelay(DeltaSeconds);
     TickPlayerCrank(DeltaMs);
     TickPlayerRhythm();
     if(ActiveBeatData()!=&Beat) return;
@@ -829,6 +833,7 @@ bool USoraCampaignDirector::TakeLoad(int32 Pickup)
 bool USoraCampaignDirector::WorkObjectiveAt(int32 Objective)
 {
     const FSoraBeat* Beat=ActiveBeatData();
+    if(IsRelayRoom()&&(Objective==3?!CanReachRelay(3):!Relay.IsDisabled(Objective))) return false;
     if(!Beat||!SoraBeatRules::WorkObjective(TaskState,Task,Objective)) return false;
     if(auto* Craft=USoraFieldcraft::Get(this)) Craft->JamPress(Objective);
     Fire(TEXT("interact:")+Beat->Objectives[Objective]);
@@ -856,6 +861,7 @@ bool USoraCampaignDirector::DeliverLoad(int32 Dropoff,int32 HeldDurationMs)
 }
 void USoraCampaignDirector::TickHeldWork(int32 DeltaMs,float DeltaSeconds)
 {
+    if(IsRelayRoom()) return; // The scan and the hold share the relay's clock.
     const FSoraBeat* Beat=ActiveBeatData();
     const FSoraBeatSpace* Space=ActiveSpace();
     ASoraPlayerCharacter* Hero=Mode().Hero();
@@ -1058,6 +1064,43 @@ ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int
     }
     if(Space->Climb.bEnabled&&GuardIndex==Space->Climb.GuardIndex)
     { Post=FVector(Space->Climb.Origin,0)+FVector(360,-300,1690);Route.Points={Post}; }
+    if(Space->RelayRoom.bEnabled)
+    {
+        const FVector Origin(Space->RelayRoom.Origin,0);
+        Route.Points.Reset();Route.PauseMs=0;Route.bThreeDimensional=true;
+        if(GuardIndex==0)
+        {
+            for(const FVector2D P:{FVector2D(650,200),FVector2D(1350,200),FVector2D(1350,800),FVector2D(650,800)})
+                Route.Points.Add(Origin+FVector(P,90));
+            Route.PeriodMs=50000;
+        }
+        else if(GuardIndex==1)
+        {
+            for(const FVector2D P:{FVector2D(510,840),FVector2D(510,160),FVector2D(1490,160),FVector2D(1490,840)})
+                Route.Points.Add(Origin+FVector(P,490));
+            Route.PeriodMs=40000;
+            Route.AlternatePoints.Add(Route.Points[0]);
+            // Short, similarly sized legs leave enough time to walk the
+            // steep stair on every other 40 s circuit at the actual speed.
+            for(int Side=0;Side<4;++Side)
+            {
+                const int Parts=Side%2==0?3:4;
+                for(int I=1;I<=Parts;++I)
+                    Route.AlternatePoints.Add(FMath::Lerp(Route.Points[Side],Route.Points[(Side+1)%4],float(I)/Parts));
+            }
+            for(int I=4;I>=0;--I) Route.AlternatePoints.Add(Origin+FVector(110+80*I,850,90+80*I));
+            for(int I=1;I<=4;++I) Route.AlternatePoints.Add(Origin+FVector(110+80*I,850,90+80*I));
+        }
+        else if(GuardIndex==2)
+        { Route.Points.Add(Origin+FVector(300,500,90));Route.PauseFacing=FVector(1,0,0); }
+        else
+        {
+            for(int I=0;I<8;++I)
+                Route.Points.Add(Origin+FVector(1000+250*FMath::Cos(I*PI/4),500+250*FMath::Sin(I*PI/4),500));
+            Route.PeriodMs=30000;
+        }
+        Post=Route.Points[0];
+    }
     if(Space->PressHall.bEnabled&&SoraPressRules::PatrolCount(GuardIndex)>0)
     {
         Route.Points.Reset();
@@ -1094,6 +1137,18 @@ ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int
     Senses.HearingCm=Guard.HearingCm; Senses.SuspicionPermille=Guard.SuspicionPermille;
     Senses.ScanDegrees=Guard.ScanDegrees; Senses.ScanMs=Guard.ScanMs; Senses.TurnMs=Guard.TurnMs;
     auto* GuardActor=ASoraEnemy::SpawnArchetype(*GetWorld(),Guard.Type,Slot,Post,FRotator(0,180,0),&Route,&Senses);
+    if(GuardActor&&Space->RelayRoom.bEnabled)
+    {
+        if(GuardIndex!=3)
+        {
+            const float Offset=GuardActor->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2.f-90.f;
+            for(auto& P:Route.Points) P.Z+=Offset;
+            for(auto& P:Route.AlternatePoints) P.Z+=Offset;
+        }
+        GuardActor->SetActorLocation(Route.Points[0]);
+        if(GuardIndex==2) GuardActor->SetActorRotation(FRotator::ZeroRotator);
+        if(auto* Brain=Cast<ASoraEnemyController>(GuardActor->GetController())) Brain->BeginPatrol(Route);
+    }
     if(GuardActor&&Space->PressHall.bEnabled&&SoraPressRules::PatrolCount(GuardIndex)>0)
     {
         // Resolve the spawned body's actual scaled capsule (the drone is
@@ -1172,12 +1227,14 @@ void USoraCampaignDirector::SpawnPending()
 {
     const FSoraBeat* Beat=ActiveBeatData();
     if(!Beat||bHorseWithdrawal) return;
+    if(IsRelayRoom()&&!Relay.ReinforcementsReady()) return;
     for(int32 Alive=LiveWaveOpponents();!Pending.IsEmpty()&&Alive<Task.MaxAlive;)
     {
         const FPendingSpawn Next=Pending[0];
         const bool Pod=Beat->Space.PodArrivals.IsValidIndex(Next.Wave);
         if(Pod&&!PodState[Next.Wave].Impacted) break;
         FVector PodPosition=FVector::ZeroVector;
+        if(IsRelayRoom()) PodPosition=FVector(Beat->Space.RelayRoom.Origin,0)+FVector(1850,400+200*(Alive%2),120);
         if(Pod)
         {
             check(Next.PodMember>=0&&Next.PodMember<SoraPodRules::Members);
@@ -1186,7 +1243,7 @@ void USoraCampaignDirector::SpawnPending()
         }
         Pending.RemoveAt(0);
         ASoraEnemy* Enemy=Beat->Space.Lift.bEnabled?SpawnLiftOpponent(Next.Type,Next.Wave,Spawned):
-            SpawnWaveOpponent(Next.Type,Beat->bSparring,Spawned,Next.bInvulnerable,Pod?&PodPosition:nullptr);
+            SpawnWaveOpponent(Next.Type,Beat->bSparring,Spawned,Next.bInvulnerable,(Pod||IsRelayRoom())?&PodPosition:nullptr);
         if(Enemy) { AddOpponent(Enemy,Next.Wave); ++Alive; }
         else
         {
@@ -1833,6 +1890,7 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
     {
     case SoraBeatRules::EGoal::Objectives:
     {
+        if(IsRelayRoom()) { bWorked=InteractRelay();break; }
         const int32 Objective=NearestOf(Space.Objectives,[&](int32 Index) { return (TaskState.PointsMask&(1u<<Index))==0u; });
         if(Space.PressHall.bEnabled&&Objective>=0&&
             (!USoraFieldcraft::Get(this)||!USoraFieldcraft::Get(this)->CanWorkPress(Objective))) return;
