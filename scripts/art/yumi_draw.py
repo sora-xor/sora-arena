@@ -857,8 +857,17 @@ def arrow_at(rig, nock, rest_pt):
     return rig["arrow_verts"].astype(np.float64) @ R.T + np.asarray(nock, np.float64)
 
 
+FLAT_TRIANGLE = 1e-12              # twice the area over the longest edge squared: below it, a segment
+
+
 def _point_tri_dist(P):
-    """Distance from the origin to each 2D triangle P (T, 3, 2): 0 inside."""
+    """Distance from the origin to each 2D triangle P (T, 3, 2): 0 inside.
+
+    A flat triangle (projected edge-on, or at a clipping boundary) is
+    measured by its edges, since it has no inside. The sign test alone
+    marked its whole line as inside: root's review of ec5df08, where
+    [[2, 0], [3, 0], [4, 0]] gave 0, not 2. The bounding box keeps rounding
+    in a near-flat sliver from marking a far point inside."""
     import numpy as np
     a, b, c = P[:, 0], P[:, 1], P[:, 2]
 
@@ -866,7 +875,10 @@ def _point_tri_dist(P):
         return (p[:, 0] - o[:, 0]) * (q[:, 1] - o[:, 1]) - (p[:, 1] - o[:, 1]) * (q[:, 0] - o[:, 0])
     O = np.zeros_like(a)
     d1, d2, d3 = cross(a, b, O), cross(b, c, O), cross(c, a, O)
-    inside = ((d1 >= 0) & (d2 >= 0) & (d3 >= 0)) | ((d1 <= 0) & (d2 <= 0) & (d3 <= 0))
+    longest2 = np.max([np.einsum("ij,ij->i", q - p, q - p) for p, q in ((a, b), (b, c), (c, a))], 0)
+    solid = np.abs(cross(a, b, c)) > FLAT_TRIANGLE * longest2
+    boxed = (P.min(1) <= 0.0).all(1) & (P.max(1) >= 0.0).all(1)
+    inside = solid & boxed & (((d1 >= 0) & (d2 >= 0) & (d3 >= 0)) | ((d1 <= 0) & (d2 <= 0) & (d3 <= 0)))
 
     def seg(p, q):
         e = q - p

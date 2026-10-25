@@ -250,6 +250,24 @@ class MeshChecker(unittest.TestCase):
         self.assertGreater(sm["arrow"]["hold"]["inside_s"], 0.0)
         self.assertEqual(sm["arrow"]["hold"]["nearest"], 0.0)
 
+    def test_an_edge_on_triangle_off_the_reticle_does_not_cover_it(self):
+        # Root's review of ec5df08 (yumi-ec5df08-root-review/degenerate-distance.json),
+        # through assess_eye: a triangle in a plane through the eye projects
+        # flat, here on v = 0 from u 0.2 to 0.3 (unscaled), and measured 0.
+        s = self.screen
+        T = self.np.array([[[100.0, 20.0, 0.0], [200.0, 60.0, 0.0], [150.0, 45.0, 0.0]]])
+        r = Y.assess_eye(T, s)
+        self.assertTrue(r["visible"])
+        self.assertAlmostEqual(r["nearest_half_heights"], 0.2 / s.tan_h * s.aspect, places=4)
+
+    def test_a_flat_triangle_on_a_frame_edges_line_off_screen_is_not_visible(self):
+        # The same fault in _tris_hit_rect's corner test: wholly right of the
+        # frame on the line of its bottom edge, it counted as covering the
+        # corner (ax, -1), so as visible.
+        ax = self.screen.aspect
+        P = self.np.array([[[ax + 1.0, -1.0], [ax + 2.0, -1.0], [ax + 3.0, -1.0]]])
+        self.assertFalse(bool(Y._tris_hit_rect(P, ax)[0]))
+
 
 class EmittedGeometry(unittest.TestCase):
     """The built rig (b55fe81) and the committed arrow, as triangles."""
@@ -299,6 +317,24 @@ class EmittedGeometry(unittest.TestCase):
         d = Y._point_tri_dist(P)
         self.assertEqual(float(d[0]), 0.0)
         self.assertAlmostEqual(float(d[1]), 2 ** 0.5, places=12)
+
+    def test_a_flat_triangle_is_measured_by_its_edges(self):
+        # Root's review of ec5df08: collinear, off the origin, it measured 0
+        # because every edge orientation was zero along its whole line.
+        import numpy as np
+        cases = [([[2.0, 0.0], [3.0, 0.0], [4.0, 0.0]], 2.0),        # root's reproduction
+                 ([[-4.0, 0.0], [-3.0, 0.0], [-2.0, 0.0]], 2.0),     # the other side
+                 ([[1.0, 2.0], [2.0, 4.0], [3.0, 6.0]], 5 ** 0.5),   # oblique, on a line through the origin
+                 ([[2.0, 0.0], [2.0, 0.0], [4.0, 0.0]], 2.0),        # two vertices shared
+                 ([[3.0, 4.0], [3.0, 4.0], [3.0, 4.0]], 5.0),        # all three
+                 ([[-1.0, 0.0], [0.5, 0.0], [2.0, 0.0]], 0.0)]       # the origin on it
+        d = Y._point_tri_dist(np.array([c for c, _ in cases]))
+        for (tri, want), got in zip(cases, d):
+            self.assertAlmostEqual(float(got), want, places=12, msg=tri)
+        # A solid triangle still contains the origin, however thin or small.
+        P = np.array([[[-1.0, -1e-9], [1.0, -1e-9], [0.0, 1e-9]],
+                      [[-1e-9, -1e-9], [1e-9, -1e-9], [0.0, 1e-9]]])
+        self.assertEqual(Y._point_tri_dist(P).tolist(), [0.0, 0.0])
 
     def test_the_kai_pose_clears_the_reticle_with_the_real_bow_and_arrow(self):
         sm = Y.summary(Y.timeline_mesh(rig=self.rig, fps=30.0))
