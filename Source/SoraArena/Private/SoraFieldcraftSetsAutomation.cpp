@@ -198,6 +198,9 @@ bool FSoraFieldcraftConvoyNetsTest::RunTest(const FString& Parameters)
     Campaign->Steed()->Place(Floor(Kaido.PointAlong(At)), Kaido.HeadingAt(At));
     for (int32 Index = 0; Index < Convoy.Num(); ++Index)
         Convoy[Index]->FollowRoad(&Kaido, At + 1500.f + 450.f * Index, 450);
+    for(const ASoraHorse* Beast:Convoy)
+        AddInfo(FString::Printf(TEXT("Convoy placed: id=%s actor=%s chainage=%.3f road=%.3f at=%s"),
+            *Beast->PackId,*GetNameSafe(Beast),Beast->RoadChainage(),Kaido.RouteLength,*Beast->GetActorLocation().ToString()));
     const auto NettedOne = [&]()
     {
         for (int32 Quarry = 0; Quarry < Fieldcraft->QuarryCount(); ++Quarry)
@@ -248,10 +251,18 @@ bool FSoraFieldcraftConvoyNetsTest::RunTest(const FString& Parameters)
         *Campaign->Steed()->LocalOf(Fieldcraft->QuarryLocation(Netted)).ToString()));
     AddInfo(FString::Printf(TEXT("Saddle cut rule: expected_weapon=%d side=%d target=%d"),
         Fieldcraft->Active()->Nets.SaddleWeapon,Fieldcraft->Active()->Nets.SaddleSide,Netted));
+    for(const ASoraHorse* Beast:Campaign->PackHorses())
+        AddInfo(FString::Printf(TEXT("Convoy at cut: id=%s actor=%s chainage=%.3f at=%s"),
+            *Beast->PackId,*GetNameSafe(Beast),Beast->RoadChainage(),*Beast->GetActorLocation().ToString()));
     for(int32 Quarry=0;Quarry<Fieldcraft->QuarryCount();++Quarry)
+    {
+        AddInfo(FString::Printf(TEXT("Quarry identity: index=%d kind=%d id=%s at=%s"),Quarry,
+            int32(Fieldcraft->Active()->Nets.Kind),*Fieldcraft->Active()->Nets.Quarry[Quarry].Id,
+            *Fieldcraft->QuarryLocation(Quarry).ToString()));
         AddInfo(FString::Printf(TEXT("Saddle cut quarry before: index=%d net=%d local=%s tether=%s"),Quarry,
             int32(Fieldcraft->NetOf(Quarry)),*Campaign->Steed()->LocalOf(Fieldcraft->QuarryLocation(Quarry)).ToString(),
             *GetNameSafe(Fieldcraft->TetherOf(Quarry))));
+    }
     if (!W.Press(EKeys::RightMouseButton) || !W.Tick(2))
         return false;
     AddInfo(FString::Printf(TEXT("Saddle cut after input: commits=%d mounted=%d play=%d stagger=%d local=%s net=%d"),
