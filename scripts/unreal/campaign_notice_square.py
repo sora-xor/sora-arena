@@ -47,9 +47,9 @@ def place_notice_square(beats,records,zones,layout,fail):
                 f['surfaces'].append({'kind':'edge_strip','center':[0,y+(16 if y>0 else -16)],'size':[1800,12],
                     'height_cm':0,'step_permille':1500,'crouch_permille':0})
             # Preserve a playable provisional ladder while the ridge route is rebuilt.
-            ladder=f['ladders'][0];ladder.update(foot=[450,1200],roof={'center':[900,1200],'size':[760,600]})
+            ladder=f['ladders'][0];ladder.update(foot=[450,1200],height_cm=750,roof={'center':[900,1200],'size':[760,600]})
             f['surfaces'].append({'kind':'board_roof','center':[900,1200],'size':[760,600],
-                                 'height_cm':320,'step_permille':1500,'crouch_permille':1500})
+                                 'height_cm':750,'step_permille':1500,'crouch_permille':1500})
         elif b['id']=='ch03.b11':
             r['camera']=[-1300,200,350,-1150,0,300,-730,460,160]
 

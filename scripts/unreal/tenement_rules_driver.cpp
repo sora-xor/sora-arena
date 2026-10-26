@@ -1,4 +1,5 @@
 #include "SoraTenementRules.h"
+#include "SoraTerminalChargeRules.h"
 #include "SoraTenementDefenseRules.h"
 #include "SoraTenementFindRules.h"
 #include "SoraTenementQueueRules.h"
@@ -79,6 +80,12 @@ int main()
         const auto A=Q::Queue(I),B=Q::DoorApproach(I),C=Q::Home(I);
         if(I)std::cout<<',';
         std::cout<<"[["<<A.X<<','<<A.Y<<"],["<<B.X<<','<<B.Y<<"],["<<C.X<<','<<C.Y<<"]]";
+    }
+    std::cout<<"],\"notice_solids\":[";Comma=false;
+    for(const auto B:SoraTerminalChargeRules::Solids)
+    {
+        if(Comma)std::cout<<',';Comma=true;
+        std::cout<<'['<<B.X<<','<<B.Y<<','<<B.Z<<','<<B.SX<<','<<B.SY<<','<<B.SZ<<",0,1]";
     }
     std::cout<<"]}\n";
 }

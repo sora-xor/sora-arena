@@ -13520,7 +13520,7 @@
         760,
         600
        ],
-       "height_cm": 320,
+       "height_cm": 750,
        "step_permille": 1500,
        "crouch_permille": 1500
       }
@@ -13559,7 +13559,7 @@
          600
         ]
        },
-       "height_cm": 320,
+       "height_cm": 750,
        "drop_noise_cm": 900,
        "straw": null,
        "guards": [

@@ -8,6 +8,9 @@ namespace SoraTerminalChargeRules
 {
 constexpr int PlantMs=4000,LightMs=1000,FuseMs=20000,BlastRadius=800,SafeDistance=1500,Damage=120;
 constexpr int TerminalX=-730,TerminalY=460,PanelX=-730,PanelY=560;
+struct FSolid { double X,Y,Z,SX,SY,SZ; };
+// Shared with the actual campaign builder and capsule-clearance tests.
+constexpr FSolid Solids[]={{-730,460,121,140,74,242},{-730,620,150,300,40,300},{-730,620,310,350,160,20}};
 enum class EStage { Empty,Planted,Burning,Detonated };
 enum class EEvent { None,Planted,Ignited,Detonated };
 struct FState

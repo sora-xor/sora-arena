@@ -1,4 +1,5 @@
 #include "SoraWorldBuilder.h"
+#include "SoraTerminalChargeRules.h"
 #include "SoraCatalog.h"
 #include "Components/PointLightComponent.h"
 #include "Components/SceneComponent.h"
@@ -280,8 +281,12 @@ void ASoraWorldBuilder::BuildArena(int32 MapId,bool bSites,bool bTenements,bool 
     {
         // 103 cm clear behind the terminal fits the fixed 68 cm capsule.
         // The authored 60 cm squeeze needs a narrower movement mode before it can be restored.
-        Box(TEXT("NoticeBoard"),FVector(-730,620,150),FVector(300,40,300),FLinearColor(.30f,.22f,.12f),true);
-        Box(TEXT("NoticeBoardRoof"),FVector(-730,620,310),FVector(350,160,20),FLinearColor(.20f,.16f,.11f),true);
+        for(int I=1;I<3;++I)
+        {
+            const auto S=SoraTerminalChargeRules::Solids[I];
+            Box(I==1?TEXT("NoticeBoard"):TEXT("NoticeBoardRoof"),FVector(S.X,S.Y,S.Z),FVector(S.SX,S.SY,S.SZ),
+                FLinearColor(.30f,.22f,.12f),true);
+        }
     }
     Lanterns(bLanternWorkshop&&MapId==1);
     Lighting(MapId);

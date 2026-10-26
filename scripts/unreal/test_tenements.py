@@ -10,6 +10,7 @@ import subprocess
 import tempfile
 import unittest
 import campaign_tenements as tenements
+import campaign_notice_square as square
 
 ROOT=Path(__file__).resolve().parents[2]
 
@@ -150,7 +151,7 @@ class TenementTests(unittest.TestCase):
         self.assertLess(math.dist(routes[2],tenements.HOIST),260)
         self.assertEqual(routes[-1],tenements.HIDEOUT)
 
-    def test_late_hub_arrivals_stay_outside_authored_districts(self):
+    def test_late_hub_arrivals_clear_districts_and_shared_square_solids(self):
         records=[r for r in self.chapter['space']['beats'] if r['zone']==-1]
         self.assertEqual({r['beat'] for r in records},{'ch03.b16','ch03.b18'})
         for r in records:
@@ -161,12 +162,25 @@ class TenementTests(unittest.TestCase):
                 self.assertEqual(self.floor_at(x,y),0)
                 self.clear([[x,y,2.15],[x,y,2.15]])
                 for zone in self.chapter['space']['zones']:
+                    if zone['place']=='pl_kosatsuba':
+                        self.assertTrue(square.notice_valid(self.chapter))
+                        for box in self.native['notice_solids']:
+                            self.assertFalse(self.hits(box,[x,y,2.15]),(r['beat'],key,box))
+                        continue
                     x0,y0,x1,y1=zone['rect']
                     self.assertFalse(x0-margin<=x<=x1+margin and y0-margin<=y<=y1+margin,
                                      (r['beat'],key,zone['id']))
             c=copy.deepcopy(self.chapter)
             next(b for b in c['space']['beats'] if b['beat']==r['beat'])['entry']=[-2700,0,0]
             self.assertFalse(tenements.tenements_valid(c),'legacy spawn overlaps tenements')
+
+    def test_notice_panel_and_north_escape_clear_actual_solids(self):
+        route=[[-730,560,2.15],[-1000,560,2.15],[-1000,3000,2.15],[-1600,3000,2.15]]
+        self.clear(route)
+        for p in self.sample(route):
+            self.assertEqual(self.floor_at(*p[:2]),0,p)
+            for box in self.native['notice_solids']:
+                self.assertFalse(self.hits(box,p),(p,box))
 
     def test_full_width_alley_and_north_passage(self):
         # The capsule may run along either edge with its 34 cm radius inside

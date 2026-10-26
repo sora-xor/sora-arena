@@ -1,4 +1,5 @@
 #include "SoraWorldBuilder.h"
+#include "SoraTerminalChargeRules.h"
 #include "ArenaKernelSubsystem.h"
 #include "World/SoraPracticeArena.h"
 #include "Components/StaticMeshComponent.h"
@@ -12,8 +13,9 @@ void ASoraWorldBuilder::LanternWardTerminal()
     TerminalPieces.Reset();bTerminalDestroyed=false;
     const FVector StreetTerminal(-730,460,0);
     const bool HasStreetTerminal=ImportedProp(TEXT("SM_Alien_StreetDebtTerminal"),StreetTerminal,FRotator::ZeroRotator);
-    auto* Proxy=Box(TEXT("StreetDebtTerminalCollision"),StreetTerminal+FVector(0,0,121),
-        FVector(140,74,242),FLinearColor(.10f,.15f,.20f),true);
+    const auto S=SoraTerminalChargeRules::Solids[0];
+    auto* Proxy=Box(TEXT("StreetDebtTerminalCollision"),FVector(S.X,S.Y,S.Z),
+        FVector(S.SX,S.SY,S.SZ),FLinearColor(.10f,.15f,.20f),true);
     if(HasStreetTerminal) Proxy->SetVisibility(false);
     for(int I=First;I<Pieces.Num();++I)if(Pieces[I]->IsVisible())TerminalPieces.Add(Pieces[I]);
     BrokenTerminal=Box(TEXT("BrokenDebtTerminal"),StreetTerminal+FVector(0,0,65),FVector(140,74,130),
@@ -24,7 +26,7 @@ void ASoraWorldBuilder::LanternWardTerminal()
 void ASoraWorldBuilder::SetTerminalDestroyed(bool Destroyed)
 {
     bTerminalDestroyed=Destroyed;
-    for(auto* P:TerminalPieces)if(IsValid(P))P->SetVisibility(!Destroyed);
+    for(UStaticMeshComponent* P:TerminalPieces)if(IsValid(P))P->SetVisibility(!Destroyed);
     if(IsValid(BrokenTerminal))BrokenTerminal->SetVisibility(Destroyed);
 }
 
