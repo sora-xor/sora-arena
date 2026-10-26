@@ -793,6 +793,74 @@
     "command": "/usr/bin/python3 scripts/art/check_nyaakoto_tp_review.py Saved/NyaakotoThirdPerson/Review/s132 Saved/W18Rebuild/s132_tp_review_check.json",
     "problems": []
    }
+  },
+  {
+   "run": "s133_authored_normals",
+   "command": "scripts/toolchain/run-editor-script.sh --rhi scripts/unreal/prepare_nyaakoto_authored_normals.py NYAAKOTO_AUTHORED_NORMALS_READY Saved/W18Rebuild/s133_authored_normals.editor.log -- --baseline-inputs Saved/W18Rebuild/s132_tp_review.inputs --readback Saved/NyaakotoThirdPerson/Unreal/s133_authored_normals_readback.json --export Saved/NyaakotoThirdPerson/Unreal/s133_SK_NyaagyuSamurai_AuthoredNormals.fbx",
+   "start": "2026-10-26T21:27:50Z",
+   "pid": 40696,
+   "exit": 0,
+   "end": "2026-10-26T21:28:38Z",
+   "log": "Saved/W18Rebuild/s133_authored_normals.log",
+   "markers": [
+    "EDITOR_EXIT=0",
+    "NYAAKOTO_AUTHORED_NORMALS_READY {\"differences\": [{\"lod\": 0, \"field\": \"recompute_normals\", \"baseline\": true, \"candidate\": false}], \"export_sha256\": \"80587c002abe7a308353e70a6c480f24f66790aa460d12bcf184361af69cb8a5\", \"baseline_unchanged\": true}"
+   ],
+   "outputs": {
+    "Saved/NyaakotoThirdPerson/Unreal/s133_authored_normals_readback.json": "54dadb120fa90d8e0b53d9b08dcd1c7060656a9e7deb95fe90140bed53fd9c99",
+    "Saved/NyaakotoThirdPerson/Unreal/s133_SK_NyaagyuSamurai_AuthoredNormals.fbx": "80587c002abe7a308353e70a6c480f24f66790aa460d12bcf184361af69cb8a5",
+    "Saved/W18Rebuild/s133_authored_normals.inputs": "d12906489857ad2643575158cf9be7ecc3ba3fe2f0c619127d70fb3bc394eda3"
+   },
+   "result": "PASS: the authored-normal candidate /Game/Generated/Candidates/AuthoredNormals/SK_NyaagyuSamurai_AuthoredNormals (cecafdbb...), a duplicate of the s132 baseline (12c9231b..., unchanged before and after) with one setting changed: LOD0 recompute_normals true -> false. Every other build field was read on every LOD and is equal; tangents explicit on both: recompute_tangents true, use_mikk_t_space true, use_high_precision_tangent_basis false. Its morphs, slots and skeleton are the baseline's. Verified on the host (compare_fbx_normals.py): the candidate's built LOD0 normals equal our FBX's authored ones, 0.0 deg in every group and 0.0011 deg at most over all 488,528 corners (the renderer still packs them to 8 bits, as for the baseline). The baseline's (s128's export) are 13.4 deg median, 24.0 max off on the paw strands (exactly their face normals), 0.16 deg median on the paw skin, 0.007 deg on the head's fur cards (whose authored normals are their face normals), and 15-24% of corners more than 10 deg off on the forearms, pelvis, spine and legs.",
+   "editor_pid": 40753,
+   "editor_exit": 0,
+   "host_checks": [
+    {
+     "check": "normals: baseline (s128's export) against our authored LOD0",
+     "command": "python3.11 scripts/art/compare_fbx_normals.py Content/SourceArt/SK_NyaagyuSamurai.fbx Saved/NyaakotoThirdPerson/Unreal/s128_SK_NyaagyuSamurai_lods_morphs.fbx Saved/W18Rebuild/normals_baseline_s128_vs_authored.json 0",
+     "outputs": {
+      "Saved/W18Rebuild/normals_baseline_s128_vs_authored.json": "73d3f4a0a11689e9ce4158b5a8449426d2840b4359e0d926e09aac18d564e947"
+     }
+    },
+    {
+     "check": "normals: the candidate (s133's export) against our authored LOD0",
+     "command": "python3.11 scripts/art/compare_fbx_normals.py Content/SourceArt/SK_NyaagyuSamurai.fbx Saved/NyaakotoThirdPerson/Unreal/s133_SK_NyaagyuSamurai_AuthoredNormals.fbx Saved/W18Rebuild/normals_candidate_s133_vs_authored.json 0",
+     "outputs": {
+      "Saved/W18Rebuild/normals_candidate_s133_vs_authored.json": "b175e855891a5bd49cbf82ec21c99be9c1210ac5e11ac2d3d2996ca00d46c55a"
+     }
+    }
+   ]
+  },
+  {
+   "run": "s134_normals_comparison",
+   "command": "scripts/toolchain/run-editor-script.sh --editor scripts/unreal/render_nyaakoto_normals_comparison.py NYAAKOTO_NORMALS_COMPARISON_COMPLETE Saved/W18Rebuild/s134_normals_comparison.editor.log -- out=s134 readback=Saved/NyaakotoThirdPerson/Unreal/s133_authored_normals_readback.json",
+   "start": "2026-10-26T21:29:36Z",
+   "pid": 42096,
+   "exit": 0,
+   "end": "2026-10-26T21:32:15Z",
+   "log": "Saved/W18Rebuild/s134_normals_comparison.log",
+   "markers": [
+    "EDITOR_EXIT=0",
+    "NYAAKOTO_NORMALS_COMPARISON_COMPLETE: 6 captures in /Users/mtakemiya/dev/sora-arena-wt/art/Saved/NyaakotoThirdPerson/Review/s134"
+   ],
+   "outputs": {
+    "Saved/NyaakotoThirdPerson/Review/s134/manifest.json": "42dd56693fcbdfff5a79865803dd52fac39090b169014f55894f0285fedec410",
+    "Saved/W18Rebuild/s134_normals_comparison.inputs": "3f2cdd033b29e51809a8b6b9905753cff09ab74ae37a920f50688d000a0b6299",
+    "Saved/W18Rebuild/s134_comparison_check.json": "797199d35b9d1c16fbd8580b91b68cbeef017af488f99d5976623d90b1ea1ea5"
+   },
+   "result": "PASS: six originals at 3840x2160, guard_front_LOD0, paw_R_back_empty_LOD0 and cuff_R_outside_LOD0, each as the baseline then the authored-normal candidate, in one level and light with s132's cameras replayed (rotation within 0.001 deg), both packages checked by SHA-256 first, pose, morph, LOD and material gates before and after each image. Host check (check_nyaakoto_normals_comparison.py): no problems; the baseline re-shot against s132's original changes 0.05-0.08% of pixels by more than 8/255 (the repeat); the candidate against the baseline changes 0.88% (guard_front, 14x the repeat), 10.0% (paw_R_back_empty, 213x) and 17.5% (cuff_R_outside, 227x). Its amplified maps put the change on the sleeves, forearms and armour plates (their smooth shading) and, as a fine speckle, on the paws' strands; in the guard front the head changes 2.2% (repeat 0.16%) and its dark broken lines, the fur cards, are unchanged. The sawtooth boundaries are unchanged: they are not normals (the boundary diagnosis).",
+   "editor_pid": 42153,
+   "editor_exit": 0,
+   "boundary_diagnosis": {
+    "command": "/usr/bin/python3 scripts/art/diagnose_nyaakoto_paw_boundaries.py Saved/NyaakotoThirdPerson/Review/s132 <shot> R Saved/W18Rebuild/paw_boundaries/diag",
+    "outputs": {
+     "Saved/W18Rebuild/paw_boundaries/diag_paw_R_back_empty_LOD0.json": "399745aa75c3e1420fcc63f9055a428714a455d437d0e739076d8a95ae041570",
+     "Saved/W18Rebuild/paw_boundaries/diag_paw_R_back_empty_LOD0.png": "3597eddf5796ec87b61c5cc33082a97ef1dc2dffe6a05044cb2df65dde151dc5",
+     "Saved/W18Rebuild/paw_boundaries/diag_paw_R_pads_holding_rest_LOD0.json": "2ead9525badfb3e30f0a4438a8d91a10937d551fb0dcda2d6d71b75fea8f2997",
+     "Saved/W18Rebuild/paw_boundaries/diag_paw_R_pads_holding_rest_LOD0.png": "9ba2e64b95597832c1b5e89980567d6c1ea06208512cbdf2be7576012c3c30d0"
+    },
+    "result": "On the right paw's LOD0 skin the CoatBlend is continuous (its largest step across any edge is 0). Two per-face choices draw staircases on the 3 mm grid: corner_uvs maps 6,950 of 24,396 faces planar (|n . Y| > 0.75) and the rest round the channel, unrelated mappings whose 873-edge, 2.32 m boundary jumps the fur texture by a median 17.6 cm of texture space; pad_faces gives whole faces M_Hero_RoseNose, a 292-edge, 0.81 m outline. Rendered from s132's own cameras, the planar region and the pad faces fall exactly on the originals' sharp light patches and jagged pad outlines."
+   }
   }
  ]
 }

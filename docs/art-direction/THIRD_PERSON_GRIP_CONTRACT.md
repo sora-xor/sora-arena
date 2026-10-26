@@ -518,7 +518,7 @@ consistent source, LODs, kamon and rig; furred paws instead of tube fingers; emp
 real FBX and Unreal morph import; every final-combination pose and clearance check again. This is a production
 direction, not photoreal acceptance.
 
-**Status (2026-10-26 21:20 UTC):**
+**Status (2026-10-26 21:40 UTC):**
 - **e8d5b587, built and checked in Blender 5.2.2:** the hero source on A (s101, its validator s102), the runtime rig
   (s103), the LODs (s104), and the runtime and LOD validators (s106, s107). Every gate passed.
 - **e8d5b587, read back in Unreal under --rhi (s110-s114, 7.7):** the sockets, the grips on the clips, every LOD's morph
@@ -531,7 +531,9 @@ direction, not photoreal acceptance.
     checks of LOD materials and coat) passed (7.8).
   - Its actual-material Unreal originals are s132's: 27 at 3840x2160 in the game's own material instances (s130).
     s131 failed at its own LOD gate (7.9).
-- Fur is still not resolved (7.10). No photoreal, visual, gameplay or root acceptance.
+  - The authored-normal candidate (s133) and its three-view comparison (s134) are in 7.10. So is the diagnosis of the
+    sawtooth boundaries.
+- Fur is still not resolved (7.11). No photoreal, visual, gameplay or root acceptance.
 
 ### 7.1 The hero source on A
 
@@ -972,13 +974,67 @@ state was to be captured before any change to the normals.
 - **The cuffs:** they end in flat discs with hard rims at the wrist.
 - **LOD2:** it visibly drops the head's fibre cards.
 
-### 7.10 What remains
+### 7.10 The authored-normal comparison (s133-s134) and the sawtooth boundaries
+
+Root reviewed s132's originals and rejected them visually: sparse dark stubble, broad sawtooth coat and pad
+boundaries, smooth pale toes, hard faceted cuff discs, and dark broken lines on the LOD0 face that LOD2 loses along
+with its fibre detail. Root then asked for a controlled comparison: the same mesh source, pose, material, camera and
+light; recompute normals disabled on a separate candidate; the imported normals verified; the tangents explicit; the
+s132 baseline preserved.
+
+**How far Unreal's recomputed normals are from ours** (`compare_fbx_normals.py`). It compares s128's export of the
+baseline with our LOD0 FBX, corner by corner:
+- **Paw strands:** 13.4 deg median, 22.3 at p99, 24.0 at most. These are exactly the strands' own face angles: Unreal
+  shades each strand by its face.
+- **Paw skin:** 0.16 deg median, 2.8 at p99.
+- **The head's fur cards:** 0.007 deg median. Their authored normals already are their face normals.
+- **The forearms (the cuffs), pelvis, spine and legs:** 15-24% of corners more than 10 deg off, 39-62 deg at p99.
+
+**s133, the candidate** (`prepare_nyaakoto_authored_normals.py`, 21:27:50-21:28:38 UTC, exit 0):
+- **The asset:** the baseline duplicated to `/Game/Generated/Candidates/AuthoredNormals/SK_NyaagyuSamurai_AuthoredNormals`,
+  with LOD0 recompute_normals set from true to false.
+- **Settings:** every other build field is read back equal on every LOD. The tangents are explicit and the same on
+  both: recomputed, MikkTSpace, 8-bit basis.
+- **The baseline package:** unchanged before and after.
+- **Verified:** the candidate's built LOD0 normals equal ours to 0.0011 deg at most, over all 488,528 corners.
+
+**s134, the comparison** (`render_nyaakoto_normals_comparison.py`, 21:29:36-21:32:15 UTC, exit 0):
+- **The shots:** guard_front_LOD0, paw_R_back_empty_LOD0 and cuff_R_outside_LOD0, each as the baseline and then the
+  candidate, in one level and light. s132's cameras are replayed, and every gate passes before and after each image.
+- **Repeat noise:** the baseline re-shot against s132 changes 0.05-0.08% of the pixels.
+- **The candidate's effect:**
+  - 0.88% of the pixels on the guard front, 14 times the repeat;
+  - 10.0% on the paw's back, 213 times;
+  - 17.5% on the cuff, 227 times.
+- **Where it changes:** the sleeves', forearms' and armour's smooth shading, and the paw strands, as a fine speckle.
+- **The head:** 2.2% of its pixels change, against a repeat of 0.16%. Its dark broken lines, the fur cards, are
+  unchanged.
+- **Adoption:** whether to adopt authored normals is root's.
+
+**The sawtooth boundaries are not the coat and not the normals** (`diagnose_nyaakoto_paw_boundaries.py`):
+- **The coat:** on the right paw's LOD0 skin the CoatBlend is continuous. Its largest step across any edge is 0.
+- **The UV projection:** `corner_uvs` maps a face planar in the channel's cross-section when it looks along the channel
+  (|n . Y| > 0.75), and round the channel otherwise.
+  - 6,950 of the 24,396 faces are planar.
+  - The two mappings are unrelated, so their 873-edge, 2.32 m boundary jumps the fur texture by a median 17.6 cm of
+    texture space, along a triangle staircase.
+- **The pads:** `pad_faces` gives whole faces M_Hero_RoseNose, a 292-edge, 0.81 m staircase.
+- **Rendered from s132's own cameras**, the planar region and the pad faces fall exactly on the originals' sharp light
+  patches and jagged pad outlines.
+- **Possible fixes, for root to choose; none is made:**
+  - **For the UVs:** one continuous mapping, or two UV sets cross-faded in the material by a smooth per-vertex weight.
+  - **For the pads:** cut the faces along a smooth contour of a per-vertex pad field, or blend the pad colour in the
+    fur's material by such a field.
+
+### 7.11 What remains
 
 - **Fur.**
   - Sparse dark stubble lines and a pale band on the empty toes remain in the previews and renders (root, 19:00). The
-    actual-material originals are s132's (7.9), for root's review.
-  - Whether to import the authored normals rather than recompute them (the strands' shading) is root's decision. It
-    comes after root's review of the current state.
+    actual-material originals are s132's (7.9), and the authored-normal comparison is s134's (7.10), for root's review.
+  - **The sawtooth boundaries** are the paws' per-face UV projection switch and per-face pads (7.10). A fix waits on
+    root's choice.
+  - **The face's dark broken lines** at LOD0 are its fur cards, whose normals authored normals do not change.
+  - Whether to adopt authored normals is root's decision.
   - Root's review of s124's full Guard Front and GuardPaws Below originals (with its 19:48 acceptance of the lane)
     also saw smooth toe surfaces and cuff faceting.
   - The empty fist's C-shaped opening remains: a closure tight enough to shut it fails the fold margin (below 0.22).

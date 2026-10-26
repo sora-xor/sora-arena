@@ -372,6 +372,22 @@ class Character:
         else:
             self.comp.set_skeletal_mesh(mesh)
 
+    def use_mesh(self, path):
+        """Draw another asset of the same skeleton and slots (render_nyaakoto_normals_comparison's candidate). The
+        game's materials are bound again, and the clip and morphs are set again at the next set_state (SetSkeletalMesh
+        clears the morph curves and re-initialises the animation)."""
+        mesh = load(path)
+        names = sorted(str(n) for n in mesh.get_all_morph_target_names())
+        if names != sorted(G.MORPHS) or not mesh.has_vertex_colors():
+            fail(f"{path}: morphs {names}, vertex colours {mesh.has_vertex_colors()}")
+        if mesh.get_editor_property("skeleton") != self.mesh.get_editor_property("skeleton"):
+            fail(f"{path} has another skeleton")
+        self.mesh = mesh
+        self.set_mesh(mesh)
+        self.bind_game_materials()
+        self.clip = "reset"
+        self.lod_count = SKEL.get_lod_count(mesh)
+
     def set_state(self, pose, state, lod):
         """Force the LOD, hold the pose (a clip at its time, or the reference pose for "rest") with both morphs at the
         state's weight, and evaluate."""
