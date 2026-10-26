@@ -154,7 +154,7 @@ class Gates(unittest.TestCase):
         self.assertEqual(G.same_import(mesh, copy.deepcopy(mesh))[1], [])
         moved = copy.deepcopy(mesh)
         moved["lod0"]["sections"][0]["positions"][1] = [1, 0, 0.01]
-        self.assertTrue(any("positions_cm" in f for f in G.same_import(mesh, moved)[1]))
+        self.assertTrue(any("no match" in f for f in G.same_import(mesh, moved)[1]))      # 0.01 cm: unmatched
         slots = copy.deepcopy(mesh)
         slots["materials"] = [["N", "N", "N"]]
         self.assertTrue(any("material slots" in f for f in G.same_import(mesh, slots)[1]))
@@ -183,6 +183,17 @@ class Gates(unittest.TestCase):
         turn = copy.deepcopy(quad)                     # a tangent 3 deg away fails
         turn["lod0"]["sections"][0]["tangents"][0] = [math.cos(math.radians(3)), math.sin(math.radians(3)), 0]
         self.assertTrue(any("tangent_deg" in f for f in G.same_import(quad, turn)[1]))
+        reordered = copy.deepcopy(quad)                # the triangles swapped and one rotated: matched, not ordered
+        reordered["lod0"]["sections"][0]["indices"] = [1, 3, 2, 1, 2, 0]
+        gaps, failures = G.same_import(quad, reordered)
+        self.assertEqual(failures, [])
+        self.assertEqual(gaps["pairing"], ["matched"])
+        flipped = copy.deepcopy(quad)                  # a reversed winding does not match
+        flipped["lod0"]["sections"][0]["indices"] = [0, 2, 1, 2, 1, 3]
+        self.assertTrue(any("no match" in f for f in G.same_import(quad, flipped)[1]))
+        moved = copy.deepcopy(reordered)               # nor does a corner moved by 0.01 cm
+        moved["lod0"]["sections"][0]["positions"][3] = [1, 1, 0.01]
+        self.assertTrue(any("no match" in f for f in G.same_import(quad, moved)[1]))
 
 
 class Record(unittest.TestCase):

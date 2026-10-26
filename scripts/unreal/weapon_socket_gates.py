@@ -107,11 +107,65 @@ def _angle_deg(a, b):
     return math.degrees(math.atan2(math.sqrt(c[0] ** 2 + c[1] ** 2 + c[2] ** 2), sum(x * y for x, y in zip(a, b))))
 
 
+def _triangles(section):
+    idx = section["indices"]
+    return [tuple(idx[k:k + 3]) for k in range(0, len(idx), 3)]
+
+
+def corner_pairs(x, y, tol=None):
+    """The corner pairs (vertex i of x, vertex j of y) of two sections' triangles, and how they were paired.
+
+    - "ordered": the triangle lists match corner for corner, each within tol cm.
+    - "matched": Unreal ordered the triangles differently (s86, W11 and W13). Each triangle of y is then matched
+      to an unused triangle of x with the same corners in a cyclic rotation, which keeps the winding, found
+      through a spatial hash of the centroids.
+
+    None when a triangle finds no match.
+    """
+    tol = SAME["positions_cm"] if tol is None else tol
+    tx, ty = _triangles(x), _triangles(y)
+    px, py = x["positions"], y["positions"]
+    if len(tx) != len(ty):
+        return None
+    if all(math.dist(px[i], py[j]) <= tol for a, b in zip(tx, ty) for i, j in zip(a, b)):
+        return [(i, j) for a, b in zip(tx, ty) for i, j in zip(a, b)], "ordered"
+    cell = 0.05
+    def centroid(tri, p):
+        return [sum(p[i][k] for i in tri) / 3.0 for k in range(3)]
+    def key(c):
+        return tuple(math.floor(v / cell) for v in c)
+    grid = {}
+    for n, tri in enumerate(tx):
+        grid.setdefault(key(centroid(tri, px)), []).append(n)
+    used, pairs = set(), []
+    for tri in ty:
+        k0 = key(centroid(tri, py))
+        found = None
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                for dz in (-1, 0, 1):
+                    for n in grid.get((k0[0] + dx, k0[1] + dy, k0[2] + dz), ()):
+                        if n in used or found:
+                            continue
+                        a = tx[n]
+                        for r in range(3):
+                            rot = a[r:] + a[:r]
+                            if all(math.dist(px[i], py[j]) <= tol for i, j in zip(rot, tri)):
+                                found = (n, rot)
+                                break
+        if found is None:
+            return None
+        used.add(found[0])
+        pairs.extend(zip(found[1], tri))
+    return pairs, "matched"
+
+
 def same_import(a, b):
     """Two imports of one asset, compared corner by corner: each triangle's three corners, so that a vertex the
     importer shares in one import and splits in the other still compares like for like.
 
     a, b: {lod0: {sections: [{positions, indices, normals, uvs, tangents}]}, materials, collision}.
+    The corners are paired by corner_pairs: in index order where that lines up, otherwise by matching triangles.
     Returns (gaps, failures). The gaps hold the worst position (cm) and UV distances, the worst normal and tangent
     differences in 8-bit steps and in degrees, how many corners differ, and each import's render vertex count.
 
@@ -126,7 +180,7 @@ def same_import(a, b):
     """
     gaps = {"positions_cm": 0.0, "uvs": 0.0, "normal_steps": 0, "normal_deg": 0.0, "tangent_steps": 0,
             "tangent_deg": 0.0, "corners": 0, "normal_corners_differing": 0, "tangent_corners_differing": 0,
-            "render_vertices": [sum(len(s["positions"]) for s in m["lod0"]["sections"]) for m in (a, b)]}
+            "render_vertices": [sum(len(s["positions"]) for s in m["lod0"]["sections"]) for m in (a, b)], "pairing": []}
     failures = []
     sa, sb = a["lod0"]["sections"], b["lod0"]["sections"]
     if len(sa) != len(sb):
@@ -135,7 +189,13 @@ def same_import(a, b):
         if len(x["indices"]) != len(y["indices"]):
             failures.append(f"section {k}: {len(x['indices']) // 3} triangles against {len(y['indices']) // 3}")
             continue
-        for i, j in zip(x["indices"], y["indices"]):
+        paired = corner_pairs(x, y)
+        if paired is None:
+            failures.append(f"section {k}: a triangle has no match within {SAME['positions_cm']} cm")
+            continue
+        pairs, how = paired
+        gaps["pairing"].append(how)
+        for i, j in pairs:
             gaps["corners"] += 1
             gaps["positions_cm"] = max(gaps["positions_cm"], math.dist(x["positions"][i], y["positions"][j]))
             gaps["uvs"] = max(gaps["uvs"], math.dist(x["uvs"][i], y["uvs"][j]))
