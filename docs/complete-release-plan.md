@@ -16,8 +16,9 @@ The local coordination mailboxes record current ownership, commits and lane use.
 The newer [kitchen queue source checkpoint](qualification/kitchen-queue-source-2026-10-26.md)
 adds six non-targetable residents and real doorways into their homes. They walk
 indoors when an enemy enters the kitchen volume and reset on checkpoint retry.
-Eighteen compiled host tenement tests pass; the new queue runtime fixture and
-Unreal compilation remain pending. This work postdates the runtime results below.
+All 64 gameplay source gates pass at signed `09b192d0`, including eighteen
+compiled host tenement tests; the new queue runtime fixture and Unreal
+compilation remain pending. This work postdates the runtime results below.
 
 Signed `ca98e606` builds in UE 5.8.3 and passes all 32 selected ward, tenement,
 landing, recovery, supply, stealth, audio-lifetime and assisted campaign cases.
