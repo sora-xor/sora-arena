@@ -175,7 +175,8 @@ class TenementTests(unittest.TestCase):
             self.assertFalse(tenements.tenements_valid(c),'legacy spawn overlaps tenements')
 
     def test_notice_panel_and_north_escape_clear_actual_solids(self):
-        route=[[-730,560,2.15],[-1000,560,2.15],[-1000,3000,2.15],[-1600,3000,2.15]]
+        self.clear([[-1000,2800,2.15],[-1000,540,2.15],[-730,548,2.15]])
+        route=[[-730,548,2.15],[-1000,548,2.15],[-1000,3000,2.15],[-1600,3000,2.15]]
         self.clear(route)
         for p in self.sample(route):
             self.assertEqual(self.floor_at(*p[:2]),0,p)

@@ -4,6 +4,7 @@
 #include "Game/SoraCampaignReach.h"
 #include "SoraCampaignRules.h"
 #include "SoraCatalog.h"
+#include "SoraCatalogTerminalCharge.h"
 #include "SoraEnemy.h"
 #include "SoraEquipmentComponent.h"
 #include "SoraFieldcraft.h"
@@ -40,7 +41,19 @@ int32 USoraCampaignDirector::HeroZone() const
 {
     const FSoraChapter* Chapter=ActiveChapter();
     const ASoraPlayerCharacter* Hero=Mode().Hero();
-    return Chapter&&Hero?Chapter->Space.ZoneAt(Hero->GetActorLocation()):-2;
+    if(!Chapter||!Hero)return -2;
+    const FVector At=Hero->GetActorLocation();
+    const FSoraSpace& World=Chapter->Space;
+    const FSoraBeatSpace* Beat=ActiveSpace();
+    // Authored places can share a physical route. The active place wins
+    // only while the hero is actually inside its spatial/height bounds.
+    if(Beat&&World.Zones.IsValidIndex(Beat->Zone)&&World.Zones[Beat->Zone].Contains(At))return Beat->Zone;
+    const int32 Zone=World.ZoneAt(At);
+    // The notice square occupies the original hub street used by later beats.
+    if(Beat&&Beat->Zone==INDEX_NONE&&World.Hub!=INDEX_NONE&&World.Zones.IsValidIndex(Zone)&&
+       SoraCatalogTerminalCharge::IsSquare(World.Zones[Zone])&&FMath::Abs(At.X)<=3150.f&&FMath::Abs(At.Y)<=2550.f)
+        return INDEX_NONE;
+    return Zone;
 }
 bool USoraCampaignDirector::ObjectivePoint(FVector& Location,bool& bInteract) const
 {

@@ -28,6 +28,7 @@ bool FSoraTerminalEscapeTest::RunTest(const FString&)
 {
     SoraTerminalTest::FWorld W(*this,TEXT("TerminalEscape"),2,9);
     if(!SoraTerminalTest::Ready(W))return false;
+    TestEqual(TEXT("The shared alley belongs to the active notice encounter"),W.Campaign()->HeroZone(),W.BeatData().Space.Zone);
     TestFalse(TEXT("Checkpoint begins with an intact terminal"),W.Mode()->Arena()->IsTerminalDestroyed());
     if(!TestTrue(TEXT("Walk to the actual service panel, hold both stages and escape through the real north passage"),
         SoraTerminalChargeAutomation::Escape(*W.World)))return false;

@@ -1,6 +1,7 @@
 #pragma once
 #if WITH_DEV_AUTOMATION_TESTS
 #include "SoraRecoveryAutomation.h"
+#include "SoraLiftAutomation.h"
 namespace SoraTerminalChargeAutomation
 {
 inline bool HoldTo(FSoraAutomationWorld& W,SoraTerminalChargeRules::EStage Stage)
@@ -17,12 +18,15 @@ inline bool HoldTo(FSoraAutomationWorld& W,SoraTerminalChargeRules::EStage Stage
 inline bool Escape(FSoraAutomationWorld& W)
 {
     namespace R=SoraTerminalChargeRules;auto* C=W.Mode()->Campaign();
-    if(!C->IsTerminalCharge()||!SoraRecoveryAutomation::WalkTo(W,FVector(-1000,560,0))||
-       !SoraRecoveryAutomation::WalkTo(W,FVector(R::PanelX,R::PanelY,0))||
+    // The AI query returns a partial path behind the board for this narrow
+    // player corridor. Walk its checked straight segments with ordinary W
+    // input instead of appending a line through the board to that path.
+    if(!C->IsTerminalCharge()||!SoraLiftAutomation::Walk(W,FVector(-1000,540,0))||
+       !SoraLiftAutomation::Walk(W,FVector(R::PanelX,548,0))||
        !HoldTo(W,R::EStage::Planted)||!HoldTo(W,R::EStage::Burning)||C->TaskProgress().Done!=2)return false;
     // Clicking on safety cannot credit it. The detonation is the completion boundary.
-    for(const FVector P:{FVector(-1000,560,0),FVector(-1000,3000,0),FVector(-1600,3000,0)})
-        if(!SoraRecoveryAutomation::WalkTo(W,P))return false;
+    for(const FVector P:{FVector(-1000,548,0),FVector(-1000,3000,0),FVector(-1600,3000,0)})
+        if(!SoraLiftAutomation::Walk(W,P))return false;
     if(!C->TerminalSafe()||!C->IsTerminalCharge()||C->TaskProgress().Done!=2)return false;
     if(!W.InjectKey(EKeys::E,IE_Pressed)||!W.InjectKey(EKeys::E,IE_Released)||C->TaskProgress().Done!=2)return false;
     for(int I=0;I<1300&&C->IsTerminalCharge()&&!W.Mode()->bDefeated;++I)if(!W.Tick(1))return false;
