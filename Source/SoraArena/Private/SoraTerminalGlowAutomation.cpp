@@ -18,7 +18,7 @@ bool FSoraTerminalGlowTest::RunTest(const FString&)
     const auto& Lamps=W.Craft().Lamps;
     const int Index=Lamps.IndexOfByPredicate([](const FSoraLamp& L){return L.Id==TEXT("terminal_glow_b10");});
     if(!TestTrue(TEXT("The terminal has a staged light"),Index>=0&&W.Fieldcraft()->Lamps().IsValidIndex(Index)))return false;
-    const auto& Spec=Lamps[Index];auto* Glow=W.Fieldcraft()->Lamps()[Index];
+    const auto& Spec=Lamps[Index];auto* Glow=W.Fieldcraft()->Lamps()[Index].Get();
     TestEqual(TEXT("The terminal illuminates six metres"),Spec.RadiusCm,600.f);
     TestTrue(TEXT("The terminal cannot be snuffed"),Spec.Snuff==FSoraLamp::ESnuff::None);
     TestEqual(TEXT("The terminal offers no snuff hold"),Spec.HoldMs,0);
