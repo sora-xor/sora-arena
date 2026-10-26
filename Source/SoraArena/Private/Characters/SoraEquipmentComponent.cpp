@@ -1,5 +1,6 @@
 #include "SoraEquipmentComponent.h"
 #include "Combat/SoraDamage.h"
+#include "Combat/SoraMeleeTrace.h"
 #include "SoraCampaignDirector.h"
 #include "SoraBowRules.h"
 #include "SoraCatalog.h"
@@ -357,7 +358,7 @@ void USoraEquipmentComponent::Melee()
         Events->OnMeleeCommitted.Broadcast(Committed);
     }
     FCollisionQueryParams Params(SCENE_QUERY_STAT(Melee),false,H); TArray<FHitResult> Hits;
-    GetWorld()->SweepMultiByChannel(Hits,Start,Start+Dir*W.Range,FQuat::Identity,ECC_Pawn,FCollisionShape::MakeSphere(45),Params);
+    SoraMeleeTrace::Sweep(*GetWorld(),Hits,Start,Start+Dir*W.Range,45.f,H);
     TSet<AActor*> Damaged;
     bool bStruck=false;
     for(const auto& Hit:Hits) if(Hit.GetActor()&&!Damaged.Contains(Hit.GetActor()))
@@ -407,8 +408,7 @@ void USoraEquipmentComponent::ResolveCommittedStrike()
     const FVector End=Start+CommittedDirection*Profile.MaximumDistanceCm;
     FCollisionQueryParams Params(SCENE_QUERY_STAT(HistoricalMelee),false,H);
     TArray<FHitResult> Hits;
-    GetWorld()->SweepMultiByChannel(Hits,Start,End,FQuat::Identity,ECC_Pawn,
-        FCollisionShape::MakeSphere(StrikeWeapon==19?16.f:36.f),Params);
+    SoraMeleeTrace::Sweep(*GetWorld(),Hits,Start,End,StrikeWeapon==19?16.f:36.f,H);
     AActor* TargetActor=nullptr;
     FHitResult TargetHit;
     float BestDistance=MAX_flt;

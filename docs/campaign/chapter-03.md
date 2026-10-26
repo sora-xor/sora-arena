@@ -1589,7 +1589,9 @@ beats:
     nonlethal_types: [bound_conscript]
     x_seal_cut: {downed_s: 8, hold_s: 1.5, freed_behavior: hide_in_place}
     light_sources: [andon_b03_bansho]
-    x_static_lights: [brazier_b03, scan_arch_b03]
+    x_static_lights:
+      - {id: brazier_b03, kind: brazier, radius_cm: 400, extinguishable: false}
+      - scan_arch_b03
     noise_surfaces:
       - {kind: puddle, volumes: [pud_b03_01, pud_b03_02, pud_b03_03]}
       - {kind: running_water, volumes: [vol_b03_culvert]}

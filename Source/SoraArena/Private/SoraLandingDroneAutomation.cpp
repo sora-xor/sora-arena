@@ -5,6 +5,8 @@
 #include "SoraWorldBuilder.h"
 #include "Combat/SoraCombatEffects.h"
 #include "Combat/SoraEnemyCatalog.h"
+#include "Combat/SoraMeleeTrace.h"
+#include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
 
@@ -174,6 +176,92 @@ bool FSoraLandingDroneBaitTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("Other encounters retain 800 ms mark, zero damage and no landing assignment"),
         !Generic->HasLandingDroneAssignment()&&Generic->CurrentAttack()->WindupMs==800&&Generic->CurrentAttack()->Damage==0);
     Generic->Destroy();
+    return !HasAnyErrors();
+}
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraDroneMeleeTest,"SoraArena.Campaign.DroneMelee",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraDroneMeleeTest::RunTest(const FString&)
+{
+    using namespace SoraLandingDroneTest;
+    FBeatWorld W(*this,TEXT("DroneMelee"),2,1);auto* Drone=Ready(W);if(!Drone)return false;
+    Freeze(*Drone);
+    W.Hero()->GetCharacterMovement()->DisableMovement();
+    auto* World=W.World->GetTestWorld();
+    const FVector At=Drone->GetActorLocation();
+    FCollisionQueryParams Query(SCENE_QUERY_STAT(DroneMeleeControl),false,W.Hero());
+    const auto Sweep=[&](const FVector& Start,const FVector& End,float Radius)
+    {
+        TArray<FHitResult> Hits;
+        SoraMeleeTrace::Sweep(*World,Hits,Start,End,Radius,W.Hero());
+        return Hits;
+    };
+    const auto Contains=[](const TArray<FHitResult>& Hits,const AActor* Actor)
+    {
+        return Hits.ContainsByPredicate([Actor](const FHitResult& Hit){return Hit.GetActor()==Actor;});
+    };
+    for(float Radius:{16.f,36.f,45.f})
+    {
+        for(float Offset:{Radius+16.f,-Radius-24.f})
+        {
+            const FVector Start=At+FVector(-120,0,Offset),End=At+FVector(180,0,Offset);
+            TArray<FHitResult> Broad;
+            World->SweepMultiByChannel(Broad,Start,End,FQuat::Identity,ECC_Pawn,FCollisionShape::MakeSphere(Radius),Query);
+            TestTrue(TEXT("Control sweep intersects the larger movement sphere"),Contains(Broad,Drone));
+            TestFalse(TEXT("A melee volume wholly above or below the visible disc misses"),Contains(Sweep(Start,End,Radius),Drone));
+        }
+        const auto Hits=Sweep(At-FVector(120,0,0),At+FVector(180,0,0),Radius);
+        TestTrue(TEXT("Each melee radius reaches the actual imported hull"),Hits.ContainsByPredicate(
+            [Drone](const FHitResult& Hit){return Hit.GetActor()==Drone&&Hit.GetComponent()==Drone->InventoryDroneBody()&&Hit.bBlockingHit;}));
+    }
+    auto* Block=World->SpawnActor<AActor>();
+    if(!TestNotNull(TEXT("Physical cover fixture spawns"),Block))return false;
+    auto* Box=NewObject<UBoxComponent>(Block);
+    Block->SetRootComponent(Box);Box->SetBoxExtent(FVector(5,80,80));
+    Box->SetCollisionEnabled(ECollisionEnabled::QueryOnly);Box->SetCollisionObjectType(ECC_WorldStatic);
+    Box->SetCollisionResponseToAllChannels(ECR_Block);Box->RegisterComponent();Block->AddInstanceComponent(Box);
+    Block->SetActorLocation(At-FVector(70,0,0));
+    auto Hits=Sweep(At-FVector(120,0,0),At+FVector(180,0,0),36.f);
+    TestTrue(TEXT("World cover stops the melee volume before the disc"),Contains(Hits,Block)&&!Contains(Hits,Drone));
+    Block->SetActorLocation(At+FVector(120,0,0));
+    Hits=Sweep(At+FVector(-120,0,52),At+FVector(180,0,52),36.f);
+    TestTrue(TEXT("Empty space around a drone does not hide a real contact behind it"),Contains(Hits,Block)&&!Contains(Hits,Drone));
+    Hits=Sweep(At-FVector(120,0,0),At+FVector(180,0,0),36.f);
+    TestTrue(TEXT("The actual disc blocks contacts beyond it"),Contains(Hits,Drone)&&!Contains(Hits,Block));
+    auto* WeakPoint=World->SpawnActor<AActor>();
+    if(!TestNotNull(TEXT("Overlapping weak-point fixture spawns"),WeakPoint))return false;
+    auto* WeakBox=NewObject<UBoxComponent>(WeakPoint);
+    WeakPoint->SetRootComponent(WeakBox);WeakBox->SetBoxExtent(FVector(5));
+    WeakBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);WeakBox->SetCollisionObjectType(ECC_WorldDynamic);
+    WeakBox->SetCollisionResponseToAllChannels(ECR_Ignore);WeakBox->SetCollisionResponseToChannel(ECC_Pawn,ECR_Overlap);
+    WeakBox->RegisterComponent();WeakPoint->AddInstanceComponent(WeakBox);
+    WeakPoint->SetActorLocation(At-FVector(90,0,0));
+    Hits=Sweep(At-FVector(160,0,0),At+FVector(180,0,0),36.f);
+    TestTrue(TEXT("An overlapping weak point before the drone remains hittable"),
+        Contains(Hits,WeakPoint)&&Contains(Hits,Drone)&&!Contains(Hits,Block));
+    WeakPoint->Destroy();
+    Block->Destroy();
+
+    const float Health=Drone->Health;
+    for(int Weapon:{4,19})
+    {
+        if(!W.World->TakeUpArm(Weapon))return false;
+        const float Radius=Weapon==19?16.f:36.f;
+        for(float Offset:{Radius+16.f,-Radius-24.f})
+        {
+            W.Look(FRotator::ZeroRotator);
+            const FVector Eye=W.Hero()->GetCamera()->GetComponentLocation();
+            Drone->SetActorLocation(Eye+FVector(Weapon==19?180.f:120.f,0,-Offset),false,nullptr,ETeleportType::TeleportPhysics);
+            if(!W.Press(EKeys::LeftMouseButton)||!W.Tick(90))return false;
+            TestEqual(TEXT("An actual mapped cut or thrust through empty sphere space deals no damage"),Drone->Health,Health);
+        }
+    }
+    if(!W.World->TakeUpArm(4))return false;
+    W.Look(FRotator::ZeroRotator);
+    Drone->SetActorLocation(W.Hero()->GetCamera()->GetComponentLocation()+FVector(120,0,0),false,nullptr,ETeleportType::TeleportPhysics);
+    if(!W.Press(EKeys::LeftMouseButton)||!W.Tick(90))return false;
+    TestEqual(TEXT("The positive-control mapped wakizashi cut damages the physical disc"),
+        Drone->Health,FMath::Max(0.f,Health-FSoraCatalog::Get().Weapon(4).Damage));
+    AddInfo(TEXT("Directed collision fixture with frozen threats and positioned drone. Ordinary landing combat and final weapon/character presentation remain separate."));
     return !HasAnyErrors();
 }
 #endif

@@ -233,7 +233,11 @@ def _lamp(entry, fail, where):
     if "extinguishable" in entry:
         value = entry["extinguishable"]
         snuff = "none" if value is False else "shot" if value == "arrow" else snuff
-    return {"id": lamp_id, "kind": kind, "radius_cm": LAMP_RADIUS[kind], "snuff": snuff,
+    radius = entry.get("radius_cm", LAMP_RADIUS[kind])
+    if type(radius) not in (int, float) or not 0 < radius <= 2147483647:
+        fail(where, f"light {lamp_id} needs a positive finite int32 radius in centimetres")
+    radius = _whole(radius, f"{where}.{lamp_id}.radius_cm", fail)
+    return {"id": lamp_id, "kind": kind, "radius_cm": radius, "snuff": snuff,
             "hold_ms": hold if snuff == "hold" else 0,
             "relight_ms": _ms(entry.get("relight_s", 0), f"{where}.{lamp_id}", fail)}
 

@@ -1,4 +1,4 @@
-# West landing source checkpoint — not runtime qualified
+# West landing — directed runtime checks; visual and ordinary play remain open
 
 This implements chapter 3's west landing and two timed patrols. The signed
 `53967094` compiled and completed fifteen Unreal NullRHI tests on October 26:
@@ -13,7 +13,11 @@ the bank face. The revised plank reaches bank height at the actual edge,
 with thickness offset along its normal. The solids fixture also omitted
 WorldDynamic, the default collision type of the runtime box components;
 it now queries both world types and checks three points along the plank.
-These corrections await their own runtime result.
+Signed `febc3900` then compiled and passed all seven landing cases, with a
+natural editor exit 0 and unchanged source, Config and Content/Generated.
+Evidence: `Saved/Qualification/2026-10-26/landing-space-febc3900-runtime-attempt1`.
+All twenty recorded files were independently hash-verified. The first failed
+run remains archived; it is not overwritten by the passing correction.
 
 The generated data now uses the authored 44 × 16 m yard, entry at the west
 steps, three lamp positions, six puddles, five cargo stacks and north-east
@@ -60,9 +64,10 @@ authored spawn without position warps, but freeze combat to isolate traversal.
 
 Open before integration or acceptance:
 
-- Recheck the corrected collision and traversal fixtures. The three existing
+- The seven corrected landing cases passed on `febc3900`. The three existing
   landing-drone tests, DroneBody, DroneCrossing, LedgerPatrols,
-  HorseShellClockAndImpact and assisted Playthrough passed on `53967094`.
+  HorseShellClockAndImpact and assisted Playthrough passed on `53967094`;
+  these results apply to their respective source revisions.
 - Physically play all three routes, snuff each lamp with its one-second
   interaction, and verify puddles, detection carryover and the real exit.
 - Review the shallow bed, boats, banks and east gangplank in actual play.
@@ -78,3 +83,8 @@ source gates in CI run `40277452775`. Its tested merge
 `17730829433ea7ff6982f3038b63ffa154bc718a` has the identical tree
 `34d4b5fc65a5f0bd39fb65ecaf5f408112856e1b`; artifacts and raw logs were
 authenticated. That result predates this landing work and does not qualify it.
+
+The earlier compile-only failure at `a1b1821c` was a fixture pointer deduction
+error, corrected in `53967094`. Both original attempts remain archived; the
+passing compile review is
+`d0b5ab7429549e3e9fa1729e3b544a2d5e5050264d6a639f7e81e605e3406e41`.
