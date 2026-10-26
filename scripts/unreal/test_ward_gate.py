@@ -100,7 +100,7 @@ class WardGateTests(unittest.TestCase):
         r=self.record(self.chapter)['ward_gate']
         self.assertEqual(r['culvert_cm'],[-6200,-650,-90,300,100,90])
         samples=[([-6390,-875],0),([-6390,-825],-30),([-6390,-775],-60),([-6390,-725],-90),
-                 ([-6390,-650],-90),([-6200,-650],-90),([-6025,-650],-90),([-5975,-650],-60),([-5925,-650],-30),([-5875,-650],0)]
+                 ([-6390,-650],-90),([-6200,-650],-90),([-5990,-650],-90),([-5945,-650],-60),([-5895,-650],-30),([-5845,-650],0)]
         for point,height in samples:
             self.assertEqual(self.floor_at(point),height,point)
             # Geometric crouch clearance only. UE's floor hover and movement
@@ -108,6 +108,11 @@ class WardGateTests(unittest.TestCase):
             for solid in self.solids():self.assertFalse(self.capsule_hits(solid,point,feet=height+1,height=88),(point,solid[0]))
         roof=next(s for s in self.native['solids'] if s[0]=='WardCulvertRoof')
         self.assertTrue(self.capsule_hits(roof,[-6200,-650],feet=-89,height=176))
+
+    def test_upward_exit_step_starts_after_the_whole_capsule_clears_the_roof(self):
+        roof=next(s for s in self.native['solids'] if s[0]=='WardCulvertRoof')
+        step=next(s for s in self.native['ground'] if s[0]=='WardCulvertEastStep2')
+        self.assertGreaterEqual(step[1]-(roof[1]+roof[4]/2),2*34)
 
     def test_wicket_gap_and_roof_firewall_exist(self):
         solids=self.solids()

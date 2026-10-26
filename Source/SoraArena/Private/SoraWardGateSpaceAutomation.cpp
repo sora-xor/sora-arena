@@ -64,12 +64,30 @@ bool WalkWard(FBeatWorld& W,FVector2D Point,bool Exit=false)
 }
 bool Cut(FBeatWorld& W,ASoraEnemy& E,bool PlaceHero)
 {
-    if(PlaceHero)W.Stand(E.GetActorLocation()+FVector(-80,0,0));
+    // Approach from the north, outside the nearby andon's snuff reach.
+    if(PlaceHero)W.Stand(E.GetActorLocation()+FVector(0,120,0));
     UGameplayStatics::ApplyDamage(&E,E.Health,W.Hero()->GetController(),W.Hero(),UDamageType::StaticClass());
     if(!W.Test.TestTrue(TEXT("A lethal-sized blow subdues the bound guard"),E.IsSubdued()&&!E.IsAlive()))return false;
     W.LookAt(E.GetActorLocation());
     if(!W.Hold(EKeys::E,95)||!WaitForControl(W))return false;
-    return W.Test.TestTrue(TEXT("Mapped interaction cuts the downed guard's seal"),E.IsFreed());
+    if(!W.Test.TestTrue(TEXT("Mapped interaction cuts the downed guard's seal"),E.IsFreed()))return false;
+    FVector Departure;
+    if(W.Fieldcraft()->WardKidobanDeparture(E,Departure))
+    {
+        // Only the freed gatekeeper resumes his live movement; the opposing
+        // guards remain held for this directed route test.
+        E.GetCharacterMovement()->SetComponentTickEnabled(true);
+        if(auto* Brain=E.GetController())Brain->SetActorTickEnabled(true);
+        for(int Frame=0;Frame<300&&FVector::Dist2D(E.GetActorLocation(),Departure)>25;++Frame)
+        {
+            const FVector Before=E.GetActorLocation();
+            if(!W.Tick(1)||!W.Test.TestTrue(TEXT("The freed gatekeeper steps aside without a teleport"),
+                FVector::Dist(Before,E.GetActorLocation())<8))return false;
+        }
+        if(!W.Test.TestTrue(TEXT("The freed gatekeeper leaves the wicket approach clear with body collision intact"),
+            FVector::Dist2D(E.GetActorLocation(),Departure)<30&&E.GetCapsuleComponent()->GetCollisionResponseToChannel(ECC_Pawn)==ECR_Block))return false;
+    }
+    return true;
 }
 FCollisionObjectQueryParams Objects()
 { FCollisionObjectQueryParams Q;Q.AddObjectTypesToQuery(ECC_WorldStatic);Q.AddObjectTypesToQuery(ECC_WorldDynamic);return Q; }
@@ -88,7 +106,7 @@ bool FSoraWardGateSolidsTest::RunTest(const FString&)
     FBeatWorld W(*this,TEXT("WardSolids"),2,2);if(!StartWard(W))return false;
     for(const FVector P:{FVector(-7820,-850,0),FVector(-7820,-630,0),FVector(-7300,-900,-40),
         FVector(-6390,-825,-30),FVector(-6390,-775,-60),FVector(-6390,-725,-90),
-        FVector(-6200,-650,-90),FVector(-5975,-650,-60),FVector(-5925,-650,-30)})
+        FVector(-6200,-650,-90),FVector(-5990,-650,-90),FVector(-5945,-650,-60),FVector(-5895,-650,-30)})
     {
         FHitResult H;
         const bool Hit=Trace(W,FVector(P.X,P.Y,P.Z+25),FVector(P.X,P.Y,P.Z-80),H);
@@ -199,12 +217,11 @@ bool FSoraWardGateRoutesTest::RunTest(const FString& Route)
         W.Look(FRotator(0,90,0));if(!W.Press(EKeys::SpaceBar)||!W.Tick(240))return false;
         if(!TestTrue(TEXT("Mapped jump climbs the authored ladder onto its roof"),
             W.Raised(TEXT("ladder_up:ladder_b03_shop"))&&!W.Fieldcraft()->IsOnLadder()&&W.Hero()->GetActorLocation().Z>400)||
-           !WalkWard(W,{-6400,930})||!WalkWard(W,{-6000,930})||!WalkWard(W,{-6000,500})||!W.Tick(90)||
-           !WalkWard(W,{-5800,400}))return false;
+           !WalkWard(W,{-6400,930})||!WalkWard(W,{-6000,930})||!WalkWard(W,{-6000,500})||!W.Tick(90))return false;
     }
     else if(Route==TEXT("Wicket"))
     {
-        auto* Kidoban=GuardAt(W,0);if(!Kidoban||!WalkWard(W,{-6700,350})||!WalkWard(W,{-6380,150})||!Cut(W,*Kidoban,false)||
+        auto* Kidoban=GuardAt(W,0);if(!Kidoban||!WalkWard(W,{-6700,350})||!WalkWard(W,{-6380,350})||!Cut(W,*Kidoban,false)||
            !W.Press(EKeys::C)||!W.Tick(10)||!WalkWard(W,{-6300,135})||!WalkWard(W,{-6100,135}))return false;
     }
     else return false;

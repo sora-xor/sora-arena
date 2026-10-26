@@ -199,6 +199,7 @@ public:
     void AssignMoatGuard(ASoraEnemy& Enemy,int32 Index);
     void AssignWardGuard(ASoraEnemy& Enemy,int32 Index);
     bool FreeWardKidoban(const AActor* Actor);
+    bool WardKidobanDeparture(const ASoraEnemy& Enemy,FVector& Goal) const;
     bool IsWardWicketOpen() const { return bWardWicketOpen; }
     bool IsMoatGuard(const ASoraEnemy& Enemy) const;
     FVector MoatGuardAim(const ASoraEnemy& Enemy) const;

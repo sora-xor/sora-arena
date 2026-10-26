@@ -30,6 +30,13 @@ void USoraFieldcraft::StageWardGate(const FSoraBeat& Beat)
 void USoraFieldcraft::AssignWardGuard(ASoraEnemy& Guard,int32 Index)
 { if(bWardGate&&Index==0)WardKidoban=&Guard; }
 
+bool USoraFieldcraft::WardKidobanDeparture(const ASoraEnemy& Enemy,FVector& Goal) const
+{
+    if(!bWardGate||!bWardWicketOpen||WardKidoban.Get()!=&Enemy||!Enemy.IsFreed())return false;
+    Goal=FVector(-6500,240,90.15);
+    return true;
+}
+
 bool USoraFieldcraft::FreeWardKidoban(const AActor* Actor)
 {
     if(!bWardGate||bWardWicketOpen||Actor!=WardKidoban.Get()||!WardKidoban.IsValid()||!WardKidoban->IsFreed())return false;

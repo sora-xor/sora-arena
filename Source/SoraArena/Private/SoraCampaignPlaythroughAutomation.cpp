@@ -809,6 +809,9 @@ bool PickUpAll(FAutomationTestBase& Test, FState& State,bool AlongMoatRoute=fals
     {
         if(Moat&&Chapter.Space.Pickups[Pickup].Zone!=Space->Zone)continue;
         const FSoraCollectible& Item = Chapter.Collectibles[Chapter.Space.Pickups[Pickup].Collectible];
+        // The seven-metre well find is taken by the real recovery ascent in
+        // b05. The aggregate flat-floor sweep cannot reach it from the court.
+        if(Item.Id==TEXT("ch03.c03"))continue;
         if(Moat)
         {
             if(!SoraMoatAutomation::Swim(*State.World,Director->PickupLocation(Pickup)))
@@ -1354,12 +1357,24 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
         bOk &= Test.TestEqual(*(Beat.Id + TEXT(" cannot be worked from afar")), Director->TaskProgress().Done, 0);
         if(Rules.RecoveryWeapons!=0u)
         {
+            const uint64 BeforeRecoveryFinds=Director->CollectedMask();
             // Deal with the patrol using the currently available wakizashi
             // before entering the rope. Recovery itself uses no state edits.
             for(int32 Action=0;Action<MaxActionsPerBeat&&!LiveEnemies(State).IsEmpty();++Action)
                 if(!DefeatOne(Test,State)) return false;
             if(!FreeConscripts(Test,State)||!Test.TestTrue(TEXT("Dry-well equipment is recovered by real movement and held input"),
                 SoraRecoveryAutomation::Recover(*State.World))) return false;
+            if(Beat.Id==TEXT("ch03.b05"))
+            {
+                const auto* Scroll=ChapterData(State).Collectibles.FindByPredicate(
+                    [](const FSoraCollectible& Item){return Item.Id==TEXT("ch03.c03");});
+                if(!Test.TestNotNull(TEXT("Recovery has its authored lining scroll"),Scroll))return false;
+                const uint64 Bit=SoraCampaignRules::CollectibleBit(Director->ChapterId,Scroll->MaskBit);
+                const auto* Saved=Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(State.Slot,0));
+                if(!Test.TestTrue(TEXT("The actual rope ascent takes and immediately saves the well scroll"),
+                    (Director->CollectedMask()&Bit)!=0&&Saved&&(static_cast<uint64>(Saved->Collectibles)&Bit)!=0))return false;
+                if((BeforeRecoveryFinds&Bit)==0)++State.PickupsFound;
+            }
         }
         if(Rules.CarryGateMs>0)
         {

@@ -28,14 +28,15 @@ inline constexpr FSlab Ground[]={
     {"WardGroundSouthOuter",-7600,-1000,-5600,-930,0},
     {"WardDitchEastEnd",-6820,-930,-5600,-870,0},
     {"WardGroundWest",-7600,-700,-6440,-600,0},
-    {"WardGroundEast",-5900,-700,-5600,-600,0},
+    {"WardGroundEast",-5870,-700,-5600,-600,0},
     {"WardCulvertBed",-6440,-700,-6050,-600,-90},
     {"WardCulvertWestStep1",-6440,-850,-6340,-800,-30},
     {"WardCulvertWestStep2",-6440,-800,-6340,-750,-60},
     {"WardCulvertWestStep3",-6440,-750,-6340,-700,-90},
-    {"WardCulvertEastStep1",-6050,-700,-6000,-600,-90},
-    {"WardCulvertEastStep2",-6000,-700,-5950,-600,-60},
-    {"WardCulvertEastStep3",-5950,-700,-5900,-600,-30},
+    // A full capsule must clear the roof before the first upward step.
+    {"WardCulvertEastStep1",-6050,-700,-5970,-600,-90},
+    {"WardCulvertEastStep2",-5970,-700,-5920,-600,-60},
+    {"WardCulvertEastStep3",-5920,-700,-5870,-600,-30},
     {"WardDitchBed",-7600,-930,-6820,-870,-40},
 };
 enum class ESurface { Wood,Stone,Plaster };

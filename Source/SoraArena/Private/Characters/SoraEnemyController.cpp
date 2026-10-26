@@ -316,10 +316,24 @@ void ASoraEnemyController::Tick(float Dt)
     // whose pawn is held still with its tick off does nothing, and noises made
     // meanwhile are forgotten.
     auto* Target = Cast<ASoraCharacterBase>(UGameplayStatics::GetPlayerPawn(this, 0));
-    if (!Enemy->IsActorTickEnabled() || !Enemy->CanPlay() || Enemy->IsFreed() || Enemy->IsSeized() || !Target || !Target->IsAlive())
+    if (!Enemy->IsActorTickEnabled() || !Enemy->CanPlay() || Enemy->IsSeized() || !Target || !Target->IsAlive())
     {
         Heard.Reset();
         bSeesHero = false;
+        return;
+    }
+    if(Enemy->IsFreed())
+    {
+        Heard.Reset();bSeesHero=false;
+        FVector Goal;
+        if(auto* Craft=USoraFieldcraft::Get(this);Craft&&Craft->WardKidobanDeparture(*Enemy,Goal))
+        {
+            // The gatekeeper walks clear of the narrow wicket after opening
+            // it, retaining normal body collision and ordinary movement.
+            if(auto* Nav=USoraNavigation::Get(this))Nav->Settle();
+            if(WalkTo(*Enemy,Goal,SoraEnemyBrain::PatrolSpeed,20.f,WorldMs())==EMove::Moving)
+                Face(*Enemy,Goal-Enemy->GetActorLocation(),Dt,5.f);
+        }
         return;
     }
     if (auto* Boss = Cast<ASoraBoss>(Enemy))
