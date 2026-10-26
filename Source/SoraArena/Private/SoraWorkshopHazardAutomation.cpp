@@ -166,7 +166,10 @@ bool FSoraWorkshopCoverTest::RunTest(const FString&)
     auto Found=Props(W);auto* Rack=Found[1];
     Place(*W.Hero(),FVector(2770,-1100,0));W.Look(FRotator(0,90,0));
     if(!W.World->InjectKey(EKeys::W,IE_Pressed)||!Tick(W,60)||!W.World->InjectKey(EKeys::W,IE_Released))return false;
-    TestTrue(TEXT("Intact rack blocks real mapped walking"),W.Hero()->GetActorLocation().Y<=-1008);
+    const FVector Stopped=W.Hero()->GetActorLocation();
+    const double StopY=Rack->GetActorLocation().Y-R::Covers[0].SY*.5-W.Hero()->GetCapsuleComponent()->GetScaledCapsuleRadius();
+    AddInfo(FString::Printf(TEXT("Rack contact: hero=(%s), expected center Y=%.3f"),*Stopped.ToString(),StopY));
+    TestTrue(TEXT("Intact rack blocks real mapped walking"),Stopped.Y<=StopY+3&&Stopped.Y>=StopY-12&&FMath::Abs(Stopped.X-2770)<5);
     Hit(W,*Rack,10,false);Hit(W,*Rack,10,true);
     TestEqual(TEXT("Normal melee and ranged hits reduce soft cover health"),Rack->CoverHealth(),20);
     if(!W.Press(EKeys::Escape))return false;Hit(W,*Rack,1000,true);
