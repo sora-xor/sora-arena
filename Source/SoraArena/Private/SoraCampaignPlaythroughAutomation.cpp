@@ -585,6 +585,9 @@ bool WorkAtAnchor(FAutomationTestBase& Test, FState& State)
         }
         if(!Test.TestTrue(TEXT("A relay work spot is grounded, visible and free of body-drag priority"),Ready))
         {
+            if(const auto* Body=USoraStealth::Get(Player(State))->DragTarget(*Player(State)))
+                Test.AddInfo(FString::Printf(TEXT("Relay blocking body: type=%s slot=%d at=%s"),
+                    *Body->ArchetypeId().ToString(),Body->EnemySlot(),*Body->GetActorLocation().ToString()));
             Test.AddInfo(FString::Printf(TEXT("Relay work diagnostic: node=%d anchor=%s hero=%s reach=%d drag=%s mode=%d input=%d"),
                 Node,*Anchor.ToString(),*Player(State)->GetActorLocation().ToString(),Director->CanReachRelay(Node),
                 *GetNameSafe(USoraStealth::Get(Player(State))->DragTarget(*Player(State))),

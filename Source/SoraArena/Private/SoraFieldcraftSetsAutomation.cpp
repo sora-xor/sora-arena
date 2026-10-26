@@ -232,8 +232,25 @@ bool FSoraFieldcraftConvoyNetsTest::RunTest(const FString& Parameters)
     if (!W.Press(EKeys::One) || !W.Tick(20))
         return false;
     W.Hero()->GetController()->SetControlRotation(FRotator(0.f, Yaw + 90.f, 0.f));
+    int32 CutCommits=0;
+    auto* CutEvents=USoraGameEvents::Get(W.Hero());
+    const auto CutHandle=CutEvents->OnMeleeCommitted.AddLambda([&](const FSoraMeleeCommittedEvent& Event)
+    {
+        if(Event.Attacker!=W.Hero()) return;
+        ++CutCommits;
+        AddInfo(FString::Printf(TEXT("Saddle cut commit: weapon=%d local=%s mounted=%d net=%d"),Event.WeaponId,
+            *Campaign->Steed()->LocalOf(Fieldcraft->QuarryLocation(Netted)).ToString(),Campaign->IsMounted(),int32(Fieldcraft->NetOf(Netted))));
+    });
+    ON_SCOPE_EXIT { CutEvents->OnMeleeCommitted.Remove(CutHandle); };
+    AddInfo(FString::Printf(TEXT("Saddle cut before input: weapon=%d mounted=%d play=%d stagger=%d sheathed=%d committed=%d local=%s"),
+        W.Hero()->WeaponId,Campaign->IsMounted(),W.Mode()->IsPlaying(),W.Hero()->GetEquipment()->IsStaggered(),
+        W.Hero()->GetEquipment()->IsSheathed(),W.Hero()->GetEquipment()->IsCommittedStrike(),
+        *Campaign->Steed()->LocalOf(Fieldcraft->QuarryLocation(Netted)).ToString()));
     if (!W.Press(EKeys::RightMouseButton) || !W.Tick(2))
         return false;
+    AddInfo(FString::Printf(TEXT("Saddle cut after input: commits=%d mounted=%d play=%d stagger=%d local=%s net=%d"),
+        CutCommits,Campaign->IsMounted(),W.Mode()->IsPlaying(),W.Hero()->GetEquipment()->IsStaggered(),
+        *Campaign->Steed()->LocalOf(Fieldcraft->QuarryLocation(Netted)).ToString(),int32(Fieldcraft->NetOf(Netted))));
     TestTrue(TEXT("A katana cut from the saddle to the right frees the netted horse"),
         Fieldcraft->NetOf(Netted) != SoraFieldcraftRules::ENet::Netted && W.Raised(TEXT("net_cut:") + Fieldcraft->Active()->Nets.Quarry[Netted].Id));
     // Cut free, the load is let be while its drone reloads (9 s): for eight

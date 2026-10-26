@@ -29,8 +29,12 @@ wave/effect mutations, and the compiled C++ obstruction/hold/reopen clock.
 Evidence: `Saved/Qualification/2026-10-26/ledger-lockdown-working-source-attempt1`;
 review SHA-256 `cda6209ef06a98f46633fa5951cbc6ab8cbc29684ba5bde9c799a5d03199d2f9`.
 
-`SoraArena.Campaign.LedgerLockdown` is written but **has not been built or run**.
+At signed `47b49669`, `SoraArena.Campaign.LedgerLockdown` **builds and passes**.
 It holds original patrol AI, raises the real stealth alarm, observes four live
 riflemen entering through their doors, then holds them while testing actual
 shutter collision, obstruction, mapped walking, pause, 30-second hold and
-retry. No runtime or visual acceptance is claimed by the CPU results.
+retry. LedgerPatrols, LedgerRoute, PalaceFusuma and Spaces also pass in the
+same 27-filter run. It has 25 passes and two separate failures (Playthrough
+and ConvoyNets); review SHA-256
+`58e08bc7cbdc71695417063c817543aefe60509ad826a3ddef1f4e0412c63bb3`.
+This is functional fixture evidence, not ordinary stealth or visual acceptance.

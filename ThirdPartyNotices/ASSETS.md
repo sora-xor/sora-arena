@@ -10,7 +10,7 @@ Policy: `docs/art-research/free-asset-acquisition-plan.md` section 2. Every asse
 |---|---:|---:|---:|
 | PUB-CC0 | 192 | 2571 | 4,584,606,249 |
 | PUB-BY | 11 | 12 | 206,629,366 |
-| OWN | 14 | 558 | 906,514,835 |
+| OWN | 14 | 558 | 906,514,915 |
 | REF | 6 | 6 | 9,778,972 |
 
 ## Public domain and CC0 (PUB-CC0, PUB-PD)
@@ -327,7 +327,7 @@ Credit format (plan section 2.3): "Title" by Author, source link, license link, 
 - `Nyaagyu_PBR_Palette_Preview`: 1 files, generator `scripts/art/render_environment_palette.py`, derived from `wood_planks_dirt`, `stone_floor`, `brown_mud_leaves_01`, `rusty_metal_02`, `kloofendal_overcast_puresky`
 - `SM_NyaagyuFernGroundTransition:derived`: 3 files, generator `scripts/art/create_nyaagyu_fern_ground_transition.py`, derived from `fern_02`
 - `fern_02:derived`: 11 files, generator `scripts/art/create_nyaagyu_fern_shoulder.py`, derived from `fern_02`
-- `inventory-drone`: 14 files, generator `scripts/art/create_inventory_drone.py`, `scripts/art/create_runtime_weapon_lib.py`, derived from -
+- `inventory-drone`: 14 files, generator `scripts/art/create_inventory_drone.py`, `scripts/art/create_runtime_weapon_lib.py`, `scripts/art/reexport_inventory_drone_lod0.py`, derived from -
 - `nyaagyu-dojo-kit`: 19 files, generator `scripts/art/create_nyaagyu_dojo_kit.py`, `scripts/art/sora_arch_lib.py`, `scripts/art/craft_textures.py`, `scripts/art/sora_mark.py`, `scripts/art/create_runtime_weapon_lib.py`, derived from `Content/SourceArt/UI/sora_logo_NOtext2.svg`
 - `nyaagyu-dojo-timbers`: 87 files, generator `scripts/art/create_nyaagyu_dojo_timbers.py`, `scripts/art/create_nyaagyu_dojo_rails.py`, `scripts/art/render_dojo_timbers_lookdev.py`, `scripts/art/sora_timber_lib.py`, `scripts/art/sora_timber_bake.py`, `scripts/art/sora_timber_lookdev.py`, `scripts/art/dojo_hall_placements.py`, `scripts/art/sora_prop_lib.py`, `scripts/art/create_runtime_weapon_lib.py`, derived from `Content/Data/campaign/chapter_01.json`, `Content/Data/campaign/chapter_02.json`, `Content/Data/campaign/chapter_03.json`, `Content/Data/campaign/chapter_04.json`, `Content/Data/campaign/chapter_05.json`, `Content/Data/campaign/chapter_06.json`, `Content/Data/campaign/chapter_07.json`, `Content/Data/campaign/chapter_08.json`
 - `pine_sapling_small:derived`: 8 files, generator `scripts/art/create_nyaagyu_pine_saplings.py`, derived from `pine_sapling_small`
