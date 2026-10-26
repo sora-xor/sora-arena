@@ -490,9 +490,15 @@ void USoraCampaignDirector::TickHorses()
     // A convoy waits for a rider who falls behind, and halts while any of its
     // string is netted or shies from a light.
     const USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this);
-    const bool bHalted=Fieldcraft&&Fieldcraft->QuarryHalted();
+    bool bHalted=Fieldcraft&&Fieldcraft->QuarryHalted();
+    // These horses are tied nose-to-tail. If the rider leaves any member
+    // behind, stop the entire string; individual distance stops let the
+    // following horses catch up and occupy the same point as the first.
     for(const auto& Beast:Pack)
-        if(IsValid(Beast)) Beast->SetWaiting(bHalted||FVector::Dist2D(Beast->GetActorLocation(),Hero->GetActorLocation())>SoraCampaignReach::ConvoyWait);
+        if(IsValid(Beast)&&!Beast->IsLed())
+            bHalted|=FVector::Dist2D(Beast->GetActorLocation(),Hero->GetActorLocation())>SoraCampaignReach::ConvoyWait;
+    for(const auto& Beast:Pack)
+        if(IsValid(Beast)) Beast->SetWaiting(bHalted);
 }
 void USoraCampaignDirector::TickSiege(int32 DeltaMs)
 {

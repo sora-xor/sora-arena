@@ -4,7 +4,6 @@
 #include "Combat/SoraCombatEffects.h"
 #include "SoraEnemy.h"
 #include "SoraEnemyController.h"
-#include "SoraEquipmentComponent.h"
 #include "SoraFieldcraftTestWorld.h"
 #include "SoraRecoveryAutomation.h"
 #include "SoraGameEvents.h"
@@ -198,9 +197,6 @@ bool FSoraFieldcraftConvoyNetsTest::RunTest(const FString& Parameters)
     Campaign->Steed()->Place(Floor(Kaido.PointAlong(At)), Kaido.HeadingAt(At));
     for (int32 Index = 0; Index < Convoy.Num(); ++Index)
         Convoy[Index]->FollowRoad(&Kaido, At + 1500.f + 450.f * Index, 450);
-    for(const ASoraHorse* Beast:Convoy)
-        AddInfo(FString::Printf(TEXT("Convoy placed: id=%s actor=%s chainage=%.3f road=%.3f at=%s"),
-            *Beast->PackId,*GetNameSafe(Beast),Beast->RoadChainage(),Kaido.RouteLength,*Beast->GetActorLocation().ToString()));
     const auto NettedOne = [&]()
     {
         for (int32 Quarry = 0; Quarry < Fieldcraft->QuarryCount(); ++Quarry)
@@ -235,43 +231,11 @@ bool FSoraFieldcraftConvoyNetsTest::RunTest(const FString& Parameters)
     if (!W.Press(EKeys::One) || !W.Tick(20))
         return false;
     W.Hero()->GetController()->SetControlRotation(FRotator(0.f, Yaw + 90.f, 0.f));
-    int32 CutCommits=0;
-    auto* CutEvents=USoraGameEvents::Get(W.Hero());
-    const auto CutHandle=CutEvents->OnMeleeCommitted.AddLambda([&](const FSoraMeleeCommittedEvent& Event)
-    {
-        if(Event.Attacker!=W.Hero()) return;
-        ++CutCommits;
-        AddInfo(FString::Printf(TEXT("Saddle cut commit: weapon=%d local=%s mounted=%d net=%d"),Event.WeaponId,
-            *Campaign->Steed()->LocalOf(Fieldcraft->QuarryLocation(Netted)).ToString(),Campaign->IsMounted(),int32(Fieldcraft->NetOf(Netted))));
-    });
-    ON_SCOPE_EXIT { CutEvents->OnMeleeCommitted.Remove(CutHandle); };
-    AddInfo(FString::Printf(TEXT("Saddle cut before input: weapon=%d mounted=%d play=%d stagger=%d sheathed=%d committed=%d local=%s"),
-        W.Hero()->WeaponId,Campaign->IsMounted(),W.Mode()->IsPlaying(),W.Hero()->GetEquipment()->IsStaggered(),
-        W.Hero()->GetEquipment()->IsSheathed(),W.Hero()->GetEquipment()->IsCommittedStrike(),
-        *Campaign->Steed()->LocalOf(Fieldcraft->QuarryLocation(Netted)).ToString()));
-    AddInfo(FString::Printf(TEXT("Saddle cut rule: expected_weapon=%d side=%d target=%d"),
-        Fieldcraft->Active()->Nets.SaddleWeapon,Fieldcraft->Active()->Nets.SaddleSide,Netted));
-    for(const ASoraHorse* Beast:Campaign->PackHorses())
-        AddInfo(FString::Printf(TEXT("Convoy at cut: id=%s actor=%s chainage=%.3f at=%s"),
-            *Beast->PackId,*GetNameSafe(Beast),Beast->RoadChainage(),*Beast->GetActorLocation().ToString()));
-    for(int32 Quarry=0;Quarry<Fieldcraft->QuarryCount();++Quarry)
-    {
-        AddInfo(FString::Printf(TEXT("Quarry identity: index=%d kind=%d id=%s at=%s"),Quarry,
-            int32(Fieldcraft->Active()->Nets.Kind),*Fieldcraft->Active()->Nets.Quarry[Quarry].Id,
-            *Fieldcraft->QuarryLocation(Quarry).ToString()));
-        AddInfo(FString::Printf(TEXT("Saddle cut quarry before: index=%d net=%d local=%s tether=%s"),Quarry,
-            int32(Fieldcraft->NetOf(Quarry)),*Campaign->Steed()->LocalOf(Fieldcraft->QuarryLocation(Quarry)).ToString(),
-            *GetNameSafe(Fieldcraft->TetherOf(Quarry))));
-    }
+    for(int32 Index=1;Index<Convoy.Num();++Index)
+        TestTrue(TEXT("The waiting convoy retains separate 450 cm road positions"),
+            FMath::IsNearlyEqual(Convoy[Index]->RoadChainage()-Convoy[Index-1]->RoadChainage(),450.f,1.f));
     if (!W.Press(EKeys::RightMouseButton) || !W.Tick(2))
         return false;
-    AddInfo(FString::Printf(TEXT("Saddle cut after input: commits=%d mounted=%d play=%d stagger=%d local=%s net=%d"),
-        CutCommits,Campaign->IsMounted(),W.Mode()->IsPlaying(),W.Hero()->GetEquipment()->IsStaggered(),
-        *Campaign->Steed()->LocalOf(Fieldcraft->QuarryLocation(Netted)).ToString(),int32(Fieldcraft->NetOf(Netted))));
-    for(int32 Quarry=0;Quarry<Fieldcraft->QuarryCount();++Quarry)
-        AddInfo(FString::Printf(TEXT("Saddle cut quarry after: index=%d net=%d local=%s cut_event=%d"),Quarry,
-            int32(Fieldcraft->NetOf(Quarry)),*Campaign->Steed()->LocalOf(Fieldcraft->QuarryLocation(Quarry)).ToString(),
-            W.Raised(TEXT("net_cut:")+Fieldcraft->Active()->Nets.Quarry[Quarry].Id)));
     TestTrue(TEXT("A katana cut from the saddle to the right frees the netted horse"),
         Fieldcraft->NetOf(Netted) != SoraFieldcraftRules::ENet::Netted && W.Raised(TEXT("net_cut:") + Fieldcraft->Active()->Nets.Quarry[Netted].Id));
     // Cut free, the load is let be while its drone reloads (9 s): for eight

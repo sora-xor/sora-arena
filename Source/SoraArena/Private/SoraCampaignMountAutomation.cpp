@@ -352,6 +352,61 @@ bool PackMareAndMountedFight(FAutomationTestBase& Test)
 } // namespace SoraCampaignMount
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FSoraConvoySpacingTest,
+    "SoraArena.Campaign.ConvoySpacing",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::ClientContext | EAutomationTestFlags::EngineFilter)
+
+bool FSoraConvoySpacingTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;
+    using namespace SoraCampaignMount;
+    if(!TestTrue(TEXT("Offline catalog loads"),FSoraCatalog::Get().Load())) return false;
+    FSoraAutomationWorld::IgnoreMissingGeneratedArt(*this);
+    FRide Ride(*this);
+    FSoraAutomationWorld::IgnoreAbsentSaveSlot(*this,Ride.Slot);
+    if(!Ride.Start(1,7)) return false;
+    const TArray<ASoraHorse*> Convoy=Ride.Campaign()->PackHorses();
+    if(!TestEqual(TEXT("Three horses form the convoy"),Convoy.Num(),3)) return false;
+    TArray<float> Initial;
+    for(const auto* Beast:Convoy) Initial.Add(Beast->RoadChainage());
+    for(int32 Index=1;Index<Convoy.Num();++Index)
+        if(!TestTrue(TEXT("The authored nose-to-tail spacing starts at 450 cm"),
+            FMath::IsNearlyEqual(Initial[Index]-Initial[Index-1],450.f,1.f))) return false;
+    float MaxSpacingError=0.f;
+    const auto ObserveSpacing=[&]()
+    {
+        for(int32 Index=1;Index<Convoy.Num();++Index)
+            MaxSpacingError=FMath::Max(MaxSpacingError,FMath::Abs(
+                Convoy[Index]->RoadChainage()-Convoy[Index-1]->RoadChainage()-450.f));
+    };
+    // Stay before the first wave mark. The lead horse reaches the rider's
+    // waiting distance while the trailing horses are still closer to him.
+    for(int32 Frame=0;Frame<600;++Frame)
+    {
+        if(!Ride.Frames(1)) return false;
+        ObserveSpacing();
+    }
+    for(const auto* Beast:Convoy)
+        TestEqual(TEXT("Every convoy member waits for the stationary rider"),Beast->Gait(),EGait::Halt);
+    TArray<float> Waiting;
+    for(const auto* Beast:Convoy) Waiting.Add(Beast->RoadChainage());
+    if(!Ride.Frames(120)) return false;
+    for(int32 Index=0;Index<Convoy.Num();++Index)
+        TestTrue(TEXT("The waiting string stays put"),FMath::IsNearlyEqual(Convoy[Index]->RoadChainage(),Waiting[Index],.1f));
+    Ride.PlaceOnRoad(Ride.Horse()->RoadChainage()+700.f);
+    for(int32 Frame=0;Frame<60;++Frame)
+    {
+        if(!Ride.Frames(1)) return false;
+        ObserveSpacing();
+    }
+    for(int32 Index=0;Index<Convoy.Num();++Index)
+        TestTrue(TEXT("Each member resumes at 450 cm/s when the rider catches up"),
+            FMath::IsNearlyEqual(Convoy[Index]->RoadChainage()-Waiting[Index],450.f,15.f));
+    AddInfo(FString::Printf(TEXT("Convoy maximum spacing error through wait and resume: %.6f cm"),MaxSpacingError));
+    return TestTrue(TEXT("Waiting and resuming preserve the tied string's 450 cm gaps"),MaxSpacingError<1.f);
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FSoraCampaignMountTest,
     "SoraArena.Campaign.Mount",
     EAutomationTestFlags::EditorContext | EAutomationTestFlags::ClientContext | EAutomationTestFlags::EngineFilter)
