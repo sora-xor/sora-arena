@@ -92,9 +92,9 @@ The initial `9402a759` build also failed on UE 5.8's `TSharedString` interface;
 
 ## Still open
 
-The ward-to-tenement join still has a 900 cm ground gap and closed east wall;
-normal beat progression currently relocates the hero. That needs a continuous
-physical route. Ordinary stealth/combat difficulty, residents, notices, kitchen
+At this revision, the ward-to-tenement join still had a 900 cm ground gap and a
+closed east wall. The later [continuous street checkpoint](ward-street-source-2026-10-26.md)
+records its implementation and separate runtime validation. Ordinary stealth/combat difficulty, residents, notices, kitchen
 dressing, final craft, cinematic camera work, listening, Nanite/SM5/SM6 rendered
 inspection, current packages, Windows, actual M1 and performance remain open.
 This checkpoint makes no full native proof, wallet, settlement or release claim.

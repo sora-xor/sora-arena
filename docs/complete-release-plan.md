@@ -22,11 +22,14 @@ now has a functional refill crate. The stream's audio import saves and reloads
 all 270 expected packages. The [bound evidence and retained failures](qualification/ward-tenement-runtime-2026-10-26.md)
 keep these results separate from ordinary-control and visual acceptance.
 
-The ward-to-tenement join still needs continuous floor and an open east boundary;
-beat progression currently relocates the hero. Final environment/character art,
+The subsequent [continuous street checkpoint](qualification/ward-street-source-2026-10-26.md)
+closes the 900 cm floor gap and opens the east boundary. Signed `bae6e9d4` builds
+and passes all 32 tests again: each gate route walks into the tenements without
+relocation, and the retry fixture returns to the authored checkpoint. The exit
+now advances only after reaching the next district. Final environment/character art,
 residents, cinematic cameras, listening and ordinary campaign play remain open.
 Latest Mac package stays `c655b6b`, native bridge `10ad7dad`. Root returned the
-engine/Blender lane to Claude at 18:14 UTC after natural EOF; root remains on CPU
+engine/Blender lane to Claude at 18:37 UTC after natural EOF; root remains on CPU
 and source work until explicit return. No release completion is claimed.
 
 ## October 26 weapon socket correction and character production
