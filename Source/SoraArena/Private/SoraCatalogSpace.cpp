@@ -975,8 +975,13 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
         for (const auto& Value : *PatrolRows)
         {
             const FJsonRows* Loop = nullptr;
+            const int32 GuardIndex = B.Patrols.Num();
+            // The authored ward sentries hold one post; its dedicated loader
+            // below checks the exact guard identities and coordinates.
+            const bool WardPost = Beat.Id == TEXT("ch03.b03") && Beat.Guards.IsValidIndex(GuardIndex) && Beat.Guards[GuardIndex].bPost;
             TArray<FVector2D>& Points = B.Patrols.AddDefaulted_GetRef();
-            if (!Value.IsValid() || !Value->TryGetArray(Loop) || !SpacePoints(Loop, Points) || Points.Num() < 2) return Bad(Beat.Id + TEXT(" patrol"));
+            if (!Value.IsValid() || !Value->TryGetArray(Loop) || !SpacePoints(Loop, Points) ||
+                (WardPost ? Points.Num() != 1 : Points.Num() < 2)) return Bad(Beat.Id + TEXT(" patrol"));
         }
         for (const auto& Value : *VolumeRows)
         {
