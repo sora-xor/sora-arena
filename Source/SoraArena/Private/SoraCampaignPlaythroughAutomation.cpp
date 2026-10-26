@@ -1745,6 +1745,22 @@ bool ForgetFallenGuard(FAutomationTestBase& Test, FState& State)
             const FVector Fell = Guard->GetActorLocation();
             if (!Advance(Test, State, 30))
                 return false;
+            if(Fallen.IsValid()&&Fallen->IsFlying())
+            {
+                // A drone on its authored five-metre plane is still falling
+                // after the old half-second wait. Observe physical landing,
+                // retaining the no-patrol-drift check throughout the descent.
+                Test.AddInfo(FString::Printf(TEXT("Fallen drone after 30 frames: start=%s at=%s velocity=%s falling=%d"),
+                    *Fell.ToString(),*Fallen->GetActorLocation().ToString(),*Fallen->GetVelocity().ToString(),
+                    int32(Fallen->GetCharacterMovement()->IsFalling())));
+                for(int32 Frame=0;Frame<180&&Fallen.IsValid()&&Fallen->GetCharacterMovement()->IsFalling();++Frame)
+                {
+                    if(!Test.TestTrue(TEXT("A falling drone remains a body and cannot resume its horizontal patrol"),
+                        Fallen->IsBody()&&FVector::Dist2D(Fallen->GetActorLocation(),Fell)<1.f)||!Advance(Test,State,1)) return false;
+                }
+                if(!Test.TestTrue(TEXT("The drone corpse settles against real ground within the bounded wait"),
+                    Fallen.IsValid()&&Fallen->GetCharacterMovement()->IsMovingOnGround())||!Advance(Test,State,30)) return false;
+            }
             return Test.TestTrue(TEXT("A fallen guard stays down where it fell, off its patrol"), Fallen.IsValid() && Fallen->IsBody() &&
                 FVector::Dist2D(Fallen->GetActorLocation(), Fell) < 1.f && Fallen->GetVelocity().IsNearlyZero()) ||
                 Fail(Test, State, Where(State) + TEXT(": a fallen guard kept walking its patrol"));
