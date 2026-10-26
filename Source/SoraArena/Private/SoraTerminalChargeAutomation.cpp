@@ -45,6 +45,10 @@ bool FSoraTerminalInterruptTest::RunTest(const FString&)
     SoraTerminalTest::FWorld W(*this,TEXT("TerminalInterrupt"),2,9);
     if(!SoraTerminalTest::Ready(W)||!SoraTerminalTest::Panel(W))return false;
     auto* C=W.Campaign();
+    W.Hero()->TakeDamage(1,FDamageEvent(),nullptr,nullptr);
+    if(!W.Tick(100)||!W.World->InjectKey(EKeys::E,IE_Pressed)||!W.Tick(1))return false;
+    TestTrue(TEXT("Damage while idle does not consume the next fresh work press"),C->TerminalOccupiesHands());
+    if(!W.World->InjectKey(EKeys::E,IE_Released)||!W.Tick(1))return false;
     if(!W.Hold(EKeys::E,60))return false;
     TestTrue(TEXT("Releasing an unfinished plant loses all progress"),C->TerminalState().Stage==EStage::Empty&&!C->TerminalOccupiesHands()&&C->TerminalState().HeldMs==0);
     if(!W.World->InjectKey(EKeys::E,IE_Pressed)||!W.Tick(60))return false;

@@ -15,7 +15,13 @@ namespace TC=SoraTerminalChargeRules;
 bool USoraCampaignDirector::IsTerminalCharge() const
 {return ActiveBeatData()&&ActiveBeatData()->Id==TEXT("ch03.b10");}
 void USoraCampaignDirector::CancelTerminalWork(bool Release)
-{TC::Cancel(TerminalCharge,!Release);TerminalWorkClock.Reset();}
+{
+    const auto* Hero=Mode().Hero();
+    // Damage/dialogue while no key is held must not swallow the next press.
+    // An interrupted held attempt still requires an actual release.
+    TC::Cancel(TerminalCharge,!Release&&Hero&&Hero->IsActionHeld(TEXT("Interact")));
+    TerminalWorkClock.Reset();
+}
 bool USoraCampaignDirector::AtTerminalPanel() const
 {
     const auto* Hero=Mode().Hero();
