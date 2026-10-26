@@ -4,7 +4,7 @@
 
 void ASoraWorldBuilder::BuildPalace(const FSoraZone& Zone)
 {
-    const FVector O(Zone.Rect.Min+FVector2D(600,270),0);
+    const FVector O(Zone.Rect.Min.X+600,Zone.Rect.Max.Y-3400,0);
     const FLinearColor Timber(.22f,.15f,.085f),Plaster(.53f,.50f,.44f);
     const auto Part=[&](const TCHAR* Name,FVector At,FVector Size,bool Solid=true)
     { return Box(Name,O+At,Size,Timber,Solid,FRotator::ZeroRotator,TEXT("Timber")); };
@@ -13,6 +13,27 @@ void ASoraWorldBuilder::BuildPalace(const FSoraZone& Zone)
     Span(TEXT("PalaceBase"),-600,-270,4400,3400,-40,0);
     for(const FSoraBox& Wall:Zone.Walls)
         Box(TEXT("PalaceBoundary"),FVector(Wall.Center,Wall.Height*.5f),FVector(Wall.Size,Wall.Height),Plaster,true,FRotator::ZeroRotator,TEXT(""));
+
+    // L5's 2.7 m nightingale corridor wraps the 24 by 16 m garden. The
+    // south rooms form a quiet alternative. These partitions leave gaps for
+    // the sliding panels, whose interaction still needs implementation.
+    Span(TEXT("PalaceTatamiFloor"),0,-1070,2400,-270,-40,0);
+    Span(TEXT("PalaceRoomsCeiling"),0,-1070,2400,-270,300,320);
+    Span(TEXT("PalaceRoomsWest"),-20,-1070,0,-270,0,300);
+    Span(TEXT("PalaceRoomsEast"),2400,-1070,2420,-270,0,300);
+    Span(TEXT("PalaceRoomsSouth"),0,-1090,2400,-1070,0,300);
+    Span(TEXT("PalaceRoomsDivideSouth"),1190,-1070,1210,-800,0,300);
+    Span(TEXT("PalaceRoomsDivideNorth"),1190,-540,1210,-270,0,300);
+    Span(TEXT("PalaceRoomDivideLintel"),1190,-800,1210,-540,240,300);
+    for(const auto& Bounds:{FVector2D(-600,120),FVector2D(380,2020),FVector2D(2280,2670)})
+        Span(TEXT("PalaceFusumaWall"),Bounds.X,-290,Bounds.Y,-270,0,300);
+    for(float X:{250.f,2150.f})
+        Span(TEXT("PalaceFusumaLintel"),X-130,-290,X+130,-270,240,300);
+    Span(TEXT("NightingaleLegAEave"),-600,-270,2670,0,300,320);
+    Span(TEXT("NightingaleLegBEave"),2400,0,2670,2200,300,320);
+    Span(TEXT("NightingaleLegBEast"),2670,-270,2690,2180,0,300);
+    // The garden-facing sides remain open under the eaves, allowing a lure
+    // into the gravel instead of treating the corridor as a sealed tunnel.
 
     // L5's registry: the level perimeter remains 1.8 m wide along the south.
     auto* Upper=Span(TEXT("RegistryJodan"),-600,2380,200,3400,0,30);
@@ -44,6 +65,6 @@ void ASoraWorldBuilder::BuildPalace(const FSoraZone& Zone)
     Span(TEXT("StoreSouth"),3000,1980,4400,2000,0,400);
     Span(TEXT("StoreNorth"),3000,3000,4400,3020,0,400);
     Span(TEXT("StoreCeiling"),3000,2000,4400,3000,400,420);
-    // This is traversable geometry, not final shoin craft or the complete
-    // b06 nightingale/garden route. The latter still needs connected placement.
+    // The connected b06 route uses this same palace. Final shoin craft,
+    // garden dressing and sliding-panel interactions remain separate work.
 }

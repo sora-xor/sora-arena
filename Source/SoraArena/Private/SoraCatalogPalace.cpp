@@ -28,11 +28,19 @@ bool SoraCatalogPalace::Read(const FJsonObject& O,FSoraBeat& Beat,const FSoraSpa
     if(!V||V->Type!=EJson::Object||!Space.Zones.IsValidIndex(B.Zone)||B.HeightCm!=0||
         Beat.Place!=TEXT("pl_uguisu_hall")) return false;
     const auto H=V->AsObject();const auto& Z=Space.Zones[B.Zone];
-    const FVector Origin(Z.Rect.Min+FVector2D(600,270),0);
+    const FVector Origin(Z.Rect.Min.X+600,Z.Rect.Max.Y-3400,0);
     int32 Width=0;
-    if(H->Values.Num()!=3||Z.Rect.GetSize()!=FVector2D(5000,3670)||Z.WallHeight!=500||!Z.Cover.IsEmpty()||!Z.Props.IsEmpty()||
+    if(H->Values.Num()!=3||Z.Rect.GetSize()!=FVector2D(5000,4470)||Z.WallHeight!=500||Z.Walls.Num()!=5||!Z.Cover.IsEmpty()||!Z.Props.IsEmpty()||
         !Point(H->TryGetField(TEXT("origin_cm")),Origin,2)||
         !SoraCatalogJson::Int(*H,TEXT("perimeter_width_cm"),Width)||Width!=R::PerimeterWidthCm) return false;
+    // A closed west wall would sever the ledger link even though every
+    // marker remains inside the palace's enclosing rectangle.
+    const FVector2D Centers[]={FVector2D(-630,-670),FVector2D(-630,1700),FVector2D(4430,1165),
+        FVector2D(1900,-1100),FVector2D(1900,3430)};
+    const FVector2D Sizes[]={FVector2D(60,800),FVector2D(60,3400),FVector2D(60,4590),
+        FVector2D(5000,60),FVector2D(5000,60)};
+    for(int I=0;I<5;++I)
+        if(Z.Walls[I].Center!=FVector2D(Origin)+Centers[I]||Z.Walls[I].Size!=Sizes[I]||Z.Walls[I].Height!=500) return false;
     const auto Desks=SoraCatalogJson::Rows(*H,TEXT("desks_cm"));
     if(!Desks||Desks->Num()!=3) return false;
     static const TCHAR* Names[]={TEXT("desk_tagata"),TEXT("desk_machikata"),TEXT("desk_shokukata")};

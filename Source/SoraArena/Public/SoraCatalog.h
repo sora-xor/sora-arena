@@ -624,6 +624,12 @@ struct FSoraRelayRoom
     FVector2D Origin=FVector2D::ZeroVector;
 };
 
+struct FSoraLedgerHall
+{
+    bool bEnabled=false;
+    FVector2D Origin=FVector2D::ZeroVector,PalaceOrigin=FVector2D::ZeroVector;
+    int32 PalaceZone=INDEX_NONE;
+};
 struct FSoraRegistryHall
 {
     bool bEnabled=false;
@@ -634,6 +640,7 @@ struct FSoraRegistryHall
 
 struct FSoraBeatSpace
 {
+    FSoraLedgerHall LedgerHall;
     FSoraRegistryHall RegistryHall;
     float FloorAt(const FVector2D& At) const { return RegistryHall.bEnabled?RegistryHall.FloorAt(At):HeightCm; }
     FSoraPressHall PressHall;

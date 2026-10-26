@@ -95,19 +95,22 @@ class PalaceContract(unittest.TestCase):
             lambda c:c['space']['beats'][7]['patrols'][3][0].__setitem__(1,0),
             lambda c:c['space']['beats'][0].update(registry_hall=copy.deepcopy(self.registry['registry_hall'])),
             lambda c:c['space']['zones'][self.registry['zone']].update(wall_cm=300),
+            lambda c:c['space']['zones'][self.registry['zone']]['walls'][0].__setitem__(3,1070),
+            lambda c:c['space']['zones'][self.registry['zone']]['walls'].pop(),
             lambda c:c['space']['zones'][self.registry['zone']]['cover'].append([0,0,100,100,100]))
         for change in changes:
             chapter = copy.deepcopy(self.chapter)
             change(chapter)
             self.assertFalse(palace_valid(chapter))
 
-    def test_zone_expansion_keeps_archive_position_and_clear_gaps(self):
+    def test_zone_expansion_keeps_desk_origin_archive_and_connected_ledger(self):
         zones = self.chapter['space']['zones']
-        self.assertEqual(self.zone['rect'],[28200,-1835,33200,1835])
+        self.assertEqual(self.zone['rect'],[28200,-2635,33200,1835])
+        self.assertEqual(self.origin,[28800,-1565])
         archive = next(z for z in zones if z['place']=='pl_archive')
         self.assertEqual(archive['rect'],[35200,-900,37800,900])
         before = zones[self.registry['zone']-1]
-        self.assertGreaterEqual(self.zone['rect'][0]-before['rect'][2],2000)
+        self.assertEqual(self.zone['rect'][0],before['rect'][2])
         self.assertGreaterEqual(archive['rect'][0]-self.zone['rect'][2],2000)
 
     def test_runtime_floor_rule_keeps_perimeter_level_and_steps_at_two_boundaries(self):

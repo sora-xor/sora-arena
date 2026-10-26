@@ -524,7 +524,7 @@ def derive_space(chapter, beats, places, collectibles, triggers, layout, fail):
         if prefix == "ch06" and place_id == "pl_uguisu_hall":
             # Use the existing gap so later validated zones do not move.
             zone_gap -= 5000 - width
-            width, height, wall = 5000, 3670, 500
+            width, height, wall = 5000, 4470, 500
         if prefix == "ch06" and place_id == "pl_archive":
             zone_gap += width - 2600
             width, height, wall = 2600, 1800, 600
@@ -532,6 +532,10 @@ def derive_space(chapter, beats, places, collectibles, triggers, layout, fail):
             width, height = max(width, BOSS_SIZE[0]), max(height, BOSS_SIZE[1])
         zone_x = x - 400 if prefix == "ch06" and place_id == "pl_uguisu_hall" else x
         rect = (zone_x, -height // 2, zone_x + width, height // 2)
+        if prefix == "ch06" and place_id == "pl_uguisu_hall":
+            # Extend south for the two quiet tatami rooms, keeping the garden
+            # origin, registry desks and every later place at their old coordinates.
+            rect = (zone_x, -2635, zone_x + width, 1835)
         zone = Zone(place_id, place_id, place_style(places[place_id], chapter_map), form, rect, wall)
         zone_of[place_id] = len(zones)
         zones.append(zone)
@@ -661,6 +665,8 @@ def derive_space(chapter, beats, places, collectibles, triggers, layout, fail):
     place_archive(beats, records, zones, fail)
     from campaign_palace import place_palace
     place_palace(beats, records, zones, sites, pickups, fail)
+    from campaign_ledger import place_ledger
+    place_ledger(beats, records, zones, pickups, fail)
     for beat, record in zip(beats, records):
         if beat["id"] == "ch06.b13":
             # Chapter 6 §3 L8 puts the bulkhead lever beside the freight-lift

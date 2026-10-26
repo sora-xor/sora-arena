@@ -18,6 +18,7 @@
 #include "SoraFieldcraft.h"
 #include "SoraPressRules.h"
 #include "SoraArchiveRules.h"
+#include "SoraLedgerRules.h"
 #include "SoraGameEvents.h"
 #include "SoraGameMode.h"
 #include "SoraGalleryRules.h"
@@ -1144,6 +1145,16 @@ ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int
         if(GuardIndex<2) Route.PauseFacing=FVector(0,1,0);
         Post=Route.Points[0]+FVector(0,0,30);
     }
+    if(Space->LedgerHall.bEnabled&&ActiveBeatData()->Id==TEXT("ch06.b06")&&GuardIndex<SoraLedgerRules::GuardCount)
+    {
+        Route.Points.Reset();
+        for(const auto& P:Space->Patrols[GuardIndex])
+            Route.Points.Add(FVector(P,SoraLedgerRules::HeightCm[GuardIndex]>0?SoraLedgerRules::HeightCm[GuardIndex]:90));
+        Route.PeriodMs=SoraLedgerRules::PeriodMs[GuardIndex];Route.PauseMs=0;
+        Route.bSupportedSegments=SoraLedgerRules::HeightCm[GuardIndex]==0;
+        Route.bThreeDimensional=true;Route.bDirectFlightSegments=!Route.bSupportedSegments;
+        Post=Route.Points[0];
+    }
     if(Space->RegistryHall.bEnabled&&Space->Patrols.IsValidIndex(GuardIndex))
     {
         Route.Points.Reset();
@@ -1203,6 +1214,15 @@ ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int
         for(auto& Point:Route.Points)
             Point.Z=SoraPressRules::PatrolFloor(GuardIndex)+GuardActor->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2.f;
         GuardActor->SetActorLocation(Route.Points[0]);
+        if(auto* Brain=Cast<ASoraEnemyController>(GuardActor->GetController())) Brain->BeginPatrol(Route);
+    }
+    if(GuardActor&&Space->LedgerHall.bEnabled&&ActiveBeatData()->Id==TEXT("ch06.b06")&&
+        GuardIndex>=0&&GuardIndex<SoraLedgerRules::GuardCount&&!Route.Points.IsEmpty())
+    {
+        if(SoraLedgerRules::HeightCm[GuardIndex]==0)
+            for(auto& P:Route.Points) P.Z=GuardActor->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2.f;
+        GuardActor->SetActorLocation(Route.Points[0]);
+        GuardActor->SetActorRotation(FRotator(0,SoraLedgerRules::Yaw[GuardIndex],0));
         if(auto* Brain=Cast<ASoraEnemyController>(GuardActor->GetController())) Brain->BeginPatrol(Route);
     }
     if(GuardActor&&Space->RegistryHall.bEnabled&&!Route.Points.IsEmpty())

@@ -51,7 +51,8 @@ void ASoraWorldBuilder::BuildCampaign(const FSoraChapter& Chapter)
         const bool Archive=Chapter.Beats.ContainsByPredicate([Index](const FSoraBeat& B)
             { return B.Space.Zone==Index&&B.Id==TEXT("ch06.b09"); });
         const auto* PressZone=Archive?Space.Zones.FindByPredicate([](const FSoraZone& Z){return Z.Id==TEXT("pl_press_hall");}):nullptr;
-        if(Space.Zones[Index].Id==TEXT("pl_uguisu_hall")) BuildPalace(Space.Zones[Index]); else if(Archive&&PressZone) BuildArchive(Space.Zones[Index],*PressZone); else if(Relay) BuildRelayRoom(*Relay); else if(Bridge) BuildBridge(Space.Zones[Index],Index,*Bridge); else if(Moat) BuildMoat(*Moat); else if(Climb) BuildClimb(*Climb); else if(Wind) BuildWindSpace(*Wind); else if(Flood) BuildFlood(*Flood); else if(Spire) BuildSpire(*Spire); else if(Summit) BuildSummit(*Summit); else BuildZone(Space.Zones[Index],Index,Recovery);
+        if(Space.Zones[Index].Id==TEXT("pl_ledger_corridors")) BuildLedger(Space.Zones[Index]);
+        else if(Space.Zones[Index].Id==TEXT("pl_uguisu_hall")) BuildPalace(Space.Zones[Index]); else if(Archive&&PressZone) BuildArchive(Space.Zones[Index],*PressZone); else if(Relay) BuildRelayRoom(*Relay); else if(Bridge) BuildBridge(Space.Zones[Index],Index,*Bridge); else if(Moat) BuildMoat(*Moat); else if(Climb) BuildClimb(*Climb); else if(Wind) BuildWindSpace(*Wind); else if(Flood) BuildFlood(*Flood); else if(Spire) BuildSpire(*Spire); else if(Summit) BuildSummit(*Summit); else BuildZone(Space.Zones[Index],Index,Recovery);
     }
     BuildChapterWood(Chapter);
     NodePositions.Reset(); Nodes.Reset(); SiteEffects.Reset(); SiteRestoredColors.Reset();

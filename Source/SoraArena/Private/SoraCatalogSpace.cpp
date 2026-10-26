@@ -1,6 +1,7 @@
 #include "SoraCatalogFlood.h"
 #include "SoraCatalogArchive.h"
 #include "SoraCatalogPalace.h"
+#include "SoraCatalogLedger.h"
 #include "SoraCatalogClimb.h"
 #include "SoraCatalogFoundryDefense.h"
 #include "SoraCatalogHorseTreatment.h"
@@ -717,7 +718,8 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
             !SpaceVector(O->TryGetField(TEXT("rect")), 4, Rect) || Rect[0] >= Rect[2] || Rect[1] >= Rect[3] ||
             !Int(*O, TEXT("wall_cm"), Wall) || Wall <= 0 || !SpacePose(*O, TEXT("entry"), Zone.Entry, Zone.EntryYaw) ||
             !SpaceBoxes(Rows(*O, TEXT("walls")), Zone.Walls) ||
-            Zone.Walls.Num() != (C.Id.StartsWith(TEXT("ch06_"))&&(Zone.Place==TEXT("pl_archive")||Zone.Place==TEXT("pl_press_hall"))?5:C.Id.StartsWith(TEXT("ch07_"))&&(Zone.Place==TEXT("pl_hull_ridge")||Zone.Place==TEXT("pl_hangar"))?0:C.Id.StartsWith(TEXT("ch01_"))&&Zone.Place==TEXT("pl_issoseki_wood")?0:
+            Zone.Walls.Num() != (C.Id.StartsWith(TEXT("ch06_"))&&Zone.Place==TEXT("pl_ledger_corridors")?0:
+                C.Id.StartsWith(TEXT("ch06_"))&&(Zone.Place==TEXT("pl_archive")||Zone.Place==TEXT("pl_press_hall")||Zone.Place==TEXT("pl_uguisu_hall"))?5:C.Id.StartsWith(TEXT("ch07_"))&&(Zone.Place==TEXT("pl_hull_ridge")||Zone.Place==TEXT("pl_hangar"))?0:C.Id.StartsWith(TEXT("ch01_"))&&Zone.Place==TEXT("pl_issoseki_wood")?0:
                 C.Id.StartsWith(TEXT("ch01_"))&&(Zone.Place==TEXT("pl_matoba")||Zone.Place==TEXT("pl_dojo_smithy"))?5:4) ||
             !SpaceBoxes(Rows(*O, TEXT("cover")), Zone.Cover) || !SpacePoints(Rows(*O, TEXT("route")), Zone.Route) ||
             (Form == TEXT("route")) != (Zone.Route.Num() >= 2) || (Zone.Route.Num() == 1))
@@ -1071,6 +1073,7 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
         if(!SoraCatalogPress::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" press hall"));
         if(!SoraCatalogRelay::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" relay room"));
         if(!SoraCatalogPalace::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" registry hall"));
+        if(!SoraCatalogLedger::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" ledger hall"));
         if(!SoraCatalogArchive::Valid(Beat,S)) return Bad(Beat.Id+TEXT(" archive geometry"));
         if(!SoraCatalogFlood::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" flood route"));
         if(!SoraCatalogClimb::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" climb routes"));

@@ -360,6 +360,8 @@ def _volume_events(beat, chapter):
 
 def check_space(chapter, beats, rewards, labels, where):
     """The chapter's space is one the world builder can build and the hero can play."""
+    from campaign_ledger import ledger_valid, supported as ledger_supported
+    require(ledger_valid(chapter), f"{where}: authored ledger/palace spatial contract")
     from campaign_ridge import wind_valid
     require(wind_valid(chapter), f"{where}: exposed ridge/wind contract")
     from campaign_wood import wood_valid
@@ -375,6 +377,12 @@ def check_space(chapter, beats, rewards, labels, where):
             if not apart and number<len(zones) and other<len(zones):
                 za,zb=zones[number].get('z_bounds_cm'),zones[other].get('z_bounds_cm')
                 apart=bool(za and zb and (za[1]<=zb[0] or zb[1]<=za[0]))
+                # ledger_valid fixes the exact touching west palace doorway;
+                # no other zones may opt out of the separation requirement.
+                if chapter['id'].startswith('ch06_') and {zones[number]['place'],zones[other]['place']}=={'pl_ledger_corridors','pl_uguisu_hall'}:
+                    ledger=zones[number] if zones[number]['place']=='pl_ledger_corridors' else zones[other]
+                    palace=zones[other] if zones[number]['place']=='pl_ledger_corridors' else zones[number]
+                    apart=ledger['rect'][2]==palace['rect'][0]
             require(apart, f"{where}: zones {a} and {b} overlap or touch")
     for zone in zones:
         expected_z = [-500,15800] if chapter["id"].startswith("ch08_") and zone["place"]=="pl_ledger_spire" else [15800,20000] if chapter["id"].startswith("ch08_") and zone["place"]=="pl_ledger_engine" else [-2000,2500] if chapter["id"].startswith("ch07_") and zone["place"]=="pl_hull_ridge" else None
@@ -384,7 +392,7 @@ def check_space(chapter, beats, rewards, labels, where):
                 zone["form"] in ("hall", "yard", "field", "route"), f"{where}: zone {zone['id']} style or form")
         wood_counts = {"pl_matoba": 5, "pl_issoseki_wood": 0, "pl_dojo_smithy": 5} if chapter["id"].startswith("ch01_") else {}
         if chapter["id"].startswith("ch07_"): wood_counts.update(pl_hull_ridge=0,pl_hangar=0)
-        if chapter["id"].startswith("ch06_"): wood_counts.update(pl_archive=5,pl_press_hall=5)
+        if chapter["id"].startswith("ch06_"): wood_counts.update(pl_archive=5,pl_press_hall=5,pl_ledger_corridors=0,pl_uguisu_hall=5)
         require(len(zone["walls"]) == wood_counts.get(zone["place"], 4) and zone["wall_cm"] >= 200,
                 f"{where}: zone {zone['id']} wall/door contract")
         for piece in cover:
@@ -405,6 +413,10 @@ def check_space(chapter, beats, rewards, labels, where):
 
     elevated_rect = None
     def on_floor(index, point, what, cover_margin=COVER_CLEAR):
+        if index>=0 and zones[index]['place']=='pl_ledger_corridors':
+            require(ledger_supported(chapter,index,point,what.startswith('ch06.b06')),
+                    f"{what} at {point[:2]} is outside the actual ledger/palace floor union")
+            return
         rect, cover = (elevated_rect, []) if elevated_rect is not None else zone_of(index)
         require(_inside(rect, point, WALL_CLEAR) and _clear_of_cover(cover, point, cover_margin),
                 f"{what} at {point[:2]} is off its floor or inside a wall or cover")
@@ -492,6 +504,11 @@ def check_space(chapter, beats, rewards, labels, where):
             named |= {f"volume_enter:{entry['volume']}" for entry in record["mount"]["forced"]}
         require(placed == named, f"{what}: volumes {sorted(placed)} differ from its events {sorted(named)}")
         for volume in record["volumes"] + [record["exit"]]:
+            if record.get('ledger_hall'):
+                require(ledger_supported(chapter,index,volume['center'],what=='ch06.b06',0) and
+                        min(volume['size'])>=(270 if volume.get('event')=='volume_enter:vol_uguisu_entry' else 300),
+                        f"{what}: ledger/palace volume {volume} is outside its supported floor")
+                continue
             volume_rect = zones[next(r["zone"] for r in records if r["beat"]=="ch08.b13")]["rect"] if what=="ch08.b12" and volume.get("floor_cm")==16000 else rect
             if what=="ch06.b10" and volume.get("event")=="volume_enter:vol_archive_press_landing":
                 volume_rect=zones[next(r["zone"] for r in records if r["beat"]=="ch06.b11")]["rect"]
@@ -580,6 +597,11 @@ def check_fieldcraft(beat, record, index, zones, zone_of, on_floor):
     require(set(craft) == FIELDCRAFT_KEYS, f"{what}: fieldcraft keys {sorted(craft)}")
 
     def area(row, label):
+        if record.get('ledger_hall'):
+            from campaign_ledger import supported
+            require(supported({'space':{'zones':zones}},index,row['center'],what=='ch06.b06',0) and min(row['size'])>0,
+                    f"{what}: {label} is outside the ledger/palace floor union")
+            return
         require(_inside(rect, row["center"], 0) and min(row["size"]) > 0, f"{what}: {label} {row} is off its floor")
 
     for lamp in craft["lamps"]:

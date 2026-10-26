@@ -1,6 +1,6 @@
 """Chapter six L5: registry levels and seized-store placement.
 
-The nightingale route in b06 remains a separate, unfinished integration.
+The connected b06 ledger/palace placement is in campaign_ledger.py.
 Coordinates here use the palace garden's authored southwest origin.
 """
 import json
@@ -28,18 +28,32 @@ def point(origin, x, y):
     return [origin[0]+x, origin[1]+y]
 
 
+def boundary_walls(rect):
+    x,y,x1,y1=rect
+    oy=y1-3400
+    return [[x-30,(y+oy-270)//2,60,oy-270-y,500],
+            [x-30,(oy+y1)//2,60,y1-oy,500],
+            [x1+30,(y+y1)//2,60,y1-y+120,500],
+            [(x+x1)//2,y-30,x1-x,60,500],
+            [(x+x1)//2,y1+30,x1-x,60,500]]
+
+
 def place_palace(beats, records, zones, sites, pickups, fail):
     for beat, record in zip(beats, records, strict=True):
         if beat['id'] not in ('ch06.b07', 'ch06.b08'):
             continue
         zone = zones[record['zone']]
         x,y,x1,y1 = zone.rect
-        if zone.place != 'pl_uguisu_hall' or (x1-x,y1-y) != (5000,3670):
+        if zone.place != 'pl_uguisu_hall' or (x1-x,y1-y) != (5000,4470):
             fail(beat['id'], 'palace must retain the garden, vestibule, store and registry frame')
-        origin = (x+600,y+270)
+        origin = (x+600,y1-3400)
         p = lambda a,b: point(origin,a,b)
         zone.cover = []  # The dedicated builder supplies the interior walls/steps.
         zone.props = []
+        # The west wall has the actual 2.7 m opening from the ledger link.
+        # All other boundary faces remain closed; the dedicated interior
+        # builder owns the corridor, room and registry partitions.
+        zone.walls = boundary_walls(zone.rect)
         zone.entry = (*p(2600,2500),180)
         record['registry_hall'] = contract(origin)
         record['entry'] = list(zone.entry)
@@ -71,11 +85,12 @@ def palace_valid(chapter):
                     return False
                 continue
             zone = chapter['space']['zones'][record['zone']]
-            x,y,x1,y1 = zone['rect']; origin=(x+600,y+270)
+            x,y,x1,y1 = zone['rect']; origin=(x+600,y1-3400)
             p = lambda a,b: point(origin,a,b)
             same = lambda a,b: json.dumps(a,sort_keys=True)==json.dumps(b,sort_keys=True)
-            if (zone['place']!='pl_uguisu_hall' or (x1-x,y1-y)!=(5000,3670)
+            if (zone['place']!='pl_uguisu_hall' or (x1-x,y1-y)!=(5000,4470)
                     or zone['wall_cm']!=500 or zone['cover'] or zone['props']
+                    or not same(zone['walls'],boundary_walls(zone['rect']))
                     or not same(record['registry_hall'],contract(origin))):
                 return False
             if (record['beat']!=beat['id'] or record['height_cm']!=0
