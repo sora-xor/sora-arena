@@ -5,6 +5,10 @@ Run: blender -b --factory-startup --python scripts/art/generate_nyaakoto_lods.py
 LOD0 is deliberately untouched. LOD1 thins the actual fur triangle cards and
 reduces selected curved volumes; LOD2 removes cards and ornamental micro-forms.
 The same 20-bone armature, 23 material identities and exact vector kamon remain.
+
+Every LOD carries LOD0's body (nyaakoto_runtime_parts.py, the third-person
+grip contract's slice A): anatomical sides, the sheathed sword set and open
+paws left out, the closed paws and narrowed palm added. The bounds are LOD0's.
 """
 
 from __future__ import annotations
@@ -12,11 +16,15 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import sys
 from pathlib import Path
 
 import bmesh
 import bpy
 from mathutils import Vector
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import nyaakoto_runtime_parts as RP  # noqa: E402
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -43,39 +51,8 @@ iris_nodes = bpy.data.materials["M_Hero_BlueEye"].node_tree.nodes
 iris_node = iris_nodes.get("Painted radial iris pigment")
 assert iris_node is not None
 iris_nodes.remove(iris_node)
-
-
-def rig_bone(name: str, p: Vector) -> str:
-    if name.startswith(("UserSupplied_SORAKamon_sode_", "Sode_kamon_backing_")):
-        return "upperarm_L" if "_-1" in name else "upperarm_R"
-    if name.startswith("UserSupplied_SORAKamon_waist"):
-        return "pelvis"
-    if name.startswith("UserSupplied_SORAKamon_chest"):
-        return "spine"
-    if name.startswith(("Skull", "Head_", "Lower_jaw", "Ear_", "Cheek_", "Muzzle_", "Eye_", "Vertical_pupil", "Corneal_", "Angular_", "Whisker_", "Tiger_", "Guard_hair_", "Soft_nose", "White_nose", "Forehead_", "Triangular_nose", "Philtrum", "Mouth_")):
-        return "head"
-    if name.startswith(("Fur_neck", "White_throat")):
-        return "neck"
-    if name.startswith("Tail_"):
-        return "tail_01" if p.x > -.34 else "tail_02" if p.x > -.49 else "tail_03"
-    if name.startswith(("Saya_", "Sageo_", "Katana_", "Obi_", "Resistance_sash", "Clan_mon", "Layered_hakama")):
-        return "pelvis"
-    if name.startswith(("Ebira_", "Ya_", "Yumi_", "Resistance_insignia", "Linen_under", "Indigo_samurai", "Under_kimono", "Do_")):
-        return "spine"
-    side = "L" if p.y < 0 else "R"
-    if name.startswith(("Hakama_upper_leg", "Hakama_fold")):
-        return f"thigh_{side}"
-    if name.startswith(("Hakama_shin", "Kyahan_", "Greave_")):
-        return f"shin_{side}"
-    if name.startswith(("Heel_", "Tabi_", "Toe_", "Claw_")):
-        return f"foot_{side}"
-    if name.startswith(("Shoulder_", "Linen_sleeve", "Sode_")):
-        return f"upperarm_{side}"
-    if name.startswith(("Fur_forearm", "Kote_", "Karakuri_", "Wrist_cell_")):
-        return f"forearm_{side}"
-    if name.startswith(("Paw_hand", "Finger_", "Thumb_")):
-        return f"hand_{side}"
-    raise ValueError(f"Unclassified Nyaakoto LOD part: {name}")
+by_name = {obj.name: obj for obj in parts}
+ARMS = RP.arm_joints(by_name)
 
 
 FUR_CARDS = (
@@ -116,21 +93,27 @@ def thin_cards(obj, stride: int) -> None:
 
 
 records = []
-base_bounds = source_manifest["bounds_m"]
+base_bounds = runtime_manifest["bounds_m"]                 # LOD0's: the runtime body, not the editable source
 for level in (1, 2):
     collection = bpy.data.collections.new(f"Nyaakoto_LOD{level}_Export")
     bpy.context.scene.collection.children.link(collection)
     pieces = []
-    for src in parts:
+    curled = RP.curled_paw("R", ARMS, by_name) + RP.curled_paw("L", ARMS, by_name)
+    for src in [p for p in parts if RP.kept(p.name)] + curled:
         name = src.name
         if level == 2 and (name.startswith(FUR_CARDS) or name.startswith(LOD2_OMIT)):
             continue
-        obj = src.copy()
-        obj.data = src.data.copy()
+        fresh = name.startswith(RP.CURLED)
+        obj = src if fresh else src.copy()
+        if not fresh:
+            obj.data = src.data.copy()
         collection.objects.link(obj)
-        obj.matrix_world = src.matrix_world.copy()
+        if not fresh:
+            obj.matrix_world = src.matrix_world.copy()
         obj.hide_set(False)
         obj.hide_render = False
+        if name.startswith("Paw_hand_"):
+            RP.narrow_palm(obj)
         if level == 1 and name.startswith(FUR_CARDS):
             thin_cards(obj, 5)
         elif name.startswith(CURVED) and len(obj.data.vertices) >= 160:
@@ -149,7 +132,7 @@ for level in (1, 2):
         group_names = tuple(rig.data.bones.keys())
         groups = {bone: obj.vertex_groups.new(name=bone) for bone in group_names}
         for vertex in obj.data.vertices:
-            bone = rig_bone(name, obj.matrix_world @ vertex.co)
+            bone = RP.rig_bone(name, obj.matrix_world @ vertex.co)
             groups[bone].add([vertex.index], 1.0, "REPLACE")
         pieces.append(obj)
     bpy.ops.object.select_all(action="DESELECT")
@@ -201,6 +184,7 @@ for level in (1, 2):
         "material_slots": sorted(material_names),
         "bone_names": sorted(rig.data.bones.keys()),
         "card_fur": "20% sampled source triangle cards" if level == 1 else "none; surface normal maps only",
+        "part_rules": "nyaakoto_runtime_parts.py: LOD0's body (slice A)",
     })
     mesh.hide_set(True)
     mesh.hide_render = True

@@ -2,6 +2,11 @@
 
 Run with Blender 5.2.2: blender -b --factory-startup --python
 scripts/art/validate_nyaakoto_runtime_skin.py
+
+The third-person grip contract's slice A, from the exported files themselves:
+- the Guard FBX round-trips: its own hand_R pose re-derives hand_r_grip at
+  every frame, within 1 cm and 2 deg of the interim stance's targets;
+- the record's clearance gates and calibration all passed.
 """
 
 import atexit
@@ -11,12 +16,16 @@ import os
 import sys
 from pathlib import Path
 
+import math
+
 import bpy
-from mathutils import Vector
+import numpy as np
+from mathutils import Matrix, Vector
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from sora_kamon_validation import (PINNED_SVG_SHA256, assert_paths_embedded,
                                    expected_paths, reference_paths)
+import third_person_rig as TP
 
 passed = False
 
@@ -44,7 +53,8 @@ for base, relative_root in (("source_blend", root),
                             ("runtime_blend", hero),
                             ("runtime_preview", hero),
                             ("skeletal_fbx", out),
-                            ("walk_fbx", out)):
+                            ("walk_fbx", out),
+                            ("guard_fbx", out)):
     file = relative_root / record[base]
     assert file.is_file() and file.stat().st_size > 1000, file
     assert hashlib.sha256(file.read_bytes()).hexdigest() == record[base + "_sha256"], file
@@ -130,5 +140,40 @@ bpy.context.scene.frame_set(10)
 second_pose = walk_rigs[0].pose.bones["thigh_L"].matrix.copy()
 assert max(abs(first_pose[row][col] - second_pose[row][col])
            for row in range(4) for col in range(4)) > .1
+# --- Slice A: the Guard FBX round trip, and the record's own gates ---------------------------------------------------
+tp = record["third_person"]
+assert tp["clearance"]["calibration"]["ok"] is True
+assert all(ok for row in tp["clearance"]["passed"].values() for ok in row.values()), tp["clearance"]["passed"]
+assert set(tp["sockets"]) == {"hand_r_grip", "hand_l_grip", "gear_saya_l"}
+before = set(bpy.data.objects)
+bpy.ops.import_scene.fbx(filepath=str(out / record["guard_fbx"]))
+guard_added = set(bpy.data.objects) - before
+guard_rigs = [o for o in guard_added if o.type == "ARMATURE"]
+assert len(guard_rigs) == 1 and set(guard_rigs[0].data.bones.keys()) == set(rig.data.bones.keys())
+grig = guard_rigs[0]
+assert grig.animation_data and grig.animation_data.action
+start, end = (int(round(v)) for v in grig.animation_data.action.frame_range)
+assert end - start >= 90, (start, end)
+stance = tp["guard"]["stance"]
+worst = {"R": [0.0, 0.0], "L": [0.0, 0.0]}
+for frame in range(start, end + 1):
+    bpy.context.scene.frame_set(frame)
+    targets = TP.socket_targets(stance, math.sin((frame - 1) / 96 * math.tau) * 0.004)
+    for side, (want_pos, want_rot) in targets.items():
+        pb = grig.pose.bones[f"hand_{side}"]
+        posed = grig.matrix_world @ pb.matrix
+        rest = grig.matrix_world @ pb.bone.matrix_local
+        rel = posed @ rest.inverted()                       # the hand's motion from its bind, in world
+        channel = Vector(tp["arm_joints_blender_m"][side]["channel"])
+        pos = np.array(rel @ channel)
+        bind = np.column_stack([TP.flip_y(tp["sockets"][f"hand_{side.lower()}_grip"][k]) for k in ("x_axis", "z_axis")])
+        rot0 = TP.frame(bind[:, 0], bind[:, 1])
+        r3 = rel.to_3x3()
+        r3.normalize()
+        rot = np.array([list(r) for r in r3]) @ rot0
+        worst[side][0] = max(worst[side][0], float(np.linalg.norm(pos - want_pos)) * 100.0)
+        worst[side][1] = max(worst[side][1], TP.angle_deg(rot, want_rot))
+assert all(w[0] <= 1.0 and w[1] <= 2.0 for w in worst.values()), worst
+print("NYAAKOTO_GUARD_ROUND_TRIP", end - start + 1, "frames; worst cm/deg", {s: [round(v, 3) for v in w] for s, w in worst.items()})
 print("NYAAKOTO_RUNTIME_SKIN_PASS", len(mesh.data.vertices), len(materials), len(rig.data.bones))
 passed = True

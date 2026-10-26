@@ -1,0 +1,206 @@
+"""The runtime body's part rules, shared by rig_nyaakoto_runtime.py (LOD0) and generate_nyaakoto_lods.py (LOD1/2), so
+every LOD carries the same body (docs/art-direction/THIRD_PERSON_GRIP_CONTRACT.md, slice A).
+
+- **Bones by anatomical side:** _R is the character's right, Blender -Y.
+- **Parts that leave the body:**
+  - the sheathed sword set (Saya_, Sageo_, Katana_); the runtime carries the authored W00 saya and katana at sockets;
+  - the open fingers and thumb (Finger_, Thumb_).
+- **What replaces the open paws:** closed paws curled round the grip channel, and the palm narrowed to the same
+  breadth.
+- **The arm joints** come from the hero's own arm parts.
+
+**What stays for now:** the bow, quiver and arrows (Ebira_, Ya_, Yumi_). viewmodels.json moves them to gear sockets,
+but their gear assets do not exist yet. Removing them now would drop their material slots. That socket migration
+stays open.
+"""
+from __future__ import annotations
+
+import math
+
+import bmesh
+import bpy
+import numpy as np
+from mathutils import Vector
+
+import third_person_rig as TP
+
+SWORD_SET = ("Saya_", "Sageo_", "Katana_")
+OPEN_PAW = ("Finger_", "Thumb_")                   # the source's open fingers, knuckles, claws and thumb
+REMOVED = SWORD_SET + OPEN_PAW
+CURLED = ("Finger_curl_", "Finger_knuckle_curl_", "Finger_claw_curl_", "Thumb_curl_")
+DEFERRED_GEAR = ("Ebira_", "Ya_", "Yumi_")         # still on the body: the socket migration waits for its assets
+PAW_HALF = TP.PAW_BREADTH_MAX_CM / 200.0           # m: the closed paw's half breadth along its channel
+CHANNEL_HALF = (TP.CHANNEL_CM[0] / 200.0, TP.CHANNEL_CM[1] / 200.0)   # m: across (Y_s), deep (Z_s)
+CHANNEL_DIR = Vector((0.589, 0.0, -0.808)).normalized()   # from the palm's centre to the channel: down and forward
+# m: how far the channel's palm side sits inside the palm's surface. Negative is clear of it. At +3 mm (the first
+# build) the palm's triangles crossed the W00 tsuka in 28 pairs while no palm vertex lay inside the channel
+# (Saved/W18Rebuild/s62_sliceA_explore). The palm is convex and its facets lie inside its vertices' surface, so
+# 0.5 mm clear keeps the tsuka off it.
+CHANNEL_EMBED = -0.0005
+FINGER_PITCH = 0.026                               # m between the four fingers (the source's 0.033 is too wide)
+# m: how far the curled fingers' and thumb's inner surface stays outside the channel, along its normal. Chords between
+# the 13 samples of a sweep sag about 0.12 mm toward the channel, so the facets stay clear too.
+FINGER_SKIN = 0.0002
+FINGER_SWEEP = (50.0, 200.0)                       # deg round the channel, from the palm's top over the front
+THUMB_SWEEP = (-40.0, -130.0)                      # deg, the other way round: from the palm's back under the channel
+
+
+def kept(name):
+    return not name.startswith(REMOVED)
+
+
+def rig_bone(name: str, world_position: Vector) -> str:
+    """The bone a source (or curled) part's vertex follows: rigid per part, sides anatomical."""
+    if name.startswith("UserSupplied_SORAKamon_sode_") or name.startswith("Sode_kamon_backing_"):
+        return "upperarm_R" if "_-1" in name else "upperarm_L"
+    if name.startswith("UserSupplied_SORAKamon_waist"):
+        return "pelvis"
+    if name.startswith("UserSupplied_SORAKamon_chest"):
+        return "spine"
+    if name.startswith(("Skull", "Head_", "Lower_jaw", "Ear_", "Cheek_", "Muzzle_", "Eye_", "Vertical_pupil", "Corneal_", "Angular_", "Whisker_", "Tiger_", "Guard_hair_", "Soft_nose", "White_nose", "Forehead_", "Triangular_nose", "Philtrum", "Mouth_")):
+        return "head"
+    if name.startswith(("Fur_neck", "White_throat")):
+        return "neck"
+    if name.startswith("Tail_"):
+        return "tail_01" if world_position.x > -.34 else "tail_02" if world_position.x > -.49 else "tail_03"
+    if name.startswith(("Saya_", "Sageo_", "Katana_", "Obi_", "Resistance_sash", "Clan_mon", "Layered_hakama")):
+        return "pelvis"
+    if name.startswith(("Ebira_", "Ya_", "Yumi_", "Resistance_insignia", "Linen_under", "Indigo_samurai", "Under_kimono", "Do_")):
+        return "spine"
+    side = "R" if world_position.y < 0 else "L"          # Blender -Y is the character's right
+    if name.startswith(("Hakama_upper_leg", "Hakama_fold")):
+        return f"thigh_{side}"
+    if name.startswith(("Hakama_shin", "Kyahan_", "Greave_")):
+        return f"shin_{side}"
+    if name.startswith(("Heel_", "Tabi_", "Toe_", "Claw_")):
+        return f"foot_{side}"
+    if name.startswith(("Shoulder_", "Linen_sleeve", "Sode_")):
+        return f"upperarm_{side}"
+    if name.startswith(("Fur_forearm", "Kote_", "Karakuri_", "Wrist_cell_")):
+        return f"forearm_{side}"
+    if name.startswith(("Paw_hand", "Finger_", "Thumb_")):
+        return f"hand_{side}"
+    raise ValueError(f"Unclassified Nyaakoto part: {name}")
+
+
+def cone_ends(obj):
+    """create_nyaagyu_hero_character.bone(): a cone along its local Z from a (-depth/2) to b (+depth/2), centred."""
+    zs = [v.co.z for v in obj.data.vertices]
+    half = (max(zs) - min(zs)) / 2.0
+    axis = (obj.matrix_world.to_3x3() @ Vector((0.0, 0.0, 1.0))).normalized()
+    c = obj.matrix_world.translation
+    return c - axis * half, c + axis * half
+
+
+def arm_joints(by_name):
+    """Per side: the shoulder (Shoulder_joint's centre), the elbow and wrist (Fur_forearm's ends), the palm's centre,
+    the grip channel's centre, and the grip socket's rotation at bind (numpy columns X, Y, Z)."""
+    arms = {}
+    for side, sign in (("R", -1), ("L", 1)):
+        shoulder = by_name[f"Shoulder_joint_{sign}"].matrix_world.translation.copy()
+        a, b = cone_ends(by_name[f"Fur_forearm_{sign}"])
+        elbow, wrist = (a, b) if a.z > b.z else (b, a)
+        palm = by_name[f"Paw_hand_{sign}"]
+        centre = palm.matrix_world.translation.copy()
+        xs, zs = [v.co.x for v in palm.data.vertices], [v.co.z for v in palm.data.vertices]
+        rx, rz = (max(xs) - min(xs)) / 2.0, (max(zs) - min(zs)) / 2.0
+        surface = 1.0 / math.sqrt((CHANNEL_DIR.x / rx) ** 2 + (CHANNEL_DIR.z / rz) ** 2)
+        channel = centre + CHANNEL_DIR * (surface + CHANNEL_HALF[1] - CHANNEL_EMBED)
+        x_s = Vector((0.0, -float(sign), 0.0))           # along the channel, little finger to thumb: inboard
+        z_s = (centre - channel).normalized()            # to the back of the paw (the mune side)
+        arms[side] = {"sign": sign, "shoulder": shoulder, "elbow": elbow, "wrist": wrist, "palm": centre,
+                      "channel": channel, "socket_rot": TP.frame(np.array(x_s), np.array(z_s))}
+    return arms
+
+
+def narrow_palm(obj):
+    """The palm (a copy of Paw_hand_) narrowed along Y to the closed paw's breadth."""
+    ys = [v.co.y for v in obj.data.vertices]
+    k = PAW_HALF / ((max(ys) - min(ys)) / 2.0)
+    for v in obj.data.vertices:
+        v.co.y *= k
+
+
+def tube(name, path, radii, material, coat, sides=10):
+    """A capped tube along path (Vectors in one X-Z plane), radius per point; a UVMap and the CoatBlend layer."""
+    bm = bmesh.new()
+    rings = []
+    for i, p in enumerate(path):
+        tangent = (path[min(i + 1, len(path) - 1)] - path[max(i - 1, 0)]).normalized()
+        u = tangent.cross(Vector((0.0, 1.0, 0.0))).normalized()
+        v = tangent.cross(u)
+        rings.append([bm.verts.new(p + radii[i] * (math.cos(k * math.tau / sides) * u + math.sin(k * math.tau / sides) * v))
+                      for k in range(sides)])
+    for r0, r1 in zip(rings, rings[1:]):
+        for k in range(sides):
+            bm.faces.new((r0[k], r0[(k + 1) % sides], r1[(k + 1) % sides], r1[k]))
+    for ring, p, flip in ((rings[0], path[0], True), (rings[-1], path[-1], False)):
+        c = bm.verts.new(p)
+        for k in range(sides):
+            f = (ring[k], ring[(k + 1) % sides], c)
+            bm.faces.new(f[::-1] if flip else f)
+    me = bpy.data.meshes.new(name)
+    bm.to_mesh(me)
+    bm.free()
+    uv = me.uv_layers.new(name="UVMap")
+    for loop in me.loops:
+        uv.data[loop.index].uv = ((loop.vertex_index % sides) / sides, (loop.vertex_index // sides) / max(len(path), 1))
+    col = me.color_attributes.new(name="CoatBlend", type="BYTE_COLOR", domain="CORNER")
+    for loop in me.loops:
+        col.data[loop.index].color = (coat, coat, coat, 1.0)
+    me.materials.append(material)
+    obj = bpy.data.objects.new(name, me)
+    for poly in me.polygons:
+        poly.use_smooth = True
+    return obj
+
+
+def around(arm, y, theta_deg, extra):
+    """A point extra (plus FINGER_SKIN) outside the channel's oval, along the oval's normal, at an angle: 0 is the
+    palm's side (Z_s), 90 the front. A tube of radius extra centred here touches nothing inside the channel. Growing
+    both semi-axes by extra, as the first build did, put the tubes' inner vertices up to 0.1 mm inside it between the
+    axes (16 vertices a paw)."""
+    th = math.radians(theta_deg)
+    z_s = Vector(arm["socket_rot"][:, 2].tolist())
+    w = Vector((0.0, 1.0, 0.0)).cross(z_s).normalized()    # in the X-Z plane, forward-up
+    c = arm["channel"].copy()
+    c.y = y
+    a, b = CHANNEL_HALF[1], CHANNEL_HALF[0]                 # along Z_s and along w
+    on = a * math.cos(th) * z_s + b * math.sin(th) * w
+    normal = ((math.cos(th) / a) * z_s + (math.sin(th) / b) * w).normalized()
+    return c + on + (extra + FINGER_SKIN) * normal
+
+
+def coat_of(by_name, name):
+    col = by_name[name].data.color_attributes.get("CoatBlend")
+    if col is None or not len(col.data):
+        return 0.0
+    return sum(d.color[0] for d in col.data) / len(col.data)
+
+
+def curled_paw(side, arms, by_name):
+    """The closed paw's new parts (unlinked objects): four fingers wrapping the channel over its front, their knuckles
+    and claws, and the thumb wrapping it the other way, at most PAW_HALF either side of the channel's centre."""
+    arm = arms[side]
+    s = arm["sign"]
+    fur, knuckle_mat = bpy.data.materials["M_Hero_WhiteFur"], bpy.data.materials["M_Hero_GreyTabbyFur"]
+    claw_mat = bpy.data.materials["M_Hero_IvoryClaw"]
+    coat = coat_of(by_name, f"Finger_{s}_1")
+    out = []
+    n = 13
+    for d in range(4):
+        y = arm["channel"].y + (d - 1.5) * FINGER_PITCH
+        th = [FINGER_SWEEP[0] + (FINGER_SWEEP[1] - FINGER_SWEEP[0]) * i / (n - 1) for i in range(n)]
+        radii = [0.016 - 0.006 * i / (n - 1) for i in range(n)]
+        path = [around(arm, y, a, r) for a, r in zip(th, radii)]
+        out.append(tube(f"Finger_curl_{s}_{d}", path, radii, fur, coat))
+        out.append(tube(f"Finger_knuckle_curl_{s}_{d}", [path[0] - (path[1] - path[0]) * 0.6, path[0] + (path[1] - path[0]) * 0.6],
+                        [0.0145, 0.0145], knuckle_mat, coat, sides=12))
+        tip = path[-1] + (path[-1] - path[-2]).normalized() * 0.016
+        out.append(tube(f"Finger_claw_curl_{s}_{d}", [path[-1], tip], [0.006, 0.0012], claw_mat, coat, sides=8))
+    y = arm["channel"].y + (-1.0 if s > 0 else 1.0) * FINGER_PITCH              # over the index finger, inboard
+    th = [THUMB_SWEEP[0] + (THUMB_SWEEP[1] - THUMB_SWEEP[0]) * i / (n - 1) for i in range(n)]
+    radii = [0.022 - 0.010 * i / (n - 1) for i in range(n)]
+    out.append(tube(f"Thumb_curl_{s}", [around(arm, y, a, r) for a, r in zip(th, radii)], radii, fur,
+                    coat_of(by_name, f"Thumb_{s}")))
+    return out

@@ -87,8 +87,8 @@ for entry in record["lods"]:
         high = max(point[axis_index] for point in world)
         assert math.isclose(low, entry["bounds_m"][axis_name][0], abs_tol=.012)
         assert math.isclose(high, entry["bounds_m"][axis_name][1], abs_tol=.012)
-        assert math.isclose(low, source["bounds_m"]["min"][axis_index], abs_tol=.02)
-        assert math.isclose(high, source["bounds_m"]["max"][axis_index], abs_tol=.02)
+        assert math.isclose(low, runtime["bounds_m"]["min"][axis_index], abs_tol=.02)    # LOD0's bounds
+        assert math.isclose(high, runtime["bounds_m"]["max"][axis_index], abs_tol=.02)
     assert_paths_embedded((mesh.matrix_world @ vertex.co for vertex in mesh.data.vertices), marks)
     assert mesh.data.uv_layers.active is not None
     print("NYAAKOTO_LOD_FBX_PASS", entry["level"], len(mesh.data.vertices),

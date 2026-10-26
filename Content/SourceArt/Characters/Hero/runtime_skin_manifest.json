@@ -4,16 +4,30 @@
   "source_blend": "Content/SourceArt/Characters/Hero/Nyaagyu_HeroCharacter.blend",
   "source_blend_sha256": "eb8e3561c9d8ee8d75c366a57b7116fa54331f502556ab0df9cfb54bf15abf08",
   "runtime_blend": "Nyaakoto_RuntimeSkin.blend",
-  "runtime_blend_sha256": "d5cda854af9f5b312de354877d833b612989067abb1ae938f736a7a8dde97b5d",
+  "runtime_blend_sha256": "cf4acdef478abfdfae266e49fd54f5c7fc66ef9fc635c587a468088f25f60769",
   "runtime_preview": "Nyaakoto_RuntimeSkin_Blender.png",
-  "runtime_preview_sha256": "1ab3a28d25683040be0389b603880a3715e7f1e47479e097f79e78fd81ba26f6",
+  "runtime_preview_sha256": "443343b2cd37060dc68d7ec8cfd62a6219cf43524b9202ee6078186272cab912",
   "source_parts": 422,
-  "source_vertices": 148128,
+  "source_vertices": 147536,
   "source_triangles": 128650,
+  "bounds_m": {
+    "min": [
+      -0.6542,
+      -0.536,
+      -0.001
+    ],
+    "max": [
+      0.2713,
+      0.529,
+      2.195
+    ]
+  },
   "skeletal_fbx": "SK_NyaagyuSamurai.fbx",
-  "skeletal_fbx_sha256": "ead9d602a89f367516ebfac386ff3d6483f14013a07401f3d8d8df4ee1d6b740",
+  "skeletal_fbx_sha256": "bde1a741e93bdb3510b1be80cb6c299279ad679977cbcb04aa32b923863ce066",
   "walk_fbx": "A_NyaagyuSamurai_Walk.fbx",
-  "walk_fbx_sha256": "32c2f8496f20713a511cccc5142d44dd9d6b6325d1fd8746a76c2de6b38b6385",
+  "walk_fbx_sha256": "89fd38a86854610ef08311a312bd4aada7beeb89ff1205bcbb13ba4f91008998",
+  "guard_fbx": "A_NyaagyuSamurai_Guard.fbx",
+  "guard_fbx_sha256": "f82c9c3afbc9030601c15461e6b221305831e6792e2af31ea07c12e7dc7d1e1e",
   "skeleton_bones": [
     "root",
     "pelvis",
@@ -44,6 +58,3318 @@
     "sode_1"
   ],
   "head_weighted_vertices": 117388,
-  "rigging": "20-bone inherited runtime skeleton; rigid source-part skin; idle/walk only",
-  "limitations": "No production deformation, lip sync, authored combat animation, strand groom, UE 5.8.2 visual review, or photoreal quality qualification. Bow and sheathed katana are back/hip presentation geometry, not interactive draw or mounting rigs."
+  "rigging": "20-bone runtime skeleton, its arm chains fitted to the hero's arm parts and its sides anatomical; rigid source-part skin; idle, walk and an interim one-paw guard",
+  "third_person": {
+    "contract": "docs/art-direction/THIRD_PERSON_GRIP_CONTRACT.md",
+    "frames": "Unreal component cm = 100 x (x, -y, z) of Blender metres; sides anatomical (_R the character's right)",
+    "arm_joints_blender_m": {
+      "R": {
+        "shoulder": [
+          0.0,
+          -0.277,
+          1.275
+        ],
+        "elbow": [
+          0.025,
+          -0.414,
+          1.077
+        ],
+        "wrist": [
+          0.092,
+          -0.467,
+          0.887
+        ],
+        "palm": [
+          0.091,
+          -0.474,
+          0.84
+        ],
+        "channel": [
+          0.1515,
+          -0.474,
+          0.757
+        ]
+      },
+      "L": {
+        "shoulder": [
+          0.0,
+          0.277,
+          1.275
+        ],
+        "elbow": [
+          0.025,
+          0.414,
+          1.077
+        ],
+        "wrist": [
+          0.092,
+          0.467,
+          0.887
+        ],
+        "palm": [
+          0.091,
+          0.474,
+          0.84
+        ],
+        "channel": [
+          0.1515,
+          0.474,
+          0.757
+        ]
+      }
+    },
+    "removed_parts": [
+      "Finger_-1_0",
+      "Finger_-1_1",
+      "Finger_-1_2",
+      "Finger_-1_3",
+      "Finger_1_0",
+      "Finger_1_1",
+      "Finger_1_2",
+      "Finger_1_3",
+      "Finger_claw_-1_0",
+      "Finger_claw_-1_1",
+      "Finger_claw_-1_2",
+      "Finger_claw_-1_3",
+      "Finger_claw_1_0",
+      "Finger_claw_1_1",
+      "Finger_claw_1_2",
+      "Finger_claw_1_3",
+      "Finger_knuckle_-1_0",
+      "Finger_knuckle_-1_1",
+      "Finger_knuckle_-1_2",
+      "Finger_knuckle_-1_3",
+      "Finger_knuckle_1_0",
+      "Finger_knuckle_1_1",
+      "Finger_knuckle_1_2",
+      "Finger_knuckle_1_3",
+      "Katana_kashira",
+      "Katana_tsuba_iron",
+      "Katana_tsuka_sheathed",
+      "Katana_tsukamaki_cross_0",
+      "Katana_tsukamaki_cross_1",
+      "Katana_tsukamaki_cross_2",
+      "Katana_tsukamaki_cross_3",
+      "Katana_tsukamaki_cross_4",
+      "Katana_tsukamaki_cross_5",
+      "Katana_tsukamaki_cross_6",
+      "Katana_tsukamaki_cross_7",
+      "Sageo_silk_cord",
+      "Saya_brass_collar",
+      "Saya_brass_collar.001",
+      "Saya_lacquer",
+      "Thumb_-1",
+      "Thumb_1"
+    ],
+    "added_parts": [
+      "Finger_claw_curl_-1_0",
+      "Finger_claw_curl_-1_1",
+      "Finger_claw_curl_-1_2",
+      "Finger_claw_curl_-1_3",
+      "Finger_claw_curl_1_0",
+      "Finger_claw_curl_1_1",
+      "Finger_claw_curl_1_2",
+      "Finger_claw_curl_1_3",
+      "Finger_curl_-1_0",
+      "Finger_curl_-1_1",
+      "Finger_curl_-1_2",
+      "Finger_curl_-1_3",
+      "Finger_curl_1_0",
+      "Finger_curl_1_1",
+      "Finger_curl_1_2",
+      "Finger_curl_1_3",
+      "Finger_knuckle_curl_-1_0",
+      "Finger_knuckle_curl_-1_1",
+      "Finger_knuckle_curl_-1_2",
+      "Finger_knuckle_curl_-1_3",
+      "Finger_knuckle_curl_1_0",
+      "Finger_knuckle_curl_1_1",
+      "Finger_knuckle_curl_1_2",
+      "Finger_knuckle_curl_1_3",
+      "Thumb_curl_-1",
+      "Thumb_curl_1"
+    ],
+    "deferred_gear": {
+      "parts": [
+        "Ebira_lacing_-0.243",
+        "Ebira_lacing_-0.437",
+        "Ebira_lacquer_backboard",
+        "Ebira_rattan_crossbar_0.984",
+        "Ebira_rattan_crossbar_1.099",
+        "Ebira_rattan_crossbar_1.218",
+        "Ebira_rattan_crossbar_1.321",
+        "Ebira_shoulder_strap",
+        "Ya_bamboo_shaft_0",
+        "Ya_bamboo_shaft_1",
+        "Ya_bamboo_shaft_2",
+        "Ya_bamboo_shaft_3",
+        "Ya_bamboo_shaft_4",
+        "Ya_bamboo_shaft_5",
+        "Ya_nock_0",
+        "Ya_nock_1",
+        "Ya_nock_2",
+        "Ya_nock_3",
+        "Ya_nock_4",
+        "Ya_nock_5",
+        "Ya_red_fletch_0_-1",
+        "Ya_red_fletch_0_1",
+        "Ya_red_fletch_1_-1",
+        "Ya_red_fletch_1_1",
+        "Ya_red_fletch_2_-1",
+        "Ya_red_fletch_2_1",
+        "Ya_red_fletch_3_-1",
+        "Ya_red_fletch_3_1",
+        "Ya_red_fletch_4_-1",
+        "Ya_red_fletch_4_1",
+        "Ya_red_fletch_5_-1",
+        "Ya_red_fletch_5_1",
+        "Yumi_grip_rattan_0",
+        "Yumi_grip_rattan_1",
+        "Yumi_grip_rattan_2",
+        "Yumi_grip_rattan_3",
+        "Yumi_grip_rattan_4",
+        "Yumi_horn_nock_0",
+        "Yumi_horn_nock_1",
+        "Yumi_laminated_bamboo",
+        "Yumi_lower_grip_wrap",
+        "Yumi_silk_string"
+      ],
+      "slots_only_they_use": [
+        "M_Hero_BambooArrowShaft",
+        "M_Hero_RedArrowFletch",
+        "M_Hero_YumiLaminatedBamboo",
+        "M_Hero_YumiSilkString"
+      ],
+      "note": "The bow, quiver and arrows stay on the body until their gear assets exist; the socket migration viewmodels.json plans stays open."
+    },
+    "channel_cm": [
+      3.3,
+      4.3
+    ],
+    "paw_breadth_max_cm": 11.0,
+    "finger_pitch_m": 0.026,
+    "guard": {
+      "stance": {
+        "grip_r": [
+          40.0,
+          18.0,
+          110.0
+        ],
+        "elevation_deg": 30.0,
+        "yaw_deg": -15.0,
+        "poles": {
+          "R": [
+            -0.3,
+            -1.0,
+            -0.5
+          ]
+        },
+        "left_paw": [
+          20.0,
+          -34.0,
+          92.0
+        ]
+      },
+      "reach": {
+        "R": 0.7841,
+        "L": 0.7075
+      },
+      "status": "interim one-paw guard; the two-paw grip and left-hand closure (4.5, 4.7) stay open"
+    },
+    "weapons": {
+      "SM_Weapon_00.fbx": {
+        "sha256": "2631bad6a4c5e2436916410b4d2d93a9d6d4bb2166bab57005254498c8e085f9",
+        "sockets_read_back_m": {
+          "Grip_L": [
+            -0.14242,
+            0.0,
+            0.0
+          ],
+          "Grip_R": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "Muzzle": [
+            0.81973,
+            0.0,
+            0.0759
+          ]
+        }
+      },
+      "SM_Weapon_00_Saya.fbx": {
+        "sha256": "c85210574b2b25a0f951af37188b5c3d08a96f0f40a342ec0f8be7f07c1c91cd",
+        "sockets_read_back_m": {
+          "Koiguchi": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "Kurikata": [
+            0.10546,
+            -0.01214,
+            -0.0147
+          ]
+        }
+      }
+    },
+    "clearance": {
+      "method": "It replaces two weaker tests:\n- a movement capsule, which is not what anyone sees (hip gear lies inside it by design);\n- vertex-to-vertex distances, which can miss a crossing: two triangles can intersect while every pair of their\n  vertices is centimetres apart.\n\n**What each measure establishes, for one pose:**\n- **Crossings:** the pairs of triangles whose surfaces intersect.\n  - The rig build uses Blender's BVHTree.overlap, which runs an exact triangle-triangle test (isect_tri_tri) on each\n    candidate pair. The CPU backend tests every pair.\n  - Neither backend is trusted with coplanar triangles. So every pair within CONTACT_EPS that the backend did not\n    report is tested here for a coplanar overlap of positive area, which counts as a crossing. Pairs that only touch\n    (an edge or a vertex) are counted as touching.\n- **Allowed and hidden crossings:** a saya is thrust through the obi, so its crossings with the obi's own parts are\n  the intended tuck, counted as allowed. A crossing counts as hidden only if all of its intersection segment lies\n  inside one closed \"hide\" island (that obi): both ends inside by ray parity, and no triangle of the island crossing\n  the segment. That holds for a non-convex volume too. A midpoint, or the ends alone, would not do. Otherwise, and\n  for every coplanar overlap, the crossing counts as visible. In the same way, an island sealed inside an allowed\n  part (the saya's mouth fittings inside the obi) is counted as allowed containment, not as containment.\n- **Containment:** with no crossings between them, a connected island lies wholly inside or wholly outside each closed\n  island of the other set. One vertex per island decides it, by ray parity along two directions against each closed\n  island whose bounds hold it; directions that disagree count as ambiguous. Open islands (an edge used once, or more\n  than twice) bound no inside, so they are counted, not tested.\n- **Separation:** the exact least distance between the two surfaces, up to a limit. Every pair of triangles whose\n  bounds come within the limit is measured: the least of its 6 vertex-face and 9 edge-edge closest-point distances,\n  or 0 when the two cross. For triangles that do not cross, that is their exact distance, since the closest pair\n  of two disjoint triangles is a vertex and a face or two edges. No pair within the limit certifies \"at least the\n  limit\". The least vertex-to-surface distance alone would be only an upper bound, since two edges can pass closer\n  than any vertex comes to a face. So it certifies no minimum and is not used.\n\n`calibrate` runs a backend on known geometry, each case with its expected value:\n- a crossing pair;\n- a tetrahedron inside a cube;\n- two cubes 2 cm apart;\n- two bars whose edges pass 5 mm apart, their nearest vertices 27 cm apart;\n- a rod crossing a box inside a hide volume;\n- a 1.6 m crossing whose midpoint alone lies in a 10 cm hide cube (root's probe, 2026-10-26), which must stay visible;\n- two coplanar triangles overlapping with positive area (root's probe), which must count as a crossing.",
+      "backend": "Blender mathutils.bvhtree (overlap: isect_tri_tri per candidate pair)",
+      "calibration": {
+        "crossing_pair": {
+          "crossings": 1,
+          "expect": 1
+        },
+        "tetra_inside_cube": {
+          "crossings": 0,
+          "contained": 1,
+          "expect": {
+            "crossings": 0,
+            "contained": 1
+          }
+        },
+        "cubes_2cm_apart": {
+          "crossings": 0,
+          "contained": 0,
+          "separation_m": 0.02,
+          "expect": {
+            "separation_m": 0.02
+          }
+        },
+        "edges_5mm_apart": {
+          "separation_m": 0.005,
+          "kind": "edge-edge",
+          "nearest_vertex_pair_m": 0.2699,
+          "expect": {
+            "separation_m": 0.005,
+            "kind": "edge-edge"
+          }
+        },
+        "rod_through_box_inside_hide": {
+          "visible": 0,
+          "hidden": 40,
+          "expect": {
+            "visible": 0,
+            "hidden": "> 0"
+          }
+        },
+        "partial_hide_probe": {
+          "visible": 1,
+          "hidden": 0,
+          "passes": false,
+          "expect": {
+            "visible": 1,
+            "passes": false
+          }
+        },
+        "coplanar_overlap_probe": {
+          "visible": 1,
+          "coplanar": 1,
+          "backend_reported": 0,
+          "passes": false,
+          "expect": {
+            "visible": 1,
+            "passes": false
+          }
+        },
+        "ok": true,
+        "backend": "Blender mathutils.bvhtree (overlap: isect_tri_tri per candidate pair)"
+      },
+      "gates": {
+        "forearms_paws_vs_torso": "no visible crossing, nothing contained or ambiguous",
+        "saya_vs_body": "no visible crossing, nothing contained or ambiguous",
+        "katana_vs_body_but_holding_paw": "no visible crossing, nothing contained or ambiguous",
+        "katana_vs_holding_paw": "no visible crossing, nothing contained or ambiguous",
+        "blade_vs_head": "no visible crossing, nothing contained or ambiguous, and at least 5 cm by exact triangle separation",
+        "blade_vs_body": "no visible crossing, nothing contained or ambiguous, and at least 3 cm by exact triangle separation",
+        "left_paw_vs_saya": "no visible crossing, nothing contained or ambiguous",
+        "sheathed_hilt_vs_body": "no visible crossing, nothing contained or ambiguous"
+      },
+      "reported_only": {
+        "upper_arms_vs_torso": "rigid parts meet at the shoulder by build"
+      },
+      "tuck": [
+        "Obi_waist",
+        "Resistance_sash_band"
+      ],
+      "results": {
+        "Guard@1": {
+          "forearms_paws_vs_torso": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              42,
+              107
+            ],
+            "open_islands": [
+              9,
+              33
+            ],
+            "separation_m": 0.01443,
+            "separation_kind": "edge-edge",
+            "separation_pairs_measured": 4864,
+            "separation_at": [
+              [
+                2.36,
+                -29.59,
+                105.1
+              ],
+              [
+                2.17,
+                -28.16,
+                105.04
+              ]
+            ],
+            "separation_limit_m": 0.02
+          },
+          "upper_arms_vs_torso": {
+            "crossing_pairs_visible": 900,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [
+              [
+                "Shoulder_joint_1",
+                "Indigo_samurai_haori",
+                184
+              ],
+              [
+                "Shoulder_joint_-1",
+                "Indigo_samurai_haori",
+                172
+              ],
+              [
+                "Shoulder_joint_1",
+                "Linen_under_kimono",
+                120
+              ],
+              [
+                "Shoulder_joint_-1",
+                "Linen_under_kimono",
+                110
+              ],
+              [
+                "Linen_sleeve_1",
+                "Indigo_samurai_haori",
+                96
+              ],
+              [
+                "Linen_sleeve_-1",
+                "Indigo_samurai_haori",
+                84
+              ],
+              [
+                "Linen_sleeve_1",
+                "Linen_under_kimono",
+                74
+              ],
+              [
+                "Linen_sleeve_-1",
+                "Linen_under_kimono",
+                60
+              ]
+            ],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": [
+              0.54,
+              27.96,
+              114.1
+            ],
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              34,
+              107
+            ],
+            "open_islands": [
+              4,
+              33
+            ],
+            "separation_m": null,
+            "separation_kind": "not measured",
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.0
+          },
+          "saya_vs_body": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 1834,
+            "crossing_pairs_allowed": 504,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [
+              [
+                "W00_Saya",
+                "Layered_hakama_waist",
+                994
+              ],
+              [
+                "W00_Saya",
+                "Indigo_samurai_haori",
+                840
+              ]
+            ],
+            "crossing_parts_allowed": [
+              [
+                "W00_Saya",
+                "Resistance_sash_band",
+                324
+              ],
+              [
+                "W00_Saya",
+                "Obi_waist",
+                180
+              ]
+            ],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 6,
+            "contained_allowed_parts": [
+              [
+                "W00_Saya",
+                "Obi_waist",
+                3
+              ],
+              [
+                "W00_Saya",
+                "Resistance_sash_band",
+                3
+              ]
+            ],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              7,
+              32941
+            ],
+            "open_islands": [
+              0,
+              32737
+            ],
+            "separation_m": null,
+            "separation_kind": "not measured",
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.0
+          },
+          "katana_vs_body_but_holding_paw": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              24,
+              32927
+            ],
+            "open_islands": [
+              0,
+              32737
+            ],
+            "separation_m": null,
+            "separation_kind": null,
+            "separation_pairs_measured": 8098,
+            "separation_at": null,
+            "separation_limit_m": 0.02
+          },
+          "katana_vs_holding_paw": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              24,
+              14
+            ],
+            "open_islands": [
+              0,
+              0
+            ],
+            "separation_m": 0.00106,
+            "separation_kind": "edge-edge",
+            "separation_pairs_measured": 22579,
+            "separation_at": [
+              [
+                44.26,
+                16.92,
+                110.16
+              ],
+              [
+                44.32,
+                16.91,
+                110.08
+              ]
+            ],
+            "separation_limit_m": 0.01
+          },
+          "blade_vs_head": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              3,
+              32710
+            ],
+            "open_islands": [
+              1,
+              32674
+            ],
+            "separation_m": null,
+            "separation_kind": null,
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.05
+          },
+          "blade_vs_body": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              3,
+              217
+            ],
+            "open_islands": [
+              1,
+              63
+            ],
+            "separation_m": null,
+            "separation_kind": null,
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.03
+          },
+          "left_paw_vs_saya": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              19,
+              7
+            ],
+            "open_islands": [
+              3,
+              0
+            ],
+            "separation_m": null,
+            "separation_kind": null,
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.02
+          },
+          "kissaki_ue_cm": [
+            104.91,
+            0.61,
+            157.56
+          ],
+          "socket_error_cm": {
+            "R": 0.0,
+            "L": 0.0
+          },
+          "socket_error_deg": {
+            "R": 0.0,
+            "L": 0.0
+          }
+        },
+        "Guard@25": {
+          "forearms_paws_vs_torso": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              42,
+              107
+            ],
+            "open_islands": [
+              9,
+              33
+            ],
+            "separation_m": 0.01317,
+            "separation_kind": "vertex-face",
+            "separation_pairs_measured": 4955,
+            "separation_at": [
+              [
+                0.96,
+                -29.46,
+                105.57
+              ],
+              [
+                0.79,
+                -28.15,
+                105.5
+              ]
+            ],
+            "separation_limit_m": 0.02
+          },
+          "upper_arms_vs_torso": {
+            "crossing_pairs_visible": 900,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [
+              [
+                "Shoulder_joint_1",
+                "Indigo_samurai_haori",
+                182
+              ],
+              [
+                "Shoulder_joint_-1",
+                "Indigo_samurai_haori",
+                176
+              ],
+              [
+                "Shoulder_joint_1",
+                "Linen_under_kimono",
+                122
+              ],
+              [
+                "Shoulder_joint_-1",
+                "Linen_under_kimono",
+                110
+              ],
+              [
+                "Linen_sleeve_1",
+                "Indigo_samurai_haori",
+                94
+              ],
+              [
+                "Linen_sleeve_-1",
+                "Indigo_samurai_haori",
+                84
+              ],
+              [
+                "Linen_sleeve_1",
+                "Linen_under_kimono",
+                74
+              ],
+              [
+                "Linen_sleeve_-1",
+                "Linen_under_kimono",
+                58
+              ]
+            ],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": [
+              1.24,
+              28.14,
+              113.98
+            ],
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              34,
+              107
+            ],
+            "open_islands": [
+              4,
+              33
+            ],
+            "separation_m": null,
+            "separation_kind": "not measured",
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.0
+          },
+          "saya_vs_body": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 1785,
+            "crossing_pairs_allowed": 504,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [
+              [
+                "W00_Saya",
+                "Layered_hakama_waist",
+                994
+              ],
+              [
+                "W00_Saya",
+                "Indigo_samurai_haori",
+                791
+              ]
+            ],
+            "crossing_parts_allowed": [
+              [
+                "W00_Saya",
+                "Resistance_sash_band",
+                324
+              ],
+              [
+                "W00_Saya",
+                "Obi_waist",
+                180
+              ]
+            ],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 6,
+            "contained_allowed_parts": [
+              [
+                "W00_Saya",
+                "Obi_waist",
+                3
+              ],
+              [
+                "W00_Saya",
+                "Resistance_sash_band",
+                3
+              ]
+            ],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              7,
+              32941
+            ],
+            "open_islands": [
+              0,
+              32737
+            ],
+            "separation_m": null,
+            "separation_kind": "not measured",
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.0
+          },
+          "katana_vs_body_but_holding_paw": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              24,
+              32927
+            ],
+            "open_islands": [
+              0,
+              32737
+            ],
+            "separation_m": null,
+            "separation_kind": null,
+            "separation_pairs_measured": 9227,
+            "separation_at": null,
+            "separation_limit_m": 0.02
+          },
+          "katana_vs_holding_paw": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              24,
+              14
+            ],
+            "open_islands": [
+              0,
+              0
+            ],
+            "separation_m": 0.00106,
+            "separation_kind": "edge-edge",
+            "separation_pairs_measured": 22578,
+            "separation_at": [
+              [
+                44.26,
+                16.92,
+                110.56
+              ],
+              [
+                44.32,
+                16.91,
+                110.48
+              ]
+            ],
+            "separation_limit_m": 0.01
+          },
+          "blade_vs_head": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              3,
+              32710
+            ],
+            "open_islands": [
+              1,
+              32674
+            ],
+            "separation_m": null,
+            "separation_kind": null,
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.05
+          },
+          "blade_vs_body": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              3,
+              217
+            ],
+            "open_islands": [
+              1,
+              63
+            ],
+            "separation_m": null,
+            "separation_kind": null,
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.03
+          },
+          "left_paw_vs_saya": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              19,
+              7
+            ],
+            "open_islands": [
+              3,
+              0
+            ],
+            "separation_m": null,
+            "separation_kind": null,
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.02
+          },
+          "kissaki_ue_cm": [
+            104.91,
+            0.61,
+            157.96
+          ],
+          "socket_error_cm": {
+            "R": 0.0,
+            "L": 0.0
+          },
+          "socket_error_deg": {
+            "R": 0.0,
+            "L": 0.0
+          }
+        },
+        "Guard@49": {
+          "forearms_paws_vs_torso": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              42,
+              107
+            ],
+            "open_islands": [
+              9,
+              33
+            ],
+            "separation_m": 0.01443,
+            "separation_kind": "edge-edge",
+            "separation_pairs_measured": 4864,
+            "separation_at": [
+              [
+                2.36,
+                -29.59,
+                105.1
+              ],
+              [
+                2.17,
+                -28.16,
+                105.04
+              ]
+            ],
+            "separation_limit_m": 0.02
+          },
+          "upper_arms_vs_torso": {
+            "crossing_pairs_visible": 900,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [
+              [
+                "Shoulder_joint_1",
+                "Indigo_samurai_haori",
+                184
+              ],
+              [
+                "Shoulder_joint_-1",
+                "Indigo_samurai_haori",
+                172
+              ],
+              [
+                "Shoulder_joint_1",
+                "Linen_under_kimono",
+                120
+              ],
+              [
+                "Shoulder_joint_-1",
+                "Linen_under_kimono",
+                110
+              ],
+              [
+                "Linen_sleeve_1",
+                "Indigo_samurai_haori",
+                96
+              ],
+              [
+                "Linen_sleeve_-1",
+                "Indigo_samurai_haori",
+                84
+              ],
+              [
+                "Linen_sleeve_1",
+                "Linen_under_kimono",
+                74
+              ],
+              [
+                "Linen_sleeve_-1",
+                "Linen_under_kimono",
+                60
+              ]
+            ],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": [
+              0.54,
+              27.96,
+              114.1
+            ],
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              34,
+              107
+            ],
+            "open_islands": [
+              4,
+              33
+            ],
+            "separation_m": null,
+            "separation_kind": "not measured",
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.0
+          },
+          "saya_vs_body": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 1834,
+            "crossing_pairs_allowed": 504,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [
+              [
+                "W00_Saya",
+                "Layered_hakama_waist",
+                994
+              ],
+              [
+                "W00_Saya",
+                "Indigo_samurai_haori",
+                840
+              ]
+            ],
+            "crossing_parts_allowed": [
+              [
+                "W00_Saya",
+                "Resistance_sash_band",
+                324
+              ],
+              [
+                "W00_Saya",
+                "Obi_waist",
+                180
+              ]
+            ],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 6,
+            "contained_allowed_parts": [
+              [
+                "W00_Saya",
+                "Obi_waist",
+                3
+              ],
+              [
+                "W00_Saya",
+                "Resistance_sash_band",
+                3
+              ]
+            ],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              7,
+              32941
+            ],
+            "open_islands": [
+              0,
+              32737
+            ],
+            "separation_m": null,
+            "separation_kind": "not measured",
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.0
+          },
+          "katana_vs_body_but_holding_paw": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              24,
+              32927
+            ],
+            "open_islands": [
+              0,
+              32737
+            ],
+            "separation_m": null,
+            "separation_kind": null,
+            "separation_pairs_measured": 8098,
+            "separation_at": null,
+            "separation_limit_m": 0.02
+          },
+          "katana_vs_holding_paw": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              24,
+              14
+            ],
+            "open_islands": [
+              0,
+              0
+            ],
+            "separation_m": 0.00106,
+            "separation_kind": "edge-edge",
+            "separation_pairs_measured": 22579,
+            "separation_at": [
+              [
+                44.26,
+                16.92,
+                110.16
+              ],
+              [
+                44.32,
+                16.91,
+                110.08
+              ]
+            ],
+            "separation_limit_m": 0.01
+          },
+          "blade_vs_head": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              3,
+              32710
+            ],
+            "open_islands": [
+              1,
+              32674
+            ],
+            "separation_m": null,
+            "separation_kind": null,
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.05
+          },
+          "blade_vs_body": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              3,
+              217
+            ],
+            "open_islands": [
+              1,
+              63
+            ],
+            "separation_m": null,
+            "separation_kind": null,
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.03
+          },
+          "left_paw_vs_saya": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              19,
+              7
+            ],
+            "open_islands": [
+              3,
+              0
+            ],
+            "separation_m": null,
+            "separation_kind": null,
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.02
+          },
+          "kissaki_ue_cm": [
+            104.91,
+            0.61,
+            157.56
+          ],
+          "socket_error_cm": {
+            "R": 0.0,
+            "L": 0.0
+          },
+          "socket_error_deg": {
+            "R": 0.0,
+            "L": 0.0
+          }
+        },
+        "Guard@73": {
+          "forearms_paws_vs_torso": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              42,
+              107
+            ],
+            "open_islands": [
+              9,
+              33
+            ],
+            "separation_m": 0.01557,
+            "separation_kind": "edge-edge",
+            "separation_pairs_measured": 4666,
+            "separation_at": [
+              [
+                2.4,
+                -29.88,
+                104.61
+              ],
+              [
+                2.17,
+                -28.34,
+                104.55
+              ]
+            ],
+            "separation_limit_m": 0.02
+          },
+          "upper_arms_vs_torso": {
+            "crossing_pairs_visible": 898,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [
+              [
+                "Shoulder_joint_1",
+                "Indigo_samurai_haori",
+                183
+              ],
+              [
+                "Shoulder_joint_-1",
+                "Indigo_samurai_haori",
+                171
+              ],
+              [
+                "Shoulder_joint_1",
+                "Linen_under_kimono",
+                120
+              ],
+              [
+                "Shoulder_joint_-1",
+                "Linen_under_kimono",
+                110
+              ],
+              [
+                "Linen_sleeve_1",
+                "Indigo_samurai_haori",
+                96
+              ],
+              [
+                "Linen_sleeve_-1",
+                "Indigo_samurai_haori",
+                84
+              ],
+              [
+                "Linen_sleeve_1",
+                "Linen_under_kimono",
+                74
+              ],
+              [
+                "Linen_sleeve_-1",
+                "Linen_under_kimono",
+                60
+              ]
+            ],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": [
+              0.54,
+              27.7,
+              113.99
+            ],
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              34,
+              107
+            ],
+            "open_islands": [
+              4,
+              33
+            ],
+            "separation_m": null,
+            "separation_kind": "not measured",
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.0
+          },
+          "saya_vs_body": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 1902,
+            "crossing_pairs_allowed": 504,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 1,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [
+              [
+                "W00_Saya",
+                "Layered_hakama_waist",
+                994
+              ],
+              [
+                "W00_Saya",
+                "Indigo_samurai_haori",
+                908
+              ]
+            ],
+            "crossing_parts_allowed": [
+              [
+                "W00_Saya",
+                "Resistance_sash_band",
+                324
+              ],
+              [
+                "W00_Saya",
+                "Obi_waist",
+                180
+              ]
+            ],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 6,
+            "contained_allowed_parts": [
+              [
+                "W00_Saya",
+                "Obi_waist",
+                3
+              ],
+              [
+                "W00_Saya",
+                "Resistance_sash_band",
+                3
+              ]
+            ],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              7,
+              32941
+            ],
+            "open_islands": [
+              0,
+              32737
+            ],
+            "separation_m": null,
+            "separation_kind": "not measured",
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.0
+          },
+          "katana_vs_body_but_holding_paw": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              24,
+              32927
+            ],
+            "open_islands": [
+              0,
+              32737
+            ],
+            "separation_m": null,
+            "separation_kind": null,
+            "separation_pairs_measured": 6913,
+            "separation_at": null,
+            "separation_limit_m": 0.02
+          },
+          "katana_vs_holding_paw": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              24,
+              14
+            ],
+            "open_islands": [
+              0,
+              0
+            ],
+            "separation_m": 0.00106,
+            "separation_kind": "edge-edge",
+            "separation_pairs_measured": 22579,
+            "separation_at": [
+              [
+                44.26,
+                16.92,
+                109.76
+              ],
+              [
+                44.32,
+                16.91,
+                109.68
+              ]
+            ],
+            "separation_limit_m": 0.01
+          },
+          "blade_vs_head": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              3,
+              32710
+            ],
+            "open_islands": [
+              1,
+              32674
+            ],
+            "separation_m": null,
+            "separation_kind": null,
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.05
+          },
+          "blade_vs_body": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              3,
+              217
+            ],
+            "open_islands": [
+              1,
+              63
+            ],
+            "separation_m": null,
+            "separation_kind": null,
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.03
+          },
+          "left_paw_vs_saya": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              19,
+              7
+            ],
+            "open_islands": [
+              3,
+              0
+            ],
+            "separation_m": null,
+            "separation_kind": null,
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.02
+          },
+          "kissaki_ue_cm": [
+            104.91,
+            0.61,
+            157.16
+          ],
+          "socket_error_cm": {
+            "R": 0.0,
+            "L": 0.0
+          },
+          "socket_error_deg": {
+            "R": 0.0,
+            "L": 0.0
+          }
+        },
+        "Idle@1": {
+          "forearms_paws_vs_torso": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              42,
+              107
+            ],
+            "open_islands": [
+              9,
+              33
+            ],
+            "separation_m": null,
+            "separation_kind": null,
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.02
+          },
+          "upper_arms_vs_torso": {
+            "crossing_pairs_visible": 936,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [
+              [
+                "Shoulder_joint_-1",
+                "Indigo_samurai_haori",
+                187
+              ],
+              [
+                "Shoulder_joint_1",
+                "Indigo_samurai_haori",
+                183
+              ],
+              [
+                "Shoulder_joint_1",
+                "Linen_under_kimono",
+                120
+              ],
+              [
+                "Shoulder_joint_-1",
+                "Linen_under_kimono",
+                120
+              ],
+              [
+                "Linen_sleeve_1",
+                "Indigo_samurai_haori",
+                98
+              ],
+              [
+                "Linen_sleeve_-1",
+                "Indigo_samurai_haori",
+                92
+              ],
+              [
+                "Linen_sleeve_1",
+                "Linen_under_kimono",
+                68
+              ],
+              [
+                "Linen_sleeve_-1",
+                "Linen_under_kimono",
+                68
+              ]
+            ],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": [
+              8.54,
+              -22.18,
+              125.17
+            ],
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              34,
+              107
+            ],
+            "open_islands": [
+              4,
+              33
+            ],
+            "separation_m": null,
+            "separation_kind": "not measured",
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.0
+          },
+          "saya_vs_body": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 1834,
+            "crossing_pairs_allowed": 504,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [
+              [
+                "W00_Saya",
+                "Layered_hakama_waist",
+                994
+              ],
+              [
+                "W00_Saya",
+                "Indigo_samurai_haori",
+                840
+              ]
+            ],
+            "crossing_parts_allowed": [
+              [
+                "W00_Saya",
+                "Resistance_sash_band",
+                324
+              ],
+              [
+                "W00_Saya",
+                "Obi_waist",
+                180
+              ]
+            ],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 6,
+            "contained_allowed_parts": [
+              [
+                "W00_Saya",
+                "Obi_waist",
+                3
+              ],
+              [
+                "W00_Saya",
+                "Resistance_sash_band",
+                3
+              ]
+            ],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              7,
+              32941
+            ],
+            "open_islands": [
+              0,
+              32737
+            ],
+            "separation_m": null,
+            "separation_kind": "not measured",
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.0
+          },
+          "sheathed_hilt_vs_body": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              23,
+              32941
+            ],
+            "open_islands": [
+              1,
+              32737
+            ],
+            "separation_m": null,
+            "separation_kind": "not measured",
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.0
+          },
+          "kissaki_ue_cm": [
+            -52.65,
+            -24.0,
+            93.09
+          ]
+        },
+        "Idle@49": {
+          "forearms_paws_vs_torso": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              42,
+              107
+            ],
+            "open_islands": [
+              9,
+              33
+            ],
+            "separation_m": null,
+            "separation_kind": null,
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.02
+          },
+          "upper_arms_vs_torso": {
+            "crossing_pairs_visible": 936,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [
+              [
+                "Shoulder_joint_-1",
+                "Indigo_samurai_haori",
+                187
+              ],
+              [
+                "Shoulder_joint_1",
+                "Indigo_samurai_haori",
+                183
+              ],
+              [
+                "Shoulder_joint_1",
+                "Linen_under_kimono",
+                120
+              ],
+              [
+                "Shoulder_joint_-1",
+                "Linen_under_kimono",
+                120
+              ],
+              [
+                "Linen_sleeve_1",
+                "Indigo_samurai_haori",
+                98
+              ],
+              [
+                "Linen_sleeve_-1",
+                "Indigo_samurai_haori",
+                92
+              ],
+              [
+                "Linen_sleeve_1",
+                "Linen_under_kimono",
+                68
+              ],
+              [
+                "Linen_sleeve_-1",
+                "Linen_under_kimono",
+                68
+              ]
+            ],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": [
+              8.54,
+              -22.18,
+              125.17
+            ],
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              34,
+              107
+            ],
+            "open_islands": [
+              4,
+              33
+            ],
+            "separation_m": null,
+            "separation_kind": "not measured",
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.0
+          },
+          "saya_vs_body": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 1834,
+            "crossing_pairs_allowed": 504,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [
+              [
+                "W00_Saya",
+                "Layered_hakama_waist",
+                994
+              ],
+              [
+                "W00_Saya",
+                "Indigo_samurai_haori",
+                840
+              ]
+            ],
+            "crossing_parts_allowed": [
+              [
+                "W00_Saya",
+                "Resistance_sash_band",
+                324
+              ],
+              [
+                "W00_Saya",
+                "Obi_waist",
+                180
+              ]
+            ],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 6,
+            "contained_allowed_parts": [
+              [
+                "W00_Saya",
+                "Obi_waist",
+                3
+              ],
+              [
+                "W00_Saya",
+                "Resistance_sash_band",
+                3
+              ]
+            ],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              7,
+              32941
+            ],
+            "open_islands": [
+              0,
+              32737
+            ],
+            "separation_m": null,
+            "separation_kind": "not measured",
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.0
+          },
+          "sheathed_hilt_vs_body": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              23,
+              32941
+            ],
+            "open_islands": [
+              1,
+              32737
+            ],
+            "separation_m": null,
+            "separation_kind": "not measured",
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.0
+          },
+          "kissaki_ue_cm": [
+            -52.65,
+            -24.0,
+            93.09
+          ]
+        },
+        "Walk@1": {
+          "forearms_paws_vs_torso": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              42,
+              107
+            ],
+            "open_islands": [
+              9,
+              33
+            ],
+            "separation_m": null,
+            "separation_kind": null,
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.02
+          },
+          "upper_arms_vs_torso": {
+            "crossing_pairs_visible": 936,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [
+              [
+                "Shoulder_joint_-1",
+                "Indigo_samurai_haori",
+                187
+              ],
+              [
+                "Shoulder_joint_1",
+                "Indigo_samurai_haori",
+                183
+              ],
+              [
+                "Shoulder_joint_1",
+                "Linen_under_kimono",
+                120
+              ],
+              [
+                "Shoulder_joint_-1",
+                "Linen_under_kimono",
+                120
+              ],
+              [
+                "Linen_sleeve_1",
+                "Indigo_samurai_haori",
+                98
+              ],
+              [
+                "Linen_sleeve_-1",
+                "Indigo_samurai_haori",
+                92
+              ],
+              [
+                "Linen_sleeve_1",
+                "Linen_under_kimono",
+                68
+              ],
+              [
+                "Linen_sleeve_-1",
+                "Linen_under_kimono",
+                68
+              ]
+            ],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": [
+              8.54,
+              -22.18,
+              125.17
+            ],
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              34,
+              107
+            ],
+            "open_islands": [
+              4,
+              33
+            ],
+            "separation_m": null,
+            "separation_kind": "not measured",
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.0
+          },
+          "saya_vs_body": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 1834,
+            "crossing_pairs_allowed": 504,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [
+              [
+                "W00_Saya",
+                "Layered_hakama_waist",
+                994
+              ],
+              [
+                "W00_Saya",
+                "Indigo_samurai_haori",
+                840
+              ]
+            ],
+            "crossing_parts_allowed": [
+              [
+                "W00_Saya",
+                "Resistance_sash_band",
+                324
+              ],
+              [
+                "W00_Saya",
+                "Obi_waist",
+                180
+              ]
+            ],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 6,
+            "contained_allowed_parts": [
+              [
+                "W00_Saya",
+                "Obi_waist",
+                3
+              ],
+              [
+                "W00_Saya",
+                "Resistance_sash_band",
+                3
+              ]
+            ],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              7,
+              32941
+            ],
+            "open_islands": [
+              0,
+              32737
+            ],
+            "separation_m": null,
+            "separation_kind": "not measured",
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.0
+          },
+          "sheathed_hilt_vs_body": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              23,
+              32941
+            ],
+            "open_islands": [
+              1,
+              32737
+            ],
+            "separation_m": null,
+            "separation_kind": "not measured",
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.0
+          },
+          "kissaki_ue_cm": [
+            -52.65,
+            -24.0,
+            93.09
+          ]
+        },
+        "Walk@9": {
+          "forearms_paws_vs_torso": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              42,
+              107
+            ],
+            "open_islands": [
+              9,
+              33
+            ],
+            "separation_m": null,
+            "separation_kind": null,
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.02
+          },
+          "upper_arms_vs_torso": {
+            "crossing_pairs_visible": 933,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [
+              [
+                "Shoulder_joint_-1",
+                "Indigo_samurai_haori",
+                186
+              ],
+              [
+                "Shoulder_joint_1",
+                "Indigo_samurai_haori",
+                181
+              ],
+              [
+                "Shoulder_joint_-1",
+                "Linen_under_kimono",
+                120
+              ],
+              [
+                "Shoulder_joint_1",
+                "Linen_under_kimono",
+                118
+              ],
+              [
+                "Linen_sleeve_1",
+                "Indigo_samurai_haori",
+                98
+              ],
+              [
+                "Linen_sleeve_-1",
+                "Indigo_samurai_haori",
+                92
+              ],
+              [
+                "Linen_sleeve_1",
+                "Linen_under_kimono",
+                72
+              ],
+              [
+                "Linen_sleeve_-1",
+                "Linen_under_kimono",
+                66
+              ]
+            ],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": [
+              8.34,
+              -21.47,
+              127.28
+            ],
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              34,
+              107
+            ],
+            "open_islands": [
+              4,
+              33
+            ],
+            "separation_m": null,
+            "separation_kind": "not measured",
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.0
+          },
+          "saya_vs_body": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 1785,
+            "crossing_pairs_allowed": 504,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [
+              [
+                "W00_Saya",
+                "Layered_hakama_waist",
+                994
+              ],
+              [
+                "W00_Saya",
+                "Indigo_samurai_haori",
+                791
+              ]
+            ],
+            "crossing_parts_allowed": [
+              [
+                "W00_Saya",
+                "Resistance_sash_band",
+                324
+              ],
+              [
+                "W00_Saya",
+                "Obi_waist",
+                180
+              ]
+            ],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 6,
+            "contained_allowed_parts": [
+              [
+                "W00_Saya",
+                "Obi_waist",
+                3
+              ],
+              [
+                "W00_Saya",
+                "Resistance_sash_band",
+                3
+              ]
+            ],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              7,
+              32941
+            ],
+            "open_islands": [
+              0,
+              32737
+            ],
+            "separation_m": null,
+            "separation_kind": "not measured",
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.0
+          },
+          "sheathed_hilt_vs_body": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              23,
+              32941
+            ],
+            "open_islands": [
+              1,
+              32737
+            ],
+            "separation_m": null,
+            "separation_kind": "not measured",
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.0
+          },
+          "kissaki_ue_cm": [
+            -52.65,
+            -24.0,
+            93.99
+          ]
+        },
+        "Walk@17": {
+          "forearms_paws_vs_torso": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              42,
+              107
+            ],
+            "open_islands": [
+              9,
+              33
+            ],
+            "separation_m": null,
+            "separation_kind": null,
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.02
+          },
+          "upper_arms_vs_torso": {
+            "crossing_pairs_visible": 936,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [
+              [
+                "Shoulder_joint_-1",
+                "Indigo_samurai_haori",
+                187
+              ],
+              [
+                "Shoulder_joint_1",
+                "Indigo_samurai_haori",
+                183
+              ],
+              [
+                "Shoulder_joint_1",
+                "Linen_under_kimono",
+                120
+              ],
+              [
+                "Shoulder_joint_-1",
+                "Linen_under_kimono",
+                120
+              ],
+              [
+                "Linen_sleeve_1",
+                "Indigo_samurai_haori",
+                98
+              ],
+              [
+                "Linen_sleeve_-1",
+                "Indigo_samurai_haori",
+                92
+              ],
+              [
+                "Linen_sleeve_1",
+                "Linen_under_kimono",
+                68
+              ],
+              [
+                "Linen_sleeve_-1",
+                "Linen_under_kimono",
+                68
+              ]
+            ],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": [
+              8.54,
+              -22.18,
+              125.17
+            ],
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              34,
+              107
+            ],
+            "open_islands": [
+              4,
+              33
+            ],
+            "separation_m": null,
+            "separation_kind": "not measured",
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.0
+          },
+          "saya_vs_body": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 1834,
+            "crossing_pairs_allowed": 504,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [
+              [
+                "W00_Saya",
+                "Layered_hakama_waist",
+                994
+              ],
+              [
+                "W00_Saya",
+                "Indigo_samurai_haori",
+                840
+              ]
+            ],
+            "crossing_parts_allowed": [
+              [
+                "W00_Saya",
+                "Resistance_sash_band",
+                324
+              ],
+              [
+                "W00_Saya",
+                "Obi_waist",
+                180
+              ]
+            ],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 6,
+            "contained_allowed_parts": [
+              [
+                "W00_Saya",
+                "Obi_waist",
+                3
+              ],
+              [
+                "W00_Saya",
+                "Resistance_sash_band",
+                3
+              ]
+            ],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              7,
+              32941
+            ],
+            "open_islands": [
+              0,
+              32737
+            ],
+            "separation_m": null,
+            "separation_kind": "not measured",
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.0
+          },
+          "sheathed_hilt_vs_body": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              23,
+              32941
+            ],
+            "open_islands": [
+              1,
+              32737
+            ],
+            "separation_m": null,
+            "separation_kind": "not measured",
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.0
+          },
+          "kissaki_ue_cm": [
+            -52.65,
+            -24.0,
+            93.09
+          ]
+        },
+        "Walk@25": {
+          "forearms_paws_vs_torso": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              42,
+              107
+            ],
+            "open_islands": [
+              9,
+              33
+            ],
+            "separation_m": null,
+            "separation_kind": null,
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.02
+          },
+          "upper_arms_vs_torso": {
+            "crossing_pairs_visible": 915,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [
+              [
+                "Shoulder_joint_1",
+                "Indigo_samurai_haori",
+                184
+              ],
+              [
+                "Shoulder_joint_-1",
+                "Indigo_samurai_haori",
+                183
+              ],
+              [
+                "Shoulder_joint_1",
+                "Linen_under_kimono",
+                118
+              ],
+              [
+                "Shoulder_joint_-1",
+                "Linen_under_kimono",
+                114
+              ],
+              [
+                "Linen_sleeve_1",
+                "Indigo_samurai_haori",
+                94
+              ],
+              [
+                "Linen_sleeve_-1",
+                "Indigo_samurai_haori",
+                92
+              ],
+              [
+                "Linen_sleeve_1",
+                "Linen_under_kimono",
+                66
+              ],
+              [
+                "Linen_sleeve_-1",
+                "Linen_under_kimono",
+                64
+              ]
+            ],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": [
+              -0.02,
+              27.59,
+              118.32
+            ],
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              34,
+              107
+            ],
+            "open_islands": [
+              4,
+              33
+            ],
+            "separation_m": null,
+            "separation_kind": "not measured",
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.0
+          },
+          "saya_vs_body": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 1902,
+            "crossing_pairs_allowed": 504,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 1,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [
+              [
+                "W00_Saya",
+                "Layered_hakama_waist",
+                994
+              ],
+              [
+                "W00_Saya",
+                "Indigo_samurai_haori",
+                908
+              ]
+            ],
+            "crossing_parts_allowed": [
+              [
+                "W00_Saya",
+                "Resistance_sash_band",
+                324
+              ],
+              [
+                "W00_Saya",
+                "Obi_waist",
+                180
+              ]
+            ],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 6,
+            "contained_allowed_parts": [
+              [
+                "W00_Saya",
+                "Obi_waist",
+                3
+              ],
+              [
+                "W00_Saya",
+                "Resistance_sash_band",
+                3
+              ]
+            ],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              7,
+              32941
+            ],
+            "open_islands": [
+              0,
+              32737
+            ],
+            "separation_m": null,
+            "separation_kind": "not measured",
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.0
+          },
+          "sheathed_hilt_vs_body": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              23,
+              32941
+            ],
+            "open_islands": [
+              1,
+              32737
+            ],
+            "separation_m": null,
+            "separation_kind": "not measured",
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.0
+          },
+          "kissaki_ue_cm": [
+            -52.65,
+            -24.0,
+            93.99
+          ]
+        },
+        "rest": {
+          "forearms_paws_vs_torso": {
+            "crossing_pairs_visible": 0,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": null,
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              42,
+              107
+            ],
+            "open_islands": [
+              9,
+              33
+            ],
+            "separation_m": null,
+            "separation_kind": null,
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.02
+          },
+          "upper_arms_vs_torso": {
+            "crossing_pairs_visible": 936,
+            "crossing_pairs_hidden": 0,
+            "crossing_pairs_allowed": 0,
+            "coplanar_overlap_pairs": 0,
+            "touching_pairs": 0,
+            "crossing_parts_visible": [
+              [
+                "Shoulder_joint_-1",
+                "Indigo_samurai_haori",
+                187
+              ],
+              [
+                "Shoulder_joint_1",
+                "Indigo_samurai_haori",
+                183
+              ],
+              [
+                "Shoulder_joint_1",
+                "Linen_under_kimono",
+                120
+              ],
+              [
+                "Shoulder_joint_-1",
+                "Linen_under_kimono",
+                120
+              ],
+              [
+                "Linen_sleeve_1",
+                "Indigo_samurai_haori",
+                98
+              ],
+              [
+                "Linen_sleeve_-1",
+                "Indigo_samurai_haori",
+                92
+              ],
+              [
+                "Linen_sleeve_1",
+                "Linen_under_kimono",
+                68
+              ],
+              [
+                "Linen_sleeve_-1",
+                "Linen_under_kimono",
+                68
+              ]
+            ],
+            "crossing_parts_hidden": [],
+            "crossing_parts_allowed": [],
+            "first_visible_crossing": [
+              8.54,
+              -22.18,
+              125.17
+            ],
+            "contained": 0,
+            "contained_parts": [],
+            "contained_allowed": 0,
+            "contained_allowed_parts": [],
+            "ambiguous": 0,
+            "ambiguous_parts": [],
+            "islands": [
+              34,
+              107
+            ],
+            "open_islands": [
+              4,
+              33
+            ],
+            "separation_m": null,
+            "separation_kind": "not measured",
+            "separation_pairs_measured": 0,
+            "separation_at": null,
+            "separation_limit_m": 0.0
+          }
+        }
+      },
+      "passed": {
+        "Guard@1": {
+          "forearms_paws_vs_torso": true,
+          "saya_vs_body": true,
+          "katana_vs_body_but_holding_paw": true,
+          "katana_vs_holding_paw": true,
+          "blade_vs_head": true,
+          "blade_vs_body": true,
+          "left_paw_vs_saya": true
+        },
+        "Guard@25": {
+          "forearms_paws_vs_torso": true,
+          "saya_vs_body": true,
+          "katana_vs_body_but_holding_paw": true,
+          "katana_vs_holding_paw": true,
+          "blade_vs_head": true,
+          "blade_vs_body": true,
+          "left_paw_vs_saya": true
+        },
+        "Guard@49": {
+          "forearms_paws_vs_torso": true,
+          "saya_vs_body": true,
+          "katana_vs_body_but_holding_paw": true,
+          "katana_vs_holding_paw": true,
+          "blade_vs_head": true,
+          "blade_vs_body": true,
+          "left_paw_vs_saya": true
+        },
+        "Guard@73": {
+          "forearms_paws_vs_torso": true,
+          "saya_vs_body": true,
+          "katana_vs_body_but_holding_paw": true,
+          "katana_vs_holding_paw": true,
+          "blade_vs_head": true,
+          "blade_vs_body": true,
+          "left_paw_vs_saya": true
+        },
+        "Idle@1": {
+          "forearms_paws_vs_torso": true,
+          "saya_vs_body": true,
+          "sheathed_hilt_vs_body": true
+        },
+        "Idle@49": {
+          "forearms_paws_vs_torso": true,
+          "saya_vs_body": true,
+          "sheathed_hilt_vs_body": true
+        },
+        "Walk@1": {
+          "forearms_paws_vs_torso": true,
+          "saya_vs_body": true,
+          "sheathed_hilt_vs_body": true
+        },
+        "Walk@9": {
+          "forearms_paws_vs_torso": true,
+          "saya_vs_body": true,
+          "sheathed_hilt_vs_body": true
+        },
+        "Walk@17": {
+          "forearms_paws_vs_torso": true,
+          "saya_vs_body": true,
+          "sheathed_hilt_vs_body": true
+        },
+        "Walk@25": {
+          "forearms_paws_vs_torso": true,
+          "saya_vs_body": true,
+          "sheathed_hilt_vs_body": true
+        },
+        "rest": {
+          "forearms_paws_vs_torso": true
+        }
+      }
+    },
+    "checks": {
+      "arm_fit": {
+        "upperarm_R": {
+          "vertices": 1358,
+          "head_tail_from_parts_cm": [
+            0.0,
+            0.0
+          ],
+          "centroid_off_bone_cm": 7.5,
+          "axis_to_bone_deg": 41.7
+        },
+        "forearm_R": {
+          "vertices": 392,
+          "head_tail_from_parts_cm": [
+            0.0,
+            0.0
+          ],
+          "centroid_off_bone_cm": 4.4,
+          "axis_to_bone_deg": 5.4
+        },
+        "hand_R": {
+          "vertices": 1098,
+          "head_tail_from_parts_cm": [
+            0.0,
+            0.0
+          ],
+          "centroid_off_bone_cm": 0.32,
+          "axis_to_bone_deg": 7.4
+        },
+        "upperarm_L": {
+          "vertices": 1358,
+          "head_tail_from_parts_cm": [
+            0.0,
+            0.0
+          ],
+          "centroid_off_bone_cm": 7.51,
+          "axis_to_bone_deg": 41.9
+        },
+        "forearm_L": {
+          "vertices": 246,
+          "head_tail_from_parts_cm": [
+            0.0,
+            0.0
+          ],
+          "centroid_off_bone_cm": 4.8,
+          "axis_to_bone_deg": 2.3
+        },
+        "hand_L": {
+          "vertices": 1098,
+          "head_tail_from_parts_cm": [
+            0.0,
+            0.0
+          ],
+          "centroid_off_bone_cm": 0.32,
+          "axis_to_bone_deg": 7.4
+        }
+      },
+      "channel": {
+        "R": {
+          "breadth_along_channel_cm": 11.0,
+          "vertices_inside_channel": 0
+        },
+        "L": {
+          "breadth_along_channel_cm": 11.0,
+          "vertices_inside_channel": 0
+        }
+      }
+    },
+    "sockets": {
+      "hand_r_grip": {
+        "bone": "hand_R",
+        "component_cm": [
+          15.1505,
+          47.4,
+          75.6999
+        ],
+        "x_axis": [
+          0.0,
+          -1.0,
+          0.0
+        ],
+        "z_axis": [
+          -0.589063,
+          -0.0,
+          0.808087
+        ]
+      },
+      "hand_l_grip": {
+        "bone": "hand_L",
+        "component_cm": [
+          15.1505,
+          -47.4,
+          75.6999
+        ],
+        "x_axis": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "z_axis": [
+          -0.589063,
+          -0.0,
+          0.808087
+        ]
+      },
+      "gear_saya_l": {
+        "bone": "pelvis",
+        "component_cm": [
+          23.0,
+          -24.0,
+          85.5
+        ],
+        "x_axis": [
+          -1.0,
+          0.0,
+          0.0
+        ],
+        "z_axis": [
+          0.0,
+          -0.0,
+          1.0
+        ],
+        "rotation_deg": [
+          0.0,
+          180.0,
+          0.0
+        ],
+        "source": "measured on the visible mesh (Saved/W18Rebuild/s63_sliceA_explore_v2); replaces viewmodels.json's planned gear_saya_l (17, -25, 95), which crosses the haori, the tail and the dō",
+        "sheathed_katana": {
+          "grip_r_in_koiguchi_cm": [
+            -6.32,
+            0.0,
+            0.0
+          ],
+          "from": "the front seppa's face (machi 9.52 less the 3.2 cm habaki); 64 katana vertices lie on it"
+        }
+      }
+    },
+    "guard_explore": "Saved/W18Rebuild/s61_guard_explore.run* (the contract's first target kept with its measurements)",
+    "review_renders": {
+      "Nyaakoto_RuntimeSkin_Guard_Front.png": "426ff4c64703ff619c288a8c58345000fa70a611a38a9f813558323daaee07de",
+      "Nyaakoto_RuntimeSkin_Guard_SideRight.png": "9f0867cabd1370061e32c5d2af7368c261feb4839f4e3b03e26d2cb502642844",
+      "Nyaakoto_RuntimeSkin_Guard_SideLeft.png": "b067fe36c951a73cd9e0f3fd8c12620b1e08fc7c1f9d586a4990c350a35416f9",
+      "Nyaakoto_RuntimeSkin_Idle_Front.png": "86fee5cad4e0c927cc9513097dbde2c54bc552ab5b670ad0c73fa4ee69d8bbb2",
+      "Nyaakoto_RuntimeSkin_Idle_SideLeft.png": "d53e911ba057167d39a5ef7e665493de1bb8eaf001117935662a1a1129358370"
+    }
+  },
+  "limitations": "No production deformation, lip sync, authored combat animation, strand groom, UE 5.8.2 visual review, or photoreal quality qualification. The guard is an interim one-paw pose. The katana and saya are the authored W00 at sockets, not body geometry; the bow, quiver and arrows remain back presentation geometry until their gear assets exist."
 }

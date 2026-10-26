@@ -1,25 +1,25 @@
 {
   "schema_version": 1,
   "generator": "scripts/art/generate_nyaakoto_lods.py",
-  "source_blend_sha256": "d5cda854af9f5b312de354877d833b612989067abb1ae938f736a7a8dde97b5d",
-  "lod0_fbx_sha256": "ead9d602a89f367516ebfac386ff3d6483f14013a07401f3d8d8df4ee1d6b740",
+  "source_blend_sha256": "cf4acdef478abfdfae266e49fd54f5c7fc66ef9fc635c587a468088f25f60769",
+  "lod0_fbx_sha256": "bde1a741e93bdb3510b1be80cb6c299279ad679977cbcb04aa32b923863ce066",
   "sora_kamon_svg_sha256": "d66413a71b70e25dcb8b2f118dcfe846a6446ed1db3de53ce88fc70c16ac0910",
   "lods": [
     {
       "level": 1,
       "fbx": "SK_NyaagyuSamurai_LOD1.fbx",
-      "sha256": "aaba57526b2b1d293beebb577238fd6617e21372a816d7bb56754a7cb27dea7f",
-      "source_parts": 422,
-      "vertices": 65964,
-      "triangles": 90062,
+      "sha256": "74b68590f57920c4caed24e56b497032a1dd807021454eb13fcac102e650dc70",
+      "source_parts": 407,
+      "vertices": 65372,
+      "triangles": 89114,
       "bounds_m": {
         "x": [
           -0.6542,
-          0.2737
+          0.2713
         ],
         "y": [
-          -0.552,
-          0.552
+          -0.536,
+          0.529
         ],
         "z": [
           -0.001,
@@ -73,23 +73,24 @@
         "upperarm_L",
         "upperarm_R"
       ],
-      "card_fur": "20% sampled source triangle cards"
+      "card_fur": "20% sampled source triangle cards",
+      "part_rules": "nyaakoto_runtime_parts.py: LOD0's body (slice A)"
     },
     {
       "level": 2,
       "fbx": "SK_NyaagyuSamurai_LOD2.fbx",
-      "sha256": "b76c67bacc5d20915c9fe50b3beb4cc1c5184c8c187906384a49e4acc3664ddd",
-      "source_parts": 204,
-      "vertices": 29117,
-      "triangles": 50638,
+      "sha256": "5523cbc8788baadb47b4b9f69ea124bb733c8b15941cc6689119ced1616551d8",
+      "source_parts": 197,
+      "vertices": 28765,
+      "triangles": 50010,
       "bounds_m": {
         "x": [
           -0.6542,
-          0.2737
+          0.2713
         ],
         "y": [
-          -0.5518,
-          0.5518
+          -0.536,
+          0.529
         ],
         "z": [
           -0.0011,
@@ -143,7 +144,8 @@
         "upperarm_L",
         "upperarm_R"
       ],
-      "card_fur": "none; surface normal maps only"
+      "card_fur": "none; surface normal maps only",
+      "part_rules": "nyaakoto_runtime_parts.py: LOD0's body (slice A)"
     }
   ],
   "license": "Original project-owned source geometry and distance LODs; user-supplied SORA crest retained exactly",
