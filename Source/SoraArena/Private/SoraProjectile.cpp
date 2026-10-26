@@ -72,6 +72,8 @@ void ASoraProjectile::EndPlay(const EEndPlayReason::Type Reason)
 {
     const auto Warning=HorseShellWarning; HorseShellWarning.Reset();
     if(Warning.IsValid()) Warning->Destroy();
+    const auto Arc=ArcWarning;ArcWarning.Reset();
+    if(Arc.IsValid())Arc->Destroy();
     // Unexpected projectile removal is a miss, not an eternally pending
     // sixth arrow. Session teardown invalidates its identities first.
     if((ArcheryShotId||WoodShotId)&&Reason==EEndPlayReason::Destroyed)

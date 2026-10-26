@@ -710,6 +710,7 @@ private:
     // invader, a sparring pupil or the collector.
     ASoraEnemy* SpawnWaveOpponent(FName Type, bool bSparring, int32 Slot, bool bInvulnerable = false, const FVector* Position = nullptr);
     ASoraEnemy* SpawnTenementDefender(int32 Wave,int32 Group,int32 Member,int32 Slot);
+    ASoraEnemy* SpawnWorkshopDefender(int32 Wave,int32 Group,int32 Member,int32 Slot);
     bool HeroAtTenementKitchen() const;
     ASoraEnemy* SpawnStealthGuard(const FSoraGuard& Guard, int32 GuardIndex, int32 Slot);
     ASoraEnemy* SpawnDuelOpponent(FName Opponent, bool bSparring, int32 Slot);

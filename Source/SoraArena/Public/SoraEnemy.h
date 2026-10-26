@@ -118,6 +118,8 @@ public:
     // way; the pawn's own tick then winds it up, strikes and recovers.
     void DisruptWindAim(int32 Milliseconds);
     bool TryAttack(ASoraCharacterBase& Target, float Distance);
+    void SetWorkshopArrival(bool Active);
+    bool IsWorkshopArriving() const { return bWorkshopArriving; }
     void SetCampaignWithdrawal(bool Active);
     bool IsCampaignWithdrawing() const { return bCampaignWithdrawing; }
     // Only the registered pod-B grenadier receives this encounter binding.
@@ -293,6 +295,7 @@ private:
     // The attack under way.
     EPhase Phase = EPhase::Idle;
     int32 AttackIndex = INDEX_NONE;
+    bool bWorkshopArriving=false;
     TWeakObjectPtr<ASoraCharacterBase> AttackTarget;
     float PhaseStartedAt = 0.f;
     float PhaseEndsAt = 0.f;

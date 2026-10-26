@@ -33,6 +33,8 @@ public:
     float TraveledCm() const { return Traveled; }
     void BindHorseShell(USoraCampaignDirector& Director,uint64 Generation,AActor* Warning);
     bool HorseShellCurrent() const;
+    void ShowArcWarning(const FVector& Landing,float FlightSeconds);
+    AActor* ArcWarningActor() const { return ArcWarning.Get(); }
 private:
     UPROPERTY() TObjectPtr<USphereComponent> Collision;
     float Age = 0.f;
@@ -42,5 +44,6 @@ private:
     uint64 HorseShellGeneration=0;
     TWeakObjectPtr<USoraCampaignDirector> HorseShellDirector;
     TWeakObjectPtr<AActor> HorseShellWarning;
+    TWeakObjectPtr<AActor> ArcWarning;
     void Detonate();
 };

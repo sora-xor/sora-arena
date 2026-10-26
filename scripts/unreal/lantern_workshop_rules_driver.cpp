@@ -1,6 +1,7 @@
 #include "SoraLanternWorkshopRules.h"
 #include "SoraFieldcraftRules.h"
 #include "SoraWorkshopHazardRules.h"
+#include "SoraWorkshopEncounterRules.h"
 #include <limits>
 #include <cassert>
 #include <iomanip>
@@ -87,5 +88,27 @@ int main()
     using Rate=SoraCombatRules::EEnvironmentalRate;
     assert(SoraCombatRules::EnemyVulnerabilityDamage(12,Hit::Hazard,Rate::WorkshopOil,true,-1000,2000)==12);
     assert(SoraCombatRules::EnemyVulnerabilityDamage(12,Hit::Melee,Rate::WorkshopOil,true,-1000,2000)>12);
-    std::cout<<"],\"hazard_boundary_assertions\":true}\n";
+    std::cout<<"],\"hazard_boundary_assertions\":true";
+    namespace E=SoraWorkshopEncounterRules;
+    std::cout<<",\"combat_spawns\":[";Comma=false;
+    for(const auto& S:E::Spawns)
+    {if(Comma)std::cout<<',';Comma=true;std::cout<<'['<<S.Floor.X<<','<<S.Floor.Y<<','<<S.Floor.Z<<']';}
+    std::cout<<"],\"entry_routes\":[";Comma=false;
+    for(const auto& S:E::Spawns)
+    {
+        if(S.Entry!=E::EEntry::Street&&S.Entry!=E::EEntry::Canal)continue;
+        if(Comma)std::cout<<',';Comma=true;
+        std::cout<<"[["<<S.Floor.X<<','<<S.Floor.Y<<",2.15]";
+        for(int L=0;L<E::WalkLegs;++L){const auto P=E::WalkPoint(S.Entry,S.Member,L);std::cout<<",["<<P.X<<','<<P.Y<<",2.15]";}
+        std::cout<<']';
+    }
+    std::cout<<"],\"vault_speed\":["<<E::VaultXSpeed<<','<<E::VaultZSpeed<<']';
+    int Expected=0;
+    for(int W=0;W<3;++W)for(int G=0;G<(W==1?2:1);++G)for(int M=0;M<(W==0?3:W==1?2:1);++M)
+        assert(E::SpawnIndex(W,G,M)==Expected++);
+    assert(Expected==8&&E::SpawnIndex(-1,0,0)==-1&&E::SpawnIndex(3,0,0)==-1&&E::SpawnIndex(1,2,0)==-1);
+    assert(E::SpawnIndex(0,0,3)==-1&&E::SpawnIndex(2,0,1)==-1&&E::SpawnIndex(0,0,-1)==-1);
+    assert(E::VaultLanded(3350,8,true)&&!E::VaultLanded(3351,0,true)&&!E::VaultLanded(3300,160,true));
+    assert(!E::VaultLanded(3300,0,false));
+    std::cout<<",\"entry_boundary_assertions\":true}\n";
 }

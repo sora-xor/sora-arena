@@ -130,6 +130,9 @@ public:
     void AssignSpireFlight() { bSpireFlight=true; }
     void AssignTenementDefense(int32 Member);
     bool HasTenementDefenseFlight() const { return TenementDrone!=INDEX_NONE; }
+    void AssignWorkshopDefense(int32 Index);
+    int32 WorkshopEntryIndex() const { return WorkshopEntry; }
+    bool WorkshopVaultLaunched() const { return bWorkshopVaultLaunched; }
     // An errand's goal is reached within this (2D).
     static constexpr float ErrandReachCm = 120.f;
     void ClearErrand() { bErrand = false; }
@@ -268,6 +271,9 @@ private:
     bool bSpireFlight=false;
     int32 TenementDrone=INDEX_NONE,TenementLeg=0;
     bool DriveTenementDefense(ASoraEnemy& Enemy,ASoraCharacterBase& Target,float Dt);
+    int32 WorkshopEntry=INDEX_NONE,WorkshopLeg=0;
+    bool bWorkshopVaultLaunched=false;
+    bool DriveWorkshopDefense(ASoraEnemy& Enemy,ASoraCharacterBase& Target,float Dt);
     bool DriveSpireFlight(ASoraEnemy& Enemy,ASoraCharacterBase& Target,float Dt);
     bool DriveLift(ASoraEnemy& Enemy,ASoraCharacterBase& Target,float Dt);
     // Stealth: the hero in view at the last tick, and evidence of a body.

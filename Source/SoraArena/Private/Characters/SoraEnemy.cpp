@@ -337,7 +337,7 @@ void ASoraEnemy::DisruptWindAim(int32 Milliseconds)
 }
 bool ASoraEnemy::TryAttack(ASoraCharacterBase& Target,float Distance)
 {
-    if(bHorseShellBound||bCampaignWithdrawing) return false;
+    if(bHorseShellBound||bCampaignWithdrawing||bWorkshopArriving) return false;
     if(!Kind||Phase!=EPhase::Idle||IsStaggered()||IsTurnLocked()||!Target.IsAlive()||Now()<NextAttackAt) return false;
     const int32 Facing=SoraDamage::FacingMilli(*this,Target.GetActorLocation());
     for(int32 Index=0;Index<AttackSet().Num();++Index)
@@ -353,6 +353,11 @@ bool ASoraEnemy::TryAttack(ASoraCharacterBase& Target,float Distance)
         return Phase!=EPhase::Idle;
     }
     return false;
+}
+void ASoraEnemy::SetWorkshopArrival(bool Active)
+{
+    bWorkshopArriving=Active;
+    if(Active)CancelAttack();
 }
 void ASoraEnemy::Commit(int32 Index,ASoraCharacterBase& Target)
 {
@@ -581,7 +586,8 @@ ASoraProjectile* ASoraEnemy::LaunchShell(const FSoraEnemyAttack& Attack,const FV
     UGameplayStatics::FinishSpawningActor(Shell,Shell->GetActorTransform());
     if(!IsValid(Shell)||Shell->IsActorBeingDestroyed()||(Director&&!Shell->HorseShellCurrent())) return nullptr;
     ++ShotsSinceRelocation;
-    if(!Director) SoraDamage::Ring(GetWorld(),Landing+FVector(0.f,0.f,3.f),Attack.RadiusCm,SoraAccessibility::TelegraphColor(this,SoraAccessibility::ETelegraph::Cleave),Flight);
+    if(ActorHasTag(TEXT("WorkshopRooftop")))Shell->ShowArcWarning(Landing,Flight);
+    else if(!Director) SoraDamage::Ring(GetWorld(),Landing+FVector(0.f,0.f,3.f),Attack.RadiusCm,SoraAccessibility::TelegraphColor(this,SoraAccessibility::ETelegraph::Cleave),Flight);
     if(USoraGameEvents* Events=USoraGameEvents::Get(this))
     {
         FSoraWeaponFiredEvent Fired;

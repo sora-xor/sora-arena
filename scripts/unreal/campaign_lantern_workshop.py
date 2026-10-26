@@ -5,9 +5,11 @@ BEATS=('ch03.b08','ch03.b09')
 ZONE=[1450,-2500,3700,200]
 ENTRY=[2000,-2300,90]
 STATIONS=[[2100,-620],[2100,-950],[2100,-1300],[2790,-2050]]
-# Clear staging positions for the existing wave runner. Authored vault and
-# rooftop arrival behavior is a separate encounter implementation.
+# The craft beat retains its inert staging pool; b08 binds each wave member
+# to the street, fence, canal gate or supported roof perch.
 SPAWNS=[[3280,-1050],[3100,-1050],[2920,-1050],[2000,-2320],[2000,-2420],[2750,-1700]]
+COMBAT_SPAWNS=[[3480,-250],[3480,-110],[3480,30],[3480,-1270],[3480,-1490],
+               [1960,-2450],[2040,-2450],[2750,-1650]]
 
 
 def contract():
@@ -19,7 +21,7 @@ def contract():
 
 def record_values(beat):
     r={'entry':list(ENTRY),'height_cm':0,'anchor':[1900,-1660],
-       'spawns':copy.deepcopy(SPAWNS),'patrols':[],
+       'spawns':copy.deepcopy(COMBAT_SPAWNS if beat=='ch03.b08' else SPAWNS),'patrols':[],
        'exit':{'center':[3480,-250],'size':[300,300]},'lantern_workshop':contract()}
     if beat=='ch03.b09':
         r.update(anchor=[2050,-950],stations=copy.deepcopy(STATIONS),step_stations=[0,1,1,2,3,3])

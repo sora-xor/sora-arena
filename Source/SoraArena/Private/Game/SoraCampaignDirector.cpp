@@ -1382,6 +1382,7 @@ void USoraCampaignDirector::SpawnPending()
         }
         Pending.RemoveAt(0);
         ASoraEnemy* Enemy=Beat->Space.bTenementDefense?SpawnTenementDefender(Next.Wave,Next.SpawnGroup,Next.SpawnMember,Spawned):
+            Beat->Id==TEXT("ch03.b08")?SpawnWorkshopDefender(Next.Wave,Next.SpawnGroup,Next.SpawnMember,Spawned):
             Beat->Space.Lift.bEnabled?SpawnLiftOpponent(Next.Type,Next.Wave,Spawned):
             SpawnWaveOpponent(Next.Type,Beat->bSparring,Spawned,Next.bInvulnerable,(Pod||IsRelayRoom()||Ledger)?&PodPosition:nullptr);
         if(Enemy)

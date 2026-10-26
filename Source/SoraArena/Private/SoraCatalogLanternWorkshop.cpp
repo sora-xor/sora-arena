@@ -1,6 +1,7 @@
 #include "SoraCatalogLanternWorkshop.h"
 #include "SoraCatalog.h"
 #include "SoraCatalogJson.h"
+#include "SoraWorkshopEncounterRules.h"
 #include <initializer_list>
 
 namespace
@@ -36,9 +37,13 @@ bool SoraCatalogLanternWorkshop::Read(const FJsonObject& O,FSoraBeat& Beat,const
     if(B.Entry!=FVector2D(2000,-2300)||B.EntryYaw!=90.f||B.HeightCm!=0||
        B.Anchor!=(Craft?FVector2D(2050,-950):FVector2D(1900,-1660))||
        B.Exit.Center!=FVector2D(3480,-250)||B.Exit.Size!=FVector2D(300,300)||
-       B.Spawns.Num()!=6||!B.Patrols.IsEmpty())return false;
+       B.Spawns.Num()!=(Combat?8:6)||!B.Patrols.IsEmpty())return false;
     const FVector2D Spawns[]={{3280,-1050},{3100,-1050},{2920,-1050},{2000,-2320},{2000,-2420},{2750,-1700}};
-    for(int I=0;I<6;++I)if(B.Spawns[I]!=Spawns[I])return false;
+    for(int I=0;I<B.Spawns.Num();++I)
+    {
+        const auto P=SoraWorkshopEncounterRules::Spawns[I].Floor;
+        if(B.Spawns[I]!=(Combat?FVector2D(P.X,P.Y):Spawns[I]))return false;
+    }
     if(Craft)
     {
         if(B.Stations.Num()!=4||B.StepStations.Num()!=6||Space.Sites.Num()!=3||Space.Sites[1]!=B.Anchor)return false;

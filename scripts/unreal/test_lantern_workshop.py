@@ -57,6 +57,34 @@ class LanternWorkshopTests(unittest.TestCase):
         self.assertEqual([r[1] for r in rows],[72]*len(rows))
         self.assertIs(self.native['hazard_boundary_assertions'],True)
 
+    def test_authored_combat_spawns_and_group_mapping(self):
+        self.assertEqual([p[:2] for p in self.native['combat_spawns']],workshop.COMBAT_SPAWNS)
+        self.assertEqual([p[2] for p in self.native['combat_spawns']],[0]*7+[650])
+        self.assertIs(self.native['entry_boundary_assertions'],True)
+        for p in self.native['combat_spawns']:self.clear([[p[0],p[1],p[2]+2.15]])
+        c=copy.deepcopy(self.chapter)
+        b=next(r for r in c['space']['beats'] if r['beat']=='ch03.b08')
+        b['spawns']=copy.deepcopy(workshop.SPAWNS)
+        self.assertFalse(workshop.workshop_valid(c))
+
+    def test_street_and_canal_entry_routes_clear_real_solids_and_cover(self):
+        self.assertEqual(len(self.native['entry_routes']),5)
+        for route in self.native['entry_routes']:
+            self.clear(route)
+            for p in tenement_geometry.TenementTests.sample(route):
+                for box in self.native['hazard_solids']:
+                    self.assertFalse(tenement_geometry.TenementTests.hits(box,p),(p,box))
+
+    def test_vault_trajectory_clears_fence_and_lands_in_yard(self):
+        vx,vz=self.native['vault_speed'];flight=2*vz/980
+        for x,y,z in self.native['combat_spawns'][3:5]:
+            points=[[x+vx*t,y,z+2.15+vz*t-490*t*t] for t in [flight*i/400 for i in range(401)]]
+            self.clear(points)
+            for p in points:
+                for box in self.native['hazard_solids']:
+                    self.assertFalse(tenement_geometry.TenementTests.hits(box,p),(p,box))
+            self.assertLess(points[-1][0],3350)
+
     def test_hazard_proxies_preserve_yard_routes_and_shell_bench_clearance(self):
         hazards=self.native['hazard_solids']
         self.assertEqual(len(hazards),4)
