@@ -276,3 +276,35 @@ readback is in `data/runtime_weapon_ue_socket_probe.json`, with every run's comm
 3. W18 with or without adopting my rebuild.
 4. Then `--apply`, the screen, `create_runtime_weapon_validation.py`, a probe of the in-place files, and root's own
    adoption.
+
+## 10. Malformed and nonfinite readbacks (root's review of d13ebfc5)
+
+**The finding.** socket_failures accepted a NaN in any one of position, scale, forward, right and up: all five
+mutations returned no failure. `math.dist(...) >= tolerance` is false for NaN, and max() could drop a NaN in
+model_agreement. Root's reproduction does not claim that any real UE socket held a NaN.
+
+**The fix.**
+- **weapon_socket_gates:**
+  - every vector is validated first (`finite_vector`: present, of its length, numeric with bools excluded,
+    finite), and a bad one fails explicitly;
+  - every comparison fails safe: `not distance < tolerance`;
+  - model_agreement counts nonfinite values, which agrees() refuses;
+  - same_import validates each section's array lengths, index range and vectors before pairing, and fails rather
+    than raises.
+- **The drone probe** now reads right and up too, and gates sockets through the same function. Its LOD0 vertex
+  and radius checks fail safe.
+- **The screen** flags nonfinite rows, and fbx_unreal_sockets.interchange refuses nonfinite node transforms and
+  vertices. `math.cos(inf)` had raised, while NaN went through.
+- **Unchanged:** the tolerances, and raw transforms. The re-export tool and validators already assert with `<` and
+  `<=` on numpy maxima, which carry NaN through, so they fail safe.
+
+**Tests.**
+- test_weapon_socket_export has mutation tests:
+  - every field against NaN, +inf, -inf, a short or long vector, text, a bool, None, a scalar, or a missing field;
+  - a malformed record position or authored axes;
+  - bad values on either side of model_agreement;
+  - nine malformed or nonfinite section cases.
+- Against d13ebfc5's gates they give 5 run: 1 passed, 2 failed, 2 errors. The NaN position returns [].
+- On the real s88 readback the hardened gates give the same verdicts: no corrected asset fails, all 26 originals
+  fail, and the model agrees. The receipts hold no NaN or Infinity.
+- W11's same_import failure stays as it was recorded: its arrays were not stored, so it cannot be re-gated.
