@@ -12,6 +12,8 @@ The chapter does not specify a low dwell or vertical speed. This implementation 
 
 `scripts/unreal/test_landing_drone.py` compiles and executes the production C++ state machine with assertions, warnings as errors and undefined-behavior traps. The local run passed on 2026-10-26. It exercises timing boundaries, all difficulty durations, fractional frame time, arrival gating, a single release, recovery, interruption and the scoped damage predicate. It does not simulate collision or certify the Unreal code.
 
+All 60 CPU gameplay gates pass on signed `a705c7c655af367762ee5bff2040bb9c3ac28132`, tree `e43250ebbfb5a304fc69d14411e49f623ece1fdd`, with clean, unchanged source before and after. The report and every log were rechecked against the signed check inventory. Evidence in the source-validation worktree: `Saved/Qualification/2026-10-26/landing-drone-cpu-attempt1`; review SHA256 `d28879f0ec959a7fbf5d10bae56b899b59d02ebd3813e15f86f9af0b28227675`. The source runner's 15 failure/scope tests also pass. These are local checks; the candidate has not been pushed or run in Unreal.
+
 Three Unreal tests are prepared but **unbuilt and unrun**:
 
 - `SoraArena.Campaign.LandingDrone.TimingAndStrike`: actual campaign binding, mark/pause, swept arrival, damage and root duration, then one mapped wakizashi attack.

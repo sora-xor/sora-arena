@@ -11,6 +11,22 @@ production. Work runs in isolated worktrees, with a single coordinated Unreal
 and GPU rendering lane. The shared checkout is not a build or render workspace.
 The local coordination mailboxes record current ownership, commits and lane use.
 
+## October 26 landing-drone source candidate
+
+Isolated `codex/drone-landing` adds ch03.b02's active 900 ms mark, physical
+descent to 2.5 m, 1.5-second net and low wakizashi vulnerability. All 60 local
+CPU gameplay gates pass on signed `a705c7c6`, with unchanged source. Three
+Unreal fixtures are prepared but unbuilt/unrun while Claude owns the engine
+lane. The chapter's horizontal patrol shapes and periods remain unfinished.
+[Candidate scope and evidence](qualification/landing-drone-2026-10-26.md)
+record the implementation choices and pending collision/input checks.
+
+The existing published checkpoint `63d7e487` separately passes all 113 source
+checks in CI run `40268131665`. Its tested merge `fe2fdf62` has the same tree;
+all five artifacts and raw logs authenticate. Review SHA256:
+`28d7bffae1185f3fe9e863f3c6a054dbe5274474496f34611936adf1bbc8230d`.
+That CI result does not include the new landing-drone candidate.
+
 ## October 26 drone import, palace doors and ledger alarm
 
 Claude's corrected drone FBX is integrated with unchanged mesh shape and maps.
