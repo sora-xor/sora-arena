@@ -246,11 +246,21 @@ bool FSoraFieldcraftConvoyNetsTest::RunTest(const FString& Parameters)
         W.Hero()->WeaponId,Campaign->IsMounted(),W.Mode()->IsPlaying(),W.Hero()->GetEquipment()->IsStaggered(),
         W.Hero()->GetEquipment()->IsSheathed(),W.Hero()->GetEquipment()->IsCommittedStrike(),
         *Campaign->Steed()->LocalOf(Fieldcraft->QuarryLocation(Netted)).ToString()));
+    AddInfo(FString::Printf(TEXT("Saddle cut rule: expected_weapon=%d side=%d target=%d"),
+        Fieldcraft->Active()->Nets.SaddleWeapon,Fieldcraft->Active()->Nets.SaddleSide,Netted));
+    for(int32 Quarry=0;Quarry<Fieldcraft->QuarryCount();++Quarry)
+        AddInfo(FString::Printf(TEXT("Saddle cut quarry before: index=%d net=%d local=%s tether=%s"),Quarry,
+            int32(Fieldcraft->NetOf(Quarry)),*Campaign->Steed()->LocalOf(Fieldcraft->QuarryLocation(Quarry)).ToString(),
+            *GetNameSafe(Fieldcraft->TetherOf(Quarry))));
     if (!W.Press(EKeys::RightMouseButton) || !W.Tick(2))
         return false;
     AddInfo(FString::Printf(TEXT("Saddle cut after input: commits=%d mounted=%d play=%d stagger=%d local=%s net=%d"),
         CutCommits,Campaign->IsMounted(),W.Mode()->IsPlaying(),W.Hero()->GetEquipment()->IsStaggered(),
         *Campaign->Steed()->LocalOf(Fieldcraft->QuarryLocation(Netted)).ToString(),int32(Fieldcraft->NetOf(Netted))));
+    for(int32 Quarry=0;Quarry<Fieldcraft->QuarryCount();++Quarry)
+        AddInfo(FString::Printf(TEXT("Saddle cut quarry after: index=%d net=%d local=%s cut_event=%d"),Quarry,
+            int32(Fieldcraft->NetOf(Quarry)),*Campaign->Steed()->LocalOf(Fieldcraft->QuarryLocation(Quarry)).ToString(),
+            W.Raised(TEXT("net_cut:")+Fieldcraft->Active()->Nets.Quarry[Quarry].Id)));
     TestTrue(TEXT("A katana cut from the saddle to the right frees the netted horse"),
         Fieldcraft->NetOf(Netted) != SoraFieldcraftRules::ENet::Netted && W.Raised(TEXT("net_cut:") + Fieldcraft->Active()->Nets.Quarry[Netted].Id));
     // Cut free, the load is let be while its drone reloads (9 s): for eight

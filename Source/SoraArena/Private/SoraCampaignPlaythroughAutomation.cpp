@@ -286,9 +286,12 @@ bool NoteUnlocks(FAutomationTestBase& Test, FState& State, const FString& BeatId
 
 bool Advance(FAutomationTestBase& Test, FState& State, int32 Frames = 2, float DeltaSeconds = FrameSeconds)
 {
-    for (int32 Frame = 0; Frame < Frames; ++Frame)
+    // Long assisted waits still advance character movement in bounded steps.
+    // A half-second world tick can exhaust its eight simulation iterations.
+    const int32 Steps = FMath::Max(1, FMath::CeilToInt(DeltaSeconds / .05f));
+    for (int32 Frame = 0; Frame < Frames * Steps; ++Frame)
     {
-        if (!State.World->Tick(1, DeltaSeconds))
+        if (!State.World->Tick(1, DeltaSeconds / Steps))
         {
             State.World->ForwardErrorMessages(&Test);
             return Fail(Test, State, TEXT("Campaign world failed to tick"));
@@ -567,8 +570,12 @@ bool WorkAtAnchor(FAutomationTestBase& Test, FState& State)
         int Node=0;while(Node<4&&(Director->TaskProgress().PointsMask&(1u<<Node))) ++Node;
         bool Ready=false;
         const FVector Tangent=Node<2?FVector(0,60,0):FVector(15,0,0);
-        for(int Side:{0,1,-1})
+        // Fallen drones now remain on the floor. Sample the wider ground
+        // approach without removing bodies or bypassing reach/visibility;
+        // keep the narrow upper platform's original three work positions.
+        for(int Side:{0,1,-1,2,-2,3,-3})
         {
+            if(Node>=2&&FMath::Abs(Side)>1) continue;
             Player(State)->GetCharacterMovement()->StopMovementImmediately();
             Player(State)->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
             Player(State)->SetActorLocation(Anchor+Tangent*Side+FVector(0,0,Player(State)->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2));
