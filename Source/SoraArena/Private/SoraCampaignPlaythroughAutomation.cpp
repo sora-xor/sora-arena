@@ -538,6 +538,7 @@ bool HoistLoad(FAutomationTestBase& Test, FState& State)
 FVector FarAway(const FState& State)
 {
     const FSoraBeatSpace* Space = Campaign(State)->ActiveSpace();
+    if(Space&&Space->bTenementDefense)return FVector(-2800,1800,0);
     return Space && Space->Zone != INDEX_NONE ? ASoraWorldBuilder::Floor(Space->Entry) : FVector(-2700, 1800, 0);
 }
 
@@ -1289,9 +1290,10 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
         if (Rules.Goal == EGoal::Hold)
         {
             MoveTo(State, FarAway(State));
+            const int32 Before=Director->TaskProgress().Progress;
             if (!Advance(Test, State, 2, FastSeconds))
                 return false;
-            bOk &= Test.TestEqual(*(Beat.Id + TEXT(" holds nothing from afar")), Director->TaskProgress().Progress, 0);
+            bOk &= Test.TestEqual(*(Beat.Id + TEXT(" makes no hold progress from afar")), Director->TaskProgress().Progress, Before);
         }
         // A ride's ambushes come as the rider passes their marks (ch02.b08's
         // drones, ch08.b02's charge), and reaching the destination ends the
@@ -2263,8 +2265,11 @@ void Step(FAutomationTestBase* Test, const FStateRef& State, TFunction<bool(FAut
 {
     ADD_LATENT_AUTOMATION_COMMAND(FFunctionLatentCommand([Test, State, Body = MoveTemp(Body)]()
     {
-        if (!State->bAborted)
-            Body(*Test, *State);
+        if (!State->bAborted&&!Body(*Test, *State))
+        {
+            if(!Test->HasAnyErrors())Test->AddError(TEXT("Campaign stage returned false without an error; subsequent stages are skipped."));
+            State->bAborted=true;
+        }
         return true;
     }));
 }

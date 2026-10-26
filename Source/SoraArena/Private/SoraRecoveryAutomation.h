@@ -17,7 +17,12 @@ inline bool WalkTo(FSoraAutomationWorld& World,const FVector& Destination)
     auto* Hero=World.Player();
     auto* Nav=USoraNavigation::Get(Hero);
     TArray<FVector> Path;
-    if(!Nav||!Nav->Settle()||!Nav->FindPath(Hero->GetActorLocation(),Destination,*Hero,Path)||Path.IsEmpty()) return false;
+    if(!Nav||!Nav->Settle()||!Nav->FindPath(Hero->GetActorLocation(),Destination,*Hero,Path)||Path.IsEmpty())
+    {
+        UE_LOG(LogTemp,Error,TEXT("Recovery walk has no path: hero=%s destination=%s"),
+            *Hero->GetActorLocation().ToString(),*Destination.ToString());
+        return false;
+    }
     Path.Add(Destination);
     for(const FVector& Point:Path)
     {
@@ -27,7 +32,16 @@ inline bool WalkTo(FSoraAutomationWorld& World,const FVector& Destination)
             Hero->GetController()->SetControlRotation(Facing); Hero->FaceRotation(Facing,0.f);
             if(!World.InjectKey(EKeys::W,IE_Pressed)||!World.Tick(1)) return false;
         }
-        if(FVector::Dist2D(Hero->GetActorLocation(),Point)>40.f) { World.InjectKey(EKeys::W,IE_Released); return false; }
+        if(FVector::Dist2D(Hero->GetActorLocation(),Point)>40.f)
+        {
+            FHitResult Hit;FCollisionQueryParams Query(SCENE_QUERY_STAT(RecoveryWalkBlocked),false,Hero);
+            World.GetTestWorld()->LineTraceSingleByChannel(Hit,Hero->GetActorLocation(),
+                FVector(Point.X,Point.Y,Hero->GetActorLocation().Z),ECC_Visibility,Query);
+            UE_LOG(LogTemp,Error,TEXT("Recovery walk blocked: hero=%s waypoint=%s destination=%s movement=%d input=%d hit=%s component=%s"),
+                *Hero->GetActorLocation().ToString(),*Point.ToString(),*Destination.ToString(),
+                int(Hero->GetCharacterMovement()->MovementMode),int(World.Mode()->InputState()),*GetNameSafe(Hit.GetActor()),*GetNameSafe(Hit.GetComponent()));
+            World.InjectKey(EKeys::W,IE_Released);return false;
+        }
     }
     return World.InjectKey(EKeys::W,IE_Released)&&World.Tick(4);
 }
