@@ -6,6 +6,8 @@ explicit openings where this district and its north passage join it.
 import copy
 
 BEATS = ('ch03.b04', 'ch03.b05', 'ch03.b06', 'ch03.b13', 'ch03.b14')
+HUB_RETURNS = {'ch03.b16': {'entry': [-350, 0, 0]},
+               'ch03.b18': {'entry': [-350, 0, 0], 'anchor': [400, -220]}}
 ZONE = [-4700, -400, -600, 4300]
 ENTRY = [-2800, 450, 90]
 WELL = [-3100, 3200]
@@ -64,6 +66,11 @@ def place_tenements(beats, records, zones, sites, pickups, layout, fail):
         return
     if len(selected) != len(BEATS):
         fail('tenements', 'all five back-tenement beats are required')
+    # The authored tenements overlap the arena's old west-street spawn.
+    # Later hub arrivals must stand on the remaining hub, not in zone 2.
+    for r in records:
+        if r['beat'] in HUB_RETURNS:
+            r.update(copy.deepcopy(HUB_RETURNS[r['beat']]))
     authored = {p['id']: p for p in layout['points']}
     for name, at in [('act_b05_dry_well_rope', WELL), ('pk_b05_tsurube', HOIST), ('dp_b05_hideout', HIDEOUT)]:
         if authored.get(name, {}).get('positions_cm') != [at + [0]]:
@@ -131,6 +138,10 @@ def tenements_valid(chapter):
         if not chapter['id'].startswith('ch03_'):
             return not any('tenements' in r or 'tenement_defense' in r or 'tenement_finds' in r for r in chapter['space']['beats'])
         if len(selected) != len(BEATS):
+            return False
+        returns = [r for r in chapter['space']['beats'] if r['beat'] in HUB_RETURNS]
+        if len(returns) != len(HUB_RETURNS) or any(r['zone'] != -1 or
+                any(r.get(k) != v for k, v in HUB_RETURNS[r['beat']].items()) for r in returns):
             return False
         if any(('tenements' in r)!=(r['beat'] in BEATS) for r in chapter['space']['beats']):
             return False

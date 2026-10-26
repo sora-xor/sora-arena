@@ -21,7 +21,17 @@ bool SoraCatalogTenements::Read(const FJsonObject& O,FSoraBeat& Beat,const FSora
     const bool Expected=Beat.Id==TEXT("ch03.b04")||Beat.Id==TEXT("ch03.b05")||Beat.Id==TEXT("ch03.b06")||
         Beat.Id==TEXT("ch03.b13")||Beat.Id==TEXT("ch03.b14");
     const auto Value=O.TryGetField(TEXT("tenements"));
-    if(!Expected)return !Value.IsValid()&&!O.HasField(TEXT("tenement_defense"))&&!O.HasField(TEXT("tenement_finds"));
+    if(!Expected)
+    {
+        if(Beat.Id==TEXT("ch03.b16")||Beat.Id==TEXT("ch03.b18"))
+        {
+            const auto& B=Beat.Space;
+            if(B.Zone!=INDEX_NONE||B.Entry!=FVector2D(-350,0)||B.EntryYaw!=0.f||
+               Space.ZoneAt(FVector(B.Entry,0))!=INDEX_NONE||
+               Space.ZoneAt(FVector(B.Anchor,0))!=INDEX_NONE)return false;
+        }
+        return !Value.IsValid()&&!O.HasField(TEXT("tenement_defense"))&&!O.HasField(TEXT("tenement_finds"));
+    }
     const auto H=Value.IsValid()&&Value->Type==EJson::Object?Value->AsObject():nullptr;
     auto& B=Beat.Space;
     if(!H||!Space.Zones.IsValidIndex(B.Zone))return false;
