@@ -49,6 +49,17 @@ class PalaceContract(unittest.TestCase):
         self.assertEqual(self.chapter['beats'][6]['params']['rewards'],['ch06.c03','ch06.c04','arrows:6'])
         self.assertEqual(self.chapter['beats'][7]['requires'],['ch06.b06'])
 
+    def test_auditors_visit_their_own_desks_and_stay_on_their_tiers(self):
+        x,y=self.origin
+        for i,(low,high) in enumerate(((1000,2200),(200,1000),(-600,200))):
+            route=self.registry['patrols'][i]
+            self.assertEqual(route[0],self.registry['objectives'][i])
+            self.assertEqual(self.registry['spawns'][i],route[0])
+            for px,py in route:
+                self.assertTrue(x+low+34<px<x+high-34)
+                self.assertTrue(y+2380+34<py<y+3400-34)
+        self.assertTrue(all(p[1]==y+2320 for p in self.registry['patrols'][3]))
+
     def test_contract_missing_extra_reordered_or_wrong_type_is_rejected(self):
         hall = self.registry['registry_hall']
         for key in tuple(hall):
@@ -80,6 +91,7 @@ class PalaceContract(unittest.TestCase):
             lambda c:c['space']['sites'].__setitem__(1,[0,0]),
             lambda c:c['space']['beats'][6].update(cache=[0,0]),
             lambda c:c['space']['beats'][6]['volumes'].pop(),
+            lambda c:c['space']['beats'][6]['volumes'].__setitem__(0,c['space']['beats'][6]['volumes'][1]),
             lambda c:c['space']['beats'][7]['patrols'][3][0].__setitem__(1,0),
             lambda c:c['space']['beats'][0].update(registry_hall=copy.deepcopy(self.registry['registry_hall'])),
             lambda c:c['space']['zones'][self.registry['zone']].update(wall_cm=300),
@@ -104,6 +116,8 @@ class PalaceContract(unittest.TestCase):
 #include <cassert>
 int main() {
     using namespace SoraRegistryRules;
+    assert(AuditorDwellMs(0)==6000&&AuditorDwellMs(1)==8000&&AuditorDwellMs(2)==10000);
+    assert(AuditorDwellMs(-1)==0&&AuditorDwellMs(3)==0);
     for(int x=-550;x<=2150;x+=10) {
         assert(Floor(x,2320)==0);
         assert(Floor(x,2379)==0);

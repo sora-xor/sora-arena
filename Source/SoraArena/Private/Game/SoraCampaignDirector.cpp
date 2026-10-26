@@ -1149,10 +1149,17 @@ ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int
         Route.Points.Reset();
         for(const auto& P:Space->Patrols[GuardIndex])
             Route.Points.Add(FVector(P,GuardIndex==4?400.f:Space->FloorAt(P)+90.f));
+        if(GuardIndex<3)
+        {
+            Route.PointPauseMs.Init(0,Route.Points.Num());
+            Route.PointPauseMs[0]=SoraRegistryRules::AuditorDwellMs(GuardIndex);
+            Route.PauseFacing=FVector(0,1,0);
+        }
         if(GuardIndex>=3)
         {
             Route.PeriodMs=GuardIndex==3?60000:30000;Route.PauseMs=0;
             Route.bThreeDimensional=true;Route.bSupportedSegments=GuardIndex==3;
+            Route.bDirectFlightSegments=GuardIndex==4;
         }
         Post=Route.Points[0];
     }
@@ -1204,6 +1211,7 @@ ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int
             for(auto& P:Route.Points) P.Z=Space->FloorAt(FVector2D(P))+GuardActor->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2.f;
         GuardActor->SetActorLocation(Route.Points[0]);
         if(auto* Brain=Cast<ASoraEnemyController>(GuardActor->GetController())) Brain->BeginPatrol(Route);
+        if(auto* Craft=USoraFieldcraft::Get(this)) Craft->AssignRegistryAuditor(*GuardActor,GuardIndex);
     }
     if(GuardActor&&Space->Moat.bEnabled)
         if(auto* Craft=USoraFieldcraft::Get(this))Craft->AssignMoatGuard(*GuardActor,GuardIndex);

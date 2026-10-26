@@ -27,6 +27,9 @@ struct FSoraPatrolRoute
     UPROPERTY() TArray<FVector> AlternatePoints;
     UPROPERTY() bool bPingPong = false;
     UPROPERTY() int32 PauseMs = 1500;
+    // Optional ordinary-patrol dwell per waypoint, in active patrol time.
+    // A zero entry walks through that corner without a timed desk stop.
+    UPROPERTY() TArray<int32> PointPauseMs;
     // Optional scheduled circuit, in active patrol time. Distractions and
     // combat take priority; a blocked station never counts as visited.
     UPROPERTY() int32 PeriodMs = 0;
@@ -132,6 +135,9 @@ public:
     // Within its acceptance of the errand's goal (2D).
     bool ErrandReached() const { return bErrand && bErrandReached; }
     const SoraPatrolRules::FLoop& PatrolTiming() const { return PatrolLoop; }
+    // An ordinary patrol's physical waypoint stop, excluding search/errands.
+    bool IsPatrolPausedAt(int32 Point) const
+    { return !bHunting&&!bErrand&&Mind.State==SoraStealthRules::EState::Unaware&&bPaused&&RouteIndex==Point; }
 protected:
     virtual void OnPossess(APawn* InPawn) override;
     virtual void OnUnPossess() override;
@@ -205,6 +211,7 @@ private:
     int32 PauseUntilMs = 0;
     float PauseYaw = 0.f;
     bool bPaused = false;
+    double PointPauseRemainingMs = 0;
     // Search around the last known place.
     TArray<FVector> SearchPoints;
     int32 SearchIndex = 0;

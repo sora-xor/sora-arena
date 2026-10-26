@@ -267,6 +267,7 @@ void ASoraEnemyController::Prepare(bool bHunt)
     RouteIndex = 0;
     RouteStep = 1;
     bPaused = false;
+    PointPauseRemainingMs = 0;
     SearchPoints.Reset();
     Heard.Reset();
     bGoalDone = false;
@@ -672,8 +673,11 @@ void ASoraEnemyController::Patrol(ASoraEnemy& Enemy, float Dt, int32 NowMs)
     }
     if (bPaused)
     {
-        LookAround(Enemy, PauseYaw, 35.f, Dt, NowMs);
-        if (NowMs < PauseUntilMs)
+        const bool AuthoredDwell=Route.PointPauseMs.IsValidIndex(RouteIndex);
+        if(AuthoredDwell&&!Route.PauseFacing.IsNearlyZero()) Face(Enemy,Route.PauseFacing,Dt,5.f);
+        else LookAround(Enemy, PauseYaw, 35.f, Dt, NowMs);
+        if(AuthoredDwell) PointPauseRemainingMs=FMath::Max(0.0,PointPauseRemainingMs-double(Dt)*1000.0);
+        if (AuthoredDwell?PointPauseRemainingMs>0:NowMs<PauseUntilMs)
             return;
         bPaused = false;
         if (Route.bPingPong)
@@ -688,11 +692,12 @@ void ASoraEnemyController::Patrol(ASoraEnemy& Enemy, float Dt, int32 NowMs)
     const EMove Move=Route.bSupportedSegments
         ?WalkSupportedSegment(Enemy,Route.Points[RouteIndex],SoraEnemyBrain::PatrolSpeed,20.f,Route.bSupportedSteps)
         :WalkTo(Enemy,Route.Points[RouteIndex],SoraEnemyBrain::PatrolSpeed,70.f,NowMs,Route.bThreeDimensional);
-    if(Move==EMove::Blocked&&Route.bSupportedSegments) return;
+    if(Move==EMove::Blocked&&(Route.bSupportedSegments||!Route.PointPauseMs.IsEmpty())) return;
     if (Move != EMove::Moving)
     {
         bPaused = true;
         PauseUntilMs = NowMs + Route.PauseMs;
+        PointPauseRemainingMs=Route.PointPauseMs.IsValidIndex(RouteIndex)?FMath::Max(0,Route.PointPauseMs[RouteIndex]):0;
         PauseYaw = Enemy.GetActorRotation().Yaw;
         return;
     }

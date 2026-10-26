@@ -7,10 +7,10 @@ import json
 
 DESKS = ((1600, 2900, 0), (600, 2900, 15), (-200, 2900, 30))
 NAMES = ('desk_tagata', 'desk_machikata', 'desk_shokukata')
-SPAWNS = ((1600,2600),(600,2600),(-200,2600),(1800,2320),(300,3000),(1800,3200))
-PATROLS = (((1600,2600),(1850,2700),(1850,3200),(1450,3200)),
-           ((600,2600),(850,2700),(850,3200),(450,3200)),
-           ((-200,2600),(50,2700),(50,3200),(-350,3200)),
+SPAWNS = ((1600,2790),(600,2790),(-200,2790),(1800,2320),(300,3000),(1800,3200))
+PATROLS = (((1600,2790),(1850,2700),(1850,3200),(1450,3200)),
+           ((600,2790),(850,2700),(850,3200),(450,3200)),
+           ((-200,2790),(50,2700),(50,3200),(-350,3200)),
            ((1800,2320),(-300,2320)),
            ((300,3000),(1800,3000),(1800,3200),(300,3200)))
 STORE_VOLUMES = {'vol_vault_armory':(3500,2500), 'vol_poi_contraband':(4100,2500),
@@ -95,7 +95,8 @@ def palace_valid(chapter):
                     return False
             else:
                 if (not same(record['anchor'],p(3700,2500)) or not same(record['cache'],p(3700,2600))
-                        or len(record['volumes'])!=len(STORE_VOLUMES)):
+                        or len(record['volumes'])!=len(STORE_VOLUMES)
+                        or {r['event'] for r in record['volumes']}!={'volume_enter:'+n for n in STORE_VOLUMES}):
                     return False
                 for row in record['volumes']:
                     name=row['event'].split(':',1)[1]

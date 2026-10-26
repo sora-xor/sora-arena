@@ -302,6 +302,9 @@ public:
     // The hero snuffs, or relights, lamp Index (automation and the hold).
     bool SnuffLamp(int32 Index);
     const TArray<TObjectPtr<ASoraLamp>>& Lamps() const { return LampActors; }
+    void AssignRegistryAuditor(ASoraEnemy& Guard,int32 Index);
+    bool RegistryLampLit(int32 Index) const;
+    ASoraEnemy* RegistryAuditor(int32 Index) const;
     int32 StonesCarried() const { return Stones; }
     FSoraFieldcraftReadout Readout(const ASoraPlayerCharacter& Hero) const;
     // Look targets raised this beat (automation).
@@ -369,6 +372,13 @@ public:
 protected:
     virtual bool DoesSupportWorldType(const EWorldType::Type WorldType) const override;
 private:
+    const FSoraBeatSpace* RegistrySpace=nullptr;
+    TWeakObjectPtr<ASoraEnemy> RegistryAuditors[3];
+    TWeakObjectPtr<APointLight> RegistryLights[3];
+    TWeakObjectPtr<UStaticMeshComponent> RegistryLenses[3];
+    void StageRegistry(const FSoraBeat& Beat);
+    void ClearRegistry();
+    void TickRegistry();
     const FSoraRelayRoom* RelayRoom=nullptr;
     TArray<TWeakObjectPtr<UStaticMeshComponent>> RelayNodes;
     TArray<TWeakObjectPtr<UStaticMeshComponent>> RelayFan;
