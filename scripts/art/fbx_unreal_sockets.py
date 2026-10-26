@@ -6,16 +6,23 @@ with +X reversed, positions right, while the Blender round trip passed.
 **What Interchange does** (the installed UE 5.8 source, read 2026-10-26):
 - **The axes** (Plugins/Interchange/Runtime/Source/Parsers/Fbx/Private/FbxConvert.cpp, ConvertScene). When the
   file's axis system is not the import axis (Z up, -Y front, right-handed, with Force Front X Axis off), the scene
-  is converted by the rotation C between them, and C^-1 is kept for the sockets.
+  is converted by the rotation C between them. The vertices and positions of root's real imports confirm C.
 - **The unit.** A centimetre file (UnitScaleFactor 1) is not converted.
 - **A baked vertex** (Bake Meshes, the static-mesh default) is C G v, where G is its node's global transform.
 - **A socket** (Import/Private/Mesh/InterchangeMeshHelper.cpp, ImportSockets) is its node's global transform with
-  C^-1 applied first, `AxisConversionInverseTransform * Transform`: so C G C^-1.
-  - When C is not the identity, a socket's own axes turn by C^-1 and the vertices do not.
+  an inverse applied first, `AxisConversionInverseTransform * Transform`: so C G A^-1.
   - A socket carries the scale of every node above it.
+  - A^-1 is not C^-1. FbxConvert.cpp derives it from FbxAxisSystem::GetMatrix, whose source the FBX SDK does not
+    ship, so it is modelled only where a real import measured it (SOCKET_INVERSE).
 - **Into Unreal's frame** (FbxConvert ConvertTransform and ConvertPos): y is negated.
 
-test_fbx_unreal_sockets.py checks that this reproduces root's actual readback of fc0858a9.
+**The measurement.** For Blender's ('Z', '-Y') axes, the runtime weapon library's, C is a 180 deg turn about Z.
+Root's import of the drone's fc0858a9 read the sockets' rotators as (0, -180, 180) and (45, -180, 180). So each
+socket's forward and up are reversed and its right is kept: A^-1 is a 180 deg turn about Y.
+- The first version of this module (45a2af0a) used C^-1, a turn about Z. It matched that import's forward vectors,
+  positions and scales, which were all it compared, but it predicted the up axes kept.
+
+test_fbx_unreal_sockets.py checks the rule against both of root's real imports, rotators included.
 
 It is pure Python and numpy. The FBX is parsed by Blender's own io_scene_fbx.parse_fbx.
 """
@@ -32,6 +39,12 @@ import numpy as np
 # Blender's own axes, ('Z', 'Y') in io_scene_fbx/fbx_utils.py RIGHT_HAND_AXES, as (axis, sign). They are UE 5.8's
 # FBX import axes, FbxAxisSystem(eZAxis, -eParityOdd, eRightHanded): Z up, -Y front, +X coord.
 UNREAL_IMPORT_AXES = {"UpAxis": (2, 1), "FrontAxis": (1, -1), "CoordAxis": (0, 1)}
+# Blender's ('Z', '-Y') axes, which the runtime weapon library exports: Maya Z-up (Z up, +Y front, -X coord).
+LIBRARY_AXES = {"UpAxis": (2, 1), "FrontAxis": (1, 1), "CoordAxis": (0, -1)}
+# Interchange's socket inverse A^-1, only for the file axes a real UE 5.8 import measured it in.
+# - Unreal's own axes: there is no conversion, so it is the identity (root's import of 45a2af0a).
+# - The library's: a 180 deg turn about Y (root's import of fc0858a9, rotators (0, -180, 180) and (45, -180, 180)).
+SOCKET_INVERSE = ((UNREAL_IMPORT_AXES, np.eye(3)), (LIBRARY_AXES, np.diag([-1.0, 1.0, -1.0])))
 MIRROR = np.diag([1.0, -1.0, 1.0, 1.0])            # right-handed FBX to Unreal: y negated
 # Node properties this model does not compose. A file that sets any of them away from its default is refused.
 DEFAULTS = {"PreRotation": (0, 0, 0), "PostRotation": (0, 0, 0), "RotationOffset": (0, 0, 0),
@@ -145,11 +158,19 @@ def conversion(axes):
     return axis_frame(UNREAL_IMPORT_AXES) @ np.linalg.inv(axis_frame(axes))
 
 
+def socket_inverse(axes):
+    """Interchange's measured socket inverse A^-1 for these file axes (SOCKET_INVERSE); other axes are refused."""
+    for known, inverse in SOCKET_INVERSE:
+        if axes == known:
+            return inverse
+    raise ValueError(f"no real import has measured the socket inverse for the file axes {axes}")
+
+
 def interchange(scene):
     """Unreal's sockets and baked vertices for a parsed scene (read_fbx), in Unreal's frame and the file's unit.
 
-    sockets[name]: position_cm, scale (the lengths of the transform's axes), x and z (its unit axes; x is the
-    socket's forward), det. vertices[mesh]: (n, 3).
+    sockets[name]: position_cm, scale (the lengths of the transform's axes), x, y and z (its unit axes: forward,
+    right and up), det. vertices[mesh]: (n, 3).
     """
     if abs(scene["unit"] - 1.0) > 1e-12:
         raise ValueError(f"UnitScaleFactor {scene['unit']}: only centimetre files are modelled")
@@ -157,18 +178,31 @@ def interchange(scene):
     c[:3, :3] = conversion(scene["axes"])
     nodes = scene["nodes"]
     sockets, vertices = {}, {}
+    if any(name.startswith("SOCKET_") for name in nodes):
+        inverse = np.eye(4)
+        inverse[:3, :3] = socket_inverse(scene["axes"])
     for name, node in nodes.items():
         g = global_matrix(nodes, name)
         if name.startswith("SOCKET_"):
-            m = MIRROR @ c @ g @ np.linalg.inv(c) @ MIRROR
+            m = MIRROR @ c @ g @ inverse @ MIRROR
             lengths = np.linalg.norm(m[:3, :3], axis=0)
             unit_axes = m[:3, :3] / lengths
             sockets[name[len("SOCKET_"):]] = {"position_cm": m[:3, 3], "scale": lengths, "x": unit_axes[:, 0],
-                                              "z": unit_axes[:, 2], "det": float(np.linalg.det(unit_axes))}
+                                              "y": unit_axes[:, 1], "z": unit_axes[:, 2],
+                                              "det": float(np.linalg.det(unit_axes))}
         if node["vertices"] is not None:
             m = MIRROR @ c @ g
             vertices[name] = node["vertices"] @ m[:3, :3].T + m[:3, 3]
     return {"conversion": c[:3, :3], "sockets": sockets, "vertices": vertices}
+
+
+def rotator_axes(pitch, yaw, roll):
+    """An Unreal FRotator's unit X (forward), Y (right) and Z (up) axes, as rows of FRotationMatrix."""
+    sp, cp = math.sin(math.radians(pitch)), math.cos(math.radians(pitch))
+    sy, cy = math.sin(math.radians(yaw)), math.cos(math.radians(yaw))
+    sr, cr = math.sin(math.radians(roll)), math.cos(math.radians(roll))
+    return (np.array([cp * cy, cp * sy, sp]), np.array([sr * sp * cy - cr * sy, sr * sp * sy + cr * cy, -sr * cp]),
+            np.array([-(cr * sp * cy + sr * sy), cy * sr - cr * sp * sy, cr * cp]))
 
 
 def to_unreal(blender_m):
