@@ -419,13 +419,23 @@ bool FreeConscripts(FAutomationTestBase& Test, FState& State)
         if (!bLearned)
             continue;
         MoveTo(State, Conscript->GetActorLocation());
+        const FVector CutStart=Player(State)->GetActorLocation(),BodyStart=Conscript->GetActorLocation();
+        const auto* CutStealth=USoraStealth::Get(Player(State));
+        const auto* DragCandidate=CutStealth?CutStealth->DragTarget(*Player(State)):nullptr;
+        const FString DragBefore=DragCandidate?DragCandidate->GetName()+TEXT(" at ")+DragCandidate->GetActorLocation().ToString():TEXT("none");
         State.World->InjectKey(EKeys::E, IE_Pressed);
         const bool bHeld = Advance(Test, State, 5, .4f);
         State.World->InjectKey(EKeys::E, IE_Released);
         if (!bHeld || !Advance(Test, State, 1))
             return false;
         if (!Test.TestTrue(TEXT("Interact held beside a knocked-down conscript cuts its seal"), Conscript->IsFreed()))
+        {
+            Test.AddInfo(FString::Printf(TEXT("Seal refusal: hero before=%s after=%s, conscript before=%s after=%s; drag candidate=%s; seal target=%s, progress=%.3f, recovery=%d, climbing=%d, notice=%s"),
+                *CutStart.ToString(),*Player(State)->GetActorLocation().ToString(),*BodyStart.ToString(),*Conscript->GetActorLocation().ToString(),
+                *DragBefore,*GetNameSafe(Campaign(State)->SealBeingCut()),Campaign(State)->SealCutProgress(),
+                Campaign(State)->NeedsEquipmentRecovery(),Campaign(State)->IsClimbingRecoveryWell(),*Mode(State)->NoticeEnglish));
             return Fail(Test, State, Where(State) + TEXT(": a conscript's seal was not cut"));
+        }
         ++State.ConscriptsFreed;
     }
     return true;

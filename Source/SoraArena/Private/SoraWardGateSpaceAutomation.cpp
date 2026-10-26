@@ -56,7 +56,11 @@ bool WalkWard(FBeatWorld& W,FVector2D Point,bool Exit=false)
     }
     W.World->InjectKey(EKeys::W,IE_Released);
     if(!W.Tick(4))return false;
-    if(Exit)return W.Test.TestEqual(TEXT("Mapped movement through the ward exit advances the campaign"),W.Campaign()->ActiveBeat(),3);
+    if(Exit)return W.Test.TestEqual(TEXT("Mapped movement through the ward exit reaches the required carry beat"),
+        W.Campaign()->ActiveBeat(),FSoraCatalog::Get().Chapter(2).BeatIndex(TEXT("ch03.b05")))&&
+        W.Test.TestTrue(TEXT("Leaving completes the ward without granting the optional finds"),
+            (W.Campaign()->Progress().CompletedMask&SoraBeatRules::BeatBit(2))!=0&&
+            (W.Campaign()->Progress().CompletedMask&SoraBeatRules::BeatBit(3))==0);
     W.Test.AddInfo(FString::Printf(TEXT("Ward walk toward %s ends at %s, crouched=%d"),
         *Point.ToString(),*W.Hero()->GetActorLocation().ToString(),W.Hero()->IsCrouched()));
     return W.Test.TestTrue(TEXT("Mapped movement reaches its ward waypoint"),W.Campaign()->ActiveBeat()==2&&
