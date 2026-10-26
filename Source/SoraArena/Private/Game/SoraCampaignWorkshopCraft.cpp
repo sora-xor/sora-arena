@@ -72,9 +72,9 @@ void USoraCampaignDirector::TickWorkshopCraft(float DeltaSeconds)
         WorkshopCraftClock.Reset();
         if(Mode().Hero())Mode().Hero()->GetViewmodel()->SetHiddenInGame(false,true);
     }
-    ResolveWorkshopCraft(Step,Result);
+    ResolveWorkshopCraft(Step,Result,true);
 }
-void USoraCampaignDirector::ResolveWorkshopCraft(int32 Step,SoraWorkshopCraftRules::EResult Result)
+void USoraCampaignDirector::ResolveWorkshopCraft(int32 Step,SoraWorkshopCraftRules::EResult Result,bool bFromTick)
 {
     namespace R=SoraWorkshopCraftRules;using SoraBeatRules::EStroke;
     const auto* Beat=ActiveBeatData();
@@ -97,5 +97,8 @@ void USoraCampaignDirector::ResolveWorkshopCraft(int32 Step,SoraWorkshopCraftRul
     if(!ActiveBeatData()||ActiveBeatData()->Id!=Id)return;
     if(DoneBefore==0)Fire(TEXT("interact_start"));
     if(!ActiveBeatData()||ActiveBeatData()->Id!=Id)return;
-    UpdateObjective();Progressed(Before);
+    UpdateObjective();
+    // TickBeat publishes the frame's progress once at its end. A key release
+    // happens outside that frame update and must publish immediately.
+    if(!bFromTick)Progressed(Before);
 }

@@ -567,7 +567,7 @@ private:
     bool AtWorkshopStation() const;
     bool BeginWorkshopCraft();
     void TickWorkshopCraft(float DeltaSeconds);
-    void ResolveWorkshopCraft(int32 Step,SoraWorkshopCraftRules::EResult Result);
+    void ResolveWorkshopCraft(int32 Step,SoraWorkshopCraftRules::EResult Result,bool bFromTick=false);
     bool bHeldWatched=false;
     bool TakeLoad(int32 Pickup);
     bool DeliverLoad(int32 Dropoff, int32 HeldDurationMs = 0);

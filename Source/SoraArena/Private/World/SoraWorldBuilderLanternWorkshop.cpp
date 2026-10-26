@@ -45,8 +45,8 @@ void ASoraWorldBuilder::BuildLanternWorkshop()
 
 void ASoraWorldBuilder::ShowWorkshopRestored(bool Restored)
 {
-    for(auto* Pane:WorkshopWindows)if(IsValid(Pane))Pane->SetVisibility(Restored);
-    for(auto* Light:WorkshopWindowLights)if(IsValid(Light))Light->PointLightComponent->SetVisibility(Restored);
+    for(const auto& Pane:WorkshopWindows)if(IsValid(Pane))Pane->SetVisibility(Restored);
+    for(const auto& Light:WorkshopWindowLights)if(IsValid(Light))Light->PointLightComponent->SetVisibility(Restored);
 }
 
 void ASoraWorldBuilder::ShowWorkshopDoor(bool FightComplete,bool SealCut)

@@ -346,6 +346,7 @@ private:
     UPROPERTY() TObjectPtr<UStaticMeshComponent> KitWheel;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> KitFill;
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> KitStations;
+    TArray<int32> KitStepStations;
     // Functional workshop motions; authored character clips remain separate.
     void StageWorkshop(const FSoraBeat& Beat);
     void ShowWorkshop(const FSoraKitView& View);

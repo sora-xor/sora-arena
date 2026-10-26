@@ -275,6 +275,7 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
     }
     else if(KitWork==TEXT("stations"))
     {
+        KitStepStations=Space.StepStations;
         for(int32 Station=0;Station<Space.Stations.Num();++Station)
         {
             const FVector P=Floor(Space.Stations[Station],Space.bLanternWorkshop?Space.FloorAt(Space.Stations[Station]):0.f);
@@ -426,8 +427,13 @@ void ASoraWorldBuilder::ShowKit(const FSoraKitView& View)
     else if(KitWork==TEXT("stations"))
     {
         ShowWorkshop(View);
+        const int32 ActiveStation=KitStepStations.IsValidIndex(View.Step)?KitStepStations[View.Step]:INDEX_NONE;
         for(int32 Station=0;Station<KitStations.Num();++Station)
-            if(KitStations[Station]) Tint(KitStations[Station],Station<View.Step?KitTeal:Station==View.Step?KitGold:KitDim);
+            if(KitStations[Station])
+            {
+                const int32 LastStep=KitStepStations.FindLast(Station);
+                Tint(KitStations[Station],Station==ActiveStation?KitGold:LastStep!=INDEX_NONE&&LastStep<View.Step?KitTeal:KitDim);
+            }
         // The output stacks beside the anchor, a piece for every stroke.
         const int32 Wanted=FMath::Min(View.Strokes,KitStackVisible);
         while(KitStacks.Num()<Wanted) KitItem(TEXT("crate"),KitAnchor+FVector(0,190,0),KitStacks.Num(),KitStacks);
@@ -520,6 +526,7 @@ void ASoraWorldBuilder::ClearKit()
     if(KitLight) KitLight->Destroy();
     ToranosukePlaque=nullptr; NyaakotoPlaque=nullptr; WashioSword.Reset(); EpiloguePlaques=0; bEpilogueSwordReturned=false;
     RecoveryBundle.Reset(); KitPieces.Reset(); KitWalkers.Reset(); KitParty.Reset(); KitActors.Reset(); KitStations.Reset(); KitTargets.Reset();
+    KitStepStations.Reset();
     KitStacks.Reset(); KitLoads.Reset(); KitDropoffs.Reset(); KitDeliveredShown.Reset(); KitItemKind=NAME_None;
     KitLooseLoads.Reset(); CarrySeal=nullptr; CargoStandLoads.Reset(); CargoUnitsPerShare=0;
     BellowsNotches.Reset(); BellowsSparks.Reset(); BellowsFeet.Reset(); BellowsShownBand=0;
