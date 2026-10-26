@@ -38,6 +38,11 @@ That is a prediction until probe_runtime_weapon_sockets.py reads real imports ba
 - **Against the original, array by array:**
   - the vertices are 100 x the original's, within 1e-6 cm;
   - every other geometry array, the material layer included, is equal within 1e-6;
+  - except the tangents and binormals, which must be within 1e-4.
+    - Blender 5.2's exporter recomputes the tangent basis on every export, and it does not reproduce.
+    - Run s82 exported each LOD0 twice from one reloaded blend, once in each convention. Every other array matched
+      exactly; most W00 loops differed by one float32 ulp, and 6 of 195,816 by up to 7.1e-6.
+    - Run s81 stopped on such a loop, at 4.7e-6 against a 1e-6 gate. 1e-4 still sees any systematic turn;
   - Interchange's baked vertices are equal within 1e-4 cm.
 - **Afterwards:** the kit's other LODs and its blend keep their hashes.
 """
@@ -70,6 +75,8 @@ import fbx_unreal_sockets as F  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 TOOL = "scripts/art/reexport_runtime_weapon_sockets.py"
+# The recomputed tangent basis, gated looser than the rest (see the docstring and run s82).
+TANGENT_BASIS, TANGENT_TOL = ("LayerElementTangent", "LayerElementBinormal"), 1e-4
 argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
 
 
@@ -152,7 +159,7 @@ def check_same_geometry(original, new, asset, baked_new):
         a, b = old_arrays[key].astype(float), new_arrays[key].astype(float)
         assert a.shape == b.shape, (asset, key, a.shape, b.shape)
         worst[key] = float(np.abs((a * 100.0 if key == "Vertices" else a) - b).max()) if a.size else 0.0
-        assert worst[key] <= 1e-6, (asset, key, worst[key])
+        assert worst[key] <= (TANGENT_TOL if key.startswith(TANGENT_BASIS) else 1e-6), (asset, key, worst[key])
     baked_old = F.interchange(F.read_fbx(original))["vertices"][asset]
     worst["interchange_vertices_cm"] = float(np.abs(baked_old - baked_new).max())
     assert worst["interchange_vertices_cm"] <= 1e-4, (asset, worst["interchange_vertices_cm"])
