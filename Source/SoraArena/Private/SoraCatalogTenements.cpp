@@ -33,7 +33,7 @@ bool SoraCatalogTenements::Read(const FJsonObject& O,FSoraBeat& Beat,const FSora
             const auto Street=[&](const FVector2D& P)
             {
                 const int32 Z=Space.ZoneAt(FVector(P,0));
-                return Z==INDEX_NONE||(Space.Zones.IsValidIndex(Z)&&SoraCatalogTerminalCharge::Square(Space.Zones[Z]));
+                return Z==INDEX_NONE||(Space.Zones.IsValidIndex(Z)&&SoraCatalogTerminalCharge::IsSquare(Space.Zones[Z]));
             };
             if(B.Zone!=INDEX_NONE||B.Entry!=FVector2D(-350,0)||B.EntryYaw!=0.f||
                !Street(B.Entry)||!Street(B.Anchor))return false;
