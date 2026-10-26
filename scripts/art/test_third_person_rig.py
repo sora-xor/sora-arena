@@ -8,6 +8,7 @@ Run: python3 -m unittest scripts/art/test_third_person_rig.py
 - two_bone keeps both lengths, bends toward the pole, and refuses a wrist out of reach (above 98 %) or too close.
 - hand_pose puts the socket exactly on its target.
 - segment_distance matches a direct computation.
+- keyed_stance rests on each key, eases between them, keeps its poles unit, and refuses a time outside [0, 1].
 """
 from __future__ import annotations
 
@@ -113,6 +114,33 @@ class Solve(unittest.TestCase):
     def test_segment_distance(self):
         d = T.segment_distance([0, 0, 0], [1, 0, 0], [[0.5, 0.2, 0], [2.0, 0, 0], [-1.0, 0, 1.0]])
         self.assertTrue(np.allclose(d, [0.2, 1.0, math.sqrt(2.0)]))
+
+
+class KeyedStance(unittest.TestCase):
+    KEYS = [{"grip_l": (34.0, 0.0, 106.0), "elevation_deg": 30.0, "poles": {"R": (1.0, -0.6, -0.5), "L": (1.0, 0.6, -0.5)}},
+            {"grip_l": (40.0, 0.0, 130.0), "elevation_deg": 80.0, "poles": {"R": (0.4, -1.0, -0.6), "L": (0.4, 1.0, -0.6)}},
+            {"grip_l": (34.0, 0.0, 106.0), "elevation_deg": 30.0, "poles": {"R": (1.0, -0.6, -0.5), "L": (1.0, 0.6, -0.5)}}]
+    TIMES = (0.0, 0.4, 1.0)
+
+    def test_rests_on_each_key(self):
+        for key, u in zip(self.KEYS, self.TIMES):
+            s = T.keyed_stance(self.KEYS, self.TIMES, u)
+            self.assertTrue(np.allclose(s["grip_l"], key["grip_l"]))
+            self.assertAlmostEqual(s["elevation_deg"], key["elevation_deg"])
+            for side in ("R", "L"):
+                self.assertTrue(np.allclose(s["poles"][side], T.unit(key["poles"][side])))
+
+    def test_eases_between_keys(self):
+        mid = T.keyed_stance(self.KEYS, self.TIMES, 0.2)
+        self.assertAlmostEqual(mid["elevation_deg"], 55.0)
+        early = T.keyed_stance(self.KEYS, self.TIMES, 0.02)
+        self.assertLess(early["elevation_deg"] - 30.0, 0.05 * 50.0)     # slow out of the key
+        for side in ("R", "L"):
+            self.assertAlmostEqual(float(np.linalg.norm(mid["poles"][side])), 1.0)
+
+    def test_refuses_time_outside(self):
+        with self.assertRaises(ValueError):
+            T.keyed_stance(self.KEYS, self.TIMES, 1.01)
 
 
 if __name__ == "__main__":

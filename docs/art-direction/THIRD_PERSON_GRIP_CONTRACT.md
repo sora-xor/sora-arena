@@ -510,3 +510,189 @@ The guard reads as a one-paw guard: the right paw is closed round the hilt and t
   - the bow, quiver and arrows' socket migration;
   - adopting gear_saya_l in `viewmodels.json`;
   - slice B (StrikeMakko, W10, draw and sheathe).
+
+## 7. The production revision: study A, furred paws, two-paw guard, strike (measured, 2026-10-26)
+
+Root's 05:15 UTC direction: A (arm 1.2, chest 0.85) as the production rig basis and saya 11 as the carry target; a
+consistent source, LODs, kamon and rig; furred paws instead of tube fingers; empty and holding states through the
+real FBX and Unreal morph import; every final-combination pose and clearance check again. This is a production
+direction, not photoreal acceptance.
+
+**Status (2026-10-26 09:46 UTC):**
+- Built and checked in Blender 5.2.2: the hero source on A (s101, its validator s102), the runtime rig (s103), the
+  LODs (s104), the runtime and LOD validators (s106, s107). Every gate passed.
+- The Unreal import (s108) imported the body, its LODs and four clips, and read back the morph target names, then
+  crashed in its new morph re-export (7.6). Not yet read back in Unreal: the sockets, the grips on the clips, every
+  LOD's morph deltas.
+- Fur is still not resolved (7.7). No photoreal, visual, gameplay or root acceptance.
+
+### 7.1 The hero source on A
+
+- `create_nyaagyu_hero_character.py` applies A with `nyaakoto_runtime_parts.apply_variant`, the rule the studies
+  applied in memory, and records `manifest.proportions` (127 parts moved).
+- **The kamon stay exact.** Each SORA kamon moves rigidly with its lacquer backing by its centre's displacement
+  (`kamon_moved_m`): the chest with the dō's front (-3.525 cm in x), each sode with its upper arm (about 2 mm), the
+  waist not at all. The arm's stretch would otherwise have stretched the sode kamon along the upper arm. The manifest
+  records each placement's centre, diameter and plane (`sora_kamon_marks`), and the hero, runtime and LOD validators
+  check every SVG path vertex there to 0.02 mm.
+- s98's first run, with the sode kamon stretched, is kept as a failed attempt (`s98_hero_A.outputs`).
+- **Not reproducible:** the generator's triangle count differs run to run (128,650 committed, 128,607 at s98, 128,729
+  at s101). s100 traced s98's difference to Head_tabby_stripe_fibers and the kamon path order. Both are consistent with
+  iterating Python sets in the generator. It predates A and is not fixed here; downstream reads the hash-pinned blend.
+
+### 7.2 The furred paws (`nyaakoto_tp_paws.py`)
+
+One closed surface per side replaces the source palm, open fingers and thumb in the runtime body and every LOD. It is
+built in numpy, so it is tested on the CPU (`test_nyaakoto_tp_paws.py`), and placed as a Blender part by
+`nyaakoto_runtime_parts.fur_paw`.
+
+**The form,** as a signed distance field from the first-person paws' primitives:
+- the source palm's ellipsoid, narrowed to the paw's breadth;
+- four digits on the old tubes' paths round the channel (50-200 deg), each a capsule chain that thins from the
+  knuckle and swells to a toe bulb, and the dewclaw-thumb the other way round (-40 to -130 deg);
+- the digits meet each other by a smooth minimum whose reach runs from 11 mm over the knuckles to 7 mm at the toes, so
+  the back of the paw is one furred mass and the toes part toward their tips; they blend into the palm by 8 mm;
+- the channel grown by 1 mm is carved out, and a slab keeps the paw, fuzz included, inside 11 cm.
+
+**The mesh:** surface nets with one vertex per patch of each cell (`manifold_surface_nets`), smoothed and projected
+back onto the field, then a slight outward fuzz (0.4 + 0.4 mm on 6 and 14 mm scales) where there is free space ahead
+and the channel is more than 1 mm away. Naive surface nets left 2-12 edges with four quads a paw, where the thumb's
+tip meets the toes and in grooves: the patch vertices and the cut pipes close every paw.
+
+**The coat:** M_Hero_GreyTabbyFur alone, its CoatBlend the digit weight times a ramp round the channel: the back and
+the toes' first joints tabby, white from there to the tips. In Unreal only this slot blends to the white coat by
+CoatBlend (`import_nyaakoto_pbr.py`). UVs at the body's 2.4 per metre, round and along the channel, planar on the
+sides.
+
+**The previews:** s96 (the first form: white rolls; its scene isolation also failed and showed the source's paws)
+and s97 (v2: tabby back, white toes, fur between the toes). One defect seen in s97, pinched notches where the toe
+grooves deepen, was answered by lengthening the blend's ramp before production.
+
+**CPU checks** (`test_nyaakoto_tp_paws`, 23 run: 23 passed), on the hero's own arms, both sides, every LOD step (3.0,
+4.5, 7.0 mm), both states: a closed outward 2-manifold; no self-crossing; no facet within 0.5 mm of the channel and no
+vertex within the 1 mm carve; the rig's channel gate (no vertex inside, breadth at most 11 cm); every LOD the same
+surface (99 % of vertices within 0.75 step of LOD0's); the mesher on its two ambiguous cases (naive surface nets fails
+both); self_crossings on a crossing pair and a cap pushed through a ball. A scratch sweep of 48 meshes (8 random
+sub-voxel offsets x both sides x the three steps) found every one closed and uncrossed in both states.
+
+### 7.3 The empty fist
+
+PawEmpty_R and PawEmpty_L are a remap in channel coordinates (`empty_points`): each digit vertex keeps its place along
+the channel, its angle round the oval and its offset from it, while the oval closes toward its palm-side edge:
+E'(t) = E(0) + k(t)(E(t) - E(0)). k is 1 up to the knuckles (|t| at most 40 deg) and eases to 0.30 by 180 deg in log
+scale; the displacement is weighted by the digit weight, so the palm does not move.
+
+- The old fist shrank the whole oval to 0.30. That slid every knuckle about 1 cm along the channel and folded 5-8
+  triangles of a single surface.
+- A linear ramp to 0.30 over 40-160 deg turns the closed oval back on itself (fold margin -0.042 on this oval). The
+  log ramp's margin is +0.076, and no face turns over at any LOD.
+- The digits' tips close to 0.32, the thumb's to 0.43.
+- The rule is one of position, so every LOD's morph is the same rule on its own vertices.
+
+### 7.4 The poses
+
+**A_NyaagyuSamurai_Guard** is the contract's two-paw chūdan (4.5) on A: Grip_L (34, 0, 106), the blade at 30°, the
+elbows far forward (study s91), a 4 s loop with a 0.4 cm breath. It replaces the interim one-paw guard. Both paws hold
+(PawEmpty 0, 0).
+
+**A_NyaagyuSamurai_StrikeMakko** (1.0 s, 24 fps, IK at every frame) eases from the guard to the raise at 0.40, the hit
+at 0.55 and the follow-through at 0.70, and back to the guard at 1.0. Its keys were searched on this body: the nearest
+to the contract's target (whose targets were set for the baseline arms) that passes every gate at the key and at a
+third and two thirds of the way from the key before it, over Grip_L offsets and the three elbow pole sets.
+
+| key | contract Grip_L, elevation | built Grip_L, poles | reach R / L | kissaki (cm) |
+| --- | --- | --- | --- | --- |
+| raise | (30, 0, 128), 80° | (39, 0, 128), far_fwd | 0.763 / 0.660 | (48.2, 0, 224.1) |
+| hit | (22, 0, 108), -5° | (26, 0, 108), far_fwd | 0.914 / 0.699 | (122.5, 0, 107.2) |
+| follow-through | the hit, 2 cm on and 4 cm down, -12° | (26, 0, 105), -12°, far_fwd | 0.953 / 0.734 | (121.7, 0, 92.4) |
+
+- Every raise candidate nearer the contract crossed the torso (and nearer still, the head too): A's raise sits 9 cm
+  forward. The first follow-through tried, (28, 0, 104), was out of reach (0.5345 m against 0.5405 m at 98 %).
+- The search measured every rejected candidate in full, about 80 s each: 34 raise, 6 hit, 4 follow-through and 2
+  recovery-path rows, all in the log (`Saved/W18Rebuild/s103_rig_production.log`). The accepted keys are also in
+  `Saved/W18Rebuild/s103_strike_keys.json`.
+
+**Idle and Walk** carry the katana in saya 11 with both paws empty (PawEmpty 1, 1).
+
+### 7.5 The checks
+
+The build keys all four clips, then checks every gate at every key and the midpoint after it before anything is
+written:
+- Idle, Walk and Guard are keyed every 4 frames, so they are checked at every other frame: 48, 16 and 48 frames;
+- the strike is keyed at every frame and checked at all 25;
+- the rest pose, for 137 + 1 checks.
+
+A failing gate exits 1 and writes nothing. The gates added for two paws and the strike:
+
+| check | sets | gate |
+| --- | --- | --- |
+| forearms and paws against the head | forearm_R/L, hand_R/L against head and neck | no crossing, containment or ambiguity |
+| katana against the body but the holding paws | W00 katana against everything but hand_R and hand_L (both hold) | 0, 0, 0 |
+| katana against the holding paws | W00 katana against hand_R and hand_L | 0, 0, 0 |
+| blade against the body | habaki to kissaki against the body but head and both paws | at least 3 cm, exact |
+| paw against paw | hand_L against hand_R | 0, 0, 0 |
+| the left grip's closure (4.7) | hand_l_grip against the katana's Grip_L, the katana placed by hand_r_grip | within 1.0 cm |
+| the paws on the tsuka (4.2) | each paw's vertices along the katana's X from Grip_R | the right paw behind the fuchi (5.5 cm), the left within 1 cm of the kashira (-18.99) |
+
+The earlier gates stand: forearms and paws against the torso, the blade against the head (5 cm, exact), the left paw
+against the saya, the saya against the body with the obi as its tuck and hide, the sheathed hilt against the body.
+**The shoulders against the torso are reported, never gated:** the rigid shoulder joints and sleeves meet the haori by
+build, at rest too.
+
+**s103's results** (138 frames, exact, ranges over frames):
+
+| check | result |
+| --- | --- |
+| forearms and paws against the torso | 0 visible, 0 contained; separation 2.07-19.88 mm |
+| forearms and paws against the head | 0, 0, nothing within 2 cm |
+| katana against the holding paws | 0, 0; 1.82 mm |
+| katana against the body but the holding paws | 0, 0, nothing within 2 cm |
+| paw against paw | 0, 0, nothing within 2 cm |
+| blade against the head; against the body | nothing within 5 cm; nothing within 3 cm |
+| left paw against the saya | 0, 0, nothing within 2 cm |
+| saya against the body (obi tuck and hide) | 0 visible; 280 tuck pairs allowed |
+| sheathed hilt against the body | 0, 0 |
+| the left grip's closure | 0.0 cm at all 73 two-paw frames |
+| the paws on the tsuka | the right paw's front at most 5.413 cm (fuchi 5.5); the left paw's back at least -19.661 (kashira -18.99, 1 cm allowed) |
+| grip sockets on their targets | within 0.0166 cm |
+| upper arms against the torso (reported) | 932-1401 visible pairs, 0-5 contained |
+
+- Guard: the kissaki at z 160.3-161.1 (4.7: 145-165), on the centreline; reach 0.871 right, 0.707 left.
+- The run took 3 h 08 min, 1 h 50 min of it the frame checks. mesh_clearance's candidate test is |a| x |b|, and the
+  paws are ten times the triangles the curled tubes were. A grid broad-phase with identical results except
+  `pairs_measured` is tested on the CPU (25 run: 25 passed) and goes into the next pass.
+
+### 7.6 The LODs and Unreal
+
+**The LODs** (s104): LOD1 76,848 vertices and 112,106 triangles, LOD2 32,489 and 57,578 (LOD0 176,069 and
+184,493). Each carries its paws at its own step and both morphs, 0 at bind. The LOD record's `max_move_cm` is in the
+joined mesh's local units (3.541 at LOD1); s107 measures 3.01 cm in world at every LOD.
+
+**The validators:**
+- s106 (runtime): the morphs re-derived from the exported FBX by the rule: 0.00023 mm (R), 0.00019 mm (L) at most,
+  3.01 cm the largest move; nothing else moves. Guard round trip, 97 frames: at most 0.300 cm and 0.018 deg. Strike
+  round trip, 25 frames: 0.001 cm and 0.011 deg. Its first run (s105) failed on the validator's own frame numbering:
+  Blender's FBX import starts each action a frame later.
+- s107 (LODs): both pass, with the four exact kamon; the morph rule within 0.00015 mm (LOD1), 0.00011 mm (LOD2).
+
+**Unreal** (s108, in the art worktree, NullRHI):
+- imported SK_NyaagyuSamurai with its coat colours and morph targets, LOD1 and LOD2 (render vertices 186,876, 84,678
+  and 36,002), and Idle, Walk, Guard and StrikeMakko; the morph target names read back PawEmpty_L and PawEmpty_R.
+- Then crashed in the morph re-export: UE 5.8's skeletal FBX exporter always builds material-baking mesh data from a
+  spawned component (FFbxMaterialBakingMeshData, FMeshMergeHelpers::RetrieveMesh,
+  USkinnedMeshComponent::GetCPUSkinnedVertices), which asserts on a missing render MeshObject under -nullrhi. The
+  editor hung in its crash handler and was terminated (SIGKILL, 137): a failed run, its log, sample and exit kept.
+- Next: the same import under `--rhi`, then check_nyaakoto_ue_morph_export.py on Unreal's export.
+
+### 7.7 What remains
+
+- **Fur.** Root's 07:12 review of s97 stands: smooth rounded digits, no resolved short fur, no furry silhouette. The
+  next pass, prepared on the CPU, grows opaque fur strands on the paws within the 23 slots (nyaakoto_tp_fur), and makes
+  the toes an arc and the thumb slimmer. The body's fur (forearms, tail, feet) and the fur material's response are
+  open.
+- **The faceted body and wardrobe** (root, 05:15) are the hero source's blockout primitives. This revision does not
+  address them.
+- **The generator's nondeterminism** (7.1).
+- **The bow, quiver and arrows' socket migration**, and adopting gear_saya_l (candidate 11) in viewmodels.json, are
+  root's.
+- **No photoreal, visual or runtime acceptance** is claimed for any of this.

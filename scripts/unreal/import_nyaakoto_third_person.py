@@ -1,16 +1,22 @@
-"""The third-person grip contract's slice A in Unreal (docs/art-direction/THIRD_PERSON_GRIP_CONTRACT.md 4.3, 4.4).
+"""The third-person grip contract in Unreal (docs/art-direction/THIRD_PERSON_GRIP_CONTRACT.md 4.3, 4.4).
 
 What it imports:
-- **The body:** the rebuilt SK_NyaagyuSamurai, with its idle, walk and interim guard.
+- **The body:** the rebuilt SK_NyaagyuSamurai on study A, with its furred paws, their empty-fist morph targets
+  (PawEmpty_R, PawEmpty_L) on every LOD, its idle, walk, two-paw guard and men strike.
 - **The sockets:** its grip and saya sockets.
-- **The weapons:** the authored W00 katana and saya, with their own sockets.
+- **The weapons** (unless --skip-weapons): the authored W00 katana and saya, with their own sockets.
 
-Everything is read back.
+Everything is read back. The morph targets are read back through Unreal's own FBX export of the imported mesh, every
+LOD with its morph deltas (--morph-export, a new file): Python exposes only their names. That export needs the
+renderer: run it with run-editor-script.sh --rhi. Under -nullrhi, UE 5.8's skeletal FBX exporter always builds its
+material-baking mesh data from a spawned component (FFbxMaterialBakingMeshData, then
+USkinnedMeshComponent::GetCPUSkinnedVertices), whose render MeshObject does not exist: s108 asserted there and crashed.
 
 Run it (UE 5.8, headless, by the holder of the shared engine lane) after rig_nyaakoto_runtime.py and
 generate_nyaakoto_lods.py:
-  scripts/toolchain/run-editor-script.sh scripts/unreal/import_nyaakoto_third_person.py NYAAKOTO_TP_UE_READY [log] \
-      -- --readback Saved/NyaakotoThirdPerson/Unreal/<new name>.json
+  scripts/toolchain/run-editor-script.sh --rhi scripts/unreal/import_nyaakoto_third_person.py NYAAKOTO_TP_UE_READY [log] \
+      -- --readback Saved/NyaakotoThirdPerson/Unreal/<new name>.json \
+         --morph-export Saved/NyaakotoThirdPerson/Unreal/<new name>.fbx [--skip-weapons]
 
 **The body:**
 - SK_NyaagyuSamurai goes into /Game/Generated/Meshes as import_original_assets.py imports it. Its idle becomes
@@ -31,8 +37,10 @@ generate_nyaakoto_lods.py:
 
 The readback (a new file, never overwritten) records:
 - each body socket's component transform at the reference pose, against the record: within 0.1 cm and 0.5 deg;
+- the morph targets' names, and the file Unreal exported them to (check_nyaakoto_ue_morph_export.py reads it);
 - each weapon socket against build_record.json: within 0.1 cm;
-- the guard's grip sockets at its first frame against the interim stance's targets: within 1 cm and 2 deg.
+- both grip sockets at the guard's first frame, and at the strike's raise and hit frames, against the two-paw
+  stances' targets: within 1 cm and 2 deg.
 
 This is an asset readback only: not a render, a capture or a gameplay admission.
 """
@@ -132,7 +140,13 @@ if READBACK.exists() or not READBACK.is_relative_to(ROOT / "Saved/NyaakotoThirdP
 record = json.loads((HERO / "runtime_skin_manifest.json").read_text(encoding="utf-8"))
 if record.get("schema_version") != 1 or record.get("generator") != "scripts/art/rig_nyaakoto_runtime.py":
     fail("runtime skin manifest identity changed")
-for key in ("skeletal_fbx", "walk_fbx", "guard_fbx"):
+SKIP_WEAPONS = "--skip-weapons" in args
+if "--morph-export" not in args:
+    fail("--morph-export <new .fbx under Saved/NyaakotoThirdPerson/Unreal> is required")
+MORPH_EXPORT = (ROOT / args[args.index("--morph-export") + 1]).resolve()
+if MORPH_EXPORT.exists() or MORPH_EXPORT.suffix != ".fbx" or not MORPH_EXPORT.is_relative_to(ROOT / "Saved/NyaakotoThirdPerson/Unreal"):
+    fail(f"the morph export must be a new .fbx under Saved/NyaakotoThirdPerson/Unreal: {MORPH_EXPORT}")
+for key in ("skeletal_fbx", "walk_fbx", "guard_fbx", "strike_fbx"):
     if sha256(SOURCE / record[key]) != record[key + "_sha256"]:
         fail(f"{record[key]} differs from runtime_skin_manifest.json")
 tp = record["third_person"]
@@ -175,7 +189,7 @@ for path in task.imported_object_paths:
             assets.delete_asset(idle_target)
         if not assets.rename_asset(path, idle_target):
             fail(f"cannot name the idle {idle_target}")
-for clip, key in (("Walk", "walk_fbx"), ("Guard", "guard_fbx")):
+for clip, key in (("Walk", "walk_fbx"), ("Guard", "guard_fbx"), ("StrikeMakko", "strike_fbx")):
     anim_options = unreal.FbxImportUI()
     anim_options.import_mesh = False
     anim_options.import_as_skeletal = True
@@ -206,8 +220,32 @@ require_api(unreal.SkeletalMeshSocket, "set_socket_parent")
 require_api(unreal.SkeletalMeshEditorSubsystem, "rename_socket")
 world = unreal.AnimPoseSpaces.WORLD
 ref = unreal.AnimPoseExtensions.get_reference_pose(skeleton)
-readback = {"inputs": {k: record[k + "_sha256"] for k in ("skeletal_fbx", "walk_fbx", "guard_fbx")},
-            "sockets": {}, "weapons": {}, "guard": {}}
+readback = {"inputs": {k: record[k + "_sha256"] for k in ("skeletal_fbx", "walk_fbx", "guard_fbx", "strike_fbx")},
+            "sockets": {}, "weapons": {}, "guard": {}, "strike": {}}
+
+# --- The empty-fist morph targets: their names here, and every LOD's deltas through Unreal's own FBX export -----------
+names = sorted(str(n) for n in mesh.get_all_morph_target_names())
+if names != ["PawEmpty_L", "PawEmpty_R"]:
+    fail(f"the morph targets read back {names}")
+lods = unreal.get_editor_subsystem(unreal.SkeletalMeshEditorSubsystem).get_lod_count(mesh)
+export_options = unreal.FbxExportOption()
+for prop, value in (("level_of_detail", True), ("export_morph_targets", True), ("ascii", False), ("collision", False),
+                    ("vertex_color", True)):
+    export_options.set_editor_property(prop, value)
+export = unreal.AssetExportTask()
+export.object = mesh
+export.filename = str(MORPH_EXPORT)
+export.automated = True
+export.prompt = False
+export.replace_identical = False
+export.exporter = unreal.SkeletalMeshExporterFBX()
+export.options = export_options
+MORPH_EXPORT.parent.mkdir(parents=True, exist_ok=True)
+if not unreal.Exporter.run_asset_export_task(export) or not MORPH_EXPORT.is_file():
+    fail(f"Unreal did not export {MORPH_EXPORT.name}")
+readback["morph_targets"] = {"names": names, "lods": lods, "export": str(MORPH_EXPORT.relative_to(ROOT)),
+                             "export_sha256": sha256(MORPH_EXPORT),
+                             "checked_by": "scripts/art/check_nyaakoto_ue_morph_export.py"}
 relative = {}
 for name, s in tp["sockets"].items():
     bone = unreal.AnimPoseExtensions.get_ref_bone_pose(ref, s["bone"], world)
@@ -244,131 +282,173 @@ for name, s in tp["sockets"].items():
     if err_cm > 0.1 or err_deg > 0.5:
         fail(f"socket {name} reads back {err_cm:.4f} cm and {err_deg:.3f} deg from the record")
 
-# The guard's first frame: its grip sockets on the interim stance's targets.
+# The guard's first frame, and the strike's raise and hit frames: both grip sockets on the two-paw stances' targets.
+W00_GRIP_L_X = -14.242                                      # cm, the katana's Grip_L from its Grip_R (third_person_rig.W00)
+
+
+def two_paw_targets(stance):
+    e = math.radians(stance["elevation_deg"])
+    x, z = (math.cos(e), 0.0, math.sin(e)), (-math.sin(e), 0.0, math.cos(e))
+    gl = stance["grip_l"]
+    gr = [gl[i] - W00_GRIP_L_X * x[i] for i in range(3)]
+    return {"hand_r_grip": frame_transform(gr, x, z), "hand_l_grip": frame_transform(gl, x, z)}
+
+
+def ease(f):
+    f = min(1.0, max(0.0, f))
+    return f * f * (3.0 - 2.0 * f)
+
+
+def keyed(keys, times, u):
+    """third_person_rig.keyed_stance's Grip_L and elevation, in plain Python."""
+    i = len(times) - 2 if u >= 1.0 else max(k for k in range(len(times) - 1) if times[k] <= u)
+    f = ease((u - times[i]) / (times[i + 1] - times[i]))
+    a, b = keys[i], keys[i + 1]
+    return {"grip_l": [(1.0 - f) * a["grip_l"][j] + f * b["grip_l"][j] for j in range(3)],
+            "elevation_deg": (1.0 - f) * a["elevation_deg"] + f * b["elevation_deg"]}
+
+
+def check_frame(clip, seconds, targets, into):
+    pose = unreal.AnimPoseExtensions.get_anim_pose_at_time(clip, seconds, unreal.AnimPoseEvaluationOptions())
+    for name, want in targets.items():
+        bone = unreal.AnimPoseExtensions.get_bone_pose(pose, tp["sockets"][name]["bone"], world)
+        comp = M.compose_transforms(relative[name], bone)
+        err_cm, err_deg = distance(comp, want), angle_between(comp, want)
+        into[name] = {"component_cm": vec(comp.translation), "target_cm": vec(want.translation),
+                      "error_cm": round(err_cm, 4), "error_deg": round(err_deg, 3)}
+        if err_cm > 1.0 or err_deg > 2.0:
+            fail(f"{clip.get_name()} at {seconds:.4f} s: {name} is {err_cm:.3f} cm and {err_deg:.2f} deg from its target")
+
+
 stance = tp["guard"]["stance"]
-e, y = math.radians(stance["elevation_deg"]), math.radians(stance.get("yaw_deg", 0.0))
-targets = {"hand_r_grip": frame_transform(stance["grip_r"], (math.cos(e) * math.cos(y), math.cos(e) * math.sin(y), math.sin(e)),
-                                          (-math.sin(e) * math.cos(y), -math.sin(e) * math.sin(y), math.cos(e)))}
-if "left_paw" in stance:
-    targets["hand_l_grip"] = frame_transform(stance["left_paw"], (0.0, 1.0, 0.0), (0.0, 0.0, 1.0))
-pose = unreal.AnimPoseExtensions.get_anim_pose_at_time(clips["Guard"], 0.0, unreal.AnimPoseEvaluationOptions())
-for name, want in targets.items():
-    bone = unreal.AnimPoseExtensions.get_bone_pose(pose, tp["sockets"][name]["bone"], world)
-    comp = M.compose_transforms(relative[name], bone)
-    err_cm, err_deg = distance(comp, want), angle_between(comp, want)
-    readback["guard"][name] = {"component_cm": vec(comp.translation), "target_cm": vec(want.translation),
-                               "error_cm": round(err_cm, 4), "error_deg": round(err_deg, 3)}
-    if err_cm > 1.0 or err_deg > 2.0:
-        fail(f"the guard's {name} is {err_cm:.3f} cm and {err_deg:.2f} deg from its target")
+check_frame(clips["Guard"], 0.0, two_paw_targets(stance), readback["guard"])
+strike = tp["strike"]
+keys = [stance] + [strike["keys"][k] for k in ("raise", "hit", "follow")] + [stance]
+for label, frame in (("raise", strike["raise_frame"]), ("hit", strike["hit_frame"])):
+    u = (frame - 1) / strike["frames"]
+    readback["strike"][label] = {"frame": frame}
+    check_frame(clips["StrikeMakko"], u * 1.0, two_paw_targets(keyed(keys, strike["times"], u)), readback["strike"][label])
 
 # --- The W00 katana and saya ----------------------------------------------------------------------------------------
-assets.make_directory(WEAPONS)
-assets.make_directory(WEAPONS + "/Textures")
-textures = {}
-for channel, entry in build["textures"].items():
-    file = ROOT / entry["file"]
-    if sha256(file) != entry["sha256"]:
-        fail(f"{file.name} differs from build_record.json")
-    import_task(file, WEAPONS + "/Textures", file.stem)
-    texture = assets.load_asset(WEAPONS + "/Textures/" + file.stem)
-    if not isinstance(texture, unreal.Texture2D):
-        fail(f"texture {file.stem} failed to import")
-    texture.set_editor_property("srgb", channel == "BaseColor")
-    if channel == "Normal":
-        texture.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_NORMALMAP)
-        texture.set_editor_property("flip_green_channel", False)          # DirectX: Unreal's own convention
-    elif channel in ("ORM", "Mask"):
-        texture.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_MASKS)
-    assets.save_loaded_asset(texture)
-    textures[channel] = texture
-if set(textures) != {"BaseColor", "Normal", "ORM", "Mask"}:
-    fail(f"W00 maps incomplete: {sorted(textures)}")
+def import_weapons():
+    """The W00 katana and saya at LOD0, their maps and material, and their sockets against build_record.json."""
+    assets.make_directory(WEAPONS)
+    assets.make_directory(WEAPONS + "/Textures")
+    textures = {}
+    for channel, entry in build["textures"].items():
+        file = ROOT / entry["file"]
+        if sha256(file) != entry["sha256"]:
+            fail(f"{file.name} differs from build_record.json")
+        import_task(file, WEAPONS + "/Textures", file.stem)
+        texture = assets.load_asset(WEAPONS + "/Textures/" + file.stem)
+        if not isinstance(texture, unreal.Texture2D):
+            fail(f"texture {file.stem} failed to import")
+        texture.set_editor_property("srgb", channel == "BaseColor")
+        if channel == "Normal":
+            texture.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_NORMALMAP)
+            texture.set_editor_property("flip_green_channel", False)          # DirectX: Unreal's own convention
+        elif channel in ("ORM", "Mask"):
+            texture.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_MASKS)
+        assets.save_loaded_asset(texture)
+        textures[channel] = texture
+    if set(textures) != {"BaseColor", "Normal", "ORM", "Mask"}:
+        fail(f"W00 maps incomplete: {sorted(textures)}")
 
 
-def node(material, expression_type, x, y_pos, **properties):
-    expression = lib.create_material_expression(material, expression_type, x, y_pos)
-    for key, value in properties.items():
-        expression.set_editor_property(key, value)
-    return expression
+    def node(material, expression_type, x, y_pos, **properties):
+        expression = lib.create_material_expression(material, expression_type, x, y_pos)
+        for key, value in properties.items():
+            expression.set_editor_property(key, value)
+        return expression
 
 
-master_path = WEAPONS + "/M_W00_Weapon"
-master = assets.load_asset(master_path) if assets.does_asset_exist(master_path) else tools.create_asset(
-    "M_W00_Weapon", WEAPONS, unreal.Material, unreal.MaterialFactoryNew())
-for old in list(lib.get_material_expressions(master)):
-    lib.delete_material_expression(master, old)
-base = node(master, unreal.MaterialExpressionTextureSampleParameter2D, -900, -400, parameter_name="BaseColorMap",
-            texture=textures["BaseColor"])
-normal = node(master, unreal.MaterialExpressionTextureSampleParameter2D, -900, -50, parameter_name="NormalMap",
-              texture=textures["Normal"])
-orm = node(master, unreal.MaterialExpressionTextureSampleParameter2D, -900, 260, parameter_name="ORMMap",
-           texture=textures["ORM"])
-mask = node(master, unreal.MaterialExpressionTextureSampleParameter2D, -900, 600, parameter_name="MaskMap",
-            texture=textures["Mask"])
-glow = node(master, unreal.MaterialExpressionScalarParameter, -560, 760, parameter_name="EmissiveStrength",
-            default_value=0.0)
-for expression, pin, prop in ((base, "RGB", unreal.MaterialProperty.MP_BASE_COLOR),
-                              (normal, "RGB", unreal.MaterialProperty.MP_NORMAL),
-                              (orm, "R", unreal.MaterialProperty.MP_AMBIENT_OCCLUSION),
-                              (orm, "G", unreal.MaterialProperty.MP_ROUGHNESS),
-                              (orm, "B", unreal.MaterialProperty.MP_METALLIC)):
-    if not lib.connect_material_property(expression, pin, prop):
-        fail(f"material output failed: {prop}")
-emissive = node(master, unreal.MaterialExpressionMultiply, -300, 680)
-if not (lib.connect_material_expressions(mask, "R", emissive, "A")
-        and lib.connect_material_expressions(glow, "", emissive, "B")
-        and lib.connect_material_property(emissive, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)):
-    fail("the W00 master's emissive did not connect")
-lib.layout_material_expressions(master)
-lib.recompile_material(master)
-assets.save_loaded_asset(master)
-mi_path = WEAPONS + "/MI_W00_Weapon"
-mi = assets.load_asset(mi_path) if assets.does_asset_exist(mi_path) else tools.create_asset(
-    "MI_W00_Weapon", WEAPONS, unreal.MaterialInstanceConstant, unreal.MaterialInstanceConstantFactoryNew())
-lib.set_material_instance_parent(mi, master)
-lib.update_material_instance(mi)
-assets.save_loaded_asset(mi)
+    master_path = WEAPONS + "/M_W00_Weapon"
+    master = assets.load_asset(master_path) if assets.does_asset_exist(master_path) else tools.create_asset(
+        "M_W00_Weapon", WEAPONS, unreal.Material, unreal.MaterialFactoryNew())
+    for old in list(lib.get_material_expressions(master)):
+        lib.delete_material_expression(master, old)
+    base = node(master, unreal.MaterialExpressionTextureSampleParameter2D, -900, -400, parameter_name="BaseColorMap",
+                texture=textures["BaseColor"])
+    normal = node(master, unreal.MaterialExpressionTextureSampleParameter2D, -900, -50, parameter_name="NormalMap",
+                  texture=textures["Normal"])
+    orm = node(master, unreal.MaterialExpressionTextureSampleParameter2D, -900, 260, parameter_name="ORMMap",
+               texture=textures["ORM"])
+    mask = node(master, unreal.MaterialExpressionTextureSampleParameter2D, -900, 600, parameter_name="MaskMap",
+                texture=textures["Mask"])
+    glow = node(master, unreal.MaterialExpressionScalarParameter, -560, 760, parameter_name="EmissiveStrength",
+                default_value=0.0)
+    for expression, pin, prop in ((base, "RGB", unreal.MaterialProperty.MP_BASE_COLOR),
+                                  (normal, "RGB", unreal.MaterialProperty.MP_NORMAL),
+                                  (orm, "R", unreal.MaterialProperty.MP_AMBIENT_OCCLUSION),
+                                  (orm, "G", unreal.MaterialProperty.MP_ROUGHNESS),
+                                  (orm, "B", unreal.MaterialProperty.MP_METALLIC)):
+        if not lib.connect_material_property(expression, pin, prop):
+            fail(f"material output failed: {prop}")
+    emissive = node(master, unreal.MaterialExpressionMultiply, -300, 680)
+    if not (lib.connect_material_expressions(mask, "R", emissive, "A")
+            and lib.connect_material_expressions(glow, "", emissive, "B")
+            and lib.connect_material_property(emissive, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)):
+        fail("the W00 master's emissive did not connect")
+    lib.layout_material_expressions(master)
+    lib.recompile_material(master)
+    assets.save_loaded_asset(master)
+    mi_path = WEAPONS + "/MI_W00_Weapon"
+    mi = assets.load_asset(mi_path) if assets.does_asset_exist(mi_path) else tools.create_asset(
+        "MI_W00_Weapon", WEAPONS, unreal.MaterialInstanceConstant, unreal.MaterialInstanceConstantFactoryNew())
+    lib.set_material_instance_parent(mi, master)
+    lib.update_material_instance(mi)
+    assets.save_loaded_asset(mi)
 
-for name, file in weapon_files.items():
-    sm_options = unreal.FbxImportUI()
-    sm_options.import_mesh = True
-    sm_options.import_as_skeletal = False
-    sm_options.import_animations = False
-    sm_options.import_materials = False
-    sm_options.import_textures = False
-    sm_options.mesh_type_to_import = unreal.FBXImportType.FBXIT_STATIC_MESH
-    data = sm_options.static_mesh_import_data
-    data.set_editor_property("combine_meshes", True)
-    data.set_editor_property("auto_generate_collision", False)
-    data.set_editor_property("convert_scene", True)
-    data.set_editor_property("convert_scene_unit", False)          # the FBX is centimetres (UnitScaleFactor 1)
-    data.set_editor_property("force_front_x_axis", False)
-    data.set_editor_property("import_uniform_scale", 1.0)
-    data.set_editor_property("normal_import_method", unreal.FBXNormalImportMethod.FBXNIM_IMPORT_NORMALS_AND_TANGENTS)
-    import_task(file, WEAPONS, name, sm_options)
-    sm = assets.load_asset(f"{WEAPONS}/{name}")
-    if not isinstance(sm, unreal.StaticMesh):
-        fail(f"{name} did not import as a static mesh")
-    for index in range(len(sm.get_editor_property("static_materials"))):
-        sm.set_material(index, mi)
-    assets.save_loaded_asset(sm)
-    sockets = {}
-    for socket_name, blender_m in build["assets"][name]["sockets"].items():
-        socket = sm.find_socket(socket_name)
-        if socket is None:
-            fail(f"{name} lacks its {socket_name} socket")
-        want = unreal.Vector(100.0 * blender_m[0], -100.0 * blender_m[1], 100.0 * blender_m[2])
-        got = socket.get_editor_property("relative_location")
-        err = math.sqrt((got.x - want.x) ** 2 + (got.y - want.y) ** 2 + (got.z - want.z) ** 2)
-        rot = socket.get_editor_property("relative_rotation")
-        sockets[socket_name] = {"relative_location": vec(got), "build_record_cm": vec(want), "error_cm": round(err, 5),
-                                "relative_rotation_pyr": [round(rot.pitch, 4), round(rot.yaw, 4), round(rot.roll, 4)]}
-        if err > 0.1:
-            fail(f"{name} socket {socket_name} reads back {err:.4f} cm from build_record.json")
-    readback["weapons"][name] = {"asset": f"{WEAPONS}/{name}", "sockets": sockets,
-                                 "material_slots": len(sm.get_editor_property("static_materials"))}
+    for name, file in weapon_files.items():
+        sm_options = unreal.FbxImportUI()
+        sm_options.import_mesh = True
+        sm_options.import_as_skeletal = False
+        sm_options.import_animations = False
+        sm_options.import_materials = False
+        sm_options.import_textures = False
+        sm_options.mesh_type_to_import = unreal.FBXImportType.FBXIT_STATIC_MESH
+        data = sm_options.static_mesh_import_data
+        data.set_editor_property("combine_meshes", True)
+        data.set_editor_property("auto_generate_collision", False)
+        data.set_editor_property("convert_scene", True)
+        data.set_editor_property("convert_scene_unit", False)          # the FBX is centimetres (UnitScaleFactor 1)
+        data.set_editor_property("force_front_x_axis", False)
+        data.set_editor_property("import_uniform_scale", 1.0)
+        data.set_editor_property("normal_import_method", unreal.FBXNormalImportMethod.FBXNIM_IMPORT_NORMALS_AND_TANGENTS)
+        import_task(file, WEAPONS, name, sm_options)
+        sm = assets.load_asset(f"{WEAPONS}/{name}")
+        if not isinstance(sm, unreal.StaticMesh):
+            fail(f"{name} did not import as a static mesh")
+        for index in range(len(sm.get_editor_property("static_materials"))):
+            sm.set_material(index, mi)
+        assets.save_loaded_asset(sm)
+        sockets = {}
+        for socket_name, blender_m in build["assets"][name]["sockets"].items():
+            socket = sm.find_socket(socket_name)
+            if socket is None:
+                fail(f"{name} lacks its {socket_name} socket")
+            want = unreal.Vector(100.0 * blender_m[0], -100.0 * blender_m[1], 100.0 * blender_m[2])
+            got = socket.get_editor_property("relative_location")
+            err = math.sqrt((got.x - want.x) ** 2 + (got.y - want.y) ** 2 + (got.z - want.z) ** 2)
+            rot = socket.get_editor_property("relative_rotation")
+            sockets[socket_name] = {"relative_location": vec(got), "build_record_cm": vec(want), "error_cm": round(err, 5),
+                                    "relative_rotation_pyr": [round(rot.pitch, 4), round(rot.yaw, 4), round(rot.roll, 4)]}
+            if err > 0.1:
+                fail(f"{name} socket {socket_name} reads back {err:.4f} cm from build_record.json")
+        readback["weapons"][name] = {"asset": f"{WEAPONS}/{name}", "sockets": sockets,
+                                     "material_slots": len(sm.get_editor_property("static_materials"))}
+
+
+
+if SKIP_WEAPONS:
+    readback["weapons"] = {"skipped": "no weapon import in the art tree (root, 2026-10-26); the W00 sockets were read "
+                                      "back in s85-s88 (weapon socket export plan)"}
+else:
+    import_weapons()
 
 READBACK.parent.mkdir(parents=True, exist_ok=True)
 with open(READBACK, "x", encoding="utf-8") as fh:
     json.dump(readback, fh, indent=1)
-print(MARKER, json.dumps({k: {n: v.get("error_cm") for n, v in readback[k].items()} for k in ("sockets", "guard")}))
+print(MARKER, json.dumps({k: {n: v.get("error_cm") for n, v in readback[k].items()} for k in ("sockets", "guard")}),
+      json.dumps({k: {n: v.get("error_cm") for n, v in r.items() if isinstance(v, dict)} for k, r in readback["strike"].items()}))
+

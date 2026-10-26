@@ -118,6 +118,28 @@ def stance_targets(name, scale=1.0):
     return {"grip_r": gr, "grip_l": gl, "x": x, "z": z, "kissaki": kissaki}
 
 
+def ease(x):
+    """Smoothstep on [0, 1]: a key is reached, and left, at rest."""
+    x = min(1.0, max(0.0, float(x)))
+    return x * x * (3.0 - 2.0 * x)
+
+
+def keyed_stance(keys, times, u):
+    """The stance at normalised time u between keyed two-paw stances (Grip_L, the elevation, and the elbow poles when
+    every key has them), eased in and out of each key. A_NyaagyuSamurai_StrikeMakko is keyed so (contract 4.5)."""
+    if not 0.0 <= u <= 1.0 or len(keys) != len(times) or times[0] != 0.0 or times[-1] != 1.0:
+        raise ValueError(f"keyed_stance: u {u}, {len(keys)} keys at {times}")
+    i = len(times) - 2 if u >= 1.0 else max(k for k in range(len(times) - 1) if times[k] <= u)
+    f = ease((u - times[i]) / (times[i + 1] - times[i]))
+    a, b = keys[i], keys[i + 1]
+    out = {"grip_l": tuple((1.0 - f) * np.asarray(a["grip_l"], np.float64) + f * np.asarray(b["grip_l"], np.float64)),
+           "elevation_deg": (1.0 - f) * a["elevation_deg"] + f * b["elevation_deg"]}
+    if all(k.get("poles") for k in (a, b)):
+        out["poles"] = {s: tuple(unit((1.0 - f) * np.asarray(a["poles"][s], np.float64) + f * np.asarray(b["poles"][s], np.float64)))
+                        for s in ("R", "L")}
+    return out
+
+
 def two_bone(shoulder, wrist, a, b, pole):
     """The elbow for a two-bone chain from shoulder to wrist (lengths a, b), bending toward pole. ValueError when the
     wrist is out of reach (beyond REACH_MAX of a + b) or too close (|a - b|)."""

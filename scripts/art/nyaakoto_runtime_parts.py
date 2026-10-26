@@ -4,10 +4,13 @@ every LOD carries the same body (docs/art-direction/THIRD_PERSON_GRIP_CONTRACT.m
 - **Bones by anatomical side:** _R is the character's right, Blender -Y.
 - **Parts that leave the body:**
   - the sheathed sword set (Saya_, Sageo_, Katana_); the runtime carries the authored W00 saya and katana at sockets;
-  - the open fingers and thumb (Finger_, Thumb_).
-- **What replaces the open paws:** closed paws curled round the grip channel, and the palm narrowed to the same
-  breadth.
-- **The arm joints** come from the hero's own arm parts.
+  - the source's open paw: its palm, fingers and thumb (Paw_hand_, Finger_, Thumb_).
+- **What replaces the open paws:** one furred paw per side, closed round the grip channel (nyaakoto_tp_paws, built
+  here as a Blender part by fur_paw). Every LOD meshes its own at its own step, and every LOD's empty fist comes from
+  the same rule. The curled tubes and narrowed palm that came first (slice A) read as white tubes in root's 05:15 UTC
+  review (2026-10-26) and are gone.
+- **The arm joints** come from the hero's own arm parts; the source palm, though it leaves the body, still sets the
+  channel and the paw's palm.
 
 **What stays for now:** the bow, quiver and arrows (Ebira_, Ya_, Yumi_). viewmodels.json moves them to gear sockets,
 but their gear assets do not exist yet. Removing them now would drop their material slots. That socket migration
@@ -17,17 +20,20 @@ from __future__ import annotations
 
 import math
 
-import bmesh
 import bpy
 import numpy as np
 from mathutils import Vector
 
+import nyaakoto_fp_paws as FP
+import nyaakoto_tp_paws as TPP
 import third_person_rig as TP
 
 SWORD_SET = ("Saya_", "Sageo_", "Katana_")
 OPEN_PAW = ("Finger_", "Thumb_")                   # the source's open fingers, knuckles, claws and thumb
-REMOVED = SWORD_SET + OPEN_PAW
-CURLED = ("Finger_curl_", "Finger_knuckle_curl_", "Finger_claw_curl_", "Thumb_curl_")
+PALM = ("Paw_hand_",)                              # the source's palm; arm_joints still measures it
+REMOVED = SWORD_SET + OPEN_PAW + PALM
+FRESH = ("PawFur_",)                               # parts made here, not copied from the source
+FUR_PAW_MATERIAL = "M_Hero_GreyTabbyFur"           # its CoatBlend blends to the white coat (import_nyaakoto_pbr.py)
 DEFERRED_GEAR = ("Ebira_", "Ya_", "Yumi_")         # still on the body: the socket migration waits for its assets
 PAW_HALF = TP.PAW_BREADTH_MAX_CM / 200.0           # m: the closed paw's half breadth along its channel
 CHANNEL_HALF = (TP.CHANNEL_CM[0] / 200.0, TP.CHANNEL_CM[1] / 200.0)   # m: across (Y_s), deep (Z_s)
@@ -37,15 +43,6 @@ CHANNEL_DIR = Vector((0.589, 0.0, -0.808)).normalized()   # from the palm's cent
 # (Saved/W18Rebuild/s62_sliceA_explore). The palm is convex and its facets lie inside its vertices' surface, so
 # 0.5 mm clear keeps the tsuka off it.
 CHANNEL_EMBED = -0.0005
-FINGER_PITCH = 0.026                               # m between the four fingers (the source's 0.033 is too wide)
-# m: how far the curled fingers' and thumb's inner surface stays outside the channel, along its normal. Chords between
-# the 13 samples of a sweep sag about 0.12 mm toward the channel, so the facets stay clear too.
-FINGER_SKIN = 0.0002
-# The empty fist: the channel shrunk to this share of the grip's, its palm side kept on the palm. The fingers and
-# thumb then close into a fist instead of ringing an empty 3.3 x 4.3 cm hole (the 145db735 review).
-EMPTY_CHANNEL = 0.30
-FINGER_SWEEP = (50.0, 200.0)                       # deg round the channel, from the palm's top over the front
-THUMB_SWEEP = (-40.0, -130.0)                      # deg, the other way round: from the palm's back under the channel
 
 
 def kept(name):
@@ -81,7 +78,7 @@ def rig_bone(name: str, world_position: Vector) -> str:
         return f"upperarm_{side}"
     if name.startswith(("Fur_forearm", "Kote_", "Karakuri_", "Wrist_cell_")):
         return f"forearm_{side}"
-    if name.startswith(("Paw_hand", "Finger_", "Thumb_")):
+    if name.startswith(("Paw_hand", "Finger_", "Thumb_", "PawFur_")):
         return f"hand_{side}"
     raise ValueError(f"Unclassified Nyaakoto part: {name}")
 
@@ -118,18 +115,32 @@ def arm_joints(by_name):
 
 CHEST_FRONT = ("Indigo_samurai_haori", "Linen_under_kimono", "Under_kimono_cross_collar", "Do_",
                "UserSupplied_SORAKamon_chest", "Resistance_insignia")
+KAMON = "UserSupplied_SORAKamon_"
+# The parts that ride with each kamon placement: its two exact SVG paths and the lacquered disc behind them.
+KAMON_BACKING = {"Resistance_insignia_backing": "chest", "Sode_kamon_backing_-1": "sode_-1",
+                 "Sode_kamon_backing_1": "sode_1"}
+
+
+def kamon_group(name):
+    """The kamon placement a part rides with ("chest", "waist", "sode_-1", "sode_1"), or None."""
+    if name.startswith(KAMON):
+        return name[len(KAMON):].rsplit("_Path_", 1)[0]
+    return KAMON_BACKING.get(name)
 
 
 def apply_variant(parts, by_name, variant):
     """An anatomy and armour study variant, applied in memory to the source parts (never saved over the source):
     - arm: stretch each upper arm along its shoulder-to-elbow axis about the shoulder, and each forearm along its
       elbow-to-wrist axis about the moved elbow. The paw moves with the wrist; the shoulder ball stays rigid.
-    - palm: scale the palm (Paw_hand) about its centre; the channel and curled fingers follow it.
+    - palm: scale the palm (Paw_hand) about its centre; the channel and the paw built on it follow it.
     - chest: bring the front half (x > 0) of the haori, kimono, collar, dō, chest kamon and insignia toward the body,
       x scaled about 0.
     Each part's origin moves with its vertices. The joints are measured from the origins (arm_joints, cone_ends), so
-    a first version that moved only the vertices left them behind (Saved/W18Rebuild/s73_twopaw_v01). Returns what
-    moved, for the record."""
+    a first version that moved only the vertices left them behind (Saved/W18Rebuild/s73_twopaw_v01).
+    Each SORA kamon, with its backing, moves rigidly by its centre's displacement (kamon_group). The user-supplied
+    paths stay exact: the arm's stretch would otherwise have stretched the sode kamon along the upper arm, and the
+    validators check every path vertex against the SVG to 0.02 mm. Returns what moved, and each kamon's displacement,
+    for the record."""
     arm, palm, chest = (float(variant.get(k, 1.0)) for k in ("arm", "palm", "chest"))
     if arm == palm == chest == 1.0:
         return {}
@@ -155,12 +166,26 @@ def apply_variant(parts, by_name, variant):
             q.x *= chest
         return q
 
+    centres = {}
+    for obj in parts:
+        g = kamon_group(obj.name)
+        if g is not None and obj.name.startswith(KAMON):
+            centres.setdefault(g, []).extend(obj.matrix_world @ v.co for v in obj.data.vertices)
+    rigid = {}
+    for g, pts in centres.items():
+        c = Vector([(min(p[i] for p in pts) + max(p[i] for p in pts)) / 2.0 for i in range(3)])
+        rigid[g] = deform(f"{KAMON}{g}_Path_0", c) - c
     moved = 0
     for obj in parts:
         mw = obj.matrix_world.copy()
         old = [mw @ v.co for v in obj.data.vertices]
-        new = [deform(obj.name, p) for p in old]
-        origin = deform(obj.name, mw.translation.copy())
+        g = kamon_group(obj.name)
+        if g is not None:
+            new = [p + rigid[g] for p in old]
+            origin = mw.translation + rigid[g]
+        else:
+            new = [deform(obj.name, p) for p in old]
+            origin = deform(obj.name, mw.translation.copy())
         if palm != 1.0 and obj.name.startswith("Paw_hand_"):
             new = [origin + (q - origin) * palm for q in new]
         if (origin - mw.translation).length < 1e-9 and all((a - b).length < 1e-9 for a, b in zip(old, new)):
@@ -174,107 +199,82 @@ def apply_variant(parts, by_name, variant):
         obj.data.update()
         moved += 1
     bpy.context.view_layer.update()
-    return {"arm": arm, "palm": palm, "chest": chest, "parts_moved": moved}
+    return {"arm": arm, "palm": palm, "chest": chest, "parts_moved": moved,
+            "kamon_moved_m": {g: [float(x) for x in d] for g, d in sorted(rigid.items())}}
 
 
-def narrow_palm(obj):
-    """The palm (a copy of Paw_hand_) narrowed along Y to the closed paw's breadth."""
-    ys = [v.co.y for v in obj.data.vertices]
-    k = PAW_HALF / ((max(ys) - min(ys)) / 2.0)
-    for v in obj.data.vertices:
-        v.co.y *= k
+def palm_radii(by_name, sign):
+    """The source palm's half extents along the world axes (create_nyaagyu_hero_character.sphere is axis-aligned)."""
+    o = by_name[f"Paw_hand_{sign}"]
+    mw = np.array([list(r) for r in o.matrix_world])
+    co = np.empty(len(o.data.vertices) * 3, np.float32)
+    o.data.vertices.foreach_get("co", co)
+    co = co.reshape(-1, 3).astype(np.float64) @ mw[:3, :3].T + mw[:3, 3]
+    return tuple(float(x) for x in (co.max(0) - co.min(0)) / 2.0)
 
 
-def tube(name, path, radii, material, coat, sides=10):
-    """A capped tube along path (Vectors in one X-Z plane), radius per point; a UVMap and the CoatBlend layer."""
-    bm = bmesh.new()
-    rings = []
-    for i, p in enumerate(path):
-        tangent = (path[min(i + 1, len(path) - 1)] - path[max(i - 1, 0)]).normalized()
-        u = tangent.cross(Vector((0.0, 1.0, 0.0))).normalized()
-        v = tangent.cross(u)
-        rings.append([bm.verts.new(p + radii[i] * (math.cos(k * math.tau / sides) * u + math.sin(k * math.tau / sides) * v))
-                      for k in range(sides)])
-    for r0, r1 in zip(rings, rings[1:]):
-        for k in range(sides):
-            bm.faces.new((r0[k], r0[(k + 1) % sides], r1[(k + 1) % sides], r1[k]))
-    for ring, p, flip in ((rings[0], path[0], True), (rings[-1], path[-1], False)):
-        c = bm.verts.new(p)
-        for k in range(sides):
-            f = (ring[k], ring[(k + 1) % sides], c)
-            bm.faces.new(f[::-1] if flip else f)
-    me = bpy.data.meshes.new(name)
-    bm.to_mesh(me)
-    bm.free()
-    uv = me.uv_layers.new(name="UVMap")
-    for loop in me.loops:
-        uv.data[loop.index].uv = ((loop.vertex_index % sides) / sides, (loop.vertex_index // sides) / max(len(path), 1))
-    col = me.color_attributes.new(name="CoatBlend", type="BYTE_COLOR", domain="CORNER")
-    for loop in me.loops:
-        col.data[loop.index].color = (coat, coat, coat, 1.0)
-    me.materials.append(material)
-    obj = bpy.data.objects.new(name, me)
-    for poly in me.polygons:
-        poly.use_smooth = True
-    return obj
-
-
-def around(arm, y, theta_deg, extra):
-    """A point extra (plus FINGER_SKIN) outside the channel's oval, along the oval's normal, at an angle: 0 is the
-    palm's side (Z_s), 90 the front. A tube of radius extra centred here touches nothing inside the channel. Growing
-    both semi-axes by extra, as the first build did, put the tubes' inner vertices up to 0.1 mm inside it between the
-    axes (16 vertices a paw)."""
-    th = math.radians(theta_deg)
-    z_s = Vector(arm["socket_rot"][:, 2].tolist())
-    w = Vector((0.0, 1.0, 0.0)).cross(z_s).normalized()    # in the X-Z plane, forward-up
-    c = arm["channel"].copy()
-    c.y = y
-    half = arm.get("half", CHANNEL_HALF)
-    a, b = half[1], half[0]                                  # along Z_s and along w
-    on = a * math.cos(th) * z_s + b * math.sin(th) * w
-    normal = ((math.cos(th) / a) * z_s + (math.sin(th) / b) * w).normalized()
-    return c + on + (extra + FINGER_SKIN) * normal
-
-
-def empty_arm(arm):
-    """The arm with its channel closed to a fist: EMPTY_CHANNEL of the grip's size, the palm-side edge where it was."""
-    out = dict(arm)
-    z_s = Vector(arm["socket_rot"][:, 2].tolist())
-    out["channel"] = arm["channel"] + (CHANNEL_HALF[1] * (1.0 - EMPTY_CHANNEL)) * z_s
-    out["half"] = (CHANNEL_HALF[0] * EMPTY_CHANNEL, CHANNEL_HALF[1] * EMPTY_CHANNEL)
-    return out
-
-
-def coat_of(by_name, name):
-    col = by_name[name].data.color_attributes.get("CoatBlend")
-    if col is None or not len(col.data):
-        return 0.0
-    return sum(d.color[0] for d in col.data) / len(col.data)
-
-
-def curled_paw(side, arms, by_name):
-    """The closed paw's new parts (unlinked objects): four fingers wrapping the channel over its front, their knuckles
-    and claws, and the thumb wrapping it the other way, at most PAW_HALF either side of the channel's centre."""
+def fur_paw(side, arms, by_name, step=TPP.LOD_STEPS[0]):
+    """The furred paw for one side as an unlinked Blender part, PawFur_{sign}: its vertices in world metres (identity
+    transform), the UVMap and CoatBlend per corner, M_Hero_GreyTabbyFur, smooth shading. Returns the object and the
+    nyaakoto_tp_paws mesh (its skeleton gives the empty fist)."""
     arm = arms[side]
-    s = arm["sign"]
-    fur, knuckle_mat = bpy.data.materials["M_Hero_WhiteFur"], bpy.data.materials["M_Hero_GreyTabbyFur"]
-    claw_mat = bpy.data.materials["M_Hero_IvoryClaw"]
-    coat = coat_of(by_name, f"Finger_{s}_1")
-    out = []
-    n = 13
-    for d in range(4):
-        y = arm["channel"].y + (d - 1.5) * FINGER_PITCH
-        th = [FINGER_SWEEP[0] + (FINGER_SWEEP[1] - FINGER_SWEEP[0]) * i / (n - 1) for i in range(n)]
-        radii = [0.016 - 0.006 * i / (n - 1) for i in range(n)]
-        path = [around(arm, y, a, r) for a, r in zip(th, radii)]
-        out.append(tube(f"Finger_curl_{s}_{d}", path, radii, fur, coat))
-        out.append(tube(f"Finger_knuckle_curl_{s}_{d}", [path[0] - (path[1] - path[0]) * 0.6, path[0] + (path[1] - path[0]) * 0.6],
-                        [0.0145, 0.0145], knuckle_mat, coat, sides=12))
-        tip = path[-1] + (path[-1] - path[-2]).normalized() * 0.016
-        out.append(tube(f"Finger_claw_curl_{s}_{d}", [path[-1], tip], [0.006, 0.0012], claw_mat, coat, sides=8))
-    y = arm["channel"].y + (-1.0 if s > 0 else 1.0) * FINGER_PITCH              # over the index finger, inboard
-    th = [THUMB_SWEEP[0] + (THUMB_SWEEP[1] - THUMB_SWEEP[0]) * i / (n - 1) for i in range(n)]
-    radii = [0.022 - 0.010 * i / (n - 1) for i in range(n)]
-    out.append(tube(f"Thumb_curl_{s}", [around(arm, y, a, r) for a, r in zip(th, radii)], radii, fur,
-                    coat_of(by_name, f"Thumb_{s}")))
-    return out
+    sign = arm["sign"]
+    m = TPP.mesh_paw(arm, palm_radii(by_name, sign), step=step)
+    m["palm_radii"] = palm_radii(by_name, sign)
+    name = f"PawFur_{sign}"
+    me = bpy.data.meshes.new(name)
+    me.from_pydata(m["verts"].tolist(), [], m["tris"].tolist())
+    me.update()
+    assert len(me.vertices) == len(m["verts"]) and len(me.loops) == m["tris"].size
+    uv = me.uv_layers.new(name="UVMap")
+    uv.data.foreach_set("uv", m["uvs"].reshape(-1).astype(np.float32))
+    col = me.color_attributes.new(name="CoatBlend", type="BYTE_COLOR", domain="CORNER")
+    rgba = np.repeat(m["coat"].reshape(-1, 1), 4, 1)
+    rgba[:, 3] = 1.0
+    col.data.foreach_set("color", rgba.reshape(-1).astype(np.float32))
+    me.color_attributes.active_color = col
+    me.materials.append(bpy.data.materials[FUR_PAW_MATERIAL])
+    me.polygons.foreach_set("use_smooth", [True] * len(me.polygons))
+    obj = bpy.data.objects.new(name, me)
+    obj["provenance"] = "scripts/art/nyaakoto_tp_paws.py (mesh_paw) on the hero source's arm joints and palm"
+    return obj, m
+
+
+def fur_paw_record(side, arms, m):
+    """The paw's own checks, both states: a closed outward 2-manifold, no self-crossing, nothing within the carve of
+    the channel and no vertex inside it, the breadth along it (the rig's 4.2 gate), no face turned over by the
+    empty fist, and the closure's fold margin. "failed" names any that fail."""
+    arm = arms[side]
+    V, T = m["verts"], m["tris"]
+    E = TPP.empty_points(V, m["skeleton"])
+    _, _, e = TPP.channel_coords(V, m["skeleton"]["frame"])
+    loc = (V - np.array([float(v) for v in arm["channel"]])) @ np.asarray(arm["socket_rot"])
+    inside = (np.abs(loc[:, 0]) <= PAW_HALF) & ((loc[:, 1] / CHANNEL_HALF[0]) ** 2 + (loc[:, 2] / CHANNEL_HALF[1]) ** 2 < 1.0)
+    n0 = np.cross(V[T[:, 1]] - V[T[:, 0]], V[T[:, 2]] - V[T[:, 0]])
+    n1 = np.cross(E[T[:, 1]] - E[T[:, 0]], E[T[:, 2]] - E[T[:, 0]])
+
+    def volume(X):
+        return float(np.einsum("ij,ij->i", X[T[:, 0]], np.cross(X[T[:, 1]], X[T[:, 2]])).sum() / 6.0)
+
+    fr = m["skeleton"]["frame"]
+    row = {"step_m": m["step"], "vertices": int(len(V)), "triangles": int(len(T)),
+           "palm_radii_m": [float(r) for r in m["palm_radii"]],
+           "frame": {k: ([float(x) for x in v] if isinstance(v, np.ndarray) else v) for k, v in fr.items()},
+           "closed_manifold": FP.is_closed_manifold(T),
+           "volume_cm3": {"grip": round(volume(V) * 1e6, 2), "empty": round(volume(E) * 1e6, 2)},
+           "self_crossings": {"grip": int(len(TPP.self_crossings(V, T))), "empty": int(len(TPP.self_crossings(E, T)))},
+           "min_offset_from_channel_mm": round(float(e.min()) * 1000.0, 4),
+           "vertices_inside_channel": int(inside.sum()),
+           "breadth_along_channel_cm": round(float(np.ptp(loc[:, 0])) * 100.0, 3),
+           "faces_turned_over_by_morph": int((np.einsum("ij,ij->i", n0, n1) <= 0.0).sum()),
+           "max_morph_move_cm": round(float(np.linalg.norm(E - V, axis=1).max()) * 100.0, 3),
+           "fold_margin": round(TPP.fold_margin(m["skeleton"]["frame"]), 4)}
+    row["failed"] = [k for k, bad in (("closed_manifold", not row["closed_manifold"]),
+                                      ("volume", min(row["volume_cm3"].values()) <= 0.0),
+                                      ("self_crossings", any(row["self_crossings"].values())),
+                                      ("carve", row["min_offset_from_channel_mm"] < TPP.CARVE_MARGIN * 1000.0 - 0.01),
+                                      ("channel", row["vertices_inside_channel"] > 0),
+                                      ("breadth", row["breadth_along_channel_cm"] > TP.PAW_BREADTH_MAX_CM + 1e-3),
+                                      ("turned_over", row["faces_turned_over_by_morph"] > 0),
+                                      ("fold_margin", row["fold_margin"] <= 0.0)) if bad]
+    return row

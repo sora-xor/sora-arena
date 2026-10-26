@@ -207,3 +207,28 @@ on the adopted body.
 
 Every run's command, pid, times, exit and render hash: `data/character_studies_s89_s95.json`. Every run exited
 naturally with 0. s89 failed on its own gate.
+
+## 6. Root's choice and the production revision (2026-10-26 05:15 UTC onward)
+
+Root viewed the A/B, empty-Idle and saya 11 renders and chose **A (arm 1.2, chest 0.85)** as the production rig basis
+and **saya 11** as the carry target, asking for a complete character revision rather than another study:
+- A in the source, the LODs, the kamon and the rig;
+- furred paws instead of tube fingers;
+- empty and holding states through the actual FBX and Unreal morph import;
+- every final-combination pose and clearance check again, the shoulder overlap reported.
+
+What was built, measured and checked is in `THIRD_PERSON_GRIP_CONTRACT.md` section 7. Every run's record is in
+`data/character_revision_runs.json`.
+
+The "Not done" list of section 5 is answered there:
+- the runtime build runs with the empty-paw shape keys;
+- the FBX carries them, and the validator re-derives every morphed vertex;
+- the LODs carry their own;
+- Unreal's import is read back through its own FBX export, every LOD.
+
+Two things moved from this study's plan:
+- **Saya 11 was measured here on the baseline body with the interim guard.** The production build checks it again on A
+  through Idle, the walk, the guard and the strike.
+- **The empty fist is no longer a second set of tubes round a shrunk channel.** It is a rule on one paw surface that
+  keeps the knuckles where they are.
+

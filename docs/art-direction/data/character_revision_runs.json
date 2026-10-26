@@ -1,0 +1,244 @@
+{
+ "what": "The production character revision on study A (root, 2026-10-26 05:15 UTC): furred paws, empty-fist morphs on every LOD, saya 11, the two-paw guard and the men strike; every run's record.",
+ "runs": [
+  {
+   "run": "s96_tp_paws_preview",
+   "command": "Blender -b --factory-startup --python-exit-code 1 --python scripts/art/preview_nyaakoto_tp_paws.py -- --out s96_tp_paws_preview --variant arm=1.2,chest=0.85",
+   "start": "2026-10-26T06:02:59Z",
+   "pid": 64874,
+   "exit": 0,
+   "end": "2026-10-26T06:09:47Z",
+   "log": "Saved/W18Rebuild/s96_tp_paws_preview.log",
+   "markers": [
+    "NYAAKOTO_TP_PAW R {\"vertices\": 15422, \"triangles\": 30848, \"closed_manifold\": true, \"volume_cm3\": {\"grip\": 1675.9, \"empty\": 1581.84}, \"self_crossings\": {\"grip\": 0, \"empty\": 0}, \"min_offset_from_channel_mm\": 1.0233, \"vertices_inside_channel\": 0, \"breadth_along_channel_cm\": 10.866, \"faces_turned_over_by_morph\": 0, \"max_morph_move_cm\": 3.01, \"fold_margin\": 0.0759, \"failed\": [], \"palm_radii_m\": [0.069, 0.078, 0.09], \"mesh_s\": 3.29, \"channel_m\": [0.1699, -0.512, 0.6794]}",
+    "NYAAKOTO_TP_PAW L {\"vertices\": 15432, \"triangles\": 30868, \"closed_manifold\": true, \"volume_cm3\": {\"grip\": 1676.78, \"empty\": 1582.45}, \"self_crossings\": {\"grip\": 0, \"empty\": 0}, \"min_offset_from_channel_mm\": 1.0233, \"vertices_inside_channel\": 0, \"breadth_along_channel_cm\": 10.776, \"faces_turned_over_by_morph\": 0, \"max_morph_move_cm\": 3.01, \"fold_margin\": 0.0759, \"failed\": [], \"palm_radii_m\": [0.069, 0.078, 0.09], \"mesh_s\": 3.47, \"channel_m\": [0.1699, 0.512, 0.6794]}",
+    "NYAAKOTO_TP_PAWS_PREVIEW_COMPLETE 20"
+   ],
+   "outputs": {
+    "Saved/W18Rebuild/s96_tp_paws_preview/preview.json": "4a03839b1c43885ef352479754e2b1f98d4110b2fdd5edc91a66c7aa0d86e317"
+   },
+   "result": "20 renders; both paws passed every pre-render check. Superseded: the scene isolation by hide_render failed (the body, the source palm and the open fingers show), and the form read as four white rolls with lumpy fuzz. Inputs archived in s96_tp_paws_preview.inputs/."
+  },
+  {
+   "run": "s97_tp_paws_preview_v2",
+   "command": "Blender -b --factory-startup --python-exit-code 1 --python scripts/art/preview_nyaakoto_tp_paws.py -- --out s97_tp_paws_preview_v2 --variant arm=1.2,chest=0.85",
+   "start": "2026-10-26T06:11:23Z",
+   "pid": 24128,
+   "exit": 0,
+   "end": "2026-10-26T06:14:30Z",
+   "log": "Saved/W18Rebuild/s97_tp_paws_preview_v2.log",
+   "markers": [
+    "NYAAKOTO_TP_PAW R {\"vertices\": 15296, \"triangles\": 30596, \"closed_manifold\": true, \"volume_cm3\": {\"grip\": 1670.71, \"empty\": 1577.59}, \"self_crossings\": {\"grip\": 0, \"empty\": 0}, \"min_offset_from_channel_mm\": 1.0233, \"vertices_inside_channel\": 0, \"breadth_along_channel_cm\": 10.828, \"faces_turned_over_by_morph\": 0, \"max_morph_move_cm\": 3.01, \"fold_margin\": 0.0759, \"failed\": [], \"palm_radii_m\": [0.069, 0.078, 0.09], \"mesh_s\": 3.88, \"channel_m\": [0.1699, -0.512, 0.6794]}",
+    "NYAAKOTO_TP_PAW L {\"vertices\": 15302, \"triangles\": 30608, \"closed_manifold\": true, \"volume_cm3\": {\"grip\": 1670.71, \"empty\": 1577.58}, \"self_crossings\": {\"grip\": 0, \"empty\": 0}, \"min_offset_from_channel_mm\": 1.0233, \"vertices_inside_channel\": 0, \"breadth_along_channel_cm\": 10.834, \"faces_turned_over_by_morph\": 0, \"max_morph_move_cm\": 3.01, \"fold_margin\": 0.0759, \"failed\": [], \"palm_radii_m\": [0.069, 0.078, 0.09], \"mesh_s\": 3.67, \"channel_m\": [0.1699, 0.512, 0.6794]}",
+    "NYAAKOTO_TP_PAW_SHOWN R ['Fur_forearm_-1', 'Karakuri_wrist_cell', 'Kote_binding_-1_0.94', 'Kote_binding_-1_0.98', 'Kote_binding_-1_1.02', 'Kote_guard_-1', 'Linen_sleeve_-1', 'Wrist_cell_trace_0.971', 'Wrist_cell_trace_0.99', 'Wrist_cell_trace_1.009']",
+    "NYAAKOTO_TP_PAW_SHOWN L ['Fur_forearm_1', 'Kote_binding_1_0.94', 'Kote_binding_1_0.98', 'Kote_binding_1_1.02', 'Kote_guard_1', 'Linen_sleeve_1']",
+    "NYAAKOTO_TP_PAWS_PREVIEW_COMPLETE 20"
+   ],
+   "outputs": {
+    "Saved/W18Rebuild/s97_tp_paws_preview_v2/preview.json": "e1e36f690632f530f06a0b7eb73172f26da512f64c04b51b55c17e76d456949d"
+   },
+   "result": "20 renders: v2 paws (variable digit blend, tabby back with white toes, light fuzz) in an isolated render scene. One defect, pinched notches where the toe grooves deepen, answered by a longer blend ramp (v3, the production module) before the build."
+  },
+  {
+   "run": "s98_hero_A",
+   "command": "Blender -b --factory-startup -t 8 --python-exit-code 1 --python scripts/art/create_nyaagyu_hero_character.py",
+   "start": "2026-10-26T06:17:40Z",
+   "pid": 27292,
+   "exit": 0,
+   "end": "2026-10-26T06:20:37Z",
+   "log": "Saved/W18Rebuild/s98_hero_A.log",
+   "markers": [
+    "NYAAGYU_HERO_SOURCE_CREATED 422 128607 {'min': [-0.6542, -0.59, -0.001], 'max': [0.2737, 0.59, 2.195]}"
+   ],
+   "outputs": {
+    "Saved/W18Rebuild/s98_hero_A.outputs/manifest.json": "539d27cbb13e4b14dc4639564aef83c4450f413d2607198d1a470ab7b8ad11ea"
+   },
+   "result": "Hero source on A; superseded by s101: apply_variant stretched the sode kamon along the upper arms, which no exact-path validator can pass. Outputs kept in s98_hero_A.outputs/, originals in s98_hero_A.originals/."
+  },
+  {
+   "run": "s99_hero_A_validate",
+   "command": "Blender -b --factory-startup --python-exit-code 1 Content/SourceArt/Characters/Hero/Nyaagyu_HeroCharacter.blend --python scripts/art/validate_nyaagyu_hero_character.py",
+   "start": "2026-10-26T06:23:21Z",
+   "pid": 30004,
+   "exit": 0,
+   "end": "2026-10-26T06:23:22Z",
+   "log": "Saved/W18Rebuild/s99_hero_A_validate.log",
+   "markers": [
+    "NYAAGYU_HERO_FBX_ROUNDTRIP_PASS 422 128607 {'min': [-0.6542, -0.59, -0.001], 'max': [0.2737, 0.59, 2.195]} ['M_Hero_AgedBrass', 'M_Hero_BambooArrowShaft', 'M_Hero_BlackUrushi', 'M_Hero_BlackenedIron', 'M_Hero_BlueEye', 'M_Hero_CharcoalStripeFur', 'M_Hero_EarSkin', 'M_Hero_EyeGlint', 'M_Hero_EyePupil', 'M_Hero_FoldedIndigo', 'M_Hero_GreyTabbyFur', 'M_Hero_IndigoSilk', 'M_Hero_IvoryClaw', 'M_Hero_JadeCircuit', 'M_Hero_OxbloodUrushi', 'M_Hero_RedArrowFletch', 'M_Hero_RoseNose', 'M_Hero_SORAResistanceRed', 'M_Hero_ScarletSash', 'M_Hero_UndyedLinen', 'M_Hero_WhiteFur', 'M_Hero_YumiLaminatedBamboo',"
+   ],
+   "outputs": {},
+   "result": "PASS on s98's source (before the exact kamon check existed)."
+  },
+  {
+   "run": "s100_hero_topology",
+   "command": "Blender -b --factory-startup --python-exit-code 1 --python scripts/art/diagnose_hero_part_topology.py -- Saved/W18Rebuild/s98_hero_A.originals/Nyaagyu_HeroCharacter.blend Content/SourceArt/Characters/Hero/Nyaagyu_HeroCharacter.blend Saved/W18Rebuild/s100_hero_topology.json",
+   "start": "2026-10-26T06:23:42Z",
+   "pid": 30159,
+   "exit": 0,
+   "end": "2026-10-26T06:23:43Z",
+   "log": "Saved/W18Rebuild/s100_hero_topology.log",
+   "markers": [
+    "HERO_PART_TOPOLOGY {\"parts\": [422, 422], \"triangles\": [128650, 128607]} 9",
+    "DIFF Head_tabby_stripe_fibers {\"old\": {\"vertices\": 27870, \"polygons\": 9290, \"triangles\": 9290}, \"new\": {\"vertices\": 27741, \"polygons\": 9247, \"triangles\": 9247}}",
+    "DIFF UserSupplied_SORAKamon_chest_Path_0 {\"old\": {\"vertices\": 63, \"polygons\": 61, \"triangles\": 61}, \"new\": {\"vertices\": 37, \"polygons\": 35, \"triangles\": 35}}",
+    "DIFF UserSupplied_SORAKamon_chest_Path_1 {\"old\": {\"vertices\": 37, \"polygons\": 35, \"triangles\": 35}, \"new\": {\"vertices\": 63, \"polygons\": 61, \"triangles\": 61}}",
+    "DIFF UserSupplied_SORAKamon_sode_-1_Path_0 {\"old\": {\"vertices\": 63, \"polygons\": 61, \"triangles\": 61}, \"new\": {\"vertices\": 37, \"polygons\": 35, \"triangles\": 35}}",
+    "DIFF UserSupplied_SORAKamon_sode_-1_Path_1 {\"old\": {\"vertices\": 37, \"polygons\": 35, \"triangles\": 35}, \"new\": {\"vertices\": 63, \"polygons\": 61, \"triangles\": 61}}",
+    "DIFF UserSupplied_SORAKamon_sode_1_Path_0 {\"old\": {\"vertices\": 63, \"polygons\": 61, \"triangles\": 61}, \"new\": {\"vertices\": 37, \"polygons\": 35, \"triangles\": 35}}",
+    "DIFF UserSupplied_SORAKamon_sode_1_Path_1 {\"old\": {\"vertices\": 37, \"polygons\": 35, \"triangles\": 35}, \"new\": {\"vertices\": 63, \"polygons\": 61, \"triangles\": 61}}",
+    "DIFF UserSupplied_SORAKamon_waist_Path_0 {\"old\": {\"vertices\": 63, \"polygons\": 61, \"triangles\": 61}, \"new\": {\"vertices\": 37, \"polygons\": 35, \"triangles\": 35}}",
+    "DIFF UserSupplied_SORAKamon_waist_Path_1 {\"old\": {\"vertices\": 37, \"polygons\": 35, \"triangles\": 35}, \"new\": {\"vertices\": 63, \"polygons\": 61, \"triangles\": 61}}"
+   ],
+   "outputs": {
+    "Saved/W18Rebuild/s100_hero_topology.json": "89cd1823d27af2a849954a4d9447a4939da2cee7638b45045619a5d8bc14fc96"
+   },
+   "result": "9 parts differ between the committed source and s98: Head_tabby_stripe_fibers (-43 triangles) and the kamon paths' order at all four placements. Consistent with the generator's own set-order nondeterminism; A only moves vertices."
+  },
+  {
+   "run": "s101_hero_A_rigid_kamon",
+   "command": "Blender -b --factory-startup -t 8 --python-exit-code 1 --python scripts/art/create_nyaagyu_hero_character.py",
+   "start": "2026-10-26T06:27:38Z",
+   "pid": 32401,
+   "exit": 0,
+   "end": "2026-10-26T06:28:54Z",
+   "log": "Saved/W18Rebuild/s101_hero_A_rigid_kamon.log",
+   "markers": [
+    "NYAAGYU_HERO_SOURCE_CREATED 422 128729 {'min': [-0.6542, -0.59, -0.001], 'max': [0.2737, 0.59, 2.195]}"
+   ],
+   "outputs": {
+    "Content/SourceArt/Characters/Hero/manifest.json": "8cc285715dd32269cb3f94c01477cfe4496af6e13d75bd252b2acb3c05f691b0",
+    "Content/SourceArt/Characters/Hero/Nyaagyu_HeroCharacter.blend": "7b6f0d4f0c92e41cb023aa4ad8f34e027b9a12a40bb664d1565300b4960e1b74",
+    "Content/SourceArt/Characters/Hero/SM_Nyaagyu_HeroCharacter.fbx": "604184670195691e4364d8cbe79419dcf249437fe8b39ffc4003b27fc5f0c405"
+   },
+   "result": "The production hero source on A, each kamon moved rigidly with its backing; sora_kamon_marks and proportions recorded."
+  },
+  {
+   "run": "s102_hero_A_validate",
+   "command": "Blender -b --factory-startup --python-exit-code 1 Content/SourceArt/Characters/Hero/Nyaagyu_HeroCharacter.blend --python scripts/art/validate_nyaagyu_hero_character.py",
+   "start": "2026-10-26T06:29:16Z",
+   "pid": 33336,
+   "exit": 0,
+   "end": "2026-10-26T06:29:17Z",
+   "log": "Saved/W18Rebuild/s102_hero_A_validate.log",
+   "markers": [
+    "NYAAGYU_HERO_FBX_ROUNDTRIP_PASS 422 128729 {'min': [-0.6542, -0.59, -0.001], 'max': [0.2737, 0.59, 2.195]} ['M_Hero_AgedBrass', 'M_Hero_BambooArrowShaft', 'M_Hero_BlackUrushi', 'M_Hero_BlackenedIron', 'M_Hero_BlueEye', 'M_Hero_CharcoalStripeFur', 'M_Hero_EarSkin', 'M_Hero_EyeGlint', 'M_Hero_EyePupil', 'M_Hero_FoldedIndigo', 'M_Hero_GreyTabbyFur', 'M_Hero_IndigoSilk', 'M_Hero_IvoryClaw', 'M_Hero_JadeCircuit', 'M_Hero_OxbloodUrushi', 'M_Hero_RedArrowFletch', 'M_Hero_RoseNose', 'M_Hero_SORAResistanceRed', 'M_Hero_ScarletSash', 'M_Hero_UndyedLinen', 'M_Hero_WhiteFur', 'M_Hero_YumiLaminatedBamboo',"
+   ],
+   "outputs": {},
+   "result": "PASS, including every SVG path vertex of the four kamon at the recorded placements in the hero FBX."
+  },
+  {
+   "run": "s103_rig_production",
+   "command": "Blender -b --factory-startup -t 8 --python-exit-code 1 --python scripts/art/rig_nyaakoto_runtime.py",
+   "start": "2026-10-26T06:30:49Z",
+   "pid": 34974,
+   "exit": 0,
+   "end": "2026-10-26T09:38:33Z",
+   "log": "Saved/W18Rebuild/s103_rig_production.log",
+   "markers": [
+    "STRIKE_SEARCH raise {\"grip_l\": [36.0, 0.0, 132.0], \"elevation_deg\": 80.0, \"pole_set\": \"far_fwd\", \"reach\": {\"R\": 0.7631, \"L\": 0.634}, \"failed\": [], \"kissaki_ue_cm\": [45.23, -0.0, 228.07], \"path\": [{\"grip_l\": [34.667, 0.0, 114.667], \"elevation_deg\": 46.667, \"pole_set\": \"far_fwd>far_fwd@0.33\", \"reach\": {\"R\": 0.8027, \"L\": 0.6536}, \"failed\": [], \"kissaki_ue_cm\": [95.17, -0.0, 189.86]}, {\"grip_l\": [35.333, 0.0, 123.333], \"elevation_deg\": 63.333, \"pole_set\": \"far_fwd>far_fwd@0.67\", \"reach\": {\"R\": 0.7692, \"L\": 0.6302}, \"failed\": [\"forearms_paws_vs_torso\"], \"kissaki_ue_cm\": [71.73, -0.0, 212.72]}]}",
+    "STRIKE_SEARCH raise {\"grip_l\": [36.0, 0.0, 132.0], \"elevation_deg\": 80.0, \"pole_set\": \"out\", \"reach\": {\"R\": 0.7631, \"L\": 0.634}, \"failed\": [], \"kissaki_ue_cm\": [45.23, -0.0, 228.07], \"path\": [{\"grip_l\": [34.667, 0.0, 114.667], \"elevation_deg\": 46.667, \"pole_set\": \"far_fwd>out@0.33\", \"reach\": {\"R\": 0.8027, \"L\": 0.6536}, \"failed\": [], \"kissaki_ue_cm\": [95.17, -0.0, 189.86]}, {\"grip_l\": [35.333, 0.0, 123.333], \"elevation_deg\": 63.333, \"pole_set\": \"far_fwd>out@0.67\", \"reach\": {\"R\": 0.7692, \"L\": 0.6302}, \"failed\": [\"forearms_paws_vs_torso\"], \"kissaki_ue_cm\": [71.73, -0.0, 212.72]}]}",
+    "STRIKE_SEARCH raise {\"grip_l\": [39.0, 0.0, 128.0], \"elevation_deg\": 80.0, \"pole_set\": \"far_fwd\", \"reach\": {\"R\": 0.7632, \"L\": 0.6599}, \"failed\": [], \"kissaki_ue_cm\": [48.23, -0.0, 224.07], \"path\": [{\"grip_l\": [35.667, 0.0, 113.333], \"elevation_deg\": 46.667, \"pole_set\": \"far_fwd>far_fwd@0.33\", \"reach\": {\"R\": 0.8137, \"L\": 0.6691}, \"failed\": [], \"kissaki_ue_cm\": [96.17, -0.0, 188.53]}, {\"grip_l\": [37.333, 0.0, 120.667], \"elevation_deg\": 63.333, \"pole_set\": \"far_fwd>far_fwd@0.67\", \"reach\": {\"R\": 0.7795, \"L\": 0.6539}, \"failed\": [], \"kissaki_ue_cm\": [73.73, -0.0, 210.05]}]}",
+    "STRIKE_SEARCH hit {\"grip_l\": [26.0, 0.0, 108.0], \"elevation_deg\": -5.0, \"pole_set\": \"far_fwd\", \"reach\": {\"R\": 0.9135, \"L\": 0.6993}, \"failed\": [], \"kissaki_ue_cm\": [122.51, -0.0, 107.18], \"path\": [{\"grip_l\": [34.667, 0.0, 121.333], \"elevation_deg\": 51.667, \"pole_set\": \"far_fwd>far_fwd@0.33\", \"reach\": {\"R\": 0.8077, \"L\": 0.6432}, \"failed\": [], \"kissaki_ue_cm\": [88.39, -0.0, 201.51]}, {\"grip_l\": [30.333, 0.0, 114.667], \"elevation_deg\": 23.333, \"pole_set\": \"far_fwd>far_fwd@0.67\", \"reach\": {\"R\": 0.855, \"L\": 0.6579}, \"failed\": [], \"kissaki_ue_cm\": [115.67, 0.0, 159.74]}]}",
+    "STRIKE_SEARCH follow {\"grip_l\": [26.0, 0.0, 105.0], \"elevation_deg\": -12.0, \"pole_set\": \"far_fwd\", \"reach\": {\"R\": 0.9532, \"L\": 0.7339}, \"failed\": [], \"kissaki_ue_cm\": [121.69, -0.0, 92.42], \"path\": [{\"grip_l\": [26.0, 0.0, 107.0], \"elevation_deg\": -7.333, \"pole_set\": \"far_fwd>far_fwd@0.33\", \"reach\": {\"R\": 0.9261, \"L\": 0.7103}, \"failed\": [], \"kissaki_ue_cm\": [122.4, -0.0, 102.25]}, {\"grip_l\": [26.0, 0.0, 106.0], \"elevation_deg\": -9.667, \"pole_set\": \"far_fwd>far_fwd@0.67\", \"reach\": {\"R\": 0.9394, \"L\": 0.7218}, \"failed\": [], \"kissaki_ue_cm\": [122.12, -0.0, 97.33]}]}",
+    "STRIKE_SEARCH recovery {\"grip_l\": [28.667, 0.0, 105.333], \"elevation_deg\": 2.0, \"pole_set\": \"far_fwd>far_fwd@0.33\", \"reach\": {\"R\": 0.9315, \"L\": 0.7208}, \"failed\": [], \"kissaki_ue_cm\": [124.56, -0.0, 116.28]}",
+    "STRIKE_SEARCH recovery {\"grip_l\": [31.333, 0.0, 105.667], \"elevation_deg\": 16.0, \"pole_set\": \"far_fwd>far_fwd@0.67\", \"reach\": {\"R\": 0.9037, \"L\": 0.7109}, \"failed\": [], \"kissaki_ue_cm\": [121.73, 0.0, 139.48]}",
+    "NYAAKOTO_RUNTIME_SKIN_COMPLETE 422 176069 20 117625"
+   ],
+   "outputs": {
+    "Content/SourceArt/SK_NyaagyuSamurai.fbx": "b2695aa29d78b3dc591ce5ae02a2f918302af83c244a92da4882f44fc57edee9",
+    "Content/SourceArt/A_NyaagyuSamurai_Walk.fbx": "771d8f3212b251ec1efe1bfa83076ccf3223fe55a8b7296dbf454f079b4cce6a",
+    "Content/SourceArt/A_NyaagyuSamurai_Guard.fbx": "3e66d1a9c823b4fec0bca9559f413105def68f87fa398b9fe815cc12dba97103",
+    "Content/SourceArt/A_NyaagyuSamurai_StrikeMakko.fbx": "c2554e5a5fe5db38d58b5ddfa571437461c689d8c8e3e5322b3b4bb45df7a4b5",
+    "Content/SourceArt/Characters/Hero/Nyaakoto_RuntimeSkin.blend": "a86e86e251489552ba07b7421e596278efbb93065566dc87ac0ae91a16f89e7d",
+    "Content/SourceArt/Characters/Hero/runtime_skin_manifest.json": "1d82b892d264514b512b3de5e722292d986db7c702747ce6ab5c9818f4fe8a57",
+    "Saved/W18Rebuild/s103_strike_keys.json": "8359c6f4a9c1ae99be0fb4607ebca52c20a3e1c10405efcc960012586c90e549"
+   },
+   "result": "The production runtime rig on A: furred paws and their morphs, saya 11, the two-paw guard and the searched strike; every gate passed at 138 checked frames. Inputs archived in s103_rig_production.inputs/, the previous outputs in s103_rig.originals/."
+  },
+  {
+   "run": "s104_lods",
+   "command": "Blender -b --factory-startup -t 8 --python-exit-code 1 --python scripts/art/generate_nyaakoto_lods.py",
+   "start": "2026-10-26T09:38:51Z",
+   "pid": 23114,
+   "exit": 0,
+   "end": "2026-10-26T09:38:57Z",
+   "log": "Saved/W18Rebuild/s104_lods.log",
+   "markers": [
+    "NYAAKOTO_LODS_CREATED [(1, 76848, 112106), (2, 32489, 57578)]"
+   ],
+   "outputs": {
+    "Content/SourceArt/Characters/Hero/LOD/SK_NyaagyuSamurai_LOD1.fbx": "4f68c44f5c310e286dcd3c294790314bce81547340679e95713d087b609f2f88",
+    "Content/SourceArt/Characters/Hero/LOD/SK_NyaagyuSamurai_LOD2.fbx": "bc368f116256ce225e2ac703cd484f1493f792906a1544372c685a101d46704e",
+    "Content/SourceArt/Characters/Hero/LOD/manifest.json": "556d6efb9a7693215cb9ff4f96b0059556b58bcf2c64e752cf4ff406d1895878"
+   },
+   "result": "LOD1 and LOD2 with their own paws and morphs. The record's max_move_cm is in the joined mesh's local units (s107 measures 3.01 cm in world). The previous LODs are archived in s104_lods.originals/."
+  },
+  {
+   "run": "s105_validate_runtime_skin.attempt1_frame_offset",
+   "command": "Blender -b --factory-startup --python-exit-code 1 --python scripts/art/validate_nyaakoto_runtime_skin.py",
+   "start": "2026-10-26T09:39:59Z",
+   "pid": 24476,
+   "exit": 1,
+   "end": "2026-10-26T09:40:04Z",
+   "log": "Saved/W18Rebuild/s105_validate_runtime_skin.attempt1_frame_offset.log",
+   "markers": [
+    "    raise ValueError(f\"keyed_stance: u {u}, {len(keys)} keys at {times}\")",
+    "ValueError: keyed_stance: u 1.0416666666666667, 5 keys at [0.0, 0.4, 0.55, 0.7, 1.0]",
+    "NYAAKOTO_EMPTY_PAW_MORPHS {'R': {'rule_error_mm': 0.00023, 'max_move_cm': 3.01}, 'L': {'rule_error_mm': 0.00019, 'max_move_cm': 3.01}}",
+    "NYAAKOTO_GUARD_ROUND_TRIP 97 frames; worst cm/deg {'R': [0.301, 0.018], 'L': [0.301, 0.014]}"
+   ],
+   "outputs": {},
+   "result": "FAILED on the validator's own frame numbering: Blender's FBX import starts each action a frame later (frame_range (2, 26) for the strike's 1-25), so the strike's round trip asked for u 1.0417. Fixed in the validator; the asset was not at fault."
+  },
+  {
+   "run": "s106_validate_runtime_skin",
+   "command": "Blender -b --factory-startup --python-exit-code 1 --python scripts/art/validate_nyaakoto_runtime_skin.py",
+   "start": "2026-10-26T09:41:05Z",
+   "pid": 24887,
+   "exit": 0,
+   "end": "2026-10-26T09:41:09Z",
+   "log": "Saved/W18Rebuild/s106_validate_runtime_skin.log",
+   "markers": [
+    "NYAAKOTO_EMPTY_PAW_MORPHS {'R': {'rule_error_mm': 0.00023, 'max_move_cm': 3.01}, 'L': {'rule_error_mm': 0.00019, 'max_move_cm': 3.01}}",
+    "NYAAKOTO_GUARD_ROUND_TRIP 97 frames; worst cm/deg {'R': [0.3, 0.018], 'L': [0.3, 0.014]}",
+    "NYAAKOTO_STRIKE_ROUND_TRIP 25 frames; worst cm/deg {'R': [0.0, 0.005], 'L': [0.001, 0.011]}",
+    "NYAAKOTO_RUNTIME_SKIN_PASS 176069 23 20"
+   ],
+   "outputs": {},
+   "result": "PASS: the morphs re-derived from the exported FBX, the guard and strike round trips, the four exact kamon."
+  },
+  {
+   "run": "s107_validate_lods",
+   "command": "Blender -b --factory-startup --python-exit-code 1 --python scripts/art/validate_nyaakoto_lods.py",
+   "start": "2026-10-26T09:41:18Z",
+   "pid": 25008,
+   "exit": 0,
+   "end": "2026-10-26T09:41:19Z",
+   "log": "Saved/W18Rebuild/s107_validate_lods.log",
+   "markers": [
+    "NYAAKOTO_LOD_FBX_PASS 1 76848 112106 23 20 morph rule mm / move cm {'R': [0.00015, 3.01], 'L': [0.00015, 3.01]}",
+    "NYAAKOTO_LOD_FBX_PASS 2 32489 57578 23 20 morph rule mm / move cm {'R': [0.00011, 3.01], 'L': [0.00011, 3.01]}"
+   ],
+   "outputs": {},
+   "result": "PASS for both LODs, with their morphs re-derived by the rule."
+  },
+  {
+   "run": "s108_ue_import",
+   "command": "scripts/toolchain/run-editor-script.sh scripts/unreal/import_nyaakoto_third_person.py NYAAKOTO_TP_UE_READY Saved/W18Rebuild/s108_ue_import.editor.log -- --readback Saved/NyaakotoThirdPerson/Unreal/s108_readback.json --morph-export Saved/NyaakotoThirdPerson/Unreal/s108_SK_NyaagyuSamurai_lods_morphs.fbx --skip-weapons",
+   "start": "2026-10-26T09:41:57Z",
+   "pid": 25271,
+   "exit": 1,
+   "end": "2026-10-26T09:44:46Z",
+   "log": "Saved/W18Rebuild/s108_ue_import.log",
+   "markers": [
+    "scripts/toolchain/run-editor-script.sh: line 60: 25341 Killed: 9               \"$EDITOR_CMD\" \"$PROJECT\" \"-ExecutePythonScript=$SCRIPT$ARGS_LINE\" -unattended -nopause \"$RHI\" -nosplash -nosound -stdout -FullStdOutLogOutput \"${EDITOR_CONFIG_ARGS[@]}\" \"${THROTTLE[@]}\" > \"$LOG\" 2>&1",
+    "EDITOR_EXIT=137",
+    "FAIL Saved/W18Rebuild/s108_ue_import.editor.log: editor exited 137; no completion marker 'NYAAKOTO_TP_UE_READY'"
+   ],
+   "outputs": {
+    "Saved/W18Rebuild/s108_ue_import.crash_sample.txt": "2cba904f8fc8a3e04c9c68f443ecb2d8cf3c0763ec546e22d8db5e469a2a7d6a"
+   },
+   "result": "FAILED: imported the body (coat colours, morph targets), LOD1/2 (render vertices 186876, 84678, 36002) and the four clips, and read back the morph target names; then UnrealEditor-Cmd (PID 25341) asserted 'MeshObject' in USkinnedMeshComponent::GetCPUSkinnedVertices under the skeletal FBX exporter's material-baking mesh data (NullRHI), SIGSEGV, and hung in FMacApplicationErrorOutputDevice::HandleErrorRestoreUI. SIGTERM 09:44:16Z ignored, SIGKILL 09:44:46Z: editor 137, wrapper 1. A manually terminated failed run; the export needs --rhi."
+  }
+ ]
+}

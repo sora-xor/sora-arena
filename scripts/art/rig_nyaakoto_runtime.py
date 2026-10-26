@@ -16,23 +16,35 @@ slice A. Its part rules are shared with the LODs (nyaakoto_runtime_parts.py).
   (Saved/W18Rebuild/s60_grip_contract).
 - **Sides are anatomical:** _R is the character's right (Blender -Y). The
   motion is unchanged, since each key keeps its side's sign.
-- **The paws are closed** around a grip channel (third_person_rig.CHANNEL_CM),
-  at most 11 cm across it. The open source fingers and thumb are rebuilt
-  here as curled tubes; the review source keeps its own. The palm is
-  narrowed to the same breadth.
+- **The paws** are nyaakoto_tp_paws' furred paws: one closed surface per
+  side round the grip channel (third_person_rig.CHANNEL_CM), at most 11 cm
+  across it. They replace the source's palm, open fingers and thumb here; the
+  review source keeps its own. Root's 05:15 UTC review (2026-10-26) found the
+  curled tubes that came before them read as white tubes.
+- **The empty paws** are two shape keys, PawEmpty_R and PawEmpty_L, 0 at
+  bind. Each moves its paw's vertices by nyaakoto_tp_paws.empty_points, a rule
+  of position, so generate_nyaakoto_lods.py gives every LOD the same morph.
 - **The sheathed sword set** (Saya_, Sageo_, Katana_) leaves the body. The
   runtime carries the authored W00 saya and katana at sockets instead.
   No material slot is used by those parts alone (checked here), so the 23
   slots stay. The bow, quiver and arrows stay on the body until their gear
   assets exist.
-- **A_NyaagyuSamurai_Guard** is solved by two-bone IK on these chains
-  (third_person_rig) and keyed beside the walk. It is an interim one-paw
-  guard: the contract's two-paw grip and left-hand closure stay open.
+- **The poses** are solved by two-bone IK on these chains (third_person_rig)
+  and keyed beside the walk.
+  - **A_NyaagyuSamurai_Guard** is the contract's two-paw chudan on study A,
+    the production proportions root chose (2026-10-26 05:15 UTC): Grip_L
+    (34, 0, 106), the blade at 30 deg, the elbows far forward (s91). It
+    replaces the interim one-paw guard.
+  - **A_NyaagyuSamurai_StrikeMakko** follows the contract's timing (4.5). Its
+    raise and hit are searched near the contract's targets on this body
+    (STRIKE), and every frame is solved by IK.
+- **The saya** rides at candidate 11 of the s94 study, root's choice (SAYA_SOCKET's notes).
 - **The checks** (mesh_clearance) run before anything is written. They use
   the posed visible mesh and the authored W00 katana and saya at their
   sockets. A failing check writes nothing.
-- **Review renders:** the guard and the sheathed carry, from the front and
-  the sides.
+- **Review renders:** the guard, the strike's raise and hit, the walk and the
+  sheathed carry, from the front and the sides, and close views of the paws
+  holding and empty.
 - **The record** (runtime_skin_manifest.json "third_person") carries:
   - the sockets' bind transforms, for the import;
   - every check, with its method and its calibration.
@@ -70,6 +82,7 @@ from mathutils import Matrix, Vector
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import mesh_clearance as MC  # noqa: E402
 import nyaakoto_runtime_parts as RP  # noqa: E402
+import nyaakoto_tp_paws as TPP  # noqa: E402
 import third_person_rig as TP  # noqa: E402
 
 ARGS = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
@@ -118,9 +131,12 @@ weights = Counter()
 duplicates = []
 kept_parts = [p for p in parts if RP.kept(p.name)]
 removed = [p.name for p in parts if not RP.kept(p.name)]
-added = {"R": RP.curled_paw("R", ARMS, by_name), "L": RP.curled_paw("L", ARMS, by_name)}
+PAWS = {side: RP.fur_paw(side, ARMS, by_name) for side in ("R", "L")}   # (object, nyaakoto_tp_paws mesh) per side
+added = {side: [PAWS[side][0]] for side in ("R", "L")}
 added_names = sorted(o.name for o in added["R"] + added["L"])   # the join below removes these objects
 added_names_ordered = {s: [o.name for o in added[s]] for s in ("R", "L")}
+paw_rows = {side: RP.fur_paw_record(side, ARMS, PAWS[side][1]) for side in ("R", "L")}
+assert not any(row["failed"] for row in paw_rows.values()), paw_rows
 # The slots: what leaves the body may use no slot alone; what the deferred gear alone uses is recorded.
 deferred = [p for p in kept_parts if p.name.startswith(RP.DEFERRED_GEAR)]
 body_materials = materials_of(kept_parts + added["R"] + added["L"])
@@ -130,15 +146,13 @@ deferred_only = sorted(materials_of(deferred) - materials_of([p for p in kept_pa
 part_names = []
 for src in kept_parts + added["R"] + added["L"]:
     part_name = src.name                                  # before the rename below, which a fresh part shares
-    fresh = part_name.startswith(RP.CURLED)
+    fresh = part_name.startswith(RP.FRESH)
     obj = src if fresh else src.copy()
     if not fresh:
         obj.data = src.data.copy()
     runtime.objects.link(obj)
     if not fresh:
         obj.matrix_world = src.matrix_world.copy()
-    if part_name.startswith("Paw_hand_"):                 # the palm narrowed to the closed paw's breadth
-        RP.narrow_palm(obj)
     obj.name = f"Runtime_{part_name}"
     # The sculpted cheek and short-fur meshes have no UVs in the art-review
     # source. Give them stable face-plane coordinates before the final join so
@@ -183,30 +197,30 @@ vid.data.foreach_get("value", _tmp)
 vertex_tag[:] = _tmp
 mesh.data.attributes.remove(vid)
 vertex_part, vertex_local = vertex_tag >> 20, vertex_tag & ((1 << 20) - 1)
-# The empty fists as shape keys: a second curled paw per side on the closed channel, its tubes built exactly as the
-# grip's, so vertex k of each empty part is vertex k of its grip part.
+# The empty fists as shape keys: each paw's vertices moved by nyaakoto_tp_paws.empty_points, from their bind
+# positions. The rule is one of position, so the LODs build the same morph on their own vertices.
 mesh.shape_key_add(name="Basis", from_mix=False)
-inv_mesh = mesh.matrix_world.inverted()
+mw_mesh = np.array([list(r) for r in mesh.matrix_world])
+inv_mesh_np = np.linalg.inv(mw_mesh)
+_co = np.empty(len(mesh.data.vertices) * 3, np.float32)
+mesh.data.vertices.foreach_get("co", _co)
+bind_local = _co.reshape(-1, 3).astype(np.float64)
+bind_world = bind_local @ mw_mesh[:3, :3].T + mw_mesh[:3, 3]
 empty_keys = {}
 for side in ("R", "L"):
-    empty_parts = RP.curled_paw(side, {side: RP.empty_arm(ARMS[side])}, by_name)
     key = mesh.shape_key_add(name=f"PawEmpty_{side}", from_mix=False)
     # Blender 5.2 starts a new key at value 1.0 (run s90's diagnosis). Left so, every pose that never calls
     # set_empty showed both paws as empty fists: s89's grip crossed the tsuka in 6,557 pairs. The grip is the default.
     key.value = 0.0
-    moved_v = 0
-    for name, empty_obj in zip([o for o in added_names_ordered[side]], empty_parts):
-        pi = part_names.index(name)
-        idx = np.nonzero(vertex_part == pi)[0]
-        assert len(idx) == len(empty_obj.data.vertices), (name, len(idx), len(empty_obj.data.vertices))
-        for vi, li in zip(idx.tolist(), vertex_local[idx].tolist()):
-            key.data[vi].co = inv_mesh @ (empty_obj.matrix_world @ empty_obj.data.vertices[li].co)
-        moved_v += len(idx)
-    for o in empty_parts:
-        me = o.data
-        bpy.data.objects.remove(o, do_unlink=True)
-        bpy.data.meshes.remove(me)
-    empty_keys[side] = moved_v
+    idx = np.nonzero(vertex_part == part_names.index(added_names_ordered[side][0]))[0]
+    assert len(idx) == len(PAWS[side][1]["verts"]), (side, len(idx), len(PAWS[side][1]["verts"]))
+    moved = TPP.empty_points(bind_world[idx], PAWS[side][1]["skeleton"])
+    kco = np.empty(len(key.data) * 3, np.float32)
+    key.data.foreach_get("co", kco)
+    kco = kco.reshape(-1, 3)
+    kco[idx] = (moved @ inv_mesh_np[:3, :3].T + inv_mesh_np[:3, 3]).astype(np.float32)
+    key.data.foreach_set("co", kco.ravel())
+    empty_keys[side] = int(len(idx))
 assert [(kb.name, kb.value) for kb in mesh.data.shape_keys.key_blocks[1:]] == [("PawEmpty_R", 0.0), ("PawEmpty_L", 0.0)]
 assert {m.name for m in mesh.data.materials} == pbr_slots
 coat=mesh.data.color_attributes.get("CoatBlend")
@@ -277,16 +291,19 @@ if "--diag-keys" in ARGS:                                  # run s90: why s89's 
     sys.exit(0)
 
 # --- Posing by the contract's sockets ---------------------------------------------------------------------------------
-# GUARD is the stance A_NyaagyuSamurai_Guard holds, an interim one-paw (katate) chudan chosen from the --explore
-# tables (Saved/W18Rebuild/s61_guard_explore.run*): in front of the right side, the blade 30 deg up and turned 15 deg
-# in so the kissaki is near the centreline, the elbow out, the left paw at the hip by the saya. It does not close the
-# contract's two-paw grip (4.5, 4.7), which stays open:
-# - its first target, two paws with Grip_L at (24, 0, 100) at 30 deg, is reachable (88.6 % / 75.9 %), but the rear paw
-#   lies against the chest armour (run1, run2; --explore measures what it lacks);
-# - every two-paw grip far enough forward to clear it is out of the right arm's reach.
-GUARD = {"grip_r": (40.0, 18.0, 110.0), "elevation_deg": 30.0, "yaw_deg": -15.0,
-         "poles": {"R": (-0.3, -1.0, -0.5)}, "left_paw": (20.0, -34.0, 92.0)}
+# GUARD is the stance A_NyaagyuSamurai_Guard holds: the contract's two-paw chudan (4.5) on study A, root's production
+# basis (2026-10-26 05:15 UTC). Grip_L at (34, 0, 106), the blade at 30 deg, the elbows far forward of the do.
+# - On the baseline body the contract's (24, 0, 100) put the rear paw against the chest armour, and no two-paw grip
+#   forward enough to clear it was in reach (s61-s63). The interim one-paw guard stood in for it until now.
+# - Study A's longer arms (1.2) and shallower chest front (0.85) reach this grip with every gate passing (s91).
+GUARD = {"grip_l": (34.0, 0.0, 106.0), "elevation_deg": 30.0, "poles": {"R": (1.0, -0.6, -0.5), "L": (1.0, 0.6, -0.5)}}
+GUARD_SOURCE = ("study A's two-paw chudan, every gate passing (Saved/W18Rebuild/s91_twopaw_A); root chose A as the "
+                "production basis, 2026-10-26 05:15 UTC")
 POLES = {"R": (-0.2, -0.5, -1.0), "L": (-0.2, 0.5, -1.0)}           # elbows down and out
+# The two-paw studies' elbow pole sets (s76, s91): the strike's search tries each.
+POLE_SETS = {"far_fwd": {"R": (1.0, -0.6, -0.5), "L": (1.0, 0.6, -0.5)},
+             "fwd": {"R": (0.3, -0.3, -1.0), "L": (0.3, 0.3, -1.0)},
+             "out": {"R": (0.4, -1.0, -0.6), "L": (0.4, 1.0, -0.6)}}
 # The saya's socket, measured on the visible mesh (Saved/W18Rebuild/s63_sliceA_explore_v2).
 # - viewmodels.json's planned gear_saya_l, (17, -25, 95) at (0, 180, 0), lies above the obi. The saya crosses the
 #   haori's skirt and, walking, the tail: up to 1238 visible triangle pairs. Its hilt crosses the dō's lowest plate.
@@ -295,10 +312,15 @@ POLES = {"R": (-0.2, -0.5, -1.0), "L": (-0.2, 0.5, -1.0)}           # elbows dow
 # - Here, with the koiguchi at x 23 and the plan's rotation, there is no visible crossing and nothing contained, at rest
 #   and through the walk. Its neighbours 1.5 cm out and 1 cm up also pass.
 # - The plan's edge-down rotation also keeps the authored kurikata on the outer face.
-SAYA_SOCKET = dict(hero_gear["sockets"]["gear_saya_l"], bind_component_cm=[23.0, -24.0, 85.5],
-                   rotation_deg=[0.0, 180.0, 0.0])
-SAYA_SOCKET_SOURCE = ("measured on the visible mesh (Saved/W18Rebuild/s63_sliceA_explore_v2); replaces viewmodels.json's "
-                      "planned gear_saya_l (17, -25, 95), which crosses the haori, the tail and the dō")
+# Root's carry target (2026-10-26 05:15 UTC) is candidate 11 of the s94 study: the koiguchi 2.5 cm further out, the saya
+# pitched 20 deg down and yawed 8 deg. s94 and s95 measured it on the baseline body with the interim guard. This build
+# checks it again on study A, through Idle, the walk, the guard and the strike.
+SAYA_SOCKET = dict(hero_gear["sockets"]["gear_saya_l"], bind_component_cm=[23.0, -26.5, 85.5],
+                   rotation_deg=[-20.0, 188.0, 0.0])
+SAYA_SOCKET_SOURCE = ("candidate 11 of the saya study (Saved/W18Rebuild/s94_saya, s95_saya_guard), root's choice "
+                      "2026-10-26 05:15 UTC; the first measured socket, (23, -24, 85.5) at (0, 180, 0), was from "
+                      "s63_sliceA_explore_v2, and viewmodels.json's planned gear_saya_l (17, -25, 95) crosses the "
+                      "haori, the tail and the do")
 TUCK = ("Obi_waist", "Resistance_sash_band")             # the obi the saya is thrust through: its crossings are the tuck
 HEAD = {"head", "neck"}
 
@@ -354,10 +376,29 @@ def reset_pose():
     bpy.context.view_layer.update()
 
 
+# --- A_NyaagyuSamurai_StrikeMakko (contract 4.5) ----------------------------------------------------------------------
+# Normalised to 1.0 s: the guard, the raise (furikaburi, small) at 0.40, the hit at 0.55, the follow-through at 0.70
+# and the guard again at 1.0. Each segment eases in and out, so the blade comes to rest at the raise, the hit and the
+# follow-through, as a kendo men does. Every frame is solved by IK on the stance between its keys.
+# The raise and hit are searched (strike_search, at build) near the contract's targets, which were set for the
+# baseline arms: the nearest that passes every gate is kept, its distance recorded. The follow-through is the hit
+# carried a little on and down.
+STRIKE_TIMES = (0.0, 0.40, 0.55, 0.70, 1.0)
+STRIKE_FRAMES = 24                                      # 1.0 s at 24 fps, keyed at every frame
+STRIKE = {}                                             # the keys, set by strike_search before the clips are keyed
+
+
+def strike_stance(u):
+    """The stance at normalised time u: Grip_L, the elevation and the elbow poles, eased between keys."""
+    return TP.keyed_stance([GUARD, STRIKE["raise"], STRIKE["hit"], STRIKE["follow"], GUARD], STRIKE_TIMES, u)
+
+
 def clip_pose(clip, t, guard=None):
     """The pose a clip keys at phase t (radians); the guard's arms by IK on the breathing body, the grips 0.4 cm up
-    and down."""
+    and down; the strike's by IK on its stance at t / 2 pi."""
     reset_pose()
+    if clip == "StrikeMakko":
+        return pose_stance(strike_stance(t / math.tau))
     for side, sign in (("R", -1), ("L", 1)):              # each side keeps its sign, so the motion is unchanged
         rig.pose.bones[f"thigh_{side}"].rotation_euler[2] = math.sin(t) * .24 * sign if clip == "Walk" else 0
         rig.pose.bones[f"shin_{side}"].rotation_euler[2] = max(0, -math.sin(t) * sign) * .30 if clip == "Walk" else 0
@@ -550,6 +591,26 @@ def render_views(views, prefix, katana_at, saya_at_, samples=32, res=1100):
     return out
 
 
+def render_close(path, centre, direction, katana_at, saya_at_, distance=0.55, lens=55.0, samples=48, res=1000):
+    """A perspective close view of the current pose, from centre + direction * distance (Blender metres)."""
+    scene = bpy.context.scene
+    render_views((), Path(str(path)[:-4]), katana_at, saya_at_, samples=samples, res=res)   # hides parts, places W00
+    cam = REVIEW["cam"]
+    cam.data.type = "PERSP"
+    cam.data.lens = lens
+    d = Vector(direction).normalized()
+    c = Vector(np.asarray(centre, np.float64).tolist())
+    cam.location = c + d * distance
+    cam.rotation_euler = (-d).to_track_quat("-Z", "Y").to_euler()
+    REVIEW["sun"].rotation_euler = (-(d * 0.5) - Vector((0.2, 0.0, 0.85))).normalized().to_track_quat("-Z", "Y").to_euler()
+    scene.camera = cam
+    scene.render.filepath = str(path)
+    bpy.ops.render.render(write_still=True)
+    cam.data.type = "ORTHO"
+    scene.camera = REVIEW["old"]
+    return Path(path)
+
+
 def end_review():
     for key in ("cam", "sun"):
         if key in REVIEW:
@@ -557,46 +618,72 @@ def end_review():
 
 
 def check_pose(saya_entry, held, only=None):
-    """The visible-mesh checks at the current pose. held: the katana in the right paw (the guard), else sheathed.
-    only: the names of the checks to run (all if None)."""
+    """The visible-mesh checks at the current pose. only: the names of the checks to run (all if None).
+    held: "RL", the katana in both paws, placed by the right paw's socket (the guard and the strike); "R" or True,
+    in the right paw alone (the studies' interim guard); else sheathed at the saya.
+    With both paws, the left paw's grip socket is also measured against the katana's Grip_L (the two-paw closure,
+    4.7), and each paw's extent along the tsuka against the fuchi and the kashira (4.2)."""
     pts = posed_points()
     sp, sr = saya_at(saya_entry)
     saya = place(SAYA, sp, sr)
     kp, kr = socket_now("R") if held else sheathed(sp, sr)
     katana = place(KATANA, kp, kr)
     hide = (SET["obi"], pts)
+    holding = "hands" if held == "RL" else "hand_R" if held else None
     plan = {"forearms_paws_vs_torso": lambda: MC.measure(BK, SET["arms_low"], pts, SET["torso"], pts, limit=0.02,
                                                          to_report=UE),
+            "forearms_paws_vs_head": lambda: MC.measure(BK, SET["arms_low"], pts, SET["head"], pts, limit=0.02,
+                                                        to_report=UE),
             "upper_arms_vs_torso": lambda: MC.measure(BK, SET["upper_arms"], pts, SET["torso"], pts, limit=0.0,
                                                       to_report=UE),
             "saya_vs_body": lambda: MC.measure(BK, K_SAYA, saya, SET["body"], pts, limit=0.0, hide=hide, allowed=TUCK,
                                                to_report=UE)}
     if held:
         plan.update({
-            "katana_vs_body_but_holding_paw": lambda: MC.measure(BK, K_ALL, katana, SET["body_but_hand_R"], pts,
-                                                                 limit=0.02, to_report=UE),
-            "katana_vs_holding_paw": lambda: MC.measure(BK, K_ALL, katana, SET["hand_R"], pts, limit=0.01, to_report=UE),
+            "katana_vs_body_but_holding_paws": lambda: MC.measure(BK, K_ALL, katana, SET[f"body_but_{holding}"], pts,
+                                                                  limit=0.02, to_report=UE),
+            "katana_vs_holding_paws": lambda: MC.measure(BK, K_ALL, katana, SET[holding], pts, limit=0.01, to_report=UE),
             "blade_vs_head": lambda: MC.measure(BK, K_BLADE, katana, SET["head"], pts, limit=0.05, to_report=UE),
-            "blade_vs_body": lambda: MC.measure(BK, K_BLADE, katana, SET["body_but_head_hand_R"], pts, limit=0.03,
+            "blade_vs_body": lambda: MC.measure(BK, K_BLADE, katana, SET[f"body_but_head_{holding}"], pts, limit=0.03,
                                                 to_report=UE),
             "left_paw_vs_saya": lambda: MC.measure(BK, SET["arm_low_L"], pts, K_SAYA, saya, limit=0.02, to_report=UE)})
+        if held == "RL":
+            plan["paw_vs_paw"] = lambda: MC.measure(BK, SET["hand_L"], pts, SET["hand_R"], pts, limit=0.02, to_report=UE)
     else:                                                 # the blade is inside the saya; its hilt may not touch the obi
         plan["sheathed_hilt_vs_body"] = lambda: MC.measure(BK, K_HILT, katana, SET["body"], pts, limit=0.0, to_report=UE)
     out = {k: f() for k, f in plan.items() if only is None or k in only}
     kissaki = kp + kr @ (np.array(TP.W00["muzzle"]) / 100.0 * np.array([1.0, -1.0, 1.0]))
     out["kissaki_ue_cm"] = [round(float(v), 2) for v in UE(kissaki)]
+    if held == "RL" and only is None:
+        lp, lr = socket_now("L")
+        grip_l = kp + kr @ (np.array(TP.W00["grip_l"]) / 100.0 * np.array([1.0, -1.0, 1.0]))
+        out["left_grip_error_cm"] = round(float(np.linalg.norm(lp - grip_l)) * 100.0, 4)
+        out["left_grip_error_deg"] = round(TP.angle_deg(lr, kr), 3)
+        along = {side: (pts[SET[f"hand_{side}"].used] - kp) @ kr[:, 0] * 100.0 for side in ("R", "L")}
+        out["paw_fit_cm"] = {"right_paw_front": round(float(along["R"].max()), 3), "fuchi": TP.W00["fuchi_x"],
+                             "left_paw_back": round(float(along["L"].min()), 3), "kashira": TP.W00["kashira_x"]}
     return out
 
 
-GATES = {"forearms_paws_vs_torso": 0.0, "saya_vs_body": 0.0, "katana_vs_body_but_holding_paw": 0.0,
-         "katana_vs_holding_paw": 0.0, "blade_vs_head": 0.05, "blade_vs_body": 0.03, "left_paw_vs_saya": 0.0,
-         "sheathed_hilt_vs_body": 0.0}
+GATES = {"forearms_paws_vs_torso": 0.0, "forearms_paws_vs_head": 0.0, "saya_vs_body": 0.0,
+         "katana_vs_body_but_holding_paws": 0.0, "katana_vs_holding_paws": 0.0, "blade_vs_head": 0.05,
+         "blade_vs_body": 0.03, "left_paw_vs_saya": 0.0, "paw_vs_paw": 0.0, "sheathed_hilt_vs_body": 0.0}
+LEFT_GRIP_CM = 1.0                                        # 4.5: each paw's grip socket within 1.0 cm of its target
+KASHIRA_OVERHANG_CM = 1.0                                 # 4.2: the left paw overhangs the kashira by at most 1 cm
 
 
 def gates_of(res):
     """Each gated check: no visible crossing, nothing contained or ambiguous, and its exact minimum (5 cm blade to
-    head, 3 cm blade to body). The upper arms at the shoulder are reported only: rigid parts meet there by build."""
-    return {k: MC.passes(res[k], m) for k, m in GATES.items() if k in res}
+    head, 3 cm blade to body). The upper arms at the shoulder are reported only: rigid parts meet there by build.
+    With both paws holding: the left grip's closure within LEFT_GRIP_CM, the right paw behind the fuchi and the left
+    paw at most KASHIRA_OVERHANG_CM past the kashira."""
+    out = {k: MC.passes(res[k], m) for k, m in GATES.items() if k in res}
+    if "left_grip_error_cm" in res:
+        out["left_grip_closure"] = bool(res["left_grip_error_cm"] <= LEFT_GRIP_CM)
+        fit = res["paw_fit_cm"]
+        out["paws_on_the_tsuka"] = bool(fit["right_paw_front"] <= fit["fuchi"] + 1e-6
+                                        and fit["left_paw_back"] >= fit["kashira"] - KASHIRA_OVERHANG_CM)
+    return out
 
 
 def brief(res):
@@ -608,9 +695,10 @@ def brief(res):
             for k, v in res.items()}
 
 
-# The empty fists by state: both paws empty out of combat; in the interim one-paw guard only the left. The runtime
+# The empty fists by state: both paws empty out of combat, both holding in the guard and the strike. The runtime
 # drives the same morph targets (PawEmpty_R, PawEmpty_L) by what each paw holds.
-EMPTY_BY_CLIP = {"Idle": (1, 1), "Walk": (1, 1), "Guard": (0, 1)}
+EMPTY_BY_CLIP = {"Idle": (1, 1), "Walk": (1, 1), "Guard": (0, 0), "StrikeMakko": (0, 0)}
+HELD_BY_CLIP = {"Idle": None, "Walk": None, "Guard": "RL", "StrikeMakko": "RL"}
 
 
 def set_empty(r_empty, l_empty):
@@ -854,13 +942,92 @@ if EXPLORE:
     print("EXPLORE_COMPLETE", flush=True)
     sys.exit(0)
 
+calibration = MC.calibrate(BK)
+assert calibration["ok"], calibration
+
+
+# --- The strike's keys, searched on this body (STRIKE's notes) ---------------------------------------------------------
+def strike_try(stance):
+    """One stance with both paws holding: its reach, and every gate (gates_of) at the pose."""
+    reset_pose()
+    row = {"grip_l": [round(float(v), 3) for v in stance["grip_l"]], "elevation_deg": round(float(stance["elevation_deg"]), 3),
+           "pole_set": stance.get("pole_set")}
+    try:
+        row["reach"] = {side: round(v, 4) for side, v in pose_stance(stance).items()}
+    except ValueError as exc:
+        row["unreachable"] = str(exc)
+        return row, False
+    set_empty(0, 0)
+    res = check_pose(SAYA_SOCKET, held="RL")
+    g = gates_of(res)
+    row["failed"] = sorted(k for k, ok in g.items() if not ok)
+    row["kissaki_ue_cm"] = res["kissaki_ue_cm"]
+    return row, not row["failed"]
+
+
+def between(a, b, f):
+    lerp = lambda x, y: tuple((1.0 - f) * np.asarray(x, np.float64) + f * np.asarray(y, np.float64))  # noqa: E731
+    return {"grip_l": lerp(a["grip_l"], b["grip_l"]), "elevation_deg": (1.0 - f) * a["elevation_deg"] + f * b["elevation_deg"],
+            "poles": {side: tuple(TP.unit(lerp(a["poles"][side], b["poles"][side]))) for side in ("R", "L")},
+            "pole_set": f"{a.get('pole_set', 'guard')}>{b.get('pole_set', 'guard')}@{f:.2f}"}
+
+
+def strike_search(name, frm, target, elevation, offsets):
+    """The nearest stance to the contract's target (Grip_L in Unreal cm) at this elevation, over offsets (dx, dz) and the
+    pole sets, that passes every gate at its key and a third and two thirds of the way from the key before it."""
+    cands = [{"grip_l": (target[0] + dx, 0.0, target[2] + dz), "elevation_deg": elevation, "poles": poles,
+              "pole_set": pole_name} for dx, dz in offsets for pole_name, poles in POLE_SETS.items()]
+    cands.sort(key=lambda c: (math.hypot(c["grip_l"][0] - target[0], c["grip_l"][2] - target[2]),
+                              list(POLE_SETS).index(c["pole_set"])))
+    tried = []
+    for c in cands:
+        row, ok = strike_try(c)
+        if ok:
+            for f in (1.0 / 3.0, 2.0 / 3.0):
+                mid, mid_ok = strike_try(between(frm, c, f))
+                row.setdefault("path", []).append(mid)
+                ok &= mid_ok
+        tried.append(row)
+        print(f"STRIKE_SEARCH {name} " + json.dumps(row, default=str), flush=True)
+        if ok:
+            return c, tried
+    print("NYAAKOTO_RUNTIME_SKIN_CHECKS_FAILED " + json.dumps({"failed": [f"strike_{name}_search"], "tried": tried},
+                                                             default=str), flush=True)
+    sys.stdout.flush()
+    os._exit(1)
+
+
+STRIKE_SEARCH = {}
+_raise = TP.STANCES["raise"]
+STRIKE["raise"], STRIKE_SEARCH["raise"] = strike_search(
+    "raise", dict(GUARD, pole_set="far_fwd"), _raise["grip_l"], _raise["elevation_deg"],
+    [(dx, dz) for dx in (0.0, 3.0, 6.0, 9.0, 12.0, 15.0) for dz in (0.0, -4.0, 4.0, -8.0)])
+_hit = TP.STANCES["hit"]
+STRIKE["hit"], STRIKE_SEARCH["hit"] = strike_search(
+    "hit", STRIKE["raise"], _hit["grip_l"], _hit["elevation_deg"],
+    [(dx, dz) for dx in (0.0, 4.0, 8.0, 12.0, 16.0) for dz in (0.0, -4.0, 4.0)])
+_h = STRIKE["hit"]["grip_l"]
+STRIKE["follow"], STRIKE_SEARCH["follow"] = strike_search(
+    "follow", STRIKE["hit"], (_h[0] + 2.0, 0.0, _h[2] - 4.0), _hit["elevation_deg"] - 7.0,
+    [(0.0, 0.0), (-2.0, 1.0), (-2.0, 4.0)])
+for f in (1.0 / 3.0, 2.0 / 3.0):                               # the recovery: the follow-through back to the guard
+    row, ok = strike_try(between(STRIKE["follow"], dict(GUARD, pole_set="far_fwd"), f))
+    print("STRIKE_SEARCH recovery " + json.dumps(row, default=str), flush=True)
+    STRIKE_SEARCH.setdefault("recovery", []).append(row)
+    if not ok:
+        print("NYAAKOTO_RUNTIME_SKIN_CHECKS_FAILED " + json.dumps({"failed": ["strike_recovery_path"], "row": row},
+                                                                 default=str), flush=True)
+        sys.stdout.flush()
+        os._exit(1)
+reset_pose()
+
 # --- The clips: keyed first, checked, rendered, and only then exported -------------------------------------------------
-CLIPS = (("Idle", 96), ("Walk", 32), ("Guard", 96))
+CLIPS = (("Idle", 96), ("Walk", 32), ("Guard", 96), ("StrikeMakko", STRIKE_FRAMES))
 for clip, frames in CLIPS:
     action = bpy.data.actions.new(rig.name + "_" + clip)
     action.use_fake_user = True
     rig.animation_data.action = action
-    for frame in range(1, frames + 2, 4):
+    for frame in range(1, frames + 2, 1 if clip == "StrikeMakko" else 4):
         clip_pose(clip, (frame - 1) / frames * math.tau)
         for pose in rig.pose.bones:
             pose.keyframe_insert(data_path="rotation_euler", frame=frame, group=pose.name)
@@ -898,19 +1065,22 @@ for side in ("R", "L"):
     inside = (np.abs(loc[:, 0]) <= RP.PAW_HALF) & ((loc[:, 1] / RP.CHANNEL_HALF[0]) ** 2 + (loc[:, 2] / RP.CHANNEL_HALF[1]) ** 2 < 1.0)
     channel_rows[side] = {"breadth_along_channel_cm": round(float(np.ptp(loc[:, 0])) * 100.0, 2),
                           "vertices_inside_channel": int(inside.sum())}
-calibration = MC.calibrate(BK)
-assert calibration["ok"], calibration
 checks, gate_rows = {}, {}
-for clip, frames in (("Guard", (1, 25, 49, 73)), ("Idle", (1, 49)), ("Walk", (1, 9, 17, 25))):
-    for f in frames:
+# Every key and the midpoint after it: Idle, Walk and Guard are keyed every 4 frames, so every other frame; the
+# strike is keyed at every frame, so every frame. The loops' last frame is their first.
+CHECK_FRAMES = {"Idle": range(1, 97, 2), "Walk": range(1, 33, 2), "Guard": range(1, 97, 2),
+                "StrikeMakko": range(1, STRIKE_FRAMES + 2)}
+for clip, frames in CLIPS:
+    for f in CHECK_FRAMES[clip]:
         at_frame(clip, f)
         set_empty(*EMPTY_BY_CLIP[clip])
-        res = check_pose(SAYA_SOCKET, held=clip == "Guard")
-        if clip == "Guard":
+        res = check_pose(SAYA_SOCKET, held=HELD_BY_CLIP[clip])
+        if HELD_BY_CLIP[clip]:
+            tgs = (TP.socket_targets(GUARD, math.sin((f - 1) / 96 * math.tau) * 0.004) if clip == "Guard"
+                   else TP.socket_targets(strike_stance((f - 1) / STRIKE_FRAMES)))
             res["socket_error_cm"] = {s: round(float(np.linalg.norm(socket_now(s)[0] - tg[0])) * 100.0, 4)
-                                      for s, tg in TP.socket_targets(GUARD, math.sin((f - 1) / 96 * math.tau) * 0.004).items()}
-            res["socket_error_deg"] = {s: round(TP.angle_deg(socket_now(s)[1], tg[1]), 3)
-                                       for s, tg in TP.socket_targets(GUARD, math.sin((f - 1) / 96 * math.tau) * 0.004).items()}
+                                      for s, tg in tgs.items()}
+            res["socket_error_deg"] = {s: round(TP.angle_deg(socket_now(s)[1], tg[1]), 3) for s, tg in tgs.items()}
         checks[f"{clip}@{f}"] = res
         gate_rows[f"{clip}@{f}"] = gates_of(res)
 reset_pose()
@@ -923,7 +1093,7 @@ checks["rest"] = {"forearms_paws_vs_torso": MC.measure(BK, SET["arms_low"], rest
                   "upper_arms_vs_torso": MC.measure(BK, SET["upper_arms"], rest_posed, SET["torso"], rest_posed,
                                                     limit=0.0, to_report=UE)}
 gate_rows["rest"] = gates_of(checks["rest"])
-socket_ok = all(max(r["socket_error_cm"].values()) <= 1.0 for k, r in checks.items() if k.startswith("Guard"))
+socket_ok = all(max(r["socket_error_cm"].values()) <= 1.0 for r in checks.values() if "socket_error_cm" in r)
 failed = sorted(f"{k}:{g}" for k, row in gate_rows.items() for g, ok in row.items() if not ok)
 failed += [f"channel_{s}" for s, row in channel_rows.items()                  # 4.2: the paw closes round the channel
            if row["vertices_inside_channel"] or row["breadth_along_channel_cm"] > TP.PAW_BREADTH_MAX_CM + 1e-3]
@@ -938,13 +1108,33 @@ if failed or not socket_ok:
 
 # --- Review renders: the guard and the sheathed carry, with the authored W00 at its sockets --------------------------
 renders = {}
-for clip, views in (("Guard", ("Front", "SideRight", "SideLeft")), ("Idle", ("Front", "SideLeft"))):
-    at_frame(clip, 1)
+RAISE_FRAME = 1 + round(STRIKE_TIMES[1] * STRIKE_FRAMES)
+HIT_FRAME = 1 + round(STRIKE_TIMES[2] * STRIKE_FRAMES)
+for clip, frame, views, label in (("Guard", 1, ("Front", "SideRight", "SideLeft"), "Guard"),
+                                  ("StrikeMakko", RAISE_FRAME, ("Front", "SideRight"), "StrikeRaise"),
+                                  ("StrikeMakko", HIT_FRAME, ("Front", "SideRight"), "StrikeHit"),
+                                  ("Idle", 1, ("Front", "SideLeft"), "Idle"),
+                                  ("Walk", 9, ("SideLeft",), "Walk")):
+    at_frame(clip, frame)
     set_empty(*EMPTY_BY_CLIP[clip])
     sp, sr = saya_at(SAYA_SOCKET)
-    held = socket_now("R") if clip == "Guard" else sheathed(sp, sr)
-    for path in render_views(views, HERO / f"Nyaakoto_RuntimeSkin_{clip}", held, (sp, sr)):
+    held = socket_now("R") if HELD_BY_CLIP[clip] else sheathed(sp, sr)
+    for path in render_views(views, HERO / f"Nyaakoto_RuntimeSkin_{label}", held, (sp, sr)):
         renders[path.name] = path
+# Close views of the paws: both round the tsuka in the guard, and the right paw empty in Idle.
+at_frame("Guard", 1)
+set_empty(0, 0)
+sp, sr = saya_at(SAYA_SOCKET)
+grip_centre = (socket_now("R")[0] + socket_now("L")[0]) / 2.0
+for view, d in (("Front", (1.0, -0.35, 0.25)), ("Below", (0.55, -0.4, -0.75))):
+    path = render_close(HERO / f"Nyaakoto_RuntimeSkin_GuardPaws_{view}.png", grip_centre, d, socket_now("R"), (sp, sr))
+    renders[path.name] = path
+at_frame("Idle", 1)
+set_empty(1, 1)
+sp, sr = saya_at(SAYA_SOCKET)
+path = render_close(HERO / "Nyaakoto_RuntimeSkin_IdlePaw_Front.png", socket_now("R")[0], (1.0, -0.6, 0.2),
+                    sheathed(sp, sr), (sp, sr))
+renders[path.name] = path
 end_review()
 set_empty(0, 0)                                           # exported as morph targets at 0; the runtime drives them
 # Nothing imported or added for the checks and renders stays in the runtime blend.
@@ -971,7 +1161,8 @@ for clip, frames in CLIPS:
     mesh.select_set(True)
     rig.select_set(True)
     bpy.context.view_layer.objects.active = rig
-    filename = {"Idle": "SK_NyaagyuSamurai.fbx", "Walk": "A_NyaagyuSamurai_Walk.fbx", "Guard": "A_NyaagyuSamurai_Guard.fbx"}[clip]
+    filename = {"Idle": "SK_NyaagyuSamurai.fbx", "Walk": "A_NyaagyuSamurai_Walk.fbx", "Guard": "A_NyaagyuSamurai_Guard.fbx",
+                "StrikeMakko": "A_NyaagyuSamurai_StrikeMakko.fbx"}[clip]
     bpy.ops.export_scene.fbx(
         filepath=str(OUT / filename), use_selection=True,
         object_types={"MESH", "ARMATURE"}, axis_forward="-Y", axis_up="Z",
@@ -1034,15 +1225,25 @@ third_person = {
     "arm_joints_blender_m": {side: {k: [round(float(c), 4) for c in ARMS[side][k]] for k in ("shoulder", "elbow", "wrist", "palm", "channel")}
                              for side in ("R", "L")},
     "removed_parts": removed, "added_parts": added_names,
-    "empty_paws": {"shape_keys": ["PawEmpty_R", "PawEmpty_L"], "by_clip": EMPTY_BY_CLIP,
-                   "vertices": empty_keys, "channel_share": RP.EMPTY_CHANNEL,
+    "paws": {"module": "scripts/art/nyaakoto_tp_paws.py", "module_sha256": sha(Path(TPP.__file__)),
+             "lod0_step_m": TPP.LOD_STEPS[0], "by_side": paw_rows},
+    "empty_paws": {"shape_keys": ["PawEmpty_R", "PawEmpty_L"], "by_clip": EMPTY_BY_CLIP, "held_by_clip": HELD_BY_CLIP,
+                   "vertices": empty_keys, "rule": "nyaakoto_tp_paws.empty_points (a rule of position: every LOD's morph)",
+                   "closure": {"empty_channel": TPP.EMPTY_CHANNEL, "curl_ramp_deg": list(TPP.CURL_RAMP)},
                    "note": "1 an empty fist, 0 the paw round a hilt; the checks and renders use these values"},
     "deferred_gear": {"parts": sorted(p.name for p in deferred), "slots_only_they_use": deferred_only,
                       "note": "The bow, quiver and arrows stay on the body until their gear assets exist; the "
                               "socket migration viewmodels.json plans stays open."},
-    "channel_cm": list(TP.CHANNEL_CM), "paw_breadth_max_cm": TP.PAW_BREADTH_MAX_CM, "finger_pitch_m": RP.FINGER_PITCH,
-    "guard": {"stance": GUARD, "reach": guard_reach,
-              "status": "interim one-paw guard; the two-paw grip and left-hand closure (4.5, 4.7) stay open"},
+    "channel_cm": list(TP.CHANNEL_CM), "paw_breadth_max_cm": TP.PAW_BREADTH_MAX_CM, "digit_pitch_m": TPP.DIGIT_PITCH,
+    "guard": {"stance": GUARD, "reach": guard_reach, "source": GUARD_SOURCE,
+              "status": "the contract's two-paw chudan (4.5) on study A; the left grip's closure is measured at every "
+                        "checked frame"},
+    "strike": {"clip": "A_NyaagyuSamurai_StrikeMakko", "times": list(STRIKE_TIMES), "frames": STRIKE_FRAMES,
+               "keys": {k: {"grip_l": list(v["grip_l"]), "elevation_deg": v["elevation_deg"], "pole_set": v["pole_set"],
+                            "poles": {side: list(v["poles"][side]) for side in ("R", "L")}}
+                        for k, v in STRIKE.items()},
+               "contract_targets": {k: TP.STANCES[k] for k in ("raise", "hit")},
+               "search": STRIKE_SEARCH, "raise_frame": RAISE_FRAME, "hit_frame": HIT_FRAME},
     "weapons": {w["file"]: {"sha256": w["sha256"], "sockets_read_back_m": w["sockets"]} for w in (KATANA, SAYA)},
     "clearance": {"method": MC.__doc__.split("\n\n", 1)[1].strip(), "backend": BK.name, "calibration": calibration,
                   "gates": {k: ("no visible crossing, nothing contained or ambiguous" +
@@ -1075,13 +1276,15 @@ record = {
     "walk_fbx_sha256": sha(OUT / "A_NyaagyuSamurai_Walk.fbx"),
     "guard_fbx": "A_NyaagyuSamurai_Guard.fbx",
     "guard_fbx_sha256": sha(OUT / "A_NyaagyuSamurai_Guard.fbx"),
+    "strike_fbx": "A_NyaagyuSamurai_StrikeMakko.fbx",
+    "strike_fbx_sha256": sha(OUT / "A_NyaagyuSamurai_StrikeMakko.fbx"),
     "skeleton_bones": all_bones,
     "sora_kamon_svg_sha256": source_record["insignia_sha256"],
     "sora_kamon_placements": source_record["sora_kamon_placements"],
     "head_weighted_vertices": weights["head"],
-    "rigging": "20-bone runtime skeleton, its arm chains fitted to the hero's arm parts and its sides anatomical; rigid source-part skin; idle, walk and an interim one-paw guard",
+    "rigging": "20-bone runtime skeleton, its arm chains fitted to the hero's arm parts and its sides anatomical; rigid source-part skin; furred paws with empty-fist morph targets; idle, walk, the two-paw guard and the men strike",
     "third_person": third_person,
-    "limitations": "No production deformation, lip sync, authored combat animation, strand groom, UE 5.8.2 visual review, or photoreal quality qualification. The guard is an interim one-paw pose. The katana and saya are the authored W00 at sockets, not body geometry; the bow, quiver and arrows remain back presentation geometry until their gear assets exist.",
+    "limitations": "No production deformation, lip sync, hand-authored combat animation, strand groom, UE 5.8 visual review, or photoreal quality qualification. The guard and strike are IK-solved stances, not motion capture. The rigid shoulders meet the torso by build (reported, not gated). The katana and saya are the authored W00 at sockets, not body geometry; the bow, quiver and arrows remain back presentation geometry until their gear assets exist.",
 }
 MANIFEST.write_text(json.dumps(record, indent=2, ensure_ascii=False, default=str) + "\n")
 print("NYAAKOTO_RUNTIME_SKIN_COMPLETE", len(parts), len(mesh.data.vertices), len(rig.data.bones), weights["head"])

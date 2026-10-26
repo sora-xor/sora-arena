@@ -7,8 +7,12 @@ reduces selected curved volumes; LOD2 removes cards and ornamental micro-forms.
 The same 20-bone armature, 23 material identities and exact vector kamon remain.
 
 Every LOD carries LOD0's body (nyaakoto_runtime_parts.py, the third-person
-grip contract's slice A): anatomical sides, the sheathed sword set and open
-paws left out, the closed paws and narrowed palm added. The bounds are LOD0's.
+grip contract's slice A): anatomical sides, the sheathed sword set and the
+source's open paws left out. The furred paws are meshed again for each LOD at
+its own step (nyaakoto_tp_paws.LOD_STEPS), and each LOD's PawEmpty_R and
+PawEmpty_L shape keys come from the same rule as LOD0's (empty_points, a rule
+of position), so the empty and holding states hold at every distance. The
+bounds are LOD0's.
 """
 
 from __future__ import annotations
@@ -21,10 +25,12 @@ from pathlib import Path
 
 import bmesh
 import bpy
+import numpy as np
 from mathutils import Vector
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import nyaakoto_runtime_parts as RP  # noqa: E402
+import nyaakoto_tp_paws as TPP  # noqa: E402
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -73,8 +79,8 @@ LOD2_OMIT = (
 CURVED = (
     "Skull", "Lower_jaw", "Cheek_ruff_", "Muzzle_pad_", "Eye_socket_",
     "Eye_iris_", "Vertical_pupil_", "Fur_neck", "White_throat_bib",
-    "Shoulder_joint_", "Paw_hand_", "Heel_paw_", "Tabi_toe_paw_",
-    "Toe_", "Finger_knuckle_", "Soft_nose_bridge", "White_nose_blaze",
+    "Shoulder_joint_", "Heel_paw_", "Tabi_toe_paw_",
+    "Toe_", "Soft_nose_bridge", "White_nose_blaze",
     "Triangular_nose", "Tail_white_tip", "Clan_mon_roundel",
 )
 
@@ -98,12 +104,13 @@ for level in (1, 2):
     collection = bpy.data.collections.new(f"Nyaakoto_LOD{level}_Export")
     bpy.context.scene.collection.children.link(collection)
     pieces = []
-    curled = RP.curled_paw("R", ARMS, by_name) + RP.curled_paw("L", ARMS, by_name)
-    for src in [p for p in parts if RP.kept(p.name)] + curled:
+    paws = {side: RP.fur_paw(side, ARMS, by_name, step=TPP.LOD_STEPS[level]) for side in ("R", "L")}
+    paw_side = {paws[side][0].name: k + 1 for k, side in enumerate(("R", "L"))}   # 1 right, 2 left; 0 the rest
+    for src in [p for p in parts if RP.kept(p.name)] + [paws[side][0] for side in ("R", "L")]:
         name = src.name
         if level == 2 and (name.startswith(FUR_CARDS) or name.startswith(LOD2_OMIT)):
             continue
-        fresh = name.startswith(RP.CURLED)
+        fresh = name.startswith(RP.FRESH)
         obj = src if fresh else src.copy()
         if not fresh:
             obj.data = src.data.copy()
@@ -112,8 +119,6 @@ for level in (1, 2):
             obj.matrix_world = src.matrix_world.copy()
         obj.hide_set(False)
         obj.hide_render = False
-        if name.startswith("Paw_hand_"):
-            RP.narrow_palm(obj)
         if level == 1 and name.startswith(FUR_CARDS):
             thin_cards(obj, 5)
         elif name.startswith(CURVED) and len(obj.data.vertices) >= 160:
@@ -129,6 +134,8 @@ for level in (1, 2):
             for loop in obj.data.loops:
                 p = obj.matrix_world @ obj.data.vertices[loop.vertex_index].co
                 uv.data[loop.index].uv = ((p.y + .8) * 2.4, (p.z - .55) * 2.4)
+        tag = obj.data.attributes.new("nyaakoto_paw_side", "INT", "POINT")   # which paw, through the join
+        tag.data.foreach_set("value", [paw_side.get(name, 0)] * len(obj.data.vertices))
         group_names = tuple(rig.data.bones.keys())
         groups = {bone: obj.vertex_groups.new(name=bone) for bone in group_names}
         for vertex in obj.data.vertices:
@@ -142,6 +149,31 @@ for level in (1, 2):
     bpy.ops.object.join()
     mesh = bpy.context.object
     mesh.name = f"SK_NyaagyuSamurai_LOD{level}"
+    side_of = np.empty(len(mesh.data.vertices), np.int32)
+    mesh.data.attributes["nyaakoto_paw_side"].data.foreach_get("value", side_of)
+    mesh.data.attributes.remove(mesh.data.attributes["nyaakoto_paw_side"])
+    # The empty fists: LOD0's rule on this LOD's own paw vertices, 0 at bind (Blender 5.2 starts a key at 1.0, s90).
+    mw = np.array([list(r) for r in mesh.matrix_world])
+    inv = np.linalg.inv(mw)
+    co = np.empty(len(mesh.data.vertices) * 3, np.float32)
+    mesh.data.vertices.foreach_get("co", co)
+    world = co.reshape(-1, 3).astype(np.float64) @ mw[:3, :3].T + mw[:3, 3]
+    mesh.shape_key_add(name="Basis", from_mix=False)
+    morph = {}
+    for k, side in enumerate(("R", "L")):
+        key = mesh.shape_key_add(name=f"PawEmpty_{side}", from_mix=False)
+        key.value = 0.0
+        idx = np.nonzero(side_of == k + 1)[0]
+        assert len(idx) == len(paws[side][1]["verts"]), (level, side, len(idx), len(paws[side][1]["verts"]))
+        kco = co.reshape(-1, 3).copy()
+        kco[idx] = (TPP.empty_points(world[idx], paws[side][1]["skeleton"]) @ inv[:3, :3].T + inv[:3, 3]).astype(np.float32)
+        key.data.foreach_set("co", kco.ravel())
+        moved = np.linalg.norm(kco[idx] - co.reshape(-1, 3)[idx], axis=1)
+        morph[f"PawEmpty_{side}"] = {"paw_vertices": int(len(idx)), "moved_vertices": int((moved > 1e-7).sum()),
+                                     "max_move_cm": round(float(moved.max()) * 100.0, 3)}
+    assert [(kb.name, kb.value) for kb in mesh.data.shape_keys.key_blocks[1:]] == [("PawEmpty_R", 0.0), ("PawEmpty_L", 0.0)]
+    paw_records = {side: RP.fur_paw_record(side, ARMS, paws[side][1]) for side in ("R", "L")}
+    assert not any(r["failed"] for r in paw_records.values()), paw_records
     coat=mesh.data.color_attributes.get("CoatBlend")
     assert coat is not None and coat.domain=="CORNER"
     mesh.data.color_attributes.active_color=coat
@@ -185,6 +217,8 @@ for level in (1, 2):
         "bone_names": sorted(rig.data.bones.keys()),
         "card_fur": "20% sampled source triangle cards" if level == 1 else "none; surface normal maps only",
         "part_rules": "nyaakoto_runtime_parts.py: LOD0's body (slice A)",
+        "paws": {"step_m": TPP.LOD_STEPS[level], "by_side": paw_records},
+        "morph_targets": morph,
     })
     mesh.hide_set(True)
     mesh.hide_render = True

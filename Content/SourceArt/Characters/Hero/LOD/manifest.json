@@ -1,25 +1,25 @@
 {
   "schema_version": 1,
   "generator": "scripts/art/generate_nyaakoto_lods.py",
-  "source_blend_sha256": "cf4acdef478abfdfae266e49fd54f5c7fc66ef9fc635c587a468088f25f60769",
-  "lod0_fbx_sha256": "bde1a741e93bdb3510b1be80cb6c299279ad679977cbcb04aa32b923863ce066",
+  "source_blend_sha256": "a86e86e251489552ba07b7421e596278efbb93065566dc87ac0ae91a16f89e7d",
+  "lod0_fbx_sha256": "b2695aa29d78b3dc591ce5ae02a2f918302af83c244a92da4882f44fc57edee9",
   "sora_kamon_svg_sha256": "d66413a71b70e25dcb8b2f118dcfe846a6446ed1db3de53ce88fc70c16ac0910",
   "lods": [
     {
       "level": 1,
       "fbx": "SK_NyaagyuSamurai_LOD1.fbx",
-      "sha256": "74b68590f57920c4caed24e56b497032a1dd807021454eb13fcac102e650dc70",
-      "source_parts": 407,
-      "vertices": 65372,
-      "triangles": 89114,
+      "sha256": "4f68c44f5c310e286dcd3c294790314bce81547340679e95713d087b609f2f88",
+      "source_parts": 381,
+      "vertices": 76848,
+      "triangles": 112106,
       "bounds_m": {
         "x": [
           -0.6542,
           0.2713
         ],
         "y": [
-          -0.536,
-          0.529
+          -0.5669,
+          0.5669
         ],
         "z": [
           -0.001,
@@ -74,23 +74,142 @@
         "upperarm_R"
       ],
       "card_fur": "20% sampled source triangle cards",
-      "part_rules": "nyaakoto_runtime_parts.py: LOD0's body (slice A)"
+      "part_rules": "nyaakoto_runtime_parts.py: LOD0's body (slice A)",
+      "paws": {
+        "step_m": 0.0045,
+        "by_side": {
+          "R": {
+            "step_m": 0.0045,
+            "vertices": 6750,
+            "triangles": 13504,
+            "palm_radii_m": [
+              0.0690000168979168,
+              0.0780000239610672,
+              0.0899999737739563
+            ],
+            "frame": {
+              "c": [
+                0.16990460455417633,
+                -0.5120000243186951,
+                0.679398775100708
+              ],
+              "z": [
+                -0.5890634470311097,
+                0.0,
+                0.808086787029603
+              ],
+              "w": [
+                0.8080867870296031,
+                -0.0,
+                0.5890634470311098
+              ],
+              "a": 0.0215,
+              "b": 0.0165,
+              "sign": -1,
+              "palm": [
+                0.10940000414848328,
+                -0.5120000243186951,
+                0.7623999714851379
+              ]
+            },
+            "closed_manifold": true,
+            "volume_cm3": {
+              "grip": 1669.9,
+              "empty": 1576.33
+            },
+            "self_crossings": {
+              "grip": 0,
+              "empty": 0
+            },
+            "min_offset_from_channel_mm": 1.0232,
+            "vertices_inside_channel": 0,
+            "breadth_along_channel_cm": 10.828,
+            "faces_turned_over_by_morph": 0,
+            "max_morph_move_cm": 3.01,
+            "fold_margin": 0.0759,
+            "failed": []
+          },
+          "L": {
+            "step_m": 0.0045,
+            "vertices": 6744,
+            "triangles": 13492,
+            "palm_radii_m": [
+              0.0690000168979168,
+              0.0780000239610672,
+              0.0899999737739563
+            ],
+            "frame": {
+              "c": [
+                0.16990460455417633,
+                0.5119999647140503,
+                0.679398775100708
+              ],
+              "z": [
+                -0.5890634470311097,
+                0.0,
+                0.808086787029603
+              ],
+              "w": [
+                0.8080867870296031,
+                -0.0,
+                0.5890634470311098
+              ],
+              "a": 0.0215,
+              "b": 0.0165,
+              "sign": 1,
+              "palm": [
+                0.10940000414848328,
+                0.5119999647140503,
+                0.7623999714851379
+              ]
+            },
+            "closed_manifold": true,
+            "volume_cm3": {
+              "grip": 1669.91,
+              "empty": 1576.33
+            },
+            "self_crossings": {
+              "grip": 0,
+              "empty": 0
+            },
+            "min_offset_from_channel_mm": 1.0232,
+            "vertices_inside_channel": 0,
+            "breadth_along_channel_cm": 10.831,
+            "faces_turned_over_by_morph": 0,
+            "max_morph_move_cm": 3.01,
+            "fold_margin": 0.0759,
+            "failed": []
+          }
+        }
+      },
+      "morph_targets": {
+        "PawEmpty_R": {
+          "paw_vertices": 6750,
+          "moved_vertices": 2152,
+          "max_move_cm": 3.541
+        },
+        "PawEmpty_L": {
+          "paw_vertices": 6744,
+          "moved_vertices": 2147,
+          "max_move_cm": 3.541
+        }
+      }
     },
     {
       "level": 2,
       "fbx": "SK_NyaagyuSamurai_LOD2.fbx",
-      "sha256": "5523cbc8788baadb47b4b9f69ea124bb733c8b15941cc6689119ced1616551d8",
-      "source_parts": 197,
-      "vertices": 28765,
-      "triangles": 50010,
+      "sha256": "bc368f116256ce225e2ac703cd484f1493f792906a1544372c685a101d46704e",
+      "source_parts": 171,
+      "vertices": 32489,
+      "triangles": 57578,
       "bounds_m": {
         "x": [
           -0.6542,
           0.2713
         ],
         "y": [
-          -0.536,
-          0.529
+          -0.5669,
+          0.5669
         ],
         "z": [
           -0.0011,
@@ -145,7 +264,126 @@
         "upperarm_R"
       ],
       "card_fur": "none; surface normal maps only",
-      "part_rules": "nyaakoto_runtime_parts.py: LOD0's body (slice A)"
+      "part_rules": "nyaakoto_runtime_parts.py: LOD0's body (slice A)",
+      "paws": {
+        "step_m": 0.007,
+        "by_side": {
+          "R": {
+            "step_m": 0.007,
+            "vertices": 2798,
+            "triangles": 5600,
+            "palm_radii_m": [
+              0.0690000168979168,
+              0.0780000239610672,
+              0.0899999737739563
+            ],
+            "frame": {
+              "c": [
+                0.16990460455417633,
+                -0.5120000243186951,
+                0.679398775100708
+              ],
+              "z": [
+                -0.5890634470311097,
+                0.0,
+                0.808086787029603
+              ],
+              "w": [
+                0.8080867870296031,
+                -0.0,
+                0.5890634470311098
+              ],
+              "a": 0.0215,
+              "b": 0.0165,
+              "sign": -1,
+              "palm": [
+                0.10940000414848328,
+                -0.5120000243186951,
+                0.7623999714851379
+              ]
+            },
+            "closed_manifold": true,
+            "volume_cm3": {
+              "grip": 1664.88,
+              "empty": 1572.2
+            },
+            "self_crossings": {
+              "grip": 0,
+              "empty": 0
+            },
+            "min_offset_from_channel_mm": 1.0232,
+            "vertices_inside_channel": 0,
+            "breadth_along_channel_cm": 10.828,
+            "faces_turned_over_by_morph": 0,
+            "max_morph_move_cm": 3.01,
+            "fold_margin": 0.0759,
+            "failed": []
+          },
+          "L": {
+            "step_m": 0.007,
+            "vertices": 2798,
+            "triangles": 5600,
+            "palm_radii_m": [
+              0.0690000168979168,
+              0.0780000239610672,
+              0.0899999737739563
+            ],
+            "frame": {
+              "c": [
+                0.16990460455417633,
+                0.5119999647140503,
+                0.679398775100708
+              ],
+              "z": [
+                -0.5890634470311097,
+                0.0,
+                0.808086787029603
+              ],
+              "w": [
+                0.8080867870296031,
+                -0.0,
+                0.5890634470311098
+              ],
+              "a": 0.0215,
+              "b": 0.0165,
+              "sign": 1,
+              "palm": [
+                0.10940000414848328,
+                0.5119999647140503,
+                0.7623999714851379
+              ]
+            },
+            "closed_manifold": true,
+            "volume_cm3": {
+              "grip": 1664.65,
+              "empty": 1572.05
+            },
+            "self_crossings": {
+              "grip": 0,
+              "empty": 0
+            },
+            "min_offset_from_channel_mm": 1.0232,
+            "vertices_inside_channel": 0,
+            "breadth_along_channel_cm": 10.817,
+            "faces_turned_over_by_morph": 0,
+            "max_morph_move_cm": 3.01,
+            "fold_margin": 0.0759,
+            "failed": []
+          }
+        }
+      },
+      "morph_targets": {
+        "PawEmpty_R": {
+          "paw_vertices": 2798,
+          "moved_vertices": 905,
+          "max_move_cm": 3.01
+        },
+        "PawEmpty_L": {
+          "paw_vertices": 2798,
+          "moved_vertices": 904,
+          "max_move_cm": 3.01
+        }
+      }
     }
   ],
   "license": "Original project-owned source geometry and distance LODs; user-supplied SORA crest retained exactly",
