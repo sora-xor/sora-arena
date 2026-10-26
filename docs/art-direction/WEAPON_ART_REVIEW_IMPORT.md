@@ -35,5 +35,12 @@ seams, and compares positions, UV0, normals and tangents with explicit packing
 tolerances. It uses Blender's installed parser without launching Blender.
 It complements the editor's counts, bounds, LOD, material and socket gates.
 
+The first import exposed existing atlas overshoots in the source LOD2s: one
+corner in W05 reaches V=1.00972125, and two corners in W09 reach V=1.00321476.
+The envelope records their exact bounds and corner counts; readback must match
+them. They remain art defects pending correction, not accepted UV layout. The
+first failed import is retained. Winding comparison follows Unreal's clockwise
+face convention; it does not accept both orientations to make a match.
+
 These checks establish an import candidate. Original renders, framing, character
 grips, runtime integration, platform and performance acceptance remain separate.

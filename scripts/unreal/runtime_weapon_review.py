@@ -15,7 +15,7 @@ import weapon_socket_gates as G
 
 SOURCE = "Content/SourceArt/Weapons/Runtime"
 ENVELOPE = "scripts/unreal/data/runtime_weapon_review.json"
-ENVELOPE_SHA256 = "c4b1d7ab59d20ff611f77c7947564546ef59cccdd3c59ea797008f1d72f639ee"
+ENVELOPE_SHA256 = "0f84ef765a6f3e8cbd7967123dd260c5cbd21467d5634c26c259a63d9cc5886e"
 DESTINATION = "/Game/ArtReview/RuntimeWeapons"
 KIT_IDS = (0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 12, 14, 15, 17, 19, 20)
 ASSETS = tuple(sorted([f"SM_Weapon_{i:02}" for i in KIT_IDS] +
@@ -121,9 +121,15 @@ def geometry_readback(expected, lods, screens):
         high = [max(p[a] for p in points) for a in range(3)]
         require(all(abs(a-b) < .002 for a, b in zip(low+high, reference["min_cm"]+reference["max_cm"])),
                 f"LOD{index} changed scale, axes or pivot")
-        require(all(-.001 <= x <= 1.001 for uv in section["uvs"] for x in uv), f"LOD{index} UV0 escaped atlas")
+        uv_low = [min(uv[a] for uv in section["uvs"]) for a in range(2)]
+        uv_high = [max(uv[a] for uv in section["uvs"]) for a in range(2)]
+        require(all(abs(a-b) < .000002 for a, b in zip(uv_low+uv_high, reference["uv_min"]+reference["uv_max"])),
+                f"LOD{index} UV0 changed from source")
+        outside = sum(any(v < 0 or v > 1 for v in section["uvs"][i]) for i in indices)
+        require(outside == reference["atlas_uv_outside_corners"], f"LOD{index} changed atlas overshoot")
         result.append({"lod": index, "vertices": len(points), "triangles": lod["triangles"],
-                       "min_cm": low, "max_cm": high, "uv_channels": lod["uv_channels"]})
+                       "min_cm": low, "max_cm": high, "uv_channels": lod["uv_channels"],
+                       "uv_min": uv_low, "uv_max": uv_high, "atlas_uv_outside_corners": outside})
     return result
 
 

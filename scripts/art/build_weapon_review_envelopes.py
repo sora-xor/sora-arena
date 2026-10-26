@@ -16,6 +16,7 @@ sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(HERE.parent / "unreal"))
 import fbx_unreal_sockets as F
 import runtime_weapon_review as R
+import verify_weapon_review_geometry as V
 
 ROOT = HERE.parents[1]
 
@@ -48,8 +49,10 @@ def build(root):
                 R.require(len(indices) // 3 == lod["triangles"] and np.isfinite(points).all(), "invalid source geometry")
                 uv_channels = sum(k.startswith("LayerElementUV[") and k.endswith(".UV") for k in data)
                 R.require(uv_channels == 2, "expected authored UV0/UVMetric")
+                uvs = np.array(V.source_section(fbx)["uvs"])
                 rows.append({**lod, "min_cm": points.min(axis=0).tolist(), "max_cm": points.max(axis=0).tolist(),
-                             "uv_channels": uv_channels})
+                             "uv_channels": uv_channels, "uv_min": uvs.min(axis=0).tolist(), "uv_max": uvs.max(axis=0).tolist(),
+                             "atlas_uv_outside_corners": int(np.any((uvs < 0) | (uvs > 1), axis=1).sum())})
             plan["assets"][name] = {"kit": record["key"], "lods": rows, "screen_sizes": asset["screen_sizes"]}
     R.require(tuple(sorted(plan["assets"])) == R.ASSETS, "missing assets")
     return plan

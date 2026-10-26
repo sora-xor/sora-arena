@@ -79,13 +79,29 @@ class WeaponReview(unittest.TestCase):
             lo, hi = row["min_cm"], row["max_cm"]
             points = [list(lo), list(hi), [hi[0], lo[1], hi[2]]]
             section = {"positions": points, "indices": [0, 1, 2]*row["triangles"],
-                       "normals": [[0, 0, 1]]*3, "tangents": [[1, 0, 0]]*3, "uvs": [[0, 0], [1, 0], [1, 1]]}
+                       "normals": [[0, 0, 1]]*3, "tangents": [[1, 0, 0]]*3,
+                       "uvs": [list(row["uv_min"]), list(row["uv_max"]), list(row["uv_min"])]}
             lods.append({"sections": [section], "triangles": row["triangles"], "uv_channels": row["uv_channels"]})
         return expected, lods, list(expected["screen_sizes"])
 
     def test_clean_bounds_counts_frames_uvs_and_screens_pass(self):
         expected, lods, screens = self.geometry()
         self.assertEqual(len(R.geometry_readback(expected, lods, screens)), 3)
+
+    def test_recorded_atlas_defects_require_exact_bounds_and_corner_count(self):
+        expected, lods, screens = self.geometry()
+        expected = copy.deepcopy(expected)
+        expected["lods"][0]["uv_max"][1] = 1.01
+        expected["lods"][0]["atlas_uv_outside_corners"] = 1
+        section = lods[0]["sections"][0]
+        for field in ("positions", "normals", "tangents"):
+            section[field].append(list(section[field][0]))
+        section["uvs"].append([section["uvs"][1][0], 1.01])
+        section["indices"][0] = 3
+        self.assertEqual(R.geometry_readback(expected, lods, screens)[0]["atlas_uv_outside_corners"], 1)
+        section["indices"][1] = 3
+        with self.assertRaisesRegex(RuntimeError, "changed atlas overshoot"):
+            R.geometry_readback(expected, lods, screens)
 
     def test_scale_pivot_axis_count_and_uv_damage_fail(self):
         for defect in ("scale", "pivot", "axes", "count", "uv_count", "uv_outside", "indices", "section"):

@@ -59,7 +59,11 @@ def source_section(path):
     uv = layer(b"LayerElementUV", b"UV", 2)
     uv[:, 1] = 1.0 - uv[:, 1]  # Unreal's texture origin is the top left.
     corners = np.arange(len(indices)).reshape(-1, 3)
-    if np.linalg.det(basis) < 0:
+    # FBX faces are counterclockwise; Unreal faces are clockwise. The ordinary
+    # right-to-left-handed conversion already flips them. Only a positive
+    # complete basis determinant needs a further index reversal. UE's Ufbx
+    # parser likewise sets reverse_winding=true alongside handedness conversion.
+    if np.linalg.det(basis) > 0:
         corners = corners[:, [2, 1, 0]]
     return {"positions": points[indices].tolist(), "indices": corners.ravel().tolist(),
             "normals": normals.tolist(), "tangents": tangents.tolist(), "uvs": uv.tolist()}

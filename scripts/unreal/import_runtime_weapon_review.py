@@ -200,6 +200,10 @@ def vec(v):
 report = {"mode": mode, "engine": unreal.SystemLibrary.get_engine_version(), "destination": R.DESTINATION,
           "envelope_sha256": R.ENVELOPE_SHA256, "importer_sha256": R.sha(Path(__file__).read_bytes()),
           "gate_sha256": R.sha(Path(R.__file__).read_bytes()), "materials": {}, "meshes": {},
+          "source_art_defects": [{"mesh": name, "lod": i, "atlas_uv_outside_corners": lod["atlas_uv_outside_corners"],
+                                  "uv_min": lod["uv_min"], "uv_max": lod["uv_max"]}
+                                 for name, asset in plan["assets"].items() for i, lod in enumerate(asset["lods"])
+                                 if lod["atlas_uv_outside_corners"]],
           "runtime_adopted": False, "visual_accepted": False}
 for kit, record in records.items():
     material, report["materials"][kit] = material_assets(kit, record)
