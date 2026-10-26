@@ -166,6 +166,7 @@ def checks(python: str = sys.executable) -> list[Check]:
     unit("assets", "ui-fonts-tests", "scripts/unreal/test_ui_fonts.py")
     script("assets", "source-images", "scripts/unreal/validate_source_images.py", "--json")
     unit("assets", "source-images-tests", "scripts/unreal/test_source_images.py")
+    unit("assets", "inventory-drone-admission", "scripts/unreal/test_inventory_drone.py")
     script("assets", "asset-ledger", "scripts/assets/validate_asset_ledger.py", "--json")
     script("assets", "asset-notices", "scripts/assets/generate_asset_notices.py", "--check")
     unit("assets", "dojo-timber-binding", "scripts/art/test_bind_dojo_timbers.py")

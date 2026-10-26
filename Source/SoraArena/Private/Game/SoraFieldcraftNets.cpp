@@ -261,7 +261,7 @@ void USoraFieldcraft::TickNets(int32 DtMs)
         }
         // The tether line up to the drone that holds the net.
         if (State.Net.State == Craft::ENet::Netted && State.Drone.IsValid())
-            SoraDamage::Beam(GetWorld(), At + FVector(0.f, 0.f, 80.f), State.Drone->GetActorLocation(), FLinearColor(.1f, .8f, .9f), 1.2f, .05f);
+            SoraDamage::Beam(GetWorld(), At + FVector(0.f, 0.f, 80.f), State.Drone->NetMuzzle(), FLinearColor(.1f, .8f, .9f), 1.2f, .05f);
     }
     // Opponents standing at a pack horse or the cart wear it down (the
     // defence's siege rule, SoraBeatRules::SiegeHpPerSecond); a drone on an

@@ -1,4 +1,5 @@
 #include "SoraEnemy.h"
+#include "SoraDroneRules.h"
 #include "SoraSettings.h"
 #include "SoraConstructRules.h"
 #include "SoraBoss.h"
@@ -16,6 +17,7 @@
 #include "SoraProjectile.h"
 #include "SoraPlayerCharacter.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -73,7 +75,15 @@ ASoraEnemy::ASoraEnemy(const FObjectInitializer& ObjectInitializer)
     GetCharacterMovement()->bOrientRotationToMovement=false;
 }
 float ASoraEnemy::Now() const { return GetWorld()->GetTimeSeconds(); }
-FVector ASoraEnemy::Eye() const { return GetActorLocation()+FVector(0.f,0.f,SoraEnemyBody::EyeHeight*GetActorScale3D().Z); }
+FVector ASoraEnemy::Eye() const
+{
+    if(IsFlying()&&DroneBody) return DroneBody->GetSocketLocation(TEXT("Eye"));
+    return GetActorLocation()+FVector(0.f,0.f,SoraEnemyBody::EyeHeight*GetActorScale3D().Z);
+}
+FVector ASoraEnemy::NetMuzzle() const
+{
+    return IsFlying()&&DroneBody?DroneBody->GetSocketLocation(TEXT("NetMuzzle")):Eye();
+}
 FVector ASoraEnemy::Feet(const ASoraCharacterBase& Body) const
 {
     return Body.GetActorLocation()-FVector(0.f,0.f,Body.GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
@@ -92,6 +102,11 @@ bool ASoraEnemy::InitArchetype(FName ArchetypeName,int32 Slot,const FSoraPatrolR
     {
         UE_LOG(LogTemp,Error,TEXT("No opponent archetype %s (variant %s): %s"),*ArchetypeName.ToString(),*VariantName.ToString(),
             Catalog.IsReady()?TEXT("not in Content/Data/enemies.json"):*Catalog.Error);
+        return false;
+    }
+    if(Found->Behavior==ESoraEnemyBehavior::Drone&&Found->ScalePermille!=SoraDroneRules::ScalePermille)
+    {
+        UE_LOG(LogTemp,Error,TEXT("Inventory drone requires its authored scale of one"));
         return false;
     }
     ResetConstruct();
@@ -127,11 +142,13 @@ bool ASoraEnemy::InitArchetype(FName ArchetypeName,int32 Slot,const FSoraPatrolR
     StaggerUntil=-1.f; StrikeStaggerImmuneUntil=-1.f; ShieldOpenUntil=-1.f;
     Conscript=Rules::EConscript::Standing; bUnconscious=false; bSeized=false;
     SetActorScale3D(FVector(Kind->ScalePermille/1000.f));
+    ConfigureBodyCollision();
     UCharacterMovementComponent* Movement=GetCharacterMovement();
     Movement->MaxWalkSpeed=Kind->SpeedCmPerSecond; Movement->MaxFlySpeed=Kind->SpeedCmPerSecond;
     Movement->SetMovementMode(IsFlying()?MOVE_Flying:MOVE_Walking);
     WeaponId=SoraEnemyBody::HeldWeapon(Kind->Behavior); RebuildWeapon();
     BuildCat();
+    if(IsFlying()&&!DroneBody) return false;
     if(auto* Brain=Cast<ASoraEnemyController>(GetController()))
     {
         if(Patrol) Brain->BeginPatrol(*Patrol);
@@ -163,6 +180,7 @@ void ASoraEnemy::InitScripted(int32 Id)
 {
     ResetConstruct();
     Kind=nullptr; Variant=NAME_None; VariantData=nullptr;
+    ConfigureBodyCollision();
     bDojoPupil=false; EnemyIndex=Id; RangedShots=0;
     Phase=EPhase::Idle; AttackIndex=INDEX_NONE; StaggerUntil=-1.f; StrikeStaggerImmuneUntil=-1.f;
     BarrierMilli=0; BarrierMaxMilli=0;
@@ -173,6 +191,7 @@ void ASoraEnemy::InitDojoPupil(int32 Id, const SoraDojoRules::FPupilTiming& Timi
 {
     ResetConstruct();
     Kind=nullptr; Variant=NAME_None; VariantData=nullptr;
+    ConfigureBodyCollision();
     bDojoPupil=true; EnemyIndex=Id;
     PupilTiming=Timing;
     StaggerUntil=-1.f; StrikeStaggerImmuneUntil=-1.f; BarrierMilli=0; BarrierMaxMilli=0;
@@ -596,7 +615,7 @@ void ASoraEnemy::CastNet(const FSoraEnemyAttack& Attack,ASoraCharacterBase& Targ
     if(USoraCombatEffects* Effects=USoraCombatEffects::Get(this)) Effects->Root(Target,NetRootOverrideMs>0?NetRootOverrideMs:Attack.RootMs);
     if(Attack.Damage>0)
     {
-        FSoraHit Hit=FSoraHit::Ranged(Eye(),INDEX_NONE);
+        FSoraHit Hit=FSoraHit::Ranged(NetMuzzle(),INDEX_NONE);
         Hit.AttackId=Attack.Id;
         FHitResult Trace; Trace.ImpactPoint=Target.GetActorLocation(); Trace.Location=Trace.ImpactPoint;
         SoraDamage::Strike(&Target,Attack.Damage,Hit,-FVector::UpVector,Trace,GetController(),this);
@@ -695,7 +714,11 @@ void ASoraEnemy::OnDefeated(AActor* Causer)
     const auto* Brain=Cast<ASoraEnemyController>(GetController());
     const bool bBody=Kind&&Brain&&Brain->IsGuard();
     if(bCollateralConstruct) ReleaseConstructGoods();
-    else if(bBody) LieDown(true);
+    else if(bBody||IsFlying())
+    {
+        LieDown(bBody);
+        if(!bBody) SetLifeSpan(2.f);
+    }
     else
     {
         SetActorEnableCollision(false);
@@ -726,6 +749,21 @@ void ASoraEnemy::LieDown(bool bBody)
     GetCharacterMovement()->DisableMovement();
     GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn,ECR_Ignore);
     SetActorRotation(FRotator(0,GetActorRotation().Yaw,85));
+    if(IsFlying())
+    {
+        // Losing the hover drive must not leave a corpse at the patrol height.
+        // The movement sphere falls against real terrain; the tilted disc stays
+        // inside it. Guard remains persist for discovery, wave remains expire.
+        if(DroneBody)
+        {
+            DroneBody->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+            DroneBody->SetScalarParameterValueOnMaterials(TEXT("EmissiveStrength"),0.f);
+        }
+        GetCharacterMovement()->SetMovementMode(MOVE_Falling);
+        if(bBody)
+            if(USoraStealth* Stealth=USoraStealth::Get(this)) Stealth->AddBody(*this);
+        return;
+    }
     if(!bBody) return;
     UCapsuleComponent* Capsule=GetCapsuleComponent();
     Capsule->SetCollisionResponseToChannel(ECC_Visibility,ECR_Ignore);

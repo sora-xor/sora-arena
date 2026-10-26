@@ -30,11 +30,16 @@ bool AdmittedSocketsAndMaterials(UStaticMesh* Mesh,const SoraViewmodelPresentati
 }
 }
 
-void USoraViewmodelComponent::Build(int32 WeaponId,bool bDojoBokken,bool bFirstPerson)
+void USoraViewmodelComponent::Clear()
 {
     for(const auto& P:Parts) if(P) P->DestroyComponent(); Parts.Reset();
-    PrimaryMesh=nullptr; bFirstPersonMode=bFirstPerson; bPresentationReady=false;
+    PrimaryMesh=nullptr; bFirstPersonMode=false; bPresentationReady=false;
     bAuthoredPresentation=false; bFallbackBowPresentation=false; ActivePose.Reset();
+    PresentationWeapon=INDEX_NONE;
+}
+void USoraViewmodelComponent::Build(int32 WeaponId,bool bDojoBokken,bool bFirstPerson)
+{
+    Clear(); bFirstPersonMode=bFirstPerson;
     if(bFirstPerson) { SetRelativeLocation(RestLocation()); SetRelativeRotation(FQuat::Identity); }
     PresentationWeapon=bDojoBokken?SoraViewmodelPresentation::BokkenId:WeaponId;
     if(!FSoraCatalog::Get().IsReady()) return;

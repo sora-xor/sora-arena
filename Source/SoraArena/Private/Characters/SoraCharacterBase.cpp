@@ -49,7 +49,8 @@ void ASoraCharacterBase::ApplyClass(int32 Id)
 }
 void ASoraCharacterBase::RebuildWeapon()
 {
-    Viewmodel->Build(WeaponId,WieldsDojoBokken(),IsFirstPersonHero());
+    if(UsesHeldWeapon()) Viewmodel->Build(WeaponId,WieldsDojoBokken(),IsFirstPersonHero());
+    else Viewmodel->Clear();
 }
 bool ASoraCharacterBase::CanPlay() const
 {
@@ -142,6 +143,7 @@ void ASoraCharacterBase::BuildCat()
     for(const auto& P:BodyParts) if(P) P->DestroyComponent(); BodyParts.Reset();
     OnBodyRebuilt();
     bSkeletalVisual=false; GetMesh()->SetSkeletalMesh(nullptr);
+    if(BuildSpecialBody()) return;
     const bool bAlien=UsesAlienBody();
     const bool bOwnerHidden=IsFirstPersonHero();
     const FString CatName=bAlien?TEXT("AlienBanker"):TEXT("NyaagyuSamurai");

@@ -1,4 +1,5 @@
 #include "SoraHorse.h"
+#include "SoraCollision.h"
 #include "SoraLeadRopeComponent.h"
 #include "SoraCatalog.h"
 #include "SoraGameMode.h"
@@ -54,6 +55,7 @@ ASoraHorse::ASoraHorse()
     Frame->SetCollisionResponseToAllChannels(ECR_Ignore);
     Frame->SetCollisionResponseToChannel(ECC_WorldStatic,ECR_Block);
     Frame->SetCollisionResponseToChannel(ECC_WorldDynamic,ECR_Block);
+    Frame->SetCollisionResponseToChannel(SoraCollision::Projectile,ECR_Block);
     Frame->SetGenerateOverlapEvents(false);
     RootComponent=Frame;
     Body=CreateDefaultSubobject<USceneComponent>(TEXT("Body"));

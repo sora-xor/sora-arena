@@ -59,11 +59,15 @@ public:
     ASoraEnemy(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
     virtual void Tick(float DeltaSeconds) override;
     virtual void EndPlay(const EEndPlayReason::Type Reason) override;
+    // The inventory drone's integrated net outlet, in actual world space.
+    FVector NetMuzzle() const;
+    FVector SenseOrigin() const { return Eye(); }
     // Makes this pawn an opponent of Archetype. Slot is its place in the spawn
     // order; fixed patterns (misses, peeks, flank sides) are offset by it so a
     // group never acts in unison. Without a patrol it belongs to a combat wave
-    // and hunts the hero; with one it starts unaware on that route. False, with
-    // nothing changed, when the catalog, the archetype or its variant is unknown.
+    // and hunts the hero; with one it starts unaware on that route. Returns false
+    // when catalog data or required body assets cannot be admitted; callers must
+    // discard the failed pawn (SpawnArchetype handles that cleanup).
     bool InitArchetype(FName Archetype, int32 Slot, const FSoraPatrolRoute* Patrol = nullptr, const FSoraEnemyTuning* Tuning = nullptr);
     // Spawns and initializes an opponent, or returns null when it cannot.
     static ASoraEnemy* SpawnArchetype(UWorld& World, FName Archetype, int32 Slot, const FVector& Location, const FRotator& Rotation,
@@ -193,6 +197,8 @@ protected:
     virtual void TickPlay(float DeltaSeconds) override;
     virtual void HaltActions() override;
     virtual bool UsesAlienBody() const override;
+    virtual bool UsesHeldWeapon() const override { return !IsFlying(); }
+    virtual bool BuildSpecialBody() override;
     virtual bool WieldsDojoBokken() const override { return bDojoPupil; }
     // An opponent outside the archetype catalog (the collector) with its own drill.
     void InitScripted(int32 Slot);
@@ -200,6 +206,8 @@ protected:
     bool bDojoPupil = false;
     int32 EnemyIndex = 0;
 private:
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> DroneBody;
+    void ConfigureBodyCollision();
     const TArray<FSoraEnemyAttack>& AttackSet() const;
     void ResetConstruct();
     bool AdmitConstructDamage(float& Damage, FSoraHit& Hit);

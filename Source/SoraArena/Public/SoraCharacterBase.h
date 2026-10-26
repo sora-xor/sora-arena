@@ -62,6 +62,9 @@ protected:
     // At the end of every kernel snapshot this character presents.
     virtual void OnKernelSnapshot(const FSoraPracticePlayer& State) {}
     virtual bool UsesAlienBody() const { return false; }
+    virtual bool UsesHeldWeapon() const { return true; }
+    // Return true when a non-humanoid body handles its own presentation.
+    virtual bool BuildSpecialBody() { return false; }
     // The possessed hero hides its own body and holds a first-person weapon.
     virtual bool IsFirstPersonHero() const { return false; }
     virtual bool WieldsDojoBokken() const { return false; }

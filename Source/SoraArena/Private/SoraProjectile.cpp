@@ -1,4 +1,5 @@
 #include "SoraProjectile.h"
+#include "SoraCollision.h"
 #include "Combat/SoraDamage.h"
 #include "SoraCombatRules.h"
 #include "SoraGameEvents.h"
@@ -16,7 +17,7 @@ ASoraProjectile::ASoraProjectile()
     PrimaryActorTick.bCanEverTick=true;
     Collision=CreateDefaultSubobject<USphereComponent>(TEXT("ProjectileCollision")); RootComponent=Collision;
     Collision->InitSphereRadius(9); Collision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-    Collision->SetCollisionResponseToAllChannels(ECR_Block); Collision->SetCollisionObjectType(ECC_WorldDynamic);
+    Collision->SetCollisionResponseToAllChannels(ECR_Block); Collision->SetCollisionObjectType(SoraCollision::Projectile);
     // A shell or arrow in flight is not terrain: it must never dirty the
     // opponents' navigation mesh.
     Collision->SetCanEverAffectNavigation(false);

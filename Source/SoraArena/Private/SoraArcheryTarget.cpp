@@ -1,4 +1,5 @@
 #include "SoraArcheryTarget.h"
+#include "SoraCollision.h"
 #include "SoraArcheryRules.h"
 #include "SoraWorldBuilder.h"
 #include "Components/BoxComponent.h"
@@ -13,6 +14,7 @@ ASoraArcheryTarget::ASoraArcheryTarget()
     Face->SetCollisionObjectType(ECC_WorldDynamic);
     Face->SetCollisionResponseToAllChannels(ECR_Ignore);
     Face->SetCollisionResponseToChannel(ECC_WorldDynamic,ECR_Block);
+    Face->SetCollisionResponseToChannel(SoraCollision::Projectile,ECR_Block);
     Face->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);
     Face->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 }

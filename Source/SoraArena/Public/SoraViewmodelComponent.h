@@ -17,6 +17,8 @@ public:
     // Rest offset from the eye.
     static FVector RestLocation() { return FVector(40,18,-18); }
     void Build(int32 WeaponId, bool bDojoBokken, bool bFirstPerson);
+    // A body with an integrated emitter has no handheld weapon geometry.
+    void Clear();
     // State/rest smoothing is visual only; the current gameplay ray is never delayed.
     void Sway(float DeltaSeconds,float LifeTime,float Moving,bool bReloading,bool bStrike,
         bool bSprint,bool bBowDrawing,const FMinimalViewInfo& View,const FVector& GameplayRay);

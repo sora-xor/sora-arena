@@ -345,7 +345,7 @@ void ASoraEnemyController::Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, 
     const int32 NowMs = WorldMs();
     const int32 DtMs = ThinkClock.Advance(Dt);
     const FVector Here = Enemy.GetActorLocation();
-    const FVector Ear = Here + FVector(0.f, 0.f, SoraEnemyBrain::EyeHeight * Enemy.GetActorScale3D().Z);
+    const FVector Ear = Enemy.SenseOrigin();
     const FVector There = Target.GetActorLocation();
     const Stealth::FPerception& Perception = Enemy.Perception();
     USoraStealth* Zone = bHunting ? nullptr : USoraStealth::Get(this);
@@ -1287,7 +1287,7 @@ bool ASoraEnemyController::CanSee(const ASoraCharacterBase& Target) const
 
 Stealth::FSight ASoraEnemyController::Look(const ASoraEnemy& Enemy, const ASoraCharacterBase& Target) const
 {
-    const FVector Eye = Enemy.GetActorLocation() + FVector(0.f, 0.f, SoraEnemyBrain::EyeHeight * Enemy.GetActorScale3D().Z);
+    const FVector Eye = Enemy.SenseOrigin();
     const FVector There = Target.GetActorLocation();
     const FVector Flat(There.X - Eye.X, There.Y - Eye.Y, 0.f);
     const Stealth::FPerception& Perception = Enemy.Perception();
@@ -1349,7 +1349,7 @@ void ASoraEnemyController::LookForBodies(ASoraEnemy& Enemy, int32 DtMs)
     // whatever light falls on it. Evidence gathers while it stays in view.
     USoraStealth* Zone = USoraStealth::Get(this);
     const Stealth::FPerception& Perception = Enemy.Perception();
-    const FVector Eye = Enemy.GetActorLocation() + FVector(0.f, 0.f, SoraEnemyBrain::EyeHeight * Enemy.GetActorScale3D().Z);
+    const FVector Eye = Enemy.SenseOrigin();
     ASoraEnemy* Seen = nullptr;
     int32 SeenGain = 0;
     int32 SeenDistance = MAX_int32;
