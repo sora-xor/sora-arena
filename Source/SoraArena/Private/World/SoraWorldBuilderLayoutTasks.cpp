@@ -231,7 +231,7 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
         for(int32 Point=0;Point<Space.Objectives.Num();++Point)
         {
             // Leave the interaction point clear in front of the writing desk.
-            const FVector P=Floor(Space.Objectives[Point],Space.HeightCm)+FVector(0,110,0);
+            const FVector P=Floor(Space.Objectives[Point],Space.FloorAt(Space.Objectives[Point]))+FVector(0,110,0);
             auto* Top=KitShape(TEXT("CopyDesk"),KitCube,P+FVector(0,0,68),FVector(1.2,.8,.08),KitTimber,TEXT("Timber"),true);
             Top->ComponentTags.Add(TEXT("CopyDesk"));
             for(int32 X:{-1,1}) for(int32 Y:{-1,1})

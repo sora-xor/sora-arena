@@ -51,7 +51,7 @@ void ASoraWorldBuilder::BuildCampaign(const FSoraChapter& Chapter)
         const bool Archive=Chapter.Beats.ContainsByPredicate([Index](const FSoraBeat& B)
             { return B.Space.Zone==Index&&B.Id==TEXT("ch06.b09"); });
         const auto* PressZone=Archive?Space.Zones.FindByPredicate([](const FSoraZone& Z){return Z.Id==TEXT("pl_press_hall");}):nullptr;
-        if(Archive&&PressZone) BuildArchive(Space.Zones[Index],*PressZone); else if(Relay) BuildRelayRoom(*Relay); else if(Bridge) BuildBridge(Space.Zones[Index],Index,*Bridge); else if(Moat) BuildMoat(*Moat); else if(Climb) BuildClimb(*Climb); else if(Wind) BuildWindSpace(*Wind); else if(Flood) BuildFlood(*Flood); else if(Spire) BuildSpire(*Spire); else if(Summit) BuildSummit(*Summit); else BuildZone(Space.Zones[Index],Index,Recovery);
+        if(Space.Zones[Index].Id==TEXT("pl_uguisu_hall")) BuildPalace(Space.Zones[Index]); else if(Archive&&PressZone) BuildArchive(Space.Zones[Index],*PressZone); else if(Relay) BuildRelayRoom(*Relay); else if(Bridge) BuildBridge(Space.Zones[Index],Index,*Bridge); else if(Moat) BuildMoat(*Moat); else if(Climb) BuildClimb(*Climb); else if(Wind) BuildWindSpace(*Wind); else if(Flood) BuildFlood(*Flood); else if(Spire) BuildSpire(*Spire); else if(Summit) BuildSummit(*Summit); else BuildZone(Space.Zones[Index],Index,Recovery);
     }
     BuildChapterWood(Chapter);
     NodePositions.Reset(); Nodes.Reset(); SiteEffects.Reset(); SiteRestoredColors.Reset();
@@ -62,12 +62,12 @@ void ASoraWorldBuilder::BuildCampaign(const FSoraChapter& Chapter)
         const int32 Zone=Space.ZoneAt(P);
         NodePositions.Add(P);
         if(Chapter.Beats.ContainsByPredicate([Zone](const FSoraBeat& B)
-            { return B.Space.Zone==Zone&&B.Space.RelayRoom.bEnabled; }))
+            { return B.Space.Zone==Zone&&(B.Space.RelayRoom.bEnabled||B.Space.RegistryHall.bEnabled); }))
         {
-            // The relay column and switches own this site's physical work.
+            // The relay controls or registry desks own this site's physical work.
             // A second generic production pedestal would obstruct the exit.
             Nodes.SetNum(Site+1);SiteEffects.SetNum(Site+1);SiteRestoredColors.SetNum(Site+1);
-            Nodes[Site]=Box(TEXT("RelaySiteMarker"),P+FVector(0,0,1),FVector(40,40,2),FLinearColor(.1f,.2f,.2f),false);
+            Nodes[Site]=Box(TEXT("AuthoredSiteMarker"),P+FVector(0,0,1),FVector(40,40,2),FLinearColor(.1f,.2f,.2f),false);
             SiteEffects[Site]=nullptr;SiteRestoredColors[Site]=FLinearColor(.07f,.62f,.53f);
             continue;
         }

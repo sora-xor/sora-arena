@@ -17,11 +17,11 @@ bool USoraCampaignDirector::AtCopyDesk(int32 Index) const
     const auto* Hero=Mode().Hero();
     if(!Space||!Hero||Index<0||Index>=Task.HoldPointCount||!Space->Objectives.IsValidIndex(Index)||
         !Hero->GetCharacterMovement()->IsMovingOnGround()||
-        FMath::Abs(Hero->GetActorLocation().Z-Space->HeightCm)>=180.f||
-        !Near(ASoraWorldBuilder::Floor(Space->Objectives[Index],Space->HeightCm),SoraCampaignReach::Interact)) return false;
+        FMath::Abs(Hero->GetActorLocation().Z-Space->FloorAt(Space->Objectives[Index]))>=180.f||
+        !Near(ASoraWorldBuilder::Floor(Space->Objectives[Index],Space->FloorAt(Space->Objectives[Index])),SoraCampaignReach::Interact)) return false;
     // End just above the ledger, not inside the writing desk's collision.
     // A wall or closed door must block both admission and ongoing copying.
-    const FVector Page=ASoraWorldBuilder::Floor(Space->Objectives[Index],Space->HeightCm)+FVector(0,102,80);
+    const FVector Page=ASoraWorldBuilder::Floor(Space->Objectives[Index],Space->FloorAt(Space->Objectives[Index]))+FVector(0,102,80);
     FCollisionQueryParams Query(SCENE_QUERY_STAT(CopyDesk),false,Hero);
     FHitResult Hit;
     return !GetWorld()->LineTraceSingleByChannel(Hit,Hero->GetEye()->GetComponentLocation(),Page,ECC_Visibility,Query);
@@ -69,7 +69,7 @@ bool USoraCampaignDirector::CopyDeskContested() const
 {
     const auto* Space=ActiveSpace();
     if(!Space||!Space->Objectives.IsValidIndex(CopyDesk)) return false;
-    const FVector At=ASoraWorldBuilder::Floor(Space->Objectives[CopyDesk],Space->HeightCm);
+    const FVector At=ASoraWorldBuilder::Floor(Space->Objectives[CopyDesk],Space->FloorAt(Space->Objectives[CopyDesk]));
     for(const auto& Enemy:Enemies)
         if(IsValid(Enemy)&&Enemy->IsEnemy()&&Enemy->IsAlive()&&
             FVector::Dist2D(Enemy->GetActorLocation(),At)<SoraCampaignReach::Interact&&

@@ -58,7 +58,7 @@ bool USoraCampaignDirector::ObjectivePoint(FVector& Location,bool& bInteract) co
     if(Beat->Space.Flood.bEnabled)
         if(const auto* Craft=USoraFieldcraft::Get(this);Craft&&Craft->FloodObjective(Location)) { bInteract=false; return true; }
     const FSoraBeatSpace& Space=Beat->Space;
-    const auto At=[&](const FVector2D& Point,bool bWorks) { Location=ASoraWorldBuilder::Floor(Point,Space.HeightCm); bInteract=bWorks; return true; };
+    const auto At=[&](const FVector2D& Point,bool bWorks) { Location=ASoraWorldBuilder::Floor(Point,Space.FloorAt(Point)); bInteract=bWorks; return true; };
     const auto VolumeOf=[&](const FString& Event) { return Space.Volumes.FindByPredicate([&](const FSoraVolume& Volume) { return Volume.Event==Event; }); };
     if(Task.RecoveryWeapons!=0u&&(NeedsEquipmentRecovery()||AtRecoveryBottom()||IsClimbingRecoveryWell()))
     {

@@ -145,6 +145,7 @@ public:
     void BuildMoat(const FSoraBeat& Beat);
     void BuildClimb(const FSoraBeat& Beat);
     void BuildRelayRoom(const FSoraBeat& Beat);
+    void BuildPalace(const FSoraZone& Zone);
     void BuildArchive(const FSoraZone& Zone,const FSoraZone& Press);
     void ShowArchivePage(const FSoraBeat& Beat,int32 Phase);
     void StageArchiveReveal(float Seconds);

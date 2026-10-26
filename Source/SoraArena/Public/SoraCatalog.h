@@ -6,6 +6,7 @@
 #include "SoraMountRules.h"
 #include "SoraCargoRules.h"
 #include "SoraRegistry.h"
+#include "SoraRegistryRules.h"
 #include "SoraSpireRules.h"
 #include "SoraHelmRules.h"
 #include "SoraCacheRewardRules.h"
@@ -623,8 +624,18 @@ struct FSoraRelayRoom
     FVector2D Origin=FVector2D::ZeroVector;
 };
 
+struct FSoraRegistryHall
+{
+    bool bEnabled=false;
+    FVector2D Origin=FVector2D::ZeroVector;
+    float FloorAt(const FVector2D& At) const
+    { const auto P=At-Origin;return SoraRegistryRules::Floor(P.X,P.Y); }
+};
+
 struct FSoraBeatSpace
 {
+    FSoraRegistryHall RegistryHall;
+    float FloorAt(const FVector2D& At) const { return RegistryHall.bEnabled?RegistryHall.FloorAt(At):HeightCm; }
     FSoraPressHall PressHall;
     FSoraRelayRoom RelayRoom;
     TArray<FSoraFuelCanister> FuelCanisters;

@@ -1144,6 +1144,18 @@ ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int
         if(GuardIndex<2) Route.PauseFacing=FVector(0,1,0);
         Post=Route.Points[0]+FVector(0,0,30);
     }
+    if(Space->RegistryHall.bEnabled&&Space->Patrols.IsValidIndex(GuardIndex))
+    {
+        Route.Points.Reset();
+        for(const auto& P:Space->Patrols[GuardIndex])
+            Route.Points.Add(FVector(P,GuardIndex==4?400.f:Space->FloorAt(P)+90.f));
+        if(GuardIndex>=3)
+        {
+            Route.PeriodMs=GuardIndex==3?60000:30000;Route.PauseMs=0;
+            Route.bThreeDimensional=true;Route.bSupportedSegments=GuardIndex==3;
+        }
+        Post=Route.Points[0];
+    }
     if(Route.Points.IsEmpty()) Route.Points.Add(FVector(Post.X,Post.Y,90.f));
     // A route of two points is walked back and forth; a longer one loops. A
     // guard the chapter posts keeps the first point of its round as its post.
@@ -1183,6 +1195,13 @@ ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int
         // smaller), so scheduled flight follows the recorded floor height.
         for(auto& Point:Route.Points)
             Point.Z=SoraPressRules::PatrolFloor(GuardIndex)+GuardActor->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2.f;
+        GuardActor->SetActorLocation(Route.Points[0]);
+        if(auto* Brain=Cast<ASoraEnemyController>(GuardActor->GetController())) Brain->BeginPatrol(Route);
+    }
+    if(GuardActor&&Space->RegistryHall.bEnabled&&!Route.Points.IsEmpty())
+    {
+        if(GuardIndex!=4)
+            for(auto& P:Route.Points) P.Z=Space->FloorAt(FVector2D(P))+GuardActor->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2.f;
         GuardActor->SetActorLocation(Route.Points[0]);
         if(auto* Brain=Cast<ASoraEnemyController>(GuardActor->GetController())) Brain->BeginPatrol(Route);
     }

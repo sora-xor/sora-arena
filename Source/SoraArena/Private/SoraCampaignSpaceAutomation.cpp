@@ -45,6 +45,7 @@ struct FProbe
     const FSoraBeatSpace* SupportSpace = nullptr;
     float FloorHeight(const FVector2D& Point) const
     {
+        if(SupportSpace&&SupportSpace->RegistryHall.bEnabled) return SupportSpace->FloorAt(Point);
         if(SupportSpace&&SupportSpace->Moat.bEnabled)
         {
             const FVector2D P=Point-SupportSpace->Moat.Origin;
@@ -126,7 +127,7 @@ const FSoraBeatSpace* SupportForZone(const FSoraChapter& Chapter,int32 Zone)
     // A later beat can revisit a previously built hangar without enabling
     // wind. Its support still belongs to the same physical place.
     for(const FSoraBeat& Beat:Chapter.Beats)
-        if(Beat.Space.Zone==Zone && (Beat.Space.Wind.Enabled() || Beat.Space.Flood.bEnabled || Beat.Space.Climb.bEnabled || Beat.Space.Moat.bEnabled)) return &Beat.Space;
+        if(Beat.Space.Zone==Zone && (Beat.Space.RegistryHall.bEnabled || Beat.Space.Wind.Enabled() || Beat.Space.Flood.bEnabled || Beat.Space.Climb.bEnabled || Beat.Space.Moat.bEnabled)) return &Beat.Space;
     return nullptr;
 }
 
@@ -162,23 +163,23 @@ bool CheckChapter(FAutomationTestBase& Test, int32 Chapter)
         Probe.HeightCm=0;
         for (int32 Site = 0; Site < Data.Space.Sites.Num(); ++Site)
         {
-            // The relay's own controls replace its generic site pedestal.
-            // Its marker stands on the room floor; ordinary sites retain a base.
+            // Authored controls/desks replace these sites' generic pedestals.
+            // Their markers stand on the floor; ordinary sites retain a base.
             FHitResult Hit;
             const FVector2D At = Data.Space.Sites[Site];
             const int32 SiteZone=Data.Space.ZoneAt(FVector(At,0));
-            const bool Relay=Data.Beats.ContainsByPredicate([SiteZone](const FSoraBeat& Beat)
-                { return Beat.Space.Zone==SiteZone&&Beat.Space.RelayRoom.bEnabled; });
+            const bool OwnControls=Data.Beats.ContainsByPredicate([SiteZone](const FSoraBeat& Beat)
+                { return Beat.Space.Zone==SiteZone&&(Beat.Space.RelayRoom.bEnabled||Beat.Space.RegistryHall.bEnabled); });
             const bool Traced=World.GetTestWorld()->LineTraceSingleByChannel(Hit,
-                FVector(At.X,At.Y,600.f),FVector(At.X,At.Y,-100.f),ECC_Visibility);
+                FVector(At.X,At.Y,OwnControls?200.f:600.f),FVector(At.X,At.Y,-100.f),ECC_Visibility);
             bOk &= Test.TestTrue(*FString::Printf(TEXT("%s site %d has its authored support"), *Name, Site),
-                Traced&&!Hit.bStartPenetrating&&(Relay?FMath::IsNearlyZero(Hit.ImpactPoint.Z,2.f):Hit.ImpactPoint.Z>50.f)&&
+                Traced&&!Hit.bStartPenetrating&&(OwnControls?FMath::IsNearlyZero(Hit.ImpactPoint.Z,2.f):Hit.ImpactPoint.Z>50.f)&&
                 World.Mode()->Arena()->NodePositions.IsValidIndex(Site)&&
                 FVector2D::Distance(FVector2D(World.Mode()->Arena()->NodePositions[Site]),At)<1.f);
-            if(Relay)
+            if(OwnControls)
             {
                 Probe.SupportSpace=nullptr;
-                bOk &= Probe.Stand(At,Name+TEXT(" relay site has clear standing room without a generic pedestal"));
+                bOk &= Probe.Stand(At,Name+TEXT(" authored site has clear standing room without a generic pedestal"));
             }
         }
         for (const FSoraBeat& Beat : Data.Beats)

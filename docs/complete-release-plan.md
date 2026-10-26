@@ -1653,6 +1653,37 @@ history below. The release remains incomplete.
   at identical atlas coordinates is prepared but has not run. No art bytes,
   textures or acceptance thresholds changed.
 
+### 2026-10-26: palace registry source checkpoint (runtime pending)
+
+The chapter-six store and registry now use the authored palace frame. The
+registry desks are at (16,29), (6,29) and (-2,29) metres from the garden origin,
+on real 0, 15 and 30 cm floors, with a level 1.8 m south corridor. The dedicated
+builder supplies the vestibule, store, registry walls, doorway gaps and
+coffered ceiling. Desk meshes, interaction rays, contest checks and objective
+markers use the local floor height. CopyDesks now traces each physical tier
+and approaches the desks through the doorway and corridor using mapped input.
+The rifle route uses a 60-second circuit; the drone uses a 30-second circuit
+at 4 metres. These runtime paths have not yet been built or executed.
+
+All 58 gameplay source checks pass, including six new palace contract tests
+and the existing archive, press and relay checks. The report is
+`Saved/Qualification/2026-10-26/palace-source-attempt1/report.json`; its source
+snapshot stayed unchanged during execution. This is source validation only.
+Unreal CopyDesks, Candle, Spaces and the assisted campaign must be rerun once
+Claude returns the engine lane. The nightingale/garden connection, quiet
+tatami route, auditor desk stops and lamps, ornamental door connection,
+authored store dressing and final visual acceptance remain open. The plain
+construction geometry is not accepted art.
+
+At the preceding exact source `f51c2236`, ArchiveFamilyPage and
+ArchiveRevealReset both pass with natural editor/runner exits 0/0. Six actual
+1920×1080 Metal SM6 archive frames pass capture checks and were viewed. The full
+family record is readable again, and shelf/wall glare is reduced; opening and
+return characters remain too dark, with unfinished poses and floating weapons.
+Final art remains rejected. Authenticated CI run 40246299398 passes all 110
+source checks, with an identical tested/source tree; review SHA256 is
+`d25901fcd8ccf8700466a900849fbab7d6f48a4548a090d6f5787b3d5555abd2`.
+
 ## Milestones and evidence
 
 | ID | Deliverable | Owner | Current state / completion evidence |
@@ -1664,7 +1695,7 @@ history below. The release remains incomplete.
 | A1 | Unique timber kit and golden-hour Estate/dojo slice | Claude | Nine baseline meshes/31 packages pass import and reopen at `97c08a0`. At `0c7961d`, 36 SM6 and 18 SM5 captures pass readiness checks on M2 Ultra, with original-image review; this closes capture readiness only. The separate six-member v2.1 pilot remains visually rejected for smooth bands, blister dents, glossy ridges and repeated adze marks. The separate v2.2 pilot also fails review of all 15 originals for smooth striped surfaces and repeated adze tiling. Claude owns the engine lane for the corrected bow; a focused timber patch is next. Unique per-placement binaries, dressing, full provenance and photoreal acceptance remain open. M2 SM5 does not qualify M1. |
 | A2 | Complete character and first-person presentation | Claude | Nyaakoto, paws, sword/saya, clothing, fur and motion must pass [photoreal acceptance](art-direction/photoreal-acceptance.md) in actual gameplay and cinematics. Generated references and Blender images are source evidence only. |
 | A3 | Complete campaign/arena art, animation, audio and effects | Claude + Codex integration | Extend approved visual direction across every environment, character and encounter; complete dialogue presentation, cinematics, sound, music and effects. Review every asset's rights and ledger records. Missing original references remain explicit, rather than being claimed as matched. |
-| Q1 | Repeatable source validation and CI | Codex validation lane | Authenticated CI `40243327875` passes all 110 gates in five jobs at exact `602b862f`. Tested/source trees match; all five artifact digests and raw logs are verified. This closes the selected source checks only; private assets, Unreal behavior, rendered art, packages and full native execution remain separate gates. Historical failures and ignored proof cases retain their original scope. |
+| Q1 | Repeatable source validation and CI | Codex validation lane | Authenticated CI `40246299398` passes all 110 gates in five jobs at exact `f51c2236`. Tested/source trees match; all five artifact digests and raw logs are verified. The new palace contract adds one source gate, pending CI. This closes the selected source checks only; private assets, Unreal behavior, rendered art, packages and full native execution remain separate gates. Historical failures and ignored proof cases retain their original scope. |
 | N1 | Matching native kernel and Connect integration | Codex | Kernel ABI4 stages and passes 94 parity cases/99,043 ticks. Signed clean native `10ad7daddf` passes29/29 directed tests and has a fresh frozen ABI30 release build with its original sidecar. All29 frozen files and six consumer hashes were checked before staging; actual UE NativeLoader passes in the `56b95f3` editor and the `b4a02d1` packaged Metal client, with the exact staged library path. Strict package/artifact hashes verify before and after execution. These tests cover loading, binding, canonical JSON and hashing; signing, submission and finality are not tested. Earlier producer records remain preserved. Windows loading remains unverified. |
 | N2 | Complete native execution proof and real settlement | Codex | Bounded native `01d4e46` completes actual crate compilation/31 CPU tests and a 3,005,248-byte proof with separate verification and 55 negative cases, but its proof attempt fails the unchanged disk reserve. Signed `6fd03be8` adds Katana fallback, and `cd9263628d` adds final-tick death/account/FFA completion with independently authenticated standalone source evidence. Fresh `cd9263628d` passes 18 provenance tests, 70 standalone constraints, exact regeneration of four final-death fixture files, and 46 actual-crate CPU tests with four ignored proofs. The actual adapter covers 254 layouts, at most 3,803,712 bytes; independent CPU review and the unchanged retained binary are sealed into the completed proof plan. Two earlier runner failures and the successful observer retry remain preserved. Fresh native proof cohort completes: one separately verified 3,666,144-byte proof, 92 verifier rejections and eleven actual-prover Constraint rejections, natural EOF zero and 116 files independently verified. This remains an unregistered two-player/two-tick relation. Historical outputs are partly missing, with no cause inferred. No registered full Arena execution profile, full World/death/ability/terminal composition, full-size proof or settlement acceptance is established. Four-validator admission/dispute/settlement, market recovery and Connect signing/finality remain open; live funding/trading stay disabled. |
 | R1 | Windows and Mac release candidates | Codex | Latest completed Mac Development package `c655b6b`, native bridge `10ad7dad`, passes Game build, cook of 1,323 packages with zero cook errors/warnings, staging/signature checks, smoke, all 164 client tests and a fresh rendered Title check. Newer gameplay and art source remains uncooked. Earlier rejected packages and warning/failure records remain preserved in the dated checkpoints. Clean-machine install, normal campaign play, controller/accessibility, multiplayer recovery, Windows and actual M1 performance remain open; M2 results do not qualify M1. |

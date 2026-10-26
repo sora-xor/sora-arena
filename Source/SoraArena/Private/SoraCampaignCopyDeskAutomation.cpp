@@ -58,10 +58,19 @@ bool FSoraCopyDesksTest::RunTest(const FString& Parameters)
     }
     TestEqual(TEXT("Three physical writing desks"),Desks,3);
     TestEqual(TEXT("Each desk shows its own copy"),Copies,3);
+    TestTrue(TEXT("The registry loads its authored stepped hall"),Space.RegistryHall.bEnabled);
+    for(int32 I=0;I<3;++I)
+    {
+        FHitResult FloorHit;
+        const FVector At(Space.Objectives[I],SoraRegistryRules::DeskFloor[I]);
+        const bool Hit=W.World->GetTestWorld()->LineTraceSingleByChannel(FloorHit,At+FVector(0,0,50),At-FVector(0,0,100),ECC_Visibility);
+        TestTrue(FString::Printf(TEXT("Desk %d has real support at %d cm"),I,SoraRegistryRules::DeskFloor[I]),
+            Hit&&!FloorHit.bStartPenetrating&&FMath::IsNearlyEqual(FloorHit.ImpactPoint.Z,float(SoraRegistryRules::DeskFloor[I]),1.f));
+    }
     W.Stand(FVector(Space.Anchor,0));
     if(!W.Tick(120)) return false;
     TestEqual(TEXT("Standing at the old anchor cannot copy"),C->TaskProgress().Progress,0);
-    const FVector Desk(Space.Objectives[2],0);
+    const FVector Desk(Space.Objectives[2],Space.FloorAt(Space.Objectives[2]));
     W.Stand(Desk);
     if(!W.Tick(2)) return false;
     C->Interact(*W.Hero());
