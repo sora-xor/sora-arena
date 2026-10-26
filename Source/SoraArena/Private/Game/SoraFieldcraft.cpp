@@ -604,7 +604,7 @@ void USoraFieldcraft::Tick(float DeltaTime)
     if (Staged) TickMolten(DtMs);
     if (Staged) TickPressHall(DtMs);
     if (Staged) TickRelayRoom(DtMs);
-    if (Staged) TickLedger();
+    if (Staged) TickLedger(DtMs);
     if (Staged) TickFusuma(DeltaTime);
     if (Staged) TickRegistry();
 }
@@ -803,6 +803,8 @@ void USoraFieldcraft::TargetChanged(int32 Target, int32 HealthPermille)
 
 void USoraFieldcraft::NoteBeatEvent(const FString& Event)
 {
+    if(LedgerSpace&&Event==TEXT("wave_spawned:w_lockdown"))
+        SoraLedgerRules::BeginLockdown(LedgerLockdown);
     // A road's searchlight comes on with its wave. Wall lights receive the
     // known detection point separately; generic alarm barks carry no position.
     for (int32 Light = 0; Light < LightStates.Num() && Staged; ++Light)

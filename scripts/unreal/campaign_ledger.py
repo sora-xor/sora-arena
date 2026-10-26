@@ -16,6 +16,7 @@ HEIGHTS = (0,0,0,0,0,0,550,550,0,0,0,0)
 YAWS = (90,90,-90,-90,0,180,0,0,90,90,0,-90)
 TYPES = ('auditor',)*4+('enforcer_rifle',)*2+('drone',)*2+('auditor',)*2+('enforcer_rifle',)*2
 POSTS = (4,5,8,11)
+REINFORCEMENTS = ((2040,6520),(2160,6520),(1100,-160),(1220,-160))
 
 
 def p(origin,x,y):
@@ -49,7 +50,8 @@ def shelf_rects(origin):
 def floor_rects(origin):
     return [[*p(origin,0,0),*p(origin,2400,6400)],
             [*p(origin,-1000,0),*p(origin,0,800)],
-            [*p(origin,1965,6400),*p(origin,2400,6670)]]
+            [*p(origin,1965,6400),*p(origin,2400,6670)],
+            [*p(origin,1025,-300),*p(origin,1295,0)]]
 
 
 def palace_floors(origin):
@@ -157,6 +159,18 @@ def ledger_valid(chapter):
             if r['fieldcraft']['stones']['piles']!=[p(origin,x,y) for x,y in ((1160,1200),(720,4400),(1600,6000))]:return False
             if [a['at'] for a in r['fieldcraft']['alarms']]!=[p(origin,280,2800),p(origin,2040,4400)]:return False
             guards=b['task']['guards']
+            waves=b['params']['waves'];compiled=b['task']['waves']
+            if (b['params']['on_detected']!='reinforce:w_lockdown' or len(waves)!=1 or len(compiled)!=1 or
+                waves[0]['id']!='w_lockdown' or waves[0]['trigger']!='ai_event:alarm_raised' or
+                waves[0]['effects']!=['shutter_c3_closed_30s'] or
+                compiled[0]['id']!='w_lockdown' or compiled[0]['event']!='ai_event:alarm_raised' or
+                compiled[0]['trigger']!='event' or b['task']['reinforce_wave']!=0 or
+                b['task']['on_detected']!='reinforce'):return False
+            enemies=waves[0]['enemies'];members=compiled[0]['members']
+            if len(enemies)!=2 or len(members)!=2:return False
+            for i,spawn in enumerate(('sp_aisle_north_door','sp_aisle_south_door')):
+                if enemies[i]!={'type':'enforcer_rifle','count':2,'spawn':spawn}:return False
+                if members[i]!={'type':'enforcer_rifle','count':2,'lethal':True,'invulnerable':False}:return False
             if len(guards)!=12 or tuple(g['type'] for g in guards)!=TYPES:return False
             if any(g['post']!=(i in POSTS) for i,g in enumerate(guards)):return False
             if any(guards[i]['scan_deg']!=90 or guards[i]['scan_ms']!=8000 for i in (4,5)):return False

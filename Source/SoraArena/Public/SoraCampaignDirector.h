@@ -387,6 +387,8 @@ private:
         FName Type;
         bool bInvulnerable = false;
         int32 PodMember = INDEX_NONE;
+        FName Spawn;
+        int32 SpawnMember = INDEX_NONE;
     };
     ASoraGameMode& Mode() const;
     UPROPERTY() TObjectPtr<USoraSaveGame> Save;

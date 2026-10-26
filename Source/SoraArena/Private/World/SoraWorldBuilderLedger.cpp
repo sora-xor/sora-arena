@@ -17,7 +17,14 @@ void ASoraWorldBuilder::BuildLedger(const FSoraZone& Zone)
     Span(TEXT("LedgerMainFloor"),0,0,R::HallWidth,R::HallLength,-40,0);
     Span(TEXT("LedgerAnnexFloor"),-1000,0,0,800,-40,0);
     Span(TEXT("LedgerPalaceLinkFloor"),1965,6400,2400,6670,-40,0);
-    Span(TEXT("LedgerSouthWall"),-1000,-20,2400,0,0,600);
+    Span(TEXT("LedgerSouthWallWest"),-1000,-20,R::SouthDoorLeft,0,0,600);
+    Span(TEXT("LedgerSouthWallEast"),R::SouthDoorRight,-20,2400,0,0,600);
+    Span(TEXT("LedgerSouthDoorLintel"),R::SouthDoorLeft,-20,R::SouthDoorRight,0,250,600);
+    Span(TEXT("LedgerSouthBayFloor"),R::SouthDoorLeft,-R::SouthBayDepth,R::SouthDoorRight,0,-40,0);
+    Span(TEXT("LedgerSouthBayWest"),R::SouthDoorLeft-20,-R::SouthBayDepth,R::SouthDoorLeft,0,0,250);
+    Span(TEXT("LedgerSouthBayEast"),R::SouthDoorRight,-R::SouthBayDepth,R::SouthDoorRight+20,0,0,250);
+    Span(TEXT("LedgerSouthBayEnd"),R::SouthDoorLeft,-R::SouthBayDepth-20,R::SouthDoorRight,-R::SouthBayDepth,0,250);
+    Span(TEXT("LedgerSouthBayCeiling"),R::SouthDoorLeft,-R::SouthBayDepth,R::SouthDoorRight,0,250,270);
     Span(TEXT("LedgerAnnexWest"),-1020,0,-1000,800,0,600);
     Span(TEXT("LedgerAnnexNorth"),-1000,800,0,820,0,600);
     Span(TEXT("LedgerAnnexDoorSouth"),-20,0,0,250,0,600);

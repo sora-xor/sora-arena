@@ -65,6 +65,48 @@ class LedgerContract(unittest.TestCase):
             self.assertTrue(free((ledger.SHELF_X[bank]+60,y)))
             self.assertFalse(free((ledger.SHELF_X[bank]+60,y-100)))
 
+    def test_reinforcements_have_two_supported_distinct_capsules_behind_each_door(self):
+        floors=ledger.floor_rects((0,0));shelves=ledger.shelf_rects((0,0))
+        for i,at in enumerate(ledger.REINFORCEMENTS):
+            self.assertTrue(ledger.union_supports(floors,at,42))
+            self.assertFalse(any(ledger.inside([a-42,b-42,c+42,d+42],at) for a,b,c,d in shelves))
+            target=(at[0],6300 if i<2 else 200)
+            for step in range(51):
+                point=[at[j]+(target[j]-at[j])*step/50 for j in range(2)]
+                self.assertTrue(ledger.union_supports(floors,point,42),point)
+            self.assertGreaterEqual(math.dist(at,ledger.REINFORCEMENTS[i^1]),84)
+
+    def test_lockdown_clock_waits_for_clearance_and_holds_closed_for_thirty_active_seconds(self):
+        source=r'''
+#include "SoraLedgerRules.h"
+#include <cassert>
+int main() {
+    using namespace SoraLedgerRules;
+    FLockdown s;
+    TickLockdown(s,1000,false);assert(s.Phase==ELockdown::Dormant);
+    assert(BeginLockdown(s));assert(!BeginLockdown(s));
+    TickLockdown(s,500,false);assert(s.TravelMs==500);
+    for(int i=0;i<4000;++i) TickLockdown(s,10,true);
+    assert(s.TravelMs==500&&s.HeldMs==0&&s.EntranceMs==1000);
+    TickLockdown(s,1000,false);assert(s.Phase==ELockdown::Holding&&s.HeldMs==0);
+    TickLockdown(s,29999,false);assert(s.Phase==ELockdown::Holding);
+    TickLockdown(s,0,false);assert(s.HeldMs==29999);
+    TickLockdown(s,1,false);assert(s.Phase==ELockdown::Opening);
+    TickLockdown(s,1499,false);assert(s.TravelMs==1);
+    TickLockdown(s,1,false);assert(s.Phase==ELockdown::Finished&&s.TravelMs==0);
+    assert(!BeginLockdown(s));s={};assert(BeginLockdown(s));
+    assert(ShutterY==4400&&ShutterTop==600&&ShutterHoldMs==30000);
+}
+'''
+        compiler=os.environ.get('CXX') or shutil.which('clang++') or shutil.which('c++')
+        self.assertIsNotNone(compiler,'Host C++ compiler is required')
+        with tempfile.TemporaryDirectory() as tmp:
+            cpp,binary=Path(tmp)/'lockdown.cpp',Path(tmp)/'lockdown'
+            cpp.write_text(source)
+            subprocess.run([compiler,'-std=c++17','-I',str(ROOT/'Source/SoraArena/Public'),str(cpp),'-o',str(binary)],
+                           check=True,capture_output=True,text=True)
+            subprocess.run([str(binary)],check=True,capture_output=True,text=True)
+
     def test_continuous_annex_to_vestibule_route_includes_both_quiet_rooms(self):
         floor=ledger.floor_rects(self.origin)+ledger.palace_floors(self.palace)
         shelves=ledger.shelf_rects(self.origin)
@@ -135,6 +177,10 @@ class LedgerContract(unittest.TestCase):
             lambda c:c['beats'][5]['task']['guards'][11].update(post=False),
             lambda c:c['space']['zones'][self.record['zone']]['cover'].append([0,0,100,100,100]),
             lambda c:c['space']['zones'][self.record['zone']].update(wall_cm=450),
+            lambda c:c['beats'][5]['params']['waves'][0]['enemies'][1].update(spawn='sp_aisle_north_door'),
+            lambda c:c['beats'][5]['params']['waves'][0]['enemies'][0].update(count=3),
+            lambda c:c['beats'][5]['params']['waves'][0].update(effects=[]),
+            lambda c:c['beats'][5]['task']['waves'][0].update(event='alert_state:alert'),
         )
         for i,change in enumerate(changes):
             with self.subTest(mutation=i):
@@ -155,6 +201,7 @@ int main() {
     }
     for(int i=0;i<6;++i) std::cout<<ShelfX[i]<<' '<<NicheY[i]<<'\n';
     for(auto p:ShelfY) std::cout<<p.X<<' '<<p.Y<<'\n';
+    for(auto p:Reinforcement) std::cout<<p.X<<' '<<p.Y<<'\n';
 }
 '''
         compiler=os.environ.get('CXX') or shutil.which('clang++') or shutil.which('c++')
@@ -173,6 +220,7 @@ int main() {
             self.assertEqual([ledger.p(origin,*p) for p in local],self.record['patrols'][i])
         self.assertEqual(rows[13:19],[[x,y] for x,(_,y) in zip(ledger.SHELF_X,ledger.NICHES)])
         self.assertEqual(rows[19:23],[list(p) for p in ledger.SHELF_Y])
+        self.assertEqual(rows[23:27],[list(p) for p in ledger.REINFORCEMENTS])
 
 
 if __name__=='__main__':

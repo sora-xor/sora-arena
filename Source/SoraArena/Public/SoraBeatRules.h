@@ -425,6 +425,8 @@ struct FTask
     int TargetLossLimit = 0;
     EDetected OnDetected = EDetected::Combat;
     int ReinforceWave = -1;
+    // An authored alarm wave waits for the alarm event, even after detection.
+    bool ReinforceOnDetection = true;
     // A ride whose horse going down returns to the checkpoint (else the rider goes on foot).
     bool HorseDownRetries = false;
     // Failures the beat's `fail` rows return to the checkpoint.
@@ -1301,7 +1303,7 @@ constexpr ERetry Fail(FTaskState& State, const FTask& Task, EFail Event)
             return ERetry::None;
         if (Task.OnDetected == EDetected::Restart)
             return ERetry::Checkpoint;
-        if (Task.OnDetected == EDetected::Reinforce)
+        if (Task.OnDetected == EDetected::Reinforce && Task.ReinforceOnDetection)
             ReleaseWave(State, Task, Task.ReinforceWave);
         return ERetry::Continue;
     case EFail::HorseDown:

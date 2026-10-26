@@ -979,7 +979,8 @@ void USoraCampaignDirector::QueueWaves(unsigned Waves)
             {
                 if(Group.bLethal)
                 {
-                    for(int32 Member=0;Member<Group.Count;++Member) Pending.Add({Wave,Group.Type,Group.bInvulnerable,Pod?PodMember++:INDEX_NONE});
+                    for(int32 Member=0;Member<Group.Count;++Member)
+                        Pending.Add({Wave,Group.Type,Group.bInvulnerable,Pod?PodMember++:INDEX_NONE,Group.Spawn,Member});
                 }
                 else if(!Beat->bSparring&&GetWorld())
                 {
@@ -1310,6 +1311,14 @@ void USoraCampaignDirector::SpawnPending()
         const bool Pod=Beat->Space.PodArrivals.IsValidIndex(Next.Wave);
         if(Pod&&!PodState[Next.Wave].Impacted) break;
         FVector PodPosition=FVector::ZeroVector;
+        const bool Ledger=Beat->Space.LedgerHall.bEnabled&&!Next.Spawn.IsNone();
+        if(Ledger)
+        {
+            const bool North=Next.Spawn==TEXT("sp_aisle_north_door");
+            check((North||Next.Spawn==TEXT("sp_aisle_south_door"))&&Next.SpawnMember>=0&&Next.SpawnMember<2);
+            const auto At=SoraLedgerRules::Reinforcement[North?Next.SpawnMember:Next.SpawnMember+2];
+            PodPosition=FVector(Beat->Space.LedgerHall.Origin,120)+FVector(At.X,At.Y,0);
+        }
         if(IsRelayRoom()) PodPosition=FVector(Beat->Space.RelayRoom.Origin,0)+FVector(1850,400+200*(Alive%2),120);
         if(Pod)
         {
@@ -1319,8 +1328,12 @@ void USoraCampaignDirector::SpawnPending()
         }
         Pending.RemoveAt(0);
         ASoraEnemy* Enemy=Beat->Space.Lift.bEnabled?SpawnLiftOpponent(Next.Type,Next.Wave,Spawned):
-            SpawnWaveOpponent(Next.Type,Beat->bSparring,Spawned,Next.bInvulnerable,(Pod||IsRelayRoom())?&PodPosition:nullptr);
-        if(Enemy) { AddOpponent(Enemy,Next.Wave); ++Alive; }
+            SpawnWaveOpponent(Next.Type,Beat->bSparring,Spawned,Next.bInvulnerable,(Pod||IsRelayRoom()||Ledger)?&PodPosition:nullptr);
+        if(Enemy)
+        {
+            if(Ledger) { Enemy->Tags.Add(TEXT("LedgerReinforcement"));Enemy->Tags.Add(Next.Spawn); }
+            AddOpponent(Enemy,Next.Wave); ++Alive;
+        }
         else
         {
             // A wave never waits on an opponent the world could not build.
