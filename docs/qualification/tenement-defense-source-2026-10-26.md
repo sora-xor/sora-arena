@@ -1,5 +1,9 @@
 # Tenement kitchen defense: source checkpoint, 26 October 2026
 
+Subsequent validation: [the combined runtime checkpoint](ward-tenement-runtime-2026-10-26.md)
+records the later UE build, 32 directed passes and remaining limits. The account
+below describes this earlier source checkpoint.
+
 This continues the tenement checkpoint `1e15e8a9`. It is **not compiled or tested
 in Unreal**. Claude still owns the engine/Blender lane for the r3 character work.
 The published integration branch and packaged game have not changed.

@@ -1,5 +1,9 @@
 # Ward culvert stream: source checkpoint, 2026-10-26 UTC
 
+Subsequent validation: [the combined runtime checkpoint](ward-tenement-runtime-2026-10-26.md)
+records the later UE build, 32 directed passes and remaining limits. The account
+below describes this earlier source checkpoint.
+
 This is source work on top of the uncompiled ward-gate checkpoint `3f115e51` and its documentation
 follow-up `81f18daa`. It does not qualify an Unreal build, imported SoundWave, audible mix, or release.
 Claude retains the exclusive engine/Blender lane for the r3 character export and readback.

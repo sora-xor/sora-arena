@@ -11,6 +11,24 @@ production. Work runs in isolated worktrees, with a single coordinated Unreal
 and GPU rendering lane. The shared checkout is not a build or render workspace.
 The local coordination mailboxes record current ownership, commits and lane use.
 
+## October 26 ward and tenement runtime
+
+Signed `ca98e606` builds in UE 5.8.3 and passes all 32 selected ward, tenement,
+landing, recovery, supply, stealth, audio-lifetime and assisted campaign cases.
+All 64 gameplay source checks pass at the same revision. Actual runtime exposed
+and corrected the culvert exit clearance, freed guard obstruction, seal/corpse
+interaction priority and late hub arrivals inside the tenement zone. The kitchen
+now has a functional refill crate. The stream's audio import saves and reloads
+all 270 expected packages. The [bound evidence and retained failures](qualification/ward-tenement-runtime-2026-10-26.md)
+keep these results separate from ordinary-control and visual acceptance.
+
+The ward-to-tenement join still needs continuous floor and an open east boundary;
+beat progression currently relocates the hero. Final environment/character art,
+residents, cinematic cameras, listening and ordinary campaign play remain open.
+Latest Mac package stays `c655b6b`, native bridge `10ad7dad`. Root returned the
+engine/Blender lane to Claude at 18:14 UTC after natural EOF; root remains on CPU
+and source work until explicit return. No release completion is claimed.
+
 ## October 26 weapon socket correction and character production
 
 The corrected kits now have a saved ArtReview import: 20 meshes, 60 authored

@@ -1,5 +1,9 @@
 # Kitchen supply: source checkpoint, 26 October 2026
 
+Subsequent validation: [the combined runtime checkpoint](ward-tenement-runtime-2026-10-26.md)
+records the later UE build, 32 directed passes and remaining limits. The account
+below describes this earlier source checkpoint.
+
 Inspection after `fb08f688` found that b14's named supply data and generic refill
 code were present, but `StageSupply` created only the chapter-eight spire crate.
 The kitchen had no runtime supply object. The earlier defense source note is

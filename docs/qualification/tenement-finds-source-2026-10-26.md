@@ -1,5 +1,9 @@
 # Tenement finds: source checkpoint, 26 October 2026
 
+Subsequent validation: [the combined runtime checkpoint](ward-tenement-runtime-2026-10-26.md)
+records the later UE build, 32 directed passes and remaining limits. The account
+below describes this earlier source checkpoint.
+
 This continues `codex/tenement-defense` at `f1efa2fa`. It is source work in the
 source-validation worktree, not a compiled Unreal result or release acceptance.
 Claude retains the exclusive engine/Blender lane. The integration branch, shared

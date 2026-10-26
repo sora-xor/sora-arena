@@ -1,5 +1,9 @@
 # Ward gate: source implementation, 26 October 2026
 
+Subsequent validation: [the combined runtime checkpoint](ward-tenement-runtime-2026-10-26.md)
+records the later UE build, 32 directed passes and remaining limits. The account
+below describes this earlier source checkpoint.
+
 This checkpoint implements the chapter-three ward gate's functional layout and
 interaction. It is **not Unreal-qualified**: its engine code and seven new runtime
 fixtures have not been compiled or run. The previous packaged game is unchanged.

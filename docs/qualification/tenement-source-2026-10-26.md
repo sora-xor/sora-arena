@@ -1,5 +1,9 @@
 # Back tenements: source checkpoint, 26 October 2026
 
+Subsequent validation: [the combined runtime checkpoint](ward-tenement-runtime-2026-10-26.md)
+records the later UE build, 32 directed passes and remaining limits. The account
+below describes this earlier source checkpoint.
+
 This is provisional functional geometry and interaction source for chapter three.
 It has **not been compiled or run in Unreal**. The engine/Blender lane remains with
 Claude for the r3 character export and readback. The published integration branch
