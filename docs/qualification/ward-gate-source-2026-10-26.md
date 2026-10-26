@@ -56,6 +56,18 @@ patrol deadlines, and blocked-arrival behavior. Python tests use its compiled
 solids to check guard-body clearance, separated routes, entrance support, culvert
 steps and headroom, the wicket opening, and contract mutations.
 
+The complete selected host groups also pass at signed source commit
+`3f115e5155bd152bc92411d094b6c6e8a2e79776` (tree
+`14f2b9920f2447173877a4cc0f1fe43e472a4573`): **112/112**, comprising 63
+gameplay, 27 tooling and 22 asset checks. The checkout stayed clean and unchanged.
+Rust and audio groups were not rerun. The report is under
+`Saved/Qualification/2026-10-26/ward-gate-3f115e51-source/` in the source-validation
+worktree. `report.json` SHA-256 is
+`7c87b8ef03729d7d7b1bfab234e9e1a817bdf1ebc649c3c596dab02dead719f8`;
+the separate inventory/112-log hash audit `independent-review.json` is
+`c0960a6d7aa388c891fa9a2e60cc88f0bf33fb962ce8957a147999e10874cf91`.
+These results do not compile the Unreal code or establish release qualification.
+
 The new Unreal fixtures are `SoraArena.Campaign.WardGate.Solids`, `.Scanner`,
 `.Wicket`, `.Patrols`, and `.Routes.Culvert`, `.Roof`, `.Wicket`. They exercise
 real collision, mapped traversal and interaction, live patrol timing, menu pause
