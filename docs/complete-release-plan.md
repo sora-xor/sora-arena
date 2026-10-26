@@ -11,6 +11,39 @@ production. Work runs in isolated worktrees, with a single coordinated Unreal
 and GPU rendering lane. The shared checkout is not a build or render workspace.
 The local coordination mailboxes record current ownership, commits and lane use.
 
+## October 26 drone import, palace doors and ledger alarm
+
+Claude's corrected drone FBX is integrated with unchanged mesh shape and maps.
+Actual UE 5.8 import now verifies all three LODs, correctly oriented unit-scale
+Eye/NetMuzzle sockets, and exactly three authored convex hulls with no extra
+simple collision. The importer enables the engine option required to retain
+custom UCX hulls. The failed earlier imports remain archived. Details and
+hashes are in [the drone checkpoint](qualification/inventory-drone-integration-2026-10-26.md).
+
+At signed `47b49669`, 25 of 27 directed runtime fixtures pass. This includes
+the drone body, exact 5.5 m ledger flight, three sliding palace doors, the
+ledger route, and the alarm's four entrance reinforcements and timed C3
+shutter. [Fusuma evidence](qualification/palace-fusuma-2026-10-26.md) and
+[lockdown evidence](qualification/ledger-lockdown-2026-10-26.md) retain their
+isolated AI and placeholder-art limits.
+
+The assisted campaign stops at a relay control because a fallen drone takes
+body-drag priority. ConvoyNets commits the mounted sword swing but does not
+free its expected horse. Both failures recur in the diagnostic run at
+`95ef38ca`; they are being investigated. The first run also retains a walking
+simulation warning. These results do not establish ordinary controls, art,
+package or platform acceptance.
+
+Source CI run `40265805351` authenticates 112 passes and one failed
+asset-notices gate. Its tested merge tree matches `47b49669`; raw logs and all
+five artifacts verify. Review:
+`35ece511863ccaba2b074b13c9f27ab479ebebfd624f59bc0054fffb3813313f`.
+The stale notice is regenerated at `95ef38ca`; its CI is pending review.
+Claude is preparing a scoped correction for 83 weapon sockets in 25 FBXs,
+whose CPU-predicted scale/orientation defect still needs actual weapon import
+verification. Character and first-person fur presentation remain rejected.
+Root holds the engine lane for gameplay diagnosis; Claude is working on CPU.
+
 ## October 26 archive reveal validation
 
 The archive's procedural rack-impact reveal now runs on a twenty-second active

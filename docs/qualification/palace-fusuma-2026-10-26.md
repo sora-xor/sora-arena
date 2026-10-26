@@ -25,7 +25,15 @@ and 200/201 cm occluded noise boundaries. The patch and new source file were
 frozen with the raw logs at `Saved/Qualification/2026-10-26/fusuma-working-source-attempt1`
 and its adjacent `-inputs` folder in the complete-game worktree.
 
-No Unreal build or runtime test has run for this change. The visible slabs are
-functional placeholders, not fitted fusuma craft or final art. Sliding sound,
-ordinary stealth difficulty, alarm shutter/reinforcements and access to the
-authored 20 cm silent edge strip remain open.
+At signed `47b49669`, the editor builds and PalaceFusuma and LedgerRoute pass.
+LedgerLockdown, LedgerPatrols and Spaces also pass in that 27-filter run. It
+finishes naturally with 25 passes and two separate failures, Playthrough and
+ConvoyNets. Twenty evidence files and unchanged source/native/config/generated
+inputs independently verify; review SHA-256:
+`58e08bc7cbdc71695417063c817543aefe60509ad826a3ddef1f4e0412c63bb3`.
+
+The visible slabs remain functional placeholders. Fitted fusuma craft, sliding
+sound, ordinary stealth difficulty and access to the authored 20 cm silent
+edge strip remain open. The alarm shutter and four entrance reinforcements
+now have separate directed runtime evidence in
+[the lockdown checkpoint](ledger-lockdown-2026-10-26.md).
