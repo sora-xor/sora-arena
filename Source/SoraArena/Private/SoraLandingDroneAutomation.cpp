@@ -144,7 +144,7 @@ bool FSoraLandingDroneObstructionTest::RunTest(const FString& Parameters)
     int Fresh=0;
     for(TActorIterator<ASoraEnemy> It(W.World->GetTestWorld());It;++It)
         if(It->HasLandingDroneAssignment())
-        { ++Fresh; Freeze(**It); TestEqual(TEXT("Reloaded drones have no stale release"),It->LandingDroneState().Releases,0); }
+        { ++Fresh; SoraLandingDroneTest::Freeze(**It); TestEqual(TEXT("Reloaded drones have no stale release"),It->LandingDroneState().Releases,0); }
     TestEqual(TEXT("Retry rebuilds both landing drones"),Fresh,2);
     return !HasAnyErrors();
 }
@@ -168,7 +168,7 @@ bool FSoraLandingDroneBaitTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("The complete attack fires only once"),E->LandingDroneState().Releases,1);
     auto* Generic=ASoraEnemy::SpawnArchetype(*W.World->GetTestWorld(),TEXT("drone"),99,Home+FVector(0,600,0),FRotator::ZeroRotator);
     if(!TestNotNull(TEXT("Unbound generic drone spawns"),Generic)) return false;
-    Freeze(*Generic);
+    SoraLandingDroneTest::Freeze(*Generic);
     Generic->SetActorRotation((W.Hero()->GetActorLocation()-Generic->GetActorLocation()).GetSafeNormal2D().Rotation());
     if(!TestTrue(TEXT("Generic drone can commit its normal attack"),Generic->TryAttack(*W.Hero(),600))) return false;
     TestTrue(TEXT("Other encounters retain 800 ms mark, zero damage and no landing assignment"),
