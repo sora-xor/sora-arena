@@ -194,6 +194,9 @@ bool FSoraTenementKitchenSupplyTest::RunTest(const FString&)
     FVector Crate;const FString Id=TEXT("vol_b14_supply");
     TestTrue(TEXT("The earlier yari is still earned in inventory"),W.Campaign()->IsWeaponUnlocked(19));
     TestFalse(TEXT("It cannot be carried before visiting the supply cache"),Kit->EquipCampaignWeapon(19));
+    // An unavailable earlier magazine is a fixture sentinel: this cache
+    // stocks only the arrows and shells carried into chapter three.
+    Kit->AmmoByWeapon[1]=0;
     if(!TestTrue(TEXT("The kitchen's own supply crate is staged"),Arena->SupplyFloor(Id,Crate)))return false;
     const auto P=SoraTenementDefenseRules::SupplyAt;
     TestTrue(TEXT("The crate is on earth beside the manager door, clear of both stairs"),Crate.Equals(FVector(P.X,P.Y,P.Z)));
@@ -229,6 +232,7 @@ bool FSoraTenementKitchenSupplyTest::RunTest(const FString&)
     TestEqual(TEXT("Supply keeps the yumi equipped"),W.Hero()->WeaponId,18);
     TestEqual(TEXT("Supply grants no health"),W.Hero()->Health,Health);
     TestEqual(TEXT("Supply grants no weapons"),W.Campaign()->Progress().WeaponsMask,Weapons);
+    TestEqual(TEXT("Supply does not refill a firearm left behind"),Kit->AmmoByWeapon[1],0);
     TestTrue(TEXT("Using the cache permits the already-earned yari"),W.Campaign()->CanHold(19,false));
     TestEqual(TEXT("Supply completes no campaign beat"),W.Campaign()->Progress().CompletedMask,Completed);
     if(!W.Press(EKeys::E))return false;

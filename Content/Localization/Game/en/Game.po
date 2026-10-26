@@ -2750,6 +2750,24 @@ msgctxt "SoraArena.SoundCaptions,TargetingLock"
 msgid "照準固定音"
 msgstr "Targeting lock"
 
+#. Key:	CollectYari
+#: Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp
+msgctxt "SoraArena.Supply,CollectYari"
+msgid "槍は同盟の補給箱で受け取ろう。"
+msgstr "Collect the yari at the League supply cache."
+
+#. Key:	KitchenHint
+#: Source/SoraArena/Private/Game/SoraCampaignSupply.cpp
+msgctxt "SoraArena.Supply,KitchenHint"
+msgid "同盟の補給箱：{Key} で槍を受け取り、矢と弾を補充。"
+msgstr "League supply cache: {Key} collects the yari and replenishes arrows and ammunition."
+
+#. Key:	YariCollected
+#: Source/SoraArena/Private/Game/SoraCampaignSupply.cpp
+msgctxt "SoraArena.Supply,YariCollected"
+msgid "槍を受け取った。矢と弾も補充した。"
+msgstr "Yari collected. Arrows and ammunition are full."
+
 #. Key:	ApprovedAccount
 #: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
 msgctxt "SoraArena.Wallet,ApprovedAccount"

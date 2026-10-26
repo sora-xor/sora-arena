@@ -721,7 +721,7 @@ bool USoraCampaignDirector::CanHold(int32 WeaponId,bool bNotify)
     if(WeaponId==19&&ActiveBeatData()&&ActiveBeatData()->SupplyPoint==TEXT("vol_b14_supply")&&
        !BeatEvents.Contains(TEXT("supply_equipment_ready:vol_b14_supply")))
     {
-        if(bNotify) Notify(TEXT("槍は同盟の補給箱で受け取ろう。"),TEXT("Collect the yari at the League supply cache."),3.f);
+        if(bNotify) Notify(SoraText::Line(NSLOCTEXT("SoraArena.Supply","CollectYari","槍は同盟の補給箱で受け取ろう。")),3.f);
         return false;
     }
     if(TaskState.Carrying&&Task.Task==SoraBeatRules::ETask::Carry&&(Task.CarryWeaponsMask&(1u<<WeaponId))==0u)

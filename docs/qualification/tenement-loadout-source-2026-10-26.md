@@ -19,10 +19,24 @@ group key. No new weapon entitlement or health is granted. The chapter data is
 regenerated from its authored document; the timber binding updates only that
 chapter's digest, with placements and coverage unchanged.
 
+The kitchen refill now covers only the chapter's carried ammunition, retaining
+an unavailable earlier firearm's magazine. Three new supply messages are gathered
+through NSLOCTEXT into both Japanese and English resources (497 total keys).
+
 Host coverage checks the complete recovery weapon mask, every chapter-three
 phase's generated carrying set, and rejects changed supply slots/refills or a
 different b09 handoff. The compiled eight-chapter rules and campaign validator
 pass. Existing warnings about the ch02 b10/b13 ideal timing overruns remain.
+
+The first broader source run, at signed `f19af764`, passes 84 of 86 gameplay and
+asset gates. `localization` and `source-content` fail because the new yari hint
+was outside NSLOCTEXT. That failure is retained, with clean unchanged source and
+all 86 logs independently audited. The source-validation worktree keeps
+`Saved/Qualification/2026-10-26/tenement-loadout-source-f19af764/`:
+report SHA-256 `9768fbdebd0e8b2b8f0610d7180aea2307e335635e779b9ad60f9bc56e2ec58b`,
+review SHA-256 `6545dfa3d76724ef0be0679ed73aca6ef1fc95f8597a4c40fad6fab124c42d39`.
+The new messages are subsequently localized; broader revalidation follows that
+correction and the carried-ammunition filter.
 
 The Unreal recovery fixture now checks every arm after the actual bundle pickup.
 The kitchen supply fixture adds ordinary polearm input, actual defeat/retry and

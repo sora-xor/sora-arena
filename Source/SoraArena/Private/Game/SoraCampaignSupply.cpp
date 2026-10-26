@@ -7,6 +7,7 @@
 #include "SoraSaveGame.h"
 #include "SoraWorldBuilder.h"
 #include "SoraCampaignRules.h"
+#include "SoraText.h"
 
 bool USoraCampaignDirector::ClaimCacheArrows(int32 Index)
 {
@@ -41,8 +42,8 @@ void USoraCampaignDirector::TickSupplyHint()
     if(BeatEvents.Contains(Event)||!Arena->CanReachSupply(Beat->SupplyPoint,*Hero)) return;
     const auto Key=SoraUI::ActionKey(this,TEXT("Interact"));
     if(Beat->SupplyPoint==TEXT("vol_b14_supply"))
-        Notify(FString::Printf(TEXT("同盟の補給箱：%s で槍を受け取り、矢と弾を補充。"),*Key.Japanese),
-            FString::Printf(TEXT("League supply cache: %s collects the yari and replenishes arrows and ammunition."),*Key.English),6.f);
+        Notify(SoraText::Format(NSLOCTEXT("SoraArena.Supply","KitchenHint","同盟の補給箱：{Key} で槍を受け取り、矢と弾を補充。"),
+            {{TEXT("Key"),Key}}),6.f);
     else Notify(FString::Printf(TEXT("同盟の補給箱：%s で矢と弾を補充。"),*Key.Japanese),
         FString::Printf(TEXT("League supply cache: %s replenishes arrows and ammunition."),*Key.English),6.f);
     Fire(Event);
@@ -56,6 +57,9 @@ bool USoraCampaignDirector::InteractSupply(ASoraPlayerCharacter& Player)
         !Arena->CanReachSupply(Beat->SupplyPoint,Player)) return false;
     unsigned Unlocked=0;
     for(int32 Id=0;Id<SoraBeatRules::WeaponCount;++Id) if(IsWeaponUnlocked(Id)) Unlocked|=1u<<Id;
+    // The kitchen stocks this chapter's carried kit: arrows and shells,
+    // not ammunition for arms left behind at the chapter's landing.
+    if(Beat->SupplyPoint==TEXT("vol_b14_supply"))Unlocked&=Task.EquipmentMask;
     const int32 Refilled=Player.GetEquipment()->RestockUnlocked(Unlocked);
     const FString Ready=TEXT("supply_equipment_ready:")+Beat->SupplyPoint;
     const bool bTakeYari=Refilled>=0&&Beat->SupplyPoint==TEXT("vol_b14_supply")&&!BeatEvents.Contains(Ready);
@@ -64,7 +68,7 @@ bool USoraCampaignDirector::InteractSupply(ASoraPlayerCharacter& Player)
     else if(bTakeYari)
     {
         Fire(Ready);
-        Notify(TEXT("槍を受け取った。矢と弾も補充した。"),TEXT("Yari collected. Arrows and ammunition are full."),4.f);
+        Notify(SoraText::Line(NSLOCTEXT("SoraArena.Supply","YariCollected","槍を受け取った。矢と弾も補充した。")),4.f);
         if(Refilled>0)Fire(TEXT("supply_restocked:")+Beat->SupplyPoint);
     }
     else if(Refilled==0)
