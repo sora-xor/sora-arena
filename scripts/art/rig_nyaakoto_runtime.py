@@ -97,6 +97,61 @@ STRIKE_KEYS_FROM = ARGS[ARGS.index("--strike-keys") + 1] if "--strike-keys" in A
 # Diagnosis only (s117's StrikeMakko@16): check just these frames ("Clip@frame", comma-separated), print each check in
 # full, and exit 0 before anything is rendered, exported or written.
 CHECK_ONLY = ARGS[ARGS.index("--check-frames") + 1].split(",") if "--check-frames" in ARGS else None
+# A containment test whose two rays disagree may be decided by the target island's winding number, computed
+# numerically in float64, on the conditions mesh_clearance._inside lists; otherwise it stays ambiguous and fails.
+# Off unless given. s117 and s118 failed StrikeMakko@16 on one such disagreement (s119 recorded it): a left-paw point
+# 12.05 mm outside katana part 17, whose first ray grazes an edge, entering and leaving 0.867 um apart, and the backend's
+# 10 um step past each hit skips the exit. Every disagreement is reported either way.
+RESOLVE_PARITY = "--resolve-parity" in ARGS
+# Where each parity disagreement's raw evidence goes (root, 18:28 UTC): a new directory, required with
+# --resolve-parity.
+PARITY_DIR = (Path(__file__).resolve().parents[2] / ARGS[ARGS.index("--parity-evidence") + 1]
+              if "--parity-evidence" in ARGS else None)
+if RESOLVE_PARITY and PARITY_DIR is None:
+    raise SystemExit("--resolve-parity needs --parity-evidence <a new directory under Saved/W18Rebuild>")
+if PARITY_DIR is not None and PARITY_DIR.exists():
+    raise SystemExit(f"--parity-evidence must be a new directory: {PARITY_DIR}")
+EVIDENCE, EVIDENCE_GATE = [], [None]                        # this frame's raw disagreements; the gate being measured
+
+
+def measure(*args, **kwargs):
+    """mesh_clearance.measure with this run's parity rule, each disagreement's raw record kept for the frame."""
+    ev = []
+    out = MC.measure(*args, resolve_parity=RESOLVE_PARITY, evidence=ev, **kwargs)
+    for e in ev:
+        e["gate"] = EVIDENCE_GATE[0]
+    EVIDENCE.extend(ev)
+    return out
+
+
+def save_evidence(label):
+    """This frame's parity disagreements, raw, for an independent float64 replay (replay_parity_evidence.py). Each
+    event is one .npz: the point and the target island's vertices and triangles as Blender evaluated them, the rays,
+    and each ray's hits (distance, face, location). index.jsonl lists each with its SHA-256 and every quantity the
+    decision used."""
+    if PARITY_DIR is None or not EVIDENCE:
+        return []
+    PARITY_DIR.mkdir(parents=True, exist_ok=True)
+    rows = []
+    for i, e in enumerate(EVIDENCE):
+        path = PARITY_DIR / f"{label}_{e['gate']}_{i:03d}.npz"
+
+        def hits(lst):
+            return np.array([[h[0], h[1], *(h[2] if len(h) > 2 else (np.nan, np.nan, np.nan))] for h in lst],
+                            np.float64).reshape(-1, 5)
+        lists = e["ray_hit_lists"] or [[], []]
+        np.savez(path, point=e["point"], vertices=e["vertices"], triangles=e["triangles"], rays=e["rays"],
+                 hits_0=hits(lists[0]), hits_1=hits(lists[1]))
+        row = {"file": path.name, "sha256": hashlib.sha256(path.read_bytes()).hexdigest(), "frame": label,
+               "gate": e["gate"], "test": e["island"], "island_index": e["island_index"], "ray_hits": e["ray_hits"],
+               "resolve_parity": RESOLVE_PARITY, "decidable": e["decidable"], "verdict": e["verdict"],
+               **{k: e[k] for k in ("oriented_manifold", "finite", "min_area_m2", "signed_volume_m3", "gap_m",
+                                    "winding", "nearest_integer", "off_integer")}}
+        with open(PARITY_DIR / "index.jsonl", "a", encoding="utf-8") as fh:
+            fh.write(json.dumps(row) + "\n")
+        print("PARITY_EVIDENCE " + json.dumps(row), flush=True)
+        rows.append(row)
+    return rows
 
 ROOT = Path(__file__).resolve().parents[2]
 HERO = ROOT / "Content/SourceArt/Characters/Hero"
@@ -643,28 +698,32 @@ def check_pose(saya_entry, held, only=None):
     katana = place(KATANA, kp, kr)
     hide = (SET["obi"], pts)
     holding = "hands" if held == "RL" else "hand_R" if held else None
-    plan = {"forearms_paws_vs_torso": lambda: MC.measure(BK, SET["arms_low"], pts, SET["torso"], pts, limit=0.02,
+    plan = {"forearms_paws_vs_torso": lambda: measure(BK, SET["arms_low"], pts, SET["torso"], pts, limit=0.02,
                                                          to_report=UE),
-            "forearms_paws_vs_head": lambda: MC.measure(BK, SET["arms_low"], pts, SET["head"], pts, limit=0.02,
+            "forearms_paws_vs_head": lambda: measure(BK, SET["arms_low"], pts, SET["head"], pts, limit=0.02,
                                                         to_report=UE),
-            "upper_arms_vs_torso": lambda: MC.measure(BK, SET["upper_arms"], pts, SET["torso"], pts, limit=0.0,
+            "upper_arms_vs_torso": lambda: measure(BK, SET["upper_arms"], pts, SET["torso"], pts, limit=0.0,
                                                       to_report=UE),
-            "saya_vs_body": lambda: MC.measure(BK, K_SAYA, saya, SET["body"], pts, limit=0.0, hide=hide, allowed=TUCK,
+            "saya_vs_body": lambda: measure(BK, K_SAYA, saya, SET["body"], pts, limit=0.0, hide=hide, allowed=TUCK,
                                                to_report=UE)}
     if held:
         plan.update({
-            "katana_vs_body_but_holding_paws": lambda: MC.measure(BK, K_ALL, katana, SET[f"body_but_{holding}"], pts,
+            "katana_vs_body_but_holding_paws": lambda: measure(BK, K_ALL, katana, SET[f"body_but_{holding}"], pts,
                                                                   limit=0.02, to_report=UE),
-            "katana_vs_holding_paws": lambda: MC.measure(BK, K_ALL, katana, SET[holding], pts, limit=0.01, to_report=UE),
-            "blade_vs_head": lambda: MC.measure(BK, K_BLADE, katana, SET["head"], pts, limit=0.05, to_report=UE),
-            "blade_vs_body": lambda: MC.measure(BK, K_BLADE, katana, SET[f"body_but_head_{holding}"], pts, limit=0.03,
+            "katana_vs_holding_paws": lambda: measure(BK, K_ALL, katana, SET[holding], pts, limit=0.01, to_report=UE),
+            "blade_vs_head": lambda: measure(BK, K_BLADE, katana, SET["head"], pts, limit=0.05, to_report=UE),
+            "blade_vs_body": lambda: measure(BK, K_BLADE, katana, SET[f"body_but_head_{holding}"], pts, limit=0.03,
                                                 to_report=UE),
-            "left_paw_vs_saya": lambda: MC.measure(BK, SET["arm_low_L"], pts, K_SAYA, saya, limit=0.02, to_report=UE)})
+            "left_paw_vs_saya": lambda: measure(BK, SET["arm_low_L"], pts, K_SAYA, saya, limit=0.02, to_report=UE)})
         if held == "RL":
-            plan["paw_vs_paw"] = lambda: MC.measure(BK, SET["hand_L"], pts, SET["hand_R"], pts, limit=0.02, to_report=UE)
+            plan["paw_vs_paw"] = lambda: measure(BK, SET["hand_L"], pts, SET["hand_R"], pts, limit=0.02, to_report=UE)
     else:                                                 # the blade is inside the saya; its hilt may not touch the obi
-        plan["sheathed_hilt_vs_body"] = lambda: MC.measure(BK, K_HILT, katana, SET["body"], pts, limit=0.0, to_report=UE)
-    out = {k: f() for k, f in plan.items() if only is None or k in only}
+        plan["sheathed_hilt_vs_body"] = lambda: measure(BK, K_HILT, katana, SET["body"], pts, limit=0.0, to_report=UE)
+    out = {}
+    for k, f in plan.items():
+        if only is None or k in only:
+            EVIDENCE_GATE[0] = k                          # each parity disagreement's record names its gate
+            out[k] = f()
     kissaki = kp + kr @ (np.array(TP.W00["muzzle"]) / 100.0 * np.array([1.0, -1.0, 1.0]))
     out["kissaki_ue_cm"] = [round(float(v), 2) for v in UE(kissaki)]
     if held == "RL" and only is None:
@@ -701,7 +760,9 @@ def gates_of(res):
 
 BRIEF = ("crossing_pairs_visible", "crossing_pairs_hidden", "crossing_pairs_allowed", "crossing_parts_visible",
          "contained", "contained_parts", "contained_allowed", "ambiguous", "ambiguous_parts", "open_islands",
-         "separation_m", "separation_kind", "first_visible_crossing")
+         "separation_m", "separation_kind", "first_visible_crossing", "parity_resolution", "parity_disagreements",
+         "parity_resolved_outside", "parity_resolved_inside")
+STRIKE_TRIES = [0]                                         # the strike search's checks, numbered for their evidence
 
 
 def brief(res):
@@ -819,13 +880,13 @@ if STUDY == "two_paw":
         pts = posed_points()
         kp, kr = socket_now("R")
         katana = place(KATANA, kp, kr)
-        res = {"forearms_paws_vs_torso": MC.measure(BK, SET["arms_low"], pts, SET["torso"], pts, limit=0.02, to_report=UE),
-               "katana_vs_body_but_paws": MC.measure(BK, K_ALL, katana, SET["body_but_hands"], pts, limit=0.02, to_report=UE),
-               "katana_vs_paws": MC.measure(BK, K_ALL, katana, SET["hands"], pts, limit=0.01, to_report=UE),
-               "blade_vs_head": MC.measure(BK, K_BLADE, katana, SET["head"], pts, limit=0.05, to_report=UE),
-               "blade_vs_body": MC.measure(BK, K_BLADE, katana, SET["body_but_head_hands"], pts, limit=0.03, to_report=UE),
-               "paw_vs_paw": MC.measure(BK, SET["hand_L"], pts, SET["hand_R"], pts, limit=0.02, to_report=UE),
-               "upper_arms_vs_torso": MC.measure(BK, SET["upper_arms"], pts, SET["torso"], pts, limit=0.0, to_report=UE)}
+        res = {"forearms_paws_vs_torso": measure(BK, SET["arms_low"], pts, SET["torso"], pts, limit=0.02, to_report=UE),
+               "katana_vs_body_but_paws": measure(BK, K_ALL, katana, SET["body_but_hands"], pts, limit=0.02, to_report=UE),
+               "katana_vs_paws": measure(BK, K_ALL, katana, SET["hands"], pts, limit=0.01, to_report=UE),
+               "blade_vs_head": measure(BK, K_BLADE, katana, SET["head"], pts, limit=0.05, to_report=UE),
+               "blade_vs_body": measure(BK, K_BLADE, katana, SET["body_but_head_hands"], pts, limit=0.03, to_report=UE),
+               "paw_vs_paw": measure(BK, SET["hand_L"], pts, SET["hand_R"], pts, limit=0.02, to_report=UE),
+               "upper_arms_vs_torso": measure(BK, SET["upper_arms"], pts, SET["torso"], pts, limit=0.0, to_report=UE)}
         mins = {"blade_vs_head": 0.05, "blade_vs_body": 0.03}
         row["gates"] = {g: MC.passes(v, mins.get(g, 0.0)) for g, v in res.items() if g != "upper_arms_vs_torso"}
         row["checks"] = brief(res)
@@ -848,7 +909,7 @@ if STUDY == "two_paw":
         for dx in [0.5 * i for i in range(0, 41)]:
             p = pts0.copy()
             p[verts, 0] += dx / 100.0
-            r = MC.measure(BK, SET[f"arm_low_{side}"], p, SET["torso"], p, limit=0.005, to_report=UE)
+            r = measure(BK, SET[f"arm_low_{side}"], p, SET["torso"], p, limit=0.005, to_report=UE)
             last = (dx, r["crossing_pairs_visible"], r["contained"], r["crossing_parts_visible"][:3])
             if MC.passes(r, 0.005):
                 need = dx
@@ -872,7 +933,7 @@ if EXPLORE:
           flush=True)
     reset_pose()
     rest_pts = posed_points()
-    print("REST " + json.dumps(brief({k: MC.measure(BK, SET[a], rest_pts, SET["torso"], rest_pts, limit=lim, to_report=UE)
+    print("REST " + json.dumps(brief({k: measure(BK, SET[a], rest_pts, SET["torso"], rest_pts, limit=lim, to_report=UE)
                                       for k, a, lim in (("forearms_paws_vs_torso", "arms_low", 0.02),
                                                         ("upper_arms_vs_torso", "upper_arms", 0.0))}), default=str),
           flush=True)
@@ -929,7 +990,7 @@ if EXPLORE:
         for dx in [0.5 * i for i in range(0, 41)]:
             p = pts0.copy()
             p[verts, 0] += dx / 100.0
-            res = MC.measure(BK, SET[f"arm_low_{side}"], p, SET["torso"], p, limit=0.005, to_report=UE)
+            res = measure(BK, SET[f"arm_low_{side}"], p, SET["torso"], p, limit=0.005, to_report=UE)
             ok = MC.passes(res, 0.005)
             row["steps_cm"].append([dx, res["crossing_pairs_visible"], res["contained"], res["separation_m"]]
                                    + ([res["crossing_parts_visible"][:4], res["contained_parts"][:2]]
@@ -996,7 +1057,11 @@ def strike_try(stance):
     if quick:
         row["failed"], row["quick"] = sorted(quick), True
         return row, False
+    EVIDENCE.clear()
     res = check_pose(SAYA_SOCKET, held="RL")
+    STRIKE_TRIES[0] += 1
+    row["parity_evidence"] = save_evidence(f"strike_try_{STRIKE_TRIES[0]:03d}")
+    EVIDENCE.clear()
     g = gates_of(res)
     row["failed"] = sorted(k for k, ok in g.items() if not ok)
     row["kissaki_ue_cm"] = res["kissaki_ue_cm"]
@@ -1120,10 +1185,14 @@ CHECK_FRAMES = {"Idle": range(1, 97, 2), "Walk": range(1, 33, 2), "Guard": range
 
 
 def frame_check(clip, f):
-    """One checked frame: its pose and empty fists, every check, and with both paws holding, the sockets' errors."""
+    """One checked frame: its pose and empty fists, every check, and with both paws holding, the sockets' errors.
+    Each parity disagreement's raw evidence is saved (save_evidence)."""
     at_frame(clip, f)
     set_empty(*EMPTY_BY_CLIP[clip])
+    EVIDENCE.clear()
     res = check_pose(SAYA_SOCKET, held=HELD_BY_CLIP[clip])
+    res["parity_evidence"] = save_evidence(f"{clip}@{f}")
+    EVIDENCE.clear()
     if HELD_BY_CLIP[clip]:
         tgs = (TP.socket_targets(GUARD, math.sin((f - 1) / 96 * math.tau) * 0.004) if clip == "Guard"
                else TP.socket_targets(strike_stance((f - 1) / STRIKE_FRAMES)))
@@ -1170,9 +1239,9 @@ rig.animation_data.action = None
 set_empty(0, 0)                                           # the bind pose: no morph
 bpy.context.view_layer.update()
 rest_posed = posed_points()
-checks["rest"] = {"forearms_paws_vs_torso": MC.measure(BK, SET["arms_low"], rest_posed, SET["torso"], rest_posed,
+checks["rest"] = {"forearms_paws_vs_torso": measure(BK, SET["arms_low"], rest_posed, SET["torso"], rest_posed,
                                                        limit=0.02, to_report=UE),
-                  "upper_arms_vs_torso": MC.measure(BK, SET["upper_arms"], rest_posed, SET["torso"], rest_posed,
+                  "upper_arms_vs_torso": measure(BK, SET["upper_arms"], rest_posed, SET["torso"], rest_posed,
                                                     limit=0.0, to_report=UE)}
 gate_rows["rest"] = gates_of(checks["rest"])
 socket_ok = all(max(r["socket_error_cm"].values()) <= 1.0 for r in checks.values() if "socket_error_cm" in r)

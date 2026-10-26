@@ -22,6 +22,12 @@ Strands may cross each other, as hairs do.
 moves them with the skin.
 
 **CoatBlend and UV** are the skin's at each root.
+
+**Shading:** each strand takes its root's skin normal (the builders set it as the strand vertices' custom normal), so
+it shades as the coat beneath it does. Its own face normal lit it as a dark line or a bright bristle across the coat:
+root's 14:38 UTC review of s116 (2026-10-26) saw "sparse stubble with a bright bristled fringe". For the same
+reason, r3's strands lie flatter and shorter than s115/s116's (16-30 deg, 3.5-7 mm; the guard hairs 22-36 deg,
+7-10 mm).
 """
 from __future__ import annotations
 
@@ -31,11 +37,18 @@ import numpy as np
 
 import nyaakoto_tp_paws as TPP
 
-STRANDS = {"density_per_cm2": 8.0, "length_m": (0.0035, 0.0070), "root_width_m": (0.00030, 0.00055),
-           "lift_deg": (16.0, 30.0), "root_lift_m": 0.0001, "clear_m": 0.006, "tip_clear_m": 0.002}
-GUARD = dict(STRANDS, density_per_cm2=0.7, length_m=(0.0070, 0.0100), root_width_m=(0.00022, 0.00036),
-             lift_deg=(22.0, 36.0), clear_m=0.008)
+# clear_m: no root this near the grip channel. 6 mm (s115-s121) left a bald white band between the fur and the pads
+# (nyaakoto_tp_paws.pad_faces, within 4 mm); 4.5 mm lets the fur reach the pads, and tip_clear_m still keeps every tip
+# 2 mm off the channel.
+STRANDS = {"density_per_cm2": 8.0, "length_m": (0.0028, 0.0055), "root_width_m": (0.00030, 0.00055),
+           "lift_deg": (8.0, 18.0), "root_lift_m": 0.0001, "clear_m": 0.0045, "tip_clear_m": 0.002}
+GUARD = dict(STRANDS, density_per_cm2=0.7, length_m=(0.0055, 0.0080), root_width_m=(0.00022, 0.00036),
+             lift_deg=(12.0, 24.0), clear_m=0.006)
 LOD_DENSITY = (1.0, 0.35, 0.0)          # LOD0, LOD1, LOD2: a share of STRANDS["density_per_cm2"]
+# m: a kept strand's tip clears the fuzzed skin by this much. 0.5 mm (to s122) pruned a quarter of r3's flatter,
+# shorter strands (5.2k a paw in s116, 3.9k in s120-s122); grow's exact skin-crossing prune still removes any
+# strand that crosses the skin.
+TIP_ABOVE_FUZZ_M = 0.0001
 
 
 def _unit(v):
@@ -59,9 +72,10 @@ def flow(points, normals, skel):
 
 
 def strands(verts, tris, uvs, coat, skel, density_share=1.0, seed=11, cfg=STRANDS):
-    """Fur strands on a mesh_paw skin: (strand verts (3 per strand), tris, per-corner UVs, per-corner CoatBlend)."""
+    """Fur strands on a mesh_paw skin: (strand verts (3 per strand), tris, per-corner UVs, per-corner CoatBlend, and
+    per-vertex normals, each its root's skin normal)."""
     if density_share <= 0.0:
-        return np.zeros((0, 3)), np.zeros((0, 3), np.int64), np.zeros((0, 3, 2)), np.zeros((0, 3))
+        return np.zeros((0, 3)), np.zeros((0, 3), np.int64), np.zeros((0, 3, 2)), np.zeros((0, 3)), np.zeros((0, 3))
     rng = np.random.default_rng(seed)
     a, b, c = verts[tris[:, 0]], verts[tris[:, 1]], verts[tris[:, 2]]
     cross = np.cross(b - a, c - a)
@@ -82,14 +96,19 @@ def strands(verts, tris, uvs, coat, skel, density_share=1.0, seed=11, cfg=STRAND
     tip = root + length[:, None] * growth
     fr = skel["frame"]
     keep = ((TPP.channel_sdf(root, fr) > cfg["clear_m"]) & (TPP.channel_sdf(tip, fr) > cfg["tip_clear_m"])
-            & (TPP.paw_sdf(tip, skel) > TPP.FUZZ_MAX + 0.0005)
+            & (TPP.paw_sdf(tip, skel) > TPP.FUZZ_MAX + TIP_ABOVE_FUZZ_M)
             & (np.abs((tip - fr["c"]) @ TPP.Y) < TPP.PAW_HALF - 0.0003))      # the rig's 11 cm breadth gate
-    root, tip, side, half = root[keep], tip[keep], side[keep], half[keep]
-    sv = np.stack([root - half[:, None] * side, root + half[:, None] * side, tip], 1).reshape(-1, 3)
+    root, tip, side, half, n = root[keep], tip[keep], side[keep], half[keep], n[keep]
+    # Wound so each strand's face looks outward with its root's normal: side x growth is about -n for a strand lying
+    # this flat, so the corners go root + side, root - side, tip. s115-s120 wound them the other way: every face
+    # looked into the skin (face . root normal about -0.97), so Cycles shaded them as backfaces (root's "dark lines")
+    # and a one-sided Unreal material would cull them.
+    sv = np.stack([root + half[:, None] * side, root - half[:, None] * side, tip], 1).reshape(-1, 3)
     st = np.arange(len(sv)).reshape(-1, 3)
     bary_uv = (uvs[pick, 0] * (1.0 - u - v)[:, None] + uvs[pick, 1] * u[:, None] + uvs[pick, 2] * v[:, None])[keep]
     bary_coat = (coat[pick, 0] * (1.0 - u - v) + coat[pick, 1] * u + coat[pick, 2] * v)[keep]
-    return sv, st, np.repeat(bary_uv[:, None, :], 3, 1), np.repeat(bary_coat[:, None], 3, 1)
+    return (sv, st, np.repeat(bary_uv[:, None, :], 3, 1), np.repeat(bary_coat[:, None], 3, 1),
+            np.repeat(n[:, None, :], 3, 1).reshape(-1, 3))
 
 
 def skin_crossing_strands(skin_v, skin_t, sv, st):
@@ -104,13 +123,16 @@ def skin_crossing_strands(skin_v, skin_t, sv, st):
 
 def grow(m, density_share=1.0, seed=11, coats=(STRANDS, GUARD)):
     """Strands for a mesh_paw result, both coats (each its own seed), pruned of every strand that crosses the skin in
-    the grip or the empty fist."""
+    the grip or the empty fist: (verts, tris, corner UVs, corner CoatBlend, how many were pruned). Their vertex
+    normals, each its root's skin normal, are m["strand_normals"] afterwards."""
     grown = [strands(m["verts"], m["tris"], m["uvs"], m["coat"], m["skeleton"], density_share, seed + k, cfg)
              for k, cfg in enumerate(coats)]
     sv = np.concatenate([g[0] for g in grown])
     st = np.arange(len(sv)).reshape(-1, 3)
     suv = np.concatenate([g[2] for g in grown])
     scoat = np.concatenate([g[3] for g in grown])
+    sn = np.concatenate([g[4] for g in grown])
+    m["strand_normals"] = sn
     if not len(st):
         return sv, st, suv, scoat, 0
     bad = set()
@@ -120,4 +142,5 @@ def grow(m, density_share=1.0, seed=11, coats=(STRANDS, GUARD)):
         bad |= set(skin_crossing_strands(sk, m["tris"], sx, st).tolist())
     keep = np.setdiff1d(np.arange(len(st)), np.array(sorted(bad), np.int64))
     sv = sv.reshape(-1, 3, 3)[keep].reshape(-1, 3)
+    m["strand_normals"] = sn.reshape(-1, 3, 3)[keep].reshape(-1, 3)
     return sv, np.arange(len(sv)).reshape(-1, 3), suv[keep], scoat[keep], len(bad)

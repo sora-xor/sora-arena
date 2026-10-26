@@ -308,6 +308,46 @@ class EmptyFist(unittest.TestCase):
         self.assertTrue(np.array_equal(P.empty_points(m["verts"][idx], m["skeleton"]), m["empty"][idx]))
 
 
+class Pads(unittest.TestCase):
+    """The pads (pad_faces): M_Hero_RoseNose on the grip side, where no fur grows. Root's 14:38 UTC review of s116 saw
+    these faces as smooth white patches in the empty fist."""
+
+    @staticmethod
+    def components(m):
+        import mesh_clearance as MC
+        V, T, pad = m["verts"], m["tris"], m["pad"]
+        area = 0.5 * np.linalg.norm(np.cross(V[T[:, 1]] - V[T[:, 0]], V[T[:, 2]] - V[T[:, 0]]), axis=1)
+        isl = MC.islands(T[pad])
+        return [float(area[pad][isl == k].sum()) for k in np.unique(isl)], float(area[pad].sum())
+
+    def test_six_separate_pads_at_lod0(self):
+        """Four toe beans, the dewclaw's pad and the palm pad, each apart from the others."""
+        for sign in (1, -1):
+            m = paw(sign, 0)
+            comps, total = self.components(m)
+            with self.subTest(sign=sign, cm2=[round(c * 1e4, 2) for c in comps]):
+                self.assertEqual(len(comps), 6)
+                self.assertTrue(0.0030 < total < 0.0050)                # 30-50 cm2 of the paw's ~750
+                self.assertGreater(min(comps), 0.0002)
+
+    def test_pads_lie_on_the_grip_side(self):
+        for sign in (1, -1):
+            m = paw(sign, 0)
+            fr = m["skeleton"]["frame"]
+            c = m["verts"][m["tris"][m["pad"]]].mean(1)
+            with self.subTest(sign=sign):
+                self.assertLessEqual(float(P.channel_sdf(c, fr).max()), P.PAD_REACH + 1e-12)
+                self.assertTrue(np.array_equal(m["material_index"], m["pad"].astype(np.int64)))
+
+    def test_every_lod_has_the_same_pad_area(self):
+        for sign in (1, -1):
+            _, a0 = self.components(paw(sign, 0))
+            for lod in (1, 2):
+                _, a = self.components(paw(sign, lod))
+                with self.subTest(sign=sign, lod=lod):
+                    self.assertLess(abs(a - a0) / a0, 0.10)
+
+
 class Surface(unittest.TestCase):
     def test_coat_white_on_the_toes_tabby_on_the_back(self):
         m = paw(1, 0)

@@ -91,6 +91,46 @@ class Strands(unittest.TestCase):
             far = max(far, float(d.max()))
         self.assertLess(far, 2.0 * P.LOD_STEPS[0])
 
+    def test_strand_normals_are_their_roots_skin_normal(self):
+        """Each strand's three vertices carry one unit normal, its root's skin normal, so it shades as the coat
+        beneath it; the strand leans off that surface by the coats' lift (8-24 deg)."""
+        for sign in (1, -1):
+            m, (sv, st, *_rest) = grown(sign, 1)
+            n = m["strand_normals"]
+            with self.subTest(sign=sign):
+                self.assertEqual(n.shape, sv.shape)
+                self.assertLess(float(np.abs(np.linalg.norm(n, axis=1) - 1.0).max()), 1e-9)
+                tri_n = n.reshape(-1, 3, 3)
+                self.assertLess(float(np.abs(tri_n - tri_n[:, :1]).max()), 1e-12)
+                tri = sv.reshape(-1, 3, 3)
+                growth = tri[:, 2] - tri[:, :2].mean(1)
+                growth /= np.linalg.norm(growth, axis=1, keepdims=True)
+                lift = np.degrees(np.arcsin(np.clip((growth * tri_n[:, 0]).sum(1), -1.0, 1.0)))
+                self.assertGreater(float(lift.min()), min(F.STRANDS["lift_deg"][0], F.GUARD["lift_deg"][0]) - 1e-6)
+                self.assertLess(float(lift.max()), max(F.STRANDS["lift_deg"][1], F.GUARD["lift_deg"][1]) + 1e-6)
+
+    def test_every_strand_faces_outward(self):
+        """Each strand's face looks the way its root's normal does: a strand facing into the skin renders as a dark
+        backface in Cycles and is culled by a one-sided Unreal material (s115-s120 wound every strand inward)."""
+        for sign in (1, -1):
+            for lod in (0, 1):
+                m, (sv, *_rest) = grown(sign, lod)
+                tri = sv.reshape(-1, 3, 3)
+                fn = np.cross(tri[:, 1] - tri[:, 0], tri[:, 2] - tri[:, 0])
+                fn /= np.linalg.norm(fn, axis=1, keepdims=True)
+                dots = (fn * m["strand_normals"].reshape(-1, 3, 3)[:, 0]).sum(1)
+                with self.subTest(sign=sign, lod=lod, least=float(dots.min())):
+                    self.assertGreater(float(dots.min()), 0.5)
+
+    def test_no_strand_grows_on_a_pad(self):
+        """The pads (nyaakoto_tp_paws.pad_faces) lie within PAD_REACH of the channel; every strand's root is further."""
+        self.assertGreater(min(F.STRANDS["clear_m"], F.GUARD["clear_m"]), P.PAD_REACH)
+        for sign in (1, -1):
+            m, (sv, *_rest) = grown(sign, 0)
+            root = sv.reshape(-1, 3, 3)[:, :2].mean(1)
+            with self.subTest(sign=sign):
+                self.assertGreater(float(P.channel_sdf(root, m["skeleton"]["frame"]).min()), P.PAD_REACH)
+
     def test_same_seed_same_strands(self):
         m, (sv, *_rest) = grown(1, 1)
         again = F.grow(m, F.LOD_DENSITY[1])[0]

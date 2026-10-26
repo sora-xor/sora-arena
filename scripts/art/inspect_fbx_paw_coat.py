@@ -10,7 +10,8 @@ isolated preview showed a tabby back. Is the tabby back in the data? This reads 
   manifest's module_sha256): the digit weight times the COAT_TURN ramp, then stored as Blender stores a byte colour
   (sRGB-encoded) and exported (colors_type SRGB, the exporter's default).
 
-It reports, per paw:
+It reports, per paw (its skin; r3's fur strands, isolated triangles carrying their root's coat, are counted apart,
+with how many there are and how far off the skin they reach):
 - the R distribution;
 - the shares near tabby (< 0.05) and near white (> 0.95);
 - the same over the paw's back (recomputed coat 0);
@@ -19,9 +20,10 @@ It reports, per paw:
   indices, not routed through LODMaterialMap as the renderer routes them: check_nyaakoto_lod_materials.py checks what
   Unreal renders.
 
-The file's frame is found, not assumed. Of the axis maps listed in AXIS_MAPS, it is the one that puts both paws'
-vertices on the paw's own surface, nyaakoto_tp_paws.paw_sdf: the skin is that field's zero set pushed out by at most
-FUZZ_MAX. (A centroid test cannot tell: the palm's mass puts the paw's centroid some 6 cm off its channel.)
+The file's frame is found, not assumed. Of the axis maps listed in AXIS_MAPS, it is the one that puts both paws' skin
+vertices (not the strands') on the paw's own surface, nyaakoto_tp_paws.paw_sdf: the skin is that field's zero set
+pushed out by at most FUZZ_MAX. (A centroid test cannot tell: the palm's mass puts the paw's centroid some 6 cm off
+its channel.)
 
 Run (host Python with numpy): python3 scripts/art/inspect_fbx_paw_coat.py <fbx> <out.json> [<paw module dir>]
 """
@@ -51,6 +53,10 @@ if MODULE_SHA != PAWS["module_sha256"]:
 # nodes) and Unreal's (Blender's axes; Unreal mirrors its own y back on export).
 AXIS_MAPS = {"identity": np.eye(3) / 100.0, "half_turn_z": np.diag([-1.0, -1.0, 1.0]) / 100.0,
              "mirror_y": np.diag([1.0, -1.0, 1.0]) / 100.0, "mirror_x": np.diag([-1.0, 1.0, 1.0]) / 100.0}
+# m: an isolated polygon reaching past this off the paw's surface is a strand (nyaakoto_tp_fur keeps a strand only if
+# its tip clears FUZZ_MAX by 0.1 mm); a skin triangle that Unreal's export isolates lies on the skin. In s128's export
+# (2026-10-26) the strands reach 0.90 mm and more, the isolated skin triangles 0.67 mm at most.
+STRAND_REACH_M = TPP.FUZZ_MAX + 0.00005
 
 
 def srgb(x):
@@ -127,9 +133,19 @@ for gid, geo in objects.items():
         out["meshes"][model] = row
         continue
     skels = {s: TPP.skeleton(frame(s), PAWS["by_side"][s]["palm_radii_m"]) for s in ("R", "L")}
+    # r3's fur strands are isolated triangles: each of their corners is its vertex's only corner. Unreal's export
+    # isolates some skin triangles too (it splits vertices at seams and section edges: its LOD2, which has no strands,
+    # has 34-36 a paw); STRAND_REACH_M tells them apart below. The strands' tips stand up to 8 mm off the skin, so the
+    # axis fit uses the polygons that share a vertex.
+    uses = np.bincount(corner_vertex, minlength=len(V))
+    n_poly = int(corner_poly[-1]) + 1
+    isolated = (np.bincount(corner_poly, weights=(uses[corner_vertex] > 1).astype(float), minlength=n_poly) == 0)
+    skin_vertex = np.zeros(len(V), bool)
+    skin_vertex[corner_vertex[~isolated[corner_poly]]] = True
+    skin_of = {s: hands[s][skin_vertex[hands[s]]] for s in ("R", "L")}
     fits = {}
     for label, M in AXIS_MAPS.items():
-        fits[label] = max(float(np.percentile(np.abs(TPP.paw_sdf(W[hands[s]] @ M.T, skels[s])), 99)) for s in ("R", "L"))
+        fits[label] = max(float(np.percentile(np.abs(TPP.paw_sdf(W[skin_of[s]] @ M.T, skels[s])), 99)) for s in ("R", "L"))
     axis = min(fits, key=fits.get)
     row["axis_map"] = {"chosen": axis, "worst_paw_p99_off_surface_mm": {k: round(v * 1000.0, 3) for k, v in fits.items()}}
     if fits[axis] > TPP.FUZZ_MAX + 0.001:
@@ -142,15 +158,35 @@ for gid, geo in objects.items():
         skel = skels[side]
         in_paw = np.zeros(len(V), bool)
         in_paw[hands[side]] = True
-        on = in_paw[corner_vertex]
+        # A strand is an isolated polygon reaching past the fuzzed skin. It carries its root's coat, which the coat at
+        # the strand's own vertex need not equal: the strands are counted apart, and compared with nothing.
+        sdf = np.full(len(V), -np.inf)
+        sdf[hands[side]] = TPP.paw_sdf(B[hands[side]], skel)
+        reach = np.full(n_poly, -np.inf)
+        np.maximum.at(reach, corner_poly, sdf[corner_vertex])
+        strand_poly = isolated & (reach > STRAND_REACH_M)
+        lone_skin_poly = isolated & ~strand_poly
+        strand = strand_poly[corner_poly]
+        on_all = in_paw[corner_vertex]
+        on = on_all & ~strand
+        paw_polys = np.unique(corner_poly[on_all])
         cv = corner_vertex[on]
         r = corner_rgba[on, 0]
         coat = TPP.digit_weight(B[cv], skel, TPP.COAT_RAMP) * TPP.ease(*TPP.COAT_TURN, TPP.turn_of(B[cv], fr))
         stored = np.round(srgb(coat) * 255.0) / 255.0
         back = coat < 1e-6
         diff = np.abs(r - stored)
+        rs = corner_rgba[on_all & strand, 0]
         side_row = {
             "paw_vertices": int(len(hands[side])), "paw_corners": int(on.sum()),
+            "strands": int(strand_poly[paw_polys].sum()), "strand_corners": int((on_all & strand).sum()),
+            "strand_reach_min_mm": round(float(reach[paw_polys][strand_poly[paw_polys]].min() * 1000.0), 4)
+            if strand_poly[paw_polys].any() else None,
+            "isolated_skin_polygons": int(lone_skin_poly[paw_polys].sum()),
+            "isolated_skin_reach_max_mm": round(float(reach[paw_polys][lone_skin_poly[paw_polys]].max() * 1000.0), 4)
+            if lone_skin_poly[paw_polys].any() else None,
+            "strand_share_near_tabby_lt_0.05": round(float((rs < 0.05).mean()), 4) if len(rs) else None,
+            "strand_share_near_white_gt_0.95": round(float((rs > 0.95).mean()), 4) if len(rs) else None,
             "R_percentiles_1_10_25_50_75_90_99": [round(float(np.percentile(r, q)), 4) for q in (1, 10, 25, 50, 75, 90, 99)],
             "share_near_tabby_lt_0.05": round(float((r < 0.05).mean()), 4),
             "share_near_white_gt_0.95": round(float((r > 0.95).mean()), 4),
@@ -162,12 +198,12 @@ for gid, geo in objects.items():
             "rgb_equal": bool(np.allclose(corner_rgba[on, 0], corner_rgba[on, 1]) and np.allclose(corner_rgba[on, 0], corner_rgba[on, 2])),
         }
         if poly_mat is not None and mat_names:
-            pm = poly_mat[corner_poly[on]] if len(poly_mat) == len(np.unique(corner_poly)) else np.zeros(int(on.sum()), np.int64)
+            pm = poly_mat[corner_poly[on_all]] if len(poly_mat) == len(np.unique(corner_poly)) else np.zeros(int(on_all.sum()), np.int64)
             side_row["materials_by_file_index"] = sorted({mat_names[int(i)] for i in np.unique(pm)})
         row[side] = side_row
     out["meshes"][model] = row
 OUT.write_text(json.dumps(out, indent=2) + "\n")
-print("FBX_PAW_COAT " + json.dumps({m: {s: {k: r[s][k] for k in ("share_near_tabby_lt_0.05", "share_near_white_gt_0.95",
+print("FBX_PAW_COAT " + json.dumps({m: {s: {k: r[s][k] for k in ("strands", "share_near_tabby_lt_0.05", "share_near_white_gt_0.95",
                                                                    "back_share_near_tabby", "max_abs_diff_from_recomputed",
                                                                    "materials_by_file_index") if k in r[s]}
                                         for s in ("R", "L") if s in r} | ({"failed": r["failed"]} if "failed" in r else {})

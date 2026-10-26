@@ -26,7 +26,7 @@ and a sun: every collection and object of the source scene is unlinked from it f
 hide_render instead, and its renders still showed the body, the source's palm and the open fingers. The cause was
 not traced in s96; unlinking does not depend on it.
 
-Renders use the source's own materials (M_Hero_GreyTabbyFur, its CoatBlend blend to the white coat) under one sun and
+Renders use the source's own materials (M_Hero_GreyTabbyFur, its CoatBlend blend to the white coat; the pads' M_Hero_RoseNose) under one sun and
 a grey world. They are for reviewing the forms, not for photoreal acceptance.
 """
 from __future__ import annotations
@@ -134,7 +134,12 @@ def paw_object(side, m, empty):
     col.data.foreach_set("color", rgba.reshape(-1).astype(np.float32))
     me.color_attributes.active_color = col
     me.materials.append(bpy.data.materials["M_Hero_GreyTabbyFur"])
+    me.materials.append(bpy.data.materials[P.PAD_MATERIAL])               # the pads (nyaakoto_tp_paws.pad_faces)
+    me.polygons.foreach_set("material_index", m["material_index"].astype(np.int32))
     me.polygons.foreach_set("use_smooth", [True] * len(me.polygons))
+    sn = m.get("strand_normals")
+    if sn is not None and len(sn):                                     # each strand shades as its root's skin
+        RP.set_strand_normals(me, len(m["verts"]) - len(sn), sn)
     obj = bpy.data.objects.new(name, me)
     scene.collection.objects.link(obj)
     obj.shape_key_add(name="Basis", from_mix=False)
@@ -185,7 +190,8 @@ for side in ("R", "L"):
         rows[side]["strands"] = {"count": int(len(st)), "pruned_for_crossing_the_skin": int(pruned)}
         n = len(m["verts"])
         m = dict(m, verts=np.concatenate([m["verts"], sv]), tris=np.concatenate([m["tris"], st + n]),
-                 uvs=np.concatenate([m["uvs"], suv]), coat=np.concatenate([m["coat"], scoat]))
+                 uvs=np.concatenate([m["uvs"], suv]), coat=np.concatenate([m["coat"], scoat]),
+                 material_index=np.concatenate([m["material_index"], np.zeros(len(st), np.int64)]))
         empty = P.empty_points(m["verts"], m["skeleton"])
     print("NYAAKOTO_TP_PAW", side, json.dumps(rows[side]), flush=True)
     if rows[side]["failed"]:

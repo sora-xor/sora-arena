@@ -518,14 +518,17 @@ consistent source, LODs, kamon and rig; furred paws instead of tube fingers; emp
 real FBX and Unreal morph import; every final-combination pose and clearance check again. This is a production
 direction, not photoreal acceptance.
 
-**Status (2026-10-26 18:00 UTC):**
+**Status (2026-10-26 20:16 UTC):**
 - **e8d5b587, built and checked in Blender 5.2.2:** the hero source on A (s101, its validator s102), the runtime rig
   (s103), the LODs (s104), and the runtime and LOD validators (s106, s107). Every gate passed.
 - **e8d5b587, read back in Unreal under --rhi (s110-s114, 7.7):** the sockets, the grips on the clips, every LOD's morph
   deltas, and what each LOD renders. s108, under -nullrhi, crashed in the morph re-export.
-- **r3** (fur strands, the toes' arc, a slimmer thumb and palm; 7.8) is previewed (s115, s116). Its production rig
-  build, s117, failed one gate (StrikeMakko@16, the katana against the holding paws) and wrote nothing. That failure
-  is not yet diagnosed.
+- **r3** (7.8): the toes' arc, a slimmer thumb and palm, pads, and outward fur strands.
+  - Its first production rig, s117, failed one gate on a ray-counting ambiguity and wrote nothing.
+  - s118 and s119 diagnosed it; the tightened parity rule decides such cases only for verified targets.
+  - s124 passed every gate and wrote the runtime body and clips.
+  - Its LODs (s125), validators (s126, s127) and Unreal import and readbacks under --rhi (s128, s129, and the host
+    checks of LOD materials and coat) passed (7.8).
 - Fur is still not resolved (7.9). No photoreal, visual, gameplay or root acceptance.
 
 ### 7.1 The hero source on A
@@ -787,28 +790,116 @@ passes, and both empty fists show the arc. Root's review of s116 (14:38 UTC):
   clearance results (KeyError), so the failure's parts and place were never printed. The rest pose's result was
   lost with it. Fixed: `brief()` handles any entry, and each CHECKED line carries its socket angle errors and the
   detail of any failing gate.
-- **Not yet diagnosed.** On the CPU, with the katana and the r3 paws rebuilt from the FBX and the manifest's frames
-  (the right paw's skin 1.819 mm from the katana, s103's 1.82 mm):
-  - seated exactly, then turned up to ±2° about each socket axis, nothing crosses;
-  - s103 recorded the left paw within 0.015° at that frame;
-  - a replay of the gate's containment test at frames 15-17 finds nothing inside or ambiguous.
-
-  So the failure lies in Blender's own evaluation, which the float64 replay does not reproduce. The next lane window
-  reruns those frames alone (`--check-frames`, which builds, checks, prints in full and writes nothing).
 - **The cost** was 3 h 41 min. Not the strands: on the CPU, katana_vs_holding_paws at frame 16 takes the same with or
   without them. It was `mesh_clearance.bbox_pairs`, whose grid cell the coarser set's 99th-percentile triangle set: the
   katana's 15.3 mm against the paws' 6.9 mm, tens of millions of candidates for 69 overlapping pairs.
   - The cell is now the finer set's. A larger triangle gathers only the cells its bounds reach (or takes the pairwise
     test directly when it would reach more cells than the other set has members), and every candidate takes the exact
     test.
-  - On frame 16's katana and paws, the answers are identical to s117's module, and 7-12× faster.
+  - On frame 16's katana and paws, the answers are identical to s117's module, and 7-12× faster. s124, the whole build,
+    took 49 min 44 s.
+
+**The diagnosis** (s118, s119). `--check-frames` rebuilt the body, checked StrikeMakko@15-17 alone and printed them in
+full.
+- **The failure:** one "ambiguous" containment test, nothing crossing or contained, the separation 1.82 mm.
+- **s119's record:** the same frames on s118's own modules, with every parity disagreement saved raw.
+  - It is a left-paw point 12.05 mm outside katana part 17.
+  - Its first ray grazes an edge of that part, entering and leaving 0.867 µm apart. The Blender backend's
+    `ray_hits` casts again from 10 µm past each hit, so it never saw the exit: 3 hits against the other ray's 0.
+  - Counted numerically in float64 without the step, the ray has 4 crossings. Root's own replay, with eight more
+    directions, agrees (18:49 UTC). float32 is not needed to explain it.
+- **The measurement now** (`mesh_clearance._inside`, only with `--resolve-parity`, which needs `--parity-evidence`).
+  A disagreement is decided by the target's winding number, computed numerically in float64, only when all of these
+  hold:
+  - the target is a closed, coherently oriented manifold: every directed edge once with its reverse, and each
+    vertex's faces one fan (`oriented_manifold`);
+  - the point and the target are finite;
+  - no target face is under 1e-14 m², and the enclosed volume is at least 1e-12 m³;
+  - the point is at least 1 µm away;
+  - the winding number is within 1e-6 of 0 (outside) or of the volume's sign (inside, which still counts as
+    contained).
+
+  Anything else stays ambiguous and fails, and hide tests are never resolved.
+  - Root found the first version's 0.25-wide bands passing a tetrahedron with two faces turned (18:28 UTC). The
+    tests cover that, a reversed tetrahedron, bowties and opposed shells, non-manifold and open targets, non-finite
+    and degenerate data, and points on the surface.
+  - Every disagreement is saved raw (point, target vertices and triangles, both rays' hits, SHA-256-indexed).
+    `replay_parity_evidence.py` replays each from the files alone.
+
+**The visual corrections** (s120-s123, previews):
+- **The pads:** `pad_faces`, M_Hero_RoseNose, on the grip side within 4 mm of the channel. Four toe beans, the
+  dewclaw's pad and a palm pad: six separate pads at LOD0, the same area (38-39.5 cm²) on every LOD.
+- **The strands:**
+  - they were all wound to face into the skin (face · root normal about -0.97). Cycles shaded them as backfaces, and
+    a one-sided Unreal material would cull them. They now face outward and carry their root's skin normal;
+  - they lie flatter and shorter (8-18°, 2.8-5.5 mm; the guard hairs 12-24°, 5.5-8 mm);
+  - they grow from 4.5 mm of the channel, so the fur meets the pads, with every tip still 2 mm off it;
+  - their tips clear the fuzz by 0.1 mm, giving about 5,280 a paw.
+- **Still open** (root, 19:00 UTC): s123's originals still show sparse dark stubble lines over the grey and a broad
+  pale band on the empty toes. They are kept for the actual-material Unreal review; whether they come from the
+  preview's procedural material, its one hard sun and Cycles, or from the coat itself is not separated.
+
+**The production rig, s124** (18:57:18-19:47:02 UTC, exit 0), with `--strike-keys --resolve-parity --parity-evidence`:
+- **Gates:** s103's strike keys and all 137 checked frames pass every gate, and the rest pose does too.
+- **The paws:**
+  - 201,632 vertices in all;
+  - strands, 5,277 and 5,278 a paw, none crossing the skin in either state;
+  - the katana against the holding paws at 1.82 mm, the forearms and paws against the torso at 2.07-19.88 mm.
+- **Parity:** five disagreements (the strike path's second recovery check, StrikeMakko@14, 18, 19 and 22), each decided
+  outside at 10.1-13.8 mm. The replay reproduces every record: merged within 1e-9 m every count is even, and the 10 µm
+  step gives Blender's own counts.
+- **The close renders** now keep only the review sun and the world. IdlePaw_Front shows the grey tabby back and the
+  white toes, and the toes' arc.
+
+**The LODs, validators and Unreal, s125-s129** (19:58:02-20:06:22 UTC, each exit 0; the ledger has every command, PID
+and hash):
+- **s125, the LODs** from s124's blend: LOD1 84,988 vertices and 110,228 triangles, LOD2 31,391 and 55,374, each with
+  its own paws, pads and morphs. LOD1 has 35% of the strand density (1,801 and 1,829 strands), LOD2 none. The LODs it
+  replaced are archived in `s125_lods.originals/`.
+- **s126 and s127, the validators:**
+  - LOD0: 201,632 vertices, 23 materials and 20 bones. The morphs re-derived from the FBX are at the rule within
+    0.00024 mm, with a largest move of 3.01 cm.
+  - The guard's 97 frames round trip within 0.3 cm and 0.018° (as in s106; the gate is 1 cm and 2°), and the strike's
+    25 frames within 0.001 cm and 0.011°.
+  - LOD1's and LOD2's morphs are at the rule within 0.00015 mm and 0.00011 mm.
+- **s128, the Unreal import under --rhi** (wrapper 80093, editor 80155, 19:59:01-20:00:52):
+  - **Sockets:** hand_r_grip 0.0 cm, hand_l_grip 0.00001 cm and gear_saya_l 0.0 cm, all at 0.0°.
+  - **Clip grips:** both grips at the guard's first frame and at the strike's raise (11) and hit (14), within 0.00005 cm
+    and 0.001°.
+  - **Morphs:** PawEmpty_L and PawEmpty_R on 3 LODs. Unreal's runtime vertices are [212573, 92966, 35078].
+  - **Each LOD's saved build settings:** MorphThresholdPosition 0.015 cm, recompute normals on.
+  - **Materials:** 23 slots, M_Hero_RoseNose among them, and 23 sections on every LOD.
+  - **The log** has s110's five Interchange warnings, one HTTP probe timeout and the engine's 19 startup self-test
+    lines, and nothing else at Warning or Error. UnrealTraceServer and zenserver exited on their own.
+- **s129, Unreal's morph deltas** against each LOD's threshold as saved (0.015 cm on all three):
+  - Every vertex the rule moves more than 0.15 mm is at the rule within 0.00075 mm (LOD0 9,932/9,869, LOD1
+    4,158/4,123, LOD2 1,275/1,266).
+  - Unreal dropped 618/621, 245/277 and 82/82 smaller deltas (the largest 0.139-0.150 mm) and kept 0-3 under the
+    threshold.
+  - Nothing outside the paws moved.
+- **What Unreal renders per material** (`check_nyaakoto_lod_materials.py`): on every LOD it equals ours by name. 17 of
+  LOD2's sections are remapped by LODMaterialMap, as in s114.
+- **The coat** (`inspect_fbx_paw_coat.py` v3, in our three FBXs and in Unreal's export of each):
+  - **Matching counts.** The paws' skin corners and strands are equal in both. Every strand survives the import:
+    5,277/5,278 on LOD0, 1,801/1,829 on LOD1.
+  - **The skin.** 78.88-79.46% is tabby and 13.35-13.72% white, and all of the back is tabby. The largest difference
+    from the module's coat is 0.0039; one byte is 0.00392.
+  - **Telling strands from skin.** Unreal's export also isolates 34-122 skin triangles a paw at seams and section
+    edges. A strand is told apart by its reach: 0.9005 mm and more off the skin, against those triangles' 0.6707 mm at
+    most.
+  - **Reader versions.** v1 and v2 classified strands by topology alone; their reports are kept.
+- **Not shown by any of this:** how the fur looks in Unreal's actual materials and light. No third-person
+  actual-material capture exists yet.
 
 ### 7.9 What remains
 
-- **StrikeMakko@16** (7.8): to be diagnosed in Blender, then fixed without relaxing any gate, before the r3 rebuild,
-  its LODs, validators and Unreal readback.
-- **Fur.** The strands break the outline and show the coat's direction, but still read as sparse stubble on a smooth
-  skin (root, 14:38). The pads, the body's fur (forearms, tail, feet) and the fur material's response are open.
+- **Fur.**
+  - Sparse dark stubble lines and a pale band on the empty toes remain in the previews and renders (root, 19:00). They
+    are kept for the actual-material Unreal review, which needs a third-person capture script; none exists yet.
+  - Root's review of s124's full Guard Front and GuardPaws Below originals (with its 19:48 acceptance of the lane)
+    also saw smooth toe surfaces and cuff faceting.
+  - The empty fist's C-shaped opening remains: a closure tight enough to shut it fails the fold margin (below 0.22).
+  - The body's fur (forearms, tail, feet) and the fur material's response are open.
 - **The faceted body and wardrobe** (root, 05:15) are the hero source's blockout primitives. This revision does not
   address them.
 - **The generator's nondeterminism** (7.1).

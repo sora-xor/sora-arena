@@ -46,7 +46,19 @@ so the grip side never moves toward the tsuka.
 coat in Unreal (import_nyaakoto_pbr.py) and in the source render. CoatBlend is the digit weight times a ramp round the
 channel (COAT_TURN): the back of the paw and the toes' first joints are tabby, the toes white from there to their tips,
 the white fading over a few centimetres. The source's white fingers on a tabby paw are its reference. s96's first
-preview, white from the knuckles, read as a white glove. The UVs are at the body's density:
+preview, white from the knuckles, read as a white glove.
+
+**The pads** (pad_faces) are M_Hero_RoseNose, the nose leather's slot: a cat's pads match its nose leather. They lie
+on the grip side, where the paw meets the tsuka and no fur strand grows (nyaakoto_tp_fur keeps strands 6 mm clear of
+the channel). A face is a pad if it is within PAD_REACH of the channel and is one of:
+- a toe bean: on a toe's bulb (|t| at least PAD_TOE_TURN), and on that toe's own surface, at least PAD_CLEFT nearer
+  it than any other mass, so the clefts between the beans stay fur;
+- the dewclaw-thumb's pad, past PAD_THUMB_TURN on the thumb's own surface;
+- the palm pad, on the palm.
+Root's 14:38 UTC review of s116 (2026-10-26): the empty fist showed these faces as "smooth white patches". The rule
+is one of position, so every LOD has the same pads.
+
+The UVs are at the body's density:
 - round the channel and along it, so the texture's fibres run along the toes;
 - planar where a face looks along the channel (the paw's sides).
 
@@ -111,6 +123,11 @@ ARC_S = (0.5 * DIGIT_PITCH, 0.0300)   # m of |s|: the full opening over the midd
 DIGIT_RAMP = 0.006             # m: the knuckle band where the digit weight eases from palm (0) to digit (1)
 COAT_RAMP = 0.009              # m: the same band for the white coat, softer
 COAT_TURN = (100.0, 140.0)     # deg of |t|: the white coat eases in along the toes
+PAD_REACH = 0.0040             # m: a pad face's centre is at most this far outside the channel (the grip side)
+PAD_TOE_TURN = 115.0           # deg of |t|: a toe bean is on the toe's bulb, from here to the tip
+PAD_THUMB_TURN = 85.0          # deg of |t|: the thumb's pad, from here to its tip
+PAD_CLEFT = 0.0025             # m: a bean's face is this much nearer its own toe than any other mass
+PAD_MATERIAL = "M_Hero_RoseNose"
 # The fuzz: a slight breakup of the silhouette, not fur. s96's first preview at 0.9 + 0.6 mm on 4.5 and 9 mm scales
 # read as lumps. The fur is the material's.
 FUZZ = {"amp": 0.0004, "scale": 0.0060, "broad_amp": 0.0004, "broad_scale": 0.0140, "clear": 0.004}
@@ -323,6 +340,26 @@ def digit_weight(points, skel, ramp=DIGIT_RAMP):
     palm, dig = masses(np.atleast_2d(points), skel)
     x = np.clip((palm - dig + ramp) / (2.0 * ramp), 0.0, 1.0)
     return x * x * (3.0 - 2.0 * x)
+
+
+def pad_faces(verts, tris, skel):
+    """The pads (see the module's notes): one bool per face, by its centre."""
+    fr = skel["frame"]
+    c = np.asarray(verts, np.float64)[np.asarray(tris)].mean(1)
+    near = channel_sdf(c, fr) <= PAD_REACH
+    turn = turn_of(c, fr)
+    chains = np.stack([_chain(c, d) for d in skel["digits"]] + [_chain(c, skel["thumb"])], 1)   # 4 toes, then the thumb
+    pl = skel["palm"]
+    palm = FP.ellipsoid(c, pl["c"], pl["axes"], pl["r"])
+    order = np.argsort(chains, 1)
+    nearest = order[:, 0]
+    own = np.take_along_axis(chains, nearest[:, None], 1)[:, 0]
+    second = np.minimum(np.take_along_axis(chains, order[:, 1:2], 1)[:, 0], palm)
+    on_own = second - own >= PAD_CLEFT
+    toe = near & (nearest < 4) & on_own & (turn >= PAD_TOE_TURN)
+    thumb = near & (nearest == 4) & on_own & (turn >= PAD_THUMB_TURN)
+    palm_pad = near & (digit_weight(c, skel) < 0.5)
+    return toe | thumb | palm_pad
 
 
 def empty_points(points, skel):
@@ -587,5 +624,6 @@ def mesh_paw(arm, palm_radii, step=LOD_STEPS[0], smooth=6, seed=7, fuzz=True):
         free = np.clip(field(verts + probe * n) / probe, 0.0, 1.0)
         verts = verts + (fuzz_amount(verts, skel, seed) * free)[:, None] * n
     coat = digit_weight(verts, skel, COAT_RAMP) * ease(*COAT_TURN, turn_of(verts, fr))
+    pad = pad_faces(verts, tris, skel)
     return {"verts": verts, "tris": tris, "uvs": corner_uvs(verts, tris, fr), "coat": coat[tris], "skeleton": skel,
-            "step": step}
+            "step": step, "pad": pad, "material_index": pad.astype(np.int64)}

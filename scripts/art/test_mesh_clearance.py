@@ -259,6 +259,145 @@ class Measure(unittest.TestCase):
         self.assertEqual(r["contained_parts"][0][:2], ["cube", "tetra"])
 
 
+class ParityResolution(unittest.TestCase):
+    """A containment test whose two rays disagree (s117 and s118's StrikeMakko@16: the Blender backend's 10 um step
+    past each hit skipped an exit 0.867 um after an entry, for a point 12.05 mm outside the katana) is logged and left
+    ambiguous, unless resolved by the winding number. Resolved, a point inside is still contained, and a point too
+    near the surface stays ambiguous."""
+
+    class Miscount(MC.BruteBackend):
+        """The brute backend, its two rays made to disagree: the first counts one surface more whenever the true
+        counts agree."""
+
+        def ray_hits(self, tree, origin, direction):
+            n = super().ray_hits(tree, origin, direction)
+            if np.allclose(direction, MC.RAYS[0]):
+                other = super().ray_hits(tree, origin, MC.RAYS[1])
+                return n + 1 if n % 2 == other % 2 else n
+            return n
+
+    def test_winding_number_of_a_closed_surface(self):
+        v, f = MC.tetra((0.0, 0.0, 0.0), 0.05)
+        self.assertAlmostEqual(abs(MC.winding_number(np.zeros(3), v[f])), 1.0, places=9)
+        self.assertAlmostEqual(MC.winding_number(np.array([0.2, 0.0, 0.0]), v[f]), 0.0, places=9)
+        lo, hi = v.min(0), v.max(0)
+        corner = lo + 0.05 * (hi - lo)                 # inside the tetra's bounds, outside the tetra
+        self.assertAlmostEqual(MC.winding_number(corner, v[f]), 0.0, places=9)
+
+    def scene(self, centre):
+        big, small = MC.tetra((0.0, 0.0, 0.0), 0.05), MC.tetra(centre, 0.002)
+        return (*tset(big, "big"), *tset(small, "small"))
+
+    def test_off_a_disagreement_is_ambiguous_and_logged(self):
+        v = MC.tetra((0.0, 0.0, 0.0), 0.05)[0]
+        corner = v.min(0) + 0.05 * (v.max(0) - v.min(0))
+        r = MC.measure(self.Miscount(), *self.scene(corner))
+        self.assertEqual((r["ambiguous"], r["contained"], r["parity_disagreements"]), (1, 0, 1))
+        self.assertEqual(r["parity_resolution"], "off")
+        self.assertFalse(MC.passes(r))
+        self.assertIsNone(r["parity_disagreement_at"][0]["verdict"])
+
+    def test_resolved_outside_passes_and_inside_is_still_contained(self):
+        v = MC.tetra((0.0, 0.0, 0.0), 0.05)[0]
+        corner = v.min(0) + 0.05 * (v.max(0) - v.min(0))
+        out = MC.measure(self.Miscount(), *self.scene(corner), resolve_parity=True)
+        self.assertEqual((out["ambiguous"], out["contained"], out["parity_resolved_outside"]), (0, 0, 1))
+        self.assertTrue(MC.passes(out))
+        inside = MC.measure(self.Miscount(), *self.scene((0.0, 0.0, 0.0)), resolve_parity=True)
+        self.assertEqual((inside["ambiguous"], inside["contained"], inside["parity_resolved_inside"]), (0, 1, 1))
+        self.assertFalse(MC.passes(inside))
+
+    def decide(self, mesh, p, name="t"):
+        """_inside with resolve, its two rays forced to disagree: (verdict, the logged record)."""
+        s, pts = tset(mesh, name)
+        log = []
+        got = MC._inside(self.Miscount(), {}, "k", s, pts, 0, np.asarray(p, np.float64), resolve=True, log=log, name=name)
+        return got, log[0], s
+
+    def test_root_counterexample_mixed_orientation_stays_ambiguous(self):
+        """Root, 18:28 UTC: two faces turned, still closed; the winding number at its inside is about 0."""
+        v, f = MC.tetra((0.0, 0.0, 0.0), 0.05)
+        f = f.copy()
+        f[:2] = f[:2, ::-1]
+        got, rec, s = self.decide((v, f), (0.0, 0.0, 0.0))
+        self.assertTrue(bool(s.closed[0]))
+        self.assertFalse(bool(s.oriented[0]))
+        self.assertIsNone(got)
+        self.assertFalse(rec["decidable"])
+
+    def test_reversed_orientation_decides_by_its_sign(self):
+        v, f = MC.tetra((0.0, 0.0, 0.0), 0.05)
+        f = f[:, ::-1].copy()                                   # every face turned: coherent, inward
+        got, rec, s = self.decide((v, f), (0.0, 0.0, 0.0))
+        self.assertTrue(bool(s.oriented[0]))
+        self.assertLess(rec["signed_volume_m3"], 0.0)
+        self.assertEqual(rec["nearest_integer"], -1)
+        self.assertLess(rec["off_integer"], 1e-9)
+        self.assertIs(got, True)                                 # inside: contained, the gate still fails
+        corner = v.min(0) + 0.05 * (v.max(0) - v.min(0))
+        got, rec, _ = self.decide((v, f), corner)
+        self.assertIs(got, False)
+        self.assertEqual(rec["nearest_integer"], 0)
+
+    def test_bowtie_and_opposed_shells_stay_ambiguous(self):
+        a, fa = MC.tetra((0.0, 0.0, 0.0), 0.05)
+        shift = a[0] - (-a[0])                                   # a second tetra touching the first at a[0] only
+        b, fb = MC.tetra((0.0, 0.0, 0.0), 0.05)
+        b = -b + shift
+        for flip in (False, True):
+            gb = fb[:, ::-1] if flip else fb[:, [0, 2, 1]]       # mirrored: [0, 2, 1] restores its outward winding
+            v = np.concatenate([a, b[1:]])                      # b[0] is a[0]
+            remap = np.array([0] + list(range(4, 7)))
+            f = np.concatenate([fa, remap[gb]])
+            s, _ = tset((v, f), "bowtie")
+            with self.subTest(opposed=flip):
+                self.assertEqual(len(s.closed), 1)
+                self.assertTrue(bool(s.closed[0]))
+                self.assertFalse(bool(s.oriented[0]))
+                got, rec, _ = self.decide((v, f), (0.0, 0.0, 0.0))
+                self.assertIsNone(got)
+
+    def test_non_manifold_and_open_surfaces_are_never_decided(self):
+        v, f = MC.tetra((0.0, 0.0, 0.0), 0.05)
+        fin_v = np.concatenate([v, [[0.2, 0.2, 0.2]]])
+        fin_f = np.concatenate([f, [[0, 1, 4]]])                 # a third face on edge 0-1
+        self.assertFalse(MC.oriented_manifold(fin_f))
+        self.assertFalse(MC.oriented_manifold(f[:3]))            # open: one face short
+        # an open target is never a containment candidate, so no disagreement can arise
+        r = MC.measure(self.Miscount(), *tset((v, f[:3]), "open"), *tset(MC.tetra((0.0, 0.0, 0.0), 0.002), "small"),
+                       resolve_parity=True)
+        self.assertEqual((r["ambiguous"], r["contained"], r["parity_disagreements"]), (0, 0, 0))
+
+    def test_non_finite_and_degenerate_targets_stay_ambiguous(self):
+        v, f = MC.tetra((0.0, 0.0, 0.0), 0.05)
+        got, rec, _ = self.decide((v, f), (np.nan, 0.0, 0.0))
+        self.assertIsNone(got)
+        self.assertFalse(rec["finite"])
+        bad = v.copy()
+        bad[3, 0] = np.inf
+        got, rec, _ = self.decide((bad, f), (0.0, 0.0, 0.0))
+        self.assertIsNone(got)
+        flat = v.copy()
+        flat[:, 2] = 0.0                                        # every vertex in one plane: no volume
+        got, rec, _ = self.decide((flat, f), (0.0, 0.0, 0.01))
+        self.assertIsNone(got)
+        self.assertLess(abs(rec["signed_volume_m3"]), MC.VOLUME_MIN)
+        same = v.copy()
+        same[3] = same[2]                                       # two vertices coincide: zero-area faces
+        got, rec, _ = self.decide((same, f), (0.0, 0.0, 0.0))
+        self.assertIsNone(got)
+
+    def test_a_point_at_the_surface_stays_ambiguous(self):
+        big = MC.tetra((0.0, 0.0, 0.0), 0.05)
+        bset, bpts = tset(big, "big")
+        face = big[0][big[1][0]]
+        p = face.mean(0)                               # on a face of the big tetra
+        cache, log = {}, []
+        got = MC._inside(self.Miscount(), cache, "k", bset, bpts, 0, p, resolve=True, log=log, name="big")
+        self.assertIsNone(got)
+        self.assertLess(log[0]["gap_m"], MC.WINDING_CLEAR)
+
+
 class BroadPhase(unittest.TestCase):
     """The grid broad-phase finds the pairwise bounds test's own pairs, and the separation it bounds is the pairwise
     loop's (s103 found that loop |a| x |b|: minutes a check with the furred paws)."""

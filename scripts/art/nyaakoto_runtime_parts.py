@@ -217,8 +217,10 @@ def palm_radii(by_name, sign):
 def fur_paw(side, arms, by_name, step=TPP.LOD_STEPS[0], strands=TPF.LOD_DENSITY[0]):
     """The furred paw for one side as an unlinked Blender part, PawFur_{sign}: its skin (nyaakoto_tp_paws) and its fur
     strands (nyaakoto_tp_fur, this share of LOD0's density), its vertices in world metres (identity transform), the
-    UVMap and CoatBlend per corner, M_Hero_GreyTabbyFur, smooth shading. Returns the object and the mesh: the skin's
-    own arrays under "skin_*", the whole part's under verts and tris (its skeleton gives the empty fist)."""
+    UVMap and CoatBlend per corner, smooth shading. Its slots are M_Hero_GreyTabbyFur (the skin and strands) and the
+    pads' M_Hero_RoseNose (nyaakoto_tp_paws.pad_faces), both already among the body's 23. Returns the object and the
+    mesh: the skin's own arrays under "skin_*", the whole part's under verts and tris (its skeleton gives the empty
+    fist)."""
     arm = arms[side]
     sign = arm["sign"]
     m = TPP.mesh_paw(arm, palm_radii(by_name, sign), step=step)
@@ -227,7 +229,8 @@ def fur_paw(side, arms, by_name, step=TPP.LOD_STEPS[0], strands=TPF.LOD_DENSITY[
     n = len(m["verts"])
     m.update(skin_verts=m["verts"], skin_tris=m["tris"], strands=int(len(st)), strands_pruned=int(pruned),
              strand_share=strands, verts=np.concatenate([m["verts"], sv]), tris=np.concatenate([m["tris"], st + n]),
-             uvs=np.concatenate([m["uvs"], suv]), coat=np.concatenate([m["coat"], scoat]))
+             uvs=np.concatenate([m["uvs"], suv]), coat=np.concatenate([m["coat"], scoat]),
+             material_index=np.concatenate([m["material_index"], np.zeros(len(st), np.int64)]))
     name = f"PawFur_{sign}"
     me = bpy.data.meshes.new(name)
     me.from_pydata(m["verts"].tolist(), [], m["tris"].tolist())
@@ -241,10 +244,24 @@ def fur_paw(side, arms, by_name, step=TPP.LOD_STEPS[0], strands=TPF.LOD_DENSITY[
     col.data.foreach_set("color", rgba.reshape(-1).astype(np.float32))
     me.color_attributes.active_color = col
     me.materials.append(bpy.data.materials[FUR_PAW_MATERIAL])
+    me.materials.append(bpy.data.materials[TPP.PAD_MATERIAL])
+    me.polygons.foreach_set("material_index", m["material_index"].astype(np.int32))
     me.polygons.foreach_set("use_smooth", [True] * len(me.polygons))
+    set_strand_normals(me, len(m["skin_verts"]), m.get("strand_normals"))
     obj = bpy.data.objects.new(name, me)
     obj["provenance"] = "scripts/art/nyaakoto_tp_paws.py (mesh_paw) on the hero source's arm joints and palm"
     return obj, m
+
+
+def set_strand_normals(me, skin_vertices, strand_normals):
+    """Each fur strand's vertices take its root's skin normal as their custom normal (nyaakoto_tp_fur's notes), so a
+    strand shades as the coat beneath it; the skin keeps its own normals (a zero custom normal keeps Blender's)."""
+    if strand_normals is None or not len(strand_normals):
+        return
+    normals = np.zeros((len(me.vertices), 3))
+    normals[skin_vertices:] = strand_normals
+    assert len(normals) - skin_vertices == len(strand_normals)
+    me.normals_split_custom_set_from_vertices(normals.tolist())
 
 
 def fur_paw_record(side, arms, m):

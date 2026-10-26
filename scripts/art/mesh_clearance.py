@@ -90,6 +90,44 @@ def closed_islands(tris, island):
     return ok
 
 
+def oriented_manifold(tris):
+    """Whether triangles (one island's) are a closed, coherently oriented 2-manifold, by topology alone:
+    - no triangle repeats a vertex;
+    - every directed edge occurs once, and its reverse once: each edge is on two faces that run it opposite ways;
+    - every vertex's faces form one fan. Its link edges (b to c for each face (v, b, c)) make a single cycle, so two
+      surfaces meeting at a vertex (a bowtie, or two opposed shells touching) fail.
+    With the island's vertex connectivity, that makes it one closed surface whose winding number is an integer field.
+    Root's 18:28 UTC counterexample (2026-10-26), a tetrahedron with two faces turned, passes closed_islands and fails
+    here."""
+    t = np.asarray(tris, np.int64).reshape(-1, 3)
+    if not len(t) or (t[:, 0] == t[:, 1]).any() or (t[:, 1] == t[:, 2]).any() or (t[:, 0] == t[:, 2]).any():
+        return False
+    directed = np.concatenate([t[:, [0, 1]], t[:, [1, 2]], t[:, [2, 0]]])
+    n = int(t.max()) + 1
+    key = directed[:, 0] * n + directed[:, 1]
+    if len(np.unique(key)) != len(key):
+        return False
+    if not np.isin(directed[:, 1] * n + directed[:, 0], key).all():
+        return False
+    link = {}
+    for a, b, c in t.tolist():
+        for v, x, y in ((a, b, c), (b, c, a), (c, a, b)):
+            link.setdefault(v, {})[x] = y
+    for nxt in link.values():
+        start = next(iter(nxt))
+        x, steps = start, 0
+        while True:
+            x = nxt.get(x)
+            steps += 1
+            if x is None or steps > len(nxt):
+                return False
+            if x == start:
+                break
+        if steps != len(nxt):
+            return False
+    return True
+
+
 class TriSet:
     """A set's topology, fixed across poses: its triangles (indices into a full point array), one part name per
     triangle, and its islands. Positions come with each measurement."""
@@ -104,6 +142,10 @@ class TriSet:
         assert len(self.names) == len(self.tris)
         self.island = islands(self.tris)
         self.closed = closed_islands(self.tris, self.island)
+        # Per island: a closed, coherently oriented manifold (oriented_manifold), the only kind whose winding number
+        # may decide a containment test the rays leave undecided (_inside).
+        self.oriented = np.array([bool(c) and oriented_manifold(self.tris[self.island == k])
+                                  for k, c in enumerate(self.closed)], bool)
         self.first_vertex = np.zeros(len(self.closed), np.int64)
         seen = np.zeros(len(self.closed), bool)
         for t, isl in zip(self.tris[:, 0].tolist(), self.island.tolist()):
@@ -567,9 +609,13 @@ class BruteBackend:
         return any(segment_triangle(p0, p1, *pa[f]) is not None for f in fa)
 
     def ray_hits(self, tree, origin, direction):
+        return len(self.ray_hit_list(tree, origin, direction))
+
+    def ray_hit_list(self, tree, origin, direction):
+        """Every hit the count takes, as (distance along the ray, face index), nearer than 1e-9 m merged."""
         pa, fa = tree
-        ts = sorted(t for t in (ray_triangle_t(origin, direction, *pa[f]) for f in fa) if t is not None)
-        return sum(1 for i, t in enumerate(ts) if i == 0 or t - ts[i - 1] > 1e-9)
+        ts = sorted((t, f) for f, t in enumerate(ray_triangle_t(origin, direction, *pa[g]) for g in fa) if t is not None)
+        return [(float(t), int(f)) for i, (t, f) in enumerate(ts) if i == 0 or t - ts[i - 1][0] > 1e-9]
 
 
 class BlenderBackend:
@@ -605,6 +651,19 @@ class BlenderBackend:
             o = loc + d * step
         return n
 
+    def ray_hit_list(self, tree, origin, direction, step=1e-5, cap=512):
+        """ray_hits' own casts, each hit as (distance from origin, face index, location): the evidence of a count."""
+        start = self.vector(tuple(map(float, origin)))
+        o, d = start.copy(), self.vector(tuple(map(float, direction))).normalized()
+        out = []
+        while len(out) < cap:
+            loc, _normal, face, _dist = tree.ray_cast(o, d)
+            if loc is None:
+                break
+            out.append((float((loc - start).length), int(face), [float(x) for x in loc]))
+            o = loc + d * step
+        return out
+
 
 # --- The measurement ------------------------------------------------------------------------------------------------
 def _bounds(pts, tset):
@@ -616,14 +675,85 @@ def _bounds(pts, tset):
     return lo, hi
 
 
-def _inside(backend, cache, key, tset, pts, isl, p):
-    """Ray parity of p against closed island isl: True, False, or None (the two directions disagree)."""
+WINDING_CLEAR = 1e-6       # m: nearer the island than this, the winding number decides nothing
+WINDING_TOL = 1e-6         # turns: how near an integer a computed winding number must be to decide
+VOLUME_MIN = 1e-12         # m3: a target enclosing less is degenerate
+AREA_MIN = 1e-14           # m2: a target triangle smaller is degenerate
+
+
+def winding_number(p, tri_pts):
+    """The winding number of a closed triangle surface ((n, 3, 3)) about p, computed numerically in float64: the
+    triangles' solid angles (Van Oosterom and Strackee) summed over 4 pi. For a closed, coherently oriented surface
+    it is an integer up to rounding (the orientation's sign inside, 0 outside); near the surface it is
+    ill-conditioned."""
+    a, b, c = (np.asarray(tri_pts, np.float64)[:, k] - np.asarray(p, np.float64) for k in range(3))
+    la, lb, lc = (np.linalg.norm(x, axis=1) for x in (a, b, c))
+    num = np.einsum("ij,ij->i", a, np.cross(b, c))
+    den = la * lb * lc + _dot(a, b) * lc + _dot(b, c) * la + _dot(c, a) * lb
+    return float(np.sum(2.0 * np.arctan2(num, den)) / (4.0 * math.pi))
+
+
+def _inside(backend, cache, key, tset, pts, isl, p, resolve=False, log=None, name=None):
+    """Ray parity of p against closed island isl: True, False, or None (undecided).
+
+    The two rays decide when their parities agree. When they disagree, the result is None unless resolve is set, and
+    resolve decides only when every one of these holds; otherwise it stays None and the gate fails as before:
+    - the island is a closed, coherently oriented manifold (TriSet.oriented: oriented_manifold);
+    - p and the island's vertices are finite, no island triangle is degenerate (AREA_MIN), and the island encloses a
+      volume of at least VOLUME_MIN, whose sign is the orientation's;
+    - p is at least WINDING_CLEAR from the island;
+    - the island's winding number about p, computed numerically in float64, is within WINDING_TOL of 0 (outside) or
+      of the orientation's sign (inside).
+
+    Each disagreement is logged with the evidence an independent float64 replay needs: the point, the island's
+    vertices and triangles as evaluated, both rays' hit lists, and every quantity above.
+
+    Why: s117 and s118 failed StrikeMakko@16 on one disagreement. s119 recorded it: a left-paw point 12.05 mm
+    outside katana part 17. Its first ray grazes an edge of that part, entering and leaving 0.867 um apart. The
+    Blender backend's ray_hits casts again from 1e-5 m past each hit, so it never saw the exit: 3 hits, odd. Counted
+    in float64 without that step, the ray has 4, and the other ray 0 (replay_parity_evidence.py, and root's own
+    replay with eight more directions). Root (18:28 UTC, 2026-10-26) also found the first version's 0.25-wide bands
+    passing a tetrahedron with two faces turned, whose winding number inside is 0: the orientation check and the
+    near-integer tolerance close that."""
     if key not in cache:
         cache[key] = backend.tree(pts, tset.tris[tset.island == isl])
-    hits = [backend.ray_hits(cache[key], p, d) for d in RAYS]
-    if hits[0] % 2 != hits[1] % 2:
-        return None
-    return bool(hits[0] % 2)
+        cache[("finite", key)] = bool(np.isfinite(np.asarray(pts, np.float64)[np.unique(tset.tris[tset.island == isl])]).all())
+    p = np.asarray(p, np.float64)
+    finite = bool(np.isfinite(p).all() and cache[("finite", key)])
+    hits = [backend.ray_hits(cache[key], p, d) for d in RAYS] if finite else [-1, -1]
+    if finite and hits[0] % 2 == hits[1] % 2:
+        return bool(hits[0] % 2)
+    # The rays disagree, or the data is not finite (no ray decides anything then): undecided unless resolved below.
+    faces = tset.tris[tset.island == isl]
+    used, local = np.unique(faces, return_inverse=True)
+    verts = np.asarray(pts, np.float64)[used]
+    local = local.reshape(-1, 3)
+    tri = verts[local]
+    area = 0.5 * np.linalg.norm(np.cross(tri[:, 1] - tri[:, 0], tri[:, 2] - tri[:, 0]), axis=1) if finite else np.zeros(1)
+    volume = float(np.einsum("ij,ij->i", tri[:, 0], np.cross(tri[:, 1], tri[:, 2])).sum() / 6.0) if finite else 0.0
+    gap = w = n = off = None
+    if finite:
+        q = np.repeat(p[None], len(tri), 0)
+        gap = float(np.linalg.norm(closest_point_triangle_v(q, tri[:, 0], tri[:, 1], tri[:, 2]) - q, axis=1).min())
+        w = winding_number(p, tri)
+        n = int(round(w))
+        off = abs(w - n)
+    sign = 1 if volume > 0 else -1
+    checks = {"oriented_manifold": bool(tset.oriented[isl]), "finite": finite,
+              "min_area_m2": float(area.min()), "signed_volume_m3": volume,
+              "gap_m": gap, "winding": w, "nearest_integer": n, "off_integer": off}
+    decidable = (finite and checks["oriented_manifold"] and float(area.min()) >= AREA_MIN and abs(volume) >= VOLUME_MIN
+                 and gap is not None and gap >= WINDING_CLEAR and off is not None and off <= WINDING_TOL
+                 and n in (0, sign))
+    verdict = (n == sign) if (resolve and decidable) else None
+    if log is not None:
+        rays = []
+        if finite and hasattr(backend, "ray_hit_list"):
+            rays = [backend.ray_hit_list(cache[key], p, d) for d in RAYS]
+        log.append({"point": p, "island": name() if callable(name) else name, "island_index": int(isl),
+                    "vertices": verts, "triangles": local, "rays": np.array(RAYS), "ray_hits": [int(h) for h in hits],
+                    "ray_hit_lists": rays, "decidable": bool(decidable), "verdict": verdict, **checks})
+    return verdict
 
 
 def _top(counter, n=8):
@@ -651,13 +781,20 @@ def _tree(backend, tset, pts_full, pos):
     return trees[key][2]
 
 
-def measure(backend, set_a, pts_a, set_b, pts_b, limit=0.10, hide=None, allowed=(), to_report=lambda p: p):
+def measure(backend, set_a, pts_a, set_b, pts_b, limit=0.10, hide=None, allowed=(), to_report=lambda p: p,
+            resolve_parity=False, evidence=None):
     """Crossings, containment and separation between set_a and set_b at these positions (full point arrays, each
     indexed as its set's triangles are).
     - limit: the exact separation is measured up to it; 0 skips it.
     - hide: (TriSet, full points) of closed volumes whose inside is not seen; a crossing inside one counts as hidden.
     - allowed: part-name prefixes in set_b whose crossings are intended (the obi's tuck), counted as allowed.
-    - to_report maps a position to the report's frame."""
+    - to_report maps a position to the report's frame.
+    - resolve_parity: a containment test whose two rays disagree may be decided by the winding number, on the
+      conditions _inside lists; otherwise, and always when off, it stays ambiguous. Hide tests are never resolved: an
+      undecided hide stays not hidden. Every disagreement is reported either way (parity_disagreement_at).
+    - evidence: a list to which each disagreement's raw record is added, the island's evaluated vertices and
+      triangles and both rays' hits included, for an independent replay."""
+    parity_log = []
     pa, pb = set_a.positions(pts_a), set_b.positions(pts_b)
     ta, tb = _tree(backend, set_a, pts_a, pa), _tree(backend, set_b, pts_b, pb)
     pairs = [tuple(map(int, ij)) for ij in backend.crossings(ta, tb)]
@@ -685,8 +822,9 @@ def measure(backend, set_a, pts_a, set_b, pts_b, limit=0.10, hide=None, allowed=
         lo, hi = np.minimum(p0, p1), np.maximum(p0, p1)
         for h in np.nonzero(hset.closed & np.all((hlo <= lo) & (hi <= hhi), 1))[0]:
             key_h = ("h", int(h))
-            if (_inside(backend, hide_cache, key_h, hset, hp, int(h), p0) is True
-                    and _inside(backend, hide_cache, key_h, hset, hp, int(h), p1) is True
+            label = lambda: "hide:" + str(hset.names[hset.island == h][0])  # noqa: E731
+            if (_inside(backend, hide_cache, key_h, hset, hp, int(h), p0, log=parity_log, name=label) is True
+                    and _inside(backend, hide_cache, key_h, hset, hp, int(h), p1, log=parity_log, name=label) is True
                     and not backend.segment_hits(hide_cache[key_h], p0, p1)):
                 return True
         return False
@@ -714,7 +852,9 @@ def measure(backend, set_a, pts_a, set_b, pts_b, limit=0.10, hide=None, allowed=
                 pair = (int(k), isl) if flip else (isl, int(k))
                 if pair in crossing_islands:
                     continue
-                inside = _inside(backend, cache, (flip, int(k)), dst, dp, int(k), p)
+                inside = _inside(backend, cache, (flip, int(k)), dst, dp, int(k), p, resolve=resolve_parity,
+                                 log=parity_log, name=lambda: str(src.names[src.island == isl][0]) + " in "
+                                 + str(dst.names[dst.island == k][0]))
                 if inside is False:
                     continue
                 name_src = str(src.names[src.island == isl][0])
@@ -725,6 +865,8 @@ def measure(backend, set_a, pts_a, set_b, pts_b, limit=0.10, hide=None, allowed=
                 bucket[key] = bucket.get(key, 0) + 1
     sep = (exact_separation(pa, set_a.tris, pb, set_b.tris, limit) if limit > 0 else
            {"separation_m": None, "at": None, "kind": "not measured", "pairs_measured": 0})
+    if evidence is not None:
+        evidence.extend(parity_log)
     return {
         "crossing_pairs_visible": int(sum(visible.values())),
         "crossing_pairs_hidden": int(sum(hidden.values())), "crossing_pairs_allowed": int(sum(allowed_n.values())),
@@ -741,6 +883,17 @@ def measure(backend, set_a, pts_a, set_b, pts_b, limit=0.10, hide=None, allowed=
         "separation_kind": sep["kind"], "separation_pairs_measured": sep["pairs_measured"],
         "separation_at": None if sep["at"] is None else [[round(float(v), 2) for v in to_report(q)] for q in sep["at"]],
         "separation_limit_m": limit,
+        "parity_resolution": "winding" if resolve_parity else "off",
+        "parity_disagreements": len(parity_log),
+        "parity_resolved_outside": sum(1 for e in parity_log if e["verdict"] is False),
+        "parity_resolved_inside": sum(1 for e in parity_log if e["verdict"] is True),
+        # Every disagreement, at full precision; the arrays (the island as evaluated, both rays' hits) go to evidence.
+        "parity_disagreement_at": [{"point_m": [float(v) for v in e["point"]], "at_report": [float(v) for v in to_report(e["point"])],
+                                    "test": e["island"], "island_index": e["island_index"], "ray_hits": e["ray_hits"],
+                                    "decidable": e["decidable"], "verdict": e["verdict"],
+                                    **{k: e[k] for k in ("oriented_manifold", "finite", "min_area_m2", "signed_volume_m3",
+                                                         "gap_m", "winding", "nearest_integer", "off_integer")}}
+                                   for e in parity_log],
     }
 
 
