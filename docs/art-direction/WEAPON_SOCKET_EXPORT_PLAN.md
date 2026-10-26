@@ -231,3 +231,48 @@ printed; the editor's pid was not sampled).
     0°: atan2(0, 0).
   - The gate now counts such corners apart and fails them (`tangent_degenerate_mismatches`), and `detail=` keeps
     the worst corners in full. Next run: s88.
+
+**s88, the final probe** (wrapper 53324, UnrealEditor-Cmd 53396, 04:38:06-04:39:31Z; editor exit 0, wrapper 1). Its
+readback is in `data/runtime_weapon_ue_socket_probe.json`, with every run's command, pid, times and exit.
+- **Sockets:** all 83 corrected sockets pass, with signed forward, right and up, unit scale and the record's
+  positions. Every original fails as predicted.
+- **The model** matches every axis of all 52 imports.
+- **same_import passes for 25 of 26 pairs.** W11 fails at 2 of its 38,556 corners, near (22.1, -1.6, 4.9) cm:
+  - the original import, and its control, hold a zero (degenerate) tangent there;
+  - the corrected import holds a valid unit tangent;
+  - the normals, positions and UVs are identical;
+  - this comes with the one render vertex that Unreal splits in the corrected import. Original against control is
+    exact, so the convention change causes it. Why the split falls there, a welding threshold tipped by the 8.65e-6°
+    turn, is inferred and not measured.
+- **The other tangent differences** are between valid unit vectors: up to 3 8-bit steps, 1.43°, in W01; at most
+  101 corners in any asset.
+- **Material slots** are equal and **collision** is 0 and 0 for every pair.
+
+## 9. Conclusions and what root decides
+
+**What is measured:**
+- In real UE 5.8, with root's SM_Weapon_XX import options, every one of the 83 weapon sockets imports at scale 1
+  on its authored axes from the corrected files, where the originals import at scale 100 with forward and up
+  reversed.
+- The model's predictions held for all 26 files before and after the fix. The screen can therefore gate later
+  exports and rebuilds on the CPU.
+- **The source FBX geometry is unchanged:** vertices exactly ×100; indices, edges, normals, UVs, materials and
+  smoothing identical. The exception is the tangent basis, which Blender's exporter does not reproduce from one
+  export to the next (at most 7.1e-6), and which Unreal ignores.
+- **Unreal's render data** holds the same triangles, UVs and materials.
+  - Positions are within 3.2e-5 cm, and normals within one 8-bit step.
+  - The derived tangents differ by at most 3 steps, plus W11's two corners, which go from a degenerate tangent to
+    a defined one.
+  - W11 and W13 each have one more render vertex.
+  - All of these come from removing the original's inexact 179.999991° node turn (s86 to s88, through the
+    control).
+
+**What is not covered:** LOD1 and LOD2, which have no sockets and were not rewritten; any render; runtime adoption.
+
+**For root:**
+1. Whether W11's two corners (a tangent that is now defined) and the one-step and few-step tangent flips are
+   acceptable.
+2. The base for the apply (section 6.3).
+3. W18 with or without adopting my rebuild.
+4. Then `--apply`, the screen, `create_runtime_weapon_validation.py`, a probe of the in-place files, and root's own
+   adoption.
