@@ -1,11 +1,25 @@
 #include "SoraTenementRules.h"
 #include "SoraTenementDefenseRules.h"
+#include "SoraTenementFindRules.h"
 #include <cassert>
 #include <iomanip>
 #include <iostream>
+#include <limits>
 
 int main()
 {
+    namespace F=SoraTenementFindRules;
+    for(int I=0;I<F::Count;++I)
+    {
+        const auto P=F::Points[I];
+        assert(F::WithinReach(I,true,-2800,P.Y,2.15));
+        assert(F::WithinReach(I,true,P.X+F::ReachCm,P.Y,0));
+        assert(!F::WithinReach(I,true,P.X+F::ReachCm+.01,P.Y,0));
+        assert(!F::WithinReach(I,false,-2800,P.Y,2.15));
+        for(double Z:{-700.,-8.01,8.01,300.})assert(!F::WithinReach(I,true,-2800,P.Y,Z));
+        assert(!F::WithinReach(I,true,std::numeric_limits<double>::quiet_NaN(),P.Y,0));
+    }
+    assert(!F::WithinReach(-1,true,0,0,0)&&!F::WithinReach(2,true,0,0,0));
     namespace D=SoraTenementDefenseRules;
     // Court, alley, rounded capsule corners, street, upper air and shaft.
     assert(D::InKitchen(-2300,3500,90.15,34,88));
@@ -42,6 +56,12 @@ int main()
         const auto P=D::FlightPoint(M,L);
         if(Comma)std::cout<<',';Comma=true;
         std::cout<<'['<<M<<','<<L<<','<<P.X<<','<<P.Y<<','<<P.Z<<']';
+    }
+    std::cout<<"],\"finds\":[";
+    for(int I=0;I<F::Count;++I)
+    {
+        const auto P=F::Points[I];if(I)std::cout<<',';
+        std::cout<<'['<<P.X<<','<<P.Y<<','<<P.Z<<']';
     }
     std::cout<<"]}\n";
 }

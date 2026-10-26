@@ -510,6 +510,9 @@ private:
     void ResolveWoodArrow(ASoraProjectile& Arrow,const FHitResult* Hit);
     void TickGalleryPois();
     bool InteractGalleryPoi(ASoraPlayerCharacter& Player);
+    int32 TenementExploreBeat() const;
+    void TickTenementFinds();
+    bool InteractTenementFind(ASoraPlayerCharacter& Player);
     FVector WorkAnchor() const;
     bool NearFloor(const FVector& Location,float Radius) const;
     bool AtWorkAnchor(float Radius) const;

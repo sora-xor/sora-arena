@@ -15,6 +15,8 @@ FIRES = [[-3320, 2950], [-3320, 3250], [-3320, 3500]]
 PATROLS = [[[-4500, 0], [-1000, 0]], [[-4500, 100], [-1000, 100]]]
 SPAWNS = [[-2800, 500], [-2800, 650], [-2800, 800], [-2800, 950], [-3500, 3600], [-3600, 3400]]
 DEFENSE_SPAWNS = [[-2800,450],[-2800,570],[-2800,690],[-2800,810],[-3500,3600],[-3500,3400]]
+FINDS = [{'id':'poi_chalk','collectible':'ch03.c01','at_cm':[-2887,1830,65]},
+         {'id':'poi_balance_door','collectible':'ch03.c02','at_cm':[-2713,2415,135]}]
 DEFENSE = {'hold_cm':[-3400,2220,0,-2200,3600,600], 'street_cm':[-2800,450,0],
            'air_cm':[-3500,3600,600], 'street_spacing_cm':120, 'air_spacing_cm':200,
            'flight_cm':[[[-3300,3350,600],[-2800,3050,600]],[[-3300,3050,600],[-2800,2750,600]]]}
@@ -41,7 +43,7 @@ def record_values(beat):
               'spawns': copy.deepcopy(SPAWNS), 'patrols': [],
               'exit': {'center': [-2800, 650], 'size': [180, 300]}, 'tenements': contract()}
     if beat == 'ch03.b04':
-        values.update(anchor=[-2440, 3330], cache=[-2800, 1800])
+        values.update(anchor=[-2440, 3330], cache=[-2800, 1800], tenement_finds=copy.deepcopy(FINDS))
     elif beat == 'ch03.b05':
         values.update(anchor=[-2900, 2900], recovery=list(WELL), pickups=[list(HOIST)],
                       dropoffs=[list(HIDEOUT)], spawns=[p[0] for p in PATROLS], patrols=copy.deepcopy(PATROLS))
@@ -73,6 +75,8 @@ def place_tenements(beats, records, zones, sites, pickups, layout, fail):
         fail('vol_b14_kitchen','authored court and alley defense volume changed')
     defense=next(b for b,_ in selected if b['id']=='ch03.b14')
     if not defense_waves_valid(defense):fail(defense['id'],'authored defense wave identities changed')
+    explore=next(b for b,_ in selected if b['id']=='ch03.b04')
+    if not finds_valid(explore):fail(explore['id'],'chalk and notice need their separate collectible bindings')
     for b, r in selected:
         zone = zones[r['zone']]
         if zone.place != 'pl_ura_nagaya':
@@ -125,12 +129,14 @@ def tenements_valid(chapter):
     try:
         selected = [r for r in chapter['space']['beats'] if r['beat'] in BEATS]
         if not chapter['id'].startswith('ch03_'):
-            return not any('tenements' in r or 'tenement_defense' in r for r in chapter['space']['beats'])
+            return not any('tenements' in r or 'tenement_defense' in r or 'tenement_finds' in r for r in chapter['space']['beats'])
         if len(selected) != len(BEATS):
             return False
         if any(('tenements' in r)!=(r['beat'] in BEATS) for r in chapter['space']['beats']):
             return False
         if any(('tenement_defense' in r)!=(r['beat']=='ch03.b14') for r in chapter['space']['beats']):return False
+        if any(('tenement_finds' in r)!=(r['beat']=='ch03.b04') for r in chapter['space']['beats']):return False
+        if not finds_valid(next(b for b in chapter['beats'] if b['id']=='ch03.b04')):return False
         if not defense_waves_valid(next(b for b in chapter['beats'] if b['id']=='ch03.b14')):return False
         for r in selected:
             if any(r.get(k) != v for k, v in record_values(r['beat']).items()):
@@ -158,6 +164,17 @@ def tenements_valid(chapter):
         return True
     except (KeyError, TypeError, IndexError, StopIteration):
         return False
+
+
+def finds_valid(beat):
+    try:
+        pois=beat['params']['pois']
+        return (beat['optional'] is True and beat['task']['goal']=='cache' and
+                beat['params']['rewards']==['ch03.c01','ch03.c02'] and
+                {p['id']:p.get('collectible') for p in pois if 'collectible' in p}==
+                {f['id']:f['collectible'] for f in FINDS} and
+                len({p['id'] for p in pois})==len(pois))
+    except (KeyError,TypeError):return False
 
 
 def defense_waves_valid(beat):

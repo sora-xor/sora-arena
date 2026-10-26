@@ -935,6 +935,15 @@ def normalize_task(beat):
                 fail(where, f"{binding} requires its authored {duration} ms hold")
     elif kind == "explore_optional":
         task["goal"] = "cache"
+        if beat["id"] == "ch03.b04":
+            # The prose places c01 on the chalk wall and c02 on the widow's
+            # door. Their reward association does not combine their claims.
+            for poi in beat["params"]["pois"]:
+                item = {"poi_chalk": "ch03.c01", "poi_balance_door": "ch03.c02"}.get(poi["id"])
+                if item:
+                    if "collectible" in poi and poi["collectible"] != item:
+                        fail(where, "tenement find bound to the wrong point")
+                    poi["collectible"] = item
         if beat["id"] == "ch01.b08":
             completion = beat["ext"].get("complete", {})
             if completion != {"volume_enter": "vol_ch01_wood_exit"}:

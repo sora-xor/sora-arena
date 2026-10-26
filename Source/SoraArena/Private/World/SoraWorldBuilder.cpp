@@ -188,6 +188,7 @@ void ASoraWorldBuilder::ClearArena()
     for(const auto& A:PickupLights) if(A) A->Destroy(); PickupLights.Reset();
     for(const auto& M:Pieces) if(M) M->DestroyComponent(); Pieces.Reset();
     WoodTargets.Reset(); WoodFloors.Reset(); WoodClapper=nullptr;
+    TenementFindTargets.Reset();
     if(IsValid(ArchivePageText)) ArchivePageText->DestroyComponent();
     ArchivePageText=nullptr; ArchivePageFont=nullptr;
     ArchivePage=nullptr; ArchivePageLight=nullptr; ArchiveNorthGate=nullptr; ArchiveEastRack=nullptr; ArchiveExposure=nullptr;

@@ -3,6 +3,7 @@
 #include "SoraCatalogJson.h"
 #include "SoraTenementRules.h"
 #include "SoraTenementDefenseRules.h"
+#include "SoraTenementFindRules.h"
 #include <initializer_list>
 
 namespace
@@ -14,12 +15,13 @@ bool TenementNumbers(const FJsonObject& O,const TCHAR* Key,std::initializer_list
     return true;
 }
 }
-bool SoraCatalogTenements::Read(const FJsonObject& O,FSoraBeat& Beat,const FSoraSpace& Space)
+bool SoraCatalogTenements::Read(const FJsonObject& O,FSoraBeat& Beat,const FSoraChapter& Chapter)
 {
+    const auto& Space=Chapter.Space;
     const bool Expected=Beat.Id==TEXT("ch03.b04")||Beat.Id==TEXT("ch03.b05")||Beat.Id==TEXT("ch03.b06")||
         Beat.Id==TEXT("ch03.b13")||Beat.Id==TEXT("ch03.b14");
     const auto Value=O.TryGetField(TEXT("tenements"));
-    if(!Expected)return !Value.IsValid()&&!O.HasField(TEXT("tenement_defense"));
+    if(!Expected)return !Value.IsValid()&&!O.HasField(TEXT("tenement_defense"))&&!O.HasField(TEXT("tenement_finds"));
     const auto H=Value.IsValid()&&Value->Type==EJson::Object?Value->AsObject():nullptr;
     auto& B=Beat.Space;
     if(!H||!Space.Zones.IsValidIndex(B.Zone))return false;
@@ -83,6 +85,29 @@ bool SoraCatalogTenements::Read(const FJsonObject& O,FSoraBeat& Beat,const FSora
         for(int I=0;I<3;++I)if(B.Fieldcraft.Fires.Points[I]!=FVector2D(-3320,Ys[I]))return false;
     }
     if(O.HasField(TEXT("tenement_defense"))!=Fires)return false;
+    if(O.HasField(TEXT("tenement_finds"))!=Explore)return false;
+    if(Explore)
+    {
+        const auto Finds=SoraCatalogJson::Rows(O,TEXT("tenement_finds"));
+        const int32 BeatIndex=Chapter.BeatIndex(Beat.Id);
+        if(!Finds||Finds->Num()!=2||!Beat.Has(SoraBeatRules::EGoal::Cache)||Beat.Rewards.Num()!=2||
+           !Chapter.Rules.IsValidIndex(BeatIndex)||!Chapter.Rules[BeatIndex].Optional||
+           Beat.Pois.FilterByPredicate([](const FSoraExplorePoi& P){return P.Collectible!=INDEX_NONE;}).Num()!=2)return false;
+        const TCHAR* Ids[]={TEXT("poi_chalk"),TEXT("poi_balance_door")};
+        const TCHAR* Items[]={TEXT("ch03.c01"),TEXT("ch03.c02")};
+        for(int I=0;I<2;++I)
+        {
+            const auto& ValueRow=(*Finds)[I];
+            const auto Row=ValueRow.IsValid()&&ValueRow->Type==EJson::Object?ValueRow->AsObject():nullptr;
+            FString Id,Item;const auto P=SoraTenementFindRules::Points[I];
+            const auto* Poi=Beat.Pois.FindByPredicate([&](const FSoraExplorePoi& V){return V.Id==Ids[I];});
+            if(!Row||!SoraCatalogJson::Str(*Row,TEXT("id"),Id)||Id!=Ids[I]||
+               !SoraCatalogJson::Str(*Row,TEXT("collectible"),Item)||Item!=Items[I]||
+               !TenementNumbers(*Row,TEXT("at_cm"),{int(P.X),int(P.Y),int(P.Z)})||
+               !Poi||!Chapter.Collectibles.IsValidIndex(Poi->Collectible)||Beat.Rewards[I]!=Poi->Collectible||
+               Chapter.Collectibles[Poi->Collectible].Id!=Items[I]||Chapter.Collectibles[Poi->Collectible].MaskBit!=I)return false;
+        }
+    }
     if(Fires)
     {
         const auto D=SoraCatalogJson::Child(O,TEXT("tenement_defense"));int32 StreetSpacing=0,AirSpacing=0;

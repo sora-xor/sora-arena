@@ -146,6 +146,7 @@ public:
     void BuildLanding(const FSoraZone& Zone);
     void BuildWardGate(const FSoraZone& Zone);
     void BuildTenements();
+    bool CanReachTenementFind(int32 Index,const ASoraPlayerCharacter& Hero) const;
     void BuildClimb(const FSoraBeat& Beat);
     void BuildRelayRoom(const FSoraBeat& Beat);
     void BuildPalace(const FSoraZone& Zone);
@@ -230,6 +231,7 @@ private:
     void StageSupply(const FSoraBeat& Beat);
     void StageGalleryPois(const FSoraChapter& Chapter,const FSoraBeat& Beat);
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> GalleryTargets;
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> TenementFindTargets;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> GalleryLabel;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> GalleryMon;
     TArray<FName> GalleryIds;

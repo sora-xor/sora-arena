@@ -19,6 +19,7 @@
 #include "SoraMaaiAutomation.h"
 #include "SoraArcheryAutomation.h"
 #include "SoraRecoveryAutomation.h"
+#include "SoraTenementFindRules.h"
 #include "SoraLiftAutomation.h"
 #include "SoraFloodAutomation.h"
 #include "SoraSpireAutomation.h"
@@ -721,7 +722,13 @@ bool OpenCaches(FAutomationTestBase& Test, FState& State)
     USoraCampaignDirector* Director = Campaign(State);
     if (!Mode(State)->IsPlaying())
         return true;
-    for (const int32 Cache : Director->AvailableCaches())
+    TArray<int32> Caches=Director->AvailableCaches();
+    const auto& Current=ChapterData(State);
+    const int32 Tenement=Current.BeatIndex(TEXT("ch03.b04"));
+    if(Tenement!=INDEX_NONE&&Director->ActiveSpace()&&Director->ActiveSpace()->bTenements&&
+       SoraBeatRules::CanStartBeat(Director->Progress(),Current.Rules.GetData(),Current.Rules.Num(),Tenement))
+        Caches.Add(Tenement);
+    for (const int32 Cache : Caches)
     {
         const FSoraChapter& Chapter = ChapterData(State);
         const FSoraBeat& Beat = Chapter.Beats[Cache];
@@ -729,8 +736,26 @@ bool OpenCaches(FAutomationTestBase& Test, FState& State)
         const uint64 Before = Director->CollectedMask();
         bool bOk = Test.TestTrue(*(Beat.Id + TEXT(": the cache's weapons and story flags wait for it")),
             (Director->Progress().WeaponsMask & Rule.WeaponsMask) == 0u && (Director->Progress().FlagsMask & Rule.FlagsMask) == 0u);
-        MoveTo(State, Director->CacheLocation(Cache));
-        Mode(State)->Interact(Player(State));
+        if(Beat.Id==TEXT("ch03.b04"))
+        {
+            // These discoveries are separate physical interactions. This
+            // assisted harness still uses controlled placement, not traversal.
+            for(int I=0;I<SoraTenementFindRules::Count;++I)
+            {
+                const auto P=SoraTenementFindRules::Points[I];
+                MoveTo(State,FVector(-2800,P.Y+45,0));
+                if(!Advance(Test,State))return false;
+                const FRotator Look=(FVector(P.X,P.Y,P.Z)-Player(State)->GetCamera()->GetComponentLocation()).Rotation();
+                Player(State)->GetController()->SetControlRotation(Look);Player(State)->FaceRotation(Look,0.f);
+                Player(State)->GetCamera()->SetWorldRotation(Look);
+                Mode(State)->Interact(Player(State));
+            }
+        }
+        else
+        {
+            MoveTo(State, Director->CacheLocation(Cache));
+            Mode(State)->Interact(Player(State));
+        }
         bOk &= Test.TestTrue(*(Beat.Id + TEXT(" cache opened")), (Director->Progress().CompletedMask & SoraBeatRules::BeatBit(Cache)) != 0u);
         bOk &= Test.TestTrue(*(Beat.Id + TEXT(" cache weapons and story flags")),
             (Director->Progress().WeaponsMask & Rule.WeaponsMask) == Rule.WeaponsMask &&

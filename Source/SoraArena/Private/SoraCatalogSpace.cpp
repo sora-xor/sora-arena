@@ -1084,7 +1084,7 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
         if(!SoraCatalogMoat::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" physical moat"));
         if(!SoraCatalogLanding::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" west landing"));
         if(!SoraCatalogWardGate::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" ward gate"));
-        if(!SoraCatalogTenements::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" back tenements"));
+        if(!SoraCatalogTenements::Read(*O,Beat,C)) return Bad(Beat.Id+TEXT(" back tenements"));
         for (const FSoraDefendedPerson& Person : B.Fieldcraft.People)
             if (Person.Target == INDEX_NONE && (!S.Zones.IsValidIndex(B.Zone) ||
                 !S.Zones[B.Zone].Rect.IsInside(Person.At + FVector2D(80,80)) || !S.Zones[B.Zone].Rect.IsInside(Person.At - FVector2D(80,80)) ||

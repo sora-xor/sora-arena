@@ -62,6 +62,27 @@ class TenementTests(unittest.TestCase):
         if -3200<=x<=3200 and -2600<=y<=2600:heights.append(0)
         return max(heights,default=None)
 
+    def test_separate_finds_have_grounded_alley_approaches(self):
+        self.assertEqual(self.native['finds'],[f['at_cm'] for f in tenements.FINDS])
+        self.assertLess(self.native['finds'][0][2],100)
+        self.assertGreater(math.dist(*[p[:2] for p in self.native['finds']]),280)
+        for x,y,z in self.native['finds']:
+            self.clear([[-2800,1250,2.15],[-2800,y,2.15]])
+            self.assertLess(abs(x+2800),140)
+
+    def test_rejects_swapped_combined_and_moved_finds(self):
+        for mutation in ('item','point','height','reward','duplicate','extra'):
+            c=copy.deepcopy(self.chapter)
+            b=next(b for b in c['beats'] if b['id']=='ch03.b04')
+            r=next(r for r in c['space']['beats'] if r['beat']=='ch03.b04')
+            if mutation=='item':next(p for p in b['params']['pois'] if p['id']=='poi_chalk')['collectible']='ch03.c02'
+            elif mutation=='point':r['tenement_finds'][0]['at_cm'][0]=-2800
+            elif mutation=='height':r['tenement_finds'][0]['at_cm'][2]=165
+            elif mutation=='reward':b['params']['rewards']=['ch03.c01']
+            elif mutation=='duplicate':b['params']['pois'].append(copy.deepcopy(b['params']['pois'][0]))
+            else:next(r for r in c['space']['beats'] if r['beat']=='ch03.b05')['tenement_finds']=copy.deepcopy(tenements.FINDS)
+            self.assertFalse(tenements.tenements_valid(c),mutation)
+
     def test_authored_contract_and_closed_home_dimensions(self):
         self.assertTrue(tenements.tenements_valid(self.chapter))
         faces=[b for b in self.solids if b[7]==3]

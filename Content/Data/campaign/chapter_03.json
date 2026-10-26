@@ -834,7 +834,8 @@
      },
      {
       "id": "poi_chalk",
-      "kind": "npc"
+      "kind": "npc",
+      "collectible": "ch03.c01"
      },
      {
       "id": "poi_leaflet",
@@ -842,7 +843,8 @@
      },
      {
       "id": "poi_balance_door",
-      "kind": "lore"
+      "kind": "lore",
+      "collectible": "ch03.c02"
      },
      {
       "id": "poi_dead_end",
@@ -12461,7 +12463,27 @@
       4200
      ],
      "patrol_ms": 45000
-    }
+    },
+    "tenement_finds": [
+     {
+      "id": "poi_chalk",
+      "collectible": "ch03.c01",
+      "at_cm": [
+       -2887,
+       1830,
+       65
+      ]
+     },
+     {
+      "id": "poi_balance_door",
+      "collectible": "ch03.c02",
+      "at_cm": [
+       -2713,
+       2415,
+       135
+      ]
+     }
+    ]
    },
    {
     "beat": "ch03.b05",

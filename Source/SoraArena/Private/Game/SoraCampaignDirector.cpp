@@ -662,7 +662,7 @@ void USoraCampaignDirector::Collect(int32 Beat)
 {
     const FSoraChapter& Chapter=*ActiveChapter();
     // Wood finds belong to their physical POIs, never its exit completion.
-    if(Beat==Chapter.Wood.Beat) return;
+    if(Beat==Chapter.Wood.Beat||Chapter.Beats[Beat].Id==TEXT("ch03.b04")) return;
     // An explore beat's cache holds its collectibles; each goes to the codex.
     for(const FSoraCollectible& Item:Chapter.Collectibles)
     {
@@ -772,6 +772,7 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
     // dialogue waiting on one starts, and the waves it names come.
     TickVolumes();
     if(ActiveBeatData()!=&Beat||M.bDefeated) return;
+    TickTenementFinds();
     if(Task.Goal==SoraBeatRules::EGoal::Lines&&bLinesStarted&&Queue.IsEmpty()&&DialogueLinesDone()) SoraBeatRules::FinishLines(TaskState,Task);
     // Arrivals: a dialogue's closing anchor (or its volume) after its lines, and the exit.
     const FSoraBeatSpace& Space=Beat.Space;
@@ -1775,6 +1776,7 @@ TArray<int32> USoraCampaignDirector::AvailableCaches() const
     if(!Chapter||!Mode().bCampaign||Mode().bChapterComplete) return Result;
     for(int32 Index=0;Index<Chapter->Beats.Num();++Index)
         if(Chapter->Beats[Index].Has(SoraBeatRules::EGoal::Cache)&&
+            Chapter->Beats[Index].Id!=TEXT("ch03.b04")&&
             (Chapter->Beats[Index].Space.HeightCm==0||bLiftGallery)&&
             SoraBeatRules::CanStartBeat(BeatState,Chapter->Rules.GetData(),Chapter->Rules.Num(),Index))
             Result.Add(Index);
@@ -1999,7 +2001,7 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
     // A knocked-down conscript within reach: Interact held cuts its seal.
     if(BeginSealCut(Player)) return;
     if(InteractSupply(Player)) return;
-    if(InteractWood(Player)||InteractGalleryPoi(Player)) return;
+    if(InteractWood(Player)||InteractGalleryPoi(Player)||InteractTenementFind(Player)) return;
     const FSoraBeatSpace& Space=Beat->Space;
     IdleMs=0;
     const int32 Before=SoraBeatRules::ProgressPermille(TaskState,Task);
