@@ -175,6 +175,7 @@ def checks(python: str = sys.executable) -> list[Check]:
     unit("assets", "weapon-socket-model", "scripts/art/test_fbx_unreal_sockets.py")
     unit("assets", "weapon-socket-export", "scripts/art/test_weapon_socket_export.py")
     unit("assets", "weapon-socket-staged-install", "scripts/art/test_apply_staged_weapon_sockets.py")
+    unit("assets", "weapon-review-admission", "scripts/unreal/test_runtime_weapon_review.py")
     script("assets", "asset-ledger", "scripts/assets/validate_asset_ledger.py", "--json")
     script("assets", "asset-notices", "scripts/assets/generate_asset_notices.py", "--check")
     unit("assets", "dojo-timber-binding", "scripts/art/test_bind_dojo_timbers.py")
