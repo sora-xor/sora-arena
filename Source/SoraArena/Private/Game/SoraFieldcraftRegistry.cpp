@@ -39,7 +39,7 @@ void USoraFieldcraft::StageRegistry(const FSoraBeat& Beat)
         if(Light)
         {
             Light->Tags.Add(TEXT("RegistryDeskLamp"));Light->SetMobility(EComponentMobility::Movable);
-            auto* Component=Light->PointLightComponent;
+            auto* Component=Light->PointLightComponent.Get();
             Component->SetLightColor(Cold);Component->SetIntensity(1200.f);
             Component->SetAttenuationRadius(300.f);Component->SetCastShadows(true);Component->SetVisibility(false);
             RegistryLights[I]=Light;
