@@ -154,6 +154,11 @@ TArray<FTrackerRow> TrackerRows(const FSoraHUDFrame& Frame)
             if(const FSoraLabel* Label=FSoraCatalog::Get().StepLabels.Find(Beat->StepKinds[State.Step]))
                 Rows.Add({FString::Printf(TEXT("▶ %s  %d / %d"),*Label->Japanese,State.StepDone,Task.Steps[State.Step].Count),
                     FString::Printf(TEXT("Now: %s, %d of %d"),*Label->English,State.StepDone,Task.Steps[State.Step].Count),-1.f,Frame.Gold});
+        if(Campaign->IsWorkshopCraft()&&(State.Step==1||State.Step==3)&&Campaign->WorkshopCraftOccupiesHands())
+        {
+            const auto Line=SoraText::Line(NSLOCTEXT("SoraArena.HUD","WorkshopPasteProgress","塗り終わるまで、そのまま押す"));
+            Rows.Add({Line.Japanese,Line.English,Campaign->HeldWorkProgress(),Frame.Teal});
+        }
         if(SoraRhythmRules::Supported(State,Task))
         {
             const auto& Cue=Campaign->RhythmState();
@@ -928,8 +933,18 @@ TArray<SoraText::FLine> InteractionPrompts(const FSoraHUDFrame& F)
     FVector Anchor;
     if(Campaign->ObjectiveAnchor(Anchor)&&Campaign->AnchorTakesInteract()&&
         FVector::Dist2D(Anchor,Hero->GetActorLocation())<260.f)
-        Lines.Add(SoraText::Format(Campaign->AwaitingCapture()?NSLOCTEXT("SoraArena.HUD","Prompt.Capture","{Interact}  捕らえる")
-            :NSLOCTEXT("SoraArena.HUD","Prompt.Work","{Interact}  作業する"),{{TEXT("Interact"),Key}}));
+    {
+        const int Step=Campaign->TaskProgress().Step;
+        const auto Prompt=Campaign->IsWorkshopCraft()&&Step==0&&F.Mode.Settings()&&F.Mode.Settings()->RhythmAssist()?
+            NSLOCTEXT("SoraArena.HUD","Prompt.WorkshopBendAssist","{Interact} を長押しする。補助が緑の帯で離す"):
+            Campaign->IsWorkshopCraft()&&Step==0?
+            NSLOCTEXT("SoraArena.HUD","Prompt.WorkshopBend","{Interact} を押し、輪が緑の帯に入ったら離す"):
+            Campaign->IsWorkshopCraft()&&(Step==1||Step==3)?
+            NSLOCTEXT("SoraArena.HUD","Prompt.WorkshopPaste","{Interact} を1.5秒長押しして塗る"):
+            Campaign->AwaitingCapture()?NSLOCTEXT("SoraArena.HUD","Prompt.Capture","{Interact}  捕らえる"):
+            NSLOCTEXT("SoraArena.HUD","Prompt.Work","{Interact}  作業する");
+        Lines.Add(SoraText::Format(Prompt,{{TEXT("Interact"),Key}}));
+    }
     for(const int32 Cache:Campaign->AvailableCaches())
         if(FVector::Dist2D(Campaign->CacheLocation(Cache),Hero->GetActorLocation())<260.f)
             Lines.Add(SoraText::Format(NSLOCTEXT("SoraArena.HUD","Prompt.Search","{Interact}  調べる"),{{TEXT("Interact"),Key}}));
@@ -1385,6 +1400,19 @@ void SoraHUDPanels::DrawDialogue(const FSoraHUDFrame& Frame)
     {
         const float Radius=22.f+30.f*Campaign->RhythmCueRemainingMs()/CuePeriod;
         const FVector2D Center(Interaction.At.CenterX,Interaction.At.CenterY);
+        const bool Bend=Campaign->IsWorkshopCraft()&&Campaign->WorkshopCraftState().Step==0;
+        if(Bend)
+        {
+            // Two fixed outlines define the release band by shape as well
+            // as colour; the moving ring sweeps through it without flashes.
+            const float Outer=22.f+60.f*SoraWorkshopCraftRules::BendToleranceMs/CuePeriod;
+            for(float R:{22.f,Outer})for(int32 Segment=0;Segment<48;++Segment)
+            {
+                const float A=Segment*2.f*PI/48.f,B=(Segment+1)*2.f*PI/48.f;
+                HUD.DrawLine(Center.X+FMath::Cos(A)*R,Center.Y+FMath::Sin(A)*R,
+                    Center.X+FMath::Cos(B)*R,Center.Y+FMath::Sin(B)*R,FLinearColor(.3f,.85f,.4f),2.f);
+            }
+        }
         for(int32 Segment=0;Segment<48;++Segment)
         {
             const float A=Segment*2.f*PI/48.f,B=(Segment+1)*2.f*PI/48.f;

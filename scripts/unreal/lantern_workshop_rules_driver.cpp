@@ -2,13 +2,76 @@
 #include "SoraFieldcraftRules.h"
 #include "SoraWorkshopHazardRules.h"
 #include "SoraWorkshopEncounterRules.h"
+#include "SoraWorkshopCraftRules.h"
+#include "SoraBeatRules.h"
 #include <limits>
 #include <cassert>
 #include <iomanip>
 #include <iostream>
 
+void CraftChecks()
+{
+    namespace C=SoraWorkshopCraftRules;namespace B=SoraBeatRules;
+    // The authored release window includes both endpoints. Holding past it
+    // fails once and cannot roll into a new attempt without a release.
+    for(int Ms:{0,639,640,800,960,961,2000,std::numeric_limits<int>::max()})
+    {
+        C::FState S;assert(C::Begin(S,0));
+        const auto Tick=C::Tick(S,Ms,true),Release=C::Release(S,true);
+        if(Ms>960)assert(Tick==C::EResult::Missed&&Release==C::EResult::None);
+        else assert(Tick==C::EResult::None&&Release==(Ms>=640?C::EResult::Passed:C::EResult::Missed));
+        assert(C::Begin(S,0));
+        assert(C::Tick(S,961,true)==C::EResult::Missed);
+        assert(C::Tick(S,10000,true)==C::EResult::None&&!C::Begin(S,0));
+        assert(C::Release(S,true)==C::EResult::None&&C::Begin(S,0));
+    }
+    for(int Step:{1,3})for(int Partition:{1,7,16,17,33,100,1499,1500,2000,std::numeric_limits<int>::max()})
+    {
+        C::FState S;assert(C::Begin(S,Step));
+        int Held=0;while(Held<1499)
+        {const int Delta=std::min(Partition,1499-Held);assert(C::Tick(S,Delta,true)==C::EResult::None);Held+=Delta;}
+        assert(S.ElapsedMs==1499&&C::Tick(S,-1,true)==C::EResult::None&&S.ElapsedMs==1499);
+        assert(C::Release(S,true)==C::EResult::Cancelled);
+        assert(C::Begin(S,Step)&&C::Tick(S,1,true)==C::EResult::None&&S.ElapsedMs==1);
+        assert(C::Tick(S,1498,true)==C::EResult::None);
+        assert(C::Tick(S,Partition,true)==C::EResult::Passed);
+        assert(!C::Begin(S,Step)&&C::Tick(S,10000,true)==C::EResult::None);
+        assert(C::Release(S,true)==C::EResult::None&&C::Begin(S,Step));
+        assert(C::Tick(S,1499,true)==C::EResult::None);
+        assert(C::Tick(S,1,false)==C::EResult::Cancelled&&!C::Begin(S,Step));
+        assert(C::Release(S,true)==C::EResult::None&&C::Begin(S,Step));
+        assert(C::Tick(S,1,true)==C::EResult::None&&S.ElapsedMs==1);
+    }
+    for(int Partition:{1,7,16,17,33,100,799,800,1000,std::numeric_limits<int>::max()})
+    {
+        C::FState S;assert(C::Begin(S,0));int Held=0;
+        while(Held<799){const int D=std::min(Partition,799-Held);assert(C::Tick(S,D,true,true)==C::EResult::None);Held+=D;}
+        assert(C::Tick(S,Partition,true,true)==C::EResult::Passed);
+        assert(!C::Begin(S,0)&&C::Release(S,true)==C::EResult::None);
+    }
+    for(int Step:{-1,2,4,5,6}){C::FState S;assert(!C::Begin(S,Step));}
+    C::FState S;assert(C::Begin(S,0)&&C::Tick(S,800,true)==C::EResult::None);
+    assert(C::Release(S,false)==C::EResult::Cancelled);
+    assert(C::Begin(S,0)&&C::Tick(S,800,true)==C::EResult::None);
+    C::Cancel(S);assert(C::Release(S,true)==C::EResult::None);
+    // A failed replacement strip must not erase finished hoops. Use the
+    // common production accounting, including recipe advancement.
+    B::FTask Task{};Task.Goal=B::EGoal::Steps;Task.StepCount=6;
+    const int Counts[]={6,4,1,1,3,1};
+    for(int I=0;I<6;++I)Task.Steps[I].Count=Counts[I];
+    auto State=B::StartTask(Task,0);
+    for(int I=0;I<2;++I)assert(B::CreditStroke(State,Task)==B::EStroke::Counted);
+    assert(C::Begin(S,0)&&C::Tick(S,600,true)==C::EResult::None&&C::Release(S,true)==C::EResult::Missed);
+    assert(State.Done==2&&State.StepDone==2);
+    for(int I=2;I<6;++I)B::CreditStroke(State,Task);
+    assert(State.Done==6&&State.Step==1&&State.StepDone==0);
+    for(int I=1;I<6;++I)for(int N=0;N<Counts[I];++N)B::CreditStroke(State,Task);
+    assert(State.Done==16&&State.Step==6&&B::CreditStroke(State,Task)==B::EStroke::Refused&&State.Done==16);
+}
+
 int main()
 {
+    CraftChecks();
     namespace R=SoraLanternWorkshopRules;
     std::cout<<std::setprecision(15)<<"{\"solids\":[";
     bool Comma=false;
@@ -110,5 +173,5 @@ int main()
     assert(E::SpawnIndex(0,0,3)==-1&&E::SpawnIndex(2,0,1)==-1&&E::SpawnIndex(0,0,-1)==-1);
     assert(E::VaultLanded(3350,8,true)&&!E::VaultLanded(3351,0,true)&&!E::VaultLanded(3300,160,true));
     assert(!E::VaultLanded(3300,0,false));
-    std::cout<<",\"entry_boundary_assertions\":true}\n";
+    std::cout<<",\"entry_boundary_assertions\":true,\"craft_boundary_assertions\":true}\n";
 }

@@ -1181,6 +1181,18 @@ constexpr bool DropCarried(FTaskState& State, const FTask& Task)
 
 enum class EStroke : unsigned char { Refused, Counted, Missed, StepDone, Finished, Credited };
 
+// Count a unit only after its interaction has admitted it (stroke timing,
+// release timing or a continuous hold). All share the same step accounting.
+constexpr EStroke CreditStroke(FTaskState& State,const FTask& Task)
+{
+    if(Task.Goal!=EGoal::Steps||State.Step<0||State.Step>=Task.StepCount||State.Step>=MaxSteps)return EStroke::Refused;
+    State.LastActionMs=State.ElapsedMs;
+    ++State.StepDone;++State.Done;
+    if(State.StepDone<Task.Steps[State.Step].Count)return EStroke::Counted;
+    ++State.Step;State.StepDone=0;State.LastActionMs=-1;
+    return State.Step>=Task.StepCount?EStroke::Finished:EStroke::StepDone;
+}
+
 // One stroke at the current manufacturing step. Off the beat, a rhythm step
 // starts again from that stroke (pass or fail, no quality grades).
 constexpr EStroke Stroke(FTaskState& State, const FTask& Task)
@@ -1200,15 +1212,7 @@ constexpr EStroke Stroke(FTaskState& State, const FTask& Task)
             return EStroke::Missed;
         }
     }
-    State.LastActionMs = State.ElapsedMs;
-    ++State.StepDone;
-    ++State.Done;
-    if (State.StepDone < Current.Count)
-        return EStroke::Counted;
-    ++State.Step;
-    State.StepDone = 0;
-    State.LastActionMs = -1;
-    return State.Step >= Task.StepCount ? EStroke::Finished : EStroke::StepDone;
+    return CreditStroke(State,Task);
 }
 
 // Damage to a defended target; true when it is destroyed by this hit.

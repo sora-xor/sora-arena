@@ -13,6 +13,7 @@
 #include "SoraHorseTreatmentRules.h"
 #include "SoraPodRules.h"
 #include "SoraMillisecondClock.h"
+#include "SoraWorkshopCraftRules.h"
 #include "SoraRelayRules.h"
 #include "SoraCampaignDirector.generated.h"
 class ACameraActor;
@@ -284,6 +285,11 @@ public:
     bool IsHoisting() const { return HeldWork == EHeldWork::Hoist; }
     bool IsUnloadingCargo() const { return HeldWork == EHeldWork::CargoUnload; }
     void CancelCargoUnload();
+    void CancelWorkshopCraft();
+    void ReleaseWorkshopCraft();
+    bool IsWorkshopCraft() const;
+    bool WorkshopCraftOccupiesHands() const { return WorkshopCraft.Step>=0; }
+    const SoraWorkshopCraftRules::FState& WorkshopCraftState() const { return WorkshopCraft; }
     bool IsPryingCarryGate() const { return bPryingCarryGate; }
     bool InLiftGallery() const { return bLiftGallery; }
     int32 WoodPoiMask() const;
@@ -556,6 +562,12 @@ private:
     int32 HeldPoint=INDEX_NONE;
     int32 HeldMs=0;
     FSoraMillisecondClock CargoClock;
+    SoraWorkshopCraftRules::FState WorkshopCraft;
+    FSoraMillisecondClock WorkshopCraftClock;
+    bool AtWorkshopStation() const;
+    bool BeginWorkshopCraft();
+    void TickWorkshopCraft(float DeltaSeconds);
+    void ResolveWorkshopCraft(int32 Step,SoraWorkshopCraftRules::EResult Result);
     bool bHeldWatched=false;
     bool TakeLoad(int32 Pickup);
     bool DeliverLoad(int32 Dropoff, int32 HeldDurationMs = 0);

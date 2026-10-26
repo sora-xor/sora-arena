@@ -585,6 +585,17 @@ bool WorkAtAnchor(FAutomationTestBase& Test, FState& State)
     MoveTo(State, Anchor);
     if (!Advance(Test, State, 1))
         return false;
+    if(Director->IsWorkshopCraft()&&SoraWorkshopCraftRules::Timed(Director->TaskProgress().Step))
+    {
+        // Placement is assisted; timing and completion still use the mapped
+        // held input and release. Dedicated workshop cases cover failures.
+        if(!Advance(Test,State,6))return false;
+        const int Ms=Director->TaskProgress().Step==0?SoraWorkshopCraftRules::BendMs:SoraWorkshopCraftRules::PasteMs;
+        if(!State.World->InjectKey(EKeys::E,IE_Pressed))return false;
+        const bool Held=Advance(Test,State,FMath::CeilToInt(Ms*60.f/1000.f));
+        const bool Released=State.World->InjectKey(EKeys::E,IE_Released);
+        return Held&&Released&&Advance(Test,State,1);
+    }
     if(Director->IsRelayRoom())
     {
         // This playthrough deliberately places the hero at controls. The
@@ -1477,6 +1488,8 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
             }
             else if (Rules.Goal == EGoal::Steps)
             {
+                if(Director->IsWorkshopCraft())
+                {if(!WorkAtAnchor(Test,State))return false;continue;}
                 const SoraBeatRules::FStep& Step = Rules.Steps[Task.Step];
                 if(Step.PhraseStrikes>0)
                 {

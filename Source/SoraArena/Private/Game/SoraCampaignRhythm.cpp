@@ -64,11 +64,13 @@ void USoraCampaignDirector::PresentRhythmResponse(int32 Step)
 }
 int32 USoraCampaignDirector::RhythmCuePeriodMs() const
 {
+    if(IsWorkshopCraft()&&WorkshopCraft.Step==0)return SoraWorkshopCraftRules::BendMs+SoraWorkshopCraftRules::BendToleranceMs;
     if(Task.AlternateTreads&&IsWorkingCrank()) return 1000;
     return SoraRhythmRules::Active(RhythmClock,TaskState,Task)?Task.Steps[TaskState.Step].BeatMs:0;
 }
 int32 USoraCampaignDirector::RhythmCueRemainingMs() const
 {
+    if(IsWorkshopCraft()&&WorkshopCraft.Step==0)return RhythmCuePeriodMs()-WorkshopCraft.ElapsedMs;
     if(Task.AlternateTreads&&IsWorkingCrank()) return 1000-(TaskState.ElapsedMs-BellowsCueStarted)%1000;
     const int32 Period=RhythmCuePeriodMs();
     return Period>0?Period-(TaskState.ElapsedMs-RhythmClock.StartedMs)%Period:0;

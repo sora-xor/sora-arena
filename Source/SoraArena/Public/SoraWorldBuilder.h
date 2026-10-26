@@ -148,6 +148,7 @@ public:
     void BuildTenements();
     void BuildLanternWorkshop();
     void ShowWorkshopDoor(bool FightComplete,bool SealCut);
+    void ShowWorkshopRestored(bool Restored);
     bool CanReachTenementFind(int32 Index,const ASoraPlayerCharacter& Hero) const;
     void BuildClimb(const FSoraBeat& Beat);
     void BuildRelayRoom(const FSoraBeat& Beat);
@@ -256,6 +257,8 @@ private:
     UPROPERTY() TObjectPtr<UStaticMeshComponent> WorkshopDoor;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> WorkshopSeal;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> WorkshopBar;
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> WorkshopWindows;
+    UPROPERTY() TArray<TObjectPtr<APointLight>> WorkshopWindowLights;
     FVector BulkheadAt=FVector::ZeroVector;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> BulkheadLever;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> BulkheadHandle;

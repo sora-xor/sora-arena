@@ -2,6 +2,7 @@
 #include "SoraCatalog.h"
 #include "SoraCatalogJson.h"
 #include "SoraWorkshopEncounterRules.h"
+#include "SoraWorkshopCraftRules.h"
 #include <initializer_list>
 
 namespace
@@ -18,6 +19,8 @@ bool SoraCatalogLanternWorkshop::Read(const FJsonObject& O,FSoraBeat& Beat,const
 {
     const bool Combat=Beat.Id==TEXT("ch03.b08"),Craft=Beat.Id==TEXT("ch03.b09");
     const auto V=O.TryGetField(TEXT("lantern_workshop"));
+    const auto Controls=O.TryGetField(TEXT("workshop_craft"));
+    if(Controls.IsValid()!=Craft)return false;
     if(!Combat&&!Craft)return !V.IsValid();
     const auto H=V.IsValid()&&V->Type==EJson::Object?V->AsObject():nullptr;
     auto& B=Beat.Space;
@@ -46,6 +49,19 @@ bool SoraCatalogLanternWorkshop::Read(const FJsonObject& O,FSoraBeat& Beat,const
     }
     if(Craft)
     {
+        const auto C=Controls->Type==EJson::Object?Controls->AsObject():nullptr;
+        namespace Timing=SoraWorkshopCraftRules;
+        if(!C||!Numbers(*C,TEXT("bend_release_ms"),{Timing::BendMs,Timing::BendToleranceMs})||
+           !Numbers(*C,TEXT("paste_hold_ms"),{Timing::PasteMs}))return false;
+        if(Beat.Task.Goal!=SoraBeatRules::EGoal::Steps||Beat.Task.StepCount!=6||Beat.StepKinds.Num()!=6)return false;
+        const int Counts[]={6,4,1,1,3,1};
+        const TCHAR* Kinds[]={TEXT("bend"),TEXT("paste"),TEXT("assemble"),TEXT("paste"),TEXT("assemble"),TEXT("inspect")};
+        for(int I=0;I<6;++I)
+        {
+            const auto& Step=Beat.Task.Steps[I];
+            if(Beat.StepKinds[I]!=Kinds[I]||Step.Count!=Counts[I]||Step.PhraseStrikes!=0||Step.PhrasePass!=0||
+               Step.BeatMs!=(I==0?Timing::BendMs:0)||Step.ToleranceMs!=(I==0?Timing::BendToleranceMs:0))return false;
+        }
         if(B.Stations.Num()!=4||B.StepStations.Num()!=6||Space.Sites.Num()!=3||Space.Sites[1]!=B.Anchor)return false;
         for(int I=0;I<4;++I)if(B.Stations[I]!=FVector2D(R::Stations[I].X,R::Stations[I].Y))return false;
         for(int I=0;I<6;++I)if(B.StepStations[I]!=R::StepStations[I])return false;

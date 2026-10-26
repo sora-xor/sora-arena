@@ -42,7 +42,7 @@ USoraCampaignDirector* HeroCampaign(const ASoraPlayerCharacter& Hero)
 bool HelmHands(const ASoraPlayerCharacter& Hero)
 {
     const auto* Campaign=HeroCampaign(Hero);
-    return Campaign&&(Campaign->HelmOccupiesHands()||Campaign->FoundryOccupiesHands()||Campaign->HorseTreatmentOccupiesHands()||Campaign->IsCopying());
+    return Campaign&&(Campaign->HelmOccupiesHands()||Campaign->FoundryOccupiesHands()||Campaign->HorseTreatmentOccupiesHands()||Campaign->IsCopying()||Campaign->WorkshopCraftOccupiesHands());
 }
 // In the saddle a weapon acts only in its mounted arc, and under a carried
 // load only if the load leaves it in hand; a refusal raises a notice.

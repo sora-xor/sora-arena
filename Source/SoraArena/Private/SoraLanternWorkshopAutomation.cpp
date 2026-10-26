@@ -80,8 +80,8 @@ bool FSoraLanternWorkshopRoutesTest::RunTest(const FString&)
     if(!Walk(W,2000,-1800)||!Walk(W,1900,-1660)||!Walk(W,1900,-1450,45)||
        !Walk(W,1950,-620,45))return false;
     const int Before=W.Campaign()->TaskProgress().StepDone;
-    if(!W.Press(EKeys::E))return false;
-    TestEqual(TEXT("Mapped Interact works at the raised rib form"),W.Campaign()->TaskProgress().StepDone,Before+1);
+    if(!W.Hold(EKeys::E,48))return false;
+    TestEqual(TEXT("Mapped Interact released in the timing band bends one rib"),W.Campaign()->TaskProgress().StepDone,Before+1);
     if(!Walk(W,1900,-950,45)||!Walk(W,1745,-950,22.5)||!Walk(W,1655,-950)||
        !Walk(W,1745,-950,22.5)||!Walk(W,1900,-950,45)||!Walk(W,1900,-1450,45)||
        !Walk(W,1900,-1660)||!Walk(W,2440,-1660)||!Walk(W,2440,-1030)||

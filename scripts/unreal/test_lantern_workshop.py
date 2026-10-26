@@ -51,6 +51,25 @@ class LanternWorkshopTests(unittest.TestCase):
         self.assertEqual([p[:2] for p in self.native['stations']],workshop.STATIONS)
         self.assertEqual([p[2] for p in self.native['stations']],[45,45,45,0])
 
+    def test_craft_release_hold_interruption_and_accounting_boundaries(self):
+        self.assertIs(self.native['craft_boundary_assertions'],True)
+
+    def test_craft_contract_rejects_missing_changed_and_misplaced_controls(self):
+        for change in ('missing','beat','tolerance','hold','combat','unrelated','count','kind','timing'):
+            c=copy.deepcopy(self.chapter)
+            b=next(r for r in c['space']['beats'] if r['beat']=='ch03.b09')
+            if change=='missing':del b['workshop_craft']
+            elif change=='beat':b['workshop_craft']['bend_release_ms'][0]=799
+            elif change=='tolerance':b['workshop_craft']['bend_release_ms'][1]=161
+            elif change=='hold':b['workshop_craft']['paste_hold_ms'][0]=1499
+            elif change in ('count','kind','timing'):
+                task=next(b['task'] for b in c['beats'] if b['id']=='ch03.b09')
+                task['steps'][0][{'count':'count','kind':'kind','timing':'beat_ms'}[change]]={'count':7,'kind':'paste','timing':799}[change]
+            else:
+                target=next(r for r in c['space']['beats'] if r['beat']=='ch03.b08') if change=='combat' else c['space']['beats'][0]
+                target['workshop_craft']=copy.deepcopy(b['workshop_craft'])
+            self.assertFalse(workshop.workshop_valid(c),change)
+
     def test_oil_duration_and_damage_are_frame_partition_independent(self):
         rows=self.native['burn_partitions']
         self.assertEqual([r[0] for r in rows],[1,7,16,17,33,100,1000,5999,6000,7000,2147483647])
@@ -123,8 +142,11 @@ class LanternWorkshopTests(unittest.TestCase):
         for i in (1,2,4,5,6,7,8):
             c=json.loads((ROOT/f'Content/Data/campaign/chapter_{i:02}.json').read_text())
             self.assertTrue(workshop.workshop_valid(c))
-            c['space']['beats'][0]['lantern_workshop']=workshop.contract()
-            self.assertFalse(workshop.workshop_valid(c))
+            for key,value in [('lantern_workshop',workshop.contract()),
+                              ('workshop_craft',{'bend_release_ms':[800,160],'paste_hold_ms':[1500]})]:
+                c['space']['beats'][0][key]=value
+                self.assertFalse(workshop.workshop_valid(c))
+                del c['space']['beats'][0][key]
 
     def test_street_to_yard_and_canal_gate_are_clear(self):
         self.clear([[3000,0,2.15],[3480,0,2.15],[3480,-1030,2.15],

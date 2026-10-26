@@ -13415,6 +13415,15 @@
       -2200,
       180
      ]
+    },
+    "workshop_craft": {
+     "bend_release_ms": [
+      800,
+      160
+     ],
+     "paste_hold_ms": [
+      1500
+     ]
     }
    },
    {

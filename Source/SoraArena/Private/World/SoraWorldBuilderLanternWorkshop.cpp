@@ -1,6 +1,8 @@
 #include "SoraWorldBuilder.h"
 #include "SoraLanternWorkshopRules.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/PointLightComponent.h"
+#include "Engine/PointLight.h"
 
 void ASoraWorldBuilder::BuildLanternWorkshop()
 {
@@ -20,6 +22,31 @@ void ASoraWorldBuilder::BuildLanternWorkshop()
         FLinearColor(.22f,.15f,.08f),false,FRotator::ZeroRotator,TEXT("Timber"));
     WorkshopDoor->SetMobility(EComponentMobility::Movable);
     ShowWorkshopDoor(false,false);
+    for(int I=0;I<2;++I)
+    {
+        const FVector P(1880+280*I,-390,210);
+        Box(FString::Printf(TEXT("WorkshopWindowFrame%d"),I),P,FVector(160,10,130),
+            FLinearColor(.18f,.12f,.07f),false,FRotator::ZeroRotator,TEXT("Timber"));
+        Box(FString::Printf(TEXT("WorkshopWindowDark%d"),I),P+FVector(0,6,0),FVector(140,2,110),
+            FLinearColor(.025f,.02f,.015f),false);
+        auto* Pane=Box(FString::Printf(TEXT("WorkshopWindowWarm%d"),I),P+FVector(0,8,0),FVector(140,2,110),
+            FLinearColor(1.f,.64f,.25f),false);
+        Pane->ComponentTags.Add(TEXT("WorkshopWarmWindow"));WorkshopWindows.Add(Pane);
+        auto* Light=GetWorld()->SpawnActor<APointLight>(P+FVector(0,45,0),FRotator::ZeroRotator);
+        Light->Tags.Add(TEXT("WorkshopWindowLight"));
+        auto* Glow=Light->PointLightComponent.Get();
+        Glow->SetIntensityUnits(ELightUnits::Lumens);Glow->SetIntensity(240.f);
+        Glow->SetAttenuationRadius(350.f);Glow->SetSourceRadius(35.f);
+        Glow->SetUseTemperature(true);Glow->SetTemperature(2700.f);Glow->SetCastShadows(false);
+        WorkshopWindowLights.Add(Light);DecorActors.Add(Light);
+    }
+    ShowWorkshopRestored(false);
+}
+
+void ASoraWorldBuilder::ShowWorkshopRestored(bool Restored)
+{
+    for(auto* Pane:WorkshopWindows)if(IsValid(Pane))Pane->SetVisibility(Restored);
+    for(auto* Light:WorkshopWindowLights)if(IsValid(Light))Light->PointLightComponent->SetVisibility(Restored);
 }
 
 void ASoraWorldBuilder::ShowWorkshopDoor(bool FightComplete,bool SealCut)

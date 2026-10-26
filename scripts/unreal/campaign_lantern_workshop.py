@@ -25,6 +25,7 @@ def record_values(beat):
        'exit':{'center':[3480,-250],'size':[300,300]},'lantern_workshop':contract()}
     if beat=='ch03.b09':
         r.update(anchor=[2050,-950],stations=copy.deepcopy(STATIONS),step_stations=[0,1,1,2,3,3])
+        r['workshop_craft']={'bend_release_ms':[800,160],'paste_hold_ms':[1500]}
     return r
 
 
@@ -63,9 +64,16 @@ def workshop_neighbour(chapter,a,b):
 def workshop_valid(chapter):
     try:
         records=chapter['space']['beats']
-        if chapter['id']!='ch03_lantern_ward':return not any('lantern_workshop' in r for r in records)
+        if chapter['id']!='ch03_lantern_ward':
+            return not any('lantern_workshop' in r or 'workshop_craft' in r for r in records)
         selected=[r for r in records if r['beat'] in BEATS]
         if len(selected)!=2 or any(('lantern_workshop' in r)!=(r['beat'] in BEATS) for r in records):return False
+        if any(('workshop_craft' in r)!=(r['beat']=='ch03.b09') for r in records):return False
+        task=next(b['task'] for b in chapter['beats'] if b['id']=='ch03.b09')
+        recipe=[{'kind':kind,'count':count,'beat_ms':800 if i==0 else 0,
+                 'tolerance_ms':160 if i==0 else 0,'phrase_strikes':0,'phrase_pass':0}
+                for i,(kind,count) in enumerate([('bend',6),('paste',4),('assemble',1),('paste',1),('assemble',3),('inspect',1)])]
+        if task['goal']!='steps' or task['steps']!=recipe:return False
         for r in selected:
             if any(r.get(k)!=v for k,v in record_values(r['beat']).items()):return False
             z=chapter['space']['zones'][r['zone']]

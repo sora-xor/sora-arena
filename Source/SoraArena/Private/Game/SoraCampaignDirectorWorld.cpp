@@ -696,11 +696,11 @@ float USoraCampaignDirector::CarryPace() const
 bool USoraCampaignDirector::CanHold(int32 WeaponId,bool bNotify)
 {
     if(!Mode().bCampaign||WeaponId<0||WeaponId>=SoraBeatRules::WeaponCount) return true;
-    if(HelmOccupiesHands()||CrankOccupiesHands()||FoundryOccupiesHands()||HorseTreatmentOccupiesHands()||IsCopying())
+    if(HelmOccupiesHands()||CrankOccupiesHands()||FoundryOccupiesHands()||HorseTreatmentOccupiesHands()||IsCopying()||WorkshopCraftOccupiesHands())
     {
         if(bNotify)
         {
-            if(FoundryOccupiesHands()||HorseTreatmentOccupiesHands()||IsCopying()) Notify(SoraText::Line(NSLOCTEXT("SoraArena.Campaign","FoundryHands","作業中は両手を使う。手を離せば武器を使える。")),3.f);
+            if(FoundryOccupiesHands()||HorseTreatmentOccupiesHands()||IsCopying()||WorkshopCraftOccupiesHands()) Notify(SoraText::Line(NSLOCTEXT("SoraArena.Campaign","FoundryHands","作業中は両手を使う。手を離せば武器を使える。")),3.f);
             else Notify(SoraText::Line(NSLOCTEXT("SoraArena.Campaign","CrankHands","両手で輪を回している。手を離せば武器を使える。")),3.f);
         }
         return false;

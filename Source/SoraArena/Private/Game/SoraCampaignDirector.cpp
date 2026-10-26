@@ -128,6 +128,7 @@ void USoraCampaignDirector::HeroDamaged(const FSoraDamagedEvent& Event)
     const ASoraGameMode& M=Mode();
     if(!ActiveBeatData()||Event.Victim!=M.Hero()) return;
     CancelFoundryWork();
+    CancelWorkshopCraft();
     CancelHorseTreatment();
     CancelCopying();
     if(bPryingCarryGate) bCarryGateHit=true;
@@ -464,6 +465,7 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     SoraBeatRules::ApplyCarryDifficulty(Task,static_cast<int32>(SoraAccessibility::CampaignDifficulty(this)));
     SoraBeatRules::ApplyRhythmDifficulty(Task,static_cast<int32>(SoraAccessibility::CampaignDifficulty(this)));
     TaskState=SoraBeatRules::StartTask(Task,Phase);
+    WorkshopCraft={};WorkshopCraftClock.Reset();
     ResetFoundry();
     ResetHorseTreatment();
     ResetHelm();
@@ -501,7 +503,11 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     if(Task.Goal==SoraBeatRules::EGoal::Elapsed) M.TitleCardTime=Task.DurationMs/1000.f;
     // The beat's place: a travel cut to its entry, its kit, horse and camera.
     EnterBeatSpace(bResumed);
-    if(ChapterId==2&&M.Arena())M.Arena()->ShowWorkshopDoor((BeatState.CompletedMask&SoraBeatRules::BeatBit(7))!=0u,false);
+    if(ChapterId==2&&M.Arena())
+    {
+        M.Arena()->ShowWorkshopDoor((BeatState.CompletedMask&SoraBeatRules::BeatBit(7))!=0u,false);
+        M.Arena()->ShowWorkshopRestored((BeatState.CompletedMask&SoraBeatRules::BeatBit(8))!=0u);
+    }
     // A stealth beat opens its zone before its guards take their posts; a
     // restored checkpoint opens it afresh. Its fieldcraft follows, so its
     // floors and the candle join the zone.
@@ -799,6 +805,7 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
     TickEquipmentRecovery(DeltaMs);
     TickCarryWork(DeltaMs);
     TickHeldWork(DeltaMs,DeltaSeconds);
+    TickWorkshopCraft(DeltaSeconds);
     TickRelay(DeltaSeconds);
     TickPlayerCrank(DeltaMs);
     TickPlayerRhythm();
@@ -930,6 +937,7 @@ void USoraCampaignDirector::TickHeldWork(int32 DeltaMs,float DeltaSeconds)
 }
 float USoraCampaignDirector::HeldWorkProgress() const
 {
+    if(IsWorkshopCraft()&&WorkshopCraft.Step>0)return float(WorkshopCraft.ElapsedMs)/SoraWorkshopCraftRules::PasteMs;
     if(IsCopying()) return static_cast<float>(TaskState.HoldProgress[CopyDesk])/Task.HoldPointMs;
     if(HorseTreatmentOccupiesHands()) return float(Treatment.HeldMs)/SoraHorseTreatmentRules::HoldMs;
     if(FoundryOccupiesHands()) return float(Foundry.HeldMs)/SoraFoundryDefenseRules::Need(Foundry.Work);
@@ -1450,6 +1458,7 @@ bool USoraCampaignDirector::AwaitingCapture() const
 }
 void USoraCampaignDirector::ClearEncounter()
 {
+    CancelWorkshopCraft();WorkshopCraft={};
     ResetFoundry();
     ResetHorseTreatment();
     BulkheadHold={}; BulkheadClock.Reset();
@@ -1641,6 +1650,7 @@ void USoraCampaignDirector::HandleFailure(SoraBeatRules::ERetry Outcome,const FS
     }
     ResetPods();
     CancelFoundryWork();
+    CancelWorkshopCraft();
     CancelHorseTreatment();
     CancelCopying();
     CancelBulkheadHold();
@@ -2106,6 +2116,8 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
             const double Feet=Player.GetActorLocation().Z-Player.GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
             if(!Player.GetCharacterMovement()->IsMovingOnGround()||FMath::Abs(Feet-Space.FloorAt(At))>8.)break;
         }
+        if(IsWorkshopCraft()&&!AtWorkshopStation())break;
+        if(BeginWorkshopCraft())return;
         if(SoraRhythmRules::Supported(TaskState,Task)) { WorkPlayerRhythm(); return; }
         const EStroke Struck=SoraBeatRules::Stroke(TaskState,Task);
         bWorked=Struck!=EStroke::Refused;

@@ -1211,6 +1211,24 @@ msgctxt "SoraArena.HUD,Prompt.Work"
 msgid "{Interact}  作業する"
 msgstr "{Interact}  Work"
 
+#. Key:	Prompt.WorkshopBend
+#: Source/SoraArena/Private/HUD/SoraHUDStoryPanels.cpp
+msgctxt "SoraArena.HUD,Prompt.WorkshopBend"
+msgid "{Interact} を押し、輪が緑の帯に入ったら離す"
+msgstr "Hold {Interact}; release when the ring enters the green band"
+
+#. Key:	Prompt.WorkshopBendAssist
+#: Source/SoraArena/Private/HUD/SoraHUDStoryPanels.cpp
+msgctxt "SoraArena.HUD,Prompt.WorkshopBendAssist"
+msgid "{Interact} を長押しする。補助が緑の帯で離す"
+msgstr "Hold {Interact}; assistance releases in the green band"
+
+#. Key:	Prompt.WorkshopPaste
+#: Source/SoraArena/Private/HUD/SoraHUDStoryPanels.cpp
+msgctxt "SoraArena.HUD,Prompt.WorkshopPaste"
+msgid "{Interact} を1.5秒長押しして塗る"
+msgstr "Hold {Interact} for 1.5 s to apply"
+
 #. Key:	Result.ArenaCleared
 #: Source/SoraArena/Private/HUD/SoraHUDStoryPanels.cpp
 msgctxt "SoraArena.HUD,Result.ArenaCleared"
@@ -1277,6 +1295,12 @@ msgstr "Offline development build  |  No XOR or NFT transfers"
 msgctxt "SoraArena.HUD,TopBar.Title"
 msgid "SORA 抵抗軍  /  猫柳生"
 msgstr "SORA Resistance  /  Nyaagyu Rebellion"
+
+#. Key:	WorkshopPasteProgress
+#: Source/SoraArena/Private/HUD/SoraHUDStoryPanels.cpp
+msgctxt "SoraArena.HUD,WorkshopPasteProgress"
+msgid "塗り終わるまで、そのまま押す"
+msgstr "Keep holding to finish the application"
 
 #. Key:	DPadDown
 #: Source/SoraArena/Private/UI/SoraMenuInput.cpp
