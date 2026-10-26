@@ -3,6 +3,7 @@
 #include "SoraCampaignDirector.h"
 #include "SoraCatalog.h"
 #include "SoraFrontEnd.h"
+#include "SoraFieldcraft.h"
 #include "SoraHUD.h"
 #include "SoraPlayerCharacter.h"
 #include "SoraPracticeDirector.h"
@@ -118,6 +119,9 @@ void ASoraGameMode::SetMenuOpen(bool bOpen)
     bMenu=bOpen;
     if(bOpen)
     {
+        // The paused world cannot tick to observe a released key. Discard
+        // fieldcraft holds here, alongside the director's held actions.
+        if(auto* Craft=USoraFieldcraft::Get(this))Craft->CancelHeldInteraction();
         if(CampaignDirector)
         {
             CampaignDirector->StopPlayerCrank();

@@ -1080,6 +1080,18 @@ bool LoseMatch(FAutomationTestBase& Test, FState& State)
 
 // Plays the active beat to its completion through the entry points its task
 // uses, then checks the beat's site, unlocks and the next beat's checkpoint.
+bool OpenWorkshopDefense(FAutomationTestBase& Test,FState& State)
+{
+    auto* Craft=USoraFieldcraft::Get(Player(State));
+    if(!Craft)return Fail(Test,State,TEXT("The workshop needs its fieldcraft subsystem"));
+    if(!Craft->NeedsWorkshopSeal())return true;
+    MoveTo(State,FVector(1900,-1660,0));
+    if(!Advance(Test,State,10)||!State.World->InjectKey(EKeys::E,IE_Pressed))return false;
+    const bool Cut=Advance(Test,State,130);
+    State.World->InjectKey(EKeys::E,IE_Released);
+    return (Cut&&!Craft->NeedsWorkshopSeal())||Fail(Test,State,TEXT("The workshop defense requires a real two-second seal hold"));
+}
+
 bool PlayBeat(FAutomationTestBase& Test, FState& State)
 {
     using SoraBeatRules::EGoal;
@@ -1232,15 +1244,7 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
                 return Fail(Test,State,TEXT("The range must complete through actual arrow impacts"));
             break;
         }
-        if(Beat.Id==TEXT("ch03.b08"))
-        {
-            MoveTo(State,FVector(1900,-1660,0));
-            if(!Advance(Test,State,10)||!State.World->InjectKey(EKeys::E,IE_Pressed))return false;
-            const bool Cut=Advance(Test,State,130);
-            State.World->InjectKey(EKeys::E,IE_Released);
-            if(!Cut||!USoraFieldcraft::Get(Player(State))||USoraFieldcraft::Get(Player(State))->NeedsWorkshopSeal())
-                return Fail(Test,State,TEXT("The workshop defense requires a real two-second seal hold"));
-        }
+        if(Beat.Id==TEXT("ch03.b08")&&!OpenWorkshopDefense(Test,State))return false;
         // Fight what the waves send; walk into the volume that brings the next
         // one; let the clock run for timed waves and survivals.
         for (int32 Action = 0; Action < MaxActionsPerBeat * 4 && Active(); ++Action)
@@ -2000,6 +2004,8 @@ bool DefeatAndRetry(FAutomationTestBase& Test, FState& State)
     ASoraGameMode* GameMode = Mode(State);
     USoraCampaignDirector* Director = Campaign(State);
     ASoraPlayerCharacter* Hero = Player(State);
+    const bool Workshop=Director->ActiveBeatData()->Id==TEXT("ch03.b08");
+    if(Workshop&&!OpenWorkshopDefense(Test,State))return false;
     const TArray<ASoraEnemy*> Enemies = LiveEnemies(State);
     if (Enemies.IsEmpty())
         return Fail(Test, State, TEXT("No opponent is there to defeat the hero"));
@@ -2020,7 +2026,10 @@ bool DefeatAndRetry(FAutomationTestBase& Test, FState& State)
     bOk &= Test.TestEqual(TEXT("A retry keeps restored sites"), GameMode->Arena()->ActivatedMask(), Sites);
     bOk &= Test.TestEqual(TEXT("A retry starts the wave over"), Director->Kills, 0);
     bOk &= Test.TestTrue(TEXT("A retry restores the hero"), Hero->IsAlive() && Hero->Health == Hero->MaxHealth);
-    bOk &= Test.TestFalse(TEXT("A retry respawns the opponents"), LiveEnemies(State).IsEmpty());
+    if(Workshop)
+        bOk &= Test.TestTrue(TEXT("Retry restores the uncut workshop seal before opponents arrive"),
+            USoraFieldcraft::Get(Hero)&&USoraFieldcraft::Get(Hero)->NeedsWorkshopSeal()&&LiveEnemies(State).IsEmpty());
+    else bOk &= Test.TestFalse(TEXT("A retry respawns the opponents"), LiveEnemies(State).IsEmpty());
     return (bOk || Fail(Test, State, TEXT("Retry did not restore the checkpoint"))) && Advance(Test, State);
 }
 
