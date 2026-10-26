@@ -15,8 +15,8 @@ void ASoraWorldBuilder::BuildPalace(const FSoraZone& Zone)
         Box(TEXT("PalaceBoundary"),FVector(Wall.Center,Wall.Height*.5f),FVector(Wall.Size,Wall.Height),Plaster,true,FRotator::ZeroRotator,TEXT(""));
 
     // L5's 2.7 m nightingale corridor wraps the 24 by 16 m garden. The
-    // south rooms form a quiet alternative. These partitions leave gaps for
-    // the sliding panels, whose interaction still needs implementation.
+    // south rooms form a quiet alternative. The beat's fieldcraft stages
+    // the movable sliding panels in these partition gaps.
     Span(TEXT("PalaceTatamiFloor"),0,-1070,2400,-270,-40,0);
     Span(TEXT("PalaceRoomsCeiling"),0,-1070,2400,-270,300,320);
     Span(TEXT("PalaceRoomsWest"),-20,-1070,0,-270,0,300);
@@ -66,5 +66,5 @@ void ASoraWorldBuilder::BuildPalace(const FSoraZone& Zone)
     Span(TEXT("StoreNorth"),3000,3000,4400,3020,0,400);
     Span(TEXT("StoreCeiling"),3000,2000,4400,3000,400,420);
     // The connected b06 route uses this same palace. Final shoin craft,
-    // garden dressing and sliding-panel interactions remain separate work.
+    // garden dressing and fitted fusuma art remain separate work.
 }

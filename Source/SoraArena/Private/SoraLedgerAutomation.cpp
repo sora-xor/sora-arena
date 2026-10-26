@@ -167,9 +167,20 @@ bool FSoraLedgerRouteTest::RunTest(const FString& Parameters)
         if(!Walk(O+At)) return false;
     // The held leg-A rifle occupies (-300,-135). Walk around its real body
     // along the south side instead of asking the hero to stand inside it.
-    for(const FVector At:{FVector(-420,-135,0),FVector(-420,-230,0),FVector(250,-230,0),FVector(250,-670,0),
-        FVector(2150,-670,0),FVector(2150,-135,0),FVector(2430,-135,0),FVector(2430,1900,0),FVector(2430,2250,0)})
+    for(const FVector At:{FVector(-420,-135,0),FVector(-420,-230,0),FVector(250,-230,0)})
         if(!Walk(P+At)) return false;
+    const auto Open=[&]()
+    {
+        if(!TestTrue(TEXT("A closed fusuma is reachable through the actual input prompt"),
+            W.Fieldcraft()->Readout(*W.Hero()).bAtFusuma&&!W.Fieldcraft()->Readout(*W.Hero()).bFusumaOpening)) return false;
+        return W.Press(EKeys::E)&&W.Tick(90);
+    };
+    if(!Open()||!Walk(P+FVector(250,-670,0))||!Walk(P+FVector(1030,-670,0))||!Open()||
+        !Walk(P+FVector(2150,-670,0))||!Walk(P+FVector(2150,-460,0))||!Open()) return false;
+    for(const FVector At:{FVector(2150,-135,0),FVector(2430,-135,0),FVector(2430,1900,0),FVector(2430,2250,0)})
+        if(!Walk(P+At)) return false;
+    for(int I=0;I<3;++I)
+        TestEqual(TEXT("Each room door slides once on the route"),W.Count(*FString::Printf(TEXT("fusuma_slide:%d"),I)),1);
     TestTrue(TEXT("Crossing the hall alone does not complete the palace exit"),W.Campaign()->ActiveBeat()==5);
     // Stop when entry into the real vestibule exit advances the checkpoint;
     // do not chase a stale destination after the ordinary beat transition.
@@ -182,7 +193,70 @@ bool FSoraLedgerRouteTest::RunTest(const FString& Parameters)
     if(!W.World->InjectKey(EKeys::W,IE_Released)||!W.Tick(2)) return false;
     TestTrue(TEXT("Only the actual palace vestibule completes b06"),W.Campaign()->ActiveBeat()!=5&&
         (W.Campaign()->Progress().CompletedMask&SoraBeatRules::BeatBit(5))!=0u);
-    AddInfo(TEXT("Mapped-input traversal with guards held. This proves the physical annex/hall/link/palace/quiet-room route only; it does not qualify ordinary stealth difficulty, sliding fusuma, silent edge access or final art."));
+    AddInfo(TEXT("Mapped-input traversal with guards held. This proves the physical annex/hall/link/palace/quiet-room route and three sliding-door interactions; ordinary stealth difficulty, silent edge access and final art remain separate."));
+    return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraPalaceFusumaTest,"SoraArena.Campaign.PalaceFusuma",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraPalaceFusumaTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;
+    using SoraFieldcraftAutomation::FBeatWorld;
+    if(!FSoraCatalog::Get().Load()) return false;
+    FBeatWorld W(*this,TEXT("PalaceFusuma"),5,5);
+    if(!W.Start()) return false;
+    W.Harden();SoraLiftAutomation::HoldThreats(*W.World);
+    const FVector P(W.BeatData().Space.LedgerHall.PalaceOrigin,0);
+    TArray<TWeakObjectPtr<UStaticMeshComponent>> Doors;
+    UStaticMeshComponent* First=nullptr;
+    for(TObjectIterator<UStaticMeshComponent> It;It;++It)
+        if(It->GetWorld()==W.World->GetTestWorld()&&It->ComponentHasTag(TEXT("PalaceFusuma")))
+        {
+            Doors.Add(*It);
+            if(It->ComponentHasTag(TEXT("PalaceFusuma0"))) First=*It;
+        }
+    if(!TestEqual(TEXT("Three actual sliding leaves fill the room openings"),Doors.Num(),3)||!First) return false;
+    const FVector Closed=First->GetComponentLocation();
+    const auto SightBlocked=[&]()
+    {
+        FHitResult Hit;FCollisionQueryParams Query(SCENE_QUERY_STAT(FusumaSight),false,W.Hero());
+        return W.World->GetTestWorld()->LineTraceSingleByChannel(Hit,P+FVector(250,-190,110),
+            P+FVector(250,-460,110),ECC_Visibility,Query)&&Hit.GetComponent()==First;
+    };
+    W.Stand(P+FVector(250,-190,0),-90);
+    if(!W.Tick(2)||!TestTrue(TEXT("Closed fusuma occludes the room"),SightBlocked())||!W.Hold(EKeys::W,60)) return false;
+    TestTrue(TEXT("Mapped walking is stopped by the closed leaf"),W.Hero()->GetActorLocation().Y>P.Y-260);
+    // Back away from contact before sliding, just as the occupancy guard
+    // asks in ordinary play. This fixture isolates door motion from AI.
+    W.Stand(P+FVector(250,-190,0),-90);
+    if(!W.Press(EKeys::E)||!W.Tick(12)) return false;
+    if(!TestTrue(TEXT("Opening physically moves the solid leaf"),!First->GetComponentLocation().Equals(Closed,.1f))) return false;
+    if(!W.Press(EKeys::Escape)) return false;
+    const FVector Paused=First->GetComponentLocation();
+    if(!W.Tick(300)) return false;
+    TestTrue(TEXT("Pause freezes a partially open door"),First->GetComponentLocation().Equals(Paused,.01f));
+    if(!W.Press(EKeys::Escape)||!W.Tick(90)) return false;
+    TestTrue(TEXT("The complete leaf parks alongside the original partition"),First->GetComponentLocation().Equals(Closed+FVector(264,0,0),.01f));
+    TestFalse(TEXT("The fully opened doorway admits a sight ray"),SightBlocked());
+    TestEqual(TEXT("A slide makes one noise event, not one per frame"),W.Count(TEXT("fusuma_slide:0")),1);
+    W.Stand(P+FVector(250,-294,0));
+    if(!W.Press(EKeys::E)||!W.Tick(90)) return false;
+    TestTrue(TEXT("A closing leaf stops for a pawn in its swept path"),W.Fieldcraft()->Readout(*W.Hero()).bFusumaBlocked);
+    TestTrue(TEXT("A blocked door does not shove the pawn"),FVector::Dist2D(W.Hero()->GetActorLocation(),P+FVector(250,-294,0))<1.f);
+    TestTrue(TEXT("A blocked leaf stays short of its closed position"),!First->GetComponentLocation().Equals(Closed,1.f));
+    W.Stand(P+FVector(250,-480,0));
+    if(!W.Tick(90)) return false;
+    TestTrue(TEXT("Closing resumes after the doorway is cleared"),First->GetComponentLocation().Equals(Closed,.01f));
+    TestEqual(TEXT("Resuming a blocked slide does not duplicate its noise"),W.Count(TEXT("fusuma_slide:0")),2);
+    if(!W.Press(EKeys::E)||!W.Tick(90)) return false;
+    FBeatWorld::Hurt(*W.Hero(),W.Hero()->Health+1000.f);
+    if(!W.Tick(2)||!W.Press(EKeys::Enter)||!W.Tick(2)) return false;
+    for(const auto& Door:Doors) TestFalse(TEXT("Retry destroys the previous beat's door components"),Door.IsValid());
+    W.Stand(P+FVector(250,-190,0));
+    TestTrue(TEXT("Retry restores a closed usable door"),W.Fieldcraft()->Readout(*W.Hero()).bAtFusuma&&
+        !W.Fieldcraft()->Readout(*W.Hero()).bFusumaOpening);
+    AddInfo(TEXT("Door collision, mapped interaction, pause, occupied-path stop/resume and retry fixture with other AI held. Final fitted art, audible slide asset and ordinary stealth difficulty remain unqualified."));
     return true;
 }
 #endif

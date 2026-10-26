@@ -899,6 +899,24 @@ msgctxt "SoraArena.Fieldcraft,Free"
 msgid "{Key} 長押し：首輪を断つ"
 msgstr "Hold {Key}: cut the collar"
 
+#. Key:	FusumaBlocked
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,FusumaBlocked"
+msgid "襖の前を空けて"
+msgstr "Clear the sliding door"
+
+#. Key:	FusumaClose
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,FusumaClose"
+msgid "{Key}：襖を閉める"
+msgstr "{Key}: Slide door closed"
+
+#. Key:	FusumaOpen
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,FusumaOpen"
+msgid "{Key}：襖を開ける"
+msgstr "{Key}: Slide door open"
+
 #. Key:	HeldWork
 #: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
 msgctxt "SoraArena.Fieldcraft,HeldWork"

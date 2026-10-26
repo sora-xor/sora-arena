@@ -122,6 +122,9 @@ struct FSoraFieldcraftReadout
     EHold HoldHere = EHold::None;
     EHold Holding = EHold::None;
     float HoldProgress = 0.f;
+    bool bAtFusuma = false;
+    bool bFusumaOpening = false;
+    bool bFusumaBlocked = false;
     // The escorted party: whether the hero's signal hides or sends them on,
     // and whether they wait for it.
     bool bSignal = false;
@@ -374,6 +377,21 @@ public:
 protected:
     virtual bool DoesSupportWorldType(const EWorldType::Type WorldType) const override;
 private:
+    struct FFusuma
+    {
+        TWeakObjectPtr<UStaticMeshComponent> Panel;
+        FVector Closed = FVector::ZeroVector;
+        FVector Travel = FVector::ZeroVector;
+        float Fraction = 0.f;
+        bool bOpen = false;
+        bool bBlocked = false;
+        bool bSounded = false;
+    };
+    TArray<FFusuma> Fusuma;
+    void StageFusuma(const FSoraBeat& Beat);
+    void TickFusuma(float DeltaSeconds);
+    int32 FusumaAt(const ASoraPlayerCharacter& Player) const;
+    bool InteractFusuma(const ASoraPlayerCharacter& Player);
     const FSoraBeatSpace* LedgerSpace=nullptr;
     TWeakObjectPtr<ASoraEnemy> LedgerAuditors[4];
     TWeakObjectPtr<APointLight> LedgerLights[4];

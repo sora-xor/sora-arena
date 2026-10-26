@@ -326,6 +326,7 @@ UStaticMeshComponent* USoraFieldcraft::Piece(const FString& Name, const TCHAR* M
 
 void USoraFieldcraft::Clear()
 {
+    Fusuma.Reset();
     ClearLedger();
     ClearRegistry();
     ClearRelayRoom();
@@ -398,6 +399,7 @@ void USoraFieldcraft::Stage(const FSoraBeat& Beat)
     StagePressHall(Beat);
     StageRelayRoom(Beat);
     StageLedger(Beat);
+    StageFusuma(Beat);
     StageRegistry(Beat);
     StageCompanions(Beat);
     StageFlood(Beat);
@@ -603,6 +605,7 @@ void USoraFieldcraft::Tick(float DeltaTime)
     if (Staged) TickPressHall(DtMs);
     if (Staged) TickRelayRoom(DtMs);
     if (Staged) TickLedger();
+    if (Staged) TickFusuma(DeltaTime);
     if (Staged) TickRegistry();
 }
 
@@ -653,6 +656,7 @@ USoraFieldcraft::FHold USoraFieldcraft::WorkAt(const FVector& Where) const
 bool USoraFieldcraft::Interact(ASoraPlayerCharacter& Player)
 {
     if (!Staged) return false;
+    if (InteractFusuma(Player)) return true;
     const FVector Where = Player.GetActorLocation();
     // Stones are taken up at a rubble pile.
     if (Staged->bStones && Stones < Staged->Stones.Max)
@@ -1468,6 +1472,13 @@ FSoraFieldcraftReadout USoraFieldcraft::Readout(const ASoraPlayerCharacter& Play
     FSoraFieldcraftReadout Out;
     if (!Staged) return Out;
     Out.bActive = true;
+    const int32 Door = FusumaAt(Player);
+    if(Fusuma.IsValidIndex(Door))
+    {
+        Out.bAtFusuma = true;
+        Out.bFusumaOpening = Fusuma[Door].bOpen;
+        Out.bFusumaBlocked = Fusuma[Door].bBlocked;
+    }
     Out.bSwimming = bSwimming;
     Out.bDiving = bSwimming && bDiving;
     if(FloodSpace)
