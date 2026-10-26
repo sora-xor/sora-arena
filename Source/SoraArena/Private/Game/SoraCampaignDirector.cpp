@@ -1224,6 +1224,7 @@ ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int
         GuardActor->SetActorLocation(Route.Points[0]);
         GuardActor->SetActorRotation(FRotator(0,SoraLedgerRules::Yaw[GuardIndex],0));
         if(auto* Brain=Cast<ASoraEnemyController>(GuardActor->GetController())) Brain->BeginPatrol(Route);
+        if(auto* Craft=USoraFieldcraft::Get(this)) Craft->AssignLedgerAuditor(*GuardActor,GuardIndex);
     }
     if(GuardActor&&Space->RegistryHall.bEnabled&&!Route.Points.IsEmpty())
     {

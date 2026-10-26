@@ -8,6 +8,8 @@
 #include "SoraEnemyController.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/PointLightComponent.h"
+#include "Engine/PointLight.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraLedgerPatrolsTest,"SoraArena.Campaign.LedgerPatrols",
     EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
@@ -32,6 +34,18 @@ bool FSoraLedgerPatrolsTest::RunTest(const FString& Parameters)
         Guards[Slot]=*It;++Count;
     }
     if(!TestEqual(TEXT("The combined ledger/palace encounter contains twelve guards"),Count,R::GuardCount)) return false;
+    TArray<TWeakObjectPtr<APointLight>> Lamps;
+    bool HasLamp[4]={};
+    for(TActorIterator<APointLight> It(W.World->GetTestWorld());It;++It)
+        if(It->Tags.Contains(TEXT("LedgerCarriedLamp")))
+        {
+            Lamps.Add(*It);
+            const auto* Guard=Cast<ASoraEnemy>(It->GetAttachParentActor());
+            if(!TestTrue(TEXT("Each carried lamp belongs to one of the four aisle auditors"),
+                Guard&&Guard->EnemySlot()>=0&&Guard->EnemySlot()<4&&!HasLamp[Guard->EnemySlot()])) return false;
+            HasLamp[Guard->EnemySlot()]=true;
+        }
+    if(!TestEqual(TEXT("The ledger owns four cold carried lamps"),Lamps.Num(),4)) return false;
     FVector Starts[R::GuardCount];float Travel[R::GuardCount]={};
     for(int I=0;I<R::GuardCount;++I)
     {
@@ -46,6 +60,14 @@ bool FSoraLedgerPatrolsTest::RunTest(const FString& Parameters)
     for(int Frame=0;Frame<2700;++Frame)
     {
         if(!W.Tick(1)) return false;
+        for(const auto& Lamp:Lamps)
+        {
+            if(!TestTrue(TEXT("The current encounter retains each carried lamp"),Lamp.IsValid())) return false;
+            const auto* Guard=Cast<ASoraEnemy>(Lamp->GetAttachParentActor());
+            if(!TestTrue(TEXT("The live auditor's lit lamp follows its actual movement and turning"),
+                Guard&&Lamp->PointLightComponent->IsVisible()&&
+                Lamp->GetActorLocation().Equals(Guard->GetActorTransform().TransformPosition(FVector(20,-30,20)),.1f))) return false;
+        }
         for(int I=0;I<R::GuardCount;++I)
         {
             const auto* Guard=Guards[I];
@@ -57,6 +79,14 @@ bool FSoraLedgerPatrolsTest::RunTest(const FString& Parameters)
             if(R::HeightCm[I]>0)
             {
                 if(!TestTrue(TEXT("Ledger drones stay at their actual 5.5 metre flight layer"),FMath::IsNearlyEqual(At.Z,550.f,5.f))) return false;
+                // Altitude alone must not pass a body that clips the ceiling.
+                // Use this archetype's real scaled capsule, not the player's
+                // dimensions or a hand-picked smaller probe.
+                const auto* Capsule=Guard->GetCapsuleComponent();
+                FCollisionQueryParams Query(SCENE_QUERY_STAT(LedgerDroneClearance),false,Guard);
+                if(!TestFalse(TEXT("The full drone body clears the authored shelves and ceiling"),
+                    W.World->GetTestWorld()->OverlapBlockingTestByChannel(At,FQuat::Identity,ECC_Pawn,
+                        FCollisionShape::MakeCapsule(Capsule->GetScaledCapsuleRadius(),Capsule->GetScaledCapsuleHalfHeight()),Query))) return false;
             }
             else if(Frame>30&&!TestTrue(TEXT("Ledger and palace ground guards keep real floor support"),
                 Guard->GetCharacterMovement()->IsMovingOnGround())) return false;
@@ -79,7 +109,16 @@ bool FSoraLedgerPatrolsTest::RunTest(const FString& Parameters)
     if(!W.Tick(300)) return false;
     for(int I=0;I<R::GuardCount;++I)
         TestTrue(TEXT("Menu pause holds all ledger and palace guards"),Guards[I]->GetActorLocation().Equals(Starts[I],1.f));
-    AddInfo(TEXT("Actual-guard patrol/post/flight fixture, observed from the annex. Ordinary stealth difficulty, carried lamps, alarm shutter and final art remain separate acceptance work."));
+    if(!W.Press(EKeys::Escape)) return false;
+    FBeatWorld::Hurt(*Guards[0],Guards[0]->Health+1000.f);
+    if(!W.Tick(2)) return false;
+    TestFalse(TEXT("A defeated auditor extinguishes its carried lamp"),W.Fieldcraft()->LedgerLampLit(0));
+    FBeatWorld::Hurt(*W.Hero(),W.Hero()->Health+1000.f);
+    if(!W.Tick(2)||!W.Press(EKeys::Enter)||!W.Tick(2)) return false;
+    TestEqual(TEXT("Retry restores the combined ledger encounter"),W.Campaign()->ActiveBeat(),5);
+    for(const auto& Lamp:Lamps) TestFalse(TEXT("Retry destroys the previous encounter's carried lamps"),Lamp.IsValid());
+    for(int I=0;I<4;++I) TestTrue(TEXT("Retry creates a lit lamp for every restored aisle auditor"),W.Fieldcraft()->LedgerLampLit(I));
+    AddInfo(TEXT("Actual-guard patrol/post/flight/lamp fixture, observed from the annex. Ordinary stealth difficulty, handheld lamp craft/animation, alarm shutter and final art remain separate acceptance work."));
     return true;
 }
 

@@ -326,6 +326,7 @@ UStaticMeshComponent* USoraFieldcraft::Piece(const FString& Name, const TCHAR* M
 
 void USoraFieldcraft::Clear()
 {
+    ClearLedger();
     ClearRegistry();
     ClearRelayRoom();
     ClearPressHall();
@@ -396,6 +397,7 @@ void USoraFieldcraft::Stage(const FSoraBeat& Beat)
     StageCanisters(Beat);
     StagePressHall(Beat);
     StageRelayRoom(Beat);
+    StageLedger(Beat);
     StageRegistry(Beat);
     StageCompanions(Beat);
     StageFlood(Beat);
@@ -600,6 +602,7 @@ void USoraFieldcraft::Tick(float DeltaTime)
     if (Staged) TickMolten(DtMs);
     if (Staged) TickPressHall(DtMs);
     if (Staged) TickRelayRoom(DtMs);
+    if (Staged) TickLedger();
     if (Staged) TickRegistry();
 }
 

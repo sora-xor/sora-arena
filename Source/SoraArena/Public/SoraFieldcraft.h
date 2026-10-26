@@ -237,6 +237,8 @@ public:
     ASoraEnemy* PressInspector(int32 Objective) const;
     bool RelayInspectionArrived(int32 Node) const;
     ASoraEnemy* RelayInspector() const;
+    void AssignLedgerAuditor(ASoraEnemy& Guard,int32 Index);
+    bool LedgerLampLit(int32 Index) const;
     int32 MoltenClock() const { return MoltenClockMs; }
     int32 MoltenBurnLeft(const ASoraCharacterBase& Body) const;
     const FSoraFieldcraft* Active() const { return Staged; }
@@ -372,6 +374,13 @@ public:
 protected:
     virtual bool DoesSupportWorldType(const EWorldType::Type WorldType) const override;
 private:
+    const FSoraBeatSpace* LedgerSpace=nullptr;
+    TWeakObjectPtr<ASoraEnemy> LedgerAuditors[4];
+    TWeakObjectPtr<APointLight> LedgerLights[4];
+    TWeakObjectPtr<UStaticMeshComponent> LedgerLenses[4];
+    void StageLedger(const FSoraBeat& Beat);
+    void ClearLedger();
+    void TickLedger();
     const FSoraBeatSpace* RegistrySpace=nullptr;
     TWeakObjectPtr<ASoraEnemy> RegistryAuditors[3];
     TWeakObjectPtr<APointLight> RegistryLights[3];
