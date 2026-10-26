@@ -731,6 +731,8 @@ struct FSoraSpace
 struct FSoraWaveGroup
 {
     FName Type;
+    // A location identity admitted by the encounter's spatial contract.
+    FName Spawn;
     int32 Count = 0;
     bool bLethal = true;
     // A scripted opponent that takes no damage (ch08.b02's sweep-only walkers).

@@ -44,6 +44,35 @@ bool Fieldcraft(const FSoraBeatSpace& B,const FVector2D& O,const FVector2D& P)
     return true;
 }
 }
+bool SoraCatalogLedger::ReadLockdown(const FJsonObject& Params,FSoraBeat& Beat)
+{
+    if(Beat.Id!=TEXT("ch06.b06")) return true;
+    using namespace SoraCatalogJson;
+    const auto Waves=Rows(Params,TEXT("waves"));
+    FString Policy,Id,Trigger;TArray<FString> Effects;
+    if(!Waves||Waves->Num()!=1||Beat.Waves.Num()!=1||
+        !Str(Params,TEXT("on_detected"),Policy)||Policy!=TEXT("reinforce:w_lockdown")) return false;
+    const auto W=(*Waves)[0]&&(*Waves)[0]->Type==EJson::Object?(*Waves)[0]->AsObject():nullptr;
+    const auto Groups=W?Rows(*W,TEXT("enemies")):nullptr;
+    if(!W||!Groups||Groups->Num()!=2||!Str(*W,TEXT("id"),Id)||Id!=TEXT("w_lockdown")||
+        !Str(*W,TEXT("trigger"),Trigger)||Trigger!=TEXT("ai_event:alarm_raised")||
+        !Strings(Rows(*W,TEXT("effects")),Effects)||Effects.Num()!=1||Effects[0]!=TEXT("shutter_c3_closed_30s")) return false;
+    auto& Wave=Beat.Waves[0];
+    if(Wave.Id!=Id||Wave.Event!=Trigger||Wave.Groups.Num()!=2||Beat.Task.ReinforceWave!=0||
+        Beat.Task.OnDetected!=SoraBeatRules::EDetected::Reinforce||Beat.Task.ReinforceOnDetection) return false;
+    for(int I=0;I<2;++I)
+    {
+        const auto G=(*Groups)[I]&&(*Groups)[I]->Type==EJson::Object?(*Groups)[I]->AsObject():nullptr;
+        FString Type,Spawn;int32 Count=0;
+        const FString Expected=I==0?TEXT("sp_aisle_north_door"):TEXT("sp_aisle_south_door");
+        auto& Group=Wave.Groups[I];
+        if(!G||!Str(*G,TEXT("type"),Type)||Type!=TEXT("enforcer_rifle")||
+            !Int(*G,TEXT("count"),Count)||Count!=2||!Str(*G,TEXT("spawn"),Spawn)||Spawn!=Expected||
+            Group.Type!=FName(*Type)||Group.Count!=Count||!Group.bLethal||Group.bInvulnerable) return false;
+        Group.Spawn=FName(*Spawn);
+    }
+    return true;
+}
 bool SoraCatalogLedger::Read(const FJsonObject& O,FSoraBeat& Beat,const FSoraSpace& Space)
 {
     using namespace SoraLedgerCatalogDetail;

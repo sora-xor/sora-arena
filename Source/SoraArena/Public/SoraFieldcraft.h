@@ -1,4 +1,5 @@
 #pragma once
+#include "SoraLedgerRules.h"
 #include "CoreMinimal.h"
 #include "Engine/HitResult.h"
 #include "Engine/EngineBaseTypes.h"
@@ -242,6 +243,8 @@ public:
     ASoraEnemy* RelayInspector() const;
     void AssignLedgerAuditor(ASoraEnemy& Guard,int32 Index);
     bool LedgerLampLit(int32 Index) const;
+    const SoraLedgerRules::FLockdown& LedgerLockdownState() const { return LedgerLockdown; }
+    bool LedgerShutterBlocked() const { return bLedgerShutterBlocked; }
     int32 MoltenClock() const { return MoltenClockMs; }
     int32 MoltenBurnLeft(const ASoraCharacterBase& Body) const;
     const FSoraFieldcraft* Active() const { return Staged; }
@@ -396,9 +399,12 @@ private:
     TWeakObjectPtr<ASoraEnemy> LedgerAuditors[4];
     TWeakObjectPtr<APointLight> LedgerLights[4];
     TWeakObjectPtr<UStaticMeshComponent> LedgerLenses[4];
+    TWeakObjectPtr<UStaticMeshComponent> LedgerShutter,LedgerSouthDoor;
+    SoraLedgerRules::FLockdown LedgerLockdown;
+    bool bLedgerShutterBlocked=false;
     void StageLedger(const FSoraBeat& Beat);
     void ClearLedger();
-    void TickLedger();
+    void TickLedger(int32 DeltaMs=0);
     const FSoraBeatSpace* RegistrySpace=nullptr;
     TWeakObjectPtr<ASoraEnemy> RegistryAuditors[3];
     TWeakObjectPtr<APointLight> RegistryLights[3];

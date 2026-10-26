@@ -7,6 +7,7 @@
 #include "SoraCatalogDojo.h"
 #include "SoraCatalogWood.h"
 #include "SoraCatalogCollectibles.h"
+#include "SoraCatalogLedger.h"
 
 namespace
 {
@@ -316,6 +317,8 @@ bool ReadTask(const FJsonObject& O, const FString& TypeName, FSoraBeat& Beat)
         if (Lethal != Rule.Lethal || Nonlethal != Rule.Nonlethal) return false;
         Beat.Waves.Add(MoveTemp(Wave));
     }
+    if (Beat.Waves.IsValidIndex(T.ReinforceWave))
+        T.ReinforceOnDetection = Beat.Waves[T.ReinforceWave].Event != TEXT("ai_event:alarm_raised");
     const FJsonRows* PhaseRows = Rows(O, TEXT("phases"));
     if (!PhaseRows || PhaseRows->IsEmpty() || PhaseRows->Num() > MaxPhases) return false;
     T.PhaseCount = PhaseRows->Num();
@@ -721,6 +724,7 @@ bool FSoraCatalog::LoadCampaign()
             if (!ReadTask(*Task, TypeName, Beat) || !SoraBeatRules::TaskValid(Beat.Task))
                 return Bad(FString::Printf(TEXT("beat %s has an invalid %s task"), *Beat.Id, *TypeName));
             if (!ReadCargo(*Params, Beat)) return Bad(Beat.Id+TEXT(" has invalid authored cargo quantities"));
+            if (!SoraCatalogLedger::ReadLockdown(*Params, Beat)) return Bad(Beat.Id+TEXT(" has invalid authored ledger lockdown"));
             if (!SoraCatalogRegistry::Read(*O, Beat))
                 return Bad(FString::Printf(TEXT("beat %s has an invalid production registry entry"), *Beat.Id));
             if (!SoraCatalogArchery::Read(*O, Beat))

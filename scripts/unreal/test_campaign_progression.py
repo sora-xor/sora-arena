@@ -156,6 +156,8 @@ def task_fields(task):
     for name, key, default in scalars:
         if task[key] != default:
             fields.append(f"T.{name} = {task[key]};")
+    if task['reinforce_wave'] >= 0 and task['waves'][task['reinforce_wave']]['event'] == 'ai_event:alarm_raised':
+        fields.append('T.ReinforceOnDetection = false;')
     if task["goal"] == "hold" and task["objectives"]:
         assert len(set(task["objective_hold_ms"])) == 1
         fields += [f"T.HoldPointCount = {len(task['objectives'])};", f"T.HoldPointMs = {task['objective_hold_ms'][0]};"]

@@ -532,6 +532,13 @@ static void TestBossAndStealth()
     Expect(Fail(State, Zone, EFail::Detected) == ERetry::Continue && Released(State, 0),
         "stealth: detection did not call the reinforcements");
     Expect(Reach(State, Zone) && TaskComplete(State, Zone), "stealth: the exit waited for the reinforcements to fall");
+    Zone.ReinforceOnDetection = false;
+    State = Begin(Zone, "stealth alarm distinct from detection");
+    Expect(Fail(State, Zone, EFail::Detected) == ERetry::Continue && !Released(State, 0),
+        "stealth: detection released a wave that requires the actual alarm");
+    Expect(ReleaseWave(State, Zone, 0) && Released(State, 0), "stealth: the actual alarm did not release its wave");
+    Expect(!ReleaseWave(State, Zone, 0), "stealth: a duplicate alarm released the wave twice");
+    Zone.ReinforceOnDetection = true;
     Zone.OnDetected = EDetected::Restart;
     Zone.ReinforceWave = -1;
     State = Begin(Zone, "stealth restart");
@@ -1818,8 +1825,9 @@ static void TestAuthoredTasks(int Chapter, const FChapterFixture& Plan, const FT
         {
             Expect(Seen == (Task.OnDetected == EDetected::Restart ? ERetry::Checkpoint : ERetry::Continue),
                 Where + ": detection did not follow on_detected");
-            Expect(Task.OnDetected != EDetected::Reinforce || Released(State, Task.ReinforceWave),
-                Where + ": detection did not call its reinforcements");
+            Expect(Task.OnDetected != EDetected::Reinforce ||
+                Released(State, Task.ReinforceWave) == Task.ReinforceOnDetection,
+                Where + ": detection ignored the authored reinforcement trigger");
         }
         else if (!Task.PauseWhenSeen)
             Expect(Seen == ERetry::None, Where + ": detection outside stealth");
