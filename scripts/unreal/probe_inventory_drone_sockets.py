@@ -31,6 +31,12 @@ at 0eb8c5e):
 - LOD0's triangles as authored, within 36.5 cm of the centre, at the record's bounds within 0.02 cm;
 - exactly three convex hulls and no other simple shapes.
 
+Since root's review of d13ebfc5, the socket gates also go through weapon_socket_gates.socket_failures:
+- malformed or nonfinite values fail explicitly;
+- the right and up vectors are read too, and checked signed against the record's socket_axes;
+- every comparison fails safe for NaN, and so do the LOD0 vertices.
+The runs s79 and s80 used the earlier version, without these checks.
+
 "original" is the control. It is read and recorded, and expected to repeat root's failure.
 
 Asset readback only: not a render, a capture or a gameplay admission.
@@ -47,6 +53,7 @@ import unreal
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from sora_engine_pin import require_running_engine  # noqa: E402
+import weapon_socket_gates as G  # noqa: E402
 
 require_running_engine("Inventory drone socket probe")
 OPTS = dict(a.split("=", 1) for a in sys.argv[1:] if "=" in a)
@@ -111,43 +118,50 @@ def probe(tag, fbx):
         scale = socket.get_editor_property("relative_scale")
         rotation = socket.get_editor_property("relative_rotation")
         forward = unreal.MathLibrary.get_forward_vector(rotation)
+        right = unreal.MathLibrary.get_right_vector(rotation)
+        up = unreal.MathLibrary.get_up_vector(rotation)
         sockets[str(socket_name)] = {"position": [position.x, position.y, position.z],
                                      "scale": [scale.x, scale.y, scale.z],
                                      "forward": [forward.x, forward.y, forward.z],
+                                     "right": [right.x, right.y, right.z], "up": [up.x, up.y, up.z],
                                      "rotation_pyr": [rotation.pitch, rotation.yaw, rotation.roll]}
-    low = [min(p[a] for p in points) for a in range(3)]
-    high = [max(p[a] for p in points) for a in range(3)]
+    finite = [p for p in points if G.finite_vector(list(p)) is not None]
+    low = [min(p[a] for p in finite) for a in range(3)] if finite else None
+    high = [max(p[a] for p in finite) for a in range(3)] if finite else None
     return {"fbx": str(Path(fbx).resolve().relative_to(ROOT)), "sha256": hashlib.sha256(Path(fbx).read_bytes()).hexdigest(),
             "sockets": sockets, "lod0": {"triangles": triangles, "mesh_triangles": mesh.get_num_triangles(0),
-                                         "vertices": len(points), "min_cm": low, "max_cm": high,
-                                         "radius_cm": max(math.dist(p, (0, 0, 0)) for p in points)},
+                                         "vertices": len(points), "nonfinite_vertices": len(points) - len(finite),
+                                         "min_cm": low, "max_cm": high,
+                                         "radius_cm": max((math.dist(p, (0, 0, 0)) for p in finite), default=None)},
             "convex_count": meshes.get_convex_collision_count(mesh),
             "other_simple_count": meshes.get_simple_collision_count(mesh)}
 
 
 def gates(row):
-    """Root's gates (0eb8c5e); the failures, empty when it passes."""
+    """Root's gates (0eb8c5e) and the signed-axis gates; the failures, empty when it passes.
+
+    The sockets go through weapon_socket_gates.socket_failures: malformed and nonfinite values fail explicitly,
+    and so do position, unit scale and signed forward, right and up against the record. Root's own forward
+    directions are checked too, failing safe: a NaN cannot pass `not distance < tolerance`.
+    """
     out = []
     if set(row["sockets"]) != {"Eye", "NetMuzzle"}:
         out.append(f"sockets {sorted(row['sockets'])}")
+    out.extend(G.socket_failures(row["sockets"], asset["sockets"], record["socket_axes"], main_mesh=False))
     for name, s in row["sockets"].items():
-        src = asset["sockets"].get(name)
-        if src is None:
-            continue
-        want = (100 * src[0], -100 * src[1], 100 * src[2])
-        if math.dist(s["position"], want) >= .02:
-            out.append(f"{name} moved: {s['position']}")
-        if math.dist(s["scale"], (1, 1, 1)) >= 1e-4:
-            out.append(f"{name} is scaled: {s['scale']}")
-        if math.dist(s["forward"], FORWARD[name]) >= .009:
-            out.append(f"{name} points the wrong way: {s['forward']}")
+        forward = G.finite_vector(s.get("forward"))
+        if name in FORWARD and (forward is None or not math.dist(forward, FORWARD[name]) < .009):
+            out.append(f"{name} points the wrong way: {s.get('forward')}")
     lod = row["lod0"]
+    if lod["nonfinite_vertices"] or lod["radius_cm"] is None:
+        out.append(f"LOD0 has {lod['nonfinite_vertices']} malformed or nonfinite render vertices")
+        return out
     env = record["envelope"]["lods"][0]
     want_low = [100*env["bounds_min_m"][0], -100*env["bounds_max_m"][1], 100*env["bounds_min_m"][2]]
     want_high = [100*env["bounds_max_m"][0], -100*env["bounds_min_m"][1], 100*env["bounds_max_m"][2]]
     if lod["triangles"] != env["triangles"] or lod["mesh_triangles"] != env["triangles"]:
         out.append(f"LOD0 triangles {lod['triangles']}, {lod['mesh_triangles']}")
-    if lod["radius_cm"] > 36.5:
+    if not lod["radius_cm"] <= 36.5:
         out.append(f"LOD0 radius {lod['radius_cm']}")
     if not all(abs(a - b) < .02 for a, b in zip(lod["min_cm"] + lod["max_cm"], want_low + want_high)):
         out.append(f"LOD0 bounds {lod['min_cm']} {lod['max_cm']}")

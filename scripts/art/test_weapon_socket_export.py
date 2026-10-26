@@ -100,6 +100,19 @@ class Screen(unittest.TestCase):
         self.assertFalse(row["passes"])
         self.assertLess(row["turned_deg"], 1e-9)
 
+    def test_a_nonfinite_transform_is_refused(self):
+        # The model refuses it (screen_fbx_sockets.main then reports the file unreadable, exit 2).
+        for key, bad in (("R", (float("nan"), 0, 0)), ("R", (0, float("inf"), 0)), ("T", (float("-inf"), 0, 0)),
+                         ("S", (1, float("nan"), 1))):
+            s = scene(F.UNREAL_IMPORT_AXES, socket_t=(30, 0, 0))
+            s["nodes"]["SOCKET_S"][key] = bad
+            with self.assertRaises(ValueError, msg=(key, bad)):
+                S.screen_scene(s, "bad.fbx")
+        s = scene(F.UNREAL_IMPORT_AXES)
+        s["nodes"]["M"]["vertices"] = np.array([[0.0, float("nan"), 0.0]])
+        with self.assertRaises(ValueError):
+            F.interchange(s)
+
     @unittest.skipUnless(T.parser_available(), "needs Blender's io_scene_fbx parser")
     def test_the_committed_drone_lod0_passes(self):
         rows = S.screen(DRONE / "SM_Drone_Inventory.fbx")
@@ -204,6 +217,90 @@ class Gates(unittest.TestCase):
         self.assertEqual(gaps["worst_corners"][0]["tangents"], [[1, 0, 0], [0, 0, 0]])
         both = copy.deepcopy(zero)                     # degenerate in both: equal, not a mismatch
         self.assertEqual(G.same_import(zero, both)[1], [])
+
+
+BAD_VECTORS = {"nan": [float("nan"), 0.0, 0.0], "inf": [float("inf"), 0.0, 0.0], "-inf": [0.0, float("-inf"), 0.0],
+               "short": [1.0, 0.0], "long": [1.0, 0.0, 0.0, 0.0], "text": ["1", 0.0, 0.0], "bool": [True, 0.0, 0.0],
+               "none": None, "scalar": 1.0}
+
+
+def quad():
+    return {"lod0": {"sections": [{"positions": [[0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0]],
+                                   "indices": [0, 1, 2, 2, 1, 3], "normals": [[0, 0, 1]] * 4,
+                                   "uvs": [[0, 0], [1, 0], [0, 1], [1, 1]], "tangents": [[1, 0, 0]] * 4}]},
+            "materials": [["M", "M", "M"]], "collision": {"convex": 0, "other_simple": 0}}
+
+
+class Malformed(unittest.TestCase):
+    """Root's review of d13ebfc5: a NaN in any one of the five readback fields passed socket_failures, and max()
+    could hide one in model_agreement. Every mutation of every field must now fail, and nothing may raise."""
+
+    @classmethod
+    def setUpClass(cls):
+        record = json.loads((DRONE / "build_record.json").read_text(encoding="utf-8"))
+        cls.positions, cls.axes = record["assets"]["SM_Drone_Inventory"]["sockets"], record["socket_axes"]
+        cls.good = drone_readback("corrected")
+        cls.predicted = {n: {"position_cm": r["position"], "scale": r["scale"], "forward": r["forward"],
+                             "right": r["right"], "up": r["up"]} for n, r in cls.good.items()}
+
+    def test_the_unmutated_readback_passes(self):
+        self.assertEqual(G.socket_failures(self.good, self.positions, self.axes, main_mesh=False), [])
+        self.assertTrue(G.agrees(G.model_agreement(self.good, self.predicted)))
+
+    def test_every_bad_value_in_every_field_fails(self):
+        for field in G.FIELDS:
+            for label, bad in list(BAD_VECTORS.items()) + [("missing", "missing")]:
+                m = copy.deepcopy(self.good)
+                if bad == "missing":
+                    del m["Eye"][field]
+                else:
+                    m["Eye"][field] = bad
+                failures = G.socket_failures(m, self.positions, self.axes, main_mesh=False)
+                self.assertTrue(any(f.startswith(f"Eye {field} is malformed or nonfinite") for f in failures),
+                                (field, label, failures))
+
+    def test_a_malformed_record_position_or_authored_axes_fails(self):
+        for mutate, text in ((lambda p, a: p.__setitem__("Eye", [float("nan"), 0, 0]), "the record's position"),
+                             (lambda p, a: a["Eye"].__setitem__("x", [float("inf"), 0, 0]), "the authored axes"),
+                             (lambda p, a: a["Eye"].pop("z"), "the authored axes"),
+                             (lambda p, a: a.pop("Eye"), "the authored axes")):
+            positions, axes = copy.deepcopy(self.positions), copy.deepcopy(self.axes)
+            mutate(positions, axes)
+            failures = G.socket_failures(self.good, positions, axes, main_mesh=False)
+            self.assertTrue(any(text in f for f in failures), (text, failures))
+
+    def test_model_agreement_refuses_bad_values_on_either_side(self):
+        for field, pkey in zip(G.FIELDS, ("position_cm", "scale", "forward", "right", "up")):
+            for label, bad in BAD_VECTORS.items():
+                readback = copy.deepcopy(self.good)
+                readback["Eye"][field] = bad
+                predicted = copy.deepcopy(self.predicted)
+                predicted["NetMuzzle"][pkey] = bad
+                for worst in (G.model_agreement(readback, self.predicted), G.model_agreement(self.good, predicted)):
+                    self.assertGreaterEqual(worst["nonfinite"], 1, (field, label))
+                    self.assertFalse(G.agrees(worst), (field, label))
+                    self.assertTrue(all(math.isfinite(worst[k]) for k in G.AGREEMENT), (field, label, worst))
+
+    def test_same_import_fails_bad_sections_without_raising(self):
+        def mutated(fn):
+            m = quad()
+            fn(m["lod0"]["sections"][0])
+            return m
+        cases = {"nan position": (lambda s: s["positions"].__setitem__(3, [float("nan"), 1, 0]), "positions: 1"),
+                 "inf normal": (lambda s: s["normals"].__setitem__(1, [0, 0, float("inf")]), "normals: 1"),
+                 "nan uv": (lambda s: s["uvs"].__setitem__(0, [float("nan"), 0]), "uvs: 1"),
+                 "short tangent": (lambda s: s["tangents"].__setitem__(2, [1, 0]), "tangents: 1"),
+                 "index out of range": (lambda s: s["indices"].__setitem__(5, 9), "out of range"),
+                 "float index": (lambda s: s["indices"].__setitem__(0, 0.0), "out of range"),
+                 "short array": (lambda s: s["uvs"].pop(), "uvs: 3 entries"),
+                 "broken triangle": (lambda s: s["indices"].pop(), "whole number of triangles"),
+                 "missing array": (lambda s: s.pop("tangents"), "malformed section")}
+        for label, (fn, text) in cases.items():
+            for a, b in ((quad(), mutated(fn)), (mutated(fn), quad())):
+                gaps, failures = G.same_import(a, b)
+                self.assertTrue(any(text in f for f in failures), (label, failures))
+                self.assertTrue(all(math.isfinite(gaps[k]) for k in ("positions_cm", "uvs", "normal_deg", "tangent_deg")))
+        self.assertTrue(G.same_import(quad(), {"lod0": None})[1])
 
 
 class Record(unittest.TestCase):

@@ -11,6 +11,8 @@ prediction until a real import reads it back.
 - at scale 1 within 1e-4, SoraViewmodelComponent's admission tolerance;
 - on the axes its own geometry carries, its authored axes, within 0.01 deg.
 
+A socket with any nonfinite value fails explicitly ("finite" false), whatever its comparisons say.
+
 It exits 1 when any socket fails, and 2 when a file cannot be read (for example, an LFS pointer).
 """
 
@@ -54,13 +56,14 @@ def screen_scene(scene, path):
         authored_y = np.cross(authored_z, authored_x)            # Unreal's right: Y = Z x X (FRotationMatrix rows)
         turned = max(angle_deg(s["x"], authored_x), angle_deg(s["y"], authored_y), angle_deg(s["z"], authored_z))
         scale_off = float(np.abs(s["scale"] - 1.0).max())
+        finite = bool(all(np.isfinite(v).all() for v in (s["position_cm"], s["scale"], s["x"], s["y"], s["z"])))
         rows.append({"file": str(path), "socket": name, "position_cm": s["position_cm"].round(5).tolist(),
                      "scale": s["scale"].round(7).tolist(), "forward": s["x"].round(7).tolist(),
                      "right": s["y"].round(7).tolist(), "z": s["z"].round(7).tolist(),
                      "authored_forward": authored_x.round(7).tolist(), "authored_right": authored_y.round(7).tolist(),
                      "authored_z": authored_z.round(7).tolist(), "turned_deg": round(turned, 4),
                      "scale_off": round(scale_off, 7), "axes": {k: list(v) for k, v in scene["axes"].items()},
-                     "passes": bool(scale_off < SCALE_TOL and turned < TURN_TOL_DEG)})
+                     "finite": finite, "passes": bool(finite and scale_off < SCALE_TOL and turned < TURN_TOL_DEG)})
     return rows
 
 

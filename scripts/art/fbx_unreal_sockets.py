@@ -172,8 +172,13 @@ def interchange(scene):
     sockets[name]: position_cm, scale (the lengths of the transform's axes), x, y and z (its unit axes: forward,
     right and up), det. vertices[mesh]: (n, 3).
     """
-    if abs(scene["unit"] - 1.0) > 1e-12:
+    if not abs(scene["unit"] - 1.0) <= 1e-12:
         raise ValueError(f"UnitScaleFactor {scene['unit']}: only centimetre files are modelled")
+    for name, node in scene["nodes"].items():         # nonfinite input is refused, never carried through as NaN
+        if not all(np.isfinite(np.asarray(node[k], float)).all() for k in ("T", "R", "S")):
+            raise ValueError(f"{name}: a nonfinite node transform {node['T']} {node['R']} {node['S']}")
+        if node["vertices"] is not None and not np.isfinite(node["vertices"]).all():
+            raise ValueError(f"{name}: nonfinite vertices")
     c = np.eye(4)
     c[:3, :3] = conversion(scene["axes"])
     nodes = scene["nodes"]

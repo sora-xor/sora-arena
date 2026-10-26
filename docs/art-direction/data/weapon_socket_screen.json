@@ -2,10 +2,10 @@
  "what": "screen_fbx_sockets.py over every tracked FBX with SOCKET_ nodes: UE 5.8 Interchange's socket rule (fbx_unreal_sockets.py), a prediction for any file a real import has not read back",
  "tree": {
   "worktree": "art (claude/photoreal-art)",
-  "head": "45a2af0ab3d10d9c2840731f177a227ab1a12dc9"
+  "head": "6021127ff3b79b1982b687f335ae29e29702cb48"
  },
- "model_sha256": "e2f6879e98593df8764c3b309de87bff16162907b31c715fe8d7951ce053ede2",
- "screen_sha256": "1b01b6129b414dea6e75d28bff4b73ed39426dc4f716161c9b0b3df37bf9fdb6",
+ "model_sha256": "b12df1375e8cf3299e645ca061d940ba4b26f7c7e0a6eb3606070b2792f60589",
+ "screen_sha256": "e4b7c07d3173c887f231d7556451fda02d7b74cd9181c663869a6dd3994289ba",
  "summary": {
   "files": 27,
   "sockets": 85,
@@ -73,6 +73,7 @@
      1
     ]
    },
+   "finite": true,
    "passes": true
   },
   {
@@ -134,6 +135,7 @@
      1
     ]
    },
+   "finite": true,
    "passes": true
   },
   {
@@ -195,6 +197,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -256,6 +259,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -317,6 +321,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -378,6 +383,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -439,6 +445,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -500,6 +507,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -561,6 +569,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -622,6 +631,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -683,6 +693,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -744,6 +755,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -805,6 +817,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -866,6 +879,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -927,6 +941,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -988,6 +1003,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -1049,6 +1065,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -1110,6 +1127,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -1171,6 +1189,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -1232,6 +1251,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -1293,6 +1313,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -1354,6 +1375,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -1415,6 +1437,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -1476,6 +1499,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -1537,6 +1561,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -1598,6 +1623,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -1659,6 +1685,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -1720,6 +1747,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -1781,6 +1809,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -1842,6 +1871,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -1903,6 +1933,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -1964,6 +1995,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -2025,6 +2057,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -2086,6 +2119,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -2147,6 +2181,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -2208,6 +2243,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -2269,6 +2305,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -2330,6 +2367,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -2391,6 +2429,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -2452,6 +2491,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -2513,6 +2553,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -2574,6 +2615,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -2635,6 +2677,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -2696,6 +2739,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -2757,6 +2801,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -2818,6 +2863,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -2879,6 +2925,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -2940,6 +2987,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -3001,6 +3049,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -3062,6 +3111,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -3123,6 +3173,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -3184,6 +3235,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -3245,6 +3297,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -3306,6 +3359,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -3367,6 +3421,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -3428,6 +3483,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -3489,6 +3545,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -3550,6 +3607,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -3611,6 +3669,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -3672,6 +3731,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -3733,6 +3793,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -3794,6 +3855,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -3855,6 +3917,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -3916,6 +3979,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -3977,6 +4041,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -4038,6 +4103,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -4099,6 +4165,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -4160,6 +4227,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -4221,6 +4289,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -4282,6 +4351,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -4343,6 +4413,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -4404,6 +4475,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -4465,6 +4537,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -4526,6 +4599,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -4587,6 +4661,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -4648,6 +4723,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -4709,6 +4785,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -4770,6 +4847,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -4831,6 +4909,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -4892,6 +4971,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -4953,6 +5033,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -5014,6 +5095,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -5075,6 +5157,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -5136,6 +5219,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   },
   {
@@ -5197,6 +5281,7 @@
      -1
     ]
    },
+   "finite": true,
    "passes": false
   }
  ],
