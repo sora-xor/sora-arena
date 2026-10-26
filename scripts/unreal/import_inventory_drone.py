@@ -127,9 +127,11 @@ nanite.set_editor_property("enabled", False)
 meshes.set_nanite_settings(mesh, nanite, True)
 for index, entry in enumerate(record["assets"][NAME]["lods"][1:], 1):
     require(meshes.import_lod(mesh, index, str(root / entry["file"])) == index, f"LOD{index} import failed")
-require(meshes.set_lod_screen_sizes(mesh, record["assets"][NAME]["screen_sizes"]), "LOD screen setup failed")
 require(len(mesh.get_editor_property("static_materials")) == 1, "drone must retain its single baked material")
 mesh.set_material(0, material)
+# SetMaterial runs Pre/PostEditChange and can rebuild render data. Apply the
+# authored thresholds after that edit, then verify the final saved result.
+require(meshes.set_lod_screen_sizes(mesh, record["assets"][NAME]["screen_sizes"]), "LOD screen setup failed")
 require(assets.save_loaded_asset(mesh), "could not save mesh")
 
 # Read actual imported geometry, sockets, collisions and material bindings.
@@ -144,7 +146,9 @@ for lod in range(meshes.get_lod_count(mesh)):
         triangles += len(indices) // 3
     require(triangles == mesh.get_num_triangles(lod), "readback missed render triangles")
     lods.append((points, triangles))
-geometry = geometry_readback(record, lods, list(meshes.get_lod_screen_sizes(mesh)))
+screens = list(meshes.get_lod_screen_sizes(mesh))
+unreal.log("INVENTORY_DRONE_LOD_SCREENS: " + json.dumps(screens))
+geometry = geometry_readback(record, lods, screens)
 sockets = {}
 for socket in mesh.get_editor_property("sockets"):
     name = str(socket.get_editor_property("socket_name"))
@@ -167,7 +171,7 @@ for channel, texture in textures.items():
 require(not meshes.get_nanite_settings(mesh).get_editor_property("enabled"), "unexpected Nanite substitution")
 report = {"source_record_sha256": RECORD_SHA256, "engine": unreal.SystemLibrary.get_engine_version(),
           "importer_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-          "asset": mesh.get_path_name(), "geometry": geometry, "sockets": sockets,
+          "asset": mesh.get_path_name(), "geometry": geometry, "screen_sizes": screens, "sockets": sockets,
           "convex_count": convex_count, "other_simple_count": simple_count,
           "material": material.get_path_name(), "nanite": False,
           "status": "import readback passed; runtime collisions, routes and final art remain separate"}

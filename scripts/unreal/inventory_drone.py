@@ -48,7 +48,8 @@ def geometry_readback(record, lods, screens):
     """Validate real render-buffer positions, not the FBX's claimed bounds."""
     require(len(lods) == 3 and len(screens) == 3, "expected three authored LODs")
     require(all(math.isfinite(v) and abs(v-w) < 1e-5 for v, w in
-                zip(screens, record["assets"][NAME]["screen_sizes"])), "changed LOD screens")
+                zip(screens, record["assets"][NAME]["screen_sizes"])),
+            f"changed LOD screens: actual={screens}, expected={record['assets'][NAME]['screen_sizes']}")
     rows = []
     for index, (points, triangles) in enumerate(lods):
         points = [vector(p, "render vertex") for p in points]
