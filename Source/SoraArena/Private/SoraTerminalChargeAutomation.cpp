@@ -89,7 +89,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraTerminalLoaderTest,"SoraArena.Campaign.Not
 bool FSoraTerminalLoaderTest::RunTest(const FString&)
 {
     if(!FSoraCatalog::Get().Load())return false;
-    for(int Case=0;Case<9;++Case)
+    for(int Case=0;Case<12;++Case)
     {
         TSharedPtr<FJsonObject> Data;if(!SoraCatalogJson::ReadJson(TEXT("campaign/chapter_03.json"),Data))return false;
         auto O=Data->GetObjectField(TEXT("space"))->GetArrayField(TEXT("beats"))[9]->AsObject();
@@ -102,6 +102,10 @@ bool FSoraTerminalLoaderTest::RunTest(const FString&)
         if(Case==6)Copy.Beats[9].Space.Objectives[2]=FVector2D::ZeroVector;
         if(Case==7)Copy.Beats[9].ObjectiveHoldMs[1]=0;
         if(Case==8)Copy.Beats[9].Task.Count=2;
+        auto& Zone=Copy.Space.Zones[Copy.Beats[9].Space.Zone];
+        if(Case==9)Zone.Place=TEXT("pl_ura_nagaya");
+        if(Case==10)Zone.Rect.Max.X+=1;
+        if(Case==11)Zone.Walls.AddDefaulted();
         TestEqual(TEXT("The native catalog binds the charge and real escape location"),
             SoraCatalogTerminalCharge::Read(*O,Copy.Beats[9],Copy.Space),Case==0);
     }

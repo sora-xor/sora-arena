@@ -1,6 +1,7 @@
 #include "SoraCatalogTenements.h"
 #include "SoraCatalog.h"
 #include "SoraCatalogJson.h"
+#include "SoraCatalogTerminalCharge.h"
 #include "SoraTenementRules.h"
 #include "SoraTenementDefenseRules.h"
 #include "SoraTenementFindRules.h"
@@ -26,9 +27,16 @@ bool SoraCatalogTenements::Read(const FJsonObject& O,FSoraBeat& Beat,const FSora
         if(Beat.Id==TEXT("ch03.b16")||Beat.Id==TEXT("ch03.b18"))
         {
             const auto& B=Beat.Space;
+            // The authored notice square occupies the existing hub street.
+            // Later street beats may share that exact open zone, but may not
+            // start in a tenement, workshop or an arbitrary overlapping zone.
+            const auto Street=[&](const FVector2D& P)
+            {
+                const int32 Z=Space.ZoneAt(FVector(P,0));
+                return Z==INDEX_NONE||(Space.Zones.IsValidIndex(Z)&&SoraCatalogTerminalCharge::Square(Space.Zones[Z]));
+            };
             if(B.Zone!=INDEX_NONE||B.Entry!=FVector2D(-350,0)||B.EntryYaw!=0.f||
-               Space.ZoneAt(FVector(B.Entry,0))!=INDEX_NONE||
-               Space.ZoneAt(FVector(B.Anchor,0))!=INDEX_NONE)return false;
+               !Street(B.Entry)||!Street(B.Anchor))return false;
         }
         return !Value.IsValid()&&!O.HasField(TEXT("tenement_defense"))&&!O.HasField(TEXT("tenement_finds"));
     }

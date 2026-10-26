@@ -12,6 +12,13 @@ static bool Numbers(const FJsonObject& O,const TCHAR* Key,std::initializer_list<
     {double V=0;if(!(*A)[I]||(*A)[I]->Type!=EJson::Number||!(*A)[I++]->TryGetNumber(V)||V!=E)return false;}
     return true;
 }
+bool Square(const FSoraZone& Z)
+{
+    return Z.Id==TEXT("pl_kosatsuba")&&Z.Place==TEXT("pl_kosatsuba")&&
+        Z.Rect.Min==FVector2D(-2200,-1000)&&Z.Rect.Max==FVector2D(3200,3200)&&
+        Z.Entry==FVector2D(-1000,2800)&&Z.EntryYaw==-90&&Z.Walls.IsEmpty()&&Z.Cover.IsEmpty()&&
+        Z.Props.IsEmpty()&&Z.Route.IsEmpty();
+}
 bool Read(const FJsonObject& O,FSoraBeat& Beat,const FSoraSpace& Space)
 {
     const bool Charge=Beat.Id==TEXT("ch03.b10");
@@ -20,9 +27,7 @@ bool Read(const FJsonObject& O,FSoraBeat& Beat,const FSoraSpace& Space)
     if(!Square)return true;
     const auto& B=Beat.Space;if(!Space.Zones.IsValidIndex(B.Zone))return false;
     const auto& Z=Space.Zones[B.Zone];
-    if(Z.Id!=TEXT("pl_kosatsuba")||Z.Rect.Min!=FVector2D(-2200,-1000)||Z.Rect.Max!=FVector2D(3200,3200)||
-       Z.Entry!=FVector2D(-1000,2800)||Z.EntryYaw!=-90||!Z.Walls.IsEmpty()||!Z.Cover.IsEmpty()||!Z.Props.IsEmpty()||
-       !Z.Route.IsEmpty()||B.Entry!=Z.Entry||B.EntryYaw!=-90||B.Anchor!=FVector2D(-730,560)||B.HeightCm!=0)return false;
+    if(!Square(Z)||B.Entry!=Z.Entry||B.EntryYaw!=-90||B.Anchor!=FVector2D(-730,560)||B.HeightCm!=0)return false;
     if(!Charge)return true;
     const auto C=V->Type==EJson::Object?V->AsObject():nullptr;namespace R=SoraTerminalChargeRules;
     if(!C||!Numbers(*C,TEXT("terminal_cm"),{R::TerminalX,R::TerminalY,0})||
