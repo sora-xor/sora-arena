@@ -1,9 +1,19 @@
 # West landing source checkpoint — not runtime qualified
 
-This prepares chapter 3's west landing and two timed patrols for an Unreal
-build. It is separate from the already exercised landing-drone attack. The
-new C++ has not been compiled or run in Unreal. Claude owns the engine and
-Blender lane while producing the character revision.
+This prepares chapter 3's west landing and two timed patrols. It is separate
+from the already exercised landing-drone attack. Signed `53967094` successfully
+compiles the editor target in UE 5.8.3 with Xcode 26.1.1. No editor or runtime
+test has launched for this candidate. Claude owns the engine and Blender lane
+while producing the character revision.
+
+The first compilation at `a1b1821c` failed because a test used `auto*` with a
+`TObjectPtr<ASoraLamp>`. The one-line explicit pointer correction is `53967094`.
+Both attempts ended naturally and remain archived; the second exited zero
+with complete stdout EOF, unchanged Config/Content/Generated and clean source.
+Its three editor artifact hashes independently match the receipt. Review:
+`d0b5ab7429549e3e9fa1729e3b544a2d5e5050264d6a639f7e81e605e3406e41`.
+The two-build CPU-only window was explicitly closed at 07:39 UTC. This is
+compilation evidence, not runtime, visual, package or platform acceptance.
 
 The generated data now uses the authored 44 × 16 m yard, entry at the west
 steps, three lamp positions, six puddles, five cargo stacks and north-east
@@ -49,7 +59,7 @@ authored spawn without position warps, but freeze combat to isolate traversal.
 
 Open before integration or acceptance:
 
-- Compile and run the seven new cases and existing landing-drone attack
+- Run the seven new cases and existing landing-drone attack
   regressions. Check generated collision, imports, navigation and lighting.
 - Physically play all three routes, snuff each lamp with its one-second
   interaction, and verify puddles, detection carryover and the real exit.

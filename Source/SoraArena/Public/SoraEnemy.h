@@ -128,6 +128,7 @@ public:
     const SoraHorseShellRules::FState& HorseShellState() const { return HorseShellClock; }
     AActor* HorseShellWarning() const { return ShellWarning.Get(); }
     bool HasLandingDroneAssignment() const { return bLandingDrone; }
+    UStaticMeshComponent* InventoryDroneBody() const { return DroneBody; }
     int32 LandingSearchlightAt(const FVector& Location) const;
     bool OwnsLandingDroneMotion() const { return bLandingDrone&&LandingDroneClock.Stage!=SoraLandingDroneRules::EStage::Idle; }
     bool IsLandingDroneLow() const;
