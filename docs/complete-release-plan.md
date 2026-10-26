@@ -11,6 +11,14 @@ production. Work runs in isolated worktrees, with a single coordinated Unreal
 and GPU rendering lane. The shared checkout is not a build or render workspace.
 The local coordination mailboxes record current ownership, commits and lane use.
 
+## October 26 workshop seal and shelter
+
+The [seal and shelter checkpoint](qualification/workshop-seal-shelter-2026-10-26.md) adds a two-second physical seal cut before the defense waves, four immune craftspeople who walk into shelter, a barred door during combat and an open door restored by later checkpoints. All 87 local gameplay/asset gates pass at `f0b7cee7`. Signed `94054f80` builds and passes all 42 selected runtime tests with zero selected errors/warnings and natural exit. Its first 40/42 run remains failed: a real missing pause cancellation is fixed, and the assisted death/retry fixture now cuts the seal before expecting enemies. Ordinary combat and final art remain unqualified.
+
+Published `463c7b3e` separately passes all 124 source CI gates in authenticated run `40397400671`; exact inventory, tested merge tree, all artifact digests and raw logs verify. That run predates the seal/shelter source. Oil hazards, destructible cover, authored wave arrivals, craft presentation and warm-window restoration remain open. The latest Mac package is still `c655b6b`, native bridge `10ad7dad`.
+
+Claude's s130 game PBR import completes, creating 43 packages: 23 instances, one master and 19 textures. Root verifies the original logs and source-map hashes and records current package hashes, with no fresh editor reload or visual acceptance. The engine lane returned to Claude at 20:58 UTC for actual-material character captures. The coordination mailboxes remain authoritative for live ownership.
+
 ## October 26 lantern workshop
 
 The [workshop layout checkpoint](qualification/lantern-workshop-layout-2026-10-26.md) replaces the generic hall with the authored building, earth passage, raised plank floor, yard, storehouse and four elevated stations. Signed `4d1a057e` builds and passes all 39 selected runtime tests with zero selected errors/warnings and natural exit. All 87 local gameplay/asset gates pass at the implementation revision `799233e8`. The first 38/39 run stays failed; a fixture-only correction puts the roof-rejection probe at the actual grounded roof height. Seal interaction, sheltered craftspeople, oil fire, destructible cover, authored enemy arrivals and final craft presentation remain unfinished.
