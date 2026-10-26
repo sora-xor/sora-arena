@@ -2,12 +2,25 @@
 #if WITH_DEV_AUTOMATION_TESTS
 #include "SoraRecoveryAutomation.h"
 #include "SoraLiftAutomation.h"
+#include "SoraEquipmentComponent.h"
+#include "Combat/SoraStealth.h"
+#include "Components/CapsuleComponent.h"
 namespace SoraTerminalChargeAutomation
 {
 inline bool HoldTo(FSoraAutomationWorld& W,SoraTerminalChargeRules::EStage Stage)
 {
     auto* C=W.Mode()->Campaign();
     if(!W.InjectKey(EKeys::E,IE_Pressed))return false;
+    if(!C->TerminalOccupiesHands()&&C->TerminalState().Stage!=Stage)
+    {
+        const auto* H=W.Player();const auto* K=H->GetEquipment();const auto* S=USoraStealth::Get(H);
+        FHitResult Hit;FCollisionQueryParams Q(SCENE_QUERY_STAT(TerminalHoldDiagnostic),false,H);
+        W.GetTestWorld()->LineTraceSingleByChannel(Hit,H->GetActorLocation(),FVector(-730,560,110),ECC_Visibility,Q);
+        UE_LOG(LogTemp,Error,TEXT("Terminal hold refused: playable=%d ground=%d feet=%.3f wait_release=%d stagger=%d strike=%d step=%d reload=%d dragging=%d drag_target=%s seal=%s ray=%s/%s"),
+            H->CanPlay(),H->GetCharacterMovement()->IsMovingOnGround(),H->GetActorLocation().Z-H->GetCapsuleComponent()->GetScaledCapsuleHalfHeight(),
+            C->TerminalState().WaitRelease,K->IsStaggered(),K->IsCommittedStrike(),K->IsStepping(),K->bReloading,S&&S->IsDragging(),
+            *GetNameSafe(S?S->DragTarget(*H):nullptr),*GetNameSafe(C->SealBeingCut()),*GetNameSafe(Hit.GetActor()),*GetNameSafe(Hit.GetComponent()));
+    }
     bool Ok=true;
     for(int I=0;I<360&&Ok&&C->TerminalState().Stage!=Stage;++I)Ok=W.Tick(1);
     const bool Released=W.InjectKey(EKeys::E,IE_Released);
