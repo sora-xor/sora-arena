@@ -51,14 +51,4 @@ The evidence follow-up also corrects a generator error message: b09 manufactures
 the festival-shell tube; it is not an alley duel or a shotgun. That wording
 correction changes neither generated data nor runtime behavior.
 
-The Unreal recovery fixture now checks every arm after the actual bundle pickup.
-The kitchen supply fixture adds ordinary polearm input, actual defeat/retry and
-full-ammunition collection. `SoraArena.Campaign.Tenements.Loadout` checks five
-checkpoint phases. These new/changed runtime assertions and compilation are
-**pending**. Earlier runtime results predate this change. The next combined
-selection also retains `SoraArena.Campaign.InfiltrationLoadout` because the shared
-equipment rule changed. No ordinary play, current package or release acceptance
-is established here.
-Both native-Japanese and English-subtitle loader tests are included to check
-the new resource entries with Unreal's parser. The combined selection has 37
-tests and is prepared only until Claude explicitly returns the engine lane.
+The Unreal recovery fixture checks every arm after the actual bundle pickup. The kitchen supply fixture adds ordinary polearm input, actual defeat/retry and full-ammunition collection. The later [runtime checkpoint](tenement-loadout-runtime-2026-10-26.md) records the successful UE 5.8.3 build and all 37 selected tests at signed `f2a27d70`, including five real checkpoint loadout phases, shared infiltration permissions and both localization loaders. It retains the first 36/37 run and its invalid-checkpoint fixture setup failure. Ordinary play, current packages and release acceptance remain open.

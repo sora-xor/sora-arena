@@ -37,14 +37,6 @@ are separately audited. The source-validation worktree retains
 | `report.json` | `ff100379cf26814033ae9efbc2469c49dde5f80bac8b3ca4a5aee9d3da3f6ea2` |
 | `independent-review.json` | `7ab7b5446388eda659bcaa02932e1f92bb9c7a2a9faa003b392a03ca891b773c` |
 
-`SoraArena.Campaign.Tenements.KitchenQueue` is added but **not yet run**. It uses
-the real first wave, directed enemy placement, damage and traces to check
-non-targetability, scatter only after volume entry, bounded movement, standing
-inside each room, menu pause, actual defeat/retry and cleanup. Its hero is hardened
-and enemies are held to isolate this behavior. It does not establish ordinary
-combat or final civilian art.
+`SoraArena.Campaign.Tenements.KitchenQueue` subsequently passes in the [37-case runtime checkpoint](tenement-loadout-runtime-2026-10-26.md) at signed `f2a27d70`. It uses the real first wave, directed enemy placement, damage and traces to check non-targetability, scatter only after volume entry, bounded movement, standing inside each room, menu pause, actual defeat/retry and cleanup. Its hero is hardened and enemies are held to isolate this behavior. Ordinary combat and final civilian art remain open.
 
-Unreal compilation and runtime validation remain pending while Claude owns the
-engine/Blender lane. Earlier 32/32 runtime and 123/123 CI evidence at `bae6e9d4`
-and `6795e0c6` respectively predates this change. No new package, performance,
-render or release acceptance is claimed.
+The later checkpoint includes a successful UE 5.8.3 build and retained failed-run evidence. No new package, performance, rendered-art or release acceptance is claimed.

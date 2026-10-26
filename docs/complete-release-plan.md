@@ -13,19 +13,9 @@ The local coordination mailboxes record current ownership, commits and lane use.
 
 ## October 26 ward and tenement runtime
 
-The [chapter-three carried-equipment correction](qualification/tenement-loadout-source-2026-10-26.md)
-keeps the recovered bundle limited to its actual arms, adds weapon 7 at b09,
-and requires using the kitchen supply crate before taking up the yari during
-b14. Earned inventory is preserved. All 86 gameplay/asset source gates pass at
-signed `cd8d7248` after a retained localization failure. New runtime permission,
-pickup, retry and localization-loader checks remain pending alongside the queue.
+The [kitchen and carried-equipment runtime checkpoint](qualification/tenement-loadout-runtime-2026-10-26.md) builds in UE 5.8.3 and passes all 37 selected tests at signed `f2a27d70`, with zero selected errors/warnings and natural EOF. The six residents walk into real homes, pause and reset on retry; the dry-well bundle and kitchen supply enforce the authored carrying phases, including full-ammunition yari collection. Both localization loaders and shared infiltration permissions pass. The first 36/37 run remains failed: its fixture tried to seed non-checkpoint b06; the corrected fixture uses real b07/b16 checkpoints for those equipment phases. Production save validation is unchanged.
 
-The newer [kitchen queue source checkpoint](qualification/kitchen-queue-source-2026-10-26.md)
-adds six non-targetable residents and real doorways into their homes. They walk
-indoors when an enemy enters the kitchen volume and reset on checkpoint retry.
-All 64 gameplay source gates pass at signed `09b192d0`, including eighteen
-compiled host tenement tests; the new queue runtime fixture and Unreal
-compilation remain pending. This work postdates the runtime results below.
+The [carried-equipment source correction](qualification/tenement-loadout-source-2026-10-26.md) passes all 86 local gameplay/asset gates after a retained localization failure. The [kitchen queue](qualification/kitchen-queue-source-2026-10-26.md) passes all 64 gameplay gates. Published `0d784a37` passes all 123 source CI gates in authenticated run `40386824878`, with matching source/tested-merge trees and all five artifact digests/raw logs verified. The runtime fixture correction follows that source CI revision.
 
 Signed `ca98e606` builds in UE 5.8.3 and passes all 32 selected ward, tenement,
 landing, recovery, supply, stealth, audio-lifetime and assisted campaign cases.
@@ -43,10 +33,11 @@ relocation, and the retry fixture returns to the authored checkpoint. The exit
 now advances only after reaching the next district. Final environment/character art,
 residents, cinematic cameras, listening and ordinary campaign play remain open.
 Latest Mac package stays `c655b6b`, native bridge `10ad7dad`. Root returned the
-engine/Blender lane to Claude at 18:37 UTC after natural EOF; root remains on CPU
-and source work until explicit return. No release completion is claimed.
+engine/Blender lane to Claude at 18:37 UTC after natural EOF. A later short root window verifies the queue/loadout changes above, with the lane returned again at 19:57 UTC. The coordination mailboxes remain authoritative for live ownership. No release completion is claimed.
 
 ## October 26 weapon socket correction and character production
+
+Claude's s124 production rig finishes naturally with all 137 checked animation frames plus its rest gate passing. Root independently archives and verifies all 20 outputs and reported gate values, and numerically replays all five saved parity events from their raw geometry. The ten-micrometre stepping explains the odd ray counts; unstepped rays and winding agree outside. This is narrow source/provenance evidence. Full-size paw views still show stubble, smooth toe bands and cuff faceting. LOD generation, actual Unreal material/morph/material-routing/threshold readbacks and final craft remain open; the character checkpoint is not adopted into gameplay.
 
 The corrected kits now have a saved ArtReview import: 20 meshes, 60 authored
 LODs, 64 sockets, 16 materials and 64 textures. Signed `eba7f54d` imports and
