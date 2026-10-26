@@ -13,18 +13,27 @@ The local coordination mailboxes record current ownership, commits and lane use.
 
 ## October 26 weapon socket correction and character production
 
+The corrected kits now have a saved ArtReview import: 20 meshes, 60 authored
+LODs, 64 sockets, 16 materials and 64 textures. Signed `eba7f54d` imports and
+reopens all 100 packages in separate UE 5.8.3 processes with identical readback
+and no package/config changes during validation. Strict CPU source comparison
+passes 58/60 LODs; W12 UV welding and W15 degenerate tangents remain held.
+W05/W09 LOD2 source atlas overshoots are also recorded. Nothing has replaced the
+gameplay meshes or received visual acceptance.
+[Import evidence and defects](qualification/weapon-import-2026-10-26.md).
+
 Twenty source FBXs across 16 manifest-listed weapon kits now use the exact
 staged bytes from Claude's UE probe. Their 64 sockets pass independent CPU
 frame checks; the source records, OWN ledger and notices match. A new installer
 validates the entire selection and backs up originals before replacing files.
 W03/W11/W13/W16 remain held, both W18 files remain excluded, and the historical
-W11 probe failure remains a failure. Runtime import and final art are still open.
+W11 probe failure remains a failure. Gameplay adoption and final art are still open.
 Signed `afd3f806` passes all 48 local assets/tooling gates with clean unchanged
 source, including ledger, notices, framing and the new socket tests.
 [Scope and evidence](qualification/weapon-sockets-2026-10-26.md) retain these limits.
 
-The landing-drone checkpoint `a5942a6d` passes all 114 source CI gates in
-authenticated run `40271395969`, independently of this newer socket correction.
+The socket checkpoint `6a54e3d4` passes all 117 source CI gates in authenticated
+run `40273883821`, independently of the newer ArtReview importer and its defects.
 Claude's A body variant and lowered saya candidate 11 are selected for the
 next character production revision. Furred paw shapes, all-LOD empty/holding
 morphs, actual FBX/UE readback and the final pose combination remain in progress;
