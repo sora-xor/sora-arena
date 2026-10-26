@@ -13,6 +13,12 @@ The local coordination mailboxes record current ownership, commits and lane use.
 
 ## October 26 ward and tenement runtime
 
+The [chapter-three carried-equipment correction](qualification/tenement-loadout-source-2026-10-26.md)
+keeps the recovered bundle limited to its actual arms, adds weapon 7 at b09,
+and requires using the kitchen supply crate before taking up the yari during
+b14. Earned inventory is preserved. Host rules pass; new runtime permission,
+pickup and retry checks remain pending alongside the queue.
+
 The newer [kitchen queue source checkpoint](qualification/kitchen-queue-source-2026-10-26.md)
 adds six non-targetable residents and real doorways into their homes. They walk
 indoors when an enemy enters the kitchen volume and reset on checkpoint retry.

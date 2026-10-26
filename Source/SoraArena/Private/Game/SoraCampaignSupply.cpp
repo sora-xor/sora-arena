@@ -40,7 +40,10 @@ void USoraCampaignDirector::TickSupplyHint()
     const FString Event=TEXT("supply_hint:")+Beat->SupplyPoint;
     if(BeatEvents.Contains(Event)||!Arena->CanReachSupply(Beat->SupplyPoint,*Hero)) return;
     const auto Key=SoraUI::ActionKey(this,TEXT("Interact"));
-    Notify(FString::Printf(TEXT("同盟の補給箱：%s で矢と弾を補充。"),*Key.Japanese),
+    if(Beat->SupplyPoint==TEXT("vol_b14_supply"))
+        Notify(FString::Printf(TEXT("同盟の補給箱：%s で槍を受け取り、矢と弾を補充。"),*Key.Japanese),
+            FString::Printf(TEXT("League supply cache: %s collects the yari and replenishes arrows and ammunition."),*Key.English),6.f);
+    else Notify(FString::Printf(TEXT("同盟の補給箱：%s で矢と弾を補充。"),*Key.Japanese),
         FString::Printf(TEXT("League supply cache: %s replenishes arrows and ammunition."),*Key.English),6.f);
     Fire(Event);
 }
@@ -54,8 +57,16 @@ bool USoraCampaignDirector::InteractSupply(ASoraPlayerCharacter& Player)
     unsigned Unlocked=0;
     for(int32 Id=0;Id<SoraBeatRules::WeaponCount;++Id) if(IsWeaponUnlocked(Id)) Unlocked|=1u<<Id;
     const int32 Refilled=Player.GetEquipment()->RestockUnlocked(Unlocked);
+    const FString Ready=TEXT("supply_equipment_ready:")+Beat->SupplyPoint;
+    const bool bTakeYari=Refilled>=0&&Beat->SupplyPoint==TEXT("vol_b14_supply")&&!BeatEvents.Contains(Ready);
     if(Refilled<0)
         Notify(TEXT("動作を終えてから補給しよう。"),TEXT("Finish your current action before taking supplies."),3.f);
+    else if(bTakeYari)
+    {
+        Fire(Ready);
+        Notify(TEXT("槍を受け取った。矢と弾も補充した。"),TEXT("Yari collected. Arrows and ammunition are full."),4.f);
+        if(Refilled>0)Fire(TEXT("supply_restocked:")+Beat->SupplyPoint);
+    }
     else if(Refilled==0)
         Notify(TEXT("矢と弾は満杯だ。"),TEXT("Your arrows and ammunition are already full."),3.f);
     else

@@ -1537,8 +1537,27 @@ def equipment_recovery(beats):
     recovery repeats the retrieval, and later beats have the recovered gear.
     """
     pending = None
+    carried = None
     for beat in beats:
         ext, where = beat["ext"], beat["id"]
+        if carried is not None:
+            # Chapter three's bundle is its carried kit, not permission to
+            # summon every arm earned in an earlier chapter.
+            if where == "ch03.b09":
+                if beat["unlocks"]["weapons"] != [7]:
+                    fail(where, "the alley duel must hand over the scattergun")
+                carried.append(7)
+            if where == "ch03.b14":
+                supply = ext.get("supply_point")
+                expected = {"id": "vol_b14_supply", "slots": {"side": [4], "polearm": [19], "firearm": [7]},
+                            "refill": ["arrows", "shells"]}
+                if supply != expected:
+                    fail(where, "the kitchen supply must retain its authored slots and refills")
+                for slot, weapons in supply["slots"].items():
+                    for weapon in weapons:
+                        expect_int(weapon, where + ".supply_point.slots." + slot, 0)
+                carried.append(19)
+            beat["task"]["equipment_weapons"] = sorted(carried)
         if "loadout" in ext:
             raw = expect(ext["loadout"], (dict,), where + ".x_loadout")
             if pending or set(raw) != {"equipped", "locked_slots", "until"}:
@@ -1571,6 +1590,7 @@ def equipment_recovery(beats):
         beat["task"]["recovery"] = {"interact": raw["interact"], "item": raw["pickup"],
             "depth_cm": depth, "string_ms": duration, "weapons": restored["equipped"], "quiver": arrows}
         pending = None
+        carried = restored["equipped"][:]
     if pending:
         fail("equipment", "temporary loadout has no recovery pickup")
 

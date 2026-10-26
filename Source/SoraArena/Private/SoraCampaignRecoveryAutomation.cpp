@@ -94,6 +94,9 @@ bool FSoraCampaignRecoveryTest::RunTest(const FString& Parameters)
     if(!World->Tick(242)) return false;
     TestTrue(TEXT("Four seconds after pickup raises Kohagi's instruction"),HasLine(TEXT("ch03.b05.kohagi.003")));
     TestTrue(TEXT("Restored bow can be selected"),Hero->GetEquipment()->EquipCampaignWeapon(18));
+    for(int Id=0;Id<SoraBeatRules::WeaponCount;++Id)
+        TestEqual(TEXT("Recovery permits only the three arms actually in the bundle"),Campaign->CanHold(Id,false),Id==0||Id==4||Id==18);
+    TestFalse(TEXT("The earlier yari is not hidden in the sword bundle"),Hero->GetEquipment()->EquipCampaignWeapon(19));
     if(!TestTrue(TEXT("Real held input climbs back to the courtyard"),SoraRecoveryAutomation::Rope(*World))) return false;
     TestTrue(TEXT("The player exits onto solid ground"),Hero->GetActorLocation().Z>0&&Hero->GetCharacterMovement()->IsMovingOnGround());
     TestEqual(TEXT("The bottom interaction collects the lining scroll"),Campaign->CollectedMask()&ScrollBit,ScrollBit);

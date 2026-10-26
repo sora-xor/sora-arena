@@ -19,7 +19,9 @@ class RecoveryTests(unittest.TestCase):
     def test_restriction_and_release(self):
         equipment_recovery(self.beats)
         self.assertTrue(all(b['task']['equipment_weapons'] == [4] for b in self.beats[:5]))
-        self.assertTrue(all(b['task']['equipment_weapons'] is None for b in self.beats[5:]))
+        self.assertTrue(all(b['task']['equipment_weapons'] == [0,4,18] for b in self.beats[5:8]))
+        self.assertTrue(all(b['task']['equipment_weapons'] == [0,4,7,18] for b in self.beats[8:13]))
+        self.assertTrue(all(b['task']['equipment_weapons'] == [0,4,7,18,19] for b in self.beats[13:]))
         self.assertEqual(self.recovery['task']['recovery'], {
             'interact': 'act_b05_dry_well_rope', 'item': 'sword_bundle', 'depth_cm': 700,
             'string_ms': 3000, 'weapons': [0, 4, 18], 'quiver': 12})
@@ -27,6 +29,14 @@ class RecoveryTests(unittest.TestCase):
         self.assertTrue(all(row['recovery'] is None for i, row in enumerate(self.chapter['space']['beats']) if i != 4))
 
     def test_recovery_contract_fails_closed(self):
+        for key,value in [('id','wrong_supply'),('slots',{'side':[4],'polearm':[1],'firearm':[7]}),
+                          ('slots',{'side':[4],'polearm':[19.0],'firearm':[7]}),
+                          ('refill',['shells'])]:
+            beats=copy.deepcopy(self.beats)
+            beats[13]['ext']['supply_point'][key]=value
+            with self.subTest(supply=key),self.assertRaises(BuildError):equipment_recovery(beats)
+        beats=copy.deepcopy(self.beats);beats[8]['unlocks']['weapons']=[1]
+        with self.assertRaises(BuildError):equipment_recovery(beats)
         for path, value in [('descend_cm', 0), ('descend_cm', 699), ('descend_cm', True),
                             ('string_bow_s', 0), ('string_bow_s', 2.99), ('pickup', 'tools'),
                             ('restores', {'equipped': [0, 18], 'quiver': 12}),

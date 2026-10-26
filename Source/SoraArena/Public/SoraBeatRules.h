@@ -1073,7 +1073,7 @@ constexpr bool EquipmentReady(const FTaskState& State, const FTask& Task)
 constexpr bool EquipmentAllows(const FTaskState& State, const FTask& Task, int Weapon)
 {
     return Weapon >= 0 && Weapon < WeaponCount &&
-        (State.EquipmentRecovered || (Task.EquipmentMask & (1u << Weapon)) != 0u);
+        (((State.EquipmentRecovered ? Task.RecoveryWeapons : Task.EquipmentMask) & (1u << Weapon)) != 0u);
 }
 // Stringing must be continuous, at the bundle. Leaving it or releasing
 // Interact loses partial work; the completed pickup is raised exactly once.

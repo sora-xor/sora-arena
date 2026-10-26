@@ -192,6 +192,8 @@ bool FSoraTenementKitchenSupplyTest::RunTest(const FString&)
     FBeatWorld W(*this,TEXT("KitchenSupply"),2,13);if(!Start(W))return false;
     auto* Arena=W.Mode()->Arena();auto* Kit=W.Hero()->GetEquipment();
     FVector Crate;const FString Id=TEXT("vol_b14_supply");
+    TestTrue(TEXT("The earlier yari is still earned in inventory"),W.Campaign()->IsWeaponUnlocked(19));
+    TestFalse(TEXT("It cannot be carried before visiting the supply cache"),Kit->EquipCampaignWeapon(19));
     if(!TestTrue(TEXT("The kitchen's own supply crate is staged"),Arena->SupplyFloor(Id,Crate)))return false;
     const auto P=SoraTenementDefenseRules::SupplyAt;
     TestTrue(TEXT("The crate is on earth beside the manager door, clear of both stairs"),Crate.Equals(FVector(P.X,P.Y,P.Z)));
@@ -221,16 +223,35 @@ bool FSoraTenementKitchenSupplyTest::RunTest(const FString&)
     if(!TestTrue(TEXT("The door's raised approach has a clear line to its supply crate"),Arena->CanReachSupply(Id,*W.Hero())))return false;
     if(!W.Press(EKeys::Escape)||!W.Press(EKeys::E))return false;
     TestEqual(TEXT("Menu input cannot restock"),Kit->Ammo,Cap-1);
+    TestFalse(TEXT("Menu input cannot collect the yari"),W.Campaign()->CanHold(19,false));
     W.Mode()->ResumePlay();if(!W.Tick(3)||!W.Press(EKeys::E))return false;
     TestEqual(TEXT("Normal Interact refills the spent held quiver"),Kit->Ammo,Cap);
     TestEqual(TEXT("Supply keeps the yumi equipped"),W.Hero()->WeaponId,18);
     TestEqual(TEXT("Supply grants no health"),W.Hero()->Health,Health);
     TestEqual(TEXT("Supply grants no weapons"),W.Campaign()->Progress().WeaponsMask,Weapons);
+    TestTrue(TEXT("Using the cache permits the already-earned yari"),W.Campaign()->CanHold(19,false));
     TestEqual(TEXT("Supply completes no campaign beat"),W.Campaign()->Progress().CompletedMask,Completed);
     if(!W.Press(EKeys::E))return false;
     TestEqual(TEXT("A full quiver cannot overfill"),Kit->Ammo,Cap);
     TestEqual(TEXT("The kitchen defense remains active"),W.Campaign()->ActiveBeat(),13);
-    AddInfo(TEXT("The hero walks from the real kitchen spawn and fires/replenishes through mapped input. Health is hardened and then wounded by the fixture; this is a supply-route test, not combat balance or final art acceptance."));
+    if(!W.Tick(30)||!W.Press(EKeys::Two))return false;
+    TestEqual(TEXT("The normal polearm key takes up the collected yari"),W.Hero()->WeaponId,19);
+    UGameplayStatics::ApplyDamage(W.Hero(),W.Hero()->Health,nullptr,nullptr,UDamageType::StaticClass());
+    if(!TestTrue(TEXT("The supply fixture reaches actual defeat"),W.Mode()->bDefeated)||!W.Press(EKeys::Enter))return false;
+    for(int I=0;I<3000&&!W.Mode()->IsPlaying();++I)if(!W.Tick(1))return false;
+    if(!W.Tick(30)||!TestTrue(TEXT("Supply retry restores normal controls"),W.Mode()->IsPlaying()))return false;
+    TestFalse(TEXT("The beat checkpoint requires taking the optional yari again"),W.Campaign()->CanHold(19,false));
+    auto* FreshKit=W.Hero()->GetEquipment();
+    const int Full=FreshKit->AmmoByWeapon[18];
+    if(!TestEqual(TEXT("The new checkpoint starts with a full quiver"),Full,Cap))return false;
+    if(!SoraRecoveryAutomation::WalkTo(*W.World,FVector(-2800,3350,90.15))||
+       !SoraRecoveryAutomation::WalkTo(*W.World,FVector(-2250,3400,90.15))||
+       !SoraRecoveryAutomation::WalkTo(*W.World,FVector(-2250,3660,90.15))||
+       !SoraRecoveryAutomation::WalkTo(*W.World,FVector(-2365,3660,112.65)))return false;
+    W.LookAt(Crate+FVector(0,0,55));if(!W.Press(EKeys::E))return false;
+    TestTrue(TEXT("A full ammunition inventory does not prevent taking the yari"),W.Campaign()->CanHold(19,false));
+    TestEqual(TEXT("Taking the yari with full supplies adds no arrows"),FreshKit->AmmoByWeapon[18],Full);
+    AddInfo(TEXT("The hero walks from the real kitchen spawn and fires/replenishes and selects the supplied yari through mapped input. Health is hardened and then wounded by the fixture; this is a supply-route test, not combat balance or final art acceptance."));
     return !HasAnyErrors();
 }
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraTenementKitchenQueueTest,"SoraArena.Campaign.Tenements.KitchenQueue",

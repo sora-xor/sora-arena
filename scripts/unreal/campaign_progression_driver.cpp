@@ -574,6 +574,8 @@ static void TestEquipmentRecovery()
     Expect(RecoverEquipment(S,T,3000,true,true),"three continuous seconds recovers equipment");
     Expect(!RecoverEquipment(S,T,3000,true,true),"pickup cannot repeat its event");
     Expect(EquipmentAllows(S,T,0)&&EquipmentAllows(S,T,4)&&EquipmentAllows(S,T,18)&&Pickup(S,T,0),"restored gear permits carrying");
+    for(int W=0;W<WeaponCount;++W)
+        Expect(EquipmentAllows(S,T,W)==(W==0||W==4||W==18),"the bundle restores only its three authored arms");
     S=StartTask(T,0);
     Expect(!S.EquipmentRecovered&&S.RecoveryHeldMs==0&&!Pickup(S,T,0),"beat checkpoint replays retrieval");
     S.Done=T.Count;

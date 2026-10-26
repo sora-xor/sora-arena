@@ -94,4 +94,26 @@ bool FSoraInfiltrationLoadoutTest::RunTest(const FString& Parameters)
     }
     return !HasAnyErrors();
 }
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraTenementLoadoutTest,"SoraArena.Campaign.Tenements.Loadout",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FSoraTenementLoadoutTest::RunTest(const FString&)
+{
+    if(!FSoraCatalog::Get().Load())return false;
+    for(const int Beat:{0,5,8,13,14})
+    {
+        SoraFieldcraftAutomation::FBeatWorld W(*this,TEXT("TenementLoadout"),2,Beat);
+        if(!W.Start())return false;
+        W.Harden();SoraLiftAutomation::HoldThreats(*W.World);
+        auto* C=W.Campaign();
+        unsigned Allowed=1u<<4;
+        if(Beat>=5)Allowed|=(1u<<0)|(1u<<18);
+        if(Beat>=8)Allowed|=1u<<7;
+        if(Beat>13)Allowed|=1u<<19;
+        TestTrue(TEXT("Chapter restrictions preserve the previously earned yari"),C->IsWeaponUnlocked(19));
+        for(int Id=0;Id<SoraBeatRules::WeaponCount;++Id)
+            TestEqual(*FString::Printf(TEXT("Beat %d carrying permission for %d"),Beat+1,Id),C->CanHold(Id,false),(Allowed&(1u<<Id))!=0u);
+    }
+    AddInfo(TEXT("Directed checkpoint snapshots check carrying permissions without granting inventory. KitchenSupply separately walks to the cache and uses normal input."));
+    return !HasAnyErrors();
+}
 #endif
