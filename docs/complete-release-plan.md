@@ -11,6 +11,12 @@ production. Work runs in isolated worktrees, with a single coordinated Unreal
 and GPU rendering lane. The shared checkout is not a build or render workspace.
 The local coordination mailboxes record current ownership, commits and lane use.
 
+## October 26 workshop crafting controls
+
+The [crafting checkpoint](qualification/workshop-crafting-2026-10-26.md) implements timed bamboo releases, sustained paste/oil holds, interruption and hand-use guards, shell-bench visibility, mapped HUD cues and provisional restored-window state. All 87 local gameplay/asset source gates pass at signed `9e41d0d8`, including 22 compiled workshop tests. Signed `c5de5059` follows with station-highlight mapping, single frame-progress publication and Unreal pointer-iteration corrections. The local source result precedes those C++ corrections. Four new native cases and a 55-case runtime selection are prepared but unrun; the engine lane remains with Claude until its current candidate finishes. Physical craft presentation, rendered acceptance and ordinary play remain open.
+
+Previous published `35cc4301` passes all 124 source CI gates in authenticated run `40408224409`, with an identical tested merge tree and all artifact digests/raw logs verified. That CI covers the preceding arrivals checkpoint. No crafting runtime or release success is claimed. Mac package remains `c655b6b`, native bridge `10ad7dad`; the full release goal remains active.
+
 ## October 26 authored workshop arrivals
 
 The [arrival checkpoint](qualification/workshop-arrivals-2026-10-26.md) replaces the generic defense spawn pool with three street rifles, two physical east-fence vaults, two canal-gate entries and one roof-bound grenadier. Arrivals require real movement/landing; blocked paths cannot finish, and the projectile owns its flight warning through impact, pause and retry. Signed `a142f34c` builds and passes all 48 selected runtime cases with zero errors/warnings, including the assisted campaign playthrough. Its source run is retained as failed (84/87): the canal floor margin and stale dojo binding were caught. Signed `f30adc1c` corrects those, passes all five affected source checks and all 11 focused workshop runtime cases. Exact selections, natural exits, original evidence and unchanged inputs are independently verified. The other 82 source and 37 runtime cases were not repeated locally after the correction.
