@@ -197,6 +197,9 @@ public:
     bool MoatObjective(FVector& At) const;
     bool MoveMoatCompanion(ASoraCompanion& Companion,float Dt);
     void AssignMoatGuard(ASoraEnemy& Enemy,int32 Index);
+    void AssignWardGuard(ASoraEnemy& Enemy,int32 Index);
+    bool FreeWardKidoban(const AActor* Actor);
+    bool IsWardWicketOpen() const { return bWardWicketOpen; }
     bool IsMoatGuard(const ASoraEnemy& Enemy) const;
     FVector MoatGuardAim(const ASoraEnemy& Enemy) const;
     bool DriveMoatGuard(ASoraEnemy& Enemy,float Dt,bool& Reached);
@@ -515,6 +518,12 @@ private:
     void QuarryDamaged(int32 Quarry, int32 Hp);
     void SaddleCut(const FSoraMeleeCommittedEvent& Event);
     void TickScouts();
+    void StageWardGate(const FSoraBeat& Beat);
+    void TickWardGate();
+    bool bWardGate=false,bWardWicketOpen=false,bWardHavePosition=false,bWardScannerInside=false;
+    FVector WardLastPosition=FVector::ZeroVector;
+    TWeakObjectPtr<ASoraEnemy> WardKidoban;
+    TWeakObjectPtr<UStaticMeshComponent> WardWicket;
     void StageWatch();
     void TickSearchlights(int32 DtMs);
     void BellStruck();

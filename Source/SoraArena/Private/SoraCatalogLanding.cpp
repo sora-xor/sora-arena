@@ -37,10 +37,10 @@ bool SoraCatalogLanding::Read(const FJsonObject& O,FSoraBeat& Beat,const FSoraSp
        Beat.Place!=TEXT("pl_horiwari")||Z.Id!=TEXT("pl_horiwari")||Z.Place!=Beat.Place||
        Z.Rect.Min!=FVector2D(R::ZoneMinX,R::ZoneMinY)||Z.Rect.Max!=FVector2D(R::MaxX,R::ZoneMaxY)||
        Z.Entry!=FVector2D(R::Entry.X,R::Entry.Y)||B.Entry!=Z.Entry||Z.EntryYaw!=0||B.EntryYaw!=0||
-       Z.WallHeight!=360||Z.Walls.Num()!=4||!Z.Route.IsEmpty()||
+       Z.WallHeight!=360||Z.Walls.Num()!=R::WallCount||!Z.Route.IsEmpty()||
        Z.Cover.Num()!=5||!Z.Props.IsEmpty()||B.Patrols.Num()!=2||
        B.Exit.Center!=FVector2D(-7820,-850)||B.Exit.Size!=FVector2D(360,300))return false;
-    for(int I=0;I<4;++I)
+    for(int I=0;I<R::WallCount;++I)
     {
         const auto& W=Z.Walls[I];const auto& E=R::Walls[I];
         if(W.Center!=FVector2D(E.X,E.Y)||W.Size!=FVector2D(E.Width,E.Depth)||W.Height!=E.Height)return false;

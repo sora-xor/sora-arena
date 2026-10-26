@@ -8,6 +8,7 @@ import copy
 
 YARD = [-12000, -2800, -7600, -1200]
 ZONE = [-22000, -4400, -7600, -660]  # Canal approach, banks, warehouses and exit lane.
+WARD_APPROACH = [-8000,-1000,-7600,-660]  # Shared ground, owned by the landing.
 CANAL = [-22000, -3800, -7600, -2800]
 WATER_Z, BED_Z = -160, -200  # Forty-centimetre shallows support wading and flat-bottom boats.
 BRIDGE = [-16000, 240]  # X and clearance above the water.
@@ -37,8 +38,8 @@ def contract():
 
 def walls():
     x,y,x1,y1=ZONE
-    return [[x-30,(y+y1)//2,60,y1-y+120,360],[x1+30,(y+y1)//2,60,y1-y+120,360],
-            [(x+x1)//2,y-30,x1-x,60,360],[(x+x1)//2,y1+30,x1-x,60,360]]
+    return [[x-30,(y+y1)//2,60,y1-y+120,360],[x1+30,(y-1000)//2,60,-1000-y,360],
+            [(x+x1)//2,y-30,x1-x,60,360],[(x-8000)//2,y1+30,-8000-x,60,360]]
 
 
 def place_landing(beats, records, zones, layout, fail):

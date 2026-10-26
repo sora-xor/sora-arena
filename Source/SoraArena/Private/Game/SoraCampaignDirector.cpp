@@ -17,6 +17,7 @@
 #include "SoraEquipmentComponent.h"
 #include "SoraFieldcraft.h"
 #include "SoraLandingSpaceRules.h"
+#include "SoraWardGateRules.h"
 #include "SoraPressRules.h"
 #include "SoraArchiveRules.h"
 #include "SoraLedgerRules.h"
@@ -205,7 +206,10 @@ void USoraCampaignDirector::EnemyCue(const FSoraEnemyCueEvent& Event)
         if(!BeatEvents.Contains(TEXT("ai_event:first_takedown"))) Fire(TEXT("ai_event:first_takedown"));
         return;
     case ESoraEnemyCue::Subdued: Fire(TEXT("conscript_downed")); return;
-    case ESoraEnemyCue::Freed: Fire(TEXT("conscript_freed")); return;
+    case ESoraEnemyCue::Freed:
+        if(auto* Craft=USoraFieldcraft::Get(this);Craft&&Craft->FreeWardKidoban(Event.Enemy.Get()))
+            Fire(TEXT("npc_freed:kidoban"));
+        Fire(TEXT("conscript_freed")); return;
     case ESoraEnemyCue::ShieldTurned: Fire(TEXT("ai:shield_turned")); return;
     case ESoraEnemyCue::AttackWindup:
         // An opponent's attack telegraph, as the scripts key it: the marksman's
@@ -1176,6 +1180,14 @@ ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int
         }
         Post=Route.Points[0];
     }
+    if(Space->bWardGate&&GuardIndex>=0&&GuardIndex<5)
+    {
+        Route.Points.Reset();
+        for(const auto& P:Space->Patrols[GuardIndex])Route.Points.Add(FVector(P,90));
+        Route.PeriodMs=SoraWardGateRules::Periods[GuardIndex];Route.PauseMs=0;
+        Route.bThreeDimensional=true;Route.bSupportedSegments=true;
+        Post=Route.Points[0];
+    }
     if(Route.Points.IsEmpty()) Route.Points.Add(FVector(Post.X,Post.Y,90.f));
     // A route of two points is walked back and forth; a longer one loops. A
     // guard the chapter posts keeps the first point of its round as its post.
@@ -1248,6 +1260,14 @@ ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int
         GuardActor->SetActorLocation(Route.Points[0]);
         if(auto* Brain=Cast<ASoraEnemyController>(GuardActor->GetController())) Brain->BeginPatrol(Route);
         if(auto* Craft=USoraFieldcraft::Get(this)) Craft->AssignRegistryAuditor(*GuardActor,GuardIndex);
+    }
+    if(GuardActor&&Space->bWardGate)
+    {
+        for(auto& P:Route.Points)P.Z=GuardActor->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2.f;
+        GuardActor->SetActorLocation(Route.Points[0]);
+        GuardActor->SetActorRotation(FRotator(0,180,0));
+        if(auto* Brain=Cast<ASoraEnemyController>(GuardActor->GetController()))Brain->BeginPatrol(Route);
+        if(auto* Craft=USoraFieldcraft::Get(this))Craft->AssignWardGuard(*GuardActor,GuardIndex);
     }
     if(GuardActor&&Space->Moat.bEnabled)
         if(auto* Craft=USoraFieldcraft::Get(this))Craft->AssignMoatGuard(*GuardActor,GuardIndex);

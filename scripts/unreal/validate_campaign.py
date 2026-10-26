@@ -70,6 +70,7 @@ from campaign_archive import archive_valid
 from campaign_palace import palace_valid
 from campaign_moat import moat_valid
 from campaign_landing import landing_valid
+from campaign_ward_gate import ward_gate_valid, shared_approach
 from campaign_space import arena_blockers, spook_dismount
 from campaign_cargo import cargo_manifest
 from campaign_registry import validate_registry
@@ -384,6 +385,7 @@ def check_space(chapter, beats, rewards, labels, where):
                     ledger=zones[number] if zones[number]['place']=='pl_ledger_corridors' else zones[other]
                     palace=zones[other] if zones[number]['place']=='pl_ledger_corridors' else zones[number]
                     apart=ledger['rect'][2]==palace['rect'][0]
+                if shared_approach(chapter,zones[number],zones[other]):apart=True
             require(apart, f"{where}: zones {a} and {b} overlap or touch")
     for zone in zones:
         expected_z = [-500,15800] if chapter["id"].startswith("ch08_") and zone["place"]=="pl_ledger_spire" else [15800,20000] if chapter["id"].startswith("ch08_") and zone["place"]=="pl_ledger_engine" else [-2000,2500] if chapter["id"].startswith("ch07_") and zone["place"]=="pl_hull_ridge" else None
@@ -414,6 +416,12 @@ def check_space(chapter, beats, rewards, labels, where):
 
     elevated_rect = None
     def on_floor(index, point, what, cover_margin=COVER_CLEAR):
+        if index>=0 and zones[index]['place']=='pl_kido' and chapter['id']=='ch03_lantern_ward':
+            # The fixed ward contract puts its west patrol 1 m inside the
+            # boundary. Keep a 60 cm body clearance; wall and solid sweeps
+            # are checked separately against the compiled construction.
+            require(_inside(zones[index]['rect'],point,60),f"{what}: ward point leaves its floor")
+            return
         if index>=0 and zones[index]['place']=='pl_horiwari' and chapter['id'].startswith('ch03_') and what.endswith(' patrol'):
             # Exact authored flight paths/heights are fixed by landing_valid;
             # the 4/5 m discs may pass above the 1.4 m cargo stacks.
@@ -437,6 +445,7 @@ def check_space(chapter, beats, rewards, labels, where):
     require(molten_valid(chapter), "casting channel contract")
     require(canisters_valid(chapter), "hangar fuel canister contract")
     require(moat_valid(chapter), f"{where}: authored physical moat/depth contract")
+    require(ward_gate_valid(chapter), f"{where}: authored ward-gate geometry and sensor contract")
     require(landing_valid(chapter), f"{where}: authored west-landing geometry and flight contract")
     records = space["beats"]
     require([record["beat"] for record in records] == [beat["id"] for beat in beats], f"{where}: one space per beat")
@@ -624,7 +633,9 @@ def check_fieldcraft(beat, record, index, zones, zone_of, on_floor):
     for surface in craft["surfaces"]:
         area(surface, f"{surface['kind']} floor")
         require(0 <= surface["crouch_permille"] <= 10000 and 0 < surface["step_permille"] <= 10000 and
-                (surface["height_cm"] == 0 or surface["height_cm"] in roofs), f"{what}: {surface['kind']} floor loudness")
+                (surface["height_cm"] == 0 or surface["height_cm"] in roofs or
+                 (what=='ch03.b03' and surface['kind']=='running_water' and surface['height_cm']==-90)),
+                f"{what}: {surface['kind']} floor loudness")
     water = craft["water"]
     if water:
         area(water, "water")

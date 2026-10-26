@@ -151,7 +151,23 @@ void USoraStealth::NoteState(ASoraEnemy& Guard, StealthRules::EState Previous, S
     OnDetected.Broadcast(Detection);
 }
 
-void USoraStealth::RaiseAlarm(ASoraEnemy& By, const FVector& Where)
+void USoraStealth::RaiseAlarm(ASoraEnemy& By,const FVector& Where)
+{ RaiseAlarmFrom(&By,Where); }
+
+void USoraStealth::RaiseSensorAlarm(const FVector& Where)
+{
+    if(!bZoneActive)return;
+    if(!bAlarm){RaiseAlarmFrom(nullptr,Where);return;}
+    // A later crossing raises searching guards back to alert; the zone's
+    // detection and alarm notifications still fire only once.
+    for(TActorIterator<ASoraEnemyController> It(GetWorld());It;++It)
+    {
+        const ASoraEnemy* Guard=nullptr;
+        if(SoraStealthZone::IsBrain(*It,Guard)&&Guard->IsAlive())It->HearAlarm(Where);
+    }
+}
+
+void USoraStealth::RaiseAlarmFrom(ASoraEnemy* By, const FVector& Where)
 {
     if (!bZoneActive || bAlarm)
         return;
@@ -161,7 +177,7 @@ void USoraStealth::RaiseAlarm(ASoraEnemy& By, const FVector& Where)
     {
         bDetected = true;
         FSoraStealthDetection Detection;
-        Detection.By = &By;
+        Detection.By = By;
         Detection.Response = StealthRules::Response(ZoneRules.OnDetected, ZoneRules.Difficulty);
         Detection.KnownLocation = Where;
         OnDetected.Broadcast(Detection);
@@ -169,10 +185,10 @@ void USoraStealth::RaiseAlarm(ASoraEnemy& By, const FVector& Where)
     for (TActorIterator<ASoraEnemyController> It(GetWorld()); It; ++It)
     {
         const ASoraEnemy* Guard = nullptr;
-        if (SoraStealthZone::IsBrain(*It, Guard) && Guard != &By && Guard->IsAlive())
+        if (SoraStealthZone::IsBrain(*It, Guard) && Guard != By && Guard->IsAlive())
             It->HearAlarm(Where);
     }
-    OnAlarm.Broadcast(&By);
+    OnAlarm.Broadcast(By);
 }
 
 void USoraStealth::AddBody(ASoraEnemy& Body)

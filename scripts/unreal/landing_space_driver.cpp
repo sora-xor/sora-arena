@@ -48,7 +48,7 @@ int main()
         std::cout<<"]}";
     }
     std::cout<<"],\"walls\":[";
-    for(int I=0;I<4;++I)
+    for(int I=0;I<R::WallCount;++I)
     {const auto& W=R::Walls[I];if(I)std::cout<<',';std::cout<<'['<<W.X<<','<<W.Y<<','<<W.Width<<','<<W.Depth<<','<<W.Height<<']';}
     std::cout<<"],\"puddles\":[";
     for(int I=0;I<6;++I)

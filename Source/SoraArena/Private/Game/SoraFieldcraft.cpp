@@ -327,6 +327,8 @@ UStaticMeshComponent* USoraFieldcraft::Piece(const FString& Name, const TCHAR* M
 
 void USoraFieldcraft::Clear()
 {
+    bWardGate=bWardWicketOpen=bWardHavePosition=bWardScannerInside=false;
+    WardKidoban.Reset();WardWicket.Reset();
     Fusuma.Reset();
     ClearLedger();
     ClearRegistry();
@@ -407,6 +409,7 @@ void USoraFieldcraft::Stage(const FSoraBeat& Beat)
     StageMoat();
     StageNets();
     StageWatch();
+    StageWardGate(Beat);
     StageCharge();
 }
 
@@ -434,7 +437,8 @@ void USoraFieldcraft::StageWorld(const FSoraBeat& Beat)
         // A roof's boards are its own floor, up where it stands.
         const float Height = static_cast<float>(Patch.HeightCm);
         if (bZone)
-            Stealth->AddSurface(FBox(FVector(Patch.Area.Center - Half, Height - 50.f), FVector(Patch.Area.Center + Half, Height + 250.f)),
+            Stealth->AddSurface(FBox(FVector(Patch.Area.Center - Half, Height - 50.f), FVector(Patch.Area.Center + Half,
+                Height + (Beat.Space.bWardGate&&Patch.Kind==TEXT("running_water")?20.f:250.f))),
                 {Patch.StepPermille, Patch.CrouchPermille});
         FLinearColor Color;
         const TCHAR* Surface = Layout::FloorLook(Patch.Kind, Color);
@@ -617,6 +621,7 @@ void USoraFieldcraft::Tick(float DeltaTime)
     if (Staged) TickLedger(DtMs);
     if (Staged) TickFusuma(DeltaTime);
     if (Staged) TickRegistry();
+    if (Staged) TickWardGate();
 }
 
 // ---------------------------------------------------------------------------

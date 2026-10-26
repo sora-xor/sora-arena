@@ -14,6 +14,7 @@
 #include "SoraCatalogRelay.h"
 #include "SoraCatalogMoat.h"
 #include "SoraCatalogLanding.h"
+#include "SoraCatalogWardGate.h"
 #include "SoraCatalog.h"
 #include "SoraCatalogJson.h"
 #include "SoraStealthRules.h"
@@ -495,7 +496,8 @@ bool SpaceReadFieldcraft(const FJsonObject& O, const FSoraBeat& Beat, FSoraField
         const auto S = Row.IsValid() ? Row->AsObject() : nullptr;
         FSoraFloorPatch Floor; FString Kind;
         if (!S || !Str(*S, TEXT("kind"), Kind) || !SpaceArea(*S, Floor.Area) || !Int(*S, TEXT("height_cm"), Floor.HeightCm) ||
-            Floor.HeightCm < 0 || !Int(*S, TEXT("step_permille"), Floor.StepPermille) ||
+            (Floor.HeightCm < 0 && !(Beat.Id==TEXT("ch03.b03")&&Kind==TEXT("running_water")&&Floor.HeightCm==-90)) ||
+            !Int(*S, TEXT("step_permille"), Floor.StepPermille) ||
             !Int(*S, TEXT("crouch_permille"), Floor.CrouchPermille) || Floor.StepPermille <= 0 || Floor.StepPermille > 10000 ||
             Floor.CrouchPermille < 0 || Floor.CrouchPermille > 10000)
             return false;
@@ -1080,6 +1082,7 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
         if(!SoraCatalogClimb::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" climb routes"));
         if(!SoraCatalogMoat::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" physical moat"));
         if(!SoraCatalogLanding::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" west landing"));
+        if(!SoraCatalogWardGate::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" ward gate"));
         for (const FSoraDefendedPerson& Person : B.Fieldcraft.People)
             if (Person.Target == INDEX_NONE && (!S.Zones.IsValidIndex(B.Zone) ||
                 !S.Zones[B.Zone].Rect.IsInside(Person.At + FVector2D(80,80)) || !S.Zones[B.Zone].Rect.IsInside(Person.At - FVector2D(80,80)) ||

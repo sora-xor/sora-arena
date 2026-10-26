@@ -32,6 +32,8 @@ void ASoraWorldBuilder::BuildCampaign(const FSoraChapter& Chapter)
     {
         if(Chapter.Beats.ContainsByPredicate([Index](const FSoraBeat& B){return B.Space.Zone==Index&&B.Space.bLanding;}))
         { BuildLanding(Space.Zones[Index]);continue; }
+        if(Chapter.Beats.ContainsByPredicate([Index](const FSoraBeat& B){return B.Space.Zone==Index&&B.Space.bWardGate;}))
+        { BuildWardGate(Space.Zones[Index]);continue; }
         const FSoraBeat* Recovery=Chapter.Beats.FindByPredicate([Index](const FSoraBeat& B)
             { return B.Space.Zone==Index&&B.Task.RecoveryWeapons!=0u; });
         const FSoraBeat* Spire=Chapter.Beats.FindByPredicate([Index](const FSoraBeat& B)
