@@ -22,7 +22,22 @@ inline bool HoldTo(FSoraAutomationWorld& W,SoraTerminalChargeRules::EStage Stage
             *GetNameSafe(S?S->DragTarget(*H):nullptr),*GetNameSafe(C->SealBeingCut()),*GetNameSafe(Hit.GetActor()),*GetNameSafe(Hit.GetComponent()));
     }
     bool Ok=true;
-    for(int I=0;I<360&&Ok&&C->TerminalState().Stage!=Stage;++I)Ok=W.Tick(1);
+    for(int I=0;I<360&&Ok&&C->TerminalState().Stage!=Stage;++I)
+    {
+        const bool WasWorking=C->TerminalOccupiesHands();const float Health=W.Player()->Health;
+        Ok=W.Tick(1);
+        if(WasWorking&&!C->TerminalOccupiesHands()&&C->TerminalState().Stage!=Stage)
+        {
+            const auto* H=W.Player();const auto* K=H->GetEquipment();
+            FHitResult Hit;FCollisionQueryParams Q(SCENE_QUERY_STAT(TerminalCancelDiagnostic),false,H);
+            W.GetTestWorld()->LineTraceSingleByChannel(Hit,H->GetActorLocation(),FVector(-730,560,110),ECC_Visibility,Q);
+            UE_LOG(LogTemp,Error,TEXT("Terminal work cancelled at frame=%d: hero=%s playable=%d ground=%d feet=%.3f key=%d wait_release=%d health=%.2f->%.2f stagger=%d strike=%d step=%d reload=%d dialogue=%d ray=%s/%s"),
+                I,*H->GetActorLocation().ToString(),H->CanPlay(),H->GetCharacterMovement()->IsMovingOnGround(),H->GetActorLocation().Z-H->GetCapsuleComponent()->GetScaledCapsuleHalfHeight(),
+                H->IsActionHeld(TEXT("Interact")),C->TerminalState().WaitRelease,Health,H->Health,K->IsStaggered(),K->IsCommittedStrike(),K->IsStepping(),K->bReloading,C->IsDialogueBlocking(),
+                *GetNameSafe(Hit.GetActor()),*GetNameSafe(Hit.GetComponent()));
+            break;
+        }
+    }
     const bool Released=W.InjectKey(EKeys::E,IE_Released);
     return Ok&&Released&&C->TerminalState().Stage==Stage&&W.Tick(1);
 }
