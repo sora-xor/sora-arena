@@ -1655,6 +1655,17 @@ history below. The release remains incomplete.
 
 ### 2026-10-26: palace registry source checkpoint (runtime pending)
 
+Claude's signed third-person grip direction (`3521e93e`) and archive lighting
+addendum (`88539dc1`) are integrated as production direction. The original
+rig-fit diagram and six measurement files were reviewed and frozen locally;
+the diagram matches its LFS identity. The proposed centred guard has since
+failed Claude's actual reach calculation and must be revised. Hip gear must
+clear the visible body and armor; the movement capsule is not a valid
+substitute for that mesh clearance. Both issues were sent to Claude, who
+retains the engine/Blender lane for the rig, closed paws, sockets, authored
+W00/saya and guard pose. No new character asset has been accepted from this
+contract, and the lighting addendum is not yet implemented.
+
 The chapter-six store and registry now use the authored palace frame. The
 registry desks are at (16,29), (6,29) and (-2,29) metres from the garden origin,
 on real 0, 15 and 30 cm floors, with a level 1.8 m south corridor. The dedicated
