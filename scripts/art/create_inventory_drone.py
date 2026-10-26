@@ -7,6 +7,7 @@ It uses the runtime weapon library unchanged (scripts/art/create_runtime_weapon_
 bake, LODs and FBX export. A drone is not a weapon, so DroneBuild replaces only:
 - the spec and the output folder (Content/SourceArt/Characters/Enemies/InventoryDrone);
 - the socket set (Eye, NetMuzzle);
+- LOD0's FBX, with its sockets and UCX hulls, in UE 5.8's own axes and unit (LOD0_FBX);
 - the renders;
 - an amendment to the record.
 
@@ -65,6 +66,16 @@ SOCKETS = {"Eye", "NetMuzzle"}
 # The hit hulls: Unreal's UCX index, and the parts (by name prefix) each one encloses.
 HIT_GROUPS = {"00": ("Disc", ("Hull_", "Rim_", "Ledger_", "Eye_", "Sigil_", "Vent_")),
               "01": ("Dome", ("Dorsal_",)), "02": ("NetPod", ("Net_",))}
+# LOD0's FBX (the only file with sockets) for UE 5.8. Root's import of fc0858a9 (0eb8c5e) read both sockets at
+# scale 100 with +X reversed, positions right. The library's convention puts the axis turn (-Y forward) and the x100
+# unit on the mesh node:
+# - Interchange converts that file's axes, then turns each socket by the inverse conversion;
+# - and it folds the node's scale into the socket.
+# fbx_unreal_sockets.py cites the source lines. So LOD0 is written in Blender's own axes, which are Unreal's FBX
+# import axes, with the unit baked into the vertices and socket translations. No node carries a rotation or a scale,
+# and no importer converts anything. LOD1 and LOD2 have no sockets and keep the library's convention.
+LOD0_FBX = dict(apply_unit_scale=True, apply_scale_options="FBX_SCALE_NONE", global_scale=1.0,
+                axis_forward="Y", axis_up="Z", bake_space_transform=True)
 MUZZLE = Matrix.Translation((0.040, 0.0, -0.115)) @ Matrix.Rotation(math.radians(45.0), 4, "Y")
 VENT_DEG = (60.0, 180.0, 300.0)
 HULL_GROWTH = 1.003
@@ -322,19 +333,7 @@ class DroneBuild(L.Build):
                               "bounds_min_m": [round(float(c), 4) for c in v.min(0)],
                               "bounds_max_m": [round(float(c), 4) for c in v.max(0)],
                               "visual_vertices_enclosed": int(len(inside)), "deepest_outside_m": round(float(inside.max()), 7)}
-        L.deselect_all()
-        lod0.select_set(True)
-        for e in exports["main"]["empties"]:
-            e.select_set(True)
-        for h in hulls:
-            h.select_set(True)
-        bpy.context.view_layer.objects.active = lod0
-        bpy.ops.export_scene.fbx(filepath=str(path), use_selection=True, object_types={"MESH", "EMPTY"},
-                                 apply_unit_scale=True, apply_scale_options="FBX_SCALE_NONE",
-                                 global_scale=1.0, axis_forward="-Y", axis_up="Z",
-                                 mesh_smooth_type="FACE", use_tspace=True, use_triangles=True,
-                                 use_mesh_modifiers=True, add_leaf_bones=False, bake_anim=False,
-                                 path_mode="STRIP", embed_textures=False, use_custom_props=False)
+        export_lod0(path, lod0, exports["main"]["empties"], hulls)
         self.log("exported", L.rel(path), "with", len(hulls), "UCX hulls")
         for h in hulls:
             h.hide_render = True
@@ -358,6 +357,8 @@ class DroneBuild(L.Build):
         rec["contract"] = "docs/art-direction/INVENTORY_DRONE_ENVELOPE.md"
         rec["envelope"] = self.envelope
         rec["hit_hulls"] = self.hit_hulls
+        rec["lod0_fbx"] = lod0_fbx_record()
+        rec["socket_axes"] = socket_axes(exports["main"]["empties"])
         top = LEDGER_HALL["flight_cm"] + COLLISION_RADIUS_M * 100.0
         bottom = LEDGER_HALL["flight_cm"] - COLLISION_RADIUS_M * 100.0
         rec["collision_proposal"] = {
@@ -368,6 +369,39 @@ class DroneBuild(L.Build):
             "today": {"radius_cm": 20.4, "half_height_cm": 52.8, "from": "34/88 humanoid capsule at scale_permille 600"},
             "for_root": "the hit volume (76 cm tall against a 23 cm body) and every other drone route's clearance"}
         path.write_text(json.dumps(rec, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+
+
+def export_lod0(path, lod0, empties, hulls):
+    """LOD0's FBX: the body, its SOCKET_ empties and the UCX hulls, in the LOD0_FBX convention."""
+    L.deselect_all()
+    for obj in (lod0, *empties, *hulls):
+        obj.select_set(True)
+    bpy.context.view_layer.objects.active = lod0
+    bpy.ops.export_scene.fbx(filepath=str(path), use_selection=True, object_types={"MESH", "EMPTY"}, **LOD0_FBX,
+                             mesh_smooth_type="FACE", use_tspace=True, use_triangles=True,
+                             use_mesh_modifiers=True, add_leaf_bones=False, bake_anim=False,
+                             path_mode="STRIP", embed_textures=False, use_custom_props=False)
+
+
+def lod0_fbx_record():
+    return {"export": dict(LOD0_FBX),
+            "axes": "Blender's own (up Z, forward Y), which are UE 5.8's FBX import axes (Z up, -Y front, "
+                    "right-handed). The file declares them, so no importer converts it",
+            "unit": "centimetres, baked into the vertices and the socket translations. No node carries a rotation "
+                    "or a scale, so each socket imports at scale 1 on its own axes",
+            "gate": "scripts/art/validate_inventory_drone.py, through scripts/art/fbx_unreal_sockets.py "
+                    "(Interchange's socket rule, calibrated on root's import of fc0858a9)",
+            "lod1_lod2": "the library's convention (-Y forward, x100 on the node), unchanged. They carry no "
+                         "sockets, and Unreal bakes them to the same vertices"}
+
+
+def socket_axes(empties):
+    """Each socket's unit X (forward) and Z axes, in the drone's Blender frame."""
+    out = {}
+    for e in empties:
+        m = e.matrix_basis.to_3x3().normalized()
+        out[e.name[len("SOCKET_"):]] = {"x": [round(c, 6) for c in m.col[0]], "z": [round(c, 6) for c in m.col[2]]}
+    return out
 
 
 def hull_volume(obj):

@@ -28,7 +28,7 @@
     {
      "file": "Content/SourceArt/Characters/Enemies/InventoryDrone/SM_Drone_Inventory.fbx",
      "triangles": 10386,
-     "sha256": "bc17dbb160e37e03f4b430b4c2a54a574ab539b802c3785c075c1a4c622c2bd0"
+     "sha256": "f7057061ddf3c2de8ab6d42d505793c70e6fc0fbe706630214bd7070962283be"
     },
     {
      "file": "Content/SourceArt/Characters/Enemies/InventoryDrone/SM_Drone_Inventory_LOD1.fbx",
@@ -331,5 +331,48 @@
    "from": "34/88 humanoid capsule at scale_permille 600"
   },
   "for_root": "the hit volume (76 cm tall against a 23 cm body) and every other drone route's clearance"
+ },
+ "lod0_fbx": {
+  "export": {
+   "apply_unit_scale": true,
+   "apply_scale_options": "FBX_SCALE_NONE",
+   "global_scale": 1.0,
+   "axis_forward": "Y",
+   "axis_up": "Z",
+   "bake_space_transform": true
+  },
+  "axes": "Blender's own (up Z, forward Y), which are UE 5.8's FBX import axes (Z up, -Y front, right-handed). The file declares them, so no importer converts it",
+  "unit": "centimetres, baked into the vertices and the socket translations. No node carries a rotation or a scale, so each socket imports at scale 1 on its own axes",
+  "gate": "scripts/art/validate_inventory_drone.py, through scripts/art/fbx_unreal_sockets.py (Interchange's socket rule, calibrated on root's import of fc0858a9)",
+  "lod1_lod2": "the library's convention (-Y forward, x100 on the node), unchanged. They carry no sockets, and Unreal bakes them to the same vertices",
+  "replaces_sha256": "bc17dbb160e37e03f4b430b4c2a54a574ab539b802c3785c075c1a4c622c2bd0",
+  "replaced_because": "root's 0eb8c5e import of fc0858a9 read both sockets at scale 100 with +X reversed (Saved/Qualification/2026-10-26/drone-0eb8c5e-import-attempt1)",
+  "rewritten_by": "scripts/art/reexport_inventory_drone_lod0.py, from the reviewed blend"
+ },
+ "socket_axes": {
+  "Eye": {
+   "x": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  "NetMuzzle": {
+   "x": [
+    0.707107,
+    0.0,
+    -0.707107
+   ],
+   "z": [
+    0.707107,
+    0.0,
+    0.707107
+   ]
+  }
  }
 }
