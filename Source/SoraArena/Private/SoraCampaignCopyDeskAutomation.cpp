@@ -8,6 +8,7 @@
 #include "SoraViewmodelComponent.h"
 #include "SoraWorldBuilder.h"
 #include "Components/BoxComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
 
 namespace
@@ -141,13 +142,19 @@ bool FSoraCopyDesksTest::RunTest(const FString& Parameters)
     FBeatWorld::Hurt(*W.Hero(),W.Hero()->Health+1000.f);
     if(!W.Tick(2)||!TestTrue(TEXT("Death cancels the held interaction"),W.Mode()->bDefeated&&!C->IsCopying())||
         !W.World->InjectKey(EKeys::G,IE_Released)||!W.Press(EKeys::Enter)) return false;
-    W.Harden(); FreezeGuards(W);
+    W.Harden(); Guard=FreezeGuards(W);
     if(!W.Tick(3)) return false;
     TestTrue(TEXT("Checkpoint retry resets every desk and its fractional work"),C->ActiveBeat()==7&&C->TaskProgress().Progress==0&&
         C->TaskProgress().Done==0&&C->TaskProgress().PointsMask==0&&C->TaskProgress().HoldProgress[2]==0&&C->TaskProgress().HoldRateCarry[2]==0);
+    if(!TestNotNull(TEXT("Retry has an auditor for the fallen-body interaction regression"),Guard)) return false;
+    Guard->SetActorLocation(Desk+FVector(0,0,Guard->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2));
+    FBeatWorld::Hurt(*Guard,Guard->Health+1000.f);
+    if(!TestTrue(TEXT("A defeated auditor leaves a real draggable body at the writing desk"),Guard->IsBody())) return false;
     for(int32 Point:{2,0,1})
     {
         if(!TestTrue(TEXT("Walk to and copy a distinct desk through the mapped input"),SoraCopyDeskAutomation::Copy(*W.World,Point))) return false;
+        if(Point==2) TestTrue(TEXT("The copy approach drags the body clear of the desk and releases it"),
+            Guard->IsBody()&&FVector::Dist2D(Guard->GetActorLocation(),Desk)>SoraStealthRules::DragReachCm&&!W.Stealth()->IsDragging());
         if(Point!=1) TestTrue(TEXT("One or two completed desks cannot complete the beat"),C->ActiveBeat()==7&&C->TaskProgress().HoldProgress[Point]==30000);
     }
     TestTrue(TEXT("Only all three desk copies finish the beat"),C->ActiveBeat()!=7);
