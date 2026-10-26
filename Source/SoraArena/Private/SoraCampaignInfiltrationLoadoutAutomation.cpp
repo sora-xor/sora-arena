@@ -99,14 +99,16 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraTenementLoadoutTest,"SoraArena.Campaign.Te
 bool FSoraTenementLoadoutTest::RunTest(const FString&)
 {
     if(!FSoraCatalog::Get().Load())return false;
-    for(const int Beat:{0,5,8,13,14})
+    // b06 and b15 have no save checkpoint. Inspect their carried-loadout
+    // phases at the next authored checkpoints, b07 and b16, respectively.
+    for(const int Beat:{0,6,8,13,15})
     {
         SoraFieldcraftAutomation::FBeatWorld W(*this,TEXT("TenementLoadout"),2,Beat);
         if(!W.Start())return false;
         W.Harden();SoraLiftAutomation::HoldThreats(*W.World);
         auto* C=W.Campaign();
         unsigned Allowed=1u<<4;
-        if(Beat>=5)Allowed|=(1u<<0)|(1u<<18);
+        if(Beat>=6)Allowed|=(1u<<0)|(1u<<18);
         if(Beat>=8)Allowed|=1u<<7;
         if(Beat>13)Allowed|=1u<<19;
         TestTrue(TEXT("Chapter restrictions preserve the previously earned yari"),C->IsWeaponUnlocked(19));
