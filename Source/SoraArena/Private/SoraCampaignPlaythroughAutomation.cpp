@@ -418,7 +418,12 @@ bool FreeConscripts(FAutomationTestBase& Test, FState& State)
         }
         if (!bLearned)
             continue;
-        MoveTo(State, Conscript->GetActorLocation());
+        FVector CutApproach=Conscript->GetActorLocation();
+        // This fixture later walks from the street to the well. Placing the
+        // hero at the fallen conscript's centre traps it inside the restored
+        // standing capsule; stand beside this guard before cutting instead.
+        if(Campaign(State)->ActiveBeatData()->Id==TEXT("ch03.b05"))CutApproach.Y+=120.f;
+        MoveTo(State, CutApproach);
         const FVector CutStart=Player(State)->GetActorLocation(),BodyStart=Conscript->GetActorLocation();
         const auto* CutStealth=USoraStealth::Get(Player(State));
         const auto* DragCandidate=CutStealth?CutStealth->DragTarget(*Player(State)):nullptr;
