@@ -1,9 +1,12 @@
 # Ledger and palace runtime checkpoint — 2026-10-26
 
 The connected ledger-to-palace route is traversable with mapped movement.
-The inventory drones still fail the exact authored flight height because their
-placeholder humanoid capsules collide with the ceiling. This is an incomplete
-gameplay and art checkpoint, not release acceptance.
+At `47b49669`, the integrated disc body also passes the exact authored 550 cm
+flight height without changing the hall or flight coordinates. LedgerRoute,
+LedgerPatrols, PalaceFusuma and LedgerLockdown pass in the 25-pass/two-failure
+cohort documented in [the drone checkpoint](inventory-drone-integration-2026-10-26.md).
+The earlier failures below remain historical evidence. This is incomplete
+gameplay and art qualification, not release acceptance.
 
 All runs used UE 5.8.3 / CL 58210709 on the M2 Ultra, pinned Xcode 26.1.1,
 and native bridge `10ad7daddf73212e81496620aba628ebf214ab72`.
