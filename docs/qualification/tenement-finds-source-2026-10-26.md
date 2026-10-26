@@ -42,10 +42,22 @@ interaction ranges. Data tests reject swapped collectible bindings, moved or
 raised objects, combined rewards, duplicate POIs and finds attached to other
 beats. The campaign validator passes 133 beats, 1,032 bilingual lines and 65
 rejected invalid variants. Regeneration is current; only chapter three and its
-dojo campaign-binding hash changed. Broad source checks are still to be recorded.
+dojo campaign-binding hash changed.
+
+All 119 selected host source checks passed at signed, clean and unchanged commit
+`70fd6ca880737fd0405bd6677b5047616990cb71`, tree
+`f6b576c65fe2692b5c8f6dbd7630f28c12f3a701`: 64 gameplay, 27 tooling, 22 assets and
+six audio checks. Rust checks were not rerun. The independent receipt verifies
+the expected inventory, commands, exit codes, log hashes and source state.
+
+- `Saved/Qualification/2026-10-26/tenement-finds-70fd6ca8-source/report.json`,
+  SHA-256 `2370c804da58258b98abb33b70b9b15e29d340f88b4802e1ba850c5681ec6cf5`.
+- `Saved/Qualification/2026-10-26/tenement-finds-70fd6ca8-source/independent-review.json`,
+  SHA-256 `688d96272748802557cb7ebd0e189155499ee6e71b06fc568010f0f70b3f7efb`.
 
 The revised `SoraArena.Campaign.RecoveryCache` fixture is **uncompiled and unrun**.
-It uses controlled placement and held threats to check both discovery orders,
+It uses controlled placement and held threats to check optional dialogue beside
+the carry task, both discovery orders,
 separate saves, repeated input, looking away, an intervening box, a raised actor,
 menu refusal, remapped Interact, fresh-world partial-save restoration and the
 still-locked hoist/katana. The assisted campaign harness visits both objects
