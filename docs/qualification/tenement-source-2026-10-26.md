@@ -48,8 +48,7 @@ the complete built arena and CharacterMovement require the Unreal fixtures.
 
 Campaign regeneration is unchanged on a second run. The validator passes 133 beats
 and 1,032 bilingual lines, and rejects its 65 invalid variants. The dojo campaign
-binding is refreshed only for the changed chapter-data hash. Broader source gates
-will be recorded after the signed source checkpoint; no result is implied here.
+binding is refreshed only for the changed chapter-data hash.
 
 The first broad run at signed `301d66f1` finished with 118 passed and one failed
 (`lift-data`), with clean unchanged source. Its report and logs remain in
@@ -59,7 +58,19 @@ flattened the new manager room. It now initializes only missing heights and
 preserves other layouts' authored floors. The existing deterministic/scoping test
 no longer repairs archive and summit heights after that call; it requires them,
 and the manager room, to remain intact. This is a production helper fix, not a
-waiver of the failing check. The corrected source still needs its broad rerun.
+waiver of the failing check.
+
+The corrected signed source `e294100a6b66898a846d9df8a05c44b47950a64f` (tree
+`3c3cac45059c8da8e99a4c2a732dc14f2a60f57f`) passed **119/119** selected host
+checks: 64 gameplay, 27 tooling, 22 assets and 6 audio. Rust was not rerun. The
+checkout remained clean and unchanged. The report is
+`Saved/Qualification/2026-10-26/tenement-e294100a-source/report.json` in the
+source-validation worktree, SHA-256
+`48de1140b5d6bc33cb55fe6d628468e272d940172f84aada7a04337d2d990051`.
+The separate inventory, 119-log hash, signed-source and preserved-failure audit is
+`independent-review.json`, SHA-256
+`7da7450c96049020908a9b718ed3bdd828106563e297ae5378e4934f1745bd7d`.
+These passes do not compile Unreal code or establish any runtime or art acceptance.
 
 ## Pending runtime validation and known omissions
 
