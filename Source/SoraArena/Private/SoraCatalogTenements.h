@@ -5,4 +5,5 @@ struct FSoraSpace;
 namespace SoraCatalogTenements
 {
 bool Read(const FJsonObject& Object,FSoraBeat& Beat,const FSoraSpace& Space);
+bool ReadDefense(const FJsonObject& Params,FSoraBeat& Beat);
 }

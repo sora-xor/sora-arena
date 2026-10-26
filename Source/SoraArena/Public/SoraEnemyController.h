@@ -128,6 +128,8 @@ public:
         bool bThreeDimensional = false, float AcceptanceCm = ErrandReachCm, bool bSupportedSteps = false);
     void AssignLift(ASoraCampaignLift& Lift,int32 Wave);
     void AssignSpireFlight() { bSpireFlight=true; }
+    void AssignTenementDefense(int32 Member);
+    bool HasTenementDefenseFlight() const { return TenementDrone!=INDEX_NONE; }
     // An errand's goal is reached within this (2D).
     static constexpr float ErrandReachCm = 120.f;
     void ClearErrand() { bErrand = false; }
@@ -264,6 +266,8 @@ private:
     int32 LiftWave = INDEX_NONE;
     bool bLiftJumped = false;
     bool bSpireFlight=false;
+    int32 TenementDrone=INDEX_NONE,TenementLeg=0;
+    bool DriveTenementDefense(ASoraEnemy& Enemy,ASoraCharacterBase& Target,float Dt);
     bool DriveSpireFlight(ASoraEnemy& Enemy,ASoraCharacterBase& Target,float Dt);
     bool DriveLift(ASoraEnemy& Enemy,ASoraCharacterBase& Target,float Dt);
     // Stealth: the hero in view at the last tick, and evidence of a body.

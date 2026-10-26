@@ -389,6 +389,7 @@ private:
         int32 PodMember = INDEX_NONE;
         FName Spawn;
         int32 SpawnMember = INDEX_NONE;
+        int32 SpawnGroup = INDEX_NONE;
     };
     ASoraGameMode& Mode() const;
     UPROPERTY() TObjectPtr<USoraSaveGame> Save;
@@ -702,6 +703,9 @@ private:
     // these bodies at merge; until then every opponent is the prototype
     // invader, a sparring pupil or the collector.
     ASoraEnemy* SpawnWaveOpponent(FName Type, bool bSparring, int32 Slot, bool bInvulnerable = false, const FVector* Position = nullptr);
+    ASoraEnemy* SpawnTenementDefender(int32 Wave,int32 Group,int32 Member,int32 Slot);
+    bool HeroAtTenementKitchen() const;
+    bool TenementKitchenContested() const;
     ASoraEnemy* SpawnStealthGuard(const FSoraGuard& Guard, int32 GuardIndex, int32 Slot);
     ASoraEnemy* SpawnDuelOpponent(FName Opponent, bool bSparring, int32 Slot);
     ASoraBoss* SpawnBoss(FName Boss, int32 Slot);

@@ -236,6 +236,15 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
         KitFill=KitShape(TEXT("HelmHoldFill"),KitCube,KitAnchor+FVector(0,0,2),FVector(.01,KitHoldSize.Y/100,.012),KitGold);
         KitFill->ComponentTags.Add(TEXT("HelmHoldFill"));
     }
+    else if(KitWork==TEXT("hold")&&Space.bTenementDefense)
+    {
+        // The work belongs to the whole court and last six metres of alley.
+        // These ground-level markers have no collision; homes occlude the
+        // parts of the rectangular authored volume outside the actual path.
+        KitAnchor=FVector(-2800,2910,0);KitHoldSize=FVector2D(1200,1380);
+        KitShape(TEXT("KitchenHoldFloor"),KitCube,KitAnchor+FVector(0,0,1),FVector(12,13.8,.01),FLinearColor(.05f,.12f,.12f));
+        KitFill=KitShape(TEXT("KitchenHoldFill"),KitCube,KitAnchor+FVector(0,0,2),FVector(.01,13.8,.012),KitGold);
+    }
     else if(KitWork==TEXT("hold")&&Beat.Task.HoldPointCount>0)
     {
         for(int32 Point=0;Point<Space.Objectives.Num();++Point)

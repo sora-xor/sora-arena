@@ -8,6 +8,7 @@
 #include "SoraCatalogWood.h"
 #include "SoraCatalogCollectibles.h"
 #include "SoraCatalogLedger.h"
+#include "SoraCatalogTenements.h"
 
 namespace
 {
@@ -725,6 +726,7 @@ bool FSoraCatalog::LoadCampaign()
                 return Bad(FString::Printf(TEXT("beat %s has an invalid %s task"), *Beat.Id, *TypeName));
             if (!ReadCargo(*Params, Beat)) return Bad(Beat.Id+TEXT(" has invalid authored cargo quantities"));
             if (!SoraCatalogLedger::ReadLockdown(*Params, Beat)) return Bad(Beat.Id+TEXT(" has invalid authored ledger lockdown"));
+            if (!SoraCatalogTenements::ReadDefense(*Params, Beat)) return Bad(Beat.Id+TEXT(" has invalid authored kitchen defense"));
             if (!SoraCatalogRegistry::Read(*O, Beat))
                 return Bad(FString::Printf(TEXT("beat %s has an invalid production registry entry"), *Beat.Id));
             if (!SoraCatalogArchery::Read(*O, Beat))

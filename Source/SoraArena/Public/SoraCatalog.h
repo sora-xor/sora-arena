@@ -653,6 +653,7 @@ struct FSoraBeatSpace
     bool bLanding=false;
     bool bWardGate=false;
     bool bTenements=false;
+    bool bTenementDefense=false;
     bool bHorseShell=false;
     bool bHorseWithdrawal=false;
     FSoraHelmSpace Helm;

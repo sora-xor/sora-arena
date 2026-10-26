@@ -14,13 +14,17 @@ HIDEOUT = [-2550, 1050]
 FIRES = [[-3320, 2950], [-3320, 3250], [-3320, 3500]]
 PATROLS = [[[-4500, 0], [-1000, 0]], [[-4500, 100], [-1000, 100]]]
 SPAWNS = [[-2800, 500], [-2800, 650], [-2800, 800], [-2800, 950], [-3500, 3600], [-3600, 3400]]
+DEFENSE_SPAWNS = [[-2800,450],[-2800,570],[-2800,690],[-2800,810],[-3500,3600],[-3500,3400]]
+DEFENSE = {'hold_cm':[-3400,2220,0,-2200,3600,600], 'street_cm':[-2800,450,0],
+           'air_cm':[-3500,3600,600], 'street_spacing_cm':120, 'air_spacing_cm':200,
+           'flight_cm':[[[-3300,3350,600],[-2800,3050,600]],[[-3300,3050,600],[-2800,2750,600]]]}
 VOLUMES = {
     'poi_idobata': ([-2420, 3170], [300, 300]),
     'poi_chalk': ([-2800, 1800], [180, 300]),
     'poi_leaflet': ([-2800, 1350], [180, 300]),
     'poi_balance_door': ([-2800, 2475], [180, 300]),
     'vol_b05_alley_mouth': ([-2800, 600], [180, 300]),
-    'vol_b14_supply': ([-2370, 3700], [300, 300]),
+    'vol_b14_supply': ([-2400, 3600], [200, 200]),
 }
 
 
@@ -47,7 +51,8 @@ def record_values(beat):
         values.update(entry=[-2800, 3850, 90], height_cm=45, anchor=[-2800, 3970],
                       camera=[-2900, 3730, 220, -2670, 3750, 210, -2800, 3970, 155])
     elif beat == 'ch03.b14':
-        values.update(entry=[-2800, 3000, 180], anchor=[-3220, 3250])
+        values.update(entry=[-2800, 3000, 180], anchor=[-3220, 3250],
+                      spawns=copy.deepcopy(DEFENSE_SPAWNS),tenement_defense=copy.deepcopy(DEFENSE))
     return values
 
 
@@ -61,6 +66,13 @@ def place_tenements(beats, records, zones, sites, pickups, layout, fail):
     for name, at in [('act_b05_dry_well_rope', WELL), ('pk_b05_tsurube', HOIST), ('dp_b05_hideout', HIDEOUT)]:
         if authored.get(name, {}).get('positions_cm') != [at + [0]]:
             fail(name, 'authored tenement point changed; review the physical layout')
+    for name,at in [('sp_b14_alley_mouth',DEFENSE['street_cm']),('sp_b14_backfence_air',DEFENSE['air_cm'])]:
+        if authored.get(name,{}).get('positions_cm')!=[at]:fail(name,'authored defense entrance changed')
+    hold=next((v for v in layout['volumes'] if v['id']=='vol_b14_kitchen'),{})
+    if hold.get('center_cm')!=[-2800,2910,300] or hold.get('size_cm')!=[1200,1380,600]:
+        fail('vol_b14_kitchen','authored court and alley defense volume changed')
+    defense=next(b for b,_ in selected if b['id']=='ch03.b14')
+    if not defense_waves_valid(defense):fail(defense['id'],'authored defense wave identities changed')
     for b, r in selected:
         zone = zones[r['zone']]
         if zone.place != 'pl_ura_nagaya':
@@ -113,11 +125,13 @@ def tenements_valid(chapter):
     try:
         selected = [r for r in chapter['space']['beats'] if r['beat'] in BEATS]
         if not chapter['id'].startswith('ch03_'):
-            return not any('tenements' in r for r in chapter['space']['beats'])
+            return not any('tenements' in r or 'tenement_defense' in r for r in chapter['space']['beats'])
         if len(selected) != len(BEATS):
             return False
         if any(('tenements' in r)!=(r['beat'] in BEATS) for r in chapter['space']['beats']):
             return False
+        if any(('tenement_defense' in r)!=(r['beat']=='ch03.b14') for r in chapter['space']['beats']):return False
+        if not defense_waves_valid(next(b for b in chapter['beats'] if b['id']=='ch03.b14')):return False
         for r in selected:
             if any(r.get(k) != v for k, v in record_values(r['beat']).items()):
                 return False
@@ -142,5 +156,20 @@ def tenements_valid(chapter):
         if chapter['space']['sites'][0]!=[-2900,2900] or chapter['space']['sites'][2]!=[-3220,3250]:
             return False
         return True
-    except (KeyError, TypeError, IndexError):
+    except (KeyError, TypeError, IndexError, StopIteration):
         return False
+
+
+def defense_waves_valid(beat):
+    try:
+        groups=[[('enforcer_rifle',2),('bound_conscript',2)],[('drone',2)],[('blade_retainer',1),('enforcer_rifle',1)]]
+        waves=beat['params']['waves'];compiled=beat['task']['waves']
+        if len(waves)!=3 or len(compiled)!=3:return False
+        if beat['task']['duration_ms']!=120000 or beat['task']['contest']!='pause':return False
+        for i,(raw,task,expected) in enumerate(zip(waves,compiled,groups,strict=True)):
+            mark=(300,600,800)[i];spawn='sp_b14_backfence_air' if i==1 else 'sp_b14_alley_mouth'
+            if raw['trigger']!=f'progress_at:{mark/1000:g}' or task['trigger']!='progress_at' or task['value']!=mark:return False
+            if raw['enemies']!=[{'type':kind,'count':count,'spawn':spawn} for kind,count in expected]:return False
+            if task['members']!=[{'type':kind,'count':count,'lethal':kind!='bound_conscript','invulnerable':False} for kind,count in expected]:return False
+        return True
+    except (KeyError,TypeError,IndexError,ValueError):return False

@@ -332,7 +332,7 @@ void ASoraEnemyController::Tick(float Dt)
         DrivePupil(*Enemy, *Target, Dt);
         return;
     }
-    if (DriveLift(*Enemy,*Target,Dt)||DriveSpireFlight(*Enemy,*Target,Dt)) return;
+    if (DriveTenementDefense(*Enemy,*Target,Dt)||DriveLift(*Enemy,*Target,Dt)||DriveSpireFlight(*Enemy,*Target,Dt)) return;
     if (Enemy->Archetype())
         Think(*Enemy, *Target, Dt);
 }

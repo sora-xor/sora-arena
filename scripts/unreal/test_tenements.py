@@ -33,7 +33,8 @@ class TenementTests(unittest.TestCase):
             subprocess.run([compiler,'-std=c++20','-UNDEBUG','-Wall','-Wextra','-Werror',
                 '-fsanitize=undefined','-fsanitize-trap=undefined',*flags,'-I',str(ROOT/'Source/SoraArena/Public'),
                 str(ROOT/'scripts/unreal/tenement_rules_driver.cpp'),'-o',str(binary)],check=True,env=env)
-            cls.solids=json.loads(subprocess.check_output([str(binary)],text=True,env=env))
+            cls.native=json.loads(subprocess.check_output([str(binary)],text=True,env=env))
+            cls.solids=cls.native['solids']
 
     @staticmethod
     def hits(box,point,radius=34,height=176):
@@ -137,6 +138,45 @@ class TenementTests(unittest.TestCase):
             c=copy.deepcopy(self.chapter)
             next(p for p in c['space']['pickups'] if p['collectible']==item)['height_cm']=height
             self.assertFalse(tenements.tenements_valid(c))
+
+    def test_defense_group_spawns_are_named_separated_and_at_authored_height(self):
+        rows=self.native['defense_spawns']
+        self.assertEqual(len(rows),8)
+        self.assertEqual([r[3:] for r in rows if r[0]==0],
+                         [[-2800,y,90.15] for y in (450,570,690,810)])
+        self.assertEqual([r[3:] for r in rows if r[0]==1],
+                         [[-3500,3600,600],[-3500,3400,600]])
+        self.assertEqual([r[3:] for r in rows if r[0]==2],[[-2800,450,90.15],[-2800,570,90.15]])
+        for row in rows:
+            wave,_,_,x,y,z=row;radius=38 if wave==1 else 34;height=76 if wave==1 else 176
+            for box in self.solids:self.assertFalse(self.hits(box,[x,y,z-height/2],radius,height),(row,box))
+            for other in rows:
+                if other!=row and other[0]==wave:self.assertGreater(math.dist(row[3:],other[3:]),radius*2)
+
+    def test_both_drone_ingresses_clear_fence_and_roofs_at_six_metres(self):
+        self.assertEqual([[p[2:] for p in self.native['defense_flight'] if p[0]==i] for i in range(2)],
+                         tenements.DEFENSE['flight_cm'])
+        for i in range(2):
+            start=next(p[3:] for p in self.native['defense_spawns'] if p[:3]==[1,0,i])
+            route=[start]+[p[2:] for p in self.native['defense_flight'] if p[0]==i]
+            for point in self.sample(route):
+                self.assertEqual(point[2],600)
+                for box in self.solids:self.assertFalse(self.hits(box,[*point[:2],point[2]-38],38,76),(point,box))
+
+    def test_defense_wave_and_volume_mutations_fail_closed(self):
+        for key,value in [('hold_cm',[-3400,2220,0,-2200,3600,0]),('air_cm',[-3500,3600,120]),
+                          ('street_spacing_cm',0),('flight_cm',[[[-3300,3350,0]],[]])]:
+            c=copy.deepcopy(self.chapter)
+            next(r for r in c['space']['beats'] if r['beat']=='ch03.b14')['tenement_defense'][key]=value
+            self.assertFalse(tenements.tenements_valid(c),key)
+        for change in ('spawn','kind','count','trigger','lethal'):
+            c=copy.deepcopy(self.chapter);b=next(b for b in c['beats'] if b['id']=='ch03.b14')
+            if change=='spawn':b['params']['waves'][1]['enemies'][0]['spawn']='sp_b14_alley_mouth'
+            elif change=='kind':b['params']['waves'][1]['enemies'][0]['type']='enforcer_rifle'
+            elif change=='count':b['params']['waves'][1]['enemies'][0]['count']=3
+            elif change=='trigger':b['task']['waves'][1]['value']=500
+            else:b['task']['waves'][0]['members'][1]['lethal']=True
+            self.assertFalse(tenements.tenements_valid(c),change)
 
 
 if __name__=='__main__':unittest.main()

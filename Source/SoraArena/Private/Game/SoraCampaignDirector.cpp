@@ -980,17 +980,19 @@ void USoraCampaignDirector::QueueWaves(unsigned Waves)
         // it: a lethal blow only knocks one down, and cutting its seal frees it.
         if(!IsArcheryLesson())
         {
-            for(const FSoraWaveGroup& Group:Beat->Waves[Wave].Groups)
+            for(int32 GroupIndex=0;GroupIndex<Beat->Waves[Wave].Groups.Num();++GroupIndex)
             {
+                const FSoraWaveGroup& Group=Beat->Waves[Wave].Groups[GroupIndex];
                 if(Group.bLethal)
                 {
                     for(int32 Member=0;Member<Group.Count;++Member)
-                        Pending.Add({Wave,Group.Type,Group.bInvulnerable,Pod?PodMember++:INDEX_NONE,Group.Spawn,Member});
+                        Pending.Add({Wave,Group.Type,Group.bInvulnerable,Pod?PodMember++:INDEX_NONE,Group.Spawn,Member,GroupIndex});
                 }
                 else if(!Beat->bSparring&&GetWorld())
                 {
                     for(int32 Member=0;Member<Group.Count;++Member)
-                        if(ASoraEnemy* Conscript=ASoraEnemy::SpawnArchetype(*GetWorld(),Group.Type,Spawned,SpawnLocation(Spawned),FRotator(0,180,0)))
+                        if(ASoraEnemy* Conscript=Beat->Space.bTenementDefense?SpawnTenementDefender(Wave,GroupIndex,Member,Spawned):
+                            ASoraEnemy::SpawnArchetype(*GetWorld(),Group.Type,Spawned,SpawnLocation(Spawned),FRotator(0,180,0)))
                             AddOpponent(Conscript,INDEX_NONE);
                 }
             }
@@ -1369,7 +1371,8 @@ void USoraCampaignDirector::SpawnPending()
             PodPosition=Beat->Space.PodArrivals[Next.Wave].Floor+FVector(Offset[0],Offset[1],120);
         }
         Pending.RemoveAt(0);
-        ASoraEnemy* Enemy=Beat->Space.Lift.bEnabled?SpawnLiftOpponent(Next.Type,Next.Wave,Spawned):
+        ASoraEnemy* Enemy=Beat->Space.bTenementDefense?SpawnTenementDefender(Next.Wave,Next.SpawnGroup,Next.SpawnMember,Spawned):
+            Beat->Space.Lift.bEnabled?SpawnLiftOpponent(Next.Type,Next.Wave,Spawned):
             SpawnWaveOpponent(Next.Type,Beat->bSparring,Spawned,Next.bInvulnerable,(Pod||IsRelayRoom()||Ledger)?&PodPosition:nullptr);
         if(Enemy)
         {
@@ -1740,6 +1743,7 @@ bool USoraCampaignDirector::HeroAtTask() const
 {
     const FSoraBeatSpace* Space=ActiveSpace();
     if(!Space) return false;
+    if(Space->bTenementDefense)return HeroAtTenementKitchen();
     if(IsHelmHold()) return Mode().Hero()&&Mode().Hero()->GetCharacterMovement()->IsMovingOnGround()&&InHelmFloor(Mode().Hero()->GetActorLocation());
     if(Task.HoldPointCount>0) return IsCopying()&&AtCopyDesk(CopyDesk);
     if(Task.Goal==SoraBeatRules::EGoal::Hold) return Near(ASoraWorldBuilder::Floor(Space->Anchor),SoraCampaignReach::Hold);
@@ -1758,6 +1762,7 @@ bool USoraCampaignDirector::Contested() const
     if(Task.HoldPointCount>0) return CopyDeskContested();
     const FSoraBeatSpace* Space=ActiveSpace();
     if(Task.Goal!=SoraBeatRules::EGoal::Hold||!Space) return false;
+    if(Space->bTenementDefense)return TenementKitchenContested();
     const FVector Anchor=ASoraWorldBuilder::Floor(Space->Anchor);
     for(const auto& Enemy:Enemies)
         if(IsValid(Enemy)&&Enemy->IsEnemy()&&Enemy->IsAlive()&&(IsHelmHold()?InHelmFloor(Enemy->GetActorLocation()):FVector::Dist2D(Enemy->GetActorLocation(),Anchor)<SoraCampaignReach::Contest)) return true;
