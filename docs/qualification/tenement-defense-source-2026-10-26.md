@@ -46,9 +46,22 @@ against the tenement solids at six metres. Invalid entry names, wave kinds,
 counts, timing, lethality, height and volume data are rejected.
 
 The final campaign validator passed with 133 beats, 1,032 bilingual lines and all
-65 invalid variants rejected. Regeneration is unchanged on a second run. Broader
-source checks are still to be recorded. The dojo campaign binding is refreshed
-for the changed chapter hash only.
+65 invalid variants rejected. Regeneration is unchanged on a second run. The dojo
+campaign binding is refreshed for the changed chapter hash only.
+
+All 119 selected host source checks passed at signed, clean and unchanged commit
+`cef5e471fc858ab92ef01de5ac7d4b39b658049b`, tree
+`64756574cc00eeb0e5b0aea076c773d0da3a2342`: 64 gameplay, 27 tooling, 22 assets and
+six audio checks. Rust checks were not rerun. The independent receipt verifies
+the expected check inventory, commands, exit codes, log hashes and source state.
+It does not compile the Unreal module or establish runtime behavior.
+
+Evidence in the source-validation worktree:
+
+- `Saved/Qualification/2026-10-26/tenement-defense-cef5e471-source/report.json`,
+  SHA-256 `8b0e7e0f1d634f01443c7c9e778bc21e3386da3340b2f8fcc46c6c87ae45da30`.
+- `Saved/Qualification/2026-10-26/tenement-defense-cef5e471-source/independent-review.json`,
+  SHA-256 `06a6b3f6b6d63d476aa5c50a90404f4b7f5dd96f3551b02e186bb38cf6fa5327`.
 
 New Unreal fixtures are source only:
 
