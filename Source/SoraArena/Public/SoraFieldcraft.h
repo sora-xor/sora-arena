@@ -287,6 +287,7 @@ public:
     // half, and taken when it is lost.
     void TargetChanged(int32 Target, int32 HealthPermille);
     const TArray<TObjectPtr<ASoraCompanion>>& PeopleInPlay() const { return People; }
+    const TArray<TObjectPtr<ASoraCompanion>>& KitchenResidents() const { return KitchenQueue; }
     // The pace at which the hero's held work fills (a cupped candle halves it).
     int32 WorkRatePermille() const;
     // The events the beat raises, so allies that wait for a wave join it.
@@ -486,6 +487,8 @@ private:
     void ClearMolten();
     void TickMolten(int32 DtMs);
     void StageCompanions(const FSoraBeat& Beat);
+    void StageKitchenQueue(const FSoraBeat& Beat);
+    void TickKitchenQueue();
     void TickHolds(int32 DtMs);
     void TickCompanions(int32 DtMs);
     void TickLamps(int32 DtMs);
@@ -572,6 +575,9 @@ private:
     UPROPERTY() TArray<TObjectPtr<ASoraCompanion>> Party;
     UPROPERTY() TArray<TObjectPtr<ASoraCompanion>> Allies;
     UPROPERTY() TArray<TObjectPtr<ASoraCompanion>> People;
+    UPROPERTY() TArray<TObjectPtr<ASoraCompanion>> KitchenQueue;
+    TArray<int32> KitchenQueueLeg;
+    bool bKitchenScattered=false;
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> Doors;
     UPROPERTY() TObjectPtr<UPointLightComponent> CandleLight;
     TArray<SoraFieldcraftRules::FLamp> LampStates;

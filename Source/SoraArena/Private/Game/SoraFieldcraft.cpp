@@ -351,6 +351,8 @@ void USoraFieldcraft::Clear()
     for (const auto& Companion : Party) if (IsValid(Companion)) Companion->Destroy();
     for (const auto& Companion : Allies) if (IsValid(Companion)) Companion->Destroy();
     for (const auto& Companion : People) if (IsValid(Companion)) Companion->Destroy();
+    for (const auto& Resident : KitchenQueue) if (IsValid(Resident)) Resident->Destroy();
+    KitchenQueue.Reset(); KitchenQueueLeg.Reset(); bKitchenScattered=false;
     for (const auto& Lamp : LampActors) if (IsValid(Lamp)) Lamp->Destroy();
     for (const auto& Fire : FireActors) if (IsValid(Fire)) Fire->Destroy();
     for (const auto& Rider : Riders) if (IsValid(Rider)) Rider->Destroy();
@@ -407,6 +409,7 @@ void USoraFieldcraft::Stage(const FSoraBeat& Beat)
     StageFusuma(Beat);
     StageRegistry(Beat);
     StageCompanions(Beat);
+    StageKitchenQueue(Beat);
     StageFlood(Beat);
     StageMoat();
     StageNets();
@@ -604,6 +607,7 @@ void USoraFieldcraft::Tick(float DeltaTime)
     // under the steps after it.
     TickHolds(DtMs);
     if (Staged) TickCompanions(DtMs);
+    if (Staged) TickKitchenQueue();
     if (Staged) TickNets(DtMs);
     if (Staged) TickVolley(DtMs);
     if (Staged) TickSmoke(DtMs);

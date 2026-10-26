@@ -263,6 +263,8 @@ public:
     bool HorseTreatmentOccupiesHands() const { return IsHorseTreatment()&&Treatment.Index>=0; }
     const SoraHorseTreatmentRules::FState& HorseTreatmentState() const { return Treatment; }
     bool IsFoundryDefense() const;
+    // The same live capsule-volume test used to suspend kitchen work.
+    bool TenementKitchenContested() const;
     ASoraFoundryFurnace* FoundryFurnace() const;
     ASoraCompanion* FoundryKozo() const;
     bool InteractFoundry(ASoraPlayerCharacter& Hero);
@@ -708,7 +710,6 @@ private:
     ASoraEnemy* SpawnWaveOpponent(FName Type, bool bSparring, int32 Slot, bool bInvulnerable = false, const FVector* Position = nullptr);
     ASoraEnemy* SpawnTenementDefender(int32 Wave,int32 Group,int32 Member,int32 Slot);
     bool HeroAtTenementKitchen() const;
-    bool TenementKitchenContested() const;
     ASoraEnemy* SpawnStealthGuard(const FSoraGuard& Guard, int32 GuardIndex, int32 Slot);
     ASoraEnemy* SpawnDuelOpponent(FName Opponent, bool bSparring, int32 Slot);
     ASoraBoss* SpawnBoss(FName Boss, int32 Slot);

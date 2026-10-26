@@ -57,7 +57,7 @@ class TenementTests(unittest.TestCase):
                 self.assertFalse(self.hits(box,point),(point,index,box))
 
     def floor_at(self,x,y):
-        heights=[b[2]+b[5]/2 for b in self.solids if b[7]==0 and
+        heights=[b[2]+b[5]/2 for b in self.solids if (b[7]==0 or b[7]==2 and b[5]<=45) and
                  abs(x-b[0])<=b[3]/2 and abs(y-b[1])<=b[4]/2]
         if -3200<=x<=3200 and -2600<=y<=2600:heights.append(0)
         return max(heights,default=None)
@@ -102,16 +102,45 @@ class TenementTests(unittest.TestCase):
             else:next(r for r in c['space']['beats'] if r['beat']=='ch03.b05')['tenement_finds']=copy.deepcopy(tenements.FINDS)
             self.assertFalse(tenements.tenements_valid(c),mutation)
 
-    def test_authored_contract_and_closed_home_dimensions(self):
+    def test_authored_contract_and_home_dimensions(self):
         self.assertTrue(tenements.tenements_valid(self.chapter))
         faces=[b for b in self.solids if b[7]==3]
-        self.assertEqual(len(faces),12)
+        self.assertEqual(len(faces),24)
         for b in faces:
-            self.assertEqual(b[4],270)
+            self.assertIn(b[4],(150,20))
             self.assertEqual(b[0]+b[3]/2 if b[0]<-2800 else b[0]-b[3]/2,
                              -2890 if b[0]<-2800 else -2710)
         floors=[b for b in self.solids if b[3:6]==[360,270,15]]
         self.assertEqual(len(floors),12)
+
+    def test_residents_have_distinct_clear_routes_into_real_homes(self):
+        routes=self.native['queue_routes']
+        self.assertEqual(len(routes),6)
+        self.assertEqual(len({tuple(r[-1]) for r in routes}),6)
+        for queue,approach,home in routes:
+            self.assertTrue(-3400<=queue[0]<=-2200 and 2220<=queue[1]<=3600)
+            self.assertEqual(self.floor_at(*queue),0)
+            self.assertEqual(self.floor_at(*home),15)
+            self.assertEqual(approach[1],home[1])
+            self.clear([queue+[2.15],approach+[2.15]])
+            # Clearance while stepping onto the 15 cm room threshold. This
+            # does not substitute for the runtime CharacterMovement test.
+            self.clear([approach+[2.15],approach+[17.15],home+[17.15]])
+            front=-2895 if home[0]<-2800 else -2705
+            blocked=[front,home[1],145,10,100,290,0,3]
+            self.assertTrue(self.hits(blocked,[front,home[1],17.15]))
+            # Narrowing a doorway below the standing body's width fails.
+            narrow=[front,home[1]+28,145,10,50,290,0,3]
+            self.assertTrue(self.hits(narrow,[front,home[1],17.15]))
+        for i,r in enumerate(routes):
+            for other in routes[i+1:]:self.assertGreater(math.dist(r[0],other[0]),68)
+
+    def test_open_doors_preserve_the_chalk_and_notice_backing(self):
+        for x,y,z in self.native['finds']:
+            front=-2895 if x<-2800 else -2705
+            self.assertTrue(any(b[7]==3 and b[0]==front and
+                                abs(y-b[1])<b[4]/2 and abs(z-b[2])<b[5]/2
+                                for b in self.solids),(x,y,z))
 
     def test_grounded_entry_court_and_carry_routes(self):
         routes=[[-2800,450],[-2800,2900],[-2600,2950],[-2800,2900],[-2800,1050],[-2550,1050]]

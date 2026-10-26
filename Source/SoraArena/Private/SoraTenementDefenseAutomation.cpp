@@ -6,6 +6,7 @@
 #include "SoraEquipmentComponent.h"
 #include "SoraWorldBuilder.h"
 #include "SoraTenementDefenseRules.h"
+#include "SoraTenementQueueRules.h"
 #include "Combat/SoraCombatEffects.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/DamageType.h"
@@ -230,6 +231,90 @@ bool FSoraTenementKitchenSupplyTest::RunTest(const FString&)
     TestEqual(TEXT("A full quiver cannot overfill"),Kit->Ammo,Cap);
     TestEqual(TEXT("The kitchen defense remains active"),W.Campaign()->ActiveBeat(),13);
     AddInfo(TEXT("The hero walks from the real kitchen spawn and fires/replenishes through mapped input. Health is hardened and then wounded by the fixture; this is a supply-route test, not combat balance or final art acceptance."));
+    return !HasAnyErrors();
+}
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraTenementKitchenQueueTest,"SoraArena.Campaign.Tenements.KitchenQueue",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FSoraTenementKitchenQueueTest::RunTest(const FString&)
+{
+    using namespace SoraTenementDefenseAutomation;
+    namespace R=SoraTenementQueueRules;
+    if(!FSoraCatalog::Get().Load())return false;
+    FBeatWorld W(*this,TEXT("KitchenQueue"),2,13);if(!Start(W))return false;
+    auto Residents=W.Fieldcraft()->KitchenResidents();
+    if(!TestEqual(TEXT("Six residents queue for the kitchen"),Residents.Num(),R::Count))return false;
+    for(int I=0;I<R::Count;++I)
+    {
+        auto* Resident=Residents[I].Get();
+        if(!TestNotNull(TEXT("Every queue place has a real resident"),Resident))return false;
+        const auto P=R::Queue(I);
+        TestTrue(TEXT("Each resident starts in its own queue place"),FVector::Dist2D(Resident->GetActorLocation(),FVector(P.X,P.Y,0))<2);
+        TestFalse(TEXT("Residents cannot be selected by enemy perception, even at contact"),Resident->IsExposed(0));
+        const float Health=Resident->Health;
+        UGameplayStatics::ApplyDamage(Resident,1000,nullptr,nullptr,UDamageType::StaticClass());
+        TestEqual(TEXT("Incidental damage cannot injure a queued resident"),Resident->Health,Health);
+        FHitResult Hit;FCollisionQueryParams Query;Query.AddIgnoredActor(W.Hero());
+        const FVector Eye=Resident->GetActorLocation()+FVector(0,0,45);
+        TestFalse(TEXT("Residents do not intercept a bullet or interaction trace"),
+            W.World->GetTestWorld()->LineTraceSingleByChannel(Hit,Eye-FVector(40,0,0),Eye+FVector(40,0,0),ECC_Visibility,Query));
+        TestTrue(TEXT("Their capsule still collides with the world"),
+            Resident->GetCapsuleComponent()->GetCollisionResponseToChannel(ECC_WorldStatic)==ECR_Block);
+    }
+    W.Stand(FVector(-3220,3250,0));int Relit=0;
+    if(!UntilWave(W,1,Relit))return false;
+    auto First=Wave(W,1);for(auto* Enemy:First)Hold(*Enemy);
+    if(!TestEqual(TEXT("The fixture uses the real first defense wave"),First.Num(),4))return false;
+    auto* Probe=First[0];Probe->SetActorLocation(FVector(-3500,3300,90.15));
+    if(!W.Tick(60))return false;
+    for(int I=0;I<R::Count;++I)
+    {
+        const auto P=R::Queue(I);
+        TestTrue(TEXT("Enemies outside the volume leave the queue in place"),
+            FVector::Dist2D(Residents[I]->GetActorLocation(),FVector(P.X,P.Y,0))<2);
+    }
+    Probe->SetActorLocation(FVector(-2300,3350,90.15));
+    if(!W.Tick(20))return false;
+    TestTrue(TEXT("A real enemy entering the court starts the scatter"),
+        FVector::Dist2D(Residents[0]->GetActorLocation(),FVector(R::Queue(0).X,R::Queue(0).Y,0))>10);
+    if(!W.Press(EKeys::Escape)||!W.Tick(3))return false;
+    TArray<FVector> Paused;for(const auto& Resident:Residents)Paused.Add(Resident->GetActorLocation());
+    if(!W.Tick(60))return false;
+    for(int I=0;I<R::Count;++I)
+        TestTrue(TEXT("Menu pause suspends the residents' walk"),Residents[I]->GetActorLocation().Equals(Paused[I],1.f));
+    W.Mode()->ResumePlay();
+    for(int Frame=0;Frame<600;++Frame)
+    {
+        TArray<FVector> Before;for(const auto& Resident:Residents)Before.Add(Resident->GetActorLocation());
+        if(!W.Tick(1))return false;
+        for(int I=0;I<R::Count;++I)
+            if(!TestTrue(TEXT("Scatter uses bounded walking and threshold steps, never a warp"),
+                FVector::Dist(Before[I],Residents[I]->GetActorLocation())<20))return false;
+    }
+    for(int I=0;I<R::Count;++I)
+    {
+        const auto P=R::Home(I);const auto* Resident=Residents[I].Get();
+        TestTrue(TEXT("Each resident walks into its own home through the doorway"),
+            FVector::Dist2D(Resident->GetActorLocation(),FVector(P.X,P.Y,0))<12&&
+            FMath::Abs(Resident->GetActorLocation().Z-105.15)<3&&Resident->GetCharacterMovement()->IsMovingOnGround());
+        TestFalse(TEXT("Sheltering does not hide or delete the resident"),Resident->IsHidden());
+    }
+    UGameplayStatics::ApplyDamage(W.Hero(),W.Hero()->Health,nullptr,nullptr,UDamageType::StaticClass());
+    if(!TestTrue(TEXT("Lethal damage reaches the real retry screen"),W.Mode()->bDefeated)||!W.Press(EKeys::Enter))return false;
+    for(int I=0;I<3000&&!W.Mode()->IsPlaying();++I)if(!W.Tick(1))return false;
+    if(!W.Tick(30)||!TestTrue(TEXT("Retry returns normal controls"),W.Mode()->IsPlaying()))return false;
+    const auto Fresh=W.Fieldcraft()->KitchenResidents();
+    if(!TestEqual(TEXT("Retry recreates exactly one fresh queue"),Fresh.Num(),R::Count))return false;
+    for(int I=0;I<R::Count;++I)
+    {
+        const auto P=R::Queue(I);
+        TestFalse(TEXT("Retry destroys each old resident"),IsValid(Residents[I]));
+        if(!TestNotNull(TEXT("Retry creates the new resident"),Fresh[I].Get()))return false;
+        TestTrue(TEXT("Retry clears the scattered state"),FVector::Dist2D(Fresh[I]->GetActorLocation(),FVector(P.X,P.Y,0))<2);
+    }
+    W.Fieldcraft()->Clear();
+    TestTrue(TEXT("Beat cleanup releases the whole queue"),W.Fieldcraft()->KitchenResidents().IsEmpty());
+    for(const auto& Resident:Fresh)TestFalse(TEXT("No resident survives beat cleanup"),IsValid(Resident));
+    AddInfo(TEXT("Directed damage, enemy placement and hardened hero isolate queue behavior. Residents move using real CharacterMovement; ordinary combat and civilian art remain separate."));
     return !HasAnyErrors();
 }
 #endif

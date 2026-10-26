@@ -8,6 +8,9 @@ namespace SoraTenementRules
 {
 constexpr int WellX=-3100, WellY=3200, Bore=90, Depth=700, Curb=75;
 constexpr int MinX=-4700, MinY=-400, MaxX=-600, MaxY=4300;
+constexpr double HomeY(int Unit) { return 1335+Unit*270; }
+// Offset doors keep both the children's chalk and the debt notice on paper.
+constexpr double DoorY(int Unit) { return HomeY(Unit)+65; }
 enum class ESurface { Soil, Wood, Stone, Paper };
 struct FBox { double X,Y,Z,SX,SY,SZ,Yaw=0; ESurface Surface=ESurface::Wood; };
 inline const std::vector<FBox>& Solids()
@@ -31,7 +34,7 @@ inline const std::vector<FBox>& Solids()
         // Six facing 2.7 m-frontage / 3.6 m-deep homes on each side.
         for(int Side:{-1,1})for(int I=0;I<6;++I)
         {
-            const double X=Side<0?-3070:-2530,Y=1335+I*270;
+            const double X=Side<0?-3070:-2530,Y=HomeY(I);
             Box(X,Y,7.5,360,270,15,ESurface::Stone);
             Box(X,Y,300,378,282,24);
             Box(Side<0?-3250:-2350,Y,145,12,270,290);
@@ -39,7 +42,11 @@ inline const std::vector<FBox>& Solids()
             Box(X,Y+135,145,360,12,290);
             // The inner face, not the centre, lies on the alley boundary.
             const double Front=Side<0?-2895:-2705;
-            Box(Front,Y,145,10,270,290,ESurface::Paper);
+            // A 100 cm opening, 210 cm above the raised floor. The paper
+            // panels remain either side; residents use the actual doorway.
+            Box(Front,Y-60,145,10,150,290,ESurface::Paper);
+            Box(Front,Y+125,145,10,20,290,ESurface::Paper);
+            Box(Front,DoorY(I),257.5,10,100,65);
         }
         // Front shop, its 1.8 m undercroft, and the 2.7 x 3 m hideout.
         Box(-2800,800,310,180,800,30);

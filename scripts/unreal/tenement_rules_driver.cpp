@@ -1,6 +1,7 @@
 #include "SoraTenementRules.h"
 #include "SoraTenementDefenseRules.h"
 #include "SoraTenementFindRules.h"
+#include "SoraTenementQueueRules.h"
 #include <cassert>
 #include <iomanip>
 #include <iostream>
@@ -71,5 +72,13 @@ int main()
         std::cout<<'['<<P.X<<','<<P.Y<<','<<P.Z<<']';
     }
     const auto P=D::SupplyAt,S=D::SupplySize;
-    std::cout<<"],\"supply\":["<<P.X<<','<<P.Y<<','<<P.Z<<','<<S.X<<','<<S.Y<<','<<S.Z<<"]}\n";
+    std::cout<<"],\"supply\":["<<P.X<<','<<P.Y<<','<<P.Z<<','<<S.X<<','<<S.Y<<','<<S.Z<<"],\"queue_routes\":[";
+    namespace Q=SoraTenementQueueRules;
+    for(int I=0;I<Q::Count;++I)
+    {
+        const auto A=Q::Queue(I),B=Q::DoorApproach(I),C=Q::Home(I);
+        if(I)std::cout<<',';
+        std::cout<<"[["<<A.X<<','<<A.Y<<"],["<<B.X<<','<<B.Y<<"],["<<C.X<<','<<C.Y<<"]]";
+    }
+    std::cout<<"]}\n";
 }
