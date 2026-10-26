@@ -51,6 +51,16 @@ and 1,032 bilingual lines, and rejects its 65 invalid variants. The dojo campaig
 binding is refreshed only for the changed chapter-data hash. Broader source gates
 will be recorded after the signed source checkpoint; no result is implied here.
 
+The first broad run at signed `301d66f1` finished with 118 passed and one failed
+(`lift-data`), with clean unchanged source. Its report and logs remain in
+`Saved/Qualification/2026-10-26/tenement-301d66f1-source/`. The lift helper reset
+every record's floor to zero before applying its own two floors, so rerunning it
+flattened the new manager room. It now initializes only missing heights and
+preserves other layouts' authored floors. The existing deterministic/scoping test
+no longer repairs archive and summit heights after that call; it requires them,
+and the manager room, to remain intact. This is a production helper fix, not a
+waiver of the failing check. The corrected source still needs its broad rerun.
+
 ## Pending runtime validation and known omissions
 
 New fixtures `SoraArena.Campaign.Tenements.Solids` and `.Routes` check actual shaft,

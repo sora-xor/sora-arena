@@ -3,7 +3,9 @@
 
 def place_lift(beats, records, fail):
     for record in records:
-        record["height_cm"] = 0
+        # Other authored rooms own their floors. Initialize an unset field,
+        # but never flatten an existing manager room, archive or summit.
+        record.setdefault("height_cm", 0)
         record["lift"] = None
     by_id = {beat["id"]: beat for beat in beats}
     if "ch08.b11" not in by_id:
