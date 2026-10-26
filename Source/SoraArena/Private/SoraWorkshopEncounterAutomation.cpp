@@ -135,8 +135,16 @@ bool FSoraWorkshopRoofShellTest::RunTest(const FString&)
     auto* Shell=WarnedShell(W);if(!TestNotNull(TEXT("Normal grenadier AI launches a warned shell"),Shell))return false;
     TWeakObjectPtr<AActor> Warning=Shell->ArcWarningActor();TWeakObjectPtr<ASoraProjectile> WeakShell=Shell;
     TArray<UStaticMeshComponent*> Parts;Warning->GetComponents(Parts);
-    TestEqual(TEXT("The warning contains a trajectory and closed landing ring"),Parts.Num(),56);
-    for(auto* P:Parts)TestEqual(TEXT("Warning geometry cannot block movement or projectiles"),P->GetCollisionEnabled(),ECollisionEnabled::NoCollision);
+    bool AboveRoof=false,AtLanding=false;
+    const FVector HeroFeet=W.Hero()->GetActorLocation()-FVector(0,0,W.Hero()->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+    for(auto* P:Parts)
+    {
+        TestEqual(TEXT("Warning geometry cannot block movement or projectiles"),P->GetCollisionEnabled(),ECollisionEnabled::NoCollision);
+        const FVector At=P->GetComponentLocation();
+        AboveRoof|=At.Z>650&&FVector::Dist2D(At,Roof->GetActorLocation())<350;
+        AtLanding|=FMath::Abs(At.Z-HeroFeet.Z-3)<5&&FMath::Abs(FVector::Dist2D(At,HeroFeet)-Shell->Radius)<5;
+    }
+    TestTrue(TEXT("The warning spans the high launch arc and the target's blast-radius ring"),AboveRoof&&AtLanding&&Warning->GetOwner()==Shell);
     if(!W.Press(EKeys::Escape))return false;const FVector Held=Shell->GetActorLocation();
     if(!W.Tick(120))return false;
     TestTrue(TEXT("Pause preserves both projectile and its warning"),WeakShell.IsValid()&&Warning.IsValid()&&Shell->GetActorLocation().Equals(Held,.01));

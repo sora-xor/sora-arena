@@ -61,7 +61,10 @@ class LanternWorkshopTests(unittest.TestCase):
         self.assertEqual([p[:2] for p in self.native['combat_spawns']],workshop.COMBAT_SPAWNS)
         self.assertEqual([p[2] for p in self.native['combat_spawns']],[0]*7+[650])
         self.assertIs(self.native['entry_boundary_assertions'],True)
-        for p in self.native['combat_spawns']:self.clear([[p[0],p[1],p[2]+2.15]])
+        for p in self.native['combat_spawns']:
+            self.clear([[p[0],p[1],p[2]+2.15]])
+            self.assertTrue(workshop.ZONE[0]+60<=p[0]<=workshop.ZONE[2]-60)
+            self.assertTrue(workshop.ZONE[1]+60<=p[1]<=workshop.ZONE[3]-60)
         c=copy.deepcopy(self.chapter)
         b=next(r for r in c['space']['beats'] if r['beat']=='ch03.b08')
         b['spawns']=copy.deepcopy(workshop.SPAWNS)

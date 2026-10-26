@@ -10,7 +10,7 @@ struct FSpawn { FPoint Floor;EEntry Entry;int Member; };
 constexpr FSpawn Spawns[]={
     {{3480,-250,0},EEntry::Street,0},{{3480,-110,0},EEntry::Street,1},{{3480,30,0},EEntry::Street,2},
     {{3480,-1270,0},EEntry::Vault,0},{{3480,-1490,0},EEntry::Vault,1},
-    {{1960,-2450,0},EEntry::Canal,0},{{2040,-2450,0},EEntry::Canal,1},
+    {{1960,-2420,0},EEntry::Canal,0},{{2040,-2420,0},EEntry::Canal,1},
     {{2750,-1650,650},EEntry::Roof,0}};
 constexpr int SpawnIndex(int Wave,int Group,int Member)
 {
