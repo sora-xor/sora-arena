@@ -150,14 +150,21 @@ screens = list(meshes.get_lod_screen_sizes(mesh))
 unreal.log("INVENTORY_DRONE_LOD_SCREENS: " + json.dumps(screens))
 geometry = geometry_readback(record, lods, screens)
 sockets = {}
-for socket in mesh.get_editor_property("sockets"):
-    name = str(socket.get_editor_property("socket_name"))
+# UE 5.8 protects StaticMesh.Sockets from Python. Its component exposes the
+# complete socket-name list; read the authored objects through FindSocket.
+socket_probe = unreal.StaticMeshComponent()
+require(socket_probe.set_static_mesh(mesh), "socket probe could not bind mesh")
+for socket_name in socket_probe.get_all_socket_names():
+    name = str(socket_name)
     require(name not in sockets, "duplicate imported socket")
+    socket = mesh.find_socket(socket_name)
+    require(socket is not None, "listed socket is missing: " + name)
     position = socket.get_editor_property("relative_location")
     scale = socket.get_editor_property("relative_scale")
     direction = unreal.MathLibrary.get_forward_vector(socket.get_editor_property("relative_rotation"))
     sockets[name] = {"position": [position.x, position.y, position.z], "scale": [scale.x, scale.y, scale.z],
                      "forward": [direction.x, direction.y, direction.z]}
+unreal.log("INVENTORY_DRONE_SOCKETS: " + json.dumps(sockets, sort_keys=True))
 socket_readback(record, sockets)
 convex_count = meshes.get_convex_collision_count(mesh)
 simple_count = meshes.get_simple_collision_count(mesh)
