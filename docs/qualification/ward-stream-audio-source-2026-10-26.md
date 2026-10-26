@@ -47,8 +47,15 @@ been accepted as a Japanese soundscape.
 
 Targeted host checks passed before this checkpoint: 17 audio processing/ledger tests, 11 import-spec
 tests, runtime-data validation, deterministic stream rebuild, and an independent comparison of all 88
-pre-existing derivative rows and bytes. The broader source report will be recorded after the signed
-checkpoint is tested.
+pre-existing derivative rows and bytes.
+
+Signed source `ac46015eca7675785b93ca5441f26dfce2ee807c` (tree
+`44936fe8afb3970d4fbf19ee3b3aeb0fbfc858e4`) then passed **55/55** selected source gates: 27 tooling,
+22 assets and 6 audio. The checkout stayed clean and unchanged. Gameplay and Rust groups were not rerun.
+The report is `Saved/Qualification/2026-10-26/ward-stream-source/report.json` in the source-validation
+worktree, SHA-256 `fa31811c7e9d01b01be75ad7320d1580352653b13605ef21fc1cd873b66d3d25`.
+The separate inventory, 55-log, LFS-pointer and preserved-derivative audit is `independent-review.json`,
+SHA-256 `580039c5377c612cb011a1afb0e3d34aa49a9f844c0ed226c6fa2195460940f3`.
 
 The following new UE fixtures exist but have **not been compiled or run**:
 
