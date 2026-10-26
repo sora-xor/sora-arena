@@ -34,6 +34,8 @@ void ASoraWorldBuilder::BuildCampaign(const FSoraChapter& Chapter)
     {
         if(bTenements&&Space.Zones[Index].Id==TEXT("pl_ura_nagaya"))
         { BuildTenements();continue; }
+        // This crossing already belongs to the hub; do not build a second walled yard.
+        if(Chapter.Id==TEXT("ch03_lantern_ward")&&Space.Zones[Index].Id==TEXT("pl_kosatsuba"))continue;
         if(bLanternWorkshop&&Space.Zones[Index].Id==TEXT("pl_chochin_kobo"))
         { BuildLanternWorkshop();continue; }
         if(Chapter.Beats.ContainsByPredicate([Index](const FSoraBeat& B){return B.Space.Zone==Index&&B.Space.bLanding;}))

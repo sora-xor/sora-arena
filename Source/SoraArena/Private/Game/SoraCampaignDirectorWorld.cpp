@@ -110,7 +110,7 @@ bool USoraCampaignDirector::ObjectivePoint(FVector& Location,bool& bInteract) co
         return false;
     case SoraBeatRules::EGoal::Objectives:
         for(int32 Objective=0;Objective<Space.Objectives.Num();++Objective)
-            if((TaskState.PointsMask&(1u<<Objective))==0u) return At(Space.Objectives[Objective],true);
+            if((TaskState.PointsMask&(1u<<Objective))==0u) return At(Space.Objectives[Objective],!IsTerminalCharge()||Objective<2);
         return false;
     case SoraBeatRules::EGoal::Deliveries:
         if(Task.Task==SoraBeatRules::ETask::Carry&&!TaskState.Carrying)
@@ -696,11 +696,11 @@ float USoraCampaignDirector::CarryPace() const
 bool USoraCampaignDirector::CanHold(int32 WeaponId,bool bNotify)
 {
     if(!Mode().bCampaign||WeaponId<0||WeaponId>=SoraBeatRules::WeaponCount) return true;
-    if(HelmOccupiesHands()||CrankOccupiesHands()||FoundryOccupiesHands()||HorseTreatmentOccupiesHands()||IsCopying()||WorkshopCraftOccupiesHands())
+    if(HelmOccupiesHands()||CrankOccupiesHands()||FoundryOccupiesHands()||HorseTreatmentOccupiesHands()||IsCopying()||WorkshopCraftOccupiesHands()||TerminalOccupiesHands())
     {
         if(bNotify)
         {
-            if(FoundryOccupiesHands()||HorseTreatmentOccupiesHands()||IsCopying()||WorkshopCraftOccupiesHands()) Notify(SoraText::Line(NSLOCTEXT("SoraArena.Campaign","FoundryHands","作業中は両手を使う。手を離せば武器を使える。")),3.f);
+            if(FoundryOccupiesHands()||HorseTreatmentOccupiesHands()||IsCopying()||WorkshopCraftOccupiesHands()||TerminalOccupiesHands()) Notify(SoraText::Line(NSLOCTEXT("SoraArena.Campaign","FoundryHands","作業中は両手を使う。手を離せば武器を使える。")),3.f);
             else Notify(SoraText::Line(NSLOCTEXT("SoraArena.Campaign","CrankHands","両手で輪を回している。手を離せば武器を使える。")),3.f);
         }
         return false;

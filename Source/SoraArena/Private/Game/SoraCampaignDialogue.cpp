@@ -44,6 +44,7 @@ void USoraCampaignDirector::RefreshDialogueHold()
     {
         CancelFoundryWork();
         CancelWorkshopCraft();
+        CancelTerminalWork();
         CancelHorseTreatment();
         CancelCopying();
         HeldWork=EHeldWork::None; HeldPoint=INDEX_NONE; HeldMs=0; bHeldWatched=false;

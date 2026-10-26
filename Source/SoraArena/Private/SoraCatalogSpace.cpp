@@ -17,6 +17,7 @@
 #include "SoraCatalogWardGate.h"
 #include "SoraCatalogTenements.h"
 #include "SoraCatalogLanternWorkshop.h"
+#include "SoraCatalogTerminalCharge.h"
 #include "SoraCatalog.h"
 #include "SoraCatalogJson.h"
 #include "SoraStealthRules.h"
@@ -1104,6 +1105,7 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
         if(!SoraCatalogLanding::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" west landing"));
         if(!SoraCatalogWardGate::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" ward gate"));
         if(!SoraCatalogTenements::Read(*O,Beat,C)) return Bad(Beat.Id+TEXT(" back tenements"));
+        if(!SoraCatalogTerminalCharge::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" terminal charge"));
         if(!SoraCatalogLanternWorkshop::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" lantern workshop"));
         for (const FSoraDefendedPerson& Person : B.Fieldcraft.People)
             if (Person.Target == INDEX_NONE && (!S.Zones.IsValidIndex(B.Zone) ||

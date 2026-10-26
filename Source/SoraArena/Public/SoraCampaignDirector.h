@@ -14,6 +14,7 @@
 #include "SoraPodRules.h"
 #include "SoraMillisecondClock.h"
 #include "SoraWorkshopCraftRules.h"
+#include "SoraTerminalChargeRules.h"
 #include "SoraRelayRules.h"
 #include "SoraCampaignDirector.generated.h"
 class ACameraActor;
@@ -285,6 +286,11 @@ public:
     bool IsHoisting() const { return HeldWork == EHeldWork::Hoist; }
     bool IsUnloadingCargo() const { return HeldWork == EHeldWork::CargoUnload; }
     void CancelCargoUnload();
+    bool IsTerminalCharge() const;
+    void CancelTerminalWork(bool Release=false);
+    bool TerminalOccupiesHands() const { return TerminalCharge.Working; }
+    const SoraTerminalChargeRules::FState& TerminalState() const { return TerminalCharge; }
+    bool TerminalSafe() const;
     void CancelWorkshopCraft();
     void ReleaseWorkshopCraft();
     bool IsWorkshopCraft() const;
@@ -562,6 +568,11 @@ private:
     int32 HeldPoint=INDEX_NONE;
     int32 HeldMs=0;
     FSoraMillisecondClock CargoClock;
+    SoraTerminalChargeRules::FState TerminalCharge;
+    FSoraMillisecondClock TerminalWorkClock,TerminalFuseClock;
+    bool AtTerminalPanel() const;
+    bool InteractTerminal();
+    void TickTerminalCharge(float DeltaSeconds);
     SoraWorkshopCraftRules::FState WorkshopCraft;
     FSoraMillisecondClock WorkshopCraftClock;
     bool AtWorkshopStation() const;

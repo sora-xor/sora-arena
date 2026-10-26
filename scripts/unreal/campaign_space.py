@@ -665,6 +665,8 @@ def derive_space(chapter, beats, places, collectibles, triggers, layout, fail):
     place_tenements(beats, records, zones, sites, pickups, layout, fail)
     from campaign_lantern_workshop import place_lantern_workshop
     place_lantern_workshop(beats, records, zones, sites, pickups, layout, fail)
+    from campaign_notice_square import place_notice_square
+    place_notice_square(beats, records, zones, layout, fail)
     from campaign_press import place_press_hall
     place_press_hall(beats, records, zones, pickups, fail)
     from campaign_relay import place_relay

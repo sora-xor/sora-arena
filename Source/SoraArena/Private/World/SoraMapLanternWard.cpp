@@ -8,11 +8,24 @@ void ASoraWorldBuilder::LanternWardTerminal()
 {
     // The occupied street faces the road at local -Y. Use the same simple
     // campaign collision whether the authored mesh imported or not.
+    const int First=Pieces.Num();
+    TerminalPieces.Reset();bTerminalDestroyed=false;
     const FVector StreetTerminal(-730,460,0);
     const bool HasStreetTerminal=ImportedProp(TEXT("SM_Alien_StreetDebtTerminal"),StreetTerminal,FRotator::ZeroRotator);
     auto* Proxy=Box(TEXT("StreetDebtTerminalCollision"),StreetTerminal+FVector(0,0,121),
         FVector(140,74,242),FLinearColor(.10f,.15f,.20f),true);
     if(HasStreetTerminal) Proxy->SetVisibility(false);
+    for(int I=First;I<Pieces.Num();++I)if(Pieces[I]->IsVisible())TerminalPieces.Add(Pieces[I]);
+    BrokenTerminal=Box(TEXT("BrokenDebtTerminal"),StreetTerminal+FVector(0,0,65),FVector(140,74,130),
+        FLinearColor(.035f,.04f,.045f),false);
+    BrokenTerminal->SetVisibility(false);
+}
+
+void ASoraWorldBuilder::SetTerminalDestroyed(bool Destroyed)
+{
+    bTerminalDestroyed=Destroyed;
+    for(auto* P:TerminalPieces)if(IsValid(P))P->SetVisibility(!Destroyed);
+    if(IsValid(BrokenTerminal))BrokenTerminal->SetVisibility(Destroyed);
 }
 
 // Practice: the occupied merchant street. Machiya with koshi lattices and lit

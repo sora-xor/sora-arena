@@ -122,7 +122,7 @@ void ASoraLamp::Build(const FSoraLamp& Data, int32 InIndex)
     // Warm 行灯 and fires at about 1900 K; the Credit House's lamps cold.
     const FLinearColor LightColor = bRelay ? FLinearColor(.45f,.8f,1.f) : bDie ? FLinearColor::MakeFromColorTemperature(5500.f) :
         bFlood ? FLinearColor(.78f, .9f, 1.f) : bStrip ? FLinearColor(.2f, .9f, 1.f) : FLinearColor(1.f, .62f, .3f);
-    LitColor=bDie||bRelay?LightColor:FLinearColor(1.f,.62f,.25f);
+    LitColor=bDie||bRelay||bStrip?LightColor:FLinearColor(1.f,.62f,.25f);
     FActorSpawnParameters Params;
     Params.Owner = this;
     Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;

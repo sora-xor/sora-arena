@@ -436,6 +436,7 @@ void ASoraPlayerCharacter::InteractUp()
         G->Campaign()->CancelHorseTreatment();
         G->Campaign()->CancelCargoUnload();
         G->Campaign()->ReleaseWorkshopCraft();
+        G->Campaign()->CancelTerminalWork(true);
         G->Campaign()->CancelHelm();
         G->Campaign()->CancelCopying();
         G->Campaign()->CancelSpineCut();

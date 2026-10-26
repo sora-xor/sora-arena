@@ -129,6 +129,7 @@ void USoraCampaignDirector::HeroDamaged(const FSoraDamagedEvent& Event)
     if(!ActiveBeatData()||Event.Victim!=M.Hero()) return;
     CancelFoundryWork();
     CancelWorkshopCraft();
+    CancelTerminalWork();
     CancelHorseTreatment();
     CancelCopying();
     if(bPryingCarryGate) bCarryGateHit=true;
@@ -466,6 +467,7 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     SoraBeatRules::ApplyRhythmDifficulty(Task,static_cast<int32>(SoraAccessibility::CampaignDifficulty(this)));
     TaskState=SoraBeatRules::StartTask(Task,Phase);
     WorkshopCraft={};WorkshopCraftClock.Reset();
+    TerminalCharge={};TerminalWorkClock.Reset();TerminalFuseClock.Reset();
     ResetFoundry();
     ResetHorseTreatment();
     ResetHelm();
@@ -507,6 +509,7 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     {
         M.Arena()->ShowWorkshopDoor((BeatState.CompletedMask&SoraBeatRules::BeatBit(7))!=0u,false);
         M.Arena()->ShowWorkshopRestored((BeatState.CompletedMask&SoraBeatRules::BeatBit(8))!=0u);
+        M.Arena()->SetTerminalDestroyed((BeatState.CompletedMask&SoraBeatRules::BeatBit(9))!=0u);
     }
     // A stealth beat opens its zone before its guards take their posts; a
     // restored checkpoint opens it afresh. Its fieldcraft follows, so its
@@ -804,6 +807,8 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
     // Work held at a point: a load hoisted, an objective worked.
     TickEquipmentRecovery(DeltaMs);
     TickCarryWork(DeltaMs);
+    TickTerminalCharge(DeltaSeconds);
+    if(ActiveBeatData()!=&Beat||M.bDefeated)return;
     TickHeldWork(DeltaMs,DeltaSeconds);
     TickWorkshopCraft(DeltaSeconds);
     TickRelay(DeltaSeconds);
@@ -861,6 +866,11 @@ bool USoraCampaignDirector::TakeLoad(int32 Pickup)
 bool USoraCampaignDirector::WorkObjectiveAt(int32 Objective)
 {
     const FSoraBeat* Beat=ActiveBeatData();
+    if(IsTerminalCharge())
+    {
+        using E=SoraTerminalChargeRules::EStage;
+        if(Objective<0||Objective>2||TerminalCharge.Stage!=(Objective==0?E::Planted:Objective==1?E::Burning:E::Detonated))return false;
+    }
     if(IsRelayRoom()&&(Objective==3?!CanReachRelay(3):!Relay.IsDisabled(Objective))) return false;
     if(!Beat||!SoraBeatRules::WorkObjective(TaskState,Task,Objective)) return false;
     if(auto* Craft=USoraFieldcraft::Get(this)) Craft->JamPress(Objective);
@@ -937,6 +947,7 @@ void USoraCampaignDirector::TickHeldWork(int32 DeltaMs,float DeltaSeconds)
 }
 float USoraCampaignDirector::HeldWorkProgress() const
 {
+    if(TerminalCharge.Working)return float(TerminalCharge.HeldMs)/SoraTerminalChargeRules::HoldNeed(TerminalCharge);
     if(IsWorkshopCraft()&&WorkshopCraft.Step>0)return float(WorkshopCraft.ElapsedMs)/SoraWorkshopCraftRules::PasteMs;
     if(IsCopying()) return static_cast<float>(TaskState.HoldProgress[CopyDesk])/Task.HoldPointMs;
     if(HorseTreatmentOccupiesHands()) return float(Treatment.HeldMs)/SoraHorseTreatmentRules::HoldMs;
@@ -1458,7 +1469,8 @@ bool USoraCampaignDirector::AwaitingCapture() const
 }
 void USoraCampaignDirector::ClearEncounter()
 {
-    CancelWorkshopCraft();WorkshopCraft={};
+    CancelWorkshopCraft();
+    CancelTerminalWork();TerminalCharge={};TerminalFuseClock.Reset();WorkshopCraft={};
     ResetFoundry();
     ResetHorseTreatment();
     BulkheadHold={}; BulkheadClock.Reset();
@@ -1651,6 +1663,7 @@ void USoraCampaignDirector::HandleFailure(SoraBeatRules::ERetry Outcome,const FS
     ResetPods();
     CancelFoundryWork();
     CancelWorkshopCraft();
+    CancelTerminalWork();
     CancelHorseTreatment();
     CancelCopying();
     CancelBulkheadHold();
@@ -2049,6 +2062,7 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
     {
     case SoraBeatRules::EGoal::Objectives:
     {
+        if(IsTerminalCharge()){InteractTerminal();return;}
         if(IsRelayRoom()) { bWorked=InteractRelay();break; }
         const int32 Objective=NearestOf(Space.Objectives,[&](int32 Index) { return (TaskState.PointsMask&(1u<<Index))==0u; });
         if(Space.PressHall.bEnabled&&Objective>=0&&
@@ -2465,6 +2479,8 @@ void USoraCampaignDirector::ArenaInteract(ASoraPlayerCharacter& Player)
 }
 FString USoraCampaignDirector::ObjectiveText() const
 {
+    if(IsTerminalCharge()&&TerminalCharge.Stage==SoraTerminalChargeRules::EStage::Burning)
+        return FString::Printf(TEXT("導火：残り%d秒。北の路地の物陰へ。"),(SoraTerminalChargeRules::FuseMs-TerminalCharge.FuseAgeMs+999)/1000);
     const ASoraGameMode& M=Mode();
     if(!M.bCampaign)
         return FString::Printf(TEXT("生産の復旧 %d / 3    |    侵略者 %d / %d    |    出口：東の鳥居"),
@@ -2512,6 +2528,8 @@ FString USoraCampaignDirector::ObjectiveText() const
 }
 FString USoraCampaignDirector::ObjectiveTextEnglish() const
 {
+    if(IsTerminalCharge()&&TerminalCharge.Stage==SoraTerminalChargeRules::EStage::Burning)
+        return FString::Printf(TEXT("Fuse: %d s. Reach cover in the north alley."),(SoraTerminalChargeRules::FuseMs-TerminalCharge.FuseAgeMs+999)/1000);
     const ASoraGameMode& M=Mode();
     if(!M.bCampaign)
         return FString::Printf(TEXT("Production sites %d of 3 / Invaders %d of %d / Exit: eastern torii gate"),

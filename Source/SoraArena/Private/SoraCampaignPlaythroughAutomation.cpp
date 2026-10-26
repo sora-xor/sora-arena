@@ -19,6 +19,7 @@
 #include "SoraMaaiAutomation.h"
 #include "SoraArcheryAutomation.h"
 #include "SoraRecoveryAutomation.h"
+#include "SoraTerminalChargeAutomation.h"
 #include "SoraTenementFindRules.h"
 #include "SoraLiftAutomation.h"
 #include "SoraFloodAutomation.h"
@@ -1384,6 +1385,12 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
     case EGoal::Turns:
     case EGoal::Steps:
     {
+        if(Beat.Id==TEXT("ch03.b10"))
+        {
+            if(!ClearField(Test,State,Index)||!FreeConscripts(Test,State)||!WaitForDialogue(Test,State)||
+               !Test.TestTrue(TEXT("Terminal charge requires two holds and a physical timed escape"),SoraTerminalChargeAutomation::Escape(*State.World)))return false;
+            State.ObjectivesHeld+=2;break;
+        }
         if(Beat.Space.Lift.bEnabled)
         {
             if(!Test.TestTrue(TEXT("The full spire ride uses boarding and ordinary crank input"),SoraLiftAutomation::Ride(*State.World))||

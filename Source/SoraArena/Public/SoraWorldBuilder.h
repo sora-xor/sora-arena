@@ -146,6 +146,8 @@ public:
     void BuildLanding(const FSoraZone& Zone);
     void BuildWardGate(const FSoraZone& Zone);
     void BuildTenements();
+    void SetTerminalDestroyed(bool Destroyed);
+    bool IsTerminalDestroyed() const { return bTerminalDestroyed; }
     void BuildLanternWorkshop();
     void ShowWorkshopDoor(bool FightComplete,bool SealCut);
     void ShowWorkshopRestored(bool Restored);
@@ -426,6 +428,9 @@ private:
     void EstateSluice(FVector P);
     // Lantern Ward, map 1 (SoraMapLanternWard.cpp).
     void LanternWardTerminal();
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> TerminalPieces;
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> BrokenTerminal=nullptr;
+    bool bTerminalDestroyed=false;
     // Silk Foundry, map 2 (SoraMapSilkFoundry.cpp).
     void SilkFoundryLoom(FVector P);
     // Debt Citadel, map 3 (SoraMapDebtCitadel.cpp).

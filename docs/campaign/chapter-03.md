@@ -597,7 +597,7 @@ Routes:
 2. **Roof:** a ladder at the pawnbroker's side leads onto the roofs. From there the player can take the marksman down from behind (lethal), which removes the glint threat.
 3. **Main-street eaves:** lit and fast, but risky.
 
-Objectives: plant the charge (hold 4 s), light the 火縄 fuse (1 s), then reach any point in `vol_b10_blast_safe` (at least 15 m away and out of sight) within the 20 s fuse. Standing within 8 m at detonation damages the player. If detected, reinforcements come from the east: three enforcers and a grenadier. On Easy, detection falls back to plain combat.
+Objectives: plant the charge (hold 4 s), light the 火縄 fuse (1 s), then reach any point in `vol_b10_blast_safe` (at least 15 m away and out of sight) within the 20 s fuse. Runtime completion checks that the player is still grounded in that cover at detonation; entering it and returning to the blast is not an escape. A surviving player who misses this deadline receives a checkpoint retry instead of a soft-locked destroyed objective. The provisional self-blast deals 120 damage through the shared explosion/cover rules. Standing within 8 m at detonation damages the player. If detected, reinforcements come from the east: three enforcers and a grenadier. On Easy, detection falls back to plain combat.
 
 **Dialogue triggers:**
 - `beat_start` → ch03.b10.kohagi.001 (radio)
