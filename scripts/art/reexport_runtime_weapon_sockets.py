@@ -99,7 +99,9 @@ FILES = set(opt("--files", "").split(",")) - {""}
 
 
 def git(*args):
-    return subprocess.run(["git", "-C", str(SRC), *args], capture_output=True, text=True, check=True).stdout.strip()
+    """Read-only git in the source tree: --no-optional-locks keeps status from refreshing another tree's index."""
+    return subprocess.run(["git", "--no-optional-locks", "-C", str(SRC), *args], capture_output=True, text=True,
+                          check=True).stdout.strip()
 
 
 def read_json_exactly(path):

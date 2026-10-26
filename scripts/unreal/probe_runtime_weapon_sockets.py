@@ -6,6 +6,7 @@ docs/art-direction/WEAPON_SOCKET_EXPORT_PLAN.md.
 Run (UE 5.8, headless, by the holder of the shared engine lane):
   scripts/toolchain/run-editor-script.sh scripts/unreal/probe_runtime_weapon_sockets.py
       RUNTIME_WEAPON_SOCKET_PROBE_DONE <log> -- out=<json> stage=<stage_report.json>[,<stage_report.json>...]
+      [controls=Saved/WeaponSocketFix/s82_diag]
   ... -- out=<json> readonly=/Game/Generated/Meshes/SM_Weapon_02,/Game/Generated/Meshes/SM_Weapon_15
       (reads assets that already exist, and imports nothing)
 
@@ -30,6 +31,11 @@ auto_generate_collision False. Weapons carry no UCX hulls.
 - the corrected import must repeat the original's LOD0 arrays, material slots and collision counts (same_import);
 - both files must follow fbx_unreal_sockets' prediction on every axis (model_agreement). That tests the model beyond
   the drone it was calibrated on, before its screen of the other files is trusted.
+
+**controls=** names a diagnose_weapon_socket_reexport.py output. Each asset's control is the library's convention
+re-exported from the same blend, so it carries the original's inexact node turn. It is imported as a third file,
+hash-checked against the diagnosis. Its comparisons with the original and with the corrected file are recorded,
+not gated: they attribute any difference between the original and corrected imports.
 
 The original is expected to fail the socket gates, and that is recorded, not raised. The report stores counts,
 bounds and gaps, not the arrays.
@@ -148,6 +154,14 @@ report = {"engine": unreal.SystemLibrary.get_engine_version(), "probe_sha256": s
           "gates_sha256": sha(Path(__file__).resolve().parent / "weapon_socket_gates.py"), "options": OPTIONS,
           "saved_packages": False}
 problems = []
+controls = {}
+if "controls" in OPTS:
+    control_dir = resolve(OPTS["controls"])
+    diagnosis = json.loads((control_dir / "diagnosis.json").read_text(encoding="utf-8"))
+    report["controls"] = {"dir": str(control_dir), "diagnosis_sha256": sha(control_dir / "diagnosis.json")}
+    for d in diagnosis["rows"]:
+        if "asset" in d:
+            controls[d["asset"]] = (control_dir / d["kit"] / "control" / f"{d['asset']}.fbx", d["control_sha256"])
 if "stage" in OPTS:
     report["stage_reports"], report["imports"] = [], {}
     for stage_path in (resolve(p) for p in OPTS["stage"].split(",")):
@@ -175,6 +189,16 @@ if "stage" in OPTS:
                     problems.append(f"{f['asset']} {tag}: the import departs from the model {agreement}")
             row["same_import_gaps"], same_failures = G.same_import(read["original"], read["corrected"])
             row["same_import_failures"] = same_failures
+            if f["asset"] in controls:
+                path, digest = controls[f["asset"]]
+                if sha(path) != digest:
+                    fail(f"{f['asset']}: the control changed since the diagnosis")
+                read["control"] = read_mesh(import_one("control", f["asset"], path))
+                row["control"] = {"fbx": str(path), "sha256": digest, "mesh": read["control"]["summary"]}
+                for label, x, y in (("original_vs_control", "original", "control"),
+                                    ("control_vs_corrected", "control", "corrected")):
+                    gaps, failures = G.same_import(read[x], read[y])
+                    row[label] = {"gaps": gaps, "failures": failures}
             if row["corrected"]["gate_failures"]:
                 problems.append(f"{f['asset']} corrected: " + "; ".join(row["corrected"]["gate_failures"]))
             if same_failures:

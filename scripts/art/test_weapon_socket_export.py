@@ -162,6 +162,28 @@ class Gates(unittest.TestCase):
         hull["collision"]["convex"] = 1
         self.assertTrue(any("collision" in f for f in G.same_import(mesh, hull)[1]))
 
+    def test_same_import_goes_corner_by_corner_in_8_bit_steps(self):
+        quad = {"lod0": {"sections": [{"positions": [[0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0]],
+                                       "indices": [0, 1, 2, 2, 1, 3], "normals": [[0, 0, 1]] * 4,
+                                       "uvs": [[0, 0], [1, 0], [0, 1], [1, 1]], "tangents": [[1, 0, 0]] * 4}]},
+                "materials": [["M", "M", "M"]], "collision": {"convex": 0, "other_simple": 0}}
+        split = copy.deepcopy(quad)                    # the same corners, with vertex 2 split in two
+        s = split["lod0"]["sections"][0]
+        for key in ("positions", "normals", "uvs", "tangents"):
+            s[key].append(copy.deepcopy(s[key][2]))
+        s["indices"] = [0, 1, 2, 4, 1, 3]
+        gaps, failures = G.same_import(quad, split)
+        self.assertEqual(failures, [])
+        self.assertEqual(gaps["render_vertices"], [4, 5])
+        step = copy.deepcopy(quad)                     # one 8-bit step passes, two do not
+        step["lod0"]["sections"][0]["normals"][3] = [0, G.STEP, 1]
+        self.assertEqual(G.same_import(quad, step)[1], [])
+        step["lod0"]["sections"][0]["normals"][3] = [0, 2 * G.STEP, 1]
+        self.assertTrue(any("normals differ by 2 steps" in f for f in G.same_import(quad, step)[1]))
+        turn = copy.deepcopy(quad)                     # a tangent 3 deg away fails
+        turn["lod0"]["sections"][0]["tangents"][0] = [math.cos(math.radians(3)), math.sin(math.radians(3)), 0]
+        self.assertTrue(any("tangent_deg" in f for f in G.same_import(quad, turn)[1]))
+
 
 class Record(unittest.TestCase):
     def setUp(self):

@@ -167,3 +167,36 @@ Logs are in `Saved/W18Rebuild/`; outputs are in `Saved/WeaponSocketFix/`. Every 
 - So the 1e-6 gate was miscalibrated, for these two derived arrays only. The drone's one pair happened to show
   1.8e-7. The tool now gates the tangent basis at 1e-4 and keeps every other array at 1e-6.
 - Data: `data/weapon_socket_reexport_diagnosis.json`.
+
+**s83, staging from this tree** (claude/photoreal-art at 77e35643; pid 39086, 04:25:32-04:25:44Z, exit 0).
+- 25 files and 79 sockets were staged to `Saved/WeaponSocketFix/s83_stage_art/`, with every gate passed.
+- Through the rule, each socket is at scale 0.9999998 to 1, on the blend's axes and at the record's positions.
+- Against the originals:
+  - every array is exact but the tangent basis, whose worst is 7.1e-6;
+  - Interchange's baked vertices are within 2.8e-5 cm.
+- W18 is my rebuild (kit last commit `b0eef326`). Content/ is unchanged.
+
+**s84, root's W14, read-only** (`codex/complete-game`, kit at `3b0a662d`; pid 40040, 04:26:42-04:26:44Z, exit 0).
+- 1 file and 4 sockets were staged to `Saved/WeaponSocketFix/s84_stage_root_w14/`, with every gate passed.
+- Git in root's tree ran with `--no-optional-locks`, and `git status -- Content/` there is still empty.
+
+**s85, the UE 5.8 probe** (wrapper 40367, UnrealEditor-Cmd 40485, 04:26:59-04:27:57Z; editor exit 0, wrapper 1).
+- **Sockets:** all 83 corrected sockets pass: the record's position within 0.02 cm, scale 1 within 1e-4, and signed
+  forward, right and up on the authored axes. Every original fails as the model predicted: scale 100, forward and
+  up reversed, right kept.
+- **The model** matches every axis of all 52 imports: position within 7.1e-6 cm, scale 6.8e-8, axes 1.1e-7. The
+  screen's predictions for the files not yet probed are therefore backed by this measurement, but they remain
+  predictions.
+- **Material slots** are equal for all 26 pairs. **Collision** is 0 convex and 0 other in every import.
+- **The wrapper's exit 1** came from my own same_import gate, which compared whole render arrays:
+  - **24 pairs** have the same render layout, UVs exact, positions within 3.2e-5 cm, and normals and tangents
+    within one 8-bit step (1/127 = 0.0079). The exception is one W01 tangent, at 0.0249.
+  - **W11 and W13:** the corrected import has one more render vertex (12,156 against 12,155; 6,628 against 6,627),
+    with the same triangle counts and bounds within 5e-6 cm.
+  - **The likely cause**, not yet measured: the original's node turn is 179.999991°, not 180°. Its import is
+    rotated by 8.65e-6°, which flips a few 8-bit roundings and one vertex-welding decision; the corrected file has
+    no turn.
+- **The gate is reworked** (weapon_socket_gates.same_import), and the next run, s86, tests the cause:
+  - it compares corner by corner, in 8-bit steps and degrees;
+  - it imports the s82 control as a third file. The control is the library's convention from the same blend, so it
+    carries the original's inexact turn.
