@@ -141,7 +141,71 @@ The review originals are in `../Renders/SM_Drone_Inventory_{Front,Side,Top,Three
 | `Eye` | (0.3622, 0, 0), the pupil's front | +X |
 | `NetMuzzle` | (0.0768, 0, -0.1518) | X 45° down and forward |
 
-Both are within 0.1 mm of the record, and the muzzle within 0.5° of its axis, from the FBX.
+Both are within 0.1 mm of the record, and their X and Z axes within 0.05° of the record's `socket_axes`, signed,
+from the FBX. In Unreal both import at scale 1 on these axes (see 5.1). fc0858a9's LOD0 did not.
+
+### 5.1 LOD0's FBX convention (corrected 2026-10-26)
+
+**The defect.** Root imported fc0858a9 at 0eb8c5e. Both sockets came in at scale 100 with +X reversed; their
+positions were right. The Blender round trip had passed: Blender's importer is not Unreal's, and its NetMuzzle
+check compared the axis with `abs()`, which accepts a reversed one.
+
+**The cause**, read in the installed UE 5.8 source:
+- LOD0 used the weapon library's export, which declares Blender's ('Z', '-Y') axes: Z up, +Y front, -X coord. Its
+  mesh node carries the 180° turn and the ×100 unit.
+- Interchange converts any file whose axes are not its import axes (Z up, -Y front, right-handed), by a rotation C
+  (`FbxConvert.cpp`, ConvertScene).
+- It then applies `AxisConversionInverseTransform * Transform` to every socket (`InterchangeMeshHelper.cpp`,
+  ImportSockets). So a socket becomes C·G·C⁻¹ while a vertex becomes C·G·v. With Bake Meshes on, the socket also
+  keeps its parent node's ×100.
+
+`scripts/art/fbx_unreal_sockets.py` models that rule. Run on fc0858a9's bytes, it gives root's readback to 1e-14:
+the positions, scale 100, Eye forward (-1, -1.5e-7, 0) and NetMuzzle (-0.7071, -1.07e-7, 0.7071).
+
+**The fix** (`create_inventory_drone.LOD0_FBX`, `export_lod0`): LOD0 is written in Blender's own ('Z', 'Y') axes.
+- Those are exactly Unreal's import axes, so neither Unreal nor Blender converts the file.
+- `bake_space_transform` bakes the ×100 into the vertices and the socket translations, so no node carries a rotation
+  or a scale.
+- LOD1 and LOD2 carry no sockets and keep the library's export. Unreal bakes all three to the same vertices.
+
+**The re-export** (`scripts/art/reexport_inventory_drone_lod0.py`) rewrote only LOD0, from the reviewed blend's own
+objects.
+- The blend, LOD1, LOD2 and the maps keep their hashes. Nothing was rebaked.
+- Against fc0858a9's LOD0, array by array, for the body and the three hulls:
+  - the vertices are exactly ×100;
+  - the indices, edges, normals, UVs, materials and smoothing are identical;
+  - the tangents differ by at most 1.8e-7;
+  - Interchange's baked vertices differ by at most 5.5e-6 cm, because the old node turn was 179.999991°.
+
+**The gates:**
+- `validate_inventory_drone.py` now also reads every LOD's bytes through the model. It requires LOD0 in Unreal's
+  axes in centimetres, each socket at scale 1 on the record's axes, and root's socket and geometry gates.
+- `scripts/unreal/probe_inventory_drone_sockets.py` imports the original and the corrected LOD0 in UE 5.8 with
+  root's options, unsaved, and reads them back as root's importer does. Its receipt is
+  `docs/art-direction/data/inventory_drone_ue_socket_probe.json`.
+
+**In UE 5.8** (runs s79 and s80):
+
+| | original bc17dbb1 | corrected f7057061 |
+| --- | --- | --- |
+| Eye | scale 100, forward (-1, -1.5e-7, 0) | (36.22, 0, 0), scale 1, forward (1, 0, 0) |
+| NetMuzzle | scale 99.99999, forward (-0.7071, -1.07e-7, 0.7071) | (7.677, 0, -15.177), scale 0.9999999, forward (0.7071, 0, -0.7071) |
+| LOD0 | 10,386 triangles, radius 36.22 cm | the same vertices and bounds |
+| UCX hulls, root's options (s79) | 0 | 0 |
+| UCX hulls, auto_generate_collision True (s80) | 3 convex, 0 other | 3 convex, 0 other |
+
+- The original repeats root's readback exactly.
+- With s80's one option, the corrected file passes every gate of root's socket_readback and of the LOD0 rows of its
+  geometry_readback.
+
+**The collision import, root's option rather than the asset's.** In UE 5.8 the FbxImportUI converter sets
+Interchange's bCollision from auto_generate_collision (`InterchangeFbxAssetImportDataConverter.cpp:316`). bCollision
+gates every collision mesh, UCX included (`InterchangeLODDataParser.cpp:739`). So `auto_generate_collision=False`
+drops the three authored hulls. When custom UCX are present, nothing is generated
+(`InterchangeStaticMeshFactory.cpp:796`), and s80 shows no 18-DOP.
+
+**Likely shared, not verified.** Every library kit's FBX with `SOCKET_` empties uses the same export: the weapons,
+and the W18 arrow's Nock and Tip. The W18 readback checked only the arrow's socket positions.
 
 **The hit hulls** (Unreal custom collision in the LOD0 FBX):
 
