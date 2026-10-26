@@ -2,15 +2,22 @@
 #include "SoraCatalog.h"
 #include "SoraCompanion.h"
 #include "SoraGameMode.h"
+#include "SoraGameEvents.h"
 #include "SoraLanternWorkshopRules.h"
 #include "SoraPlayerCharacter.h"
 #include "SoraWorldBuilder.h"
+#include "SoraWorkshopProp.h"
 #include "Components/CapsuleComponent.h"
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 void USoraFieldcraft::ClearWorkshop()
 {
+    ++WorkshopGeneration;
+    if(auto* Bus=USoraGameEvents::Get(this))Bus->OnDetonated.Remove(WorkshopBurst);
+    WorkshopBurst.Reset();
+    for(const auto& Prop:WorkshopProps)if(IsValid(Prop))Prop->Destroy();
+    WorkshopProps.Reset();
     for(const auto& Person:WorkshopPeople)if(IsValid(Person))Person->Destroy();
     WorkshopPeople.Reset();bWorkshopFight=false;bWorkshopSealCut=false;
 }
@@ -35,6 +42,31 @@ void USoraFieldcraft::StageWorkshop(const FSoraBeat& Beat)
         Person->Init(Spec,I);
         Person->GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Visibility,ECR_Ignore);
     }
+    // These hazardous/destructible proxies belong to the defense encounter;
+    // the following manufacturing beat starts with a cleared work yard.
+    if(!bWorkshopFight)return;
+    namespace H=SoraWorkshopHazardRules;
+    Params.Owner=Props;
+    for(int I=-1;I<int(UE_ARRAY_COUNT(H::Covers));++I)
+    {
+        const FVector At=I<0?FVector(H::OilX,H::OilY,H::OilHalfHeightCm):
+            FVector(H::Covers[I].X,H::Covers[I].Y,H::Covers[I].Height*.5f);
+        if(auto* Prop=GetWorld()->SpawnActor<ASoraWorkshopProp>(At,FRotator::ZeroRotator,Params))
+        {Prop->Build(I);WorkshopProps.Add(Prop);}
+    }
+    if(auto* Bus=USoraGameEvents::Get(this))WorkshopBurst=Bus->OnDetonated.AddUObject(this,&USoraFieldcraft::WorkshopDetonated);
+}
+
+void USoraFieldcraft::WorkshopDetonated(const FSoraDetonatedEvent& Event)
+{
+    const auto* Mode=Cast<ASoraGameMode>(GetWorld()->GetAuthGameMode());
+    if(!bWorkshopFight||!Mode||!Mode->IsPlaying()||GetWorld()->IsPaused())return;
+    // Sample every line before breaking any cover. One blast cannot acquire
+    // different oil reach merely by changing delegate/prop iteration order.
+    TArray<TWeakObjectPtr<ASoraWorkshopProp>> Reached;
+    for(const auto& Prop:WorkshopProps)
+        if(IsValid(Prop)&&!Prop->IsActorBeingDestroyed()&&Prop->BlastReaches(Event.Location,Event.Radius,Event.Damage))Reached.Add(Prop);
+    for(const auto& Weak:Reached)if(auto* Prop=Weak.Get())Prop->Detonate(Event.Damage);
 }
 
 bool USoraFieldcraft::CanCutWorkshopSeal(const ASoraPlayerCharacter& Player) const
@@ -54,8 +86,15 @@ void USoraFieldcraft::CutWorkshopSeal()
     Raise(TEXT("workshop_seal_cut"));
 }
 
-void USoraFieldcraft::TickWorkshop()
+void USoraFieldcraft::TickWorkshop(int32 DtMs)
 {
+    const uint32 Generation=WorkshopGeneration;
+    const auto CurrentProps=WorkshopProps;
+    for(const auto& Prop:CurrentProps)
+    {
+        if(Generation!=WorkshopGeneration)return;
+        if(IsValid(Prop)&&!Prop->IsActorBeingDestroyed())Prop->StepFire(DtMs);
+    }
     if(!bWorkshopFight||!bWorkshopSealCut)return;
     for(int I=0;I<WorkshopPeople.Num();++I)
         if(auto* Person=WorkshopPeople[I].Get();IsValid(Person))

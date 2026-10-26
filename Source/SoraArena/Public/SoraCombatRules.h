@@ -235,11 +235,11 @@ constexpr int RearDamage(int Damage, int FacingMilli, int RearWeakPermille)
 
 // Only the explicitly authored floor-contact rate omits vulnerability bonuses.
 // This changes no shield, barrier, invulnerability or defeat admission rules.
-enum class EEnvironmentalRate { None, MoltenChannel };
+enum class EEnvironmentalRate { None, MoltenChannel, WorkshopOil };
 constexpr int EnemyVulnerabilityDamage(int Damage,EHit Kind,EEnvironmentalRate Rate,
                                       bool Staggered,int FacingMilli,int RearWeakPermille)
 {
-    return Kind==EHit::Hazard&&Rate==EEnvironmentalRate::MoltenChannel ? Damage :
+    return Kind==EHit::Hazard&&(Rate==EEnvironmentalRate::MoltenChannel||Rate==EEnvironmentalRate::WorkshopOil) ? Damage :
         RearDamage(StaggeredDamage(Damage,Staggered),FacingMilli,RearWeakPermille);
 }
 

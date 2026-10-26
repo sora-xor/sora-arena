@@ -18,12 +18,14 @@ class ASoraCharacterBase;
 class ASoraEnemy;
 class ASoraHorse;
 class ASoraFuelCanister;
+class ASoraWorkshopProp;
 class ASoraPlayerCharacter;
 class UPointLightComponent;
 class USphereComponent;
 class USpotLightComponent;
 class UStaticMeshComponent;
 struct FSoraMeleeCommittedEvent;
+struct FSoraDetonatedEvent;
 
 // A lamp or fire of the beat's fieldcraft: its body, and the point light
 // the guards see by (USoraStealth::LightAt counts every visible APointLight).
@@ -491,10 +493,14 @@ private:
     void StageCompanions(const FSoraBeat& Beat);
     void StageWorkshop(const FSoraBeat& Beat);
     void ClearWorkshop();
-    void TickWorkshop();
+    void TickWorkshop(int32 DtMs);
+    void WorkshopDetonated(const FSoraDetonatedEvent& Event);
     bool CanCutWorkshopSeal(const ASoraPlayerCharacter& Player) const;
     void CutWorkshopSeal();
     UPROPERTY() TArray<TObjectPtr<ASoraCompanion>> WorkshopPeople;
+    UPROPERTY() TArray<TObjectPtr<ASoraWorkshopProp>> WorkshopProps;
+    FDelegateHandle WorkshopBurst;
+    uint32 WorkshopGeneration=0;
     bool bWorkshopFight=false,bWorkshopSealCut=false;
     void StageKitchenQueue(const FSoraBeat& Beat);
     void TickKitchenQueue();

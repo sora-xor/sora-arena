@@ -51,6 +51,29 @@ class LanternWorkshopTests(unittest.TestCase):
         self.assertEqual([p[:2] for p in self.native['stations']],workshop.STATIONS)
         self.assertEqual([p[2] for p in self.native['stations']],[45,45,45,0])
 
+    def test_oil_duration_and_damage_are_frame_partition_independent(self):
+        rows=self.native['burn_partitions']
+        self.assertEqual([r[0] for r in rows],[1,7,16,17,33,100,1000,5999,6000,7000,2147483647])
+        self.assertEqual([r[1] for r in rows],[72]*len(rows))
+        self.assertIs(self.native['hazard_boundary_assertions'],True)
+
+    def test_hazard_proxies_preserve_yard_routes_and_shell_bench_clearance(self):
+        hazards=self.native['hazard_solids']
+        self.assertEqual(len(hazards),4)
+        self.assertEqual(hazards[0],[2360,-1200,55,48,48,110,0,1])
+        for point in tenement_geometry.TenementTests.sample(
+                [[2000,-1800,2.15],[2440,-1800,2.15],[2440,-1030,2.15],[3480,-1030,2.15]]):
+            for box in hazards:self.assertFalse(tenement_geometry.TenementTests.hits(box,point),(point,box))
+        self.assertGreater(hazards[0][0]-hazards[0][3]/2,2326)
+        self.assertGreater(math.dist(hazards[0][:2],self.native['stations'][3][:2]),180+140)
+
+    def test_soft_cover_has_no_solid_building_or_well_overlap(self):
+        for a in self.native['hazard_solids']:
+            for b in self.solids:
+                # Ground contact is intentional, penetration into another
+                # collision box is not. All three dimensions must overlap.
+                self.assertFalse(all(abs(a[i]-b[i])<(a[i+3]+b[i+3])/2-.01 for i in range(3)),(a,b))
+
     def test_rejects_changed_floor_door_station_route_and_collectible(self):
         for kind in ('floor','door','station','steps','zone','spawn','pickup','extra'):
             c=copy.deepcopy(self.chapter)

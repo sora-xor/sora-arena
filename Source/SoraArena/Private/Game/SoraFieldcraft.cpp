@@ -611,7 +611,7 @@ void USoraFieldcraft::Tick(float DeltaTime)
     TickHolds(DtMs);
     if (Staged) TickCompanions(DtMs);
     if (Staged) TickKitchenQueue();
-    if (Staged) TickWorkshop();
+    if (Staged) TickWorkshop(DtMs);
     if (Staged) TickNets(DtMs);
     if (Staged) TickVolley(DtMs);
     if (Staged) TickSmoke(DtMs);
