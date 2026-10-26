@@ -27,3 +27,13 @@ These changes have **not been compiled or run in Unreal**. Claude owns the engin
 lane for character work. The previous 32-test pass belongs to `ca98e606` and does
 not validate this connection. Ordinary play, visuals and release acceptance
 remain open.
+
+All 64 gameplay source gates subsequently pass at signed
+`d41c662e7ddeb5a1c004fd7867660e08d0b3ea95`, tree
+`07f5b17f3c76e26dc6c98652805e128c4bdde8e6`, with a clean, unchanged checkout.
+The source-validation worktree retains
+`Saved/Qualification/2026-10-26/ward-street-source/report.json` (SHA-256
+`28b0aca891f6659509c081d908e516612fec235a9820c56275a588d4b643f7bb`)
+and its separate 64-log/inventory audit `independent-review.json` (SHA-256
+`cac9b4123de0383a18055a59e19fa372020d4625fc38eeb812114fbf71b86995`).
+These host results do not compile the Unreal code or validate its fixtures.
