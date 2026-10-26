@@ -184,7 +184,7 @@ bool FSoraDroneMeleeTest::RunTest(const FString&)
 {
     using namespace SoraLandingDroneTest;
     FBeatWorld W(*this,TEXT("DroneMelee"),2,1);auto* Drone=Ready(W);if(!Drone)return false;
-    Freeze(*Drone);
+    SoraLandingDroneTest::Freeze(*Drone);
     W.Hero()->GetCharacterMovement()->DisableMovement();
     auto* World=W.World->GetTestWorld();
     const FVector At=Drone->GetActorLocation();
