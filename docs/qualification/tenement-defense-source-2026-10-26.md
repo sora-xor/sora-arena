@@ -31,8 +31,11 @@ It does not alter other drones' behavior or move a pawn directly to a waypoint.
 
 The provisional work marker spans the authored rectangle. The supply trigger is
 restored to the specified 200 x 200 cm box centred at the manager's door
-(-2400, 3600). Existing supply loadout/refill behavior and the three two-second
-cookfire relights are reused. The generated layout, raw wave names/types/counts,
+(-2400, 3600). The three two-second cookfire relights are reused. Later inspection
+found that the generic supply refill existed but its builder staged only the
+spire cache: **this checkpoint did not create a kitchen supply crate**. The
+follow-up `tenement-supply-source-2026-10-26.md` records that fix and its limits.
+The generated layout, raw wave names/types/counts,
 compiled wave rules, loader checks and shared native geometry must agree.
 
 ## Evidence and remaining validation

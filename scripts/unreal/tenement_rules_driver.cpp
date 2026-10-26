@@ -21,6 +21,13 @@ int main()
     }
     assert(!F::WithinReach(-1,true,0,0,0)&&!F::WithinReach(2,true,0,0,0));
     namespace D=SoraTenementDefenseRules;
+    for(double Z:{2.15,24.65,47.15})assert(D::SupplyReach(true,-2365,3660,Z));
+    assert(!D::SupplyReach(false,-2365,3660,24.65));
+    assert(!D::SupplyReach(true,-2250,3660,2.15));
+    assert(!D::SupplyReach(true,-2365,3499.99,2.15));
+    assert(!D::SupplyReach(true,-2365,3660,-700));
+    assert(!D::SupplyReach(true,-2365,3660,50.01));
+    assert(!D::SupplyReach(true,std::numeric_limits<double>::quiet_NaN(),3660,2.15));
     // Court, alley, rounded capsule corners, street, upper air and shaft.
     assert(D::InKitchen(-2300,3500,90.15,34,88));
     assert(D::InKitchen(-2800,2250,90.15,34,88));
@@ -63,5 +70,6 @@ int main()
         const auto P=F::Points[I];if(I)std::cout<<',';
         std::cout<<'['<<P.X<<','<<P.Y<<','<<P.Z<<']';
     }
-    std::cout<<"]}\n";
+    const auto P=D::SupplyAt,S=D::SupplySize;
+    std::cout<<"],\"supply\":["<<P.X<<','<<P.Y<<','<<P.Z<<','<<S.X<<','<<S.Y<<','<<S.Z<<"]}\n";
 }

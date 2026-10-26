@@ -3,6 +3,8 @@
 #include "SoraFieldcraftTestWorld.h"
 #include "SoraRecoveryAutomation.h"
 #include "SoraEnemyController.h"
+#include "SoraEquipmentComponent.h"
+#include "SoraWorldBuilder.h"
 #include "SoraTenementDefenseRules.h"
 #include "Combat/SoraCombatEffects.h"
 #include "Components/CapsuleComponent.h"
@@ -178,6 +180,56 @@ bool FSoraTenementDefenseWavesTest::RunTest(const FString&)
     if(W.Fieldcraft()->FiresOut()>0&&!Relight(W,Relit++))return false;
     TestEqual(TEXT("All three authored cookfire interruptions were exercised"),Relit,3);
     AddInfo(TEXT("Real beat time, held relighting and live drone flight/attacks; fixture hardens the hero, holds/repositions one probe and removes completed enemy groups. Ordinary combat balance and release acceptance remain unqualified."));
+    return !HasAnyErrors();
+}
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraTenementKitchenSupplyTest,"SoraArena.Campaign.Tenements.KitchenSupply",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FSoraTenementKitchenSupplyTest::RunTest(const FString&)
+{
+    using namespace SoraTenementDefenseAutomation;
+    if(!FSoraCatalog::Get().Load())return false;
+    FBeatWorld W(*this,TEXT("KitchenSupply"),2,13);if(!Start(W))return false;
+    auto* Arena=W.Mode()->Arena();auto* Kit=W.Hero()->GetEquipment();
+    FVector Crate;const FString Id=TEXT("vol_b14_supply");
+    if(!TestTrue(TEXT("The kitchen's own supply crate is staged"),Arena->SupplyFloor(Id,Crate)))return false;
+    const auto P=SoraTenementDefenseRules::SupplyAt;
+    TestTrue(TEXT("The crate is on earth beside the manager door, clear of both stairs"),Crate.Equals(FVector(P.X,P.Y,P.Z)));
+    FVector Other;TestFalse(TEXT("The spire's supply identity is not active here"),Arena->SupplyFloor(TEXT("sp_spire_base"),Other));
+    if(!Kit->EquipCampaignWeapon(18)||!W.Tick(40))return false;
+    const int Cap=FSoraCatalog::Get().Weapon(18).Magazine;
+    if(!TestEqual(TEXT("The restored yumi starts with twelve arrows"),Kit->Ammo,12))return false;
+    W.Look(FRotator(35,0,0));
+    if(!W.Hold(EKeys::LeftMouseButton,50)||!W.Tick(90))return false;
+    if(!TestEqual(TEXT("A mapped bow release really spends an arrow"),Kit->Ammo,Cap-1))return false;
+    if(!W.Press(EKeys::E))return false;
+    TestEqual(TEXT("Distant kitchen input does not restock"),Kit->Ammo,Cap-1);
+    const unsigned Weapons=W.Campaign()->Progress().WeaponsMask,Completed=W.Campaign()->Progress().CompletedMask;
+    W.Hero()->Health-=25.f;const float Health=W.Hero()->Health;
+    // Walk from the actual kitchen checkpoint, around the crate to the
+    // manager's east step. No hero placement or task-state injection.
+    if(!SoraRecoveryAutomation::WalkTo(*W.World,FVector(-2800,3350,90.15))||
+       !SoraRecoveryAutomation::WalkTo(*W.World,FVector(-2250,3400,90.15))||
+       !SoraRecoveryAutomation::WalkTo(*W.World,FVector(-2250,3660,90.15)))return false;
+    W.LookAt(Crate+FVector(0,0,55));
+    TestFalse(TEXT("The nearby court outside the 200 cm supply volume cannot refill"),Arena->CanReachSupply(Id,*W.Hero()));
+    if(!W.Press(EKeys::E)||!TestEqual(TEXT("Walking nearby never refills automatically"),Kit->Ammo,Cap-1))return false;
+    if(!SoraRecoveryAutomation::WalkTo(*W.World,FVector(-2365,3660,112.65)))return false;
+    const double Feet=W.Hero()->GetActorLocation().Z-W.Hero()->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+    TestTrue(TEXT("Ordinary movement climbed a real doorway step"),Feet>10&&Feet<50);
+    W.LookAt(Crate+FVector(0,0,55));
+    if(!TestTrue(TEXT("The door's raised approach has a clear line to its supply crate"),Arena->CanReachSupply(Id,*W.Hero())))return false;
+    if(!W.Press(EKeys::Escape)||!W.Press(EKeys::E))return false;
+    TestEqual(TEXT("Menu input cannot restock"),Kit->Ammo,Cap-1);
+    W.Mode()->ResumePlay();if(!W.Tick(3)||!W.Press(EKeys::E))return false;
+    TestEqual(TEXT("Normal Interact refills the spent held quiver"),Kit->Ammo,Cap);
+    TestEqual(TEXT("Supply keeps the yumi equipped"),W.Hero()->WeaponId,18);
+    TestEqual(TEXT("Supply grants no health"),W.Hero()->Health,Health);
+    TestEqual(TEXT("Supply grants no weapons"),W.Campaign()->Progress().WeaponsMask,Weapons);
+    TestEqual(TEXT("Supply completes no campaign beat"),W.Campaign()->Progress().CompletedMask,Completed);
+    if(!W.Press(EKeys::E))return false;
+    TestEqual(TEXT("A full quiver cannot overfill"),Kit->Ammo,Cap);
+    TestEqual(TEXT("The kitchen defense remains active"),W.Campaign()->ActiveBeat(),13);
+    AddInfo(TEXT("The hero walks from the real kitchen spawn and fires/replenishes through mapped input. Health is hardened and then wounded by the fixture; this is a supply-route test, not combat balance or final art acceptance."));
     return !HasAnyErrors();
 }
 #endif

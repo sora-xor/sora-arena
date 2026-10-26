@@ -70,6 +70,25 @@ class TenementTests(unittest.TestCase):
             self.clear([[-2800,1250,2.15],[-2800,y,2.15]])
             self.assertLess(abs(x+2800),140)
 
+    def test_supply_crate_is_on_ground_and_clear_of_doorway_steps(self):
+        x,y,z,sx,sy,sz=self.native['supply']
+        self.assertEqual(self.floor_at(x,y),z)
+        self.assertTrue(-2500<=x-sx/2<x+sx/2<=-2300)
+        self.assertTrue(3500<=y-sy/2<y+sy/2<=3700)
+        for bx,by,bz,wx,wy,wz,yaw,_ in self.solids:
+            a=math.radians(yaw)
+            ex=(abs(math.cos(a))*wx+abs(math.sin(a))*wy)/2
+            ey=(abs(math.sin(a))*wx+abs(math.cos(a))*wy)/2
+            overlaps=(abs(x-bx)<sx/2+ex-1e-6 and abs(y-by)<sy/2+ey-1e-6 and
+                      z<bz+wz/2-1e-6 and z+sz>bz-wz/2+1e-6)
+            self.assertFalse(overlaps,(bx,by,bz,'supply overlaps a tenement solid'))
+        crate=[x,y,z+sz/2,sx,sy,sz,0,1]
+        self.clear([[-2800,3000,2.15],[-2800,3350,2.15],[-2250,3400,2.15],[-2250,3660,2.15]])
+        self.assertFalse(self.hits(crate,[-2365,3660,24.65]))
+        # Both authored 22.5 cm steps and the full 45 cm room remain valid
+        # supply floors; an actual step-up sweep is checked only in Unreal.
+        self.clear([[-2365,3660,24.65],[-2365,3660,24.65]])
+
     def test_rejects_swapped_combined_and_moved_finds(self):
         for mutation in ('item','point','height','reward','duplicate','extra'):
             c=copy.deepcopy(self.chapter)

@@ -7,6 +7,14 @@ namespace SoraTenementDefenseRules
 constexpr int MinX=-3400,MinY=2220,MaxX=-2200,MaxY=3600,Top=600;
 constexpr int FlightHeight=600,FlightLegs=2;
 struct FPoint { double X=0,Y=0,Z=0; };
+// Ground beside the manager's southeast doorway, clear of both step runs.
+constexpr FPoint SupplyAt{-2340,3540,0},SupplySize{80,70,70};
+inline bool SupplyReach(bool Grounded,double X,double Y,double Feet)
+{
+    // The 200 cm authored door volume spans earth, 22.5 cm steps and the
+    // raised 45 cm room. All three are valid, visible supply approaches.
+    return Grounded&&X>=-2500&&X<=-2300&&Y>=3500&&Y<=3700&&Feet>=-8&&Feet<=50;
+}
 constexpr int Groups(int Wave) { return Wave==1?1:Wave==0||Wave==2?2:0; }
 constexpr int Count(int Wave,int Group)
 { return Group>=0&&Group<Groups(Wave)?(Wave==2?1:2):0; }
