@@ -1653,61 +1653,71 @@ history below. The release remains incomplete.
   at identical atlas coordinates is prepared but has not run. No art bytes,
   textures or acceptance thresholds changed.
 
-### 2026-10-26: palace registry source checkpoint (runtime pending)
+### 2026-10-26: palace registry runtime and assisted campaign
 
-Claude's signed third-person grip direction (`3521e93e`) and archive lighting
-addendum (`88539dc1`) are integrated as production direction. The original
-rig-fit diagram and six measurement files were reviewed and frozen locally;
-the diagram matches its LFS identity. The proposed centred guard has since
-failed Claude's actual reach calculation and must be revised. Hip gear must
-clear the visible body and armor; the movement capsule is not a valid
-substitute for that mesh clearance. Both issues were sent to Claude, who
-retains the engine/Blender lane for the rig, closed paws, sockets, authored
-W00/saya and guard pose. No new character asset has been accepted from this
-contract, and the lighting addendum is not yet implemented.
+The chapter-six store and registry use the authored palace frame. Three desks
+stand at (16,29), (6,29) and (-2,29) metres from the garden origin on real 0, 15
+and 30 cm floors. The builder supplies a level 1.8 m south corridor, vestibule,
+store, walls, doorway gaps and coffered ceiling. Desk meshes, interaction rays,
+contest checks and objective markers use local floor heights. This construction
+geometry has not passed final art review.
 
-The chapter-six store and registry now use the authored palace frame. The
-registry desks are at (16,29), (6,29) and (-2,29) metres from the garden origin,
-on real 0, 15 and 30 cm floors, with a level 1.8 m south corridor. The dedicated
-builder supplies the vestibule, store, registry walls, doorway gaps and
-coffered ceiling. Desk meshes, interaction rays, contest checks and objective
-markers use the local floor height. CopyDesks now traces each physical tier
-and approaches the desks through the doorway and corridor using mapped input.
-The rifle route uses a 60-second circuit; the drone uses a 30-second circuit
-at 4 metres. These runtime paths have not yet been built or executed.
+Signed `53a4be3a` passed all 58 local gameplay source gates and all 111 CI gates
+in run 40249002097 on an identical tested/source tree. Independent CI review
+SHA256: `ac5b4c016e5fcf0c8642e150b353ea9c36b01bbc44b6e104bfd5ae088e0abb25`.
+Its separate editor build then failed because `auto*` could not unwrap the
+light component's `TObjectPtr`. No runtime tests ran in that failed attempt;
+the original build log is retained. Signed `adca677d` fixes the pointer access
+with `.Get()` and builds successfully.
 
-All 58 gameplay source checks pass, including six new palace contract tests
-and the existing archive, press and relay checks. The report is
-`Saved/Qualification/2026-10-26/palace-source-attempt1/report.json`; its source
-snapshot stayed unchanged during execution. This is source validation only.
-Unreal CopyDesks, Candle, Spaces and the assisted campaign must be rerun once
-Claude returns the engine lane. The nightingale/garden connection, quiet
-tatami route, auditor desk stops and lamps, ornamental door connection,
-authored store dressing and final visual acceptance remain open. The plain
-construction geometry is not accepted art.
+At exact `adca677d`, six of seven NullRHI tests pass: RegistryPatrols, Patrol,
+BlockedWalksOn, CopyDesks, Spaces and Candle. RegistryPatrols uses the actual
+authored guards: initial lit desk visits measured 5.917, 7.917 and 9.917 seconds
+against the 6/8/10-second targets, then each auditor walked its circuit and
+returned. Menu pause held visits and lights; defeating an auditor extinguished
+its lamp; retry destroyed old lights and created exactly three replacements.
+The grounded rifle circuit completed at 60,000 ms and the drone at 30,000 ms,
+with the drone remaining at Z400. These are directed behavior checks with the
+hero placed behind the hall wall, not ordinary stealth difficulty or a rendered
+lighting review. All 20 evidence files and unchanged source/native, Config and
+Generated inputs were independently verified after natural editor/wrapper
+exits 3/1. Review SHA256:
+`4223e282d66411ea68e2afef270e1c84b1846fd4015bd21fdbc3b5a50777a70d`.
 
-The follow-up source now assigns the three auditors to their own writing
-positions and gives them 6, 8 and 10 second stops, counting only active patrol
-time. Each cold desk lamp is visible only while its assigned, living auditor
-is grounded at that desk in a calm patrol stop. Alerts, departures and defeat
-turn it off; checkpoint cleanup destroys the previous lights. The new
-RegistryPatrols fixture uses the actual authored guards to check timing,
-menu pause, physical return and retry cleanup. Seven palace host tests, the
-campaign validator, generated-data check and existing stealth/fieldcraft
-rule suites pass; this new runtime fixture has not been executed yet.
+The failed seventh case, assisted Playthrough, correctly grabbed a fallen
+auditor when Interact was pressed beside its desk. Signed `a8242f65` changes
+only automation: use held mapped Interact and ordinary walking to drag the
+body clear, release it, return, and begin the copy with a fresh press. The
+CopyDesks regression adds a real defeated auditor and verifies it was moved
+and released. Both CopyDesks and the complete assisted 133-beat Playthrough
+pass on the exact signed source with zero selected errors/warnings and natural
+exits 0/0. All three bodies' positions were recorded in the runtime log from their
+desks to the corridor; copy progress remained zero while dragging. All 20
+files and unchanged inputs were rechecked. Review SHA256:
+`94c7c0d1e87cdbb2905c14543c14924d47251d848d3b82d7416d43533ea19118`.
+The earlier failed attempts remain preserved under the dated registry folders
+in `Saved/Qualification/2026-10-26`. CI for `adca677d` was superseded and
+cancelled; no passing result is claimed for it.
 
-The preceding palace checkpoint `22e8f38a` independently passes all 111 CI
-source gates in run40248019094 on an identical tested/source tree. Its review
-SHA256 is `a9b9543ac1adef5827fb84b50364ce1ab42b44dcf4863067b37d550a77f065e3`.
+Claude again owns the engine/Blender lane after root's natural completion.
+The signed third-person grip direction (`3521e93e`) and archive lighting
+addendum (`88539dc1`) remain production direction, not accepted assets. After
+refitting the arm positions, the original centred two-paw target is reachable
+but intersects the body/armor. The one-paw pose is explicitly interim; original
+two-paw closure stays open. Gear clearance uses posed visible meshes, triangle
+intersection and containment, with edge-edge as well as vertex-face separation
+for minimum-gap thresholds. The movement capsule and nearest vertex distance
+cannot certify those gaps. Rig/LOD consistency, closed paws, sockets, W00/saya
+and guard renders remain with Claude; the lighting addendum is unimplemented.
 
-At the preceding exact source `f51c2236`, ArchiveFamilyPage and
-ArchiveRevealReset both pass with natural editor/runner exits 0/0. Six actual
-1920×1080 Metal SM6 archive frames pass capture checks and were viewed. The full
-family record is readable again, and shelf/wall glare is reduced; opening and
-return characters remain too dark, with unfinished poses and floating weapons.
-Final art remains rejected. Authenticated CI run 40246299398 passes all 110
-source checks, with an identical tested/source tree; review SHA256 is
-`d25901fcd8ccf8700466a900849fbab7d6f48a4548a090d6f5787b3d5555abd2`.
+The connected nightingale/garden/tatami route, full 24-by-64-metre ledger aisles,
+ornamental archive-door connection, authored store dressing, ordinary-control
+play and final visual acceptance remain open. The preceding `f51c2236`
+ArchiveFamilyPage and ArchiveRevealReset runs pass; six original 1920×1080
+Metal SM6 frames show the full readable family record and reduced shelf/wall
+glare. Archive final art remains rejected for dark opening/return characters,
+unfinished materials, rigid poses and floating weapons. Newer source remains
+uncooked; package/platform/performance and full native execution gates are open.
 
 ## Milestones and evidence
 
@@ -1715,12 +1725,12 @@ source checks, with an identical tested/source tree; review SHA256 is
 | --- | --- | --- | --- |
 | T1 | Reproducible Mac development toolchain | Codex toolchain lane | UE 5.8.3 / CL 58210709 installed and identity checked on M2 Ultra. Xcode 26.1.1 / 17B100, SDK 26.1 and Metal 17B54 installed; doctor and editor build pass. Full imports/validators pass for 280 original-art, 345 CC0 and 267 audio packages, 27 VFX systems, the craft prop and 12 dojo-kit modules. Actual SM5 and SM6 captures pass on this M2 Ultra. Xcode 27 and global selection are preserved; that compiler has not been qualified for this project. |
 | G1 | Complete authored offline campaign mechanics | Codex gameplay lane | Exact `4fa637f` passes CopyDesks, Candle and the complete assisted campaign with zero selected errors/warnings and natural EOF; three separate held copies now replace the generic chapter-six timer. Exact `bf58810` passes 15/16 directed Unreal cases, including all pods, real horse-shell cadence/bait, treatment, corrected canister/MarginLinger and the assisted 133-beat route. Fixture-only `2a69fb5` passes the remaining dud case and shared arming regression. Casting, bridge/props, helm and cane cases have earlier directed passes. Exact `0adc081` separately passes all 13 withdrawal/horse/pod/treatment/assisted campaign cases, with no errors and one external HTTP connectivity timeout. The withdrawal includes real movement and the complete gate-clear call before the cinematic. Prepared rendered withdrawal at `5d02f3b` also passes, including the six-person detail and readable tracker; ordinary controls/pacing, remaining mechanics and current packages remain open. |
-| G2 | Complete playable campaign spaces and encounters | Codex + Claude | Use authored layouts, patrols and encounters; verify traversal, collision, navigation, interaction reach, stealth and boss behavior. Verify all eight chapters and 133 beats with normal controls; headless shortcuts do not establish pacing or difficulty. |
+| G2 | Complete playable campaign spaces and encounters | Codex + Claude | Exact `adca677d` passes actual registry visits/lamps, rifle/drone periods, tier traversal, Spaces and Candle. Automation-only `a8242f65` passes CopyDesks with real held body drag and the assisted 133-beat route. The full ledger/palace connection and final art remain open. Use authored layouts, patrols and encounters; verify traversal, collision, navigation, interaction reach, stealth and boss behavior. Verify all eight chapters and 133 beats with normal controls; headless shortcuts do not establish pacing or difficulty. |
 | U1 | Readable bilingual gameplay and accessible controls | Codex HUD lane | At clean `5f7958f`, the complete Metal SM6 HUD matrix passes all nine prepared scenes at both 1280×720 and 1920×1080, with zero selected-test errors/warnings. All 36 actual images were viewed and their hashes retained. Measured dark backing resolves the gold Examine text over bright bellows and objective labels over bright dojo surfaces, while ordinary Work remains above coaching. No blocking overlap or clipping appears in the matrix. Earlier `febb516` hidden-prompt and `495170d` low-contrast visual failures remain preserved. Both original logs received trace-server shutdown output after their capture manifests were written; reviews retain and bind the exact original prefix, appended suffix and final full log separately. The owned-stream runner at `977c12d` then passes one actual Metal SM6 BellowsGamepad capture at 1280×720: one selected test, zero errors/warnings, two original frames viewed, editor/runner exit zero and inherited-stream EOF true. Its manifest and completion receipt match the entire final raw log, including trace-server shutdown. The earlier wrong-filter invocation remains preserved as a failed launch with correctly retained exit 3. The runner also passes 47 CPU process/report/source tests. U1 remains open for normal-control play, dense bilingual screen coverage, small projected labels, accessibility, motion and packaged/platform qualification. Prepared stress scenes do not establish those gates. |
 | A1 | Unique timber kit and golden-hour Estate/dojo slice | Claude | Nine baseline meshes/31 packages pass import and reopen at `97c08a0`. At `0c7961d`, 36 SM6 and 18 SM5 captures pass readiness checks on M2 Ultra, with original-image review; this closes capture readiness only. The separate six-member v2.1 pilot remains visually rejected for smooth bands, blister dents, glossy ridges and repeated adze marks. The separate v2.2 pilot also fails review of all 15 originals for smooth striped surfaces and repeated adze tiling. Claude owns the engine lane for the corrected bow; a focused timber patch is next. Unique per-placement binaries, dressing, full provenance and photoreal acceptance remain open. M2 SM5 does not qualify M1. |
 | A2 | Complete character and first-person presentation | Claude | Nyaakoto, paws, sword/saya, clothing, fur and motion must pass [photoreal acceptance](art-direction/photoreal-acceptance.md) in actual gameplay and cinematics. Generated references and Blender images are source evidence only. |
 | A3 | Complete campaign/arena art, animation, audio and effects | Claude + Codex integration | Extend approved visual direction across every environment, character and encounter; complete dialogue presentation, cinematics, sound, music and effects. Review every asset's rights and ledger records. Missing original references remain explicit, rather than being claimed as matched. |
-| Q1 | Repeatable source validation and CI | Codex validation lane | Authenticated CI `40248019094` passes all 111 gates in five jobs at exact `22e8f38a`, including the new palace contract gate. Tested/source trees match; all five artifact digests and raw logs are verified. This closes the selected source checks only; private assets, Unreal behavior, rendered art, packages and full native execution remain separate gates. Historical failures and ignored proof cases retain their original scope. |
+| Q1 | Repeatable source validation and CI | Codex validation lane | Authenticated CI `40249002097` passes all 111 gates in five jobs at exact `53a4be3a`, including the new palace contract gate. Tested/source trees match; all five artifact digests and raw logs are verified. This closes the selected source checks only; private assets, Unreal behavior, rendered art, packages and full native execution remain separate gates. Historical failures and ignored proof cases retain their original scope. |
 | N1 | Matching native kernel and Connect integration | Codex | Kernel ABI4 stages and passes 94 parity cases/99,043 ticks. Signed clean native `10ad7daddf` passes29/29 directed tests and has a fresh frozen ABI30 release build with its original sidecar. All29 frozen files and six consumer hashes were checked before staging; actual UE NativeLoader passes in the `56b95f3` editor and the `b4a02d1` packaged Metal client, with the exact staged library path. Strict package/artifact hashes verify before and after execution. These tests cover loading, binding, canonical JSON and hashing; signing, submission and finality are not tested. Earlier producer records remain preserved. Windows loading remains unverified. |
 | N2 | Complete native execution proof and real settlement | Codex | Bounded native `01d4e46` completes actual crate compilation/31 CPU tests and a 3,005,248-byte proof with separate verification and 55 negative cases, but its proof attempt fails the unchanged disk reserve. Signed `6fd03be8` adds Katana fallback, and `cd9263628d` adds final-tick death/account/FFA completion with independently authenticated standalone source evidence. Fresh `cd9263628d` passes 18 provenance tests, 70 standalone constraints, exact regeneration of four final-death fixture files, and 46 actual-crate CPU tests with four ignored proofs. The actual adapter covers 254 layouts, at most 3,803,712 bytes; independent CPU review and the unchanged retained binary are sealed into the completed proof plan. Two earlier runner failures and the successful observer retry remain preserved. Fresh native proof cohort completes: one separately verified 3,666,144-byte proof, 92 verifier rejections and eleven actual-prover Constraint rejections, natural EOF zero and 116 files independently verified. This remains an unregistered two-player/two-tick relation. Historical outputs are partly missing, with no cause inferred. No registered full Arena execution profile, full World/death/ability/terminal composition, full-size proof or settlement acceptance is established. Four-validator admission/dispute/settlement, market recovery and Connect signing/finality remain open; live funding/trading stay disabled. |
 | R1 | Windows and Mac release candidates | Codex | Latest completed Mac Development package `c655b6b`, native bridge `10ad7dad`, passes Game build, cook of 1,323 packages with zero cook errors/warnings, staging/signature checks, smoke, all 164 client tests and a fresh rendered Title check. Newer gameplay and art source remains uncooked. Earlier rejected packages and warning/failure records remain preserved in the dated checkpoints. Clean-machine install, normal campaign play, controller/accessibility, multiplayer recovery, Windows and actual M1 performance remain open; M2 results do not qualify M1. |
