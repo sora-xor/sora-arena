@@ -19,6 +19,15 @@ namespace Construct = SoraConstructRules;
 
 const TArray<FSoraEnemyAttack>& ASoraEnemy::AttackSet() const
 {
+    static const TArray<FSoraEnemyAttack> LandingNet=[] {
+        FSoraEnemyAttack A; A.Id=TEXT("seizure_net"); A.Cue=A.Id;
+        A.NameJapanese=TEXT("差押え網"); A.NameEnglish=TEXT("Seizure net");
+        A.Kind=ESoraEnemyAttackKind::Net; A.bCyanTelegraph=true;
+        A.Damage=SoraLandingDroneRules::Damage; A.WindupMs=SoraLandingDroneRules::MarkMs;
+        A.RootMs=SoraLandingDroneRules::RootMs; A.RecoveryMs=SoraLandingDroneRules::LowMs;
+        A.MaxRangeCm=1500; A.RadiusCm=150;
+        return TArray<FSoraEnemyAttack>{A};
+    }();
     static const TArray<FSoraEnemyAttack> ClimbShot=[] {
         FSoraEnemyAttack A;A.Id=TEXT("yagura_sentry_shot");A.Cue=A.Id;
         A.Kind=ESoraEnemyAttackKind::LockShot;A.Damage=12;A.WindupMs=200;A.RecoveryMs=1000;A.MaxRangeCm=1800;
@@ -35,7 +44,7 @@ const TArray<FSoraEnemyAttack>& ASoraEnemy::AttackSet() const
         return TArray<FSoraEnemyAttack>{A};
     }();
     static const TArray<FSoraEnemyAttack> Empty;
-    return bClimbSentry?ClimbShot:bCollateralConstruct?Slam:Kind?Kind->Attacks:Empty;
+    return bLandingDrone?LandingNet:bClimbSentry?ClimbShot:bCollateralConstruct?Slam:Kind?Kind->Attacks:Empty;
 }
 
 void ASoraEnemy::ResetConstruct()

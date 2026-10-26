@@ -6,6 +6,7 @@
 #include "SoraFieldcraftRules.h"
 #include "SoraStealthRules.h"
 #include "SoraHorseShellRules.h"
+#include "SoraLandingDroneRules.h"
 #include "SoraMillisecondClock.h"
 #include "SoraEnemy.generated.h"
 enum class ESoraEnemyCue : uint8;
@@ -26,6 +27,8 @@ struct FSoraEnemyTuning
     int32 Health = 0;
     // Zero keeps the archetype's hold; chapter 07's ridge specifies 1.2 s.
     int32 NetRootMs = 0;
+    // Chapter 03's landing: mark, descend, net and a low wakizashi opening.
+    bool bLandingDrone = false;
     int32 SightCm = 0;
     int32 ViewDegrees = 0;
     // Negative keeps the archetype's value; a zero hearing is deaf.
@@ -122,12 +125,17 @@ public:
     void CancelHorseShell() { CancelAttack(); }
     const SoraHorseShellRules::FState& HorseShellState() const { return HorseShellClock; }
     AActor* HorseShellWarning() const { return ShellWarning.Get(); }
+    bool HasLandingDroneAssignment() const { return bLandingDrone; }
+    bool OwnsLandingDroneMotion() const { return bLandingDrone&&LandingDroneClock.Stage!=SoraLandingDroneRules::EStage::Idle; }
+    bool IsLandingDroneLow() const;
+    const SoraLandingDroneRules::FState& LandingDroneState() const { return LandingDroneClock; }
+    AActor* LandingDroneWarning() const { return LandingWarning.Get(); }
     bool IsAttacking() const { return Phase != EPhase::Idle; }
     bool IsWindingUp() const { return Phase == EPhase::Windup; }
     // Winding up or firing; collateral also holds still during its exposed
     // recovery, so the hero can maintain contact with the core.
     bool IsCommitted() const { return Phase == EPhase::Windup || Phase == EPhase::Firing ||
-        (bCollateralConstruct && Phase == EPhase::Recovery); }
+        ((bCollateralConstruct || bLandingDrone) && Phase == EPhase::Recovery); }
     const FSoraEnemyAttack* CurrentAttack() const;
     float WindupProgress() const;
     // The farthest reach of its melee attacks, for footwork.
@@ -237,6 +245,15 @@ private:
     ASoraProjectile* LaunchShell(const FSoraEnemyAttack& Attack,const FVector& Landing,
         USoraCampaignDirector* Director=nullptr,uint64 Generation=0,AActor* Warning=nullptr);
     void TickHorseShell();
+    bool BeginLandingDrone(int32 WindupMs);
+    void TickLandingDrone();
+    void ClearLandingWarning();
+    bool bLandingDrone=false, bLandingFloorKnown=false;
+    SoraLandingDroneRules::FState LandingDroneClock;
+    FSoraMillisecondClock LandingDroneMilliseconds;
+    double LandingDroneLastWorldSeconds=0;
+    FVector LandingHome=FVector::ZeroVector, LandingLow=FVector::ZeroVector;
+    TWeakObjectPtr<AActor> LandingWarning;
     void AdvanceHorseShellClock();
     bool bHorseShellBound=false;
     bool bCampaignWithdrawing=false;

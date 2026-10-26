@@ -1192,6 +1192,15 @@ ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int
             }
     // The senses the chapter authors for this guard.
     FSoraEnemyTuning Senses;
+    Senses.bLandingDrone=ActiveBeatData()->Id==TEXT("ch03.b02")&&Guard.Type==TEXT("drone");
+    if(Senses.bLandingDrone)
+    {
+        // D1's specified five-metre plane; D2 uses the same plane until its
+        // canal-edge route is authored. This does not certify either loop.
+        for(auto& Point:Route.Points) Point.Z=500.f;
+        Route.bThreeDimensional=true;
+        Post=Route.Points[0];
+    }
     Senses.SightCm=Guard.SightCm; Senses.DarkSightCm=Guard.DarkSightCm; Senses.ViewDegrees=Guard.ViewDegrees;
     Senses.HearingCm=Guard.HearingCm; Senses.SuspicionPermille=Guard.SuspicionPermille;
     Senses.ScanDegrees=Guard.ScanDegrees; Senses.ScanMs=Guard.ScanMs; Senses.TurnMs=Guard.TurnMs;

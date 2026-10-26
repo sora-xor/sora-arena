@@ -444,6 +444,10 @@ void ASoraEnemyController::Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, 
     // A staggered opponent still notices, but neither moves nor strikes.
     if (Enemy.IsStaggered())
         return;
+    // Perception still updates, but this committed attack owns its swept
+    // descent, low recovery and return to the original flight plane.
+    if (Enemy.OwnsLandingDroneMotion())
+        return;
     if(auto* Craft=USoraFieldcraft::Get(this);Craft&&Craft->DriveClimbSentry(Enemy,Dt)) return;
     if(auto* Craft=USoraFieldcraft::Get(this);Craft&&Craft->DriveMoatGuard(Enemy,Dt,bGoalDone)) return;
     // A scripted errand takes it where the beat sends it instead.

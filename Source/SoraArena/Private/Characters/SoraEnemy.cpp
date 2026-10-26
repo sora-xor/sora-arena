@@ -112,6 +112,9 @@ bool ASoraEnemy::InitArchetype(FName ArchetypeName,int32 Slot,const FSoraPatrolR
     ResetConstruct();
     bClimbSentry=false;
     Kind=Found; Variant=VariantName; VariantData=Chosen;
+    CancelAttack();
+    bLandingDrone=Kind->Behavior==ESoraEnemyBehavior::Drone&&Tuning&&Tuning->bLandingDrone;
+    bLandingFloorKnown=false;
     NetRootOverrideMs=Kind->Behavior==ESoraEnemyBehavior::Drone&&Tuning?FMath::Max(0,Tuning->NetRootMs):0;
     bDojoPupil=false; EnemyIndex=Slot; RangedShots=0; ShotsSinceRelocation=0;
     // Perception: the archetype's, then its variant's, then the beat's.
@@ -264,6 +267,8 @@ const FSoraEnemyAttack* ASoraEnemy::CurrentAttack() const
 }
 float ASoraEnemy::WindupProgress() const
 {
+    if(bLandingDrone&&LandingDroneClock.Stage==SoraLandingDroneRules::EStage::Mark)
+        return LandingDroneClock.WindupMs>0?1.f-float(LandingDroneClock.RemainingMs)/LandingDroneClock.WindupMs:1.f;
     if(bHorseShellBound&&HorseShellClock.Winding)
         return FMath::Clamp(float(HorseShellClock.ClockMs-HorseShellClock.WarningStartedMs)/SoraHorseShellRules::WarningMs,0.f,1.f);
     if(Phase!=EPhase::Windup||PhaseEndsAt<=PhaseStartedAt) return 0.f;
@@ -298,7 +303,7 @@ void ASoraEnemy::Tick(float Dt)
 }
 void ASoraEnemy::TickPlay(float Dt)
 {
-    if(bHorseShellBound) TickHorseShell(); else AdvanceAttack();
+    if(bHorseShellBound) TickHorseShell(); else if(bLandingDrone) TickLandingDrone(); else AdvanceAttack();
     if(BarrierMaxMilli>0&&VariantData)
     {
         const Rules::FBarrier Next=Rules::RegeneratedBarrier({BarrierAtLastHitMilli,BarrierMaxMilli},
@@ -315,6 +320,8 @@ void ASoraEnemy::HaltActions()
     if(bHorseShellBound&&IsAlive()&&HorseShellDirector.IsValid()&&
        HorseShellDirector->HorseShellSession(HorseShellGeneration))
     { HorseShellLastWorldSeconds=GetWorld()->GetTimeSeconds(); return; }
+    if(bLandingDrone&&IsAlive())
+    { LandingDroneLastWorldSeconds=GetWorld()->GetTimeSeconds(); return; }
     CancelAttack();
 }
 void ASoraEnemy::SetCampaignWithdrawal(bool Active)
@@ -342,7 +349,7 @@ bool ASoraEnemy::TryAttack(ASoraCharacterBase& Target,float Distance)
         const int32 Needed=Attack.Kind==ESoraEnemyAttackKind::Melee?FMath::Max(Attack.ArcMilli,0):0;
         if(!bAround&&Facing<Needed) continue;
         Commit(Index,Target);
-        return true;
+        return Phase!=EPhase::Idle;
     }
     return false;
 }
@@ -362,7 +369,11 @@ void ASoraEnemy::Commit(int32 Index,ASoraCharacterBase& Target)
     PhaseStartedAt=Time; PhaseEndsAt=Time+WindupMs/1000.f; NextLaserAt=Time;
     LockedDirection=(Target.GetActorLocation()+FVector(0.f,0.f,SoraEnemyBody::ChestHeight)-Eye()).GetSafeNormal();
     LockedPoint=Feet(Target);
-    Telegraph(Attack,WindupMs/1000.f);
+    if(bLandingDrone)
+    {
+        if(!BeginLandingDrone(WindupMs)) { CancelAttack(); return; }
+    }
+    else Telegraph(Attack,WindupMs/1000.f);
     if(Attack.Kind==ESoraEnemyAttackKind::Melee) if(USoraGameEvents* Events=USoraGameEvents::Get(this))
     {
         FSoraMeleeCommittedEvent Committed;
@@ -479,6 +490,7 @@ void ASoraEnemy::Recover(const FSoraEnemyAttack& Attack)
 }
 void ASoraEnemy::CancelAttack()
 {
+    SoraLandingDroneRules::Cancel(LandingDroneClock); ClearLandingWarning();
     SoraHorseShellRules::Cancel(HorseShellClock); HorseShellTarget.Reset();
     const auto Warning=ShellWarning; ShellWarning.Reset();
     Phase=EPhase::Idle; AttackIndex=INDEX_NONE; AttackTarget=nullptr; RoundsLeft=0;
@@ -684,6 +696,8 @@ bool ASoraEnemy::AdmitDamage(float& Damage,FSoraHit& Hit,AActor* Causer)
     }
     Amount=Rules::EnemyVulnerabilityDamage(Amount,Hit.Kind,Hit.EnvironmentalRate,IsStaggered(),Facing,
         Kind?Kind->RearWeakPermille:1000);
+    if(SoraLandingDroneRules::WakizashiFinishes(IsLandingDroneLow(),Hit.Kind==Rules::EHit::Melee,Hit.WeaponId,Amount))
+        Amount=FMath::Max(Amount,FMath::CeilToInt(Health));
     // A landed strike staggers when it outweighs the opponent's poise, but a
     // chain of cuts cannot hold it still.
     if(Kind&&Hit.Kind==Rules::EHit::Melee)
