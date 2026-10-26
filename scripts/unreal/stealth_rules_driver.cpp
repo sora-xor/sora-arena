@@ -131,6 +131,10 @@ int main()
     // A drop off a roof thuds 9 m around, as loud as a blade.
     assert(NoiseRadiusCm(ENoise::Landing) == 900 && !IsContinuous(ENoise::Landing) &&
         NoisePeakPermille(ENoise::Landing) == NoisePeakPermille(ENoise::Melee));
+    // The palace sliding panel is an impulse with a four-metre base reach.
+    assert(!IsContinuous(ENoise::Fusuma));
+    assert(HeardPermille(ENoise::Fusuma,400,false)>0 && HeardPermille(ENoise::Fusuma,401,false)==0);
+    assert(HeardPermille(ENoise::Fusuma,200,true)>0 && HeardPermille(ENoise::Fusuma,201,true)==0);
     assert(HeardPermille(ENoise::Lure, 600, false) == 600 && HeardPermille(ENoise::Lure, 1401, false) == 0);
     assert(HeardPermille(ENoise::Lure, 600, false) * AwarenessScale >= SuspiciousAt &&
         HeardPermille(ENoise::Lure, 600, false) * AwarenessScale < AwarenessMax);

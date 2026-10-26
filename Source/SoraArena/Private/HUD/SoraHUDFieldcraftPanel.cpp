@@ -146,6 +146,14 @@ void SoraHUDPanels::DrawFieldcraft(const FSoraHUDFrame& Frame, const ASoraPlayer
         }
     }
     if (!R.bActive) { DrawPrompts(); return; }
+    if(R.bAtFusuma)
+    {
+        Prompt(Keyed(HUD,R.bFusumaOpening
+            ?NSLOCTEXT("SoraArena.Fieldcraft","FusumaClose","{Key}：襖を閉める")
+            :NSLOCTEXT("SoraArena.Fieldcraft","FusumaOpen","{Key}：襖を開ける"),TEXT("Interact")),Frame.Gold);
+        if(R.bFusumaBlocked)
+            Prompt(SoraText::Line(NSLOCTEXT("SoraArena.Fieldcraft","FusumaBlocked","襖の前を空けて")),Frame.Gold);
+    }
     // What the hero's hand can do here, and how far a held piece of it has come.
     using EHold = FSoraFieldcraftReadout::EHold;
     const EHold Work = R.Holding != EHold::None ? R.Holding : R.HoldHere;
