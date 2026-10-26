@@ -6,6 +6,7 @@
 #include "SoraTenementRules.h"
 #include "SoraWorldBuilder.h"
 #include "Components/StaticMeshComponent.h"
+#include "GameFramework/DamageType.h"
 
 namespace
 {
@@ -75,6 +76,38 @@ bool FSoraTenementRoutesTest::RunTest(const FString&)
     if(!Walk(-2460,3660,45)||!Walk(-2440,3450)||!Walk(-2400,3000)||!Walk(-1000,3000)||!Walk(-1000,700)||!Walk(-730,700))return false;
     TestTrue(TEXT("The side passage reaches the notice-board approach on foot"),W.Hero()->GetCharacterMovement()->IsMovingOnGround());
     AddInfo(TEXT("Mapped movement, hoisting and delivery with guards held. Live patrol pressure, b10 continuation, final art and ordinary campaign acceptance remain separate."));
+    return !HasAnyErrors();
+}
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraTenementSealBesideBodyTest,"SoraArena.Campaign.Tenements.SealBesideBody",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FSoraTenementSealBesideBodyTest::RunTest(const FString&)
+{
+    if(!FSoraCatalog::Get().Load())return false;
+    SoraFieldcraftAutomation::FBeatWorld W(*this,TEXT("TenementSealBesideBody"),2,4);
+    if(!Ready(W))return false;
+    ASoraEnemy* Rifle=nullptr;ASoraEnemy* Conscript=nullptr;
+    for(TActorIterator<ASoraEnemy> It(W.World->GetTestWorld());It;++It)
+        if(It->IsEnemy()) { if(It->IsNonlethal())Conscript=*It;else Rifle=*It; }
+    if(!TestNotNull(TEXT("The real street rifleman exists"),Rifle)||
+       !TestNotNull(TEXT("The real street conscript exists"),Conscript))return false;
+    Rifle->SetActorLocation(FVector(-4300,0,90.15));Conscript->SetActorLocation(FVector(-4300,100,90.15));
+    UGameplayStatics::ApplyDamage(Rifle,Rifle->Health,W.Hero()->GetController(),W.Hero(),UDamageType::StaticClass());
+    UGameplayStatics::ApplyDamage(Conscript,Conscript->Health,W.Hero()->GetController(),W.Hero(),UDamageType::StaticClass());
+    if(!TestTrue(TEXT("Damage leaves a corpse and a living conscript to free"),Rifle->IsBody()&&Conscript->CanCutSeal()))return false;
+    W.Stand(FVector(-4300,-80,0));W.LookAt(Rifle->GetActorLocation());
+    TestTrue(TEXT("The closer corpse can still be dragged while a farther seal is available"),W.Stealth()->DragTarget(*W.Hero())==Rifle);
+    W.Stand(FVector(-4300,100,0));W.LookAt(Rifle->GetActorLocation());
+    TestNull(TEXT("The farther corpse cannot steal Interact from the closer seal"),W.Stealth()->DragTarget(*W.Hero()));
+    const FVector CorpseAt=Rifle->GetActorLocation();
+    if(!W.Hold(EKeys::E,125))return false;
+    TestTrue(TEXT("Mapped held Interact frees the nearer conscript"),Conscript->IsFreed());
+    TestTrue(TEXT("The adjacent corpse was not dragged"),Rifle->GetActorLocation().Equals(CorpseAt,.1)&&!W.Stealth()->IsDragging());
+    W.Stand(FVector(-4300,-80,0));W.LookAt(Rifle->GetActorLocation());
+    if(!W.World->InjectKey(EKeys::E,IE_Pressed)||!W.Tick(2))return false;
+    TestTrue(TEXT("After freeing the conscript, normal held Interact still starts dragging the corpse"),W.Stealth()->IsDragging());
+    if(!W.World->InjectKey(EKeys::E,IE_Released)||!W.Tick(2))return false;
+    TestFalse(TEXT("Releasing Interact still drops the body"),W.Stealth()->IsDragging());
+    AddInfo(TEXT("Two real street guards are held and placed to isolate competing interactions; damage and Interact use their normal interfaces. This is not ordinary combat acceptance."));
     return !HasAnyErrors();
 }
 #endif

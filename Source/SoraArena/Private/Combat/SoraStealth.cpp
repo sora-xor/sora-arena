@@ -6,6 +6,8 @@
 #include "SoraEquipmentComponent.h"
 #include "SoraGameEvents.h"
 #include "SoraPlayerCharacter.h"
+#include "SoraGameMode.h"
+#include "SoraCampaignDirector.h"
 #include "SoraFieldcraft.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/DirectionalLightComponent.h"
@@ -403,22 +405,32 @@ ASoraEnemy* USoraStealth::DragTarget(const ASoraPlayerCharacter& Hero) const
         return nullptr;
     ASoraEnemy* Best = nullptr;
     float BestDistance = StealthRules::DragReachCm;
+    float SealDistance = MAX_flt;
+    const auto* Mode=GetWorld()?Cast<ASoraGameMode>(GetWorld()->GetAuthGameMode()):nullptr;
+    const bool SealLearned=Mode&&Mode->Campaign()&&Mode->Campaign()->IsMechanicInPlay(TEXT("seal_cut"));
     const FVector There = Hero.GetActorLocation();
     for (const FBody& Entry : Bodies)
     {
         ASoraEnemy* Body = Entry.Enemy.Get();
-        // A knocked-down conscript's collar is cut, not dragged.
-        if (!Body || !Body->IsBody() || Body->IsSubdued() || SoraDamage::FacingMilli(Hero, Body->GetActorLocation()) < 0 ||
+        if (!Body || !Body->IsBody() ||
             FMath::Abs(Body->GetActorLocation().Z - There.Z) > SoraStealthZone::ReachHeightCm)
             continue;
         const float Distance = FVector::Dist2D(There, Body->GetActorLocation());
+        // A nearer conscript's eligible collar must not lose Interact to a
+        // corpse farther away. The campaign still performs the held cut.
+        if(Body->IsSubdued())
+        {
+            if(SealLearned&&Body->CanCutSeal())SealDistance=FMath::Min(SealDistance,Distance);
+            continue;
+        }
+        if(SoraDamage::FacingMilli(Hero,Body->GetActorLocation())<0)continue;
         if (Distance <= BestDistance)
         {
             Best = Body;
             BestDistance = Distance;
         }
     }
-    return Best;
+    return BestDistance<SealDistance?Best:nullptr;
 }
 
 bool USoraStealth::BeginDrag(ASoraPlayerCharacter& Hero)
