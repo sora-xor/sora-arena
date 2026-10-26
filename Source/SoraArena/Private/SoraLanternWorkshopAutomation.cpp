@@ -115,7 +115,8 @@ void HoldWorkshopEnemies(SoraFieldcraftAutomation::FBeatWorld& W)
 UStaticMeshComponent* WorkshopPiece(SoraFieldcraftAutomation::FBeatWorld& W,const TCHAR* Name)
 {
     TArray<UStaticMeshComponent*> Pieces;W.Mode()->Arena()->GetComponents(Pieces);
-    for(auto* P:Pieces)if(P->GetName()==Name)return P;
+    // ResetRound may suffix names while destroyed components await GC.
+    for(auto* P:Pieces)if(P->GetName().StartsWith(Name))return P;
     return nullptr;
 }
 bool DoorBlocks(SoraFieldcraftAutomation::FBeatWorld& W)
