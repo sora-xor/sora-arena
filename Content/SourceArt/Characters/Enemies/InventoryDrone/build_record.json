@@ -1,0 +1,335 @@
+{
+ "id": "drone",
+ "key": "InventoryDrone",
+ "ja": "目録",
+ "en": "Inventory drone",
+ "faction": "Stellar Credit House (credit_house)",
+ "builder": "scripts/art/create_inventory_drone.py",
+ "library": "scripts/art/create_runtime_weapon_lib.py",
+ "units": "metres in Blender; FBX exported with apply_unit_scale (Unreal imports centimetres)",
+ "axes": "+X forward (the eye), +Z up, +Y the drone's left (Unreal: -Y); origin at the body's centre",
+ "origin": "Centre",
+ "texture_res": 2048,
+ "texel_density_px_per_m": {
+  "mean": 866.7977015252854,
+  "p05": 834.7260943092776,
+  "uv_coverage": 0.35352546552054376
+ },
+ "notes": {
+  "diameter_m": 0.712,
+  "height_m": 0.2335,
+  "eye": "cyan iris (Mask R) round a dark glass pupil",
+  "emissive": "Mask R: eye lens, ledger line, sigil ring, vent glows, net muzzle glow",
+  "glow": "alien family: cyan (story bible 15.1)"
+ },
+ "assets": {
+  "SM_Drone_Inventory": {
+   "lods": [
+    {
+     "file": "Content/SourceArt/Characters/Enemies/InventoryDrone/SM_Drone_Inventory.fbx",
+     "triangles": 10386,
+     "sha256": "bc17dbb160e37e03f4b430b4c2a54a574ab539b802c3785c075c1a4c622c2bd0"
+    },
+    {
+     "file": "Content/SourceArt/Characters/Enemies/InventoryDrone/SM_Drone_Inventory_LOD1.fbx",
+     "triangles": 4362,
+     "sha256": "15968002a1fb1f86ebefbac59008b3171498bd80e6097af4bd8920d5c4e9646f"
+    },
+    {
+     "file": "Content/SourceArt/Characters/Enemies/InventoryDrone/SM_Drone_Inventory_LOD2.fbx",
+     "triangles": 1660,
+     "sha256": "4968624a6d32eb18d7ea6636acfded7c121a76639328f61e4f81a798f2f0ac91"
+    }
+   ],
+   "bounds_m": [
+    0.7182,
+    0.712,
+    0.26931
+   ],
+   "sockets": {
+    "Eye": [
+     0.3622,
+     0.0,
+     0.0
+    ],
+    "NetMuzzle": [
+     0.07677,
+     0.0,
+     -0.15177
+    ]
+   },
+   "screen_sizes": [
+    1.0,
+    0.35,
+    0.12
+   ]
+  }
+ },
+ "sources": [
+  "Content/SourceArt/SK_NyaagyuSamurai.fbx"
+ ],
+ "emissive": {
+  "mask": "Mask R",
+  "glows": [
+   {
+    "material": "M_Drone_EyeLens",
+    "linear_rgb": [
+     0.12,
+     0.85,
+     1.0
+    ],
+    "srgb_hex": "#61EDFF",
+    "strength": 4.0
+   },
+   {
+    "material": "M_Drone_Ledger",
+    "linear_rgb": [
+     0.12,
+     0.85,
+     1.0
+    ],
+    "srgb_hex": "#61EDFF",
+    "strength": 8.0
+   }
+  ],
+  "note": "alien family: cyan (story bible 15.1)"
+ },
+ "textures": {
+  "BaseColor": {
+   "file": "Content/SourceArt/Characters/Enemies/InventoryDrone/T_Drone_Inventory_BaseColor.png",
+   "sha256": "f34af408af65780eb828bfb3524b6d3b30fd3714f40d47215d1a02943ac11469"
+  },
+  "ORM": {
+   "file": "Content/SourceArt/Characters/Enemies/InventoryDrone/T_Drone_Inventory_ORM.png",
+   "sha256": "067597bcd4009b9aec9878c7b416336643c28a750d26cb61f043abd11d6900b2"
+  },
+  "Mask": {
+   "file": "Content/SourceArt/Characters/Enemies/InventoryDrone/T_Drone_Inventory_Mask.png",
+   "sha256": "1d9d6953a8cdeff7ed28424d75259052d8fe17fe3bc7ae342e471d4232be16d6"
+  },
+  "Normal": {
+   "file": "Content/SourceArt/Characters/Enemies/InventoryDrone/T_Drone_Inventory_NormalDX.png",
+   "sha256": "2f5339df76b8bcacc137485c8f26a36b63c516c849f6db1f8cbc5f3a09c46f90"
+  }
+ },
+ "material": {
+  "name": "M_Drone_Inventory",
+  "BaseColor": "sRGB",
+  "NormalDX": "tangent, DirectX (green down), MikkTSpace from the exported mesh",
+  "ORM": "R ambient occlusion, G roughness, B metallic",
+  "Mask": "R hamon / emissive, G lacquer-or-edge wear, B cavity dirt"
+ },
+ "microsurface": {
+  "normal_tilt_mean_all_texels": 0.0046,
+  "normal_tilt_p90_all_texels": 0.0149,
+  "by_material": {
+   "M_Drone_Graphite": {
+    "tilt": 0.0108,
+    "area_m2": 0.91054
+   },
+   "M_Drone_PanelGraphite": {
+    "tilt": 0.0121,
+    "area_m2": 0.80777
+   },
+   "M_Drone_Titanium": {
+    "tilt": 0.0137,
+    "area_m2": 0.12244
+   },
+   "M_Drone_Ledger": {
+    "tilt": 0.0037,
+    "area_m2": 0.05996
+   },
+   "M_Drone_EyeLens": {
+    "tilt": 0.0051,
+    "area_m2": 0.0043
+   },
+   "M_Drone_BlackGlass": {
+    "tilt": 0.0005,
+    "area_m2": 0.06853
+   }
+  }
+ },
+ "blend": {
+  "file": "Content/SourceArt/Characters/Enemies/InventoryDrone/SM_Drone_Inventory.blend",
+  "sha256": "ea5999e82700b4a2478cad8f1bd9f49c4adf8704b18e5259eee2a5e0be6cdde3"
+ },
+ "renders": [
+  "Content/SourceArt/Characters/Enemies/Renders/SM_Drone_Inventory_Front.png",
+  "Content/SourceArt/Characters/Enemies/Renders/SM_Drone_Inventory_Side.png",
+  "Content/SourceArt/Characters/Enemies/Renders/SM_Drone_Inventory_Top.png",
+  "Content/SourceArt/Characters/Enemies/Renders/SM_Drone_Inventory_ThreeQuarter.png",
+  "Content/SourceArt/Characters/Enemies/Renders/SM_Drone_Inventory_Envelope.png",
+  "Content/SourceArt/Characters/Enemies/Renders/SM_Drone_Inventory_Lineup.png"
+ ],
+ "contract": "docs/art-direction/INVENTORY_DRONE_ENVELOPE.md",
+ "envelope": {
+  "design_bound_m": 0.365,
+  "collision_radius_m": 0.38,
+  "max_from_centre_m": 0.36227,
+  "margin_to_collision_cm": 1.77,
+  "lods": [
+   {
+    "lod": 0,
+    "vertices": 5579,
+    "triangles": 10386,
+    "max_from_centre_m": 0.3622,
+    "farthest_point_m": [
+     0.3622,
+     0.0,
+     0.0
+    ],
+    "bounds_min_m": [
+     -0.356,
+     -0.356,
+     -0.1758
+    ],
+    "bounds_max_m": [
+     0.3622,
+     0.356,
+     0.0935
+    ]
+   },
+   {
+    "lod": 1,
+    "vertices": 2553,
+    "triangles": 4362,
+    "max_from_centre_m": 0.3622,
+    "farthest_point_m": [
+     0.3622,
+     0.0,
+     0.0
+    ],
+    "bounds_min_m": [
+     -0.356,
+     -0.356,
+     -0.1758
+    ],
+    "bounds_max_m": [
+     0.3622,
+     0.356,
+     0.0935
+    ]
+   },
+   {
+    "lod": 2,
+    "vertices": 1051,
+    "triangles": 1660,
+    "max_from_centre_m": 0.36227,
+    "farthest_point_m": [
+     0.3623,
+     -0.001,
+     -0.0018
+    ],
+    "bounds_min_m": [
+     -0.3568,
+     -0.356,
+     -0.1758
+    ],
+    "bounds_max_m": [
+     0.3623,
+     0.3568,
+     0.0935
+    ]
+   }
+  ]
+ },
+ "hit_hulls": {
+  "convention": "Unreal FBX custom collision: UCX_<mesh>_<nn>, convex, in the LOD0 FBX",
+  "hulls": {
+   "UCX_SM_Drone_Inventory_00": {
+    "encloses": "Disc",
+    "parts": [
+     "Hull_",
+     "Rim_",
+     "Ledger_",
+     "Eye_",
+     "Sigil_",
+     "Vent_"
+    ],
+    "vertices": 235,
+    "triangles": 466,
+    "bounds_min_m": [
+     -0.3572,
+     -0.3571,
+     -0.0602
+    ],
+    "bounds_max_m": [
+     0.3631,
+     0.3571,
+     0.0655
+    ],
+    "visual_vertices_enclosed": 4514,
+    "deepest_outside_m": -0.0002013
+   },
+   "UCX_SM_Drone_Inventory_01": {
+    "encloses": "Dome",
+    "parts": [
+     "Dorsal_"
+    ],
+    "vertices": 65,
+    "triangles": 126,
+    "bounds_min_m": [
+     -0.1003,
+     -0.1003,
+     0.0579
+    ],
+    "bounds_max_m": [
+     0.1003,
+     0.1003,
+     0.0936
+    ],
+    "visual_vertices_enclosed": 385,
+    "deepest_outside_m": -5.19e-05
+   },
+   "UCX_SM_Drone_Inventory_02": {
+    "encloses": "NetPod",
+    "parts": [
+     "Net_"
+    ],
+    "vertices": 72,
+    "triangles": 140,
+    "bounds_min_m": [
+     -0.0903,
+     -0.0903,
+     -0.1774
+    ],
+    "bounds_max_m": [
+     0.1025,
+     0.0903,
+     -0.0548
+    ],
+    "visual_vertices_enclosed": 680,
+    "deepest_outside_m": -0.000153
+   }
+  },
+  "vertical_span_m": [
+   -0.1774,
+   0.0936
+  ],
+  "volume_m3": 0.03951,
+  "movement_sphere_volume_m3": 0.22985,
+  "share_of_movement_sphere": 0.1719,
+  "use": "precision hits (arrows, rifle shots) against these hulls, not the 38 cm movement sphere; root owns responses"
+ },
+ "collision_proposal": {
+  "shape": "sphere: capsule radius = half-height",
+  "radius_cm": 38.0,
+  "actor_scale": 1.0,
+  "enemies_json_scale_permille": 1000,
+  "ledger_hall": {
+   "ceiling_cm": 600,
+   "flight_cm": 550,
+   "shelf_top_cm": 450,
+   "top_cm": 588.0,
+   "ceiling_clearance_cm": 12.0,
+   "bottom_cm": 512.0,
+   "above_shelf_tops_cm": 62.0
+  },
+  "today": {
+   "radius_cm": 20.4,
+   "half_height_cm": 52.8,
+   "from": "34/88 humanoid capsule at scale_permille 600"
+  },
+  "for_root": "the hit volume (76 cm tall against a 23 cm body) and every other drone route's clearance"
+ }
+}
