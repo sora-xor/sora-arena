@@ -1,0 +1,813 @@
+{
+ "what": "Character studies s89-s95 (Blender 5.2.2, in memory only; renders under Saved/W18Rebuild/<run>/). Studies, not approval",
+ "script_sha256": "801eee3fb5361101e956480edd2cc5cf27e5935c72d8a7b9b512e16be9ef1439",
+ "parts_sha256": "d757faf9d7b90ff15b72739efc3e416c523b459029ceee708a5a4c393fdfcc33",
+ "ab_paws_sheet": {
+  "file": "Saved/W18Rebuild/s91_s92_twopaw_AB_paws_sheet.png",
+  "sha256": "07577541e72ffe363529dc1bca4f9746f6e7a6127372b3870269272ef7677f34"
+ },
+ "runs": {
+  "s89": {
+   "command": "Blender -b --factory-startup --python-exit-code 1 --python scripts/art/rig_nyaakoto_runtime.py -- --study two_paw --variant arm=1.2,chest=0.85 --stance 34,0,106:far_fwd --study-out s89_twopaw_A",
+   "start": "2026-10-26T04:56:41Z",
+   "pid": "87314",
+   "exit": 0,
+   "end": "2026-10-26T04:57:09Z",
+   "result": "FAILED gate katana_vs_paws: 6,557 crossings. Both PawEmpty keys were at 1.0 (see s90), so the grip pose showed empty fists. Its renders show that defect and are not a review of variant A",
+   "two_paw": {
+    "gates": {
+     "forearms_paws_vs_torso": true,
+     "katana_vs_body_but_paws": true,
+     "katana_vs_paws": false,
+     "blade_vs_head": true,
+     "blade_vs_body": true,
+     "paw_vs_paw": true
+    },
+    "reach": {
+     "R": 0.871,
+     "L": 0.7071
+    },
+    "kissaki_ue_cm": [
+     113.53,
+     0.0,
+     160.68
+    ],
+    "checks": {
+     "forearms_paws_vs_torso": {
+      "crossing_pairs_visible": 0,
+      "contained": 0,
+      "ambiguous": 0,
+      "separation_m": 0.01712,
+      "separation_kind": "vertex-face"
+     },
+     "katana_vs_body_but_paws": {
+      "crossing_pairs_visible": 0,
+      "contained": 0,
+      "ambiguous": 0,
+      "separation_m": null,
+      "separation_kind": null
+     },
+     "katana_vs_paws": {
+      "crossing_pairs_visible": 6557,
+      "contained": 1,
+      "ambiguous": 0,
+      "separation_m": 0.0,
+      "separation_kind": "crossing"
+     },
+     "blade_vs_head": {
+      "crossing_pairs_visible": 0,
+      "contained": 0,
+      "ambiguous": 0,
+      "separation_m": null,
+      "separation_kind": null
+     },
+     "blade_vs_body": {
+      "crossing_pairs_visible": 0,
+      "contained": 0,
+      "ambiguous": 0,
+      "separation_m": null,
+      "separation_kind": null
+     },
+     "paw_vs_paw": {
+      "crossing_pairs_visible": 0,
+      "contained": 0,
+      "ambiguous": 0,
+      "separation_m": null,
+      "separation_kind": null
+     },
+     "upper_arms_vs_torso": {
+      "crossing_pairs_visible": 1322,
+      "contained": 5,
+      "ambiguous": 0,
+      "separation_m": null,
+      "separation_kind": "not measured"
+     }
+    }
+   },
+   "renders": {
+    "TwoPaw_Front.png": "5173e8424eadd88c5804a678a4b1e8885423535ab9495353187f1c3312da7cfe",
+    "TwoPaw_SideLeft.png": "b3b33b57bb6d37ef1d1d712cd0fd9d70e52a294e4d75e5ab54bf771e8ab56320",
+    "TwoPaw_SideRight.png": "6322521dd3033aacee268342e2582180d87e340321f5ab68544f1824e0760d9f"
+   }
+  },
+  "s90": {
+   "command": "Blender -b --factory-startup --python-exit-code 1 --python scripts/art/rig_nyaakoto_runtime.py -- --study two_paw --variant arm=1.2,chest=0.85 --diag-keys",
+   "start": "2026-10-26T04:59:51Z",
+   "pid": "89961",
+   "exit": 0,
+   "end": "2026-10-26T04:59:53Z",
+   "diag": {
+    "reference": "Basis",
+    "use_relative": true,
+    "blocks": [
+     {
+      "name": "Basis",
+      "value": 1.0,
+      "relative_key": "Basis",
+      "mute": false
+     },
+     {
+      "name": "PawEmpty_R",
+      "value": 1.0,
+      "relative_key": "Basis",
+      "mute": false
+     },
+     {
+      "name": "PawEmpty_L",
+      "value": 1.0,
+      "relative_key": "Basis",
+      "mute": false
+     }
+    ],
+    "active_index": 0,
+    "show_only_shape_key": false,
+    "finger_vertices": 1672,
+    "evaluated_vs_mesh": 0.031393,
+    "evaluated_vs_blocks": {
+     "Basis": 0.031393,
+     "PawEmpty_R": 0.031393,
+     "PawEmpty_L": 0.031393
+    },
+    "mesh_vs_blocks": {
+     "Basis": 0.0,
+     "PawEmpty_R": 0.031393,
+     "PawEmpty_L": 0.031393
+    }
+   },
+   "result": "cause: Blender 5.2's Object.shape_key_add started PawEmpty_R and PawEmpty_L at value 1.0; fixed by key.value = 0.0 and an assert"
+  },
+  "s91": {
+   "command": "Blender -b --factory-startup --python-exit-code 1 --python scripts/art/rig_nyaakoto_runtime.py -- --study two_paw --variant arm=1.2,chest=0.85 --stance 34,0,106:far_fwd --study-out s91_twopaw_A",
+   "start": "2026-10-26T05:00:39Z",
+   "pid": "90191",
+   "exit": 0,
+   "end": "2026-10-26T05:01:03Z",
+   "result": "variant A: every gate passes, as s76 v03",
+   "two_paw": {
+    "gates": {
+     "forearms_paws_vs_torso": true,
+     "katana_vs_body_but_paws": true,
+     "katana_vs_paws": true,
+     "blade_vs_head": true,
+     "blade_vs_body": true,
+     "paw_vs_paw": true
+    },
+    "reach": {
+     "R": 0.871,
+     "L": 0.7071
+    },
+    "kissaki_ue_cm": [
+     113.53,
+     0.0,
+     160.68
+    ],
+    "checks": {
+     "forearms_paws_vs_torso": {
+      "crossing_pairs_visible": 0,
+      "contained": 0,
+      "ambiguous": 0,
+      "separation_m": 0.01712,
+      "separation_kind": "vertex-face"
+     },
+     "katana_vs_body_but_paws": {
+      "crossing_pairs_visible": 0,
+      "contained": 0,
+      "ambiguous": 0,
+      "separation_m": null,
+      "separation_kind": null
+     },
+     "katana_vs_paws": {
+      "crossing_pairs_visible": 0,
+      "contained": 0,
+      "ambiguous": 0,
+      "separation_m": 0.00106,
+      "separation_kind": "edge-edge"
+     },
+     "blade_vs_head": {
+      "crossing_pairs_visible": 0,
+      "contained": 0,
+      "ambiguous": 0,
+      "separation_m": null,
+      "separation_kind": null
+     },
+     "blade_vs_body": {
+      "crossing_pairs_visible": 0,
+      "contained": 0,
+      "ambiguous": 0,
+      "separation_m": null,
+      "separation_kind": null
+     },
+     "paw_vs_paw": {
+      "crossing_pairs_visible": 0,
+      "contained": 0,
+      "ambiguous": 0,
+      "separation_m": null,
+      "separation_kind": null
+     },
+     "upper_arms_vs_torso": {
+      "crossing_pairs_visible": 1322,
+      "contained": 5,
+      "ambiguous": 0,
+      "separation_m": null,
+      "separation_kind": "not measured"
+     }
+    }
+   },
+   "renders": {
+    "TwoPaw_Front.png": "696aa6f4ca0e37e0123c021ee87028c9bd8f9285f8cb4e80f60c2cb43e99ecd7",
+    "TwoPaw_SideLeft.png": "de26030fa0ff32c8c04e5926c5e717e54dd09fac3ec51442c58928b4ceb0db86",
+    "TwoPaw_SideRight.png": "5b2ee0d56c0ee1b8d962d11e0d54c43036986238783502922745181ffd396a78"
+   }
+  },
+  "s92": {
+   "command": "Blender -b --factory-startup --python-exit-code 1 --python scripts/art/rig_nyaakoto_runtime.py -- --study two_paw --variant arm=1.2,palm=0.8,chest=0.8 --stance 34,0,106:far_fwd --study-out s92_twopaw_B",
+   "start": "2026-10-26T05:01:44Z",
+   "pid": "90890",
+   "exit": 0,
+   "end": "2026-10-26T05:02:09Z",
+   "result": "variant B: every gate passes, as s76 v06",
+   "two_paw": {
+    "gates": {
+     "forearms_paws_vs_torso": true,
+     "katana_vs_body_but_paws": true,
+     "katana_vs_paws": true,
+     "blade_vs_head": true,
+     "blade_vs_body": true,
+     "paw_vs_paw": true
+    },
+    "reach": {
+     "R": 0.8851,
+     "L": 0.7244
+    },
+    "kissaki_ue_cm": [
+     113.53,
+     0.0,
+     160.68
+    ],
+    "checks": {
+     "forearms_paws_vs_torso": {
+      "crossing_pairs_visible": 0,
+      "contained": 0,
+      "ambiguous": 0,
+      "separation_m": null,
+      "separation_kind": null
+     },
+     "katana_vs_body_but_paws": {
+      "crossing_pairs_visible": 0,
+      "contained": 0,
+      "ambiguous": 0,
+      "separation_m": null,
+      "separation_kind": null
+     },
+     "katana_vs_paws": {
+      "crossing_pairs_visible": 0,
+      "contained": 0,
+      "ambiguous": 0,
+      "separation_m": 0.00106,
+      "separation_kind": "edge-edge"
+     },
+     "blade_vs_head": {
+      "crossing_pairs_visible": 0,
+      "contained": 0,
+      "ambiguous": 0,
+      "separation_m": null,
+      "separation_kind": null
+     },
+     "blade_vs_body": {
+      "crossing_pairs_visible": 0,
+      "contained": 0,
+      "ambiguous": 0,
+      "separation_m": null,
+      "separation_kind": null
+     },
+     "paw_vs_paw": {
+      "crossing_pairs_visible": 0,
+      "contained": 0,
+      "ambiguous": 0,
+      "separation_m": null,
+      "separation_kind": null
+     },
+     "upper_arms_vs_torso": {
+      "crossing_pairs_visible": 1329,
+      "contained": 4,
+      "ambiguous": 0,
+      "separation_m": null,
+      "separation_kind": "not measured"
+     }
+    }
+   },
+   "renders": {
+    "TwoPaw_Front.png": "fb3f3fc595eb6ba1aa0a72e79131e5a8789eb44c35ba5836aa614b2373afbf27",
+    "TwoPaw_SideLeft.png": "deb6da55dda4538e922ebd6c1d1c3d33ee358bc14d3f77de43426ed95108fb4f",
+    "TwoPaw_SideRight.png": "fbe2fc1da52d86d085986b31e00195894e997e096f214d5c0361de21ee308c2e"
+   }
+  },
+  "s93": {
+   "command": "Blender -b --factory-startup --python-exit-code 1 --python scripts/art/rig_nyaakoto_runtime.py -- --study empty_paw --study-out s93_empty_paw",
+   "start": "2026-10-26T05:02:38Z",
+   "pid": "91318",
+   "exit": 0,
+   "end": "2026-10-26T05:03:08Z",
+   "result": "Idle (both paws empty) and the interim Guard (left paw empty): every gate passes",
+   "empty": [
+    {
+     "clip": "Idle",
+     "empty": [
+      1,
+      1
+     ],
+     "gates": {
+      "forearms_paws_vs_torso": true,
+      "saya_vs_body": true,
+      "sheathed_hilt_vs_body": true
+     }
+    },
+    {
+     "clip": "Guard",
+     "empty": [
+      0,
+      1
+     ],
+     "gates": {
+      "forearms_paws_vs_torso": true,
+      "saya_vs_body": true,
+      "katana_vs_body_but_holding_paw": true,
+      "katana_vs_holding_paw": true,
+      "blade_vs_head": true,
+      "blade_vs_body": true,
+      "left_paw_vs_saya": true
+     }
+    }
+   ],
+   "renders": {
+    "Empty_Guard_Front.png": "24445e65d158aa587dba5315399aefbc618a528e8be2861299cbe8f7bc64f265",
+    "Empty_Guard_SideLeft.png": "a740921bebfe59d03230990d2fd8034068f1b8be3dc5627d022a1b1ca698306a",
+    "Empty_Guard_SideRight.png": "cf57155fbcb026ec2b40059166efe48cebc768790a694f596bb82728cf3d7ec5",
+    "Empty_Idle_Front.png": "751fd97913658ba3d43e787d45ea9d4af01e221d44accef30e8612cfa890ec75",
+    "Empty_Idle_SideLeft.png": "1136509a2ee472d375593de07c8223d83e5f41ced09d6735cd166c8fd12e173e",
+    "Empty_Idle_SideRight.png": "b5f83bcccf96bc99e8dc4980bb0925d78fd9b6c9ff7371fba771d172b5fb6e07"
+   }
+  },
+  "s94": {
+   "command": "Blender -b --factory-startup --python-exit-code 1 --python scripts/art/rig_nyaakoto_runtime.py -- --study saya --study-out s94_saya",
+   "start": "2026-10-26T05:04:05Z",
+   "pid": "92699",
+   "exit": 0,
+   "end": "2026-10-26T05:05:50Z",
+   "result": "3 of 12 carries pass at Idle and four walk phases: 07, 09 and 11, all at y -26.5 and yaw 188",
+   "saya": [
+    {
+     "socket": {
+      "bind_component_cm": [
+       23.0,
+       -24.0,
+       85.5
+      ],
+      "rotation_deg": [
+       -10.0,
+       180.0,
+       0.0
+      ]
+     },
+     "passes": false
+    },
+    {
+     "socket": {
+      "bind_component_cm": [
+       23.0,
+       -24.0,
+       85.5
+      ],
+      "rotation_deg": [
+       -10.0,
+       188.0,
+       0.0
+      ]
+     },
+     "passes": false
+    },
+    {
+     "socket": {
+      "bind_component_cm": [
+       23.0,
+       -24.0,
+       85.5
+      ],
+      "rotation_deg": [
+       -15.0,
+       180.0,
+       0.0
+      ]
+     },
+     "passes": false
+    },
+    {
+     "socket": {
+      "bind_component_cm": [
+       23.0,
+       -24.0,
+       85.5
+      ],
+      "rotation_deg": [
+       -15.0,
+       188.0,
+       0.0
+      ]
+     },
+     "passes": false
+    },
+    {
+     "socket": {
+      "bind_component_cm": [
+       23.0,
+       -24.0,
+       85.5
+      ],
+      "rotation_deg": [
+       -20.0,
+       180.0,
+       0.0
+      ]
+     },
+     "passes": false
+    },
+    {
+     "socket": {
+      "bind_component_cm": [
+       23.0,
+       -24.0,
+       85.5
+      ],
+      "rotation_deg": [
+       -20.0,
+       188.0,
+       0.0
+      ]
+     },
+     "passes": false
+    },
+    {
+     "socket": {
+      "bind_component_cm": [
+       23.0,
+       -26.5,
+       85.5
+      ],
+      "rotation_deg": [
+       -10.0,
+       180.0,
+       0.0
+      ]
+     },
+     "passes": false
+    },
+    {
+     "socket": {
+      "bind_component_cm": [
+       23.0,
+       -26.5,
+       85.5
+      ],
+      "rotation_deg": [
+       -10.0,
+       188.0,
+       0.0
+      ]
+     },
+     "passes": true
+    },
+    {
+     "socket": {
+      "bind_component_cm": [
+       23.0,
+       -26.5,
+       85.5
+      ],
+      "rotation_deg": [
+       -15.0,
+       180.0,
+       0.0
+      ]
+     },
+     "passes": false
+    },
+    {
+     "socket": {
+      "bind_component_cm": [
+       23.0,
+       -26.5,
+       85.5
+      ],
+      "rotation_deg": [
+       -15.0,
+       188.0,
+       0.0
+      ]
+     },
+     "passes": true
+    },
+    {
+     "socket": {
+      "bind_component_cm": [
+       23.0,
+       -26.5,
+       85.5
+      ],
+      "rotation_deg": [
+       -20.0,
+       180.0,
+       0.0
+      ]
+     },
+     "passes": false
+    },
+    {
+     "socket": {
+      "bind_component_cm": [
+       23.0,
+       -26.5,
+       85.5
+      ],
+      "rotation_deg": [
+       -20.0,
+       188.0,
+       0.0
+      ]
+     },
+     "passes": true
+    }
+   ],
+   "renders": {
+    "Saya_07_SideLeft.png": "f6ce4ded4421dbf0dc70be5bb986ec48e360c2b1c2c0f810b3dd534075c28171",
+    "Saya_09_SideLeft.png": "27f91da1f30b20e879334a2d22772741ed17af29198eaa9cea10d2f8eca6c237",
+    "Saya_11_SideLeft.png": "f99289ecffb090728e6af4f6a8721347d011eb8a7b1d3dab2a94cdab4045a51f"
+   }
+  },
+  "s95": {
+   "command": "Blender -b --factory-startup --python-exit-code 1 --python scripts/art/rig_nyaakoto_runtime.py -- --study saya --study-out s95_saya_guard",
+   "start": "2026-10-26T05:07:16Z",
+   "pid": "757",
+   "exit": 0,
+   "end": "2026-10-26T05:09:55Z",
+   "result": "the same 3 carries also pass every gate of the interim Guard with the left paw empty, left_paw_vs_saya included",
+   "saya": [
+    {
+     "socket": {
+      "bind_component_cm": [
+       23.0,
+       -24.0,
+       85.5
+      ],
+      "rotation_deg": [
+       -10.0,
+       180.0,
+       0.0
+      ]
+     },
+     "passes": false,
+     "passes_guard": null,
+     "guard_gates": null
+    },
+    {
+     "socket": {
+      "bind_component_cm": [
+       23.0,
+       -24.0,
+       85.5
+      ],
+      "rotation_deg": [
+       -10.0,
+       188.0,
+       0.0
+      ]
+     },
+     "passes": false,
+     "passes_guard": null,
+     "guard_gates": null
+    },
+    {
+     "socket": {
+      "bind_component_cm": [
+       23.0,
+       -24.0,
+       85.5
+      ],
+      "rotation_deg": [
+       -15.0,
+       180.0,
+       0.0
+      ]
+     },
+     "passes": false,
+     "passes_guard": null,
+     "guard_gates": null
+    },
+    {
+     "socket": {
+      "bind_component_cm": [
+       23.0,
+       -24.0,
+       85.5
+      ],
+      "rotation_deg": [
+       -15.0,
+       188.0,
+       0.0
+      ]
+     },
+     "passes": false,
+     "passes_guard": null,
+     "guard_gates": null
+    },
+    {
+     "socket": {
+      "bind_component_cm": [
+       23.0,
+       -24.0,
+       85.5
+      ],
+      "rotation_deg": [
+       -20.0,
+       180.0,
+       0.0
+      ]
+     },
+     "passes": false,
+     "passes_guard": null,
+     "guard_gates": null
+    },
+    {
+     "socket": {
+      "bind_component_cm": [
+       23.0,
+       -24.0,
+       85.5
+      ],
+      "rotation_deg": [
+       -20.0,
+       188.0,
+       0.0
+      ]
+     },
+     "passes": false,
+     "passes_guard": null,
+     "guard_gates": null
+    },
+    {
+     "socket": {
+      "bind_component_cm": [
+       23.0,
+       -26.5,
+       85.5
+      ],
+      "rotation_deg": [
+       -10.0,
+       180.0,
+       0.0
+      ]
+     },
+     "passes": false,
+     "passes_guard": null,
+     "guard_gates": null
+    },
+    {
+     "socket": {
+      "bind_component_cm": [
+       23.0,
+       -26.5,
+       85.5
+      ],
+      "rotation_deg": [
+       -10.0,
+       188.0,
+       0.0
+      ]
+     },
+     "passes": true,
+     "passes_guard": true,
+     "guard_gates": {
+      "forearms_paws_vs_torso": true,
+      "saya_vs_body": true,
+      "katana_vs_body_but_holding_paw": true,
+      "katana_vs_holding_paw": true,
+      "blade_vs_head": true,
+      "blade_vs_body": true,
+      "left_paw_vs_saya": true
+     }
+    },
+    {
+     "socket": {
+      "bind_component_cm": [
+       23.0,
+       -26.5,
+       85.5
+      ],
+      "rotation_deg": [
+       -15.0,
+       180.0,
+       0.0
+      ]
+     },
+     "passes": false,
+     "passes_guard": null,
+     "guard_gates": null
+    },
+    {
+     "socket": {
+      "bind_component_cm": [
+       23.0,
+       -26.5,
+       85.5
+      ],
+      "rotation_deg": [
+       -15.0,
+       188.0,
+       0.0
+      ]
+     },
+     "passes": true,
+     "passes_guard": true,
+     "guard_gates": {
+      "forearms_paws_vs_torso": true,
+      "saya_vs_body": true,
+      "katana_vs_body_but_holding_paw": true,
+      "katana_vs_holding_paw": true,
+      "blade_vs_head": true,
+      "blade_vs_body": true,
+      "left_paw_vs_saya": true
+     }
+    },
+    {
+     "socket": {
+      "bind_component_cm": [
+       23.0,
+       -26.5,
+       85.5
+      ],
+      "rotation_deg": [
+       -20.0,
+       180.0,
+       0.0
+      ]
+     },
+     "passes": false,
+     "passes_guard": null,
+     "guard_gates": null
+    },
+    {
+     "socket": {
+      "bind_component_cm": [
+       23.0,
+       -26.5,
+       85.5
+      ],
+      "rotation_deg": [
+       -20.0,
+       188.0,
+       0.0
+      ]
+     },
+     "passes": true,
+     "passes_guard": true,
+     "guard_gates": {
+      "forearms_paws_vs_torso": true,
+      "saya_vs_body": true,
+      "katana_vs_body_but_holding_paw": true,
+      "katana_vs_holding_paw": true,
+      "blade_vs_head": true,
+      "blade_vs_body": true,
+      "left_paw_vs_saya": true
+     }
+    }
+   ],
+   "renders": {
+    "Saya_07_Guard_SideLeft.png": "77e5338d5c0e3ba852be6942b2380e5f175983133b1e25d370a5aef7c337cf29",
+    "Saya_07_SideLeft.png": "c833051bfdb40ce9704947807a8ddec3f24a084bd855ba077be0f27c11b80eab",
+    "Saya_09_Guard_SideLeft.png": "a6dba33f20fe13e6f592f40af1fffd03d11f37a467d4036f59f4bd63d3f2ccc3",
+    "Saya_09_SideLeft.png": "23c9b4e9a5a85f9a5a5cd823f2cad8b516eeb1dc7c50649ac64eed2bce43c777",
+    "Saya_11_Guard_SideLeft.png": "af939ac1a56f709156206af072dc3220e16d776d4bc1ce77666314c0af1eb093",
+    "Saya_11_SideLeft.png": "fa995b1f3f09e7c7eee89b574f66178391801842572d6d7d7dbda8002994d8be"
+   }
+  }
+ },
+ "script_versions": {
+  "s89": {
+   "sha256": "99e8c817cfb617cea723dccd3f986843cdbfa710f08d968198ff2963793948c7",
+   "kept": "Saved/W18Rebuild/s89_twopaw_A.rig_script.py",
+   "note": "the empty-paw patch and --stance, before the key fix"
+  },
+  "s90": {
+   "note": "s89's script plus the guarded --diag-keys block (not kept separately)"
+  },
+  "s91-s94": {
+   "sha256": "d6334f4eb1e8cd7f34d3fda4f8ab829bb3d4f9a1d678972476cdbc4855474fbc",
+   "kept": "Saved/W18Rebuild/s91_to_s94.rig_script.py",
+   "note": "with key.value = 0.0 and its assert"
+  },
+  "s95": {
+   "sha256": "801eee3fb5361101e956480edd2cc5cf27e5935c72d8a7b9b512e16be9ef1439",
+   "kept": "Saved/W18Rebuild/s95_saya_guard.rig_script.py",
+   "note": "plus the saya study's Guard check; the committed version"
+  }
+ }
+}

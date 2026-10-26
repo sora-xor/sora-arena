@@ -1,6 +1,9 @@
 # Two-paw grip: anatomy and armour study (measured)
 
-**Status (2026-10-26):** a measured study from the art lane, in progress.
+**Status (2026-10-26):** a measured study from the art lane.
+- Rounds 1 and 2 (sections 2 and 3), the posed renders of A and B (section 4), and the empty paws and saya carry
+  (section 5) are done.
+- What is left is root's decisions and the art pass on the paws. Nothing here is an approval.
 
 - **Root's direction:** the original two-paw grip and left-hand closure (`THIRD_PERSON_GRIP_CONTRACT.md` 4.5, 4.7) stay
   binding.
@@ -124,7 +127,83 @@ source body (create_nyaagyu_hero_character.py) and every LOD, kamon placement an
 
 **Every run** exited naturally with 0. The round-2 grid's last run ended at 02:54:00Z.
 
-## 4. Natural empty paws and the saya carry
+## 4. The posed renders of A and B (runs s91 and s92, 2026-10-26)
 
-(prepared, not yet run: empty-fist shape keys PawEmpty_R and PawEmpty_L, and a carry sweep with the kojiri lowered
-10-20° and swung out)
+Both are posed at Grip_L (34, 0, 106), blade 30° up, elbows far forward. Each is rendered Front, SideRight and
+SideLeft at the build's review quality (32 samples, 1100 px), with the measured interim saya socket. Runs:
+`--study two_paw --variant ... --stance 34,0,106:far_fwd`. The renders are in `Saved/W18Rebuild/s91_twopaw_A/` and
+`s92_twopaw_B/`, and the cropped paws side by side are in `Saved/W18Rebuild/s91_s92_twopaw_AB_paws_sheet.png`.
+
+**The measurements repeat round 2 exactly:**
+
+| | A: arm 1.2, chest 0.85 | B: arm 1.2, palm 0.8, chest 0.8 |
+| --- | --- | --- |
+| every gate | pass | pass |
+| arms' exact gap from the torso | 17.12 mm | no pair within 2 cm |
+| katana against the paws | 0 crossings, 1.06 mm | 0 crossings, 1.06 mm |
+| reach R / L | 0.871 / 0.707 | 0.885 / 0.724 |
+| kissaki (cm) | (113.5, 0, 160.7) | (113.5, 0, 160.7) |
+| upper arms against the torso (reported only) | 1,322 pairs, 5 contained | 1,329 pairs, 4 contained |
+
+**My look at the originals** (a study, not an approval):
+- Both read as a two-handed chūdan: the paws close on the tsuka in front of the dō, the elbows come forward and
+  out, and the kissaki rises well forward of the face. At 1.2× the arms no longer look stunted beside the body.
+- A and B are nearly indistinguishable at review distance. B's 0.8 palm puts slightly less paw on the hilt, and its
+  flatter chest does not show. B buys clearance margin, not a visible change.
+- **The weak point is the paw art, in both.** The curled fingers read as stacked white tubes, ribbed cylinders
+  round the tsuka, not a cat's furred paw. They need sculpting and fur before any photoreal claim, whichever variant
+  is adopted.
+- Not from this study: the pale and dark crossed rods at the upper chest are in every render, today's body too.
+
+**A failed first attempt, kept** (s89).
+- Variant A's first render run failed katana_vs_paws: 6,557 crossings against the curled fingers.
+- The diagnosis (s90, `--diag-keys`): Blender 5.2's `Object.shape_key_add` started the new empty-fist keys
+  (section 5) at value 1.0, not 0. So every pose that never sets them showed both paws as empty fists, moving the
+  finger vertices up to 3.14 cm.
+- Each key is now set to 0 at creation, with an assert. s89's renders show the defect and are not a review of A.
+
+**For root:** A is the least change that passes with margin. B is the fallback if more clearance is wanted. Either
+one changes the hero's source body and everything that depends on it (section 3).
+
+## 5. Natural empty paws and the saya carry (runs s93, s94 and s95)
+
+**The empty fists** (`--study empty_paw`, s93) are two shape keys, PawEmpty_R and PawEmpty_L, on the runtime skin.
+- Each is a second curled paw built with the grip's topology around a channel shrunk to 30 % of the grip's, its
+  palm side kept on the palm, so the fingers close to a fist instead of ringing an empty 3.3 × 4.3 cm hole.
+- The runtime drives them by what each paw holds: both empty in Idle and Walk, the left only in the interim Guard.
+- **Results:**
+  - Idle, both paws empty: every gate passes;
+  - the interim Guard, left paw empty: every gate passes. The arms clear the torso by 14.43 mm, the katana clears
+    the holding paw by 1.06 mm, and the left paw clears the saya;
+  - reported only: the upper arms against the torso, 936 and 900 pairs (the shoulder ball against the haori).
+- My look: the empty paws read as small closed fists. Renders: `Saved/W18Rebuild/s93_empty_paw/`.
+
+**The saya carry** (`--study saya`, s94; with the Guard check, s95). There are 12 candidates at the obi placement
+(23, y, 85.5) cm: y -24 or -26.5, the kojiri lowered by a pitch of -10, -15 or -20°, yaw 180 or 188 (swung 8° out).
+Each is checked at Idle and four walk phases with both paws empty: the saya and the sheathed hilt against the whole
+body, paws included.
+
+| candidate | socket (cm), rotation (deg) | Idle and walk | interim Guard, left paw empty |
+| --- | --- | --- | --- |
+| 07 | (23, -26.5, 85.5), (-10, 188, 0) | pass | pass |
+| 09 | (23, -26.5, 85.5), (-15, 188, 0) | pass | pass |
+| **11** | **(23, -26.5, 85.5), (-20, 188, 0)** | **pass** | **pass** |
+| the other 9 | y -24, or yaw 180 | fail: up to 1,828 crossings with the body | not checked |
+
+- In Guard every gate passes for all three, and the left paw has no pair within 2 cm of the saya.
+- My look: all three are natural carries, the tsuka forward and up and the kojiri down behind, far better than the
+  interim horizontal saya. **11 (-20°)** is closest to the classic worn angle.
+- Renders: `Saved/W18Rebuild/s95_saya_guard/Saya_{07,09,11}_SideLeft.png` and `_Guard_SideLeft.png`.
+
+**For root:** whether to move `gear_saya_l` (viewmodels.json hero_gear, root's) from the interim (23, -24, 85.5),
+(0, 180, 0) to candidate 11. Every check here was on today's body. If A or B is adopted, both studies need re-running
+on the adopted body.
+
+**Not done:**
+- The runtime build has not been run with the empty-paw shape keys.
+- Its FBX export keeps `use_mesh_modifiers` at its default, so whether the export carries the two morph targets is
+  unverified. So is their UE import (`import_morph_targets` is in the unrun importer).
+- The LODs have no shape keys yet.
+
+Every run's command, pid, times, exit and render hash: `data/character_studies_s89_s95.json`. Every run exited
+naturally with 0. s89 failed on its own gate.

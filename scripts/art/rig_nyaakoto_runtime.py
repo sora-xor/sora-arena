@@ -44,6 +44,13 @@ the two-paw grip lacks. It prints them and stops before writing anything.
 measures the contract's two-paw guard on an anatomy and armour variant. The
 variant (nyaakoto_runtime_parts.apply_variant) is applied in memory only. It
 writes its review renders to Saved/W18Rebuild/<name>/ and nothing else.
+`--stance 34,0,106:far_fwd` measures and renders that one two-paw stance
+(Grip_L in Unreal cm, and an elbow pole set) at full review quality, instead
+of the whole grid. The contract-target shift analysis is then skipped.
+
+`--study empty_paw` and `--study saya` measure, and render from the left, the
+empty-fist shape keys and the saya carry candidates (both written to
+Saved/W18Rebuild/<name>/ only).
 """
 
 from __future__ import annotations
@@ -70,6 +77,7 @@ STUDY = ARGS[ARGS.index("--study") + 1] if "--study" in ARGS else None
 EXPLORE = "--explore" in ARGS or STUDY is not None                  # a study writes only to Saved/
 VARIANT = dict(kv.split("=") for kv in ARGS[ARGS.index("--variant") + 1].split(",")) if "--variant" in ARGS else {}
 STUDY_OUT = ARGS[ARGS.index("--study-out") + 1] if "--study-out" in ARGS else None
+STANCE = ARGS[ARGS.index("--stance") + 1] if "--stance" in ARGS else None    # "34,0,106:far_fwd", two_paw only
 
 ROOT = Path(__file__).resolve().parents[2]
 HERO = ROOT / "Content/SourceArt/Characters/Hero"
@@ -112,6 +120,7 @@ kept_parts = [p for p in parts if RP.kept(p.name)]
 removed = [p.name for p in parts if not RP.kept(p.name)]
 added = {"R": RP.curled_paw("R", ARMS, by_name), "L": RP.curled_paw("L", ARMS, by_name)}
 added_names = sorted(o.name for o in added["R"] + added["L"])   # the join below removes these objects
+added_names_ordered = {s: [o.name for o in added[s]] for s in ("R", "L")}
 # The slots: what leaves the body may use no slot alone; what the deferred gear alone uses is recorded.
 deferred = [p for p in kept_parts if p.name.startswith(RP.DEFERRED_GEAR)]
 body_materials = materials_of(kept_parts + added["R"] + added["L"])
@@ -142,6 +151,8 @@ for src in kept_parts + added["R"] + added["L"]:
     # Each face remembers its part through the join, for the clearance checks (removed again after the join).
     tag = obj.data.attributes.new("slice_a_part", "INT", "FACE")
     tag.data.foreach_set("value", [len(part_names)] * len(obj.data.polygons))
+    vid = obj.data.attributes.new("slice_a_vid", "INT", "POINT")        # part << 20 | local vertex, through the join
+    vid.data.foreach_set("value", [(len(part_names) << 20) | i for i in range(len(obj.data.vertices))])
     part_names.append(part_name)
     # Splitting source parts keeps hard armor, crest paths and arrow fletching
     # coherent while preserving every authored material slot on final join.
@@ -165,6 +176,38 @@ face_part = np.empty(len(mesh.data.polygons), np.int32)
 tag.data.foreach_get("value", face_part)
 mesh.data.attributes.remove(tag)
 assert set(face_part.tolist()) == set(range(len(part_names)))
+vid = mesh.data.attributes["slice_a_vid"]
+vertex_tag = np.empty(len(mesh.data.vertices), np.int64)
+_tmp = np.empty(len(mesh.data.vertices), np.int32)
+vid.data.foreach_get("value", _tmp)
+vertex_tag[:] = _tmp
+mesh.data.attributes.remove(vid)
+vertex_part, vertex_local = vertex_tag >> 20, vertex_tag & ((1 << 20) - 1)
+# The empty fists as shape keys: a second curled paw per side on the closed channel, its tubes built exactly as the
+# grip's, so vertex k of each empty part is vertex k of its grip part.
+mesh.shape_key_add(name="Basis", from_mix=False)
+inv_mesh = mesh.matrix_world.inverted()
+empty_keys = {}
+for side in ("R", "L"):
+    empty_parts = RP.curled_paw(side, {side: RP.empty_arm(ARMS[side])}, by_name)
+    key = mesh.shape_key_add(name=f"PawEmpty_{side}", from_mix=False)
+    # Blender 5.2 starts a new key at value 1.0 (run s90's diagnosis). Left so, every pose that never calls
+    # set_empty showed both paws as empty fists: s89's grip crossed the tsuka in 6,557 pairs. The grip is the default.
+    key.value = 0.0
+    moved_v = 0
+    for name, empty_obj in zip([o for o in added_names_ordered[side]], empty_parts):
+        pi = part_names.index(name)
+        idx = np.nonzero(vertex_part == pi)[0]
+        assert len(idx) == len(empty_obj.data.vertices), (name, len(idx), len(empty_obj.data.vertices))
+        for vi, li in zip(idx.tolist(), vertex_local[idx].tolist()):
+            key.data[vi].co = inv_mesh @ (empty_obj.matrix_world @ empty_obj.data.vertices[li].co)
+        moved_v += len(idx)
+    for o in empty_parts:
+        me = o.data
+        bpy.data.objects.remove(o, do_unlink=True)
+        bpy.data.meshes.remove(me)
+    empty_keys[side] = moved_v
+assert [(kb.name, kb.value) for kb in mesh.data.shape_keys.key_blocks[1:]] == [("PawEmpty_R", 0.0), ("PawEmpty_L", 0.0)]
 assert {m.name for m in mesh.data.materials} == pbr_slots
 coat=mesh.data.color_attributes.get("CoatBlend")
 assert coat is not None and coat.domain=="CORNER"
@@ -211,6 +254,27 @@ modifier.object = rig
 mesh.parent = rig
 rig.animation_data_create()
 actions = {}
+if "--diag-keys" in ARGS:                                  # run s90: why s89's grip paws behaved as empty fists
+    bpy.context.view_layer.update()
+    keys = mesh.data.shape_keys
+    rows = [{"name": kb.name, "value": kb.value, "relative_key": kb.relative_key.name, "mute": kb.mute}
+            for kb in keys.key_blocks]
+    finger = np.isin(vertex_part, [part_names.index(n) for s in ("R", "L") for n in added_names_ordered[s]])
+    ev = mesh.evaluated_get(bpy.context.evaluated_depsgraph_get())
+    me_ev = ev.to_mesh()
+    evaluated = np.array([list(v.co) for v in me_ev.vertices])
+    ev.to_mesh_clear()
+    base = np.array([list(v.co) for v in mesh.data.vertices])
+    blocks = {kb.name: np.array([list(d.co) for d in kb.data]) for kb in keys.key_blocks}
+    gap = lambda a, b: round(float(np.abs(a - b)[finger].max()), 6)  # noqa: E731
+    print("DIAG_KEYS " + json.dumps({"reference": keys.reference_key.name, "use_relative": keys.use_relative,
+                                     "blocks": rows, "active_index": mesh.active_shape_key_index,
+                                     "show_only_shape_key": mesh.show_only_shape_key, "finger_vertices": int(finger.sum()),
+                                     "evaluated_vs_mesh": gap(evaluated, base),
+                                     "evaluated_vs_blocks": {n: gap(evaluated, b) for n, b in blocks.items()},
+                                     "mesh_vs_blocks": {n: gap(base, b) for n, b in blocks.items()}}), flush=True)
+    print("DIAG_KEYS_DONE", flush=True)
+    sys.exit(0)
 
 # --- Posing by the contract's sockets ---------------------------------------------------------------------------------
 # GUARD is the stance A_NyaagyuSamurai_Guard holds, an interim one-paw (katate) chudan chosen from the --explore
@@ -544,6 +608,74 @@ def brief(res):
             for k, v in res.items()}
 
 
+# The empty fists by state: both paws empty out of combat; in the interim one-paw guard only the left. The runtime
+# drives the same morph targets (PawEmpty_R, PawEmpty_L) by what each paw holds.
+EMPTY_BY_CLIP = {"Idle": (1, 1), "Walk": (1, 1), "Guard": (0, 1)}
+
+
+def set_empty(r_empty, l_empty):
+    """The empty-fist shape keys: 1 an empty paw, 0 the paw round a hilt."""
+    blocks = mesh.data.shape_keys.key_blocks
+    blocks["PawEmpty_R"].value, blocks["PawEmpty_L"].value = float(r_empty), float(l_empty)
+    bpy.context.view_layer.update()
+
+
+if STUDY in ("saya", "empty_paw"):
+    cal = MC.calibrate(BK)
+    assert cal["ok"], cal
+    out_dir = ROOT / "Saved/W18Rebuild" / STUDY_OUT if STUDY_OUT else None
+    if out_dir:
+        out_dir.mkdir(parents=True, exist_ok=True)
+    walk = (("Idle", 0.0), ("Walk", 0.0), ("Walk", math.pi / 2), ("Walk", math.pi), ("Walk", 1.5 * math.pi))
+    if STUDY == "saya":
+        base = dict(hero_gear["sockets"]["gear_saya_l"])
+        cands = [dict(base, bind_component_cm=[23.0, y, 85.5], rotation_deg=[p_, 180.0 + yw, 0.0])
+                 for y in (-24.0, -26.5) for p_ in (-10.0, -15.0, -20.0) for yw in (0.0, 8.0)]
+        for k, c in enumerate(cands):
+            row = {"socket": {f: c[f] for f in ("bind_component_cm", "rotation_deg")}, "frames": {}}
+            ok = True
+            for clip, ph in walk:
+                clip_pose(clip, ph)
+                set_empty(1, 1)
+                res = check_pose(c, held=False, only={"saya_vs_body", "sheathed_hilt_vs_body"})
+                g = gates_of(res)
+                ok &= all(g.values())
+                row["frames"][f"{clip}@{ph:.2f}"] = {"gates": g, "saya": brief(res)["saya_vs_body"],
+                                                     "hilt": brief(res)["sheathed_hilt_vs_body"]}
+            row["passes"] = bool(ok)
+            if ok:                                     # the carry must clear the interim guard's empty left paw too
+                clip_pose("Guard", 0.0)
+                set_empty(0, 1)
+                res = check_pose(c, held=True)
+                g = gates_of(res)
+                row["guard"] = {"gates": g, "checks": {n: brief(res)[n] for n in ("saya_vs_body", "left_paw_vs_saya")}}
+                row["passes_guard"] = bool(all(g.values()))
+            print("STUDY_SAYA " + json.dumps(row, default=str), flush=True)
+            if ok and out_dir:
+                clip_pose("Idle", 0.0)
+                set_empty(1, 1)
+                sp, sr = saya_at(c)
+                render_views(("SideLeft",), out_dir / f"Saya_{k:02d}", sheathed(sp, sr), (sp, sr), samples=24, res=900)
+                if row["passes_guard"]:
+                    clip_pose("Guard", 0.0)
+                    set_empty(0, 1)
+                    render_views(("SideLeft",), out_dir / f"Saya_{k:02d}_Guard", socket_now("R"), saya_at(c), samples=24,
+                                 res=900)
+    else:
+        for clip, (r_e, l_e) in (("Idle", (1, 1)), ("Guard", (0, 1))):
+            clip_pose(clip, 0.0)
+            set_empty(r_e, l_e)
+            res = check_pose(SAYA_SOCKET, held=clip == "Guard")
+            print("STUDY_EMPTY " + json.dumps({"clip": clip, "empty": [r_e, l_e], "gates": gates_of(res),
+                                               "checks": brief(res)}, default=str), flush=True)
+            if out_dir:
+                sp, sr = saya_at(SAYA_SOCKET)
+                held = socket_now("R") if clip == "Guard" else sheathed(sp, sr)
+                render_views(("Front", "SideLeft", "SideRight"), out_dir / f"Empty_{clip}", held, (sp, sr), samples=24,
+                             res=900)
+    print("STUDY_COMPLETE", flush=True)
+    sys.exit(0)
+
 if STUDY == "two_paw":
     cal = MC.calibrate(BK)
     assert cal["ok"], cal
@@ -566,6 +698,10 @@ if STUDY == "two_paw":
                        for g in ((24.0, 0.0, 100.0), (28.0, 0.0, 100.0), (30.0, 0.0, 102.0), (32.0, 0.0, 104.0),
                                  (34.0, 0.0, 106.0))
                        for name, poles in pole_sets.items()]
+    if STANCE:                                         # one stance, measured and rendered for review
+        grip, pole_name = STANCE.split(":")
+        two_paw_stances = [{"grip_l": tuple(float(v) for v in grip.split(",")), "elevation_deg": 30.0,
+                            "poles": pole_sets[pole_name], "pole_set": pole_name}]
     for k, c in enumerate(two_paw_stances):
         reset_pose()
         row = {"stance": c}
@@ -592,7 +728,11 @@ if STUDY == "two_paw":
         print("STUDY_TWO_PAW " + json.dumps(row, default=str), flush=True)
         if out_dir and k == 0:
             sp, sr = saya_at(SAYA_SOCKET)
-            render_views(("Front", "SideRight", "SideLeft"), out_dir / "TwoPaw", (kp, kr), (sp, sr), samples=24, res=900)
+            quality = {} if STANCE else {"samples": 24, "res": 900}  # with --stance: the build's review quality
+            render_views(("Front", "SideRight", "SideLeft"), out_dir / "TwoPaw", (kp, kr), (sp, sr), **quality)
+    if STANCE:
+        print("STUDY_COMPLETE", flush=True)
+        sys.exit(0)
     # How far each arm must still move forward at the contract's target to clear the torso by 5 mm.
     reset_pose()
     pose_stance(two_paw_stances[0])
@@ -764,6 +904,7 @@ checks, gate_rows = {}, {}
 for clip, frames in (("Guard", (1, 25, 49, 73)), ("Idle", (1, 49)), ("Walk", (1, 9, 17, 25))):
     for f in frames:
         at_frame(clip, f)
+        set_empty(*EMPTY_BY_CLIP[clip])
         res = check_pose(SAYA_SOCKET, held=clip == "Guard")
         if clip == "Guard":
             res["socket_error_cm"] = {s: round(float(np.linalg.norm(socket_now(s)[0] - tg[0])) * 100.0, 4)
@@ -774,6 +915,7 @@ for clip, frames in (("Guard", (1, 25, 49, 73)), ("Idle", (1, 49)), ("Walk", (1,
         gate_rows[f"{clip}@{f}"] = gates_of(res)
 reset_pose()
 rig.animation_data.action = None
+set_empty(0, 0)                                           # the bind pose: no morph
 bpy.context.view_layer.update()
 rest_posed = posed_points()
 checks["rest"] = {"forearms_paws_vs_torso": MC.measure(BK, SET["arms_low"], rest_posed, SET["torso"], rest_posed,
@@ -798,11 +940,13 @@ if failed or not socket_ok:
 renders = {}
 for clip, views in (("Guard", ("Front", "SideRight", "SideLeft")), ("Idle", ("Front", "SideLeft"))):
     at_frame(clip, 1)
+    set_empty(*EMPTY_BY_CLIP[clip])
     sp, sr = saya_at(SAYA_SOCKET)
     held = socket_now("R") if clip == "Guard" else sheathed(sp, sr)
     for path in render_views(views, HERO / f"Nyaakoto_RuntimeSkin_{clip}", held, (sp, sr)):
         renders[path.name] = path
 end_review()
+set_empty(0, 0)                                           # exported as morph targets at 0; the runtime drives them
 # Nothing imported or added for the checks and renders stays in the runtime blend.
 for kind in DATA_KINDS:
     for d in [d for d in getattr(bpy.data, kind) if d not in data_before_weapons[kind] and d not in actions.values()
@@ -890,6 +1034,9 @@ third_person = {
     "arm_joints_blender_m": {side: {k: [round(float(c), 4) for c in ARMS[side][k]] for k in ("shoulder", "elbow", "wrist", "palm", "channel")}
                              for side in ("R", "L")},
     "removed_parts": removed, "added_parts": added_names,
+    "empty_paws": {"shape_keys": ["PawEmpty_R", "PawEmpty_L"], "by_clip": EMPTY_BY_CLIP,
+                   "vertices": empty_keys, "channel_share": RP.EMPTY_CHANNEL,
+                   "note": "1 an empty fist, 0 the paw round a hilt; the checks and renders use these values"},
     "deferred_gear": {"parts": sorted(p.name for p in deferred), "slots_only_they_use": deferred_only,
                       "note": "The bow, quiver and arrows stay on the body until their gear assets exist; the "
                               "socket migration viewmodels.json plans stays open."},

@@ -41,6 +41,9 @@ FINGER_PITCH = 0.026                               # m between the four fingers 
 # m: how far the curled fingers' and thumb's inner surface stays outside the channel, along its normal. Chords between
 # the 13 samples of a sweep sag about 0.12 mm toward the channel, so the facets stay clear too.
 FINGER_SKIN = 0.0002
+# The empty fist: the channel shrunk to this share of the grip's, its palm side kept on the palm. The fingers and
+# thumb then close into a fist instead of ringing an empty 3.3 x 4.3 cm hole (the 145db735 review).
+EMPTY_CHANNEL = 0.30
 FINGER_SWEEP = (50.0, 200.0)                       # deg round the channel, from the palm's top over the front
 THUMB_SWEEP = (-40.0, -130.0)                      # deg, the other way round: from the palm's back under the channel
 
@@ -226,10 +229,20 @@ def around(arm, y, theta_deg, extra):
     w = Vector((0.0, 1.0, 0.0)).cross(z_s).normalized()    # in the X-Z plane, forward-up
     c = arm["channel"].copy()
     c.y = y
-    a, b = CHANNEL_HALF[1], CHANNEL_HALF[0]                 # along Z_s and along w
+    half = arm.get("half", CHANNEL_HALF)
+    a, b = half[1], half[0]                                  # along Z_s and along w
     on = a * math.cos(th) * z_s + b * math.sin(th) * w
     normal = ((math.cos(th) / a) * z_s + (math.sin(th) / b) * w).normalized()
     return c + on + (extra + FINGER_SKIN) * normal
+
+
+def empty_arm(arm):
+    """The arm with its channel closed to a fist: EMPTY_CHANNEL of the grip's size, the palm-side edge where it was."""
+    out = dict(arm)
+    z_s = Vector(arm["socket_rot"][:, 2].tolist())
+    out["channel"] = arm["channel"] + (CHANNEL_HALF[1] * (1.0 - EMPTY_CHANNEL)) * z_s
+    out["half"] = (CHANNEL_HALF[0] * EMPTY_CHANNEL, CHANNEL_HALF[1] * EMPTY_CHANNEL)
+    return out
 
 
 def coat_of(by_name, name):
