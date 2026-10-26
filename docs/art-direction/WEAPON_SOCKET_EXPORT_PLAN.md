@@ -200,3 +200,20 @@ Logs are in `Saved/W18Rebuild/`; outputs are in `Saved/WeaponSocketFix/`. Every 
   - it compares corner by corner, in 8-bit steps and degrees;
   - it imports the s82 control as a third file. The control is the library's convention from the same blend, so it
     carries the original's inexact turn.
+
+**s86, the UE 5.8 probe with controls** (wrapper 47437, 04:31:34-04:33:06Z; editor exit 0, wrapper 1; the editor's
+pid was not sampled).
+- **Sockets:** again, all 83 corrected sockets pass, and the model matches every axis of all imports.
+- **The attribution, measured:**
+  - **original against control** is bit-identical in UE for all 25 pairs: positions 0.0, normals and tangents 0
+    steps, the same render vertex counts. The control's FBX tangents differ by up to 7.1e-6, so Unreal recomputes
+    the tangents and ignores the file's.
+  - **control against corrected** repeats the original-against-corrected numbers in every row. So the differences
+    come from the convention change alone: removing the original's 179.999991° node turn.
+- **The 24 pairs with the same layout** pass the corner gate:
+  - positions within 3.2e-5 cm;
+  - normals within one 8-bit step, at no more than 12 corners;
+  - tangents within one step, except W01, where 42 corners differ and the worst by 3 steps.
+- **W11 and W13** failed the corner gate. Unreal ordered their triangles differently, together with the one extra
+  render vertex, so pairing corners in index order compared unrelated corners. same_import now matches triangles by
+  their corners, keeping the winding, when index order does not line up (`corner_pairs`). Next run: s87.
