@@ -242,9 +242,10 @@ bool FSoraDroneMeleeTest::RunTest(const FString&)
     Block->Destroy();
 
     const float Health=Drone->Health;
-    for(int Weapon:{4,19})
+    TestFalse(TEXT("The landing still forbids the unlocked yari"),W.Campaign()->CanHold(19,false));
+    for(int Weapon:{4})
     {
-        if(!W.World->TakeUpArm(Weapon))return false;
+        if(!TestTrue(TEXT("Mapped weapon selection equips the landing's wakizashi"),W.World->TakeUpArm(Weapon)))return false;
         const float Radius=Weapon==19?16.f:36.f;
         for(float Offset:{Radius+16.f,-Radius-24.f})
         {
@@ -255,13 +256,52 @@ bool FSoraDroneMeleeTest::RunTest(const FString&)
             TestEqual(TEXT("An actual mapped cut or thrust through empty sphere space deals no damage"),Drone->Health,Health);
         }
     }
-    if(!W.World->TakeUpArm(4))return false;
+    if(!TestTrue(TEXT("Mapped selection retains the wakizashi for the positive control"),W.World->TakeUpArm(4)))return false;
     W.Look(FRotator::ZeroRotator);
     Drone->SetActorLocation(W.Hero()->GetCamera()->GetComponentLocation()+FVector(120,0,0),false,nullptr,ETeleportType::TeleportPhysics);
     if(!W.Press(EKeys::LeftMouseButton)||!W.Tick(90))return false;
     TestEqual(TEXT("The positive-control mapped wakizashi cut damages the physical disc"),
         Drone->Health,FMath::Max(0.f,Health-FSoraCatalog::Get().Weapon(4).Damage));
     AddInfo(TEXT("Directed collision fixture with frozen threats and positioned drone. Ordinary landing combat and final weapon/character presentation remain separate."));
+    return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraDroneMeleeYariTest,"SoraArena.Campaign.DroneMeleeYari",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraDroneMeleeYariTest::RunTest(const FString&)
+{
+    using namespace SoraLandingDroneTest;
+    // Chapter 3's landing permits only the wakizashi. Exercise the actual
+    // thrust where the campaign has taught and permits the yari, without
+    // overriding any inventory or mission equipment restrictions.
+    if(!FSoraCatalog::Get().Load())return false;
+    FBeatWorld W(*this,TEXT("DroneMeleeYari"),1,3);if(!W.Start())return false;
+    W.Harden();
+    for(TActorIterator<ASoraCharacterBase> It(W.World->GetTestWorld());It;++It)
+        if(*It!=W.Hero())SoraLandingDroneTest::Freeze(**It);
+    for(int I=0;I<3000&&!W.Mode()->IsPlaying();++I)if(!W.Tick(1))return false;
+    if(!TestTrue(TEXT("The yari encounter releases control"),W.Mode()->IsPlaying())||
+        !TestTrue(TEXT("The yari is learned and permitted in this encounter"),
+            W.Campaign()->IsWeaponUnlocked(19)&&W.Campaign()->CanHold(19,false))||
+        !TestTrue(TEXT("Mapped selection equips the permitted yari"),W.World->TakeUpArm(19)))return false;
+    W.Hero()->GetCharacterMovement()->DisableMovement();W.Look(FRotator::ZeroRotator);
+    const FVector Eye=W.Hero()->GetCamera()->GetComponentLocation();
+    auto* Drone=ASoraEnemy::SpawnArchetype(*W.World->GetTestWorld(),TEXT("drone"),99,
+        Eye+FVector(180,0,0),FRotator(0,180,0));
+    if(!TestNotNull(TEXT("The directed thrust target uses an actual inventory drone"),Drone))return false;
+    SoraLandingDroneTest::Freeze(*Drone);
+    const float Health=Drone->Health;
+    for(float Offset:{32.f,-40.f})
+    {
+        Drone->SetActorLocation(Eye+FVector(180,0,-Offset),false,nullptr,ETeleportType::TeleportPhysics);
+        if(!TestTrue(TEXT("The mapped thrust input and recovery complete"),W.Press(EKeys::LeftMouseButton)&&W.Tick(90)))return false;
+        TestEqual(TEXT("A mapped yari thrust through empty movement-sphere space deals no damage"),Drone->Health,Health);
+    }
+    Drone->SetActorLocation(Eye+FVector(180,0,0),false,nullptr,ETeleportType::TeleportPhysics);
+    if(!TestTrue(TEXT("The positive-control mapped thrust completes"),W.Press(EKeys::LeftMouseButton)&&W.Tick(90)))return false;
+    TestEqual(TEXT("The mapped yari thrust damages the actual imported hull"),
+        Drone->Health,FMath::Max(0.f,Health-FSoraCatalog::Get().Weapon(19).Damage));
+    AddInfo(TEXT("Directed positioned-drone fixture in a yari-permitted checkpoint; no changes to campaign weapon permissions or ordinary-combat acceptance."));
     return !HasAnyErrors();
 }
 #endif
