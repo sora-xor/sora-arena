@@ -4,6 +4,7 @@
 #include "SoraLiftAutomation.h"
 #include "SoraLanternWorkshopRules.h"
 #include "SoraWorldBuilder.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
 
 namespace
@@ -55,8 +56,14 @@ bool FSoraLanternWorkshopSolidsTest::RunTest(const FString&)
         }
     TestEqual(TEXT("All four stations have physical benches"),Benches,4);
     const int Before=W.Campaign()->TaskProgress().StepDone;
-    W.Stand(FVector(1950,-620,450));
-    if(!W.Tick(10)||!W.Press(EKeys::E))return false;
+    // FBeatWorld::Stand only changes XY. Place this rejection probe on the
+    // roof explicitly, and assert its real floor before testing Interact.
+    W.Hero()->GetCharacterMovement()->StopMovementImmediately();
+    W.Hero()->SetActorLocation(FVector(1950,-620,450+W.Hero()->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2),
+        false,nullptr,ETeleportType::TeleportPhysics);
+    if(!W.Tick(10)||!TestTrue(TEXT("The rejection probe actually stands on the roof"),
+        W.Hero()->GetCharacterMovement()->IsMovingOnGround()&&FMath::IsNearlyEqual(W.Hero()->GetActorLocation().Z,540.15,3.))||
+        !W.Press(EKeys::E))return false;
     TestEqual(TEXT("Standing above the rib form on the roof cannot manufacture through the ceiling"),
         W.Campaign()->TaskProgress().StepDone,Before);
     AddInfo(TEXT("Real world collision and station heights from a seeded b09 checkpoint. Final art, combat and ordinary play are not established."));
