@@ -16,8 +16,9 @@ The local coordination mailboxes record current ownership, commits and lane use.
 The [chapter-three carried-equipment correction](qualification/tenement-loadout-source-2026-10-26.md)
 keeps the recovered bundle limited to its actual arms, adds weapon 7 at b09,
 and requires using the kitchen supply crate before taking up the yari during
-b14. Earned inventory is preserved. Host rules pass; new runtime permission,
-pickup and retry checks remain pending alongside the queue.
+b14. Earned inventory is preserved. All 86 gameplay/asset source gates pass at
+signed `cd8d7248` after a retained localization failure. New runtime permission,
+pickup, retry and localization-loader checks remain pending alongside the queue.
 
 The newer [kitchen queue source checkpoint](qualification/kitchen-queue-source-2026-10-26.md)
 adds six non-targetable residents and real doorways into their homes. They walk

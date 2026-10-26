@@ -35,8 +35,21 @@ all 86 logs independently audited. The source-validation worktree keeps
 `Saved/Qualification/2026-10-26/tenement-loadout-source-f19af764/`:
 report SHA-256 `9768fbdebd0e8b2b8f0610d7180aea2307e335635e779b9ad60f9bc56e2ec58b`,
 review SHA-256 `6545dfa3d76724ef0be0679ed73aca6ef1fc95f8597a4c40fad6fab124c42d39`.
-The new messages are subsequently localized; broader revalidation follows that
-correction and the carried-ammunition filter.
+The new messages are subsequently localized. All 86 gameplay/asset source gates
+pass after that correction and the carried-ammunition filter, at signed
+`cd8d7248e96159d235e6140b48c965e96e32afaa`, tree
+`3b2f753980c759370158c639fc997d53246589d7`. Exact commands and all original logs
+are independently audited; source stays clean and unchanged. Evidence in
+`Saved/Qualification/2026-10-26/tenement-loadout-source-cd8d7248/`:
+
+| Evidence | SHA-256 |
+| --- | --- |
+| `report.json` | `2b378fb5654b914c6ff984ae794ce125308cb7a45ba71602fa5d87caa7c3fd79` |
+| `independent-review.json` | `cabec3d4aa76497e82fa6635aa2ccfe7ee199fde8d43f404654e61531b48f24d` |
+
+The evidence follow-up also corrects a generator error message: b09 manufactures
+the festival-shell tube; it is not an alley duel or a shotgun. That wording
+correction changes neither generated data nor runtime behavior.
 
 The Unreal recovery fixture now checks every arm after the actual bundle pickup.
 The kitchen supply fixture adds ordinary polearm input, actual defeat/retry and
@@ -46,3 +59,6 @@ checkpoint phases. These new/changed runtime assertions and compilation are
 selection also retains `SoraArena.Campaign.InfiltrationLoadout` because the shared
 equipment rule changed. No ordinary play, current package or release acceptance
 is established here.
+Both native-Japanese and English-subtitle loader tests are included to check
+the new resource entries with Unreal's parser. The combined selection has 37
+tests and is prepared only until Claude explicitly returns the engine lane.

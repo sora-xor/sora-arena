@@ -1545,7 +1545,7 @@ def equipment_recovery(beats):
             # summon every arm earned in an earlier chapter.
             if where == "ch03.b09":
                 if beat["unlocks"]["weapons"] != [7]:
-                    fail(where, "the alley duel must hand over the scattergun")
+                    fail(where, "the workshop manufacture must hand over the festival-shell tube")
                 carried.append(7)
             if where == "ch03.b14":
                 supply = ext.get("supply_point")
