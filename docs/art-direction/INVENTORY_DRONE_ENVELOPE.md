@@ -156,11 +156,21 @@ check compared the axis with `abs()`, which accepts a reversed one.
 - Interchange converts any file whose axes are not its import axes (Z up, -Y front, right-handed), by a rotation C
   (`FbxConvert.cpp`, ConvertScene).
 - It then applies `AxisConversionInverseTransform * Transform` to every socket (`InterchangeMeshHelper.cpp`,
-  ImportSockets). So a socket becomes C·G·C⁻¹ while a vertex becomes C·G·v. With Bake Meshes on, the socket also
+  ImportSockets). So a socket becomes C·G·A⁻¹ while a vertex becomes C·G·v. With Bake Meshes on, the socket also
   keeps its parent node's ×100.
+- A⁻¹ is not C⁻¹. It comes from `FbxAxisSystem::GetMatrix`, whose source the FBX SDK does not ship. For these
+  axes, the real rotators measure it as a 180° turn about Y: (0, -180, 180) for Eye and (45, -180, 180) for
+  NetMuzzle, in runs s79 and s80. Each socket's forward and up are reversed and its right is kept.
 
-`scripts/art/fbx_unreal_sockets.py` models that rule. Run on fc0858a9's bytes, it gives root's readback to 1e-14:
-the positions, scale 100, Eye forward (-1, -1.5e-7, 0) and NetMuzzle (-0.7071, -1.07e-7, 0.7071).
+`scripts/art/fbx_unreal_sockets.py` models that rule, with A⁻¹ as measured. Run on fc0858a9's bytes, it gives
+root's readback to 1e-14: the positions, scale 100, Eye forward (-1, -1.5e-7, 0) and NetMuzzle
+(-0.7071, -1.07e-7, 0.7071). It also gives every axis of both real imports' rotators within 1e-6.
+
+**Superseded** (2026-10-26): as first committed in 45a2af0a, this section and the model said C·G·C⁻¹, a turn about
+Z, which keeps the up axis. That matched the forward vectors, positions and scales, all that was then compared.
+The weapons plan keeps that model's predictions in
+`docs/art-direction/data/weapon_socket_screen_superseded.json`. The fix below is unaffected: its file needs no
+conversion, so A⁻¹ is the identity, and both real imports read its rotators as authored.
 
 **The fix** (`create_inventory_drone.LOD0_FBX`, `export_lod0`): LOD0 is written in Blender's own ('Z', 'Y') axes.
 - Those are exactly Unreal's import axes, so neither Unreal nor Blender converts the file.

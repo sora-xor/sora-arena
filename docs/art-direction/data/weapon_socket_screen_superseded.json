@@ -1,0 +1,4353 @@
+{
+ "superseded": "by weapon_socket_screen.json, 2026-10-26. This screen used fbx_unreal_sockets.py as committed in 45a2af0a, whose socket inverse was C^-1 (a 180 deg turn about Z). It predicted each weapon socket's forward reversed and its up KEPT. Root's real imports of the drone (docs/art-direction/data/inventory_drone_ue_socket_probe.json, rotators (0, -180, 180) and (45, -180, 180)) show the up reversed too: the measured inverse is a 180 deg turn about Y. The forward, position and scale predictions were right; the up and right were not.",
+ "kept_because": "root asked for the old prediction to be preserved as superseded",
+ "tree": {
+  "worktree": "art (claude/photoreal-art)",
+  "head": "45a2af0ab3d10d9c2840731f177a227ab1a12dc9"
+ },
+ "summary": {
+  "files": 27,
+  "sockets": 85,
+  "failing_sockets": 83,
+  "failing_files": 26,
+  "unreadable": 0
+ },
+ "rows": [
+  {
+   "file": "Content/SourceArt/Characters/Enemies/InventoryDrone/SM_Drone_Inventory.fbx",
+   "socket": "Eye",
+   "position_cm": [
+    36.22,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "forward": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 0.0,
+   "scale_off": 0.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     -1
+    ],
+    "CoordAxis": [
+     0,
+     1
+    ]
+   },
+   "passes": true
+  },
+  {
+   "file": "Content/SourceArt/Characters/Enemies/InventoryDrone/SM_Drone_Inventory.fbx",
+   "socket": "NetMuzzle",
+   "position_cm": [
+    7.67695,
+    0.0,
+    -15.17696
+   ],
+   "scale": [
+    0.9999999,
+    0.9999999,
+    0.9999999
+   ],
+   "forward": [
+    0.7071068,
+    0.0,
+    -0.7071068
+   ],
+   "z": [
+    0.7071068,
+    0.0,
+    0.7071068
+   ],
+   "authored_forward": [
+    0.7071068,
+    0.0,
+    -0.7071068
+   ],
+   "authored_z": [
+    0.7071068,
+    0.0,
+    0.7071068
+   ],
+   "turned_deg": 0.0,
+   "scale_off": 1e-07,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     -1
+    ],
+    "CoordAxis": [
+     0,
+     1
+    ]
+   },
+   "passes": true
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00.fbx",
+   "socket": "Grip_L",
+   "position_cm": [
+    -14.2424,
+    -0.0,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00.fbx",
+   "socket": "Grip_R",
+   "position_cm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00.fbx",
+   "socket": "Muzzle",
+   "position_cm": [
+    81.97283,
+    1e-05,
+    7.5898
+   ],
+   "scale": [
+    99.9999881,
+    99.999994,
+    99.9999881
+   ],
+   "forward": [
+    -0.9864236,
+    -1e-07,
+    -0.1642211
+   ],
+   "z": [
+    -0.1642211,
+    -0.0,
+    0.9864236
+   ],
+   "authored_forward": [
+    0.9864236,
+    1e-07,
+    0.1642211
+   ],
+   "authored_z": [
+    -0.1642211,
+    -0.0,
+    0.9864236
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 98.999994,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00_Saya.fbx",
+   "socket": "Koiguchi",
+   "position_cm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00_Saya.fbx",
+   "socket": "Kurikata",
+   "position_cm": [
+    10.5462,
+    1.21426,
+    -1.46974
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/SM_Weapon_01.fbx",
+   "socket": "Grip_L",
+   "position_cm": [
+    33.0,
+    0.0,
+    -1.19874
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/SM_Weapon_01.fbx",
+   "socket": "Grip_R",
+   "position_cm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/SM_Weapon_01.fbx",
+   "socket": "Muzzle",
+   "position_cm": [
+    56.15,
+    1e-05,
+    3.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02.fbx",
+   "socket": "Chain_Anchor",
+   "position_cm": [
+    -11.1,
+    -0.0,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02.fbx",
+   "socket": "Grip_L",
+   "position_cm": [
+    6.0,
+    -23.0,
+    -3.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1e-07,
+    -0.0,
+    1.0
+   ],
+   "z": [
+    1.0,
+    2e-07,
+    1e-07
+   ],
+   "authored_forward": [
+    1e-07,
+    0.0,
+    -1.0
+   ],
+   "authored_z": [
+    1.0,
+    2e-07,
+    1e-07
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02.fbx",
+   "socket": "Grip_R",
+   "position_cm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02.fbx",
+   "socket": "Muzzle",
+   "position_cm": [
+    28.26,
+    -0.12,
+    -18.7
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1e-07,
+    -0.0,
+    1.0
+   ],
+   "z": [
+    1.0,
+    2e-07,
+    1e-07
+   ],
+   "authored_forward": [
+    1e-07,
+    0.0,
+    -1.0
+   ],
+   "authored_z": [
+    1.0,
+    2e-07,
+    1e-07
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02_Chain.fbx",
+   "socket": "Anchor",
+   "position_cm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02_Chain.fbx",
+   "socket": "Fundo",
+   "position_cm": [
+    26.60912,
+    -11.607,
+    1.09
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W03_NeedleSMG/SM_Weapon_03.fbx",
+   "socket": "Grip_L",
+   "position_cm": [
+    9.5,
+    0.0,
+    -6.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W03_NeedleSMG/SM_Weapon_03.fbx",
+   "socket": "Grip_R",
+   "position_cm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W03_NeedleSMG/SM_Weapon_03.fbx",
+   "socket": "Muzzle",
+   "position_cm": [
+    36.0,
+    1e-05,
+    3.4
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04.fbx",
+   "socket": "Grip_L",
+   "position_cm": [
+    -9.96665,
+    -0.0,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04.fbx",
+   "socket": "Grip_R",
+   "position_cm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04.fbx",
+   "socket": "Muzzle",
+   "position_cm": [
+    52.55445,
+    1e-05,
+    5.88941
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -0.9808006,
+    -1e-07,
+    -0.1950132
+   ],
+   "z": [
+    -0.1950132,
+    -0.0,
+    0.9808006
+   ],
+   "authored_forward": [
+    0.9808006,
+    1e-07,
+    0.1950132
+   ],
+   "authored_z": [
+    -0.1950132,
+    -0.0,
+    0.9808006
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04_Saya.fbx",
+   "socket": "Koiguchi",
+   "position_cm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04_Saya.fbx",
+   "socket": "Kurikata",
+   "position_cm": [
+    7.55536,
+    1.1919,
+    -1.42123
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/SM_Weapon_05.fbx",
+   "socket": "Grip_L",
+   "position_cm": [
+    30.0,
+    0.0,
+    0.4
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/SM_Weapon_05.fbx",
+   "socket": "Grip_R",
+   "position_cm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/SM_Weapon_05.fbx",
+   "socket": "MatchTip",
+   "position_cm": [
+    2.38,
+    2.24,
+    3.79
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/SM_Weapon_05.fbx",
+   "socket": "Muzzle",
+   "position_cm": [
+    77.5,
+    1e-05,
+    3.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/SM_Weapon_05.fbx",
+   "socket": "Pan",
+   "position_cm": [
+    6.2,
+    1.67,
+    3.5
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W06_Kanabo/SM_Weapon_06.fbx",
+   "socket": "Grip_L",
+   "position_cm": [
+    -13.0,
+    -0.0,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W06_Kanabo/SM_Weapon_06.fbx",
+   "socket": "Grip_R",
+   "position_cm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W06_Kanabo/SM_Weapon_06.fbx",
+   "socket": "Muzzle",
+   "position_cm": [
+    103.616,
+    2e-05,
+    5.5
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1e-07,
+    -0.0,
+    -1.0
+   ],
+   "z": [
+    1.0,
+    -0.0,
+    -1e-07
+   ],
+   "authored_forward": [
+    1e-07,
+    0.0,
+    1.0
+   ],
+   "authored_z": [
+    1.0,
+    -0.0,
+    -1e-07
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/SM_Weapon_07.fbx",
+   "socket": "Fuse",
+   "position_cm": [
+    0.2,
+    -1.2,
+    6.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/SM_Weapon_07.fbx",
+   "socket": "Grip_L",
+   "position_cm": [
+    30.0,
+    0.0,
+    -4.75
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/SM_Weapon_07.fbx",
+   "socket": "Grip_R",
+   "position_cm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/SM_Weapon_07.fbx",
+   "socket": "Muzzle",
+   "position_cm": [
+    64.0,
+    1e-05,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/SM_Weapon_08.fbx",
+   "socket": "Grip_L",
+   "position_cm": [
+    -15.0,
+    -0.0,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/SM_Weapon_08.fbx",
+   "socket": "Grip_R",
+   "position_cm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/SM_Weapon_08.fbx",
+   "socket": "Muzzle",
+   "position_cm": [
+    56.75,
+    1e-05,
+    -8.25
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1e-07,
+    -0.0,
+    1.0
+   ],
+   "z": [
+    1.0,
+    2e-07,
+    1e-07
+   ],
+   "authored_forward": [
+    1e-07,
+    0.0,
+    -1.0
+   ],
+   "authored_z": [
+    1.0,
+    2e-07,
+    1e-07
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W09_Repeater/SM_Weapon_09.fbx",
+   "socket": "Grip_L",
+   "position_cm": [
+    30.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W09_Repeater/SM_Weapon_09.fbx",
+   "socket": "Grip_R",
+   "position_cm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W09_Repeater/SM_Weapon_09.fbx",
+   "socket": "Magazine",
+   "position_cm": [
+    4.0,
+    -1.8,
+    3.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W09_Repeater/SM_Weapon_09.fbx",
+   "socket": "Muzzle",
+   "position_cm": [
+    78.15,
+    1e-05,
+    3.4
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10.fbx",
+   "socket": "Grip_L",
+   "position_cm": [
+    -4.40605,
+    -0.0,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10.fbx",
+   "socket": "Grip_R",
+   "position_cm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10.fbx",
+   "socket": "Muzzle",
+   "position_cm": [
+    29.12373,
+    0.0,
+    0.84003
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -0.9993806,
+    -2e-07,
+    0.0351919
+   ],
+   "z": [
+    0.0351919,
+    0.0,
+    0.9993806
+   ],
+   "authored_forward": [
+    0.9993806,
+    2e-07,
+    -0.0351919
+   ],
+   "authored_z": [
+    0.0351919,
+    0.0,
+    0.9993806
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10_Saya.fbx",
+   "socket": "Koiguchi",
+   "position_cm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10_Saya.fbx",
+   "socket": "Kurikata",
+   "position_cm": [
+    7.48383,
+    1.06615,
+    -1.13911
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W11_PulseCarbine/SM_Weapon_11.fbx",
+   "socket": "Grip_L",
+   "position_cm": [
+    34.0,
+    1e-05,
+    1.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W11_PulseCarbine/SM_Weapon_11.fbx",
+   "socket": "Grip_R",
+   "position_cm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W11_PulseCarbine/SM_Weapon_11.fbx",
+   "socket": "Muzzle",
+   "position_cm": [
+    56.06,
+    1e-05,
+    3.2
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/SM_Weapon_12.fbx",
+   "socket": "Grip_L",
+   "position_cm": [
+    75.0,
+    1e-05,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/SM_Weapon_12.fbx",
+   "socket": "Grip_R",
+   "position_cm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/SM_Weapon_12.fbx",
+   "socket": "Muzzle",
+   "position_cm": [
+    185.0,
+    3e-05,
+    13.45366
+   ],
+   "scale": [
+    99.999994,
+    99.999994,
+    99.999994
+   ],
+   "forward": [
+    -0.9036288,
+    -1e-07,
+    -0.4283166
+   ],
+   "z": [
+    -0.4283166,
+    -1e-07,
+    0.9036288
+   ],
+   "authored_forward": [
+    0.9036288,
+    1e-07,
+    0.4283166
+   ],
+   "authored_z": [
+    -0.4283166,
+    -1e-07,
+    0.9036288
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 98.999994,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W13_PhantomSMG/SM_Weapon_13.fbx",
+   "socket": "Grip_L",
+   "position_cm": [
+    7.5,
+    0.0,
+    -6.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W13_PhantomSMG/SM_Weapon_13.fbx",
+   "socket": "Grip_R",
+   "position_cm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W13_PhantomSMG/SM_Weapon_13.fbx",
+   "socket": "Muzzle",
+   "position_cm": [
+    42.0,
+    1e-05,
+    3.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/SM_Weapon_14.fbx",
+   "socket": "Charge",
+   "position_cm": [
+    8.5,
+    0.0,
+    3.5
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/SM_Weapon_14.fbx",
+   "socket": "Grip_L",
+   "position_cm": [
+    30.0,
+    0.0,
+    1.2
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/SM_Weapon_14.fbx",
+   "socket": "Grip_R",
+   "position_cm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/SM_Weapon_14.fbx",
+   "socket": "Muzzle",
+   "position_cm": [
+    96.46,
+    1e-05,
+    3.2
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/SM_Weapon_15.fbx",
+   "socket": "Fuse",
+   "position_cm": [
+    19.0,
+    -1.0,
+    16.4
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/SM_Weapon_15.fbx",
+   "socket": "Grip_L",
+   "position_cm": [
+    22.2,
+    0.0,
+    -4.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/SM_Weapon_15.fbx",
+   "socket": "Grip_R",
+   "position_cm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1e-07,
+    -0.0,
+    -1.0
+   ],
+   "z": [
+    -1.0,
+    -2e-07,
+    1e-07
+   ],
+   "authored_forward": [
+    1e-07,
+    0.0,
+    1.0
+   ],
+   "authored_z": [
+    -1.0,
+    -2e-07,
+    1e-07
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/SM_Weapon_15.fbx",
+   "socket": "Muzzle",
+   "position_cm": [
+    63.2,
+    1e-05,
+    7.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W16_ShockEmitter/SM_Weapon_16.fbx",
+   "socket": "Grip_L",
+   "position_cm": [
+    18.0,
+    0.0,
+    -3.1
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W16_ShockEmitter/SM_Weapon_16.fbx",
+   "socket": "Grip_R",
+   "position_cm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W16_ShockEmitter/SM_Weapon_16.fbx",
+   "socket": "Muzzle",
+   "position_cm": [
+    52.4,
+    1e-05,
+    3.4
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/SM_Weapon_17.fbx",
+   "socket": "Grip_L",
+   "position_cm": [
+    73.0,
+    1e-05,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/SM_Weapon_17.fbx",
+   "socket": "Grip_R",
+   "position_cm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/SM_Weapon_17.fbx",
+   "socket": "Muzzle",
+   "position_cm": [
+    145.0,
+    2e-05,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/SM_Weapon_17.fbx",
+   "socket": "Remedy",
+   "position_cm": [
+    112.5,
+    2e-05,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18.fbx",
+   "socket": "Grip_L",
+   "position_cm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18.fbx",
+   "socket": "Grip_R",
+   "position_cm": [
+    -16.64606,
+    -0.0,
+    7.00001
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18.fbx",
+   "socket": "Muzzle",
+   "position_cm": [
+    1.475,
+    1.975,
+    7.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18.fbx",
+   "socket": "String_Lower",
+   "position_cm": [
+    -16.38746,
+    -0.0,
+    -69.40933
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18.fbx",
+   "socket": "String_Upper",
+   "position_cm": [
+    -17.10988,
+    -0.0,
+    144.04515
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_Ya.fbx",
+   "socket": "Nock",
+   "position_cm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_Ya.fbx",
+   "socket": "Tip",
+   "position_cm": [
+    98.0,
+    1e-05,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W19_Yari/SM_Weapon_19.fbx",
+   "socket": "Grip_L",
+   "position_cm": [
+    72.0,
+    1e-05,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W19_Yari/SM_Weapon_19.fbx",
+   "socket": "Grip_R",
+   "position_cm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W19_Yari/SM_Weapon_19.fbx",
+   "socket": "Muzzle",
+   "position_cm": [
+    171.0,
+    3e-05,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W20_Naginata/SM_Weapon_20.fbx",
+   "socket": "Grip_L",
+   "position_cm": [
+    75.0,
+    1e-05,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W20_Naginata/SM_Weapon_20.fbx",
+   "socket": "Grip_R",
+   "position_cm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -1.0,
+    -2e-07,
+    0.0
+   ],
+   "z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "authored_forward": [
+    1.0,
+    2e-07,
+    0.0
+   ],
+   "authored_z": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  },
+  {
+   "file": "Content/SourceArt/Weapons/Runtime/W20_Naginata/SM_Weapon_20.fbx",
+   "socket": "Muzzle",
+   "position_cm": [
+    169.00001,
+    3e-05,
+    9.8326
+   ],
+   "scale": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "forward": [
+    -0.9363267,
+    -1e-07,
+    -0.3511301
+   ],
+   "z": [
+    -0.3511301,
+    -1e-07,
+    0.9363267
+   ],
+   "authored_forward": [
+    0.9363267,
+    1e-07,
+    0.3511301
+   ],
+   "authored_z": [
+    -0.3511301,
+    -1e-07,
+    0.9363267
+   ],
+   "turned_deg": 180.0,
+   "scale_off": 99.0,
+   "axes": {
+    "UpAxis": [
+     2,
+     1
+    ],
+    "FrontAxis": [
+     1,
+     1
+    ],
+    "CoordAxis": [
+     0,
+     -1
+    ]
+   },
+   "passes": false
+  }
+ ],
+ "unreadable": []
+}

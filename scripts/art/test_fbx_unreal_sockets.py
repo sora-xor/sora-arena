@@ -4,8 +4,12 @@ Run: python3 -m unittest scripts/art/test_fbx_unreal_sockets.py
 
 - **Calibration.** fc0858a9's LOD0 nodes, as its bytes hold them, give root's actual UE 5.8 readback: scale 100,
   both +X reversed, positions right. The file test checks the same on the archived bytes, where they are kept.
+- **Full rotations.** The model gives every axis (forward, right, up) of both real imports' rotators, before and
+  after the fix (docs/art-direction/data/inventory_drone_ue_socket_probe.json, runs s79 and s80). The first model
+  (45a2af0a) matched only the forward vectors this file then compared.
 - **The convention.** Unreal's import axes with the unit baked leave a socket unturned and at scale 1, and a node
-  scale still reaches the socket.
+  scale still reaches the socket. The library's axes reverse a socket's forward and up, and keep its right. Axes no
+  real import has measured are refused.
 - **The kit.** The committed LOD0, through the rule, meets root's socket and geometry gates
   (scripts/unreal/inventory_drone.py, 0eb8c5e) and the record.
 
@@ -46,6 +50,17 @@ ROOT_READBACK = {
                   "scale": [99.99998807907107, 99.99999403953555, 99.99998807907104]}}
 # Root's socket gate (scripts/unreal/inventory_drone.py socket_readback, 0eb8c5e).
 ROOT_FORWARD = {"Eye": (1.0, 0.0, 0.0), "NetMuzzle": (math.sqrt(0.5), 0.0, -math.sqrt(0.5))}
+# Both real imports' readbacks, rotators included (scripts/unreal/probe_inventory_drone_sockets.py).
+RECEIPT = json.loads((ROOT / "docs/art-direction/data/inventory_drone_ue_socket_probe.json").read_text())
+# 45a2af0a's LOD0 nodes, as its bytes hold them: Unreal's axes, nothing turned or scaled but the sockets' own turns.
+CORRECTED = {"axes": dict(F.UNREAL_IMPORT_AXES), "unit": 1.0, "nodes": {
+    "SM_Drone_Inventory": {"type": "Mesh", "parent": None, "T": (0, 0, 0), "R": (0, 0, 0), "S": (1, 1, 1),
+                           "vertices": None},
+    "SOCKET_Eye": {"type": "Null", "parent": "SM_Drone_Inventory", "T": (36.2199991941452, 0.0, 0.0),
+                   "R": (0.0, 0.0, 0.0), "S": (1.0, 1.0, 1.0), "vertices": None},
+    "SOCKET_NetMuzzle": {"type": "Null", "parent": "SM_Drone_Inventory",
+                         "T": (7.676954567432404, 0.0, -15.176954865455627), "R": (0.0, 45.00000125223908, 0.0),
+                         "S": (0.9999998807907104, 0.9999998807907104, 0.9999998807907104), "vertices": None}}}
 
 
 def parser_available():
@@ -72,6 +87,30 @@ class Calibration(unittest.TestCase):
     def test_fc0858a9_bytes_give_root_readback(self):
         self.check_root_readback(F.read_fbx(ORIGINAL))
 
+    def check_rotators(self, scene, readback):
+        got = F.interchange(scene)["sockets"]
+        self.assertEqual(set(got), set(readback))
+        for name, row in readback.items():
+            for axis, want in zip(("x", "y", "z"), F.rotator_axes(*row["rotation_pyr"])):
+                self.assertLess(math.dist(got[name][axis], want), 1e-6, (name, axis, got[name][axis], want))
+            self.assertLess(math.dist(got[name]["position_cm"], row["position"]), 1e-4, name)
+            self.assertLess(math.dist(got[name]["scale"], row["scale"]), 1e-6, name)
+
+    def test_every_axis_of_both_real_imports(self):
+        for run in ("s79", "s80"):
+            imports = RECEIPT["runs"][run]["readback"]["imports"]
+            self.check_rotators(FC0858A9, imports["original"]["sockets"])
+            self.check_rotators(CORRECTED, imports["corrected"]["sockets"])
+
+    def test_the_library_axes_reverse_forward_and_up_and_keep_right(self):
+        for name, row in RECEIPT["runs"]["s80"]["readback"]["imports"]["original"]["sockets"].items():
+            x, y, z = F.rotator_axes(*row["rotation_pyr"])
+            authored = RECEIPT["runs"]["s80"]["readback"]["imports"]["corrected"]["sockets"][name]
+            ax, ay, az = F.rotator_axes(*authored["rotation_pyr"])
+            np.testing.assert_allclose(x, -ax, atol=1e-6, err_msg=name)
+            np.testing.assert_allclose(y, ay, atol=1e-6, err_msg=name)
+            np.testing.assert_allclose(z, -az, atol=1e-6, err_msg=name)
+
 
 class Convention(unittest.TestCase):
     def scene(self, axes, mesh_s=(1.0, 1.0, 1.0), socket_t=(36.22, 0.0, 0.0), socket_r=(0.0, 45.0, 0.0)):
@@ -90,12 +129,23 @@ class Convention(unittest.TestCase):
         np.testing.assert_allclose(s["position_cm"], (36.22, 0, 0), atol=1e-12)
         np.testing.assert_allclose(r["vertices"]["M"], [[36.22, -1.0, 0.0]], atol=1e-12)
 
-    def test_other_axes_move_a_socket_with_the_scene_but_not_its_axes(self):
-        r = F.interchange(self.scene({"UpAxis": (2, 1), "FrontAxis": (1, 1), "CoordAxis": (0, -1)}))
+    def test_library_axes_move_a_socket_with_the_scene_but_reverse_its_forward_and_up(self):
+        r = F.interchange(self.scene(F.LIBRARY_AXES))
         np.testing.assert_allclose(r["vertices"]["M"], [[-36.22, 1.0, 0.0]], atol=1e-12)    # the scene, turned
-        np.testing.assert_allclose(r["sockets"]["S"]["position_cm"], (-36.22, 0, 0), atol=1e-12)
-        # The scene's turn would carry the socket's forward to (-0.7071, 0, -0.7071). C R C^-1 gives Ry(-45) instead.
-        np.testing.assert_allclose(r["sockets"]["S"]["x"], (math.sqrt(0.5), 0, math.sqrt(0.5)), atol=1e-12)
+        s = r["sockets"]["S"]
+        np.testing.assert_allclose(s["position_cm"], (-36.22, 0, 0), atol=1e-12)
+        # The scene's turn alone would carry the socket's axes to forward (-0.7071, 0, -0.7071), right (0, -1, 0)
+        # and up (-0.7071, 0, 0.7071), in Unreal's frame (a transform's Y column there is minus the mirrored FBX
+        # Y axis). The measured inverse reverses the forward and up, and keeps the right.
+        h = math.sqrt(0.5)
+        np.testing.assert_allclose(s["x"], (h, 0, h), atol=1e-12)
+        np.testing.assert_allclose(s["y"], (0, -1, 0), atol=1e-12)
+        np.testing.assert_allclose(s["z"], (h, 0, -h), atol=1e-12)
+
+    def test_unmeasured_axes_are_refused(self):
+        maya_y_up = {"UpAxis": (1, 1), "FrontAxis": (2, 1), "CoordAxis": (0, 1)}
+        with self.assertRaises(ValueError):
+            F.interchange(self.scene(maya_y_up))
 
     def test_a_parent_scale_reaches_the_socket(self):
         s = F.interchange(self.scene(F.UNREAL_IMPORT_AXES, mesh_s=(100.0,) * 3, socket_t=(0.3622, 0, 0)))["sockets"]["S"]
