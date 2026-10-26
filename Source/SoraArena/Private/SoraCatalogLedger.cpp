@@ -3,7 +3,7 @@
 #include "SoraCatalogJson.h"
 #include "SoraLedgerRules.h"
 
-namespace
+namespace SoraLedgerCatalogDetail
 {
 bool Point(const FJsonObject& O,const TCHAR* Key,const FVector2D& Expected)
 {
@@ -46,6 +46,7 @@ bool Fieldcraft(const FSoraBeatSpace& B,const FVector2D& O,const FVector2D& P)
 }
 bool SoraCatalogLedger::Read(const FJsonObject& O,FSoraBeat& Beat,const FSoraSpace& Space)
 {
+    using namespace SoraLedgerCatalogDetail;
     namespace R=SoraLedgerRules;
     const auto V=O.TryGetField(TEXT("ledger_hall"));
     const bool Stealth=Beat.Id==TEXT("ch06.b06");
