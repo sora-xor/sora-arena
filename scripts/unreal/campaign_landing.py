@@ -7,7 +7,11 @@ crossing figure-eight within that envelope. D2 keeps its exact authored ends.
 import copy
 
 YARD = [-12000, -2800, -7600, -1200]
-ZONE = [-12000, -3400, -7600, -660]  # Landing steps, warehouses and exit lane.
+ZONE = [-22000, -4400, -7600, -660]  # Canal approach, banks, warehouses and exit lane.
+CANAL = [-22000, -3800, -7600, -2800]
+WATER_Z, BED_Z = -160, -200  # Forty-centimetre shallows support wading and flat-bottom boats.
+BRIDGE = [-16000, 240]  # X and clearance above the water.
+CAMERA = [-21800,-3300,40,-11300,-2850,40,-11000,-2200,160]
 ENTRY = [-11300, -2700, 0]
 D1_OFFSETS = [(0,0),(459,354),(849,500),(1109,354),(1200,0),(1109,-354),(849,-500),(459,-354),
               (0,0),(-459,354),(-849,500),(-1109,354),(-1200,0),(-1109,-354),(-849,-500),(-459,-354)]
@@ -27,7 +31,8 @@ VOLUMES = [
 
 def contract():
     return {"yard_cm":list(YARD),"altitudes_cm":list(HEIGHTS),"periods_ms":list(PERIODS),
-            "figure_eight":True,"canal_ping_pong":True}
+            "figure_eight":True,"canal_ping_pong":True,"canal_cm":list(CANAL),
+            "water_z_cm":WATER_Z,"bed_z_cm":BED_Z,"bridge_cm":list(BRIDGE)}
 
 
 def walls():
@@ -59,9 +64,9 @@ def place_landing(beats, records, zones, layout, fail):
         r.update(entry=list(ENTRY),anchor=[-11000,-2500],spawns=[[-11400,-2100],[-8000,-2700]],
                  patrols=copy.deepcopy(PATROLS),exit=copy.deepcopy(EXIT),landing=contract())
         if b['id']=='ch03.b01':
-            # The final landing shot only. The full 100 m boat approach remains
-            # a cinematic production task; this does not claim to replace it.
-            r['camera']=[-11700,-3250,280,-11300,-2850,220,-11000,-2200,160]
+            # A continuous water-level approach; the camera stays below the
+            # bridge's lowest timber. Final boat/character cinematics remain art work.
+            r['camera']=list(CAMERA)
         elif b['id']=='ch03.b02':
             r['volumes']=copy.deepcopy(VOLUMES)
             lamps=r['fieldcraft']['lamps'];surfaces=r['fieldcraft']['surfaces']
@@ -89,6 +94,7 @@ def landing_valid(chapter):
             if (p['zone']!=r['zone'] or p['entry']!=ENTRY or p['landing']!=contract() or
                     p['patrols']!=PATROLS or p['exit']!=EXIT):return False
         if r['volumes']!=VOLUMES:return False
+        if records['ch03.b01']['camera']!=CAMERA:return False
         lamps=r['fieldcraft']['lamps'];puddles=r['fieldcraft']['surfaces']
         if [p['at'] for p in lamps]!=LAMPS:return False
         if [p['id'] for p in lamps]!=['andon_b02_w1','andon_b02_w3','andon_b02_shed']:return False

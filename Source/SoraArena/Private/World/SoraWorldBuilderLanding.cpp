@@ -13,30 +13,55 @@ void ASoraWorldBuilder::BuildLanding(const FSoraZone& Zone)
     { return Box(Name,FVector((X0+X1)*.5f,(Y0+Y1)*.5f,Top-30),FVector(X1-X0,Y1-Y0,60),Color,true,FRotator::ZeroRotator,Role); };
     Slab(TEXT("LandingEarth"),R::MinX,R::MinY,R::MaxX,R::MaxY,0,Earth,TEXT("Soil"));
     Slab(TEXT("LandingWarehouseGround"),R::MinX,R::MaxY,R::MaxX,R::ZoneMaxY,0,Earth,TEXT("Soil"));
-    // A narrow lower quay gives the water-edge route real footing and low
-    // boat cover. Six west steps descend to it; the east mooring gangplank
-    // returns to the exit-side bank. No invisible slab spans the canal.
-    Slab(TEXT("LandingLowerQuay"),R::MinX,R::ZoneMinY,R::MaxX,-3100,-130,Stone,TEXT("Stone"));
+    Slab(TEXT("LandingApproachNorthBank"),R::ZoneMinX,R::MinY,R::MinX,R::ZoneMaxY,0,Earth,TEXT("Soil"));
+    Slab(TEXT("LandingSouthBank"),R::ZoneMinX,R::ZoneMinY,R::MaxX,R::CanalMinY,0,Earth,TEXT("Soil"));
+    // A real shallow canal bed permits the water-edge route without a
+    // floating stone floor. Six west steps descend into forty-centimetre
+    // water; the east mooring gangplank returns to the exit-side bank.
+    Slab(TEXT("LandingCanalBed"),R::ZoneMinX,R::CanalMinY,R::MaxX,R::MinY,R::BedZ,Stone,TEXT("Stone"));
     for(int I=0;I<6;++I)
         Slab(FString::Printf(TEXT("LandingStep%d"),I),-11600,-2850-I*50,-11000,-2800-I*50,
-             -(I+1)*(160.f/6.f),Stone,TEXT("Stone"));
-    const float RampPitch=FMath::RadiansToDegrees(FMath::Atan2(130.f,500.f));
-    Box(TEXT("LandingEastGangplank"),FVector(-7900,-2950,-73),FVector(FMath::Sqrt(500.f*500.f+130.f*130.f),180,16),
+             (I+1)*(R::WaterZ/6.f),Stone,TEXT("Stone"));
+    const float Rise=-float(R::BedZ),RampPitch=FMath::RadiansToDegrees(FMath::Atan2(Rise,500.f));
+    Box(TEXT("LandingEastGangplank"),FVector(-7900,-2950,R::BedZ*.5f-8),FVector(FMath::Sqrt(500.f*500.f+Rise*Rise),180,16),
         Wood,true,FRotator(RampPitch,90,0),TEXT("Timber"));
-    Box(TEXT("LandingCanalWater"),FVector(-9800,-3100,-162),FVector(4400,600,4),FLinearColor(.035f,.085f,.09f),false);
+    Box(TEXT("LandingCanalWater"),FVector((R::ZoneMinX+R::MaxX)*.5f,(R::CanalMinY+R::MinY)*.5f,R::WaterZ-1),
+        FVector(R::MaxX-R::ZoneMinX,R::MinY-R::CanalMinY,2),FLinearColor(.035f,.085f,.09f),false);
     // The land's bank is 1.6 m above the water, broken only at its steps and
     // the east gangplank. These faces do not intrude into either flight lane.
-    for(const auto Range:{FVector2D(-12000,-11600),FVector2D(-11000,-8000),FVector2D(-7800,-7600)})
-        Box(TEXT("LandingStoneBank"),FVector((Range.X+Range.Y)*.5f,-2810,-95),FVector(Range.Y-Range.X,20,190),
+    for(const auto Range:{FVector2D(R::ZoneMinX,-11600),FVector2D(-11000,-8000),FVector2D(-7800,R::MaxX)})
+        Box(TEXT("LandingStoneBank"),FVector((Range.X+Range.Y)*.5f,R::MinY+10,R::BedZ*.5f),FVector(Range.Y-Range.X,20,-R::BedZ),
             Stone,true,FRotator::ZeroRotator,TEXT("Stone"));
+    Box(TEXT("LandingSouthStoneBank"),FVector((R::ZoneMinX+R::MaxX)*.5f,R::CanalMinY-10,R::BedZ*.5f),
+        FVector(R::MaxX-R::ZoneMinX,20,-R::BedZ),Stone,true,FRotator::ZeroRotator,TEXT("Stone"));
     for(int I=0;I<Zone.Walls.Num();++I)
     {
         const auto& W=Zone.Walls[I];
-        // Foundations extend below the lower quay so crouching cannot pass
-        // underneath a perimeter wall which starts at the upper bank height.
+        // The outer boundary now sits beyond both banks, not in the canal.
+        // Its foundation also closes the bed at the scene's two far ends.
         Box(FString::Printf(TEXT("LandingBoundary%d"),I),FVector(W.Center,(W.Height-250)*.5f),
             FVector(W.Size,W.Height+250),Stone,true,FRotator::ZeroRotator,TEXT("Stone"));
     }
+    // The b01 approach crosses a timber bridge at X -160 m. The lowest
+    // stringer is exactly 2.4 m above the water, with the deck above it.
+    const float Low=R::WaterZ+R::BridgeClearance,Deck=Low+60;
+    const float CanalY=(R::CanalMinY+R::MinY)*.5f;
+    for(int Side:{-1,1})
+    {
+        Box(TEXT("LandingBridgeStringer"),FVector(R::BridgeX+Side*150,CanalY,Low+14),FVector(28,1120,28),
+            Wood,true,FRotator::ZeroRotator,TEXT("Timber"));
+        Box(TEXT("LandingBridgeRail"),FVector(R::BridgeX+Side*195,CanalY,Deck+95),FVector(16,1120,18),
+            Wood,true,FRotator::ZeroRotator,TEXT("Timber"));
+        for(int Y:{R::CanalMinY-40,R::MinY+40})
+            Box(TEXT("LandingBridgePost"),FVector(R::BridgeX+Side*195,Y,(Deck+110)*.5f),FVector(20,20,Deck+110),
+                Wood,true,FRotator::ZeroRotator,TEXT("Timber"));
+        const float BankY=Side<0?R::CanalMinY-250:R::MinY+250;
+        Box(TEXT("LandingBridgeBankRamp"),FVector(R::BridgeX,BankY,Deck*.5f-8),
+            FVector(FMath::Sqrt(500.f*500.f+Deck*Deck),400,16),Wood,true,
+            FRotator(-Side*FMath::RadiansToDegrees(FMath::Atan2(Deck,500.f)),90,0),TEXT("Timber"));
+    }
+    Box(TEXT("LandingBridgeDeck"),FVector(R::BridgeX,CanalY,Deck-16),FVector(420,1120,32),
+        Wood,true,FRotator::ZeroRotator,TEXT("Timber"));
     // Three 7.2 x 5.4 m two-storey warehouses, 2 m apart. Their south faces
     // meet the yard's north edge; the dry eaves strip remains clear of cargo.
     for(int I=0;I<3;++I)
@@ -72,19 +97,18 @@ void ASoraWorldBuilder::BuildLanding(const FSoraZone& Zone)
             Wood,true,FRotator::ZeroRotator,TEXT("Timber"));
         if(ImportedProp(TEXT("SM_Nyaagyu_CargoStack"),FVector(C.Center,0),FRotator::ZeroRotator))Solid->SetVisibility(false);
     }
-    // Two moored hulls east of the west steps, with decks and low gunwales.
-    // They are real cover above the lower quay, rather than decorative boxes
-    // over an uninterrupted ground floor.
+    // Two shallow-draft hulls east of the steps. Their bottoms sit between
+    // the canal bed and the waterline; the gunwales provide low route cover.
     for(int I=0;I<2;++I)
     {
         const float X=-10450+I*1400;
         const FString Name=FString::Printf(TEXT("LandingBoat%d"),I);
-        Box(Name+TEXT("Hull"),FVector(X,-2980,-80),FVector(1000,260,100),Wood,true,FRotator::ZeroRotator,TEXT("Timber"));
+        Box(Name+TEXT("Hull"),FVector(X,-2980,-150),FVector(1000,260,90),Wood,true,FRotator::ZeroRotator,TEXT("Timber"));
         for(int Side:{-1,1})
-            Box(Name+TEXT("Gunwale"),FVector(X,-2980+Side*130,5),FVector(1040,18,80),Wood,true,FRotator::ZeroRotator,TEXT("Timber"));
+            Box(Name+TEXT("Gunwale"),FVector(X,-2980+Side*130,-80),FVector(1040,18,80),Wood,true,FRotator::ZeroRotator,TEXT("Timber"));
         for(int Side:{-1,1})
-            Box(Name+TEXT("End"),FVector(X+Side*500,-2980,-5),FVector(20,260,100),Wood,true,FRotator::ZeroRotator,TEXT("Timber"));
+            Box(Name+TEXT("End"),FVector(X+Side*500,-2980,-90),FVector(20,260,100),Wood,true,FRotator::ZeroRotator,TEXT("Timber"));
         for(int Beam=0;Beam<4;++Beam)
-            Box(Name+TEXT("Thwart"),FVector(X-340+Beam*220,-2980,-19),FVector(40,240,22),Wood,false,FRotator::ZeroRotator,TEXT("Timber"));
+            Box(Name+TEXT("Thwart"),FVector(X-340+Beam*220,-2980,-94),FVector(40,240,22),Wood,false,FRotator::ZeroRotator,TEXT("Timber"));
     }
 }

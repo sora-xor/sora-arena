@@ -45,6 +45,8 @@ class LandingSpaceTests(unittest.TestCase):
             self.assertEqual(route['period'],record['landing']['periods_ms'][i])
         self.assertEqual(self.native['walls'],self.chapter['space']['zones'][record['zone']]['walls'])
         self.assertEqual(self.native['puddles'],[p['center'] for p in record['fieldcraft']['surfaces']])
+        for key in ('canal_cm','water_z_cm','bed_z_cm','bridge_cm'):
+            self.assertEqual(self.native[key],record['landing'][key])
 
     def test_authored_dimensions_and_timing(self):
         r=self.record(self.chapter);self.assertTrue(landing.landing_valid(self.chapter))
@@ -67,7 +69,9 @@ class LandingSpaceTests(unittest.TestCase):
     def test_changed_route_contracts_are_rejected(self):
         for beat in ('ch03.b01','ch03.b02'):
             for field,value in [('periods_ms',[39000,30000]),('altitudes_cm',[500,500]),
-                                ('figure_eight',False),('canal_ping_pong',False),('extra',True)]:
+                                ('figure_eight',False),('canal_ping_pong',False),('extra',True),
+                                ('water_z_cm',0),('bed_z_cm',-500),('bridge_cm',[-16000,200]),
+                                ('canal_cm',[-22000,-3400,-7600,-2800])]:
                 with self.subTest(beat=beat,field=field):
                     c=copy.deepcopy(self.chapter);self.record(c,beat)['landing'][field]=value
                     self.assertFalse(landing.landing_valid(c))
@@ -95,6 +99,29 @@ class LandingSpaceTests(unittest.TestCase):
             c=json.loads(path.read_text());self.assertTrue(landing.landing_valid(c))
             c['space']['beats'][0]['landing']=landing.contract()
             self.assertFalse(landing.landing_valid(c))
+
+    def test_canal_and_bridge_have_authored_clearances(self):
+        r=self.record(self.chapter)['landing']
+        self.assertEqual(r['canal_cm'],[-22000,-3800,-7600,-2800])
+        self.assertEqual(r['canal_cm'][3]-r['canal_cm'][1],1000)
+        self.assertEqual(-r['water_z_cm'],160)
+        self.assertEqual(r['bridge_cm'],[-16000,240])
+        # Forty-centimetre wading is an implementation choice, not a source
+        # requirement. It keeps the sixth step reachable with a 45 cm step.
+        self.assertGreater(r['water_z_cm']-r['bed_z_cm'],0)
+        self.assertLessEqual(r['water_z_cm']-r['bed_z_cm'],45)
+
+    def test_opening_camera_crosses_below_bridge(self):
+        shot=self.record(self.chapter,'ch03.b01')['camera']
+        start,end=shot[:3],shot[3:6];r=self.record(self.chapter)['landing']
+        x,clearance=r['bridge_cm'];fraction=(x-start[0])/(end[0]-start[0])
+        self.assertGreater(fraction,0);self.assertLess(fraction,1)
+        z=start[2]+fraction*(end[2]-start[2]);y=start[1]+fraction*(end[1]-start[1])
+        self.assertLess(z+10,r['water_z_cm']+clearance)
+        self.assertGreater(z-10,r['water_z_cm'])
+        self.assertTrue(r['canal_cm'][1]+10<y<r['canal_cm'][3]-10)
+        c=copy.deepcopy(self.chapter);self.record(c,'ch03.b01')['camera'][2]=300
+        self.assertFalse(landing.landing_valid(c))
 
 
 if __name__=='__main__':unittest.main()

@@ -53,5 +53,7 @@ int main()
     std::cout<<"],\"puddles\":[";
     for(int I=0;I<6;++I)
     {const auto& Q=R::Puddles[I];if(I)std::cout<<',';std::cout<<'['<<Q.X<<','<<Q.Y<<']';}
-    std::cout<<"]}\n";
+    std::cout<<"],\"canal_cm\":["<<R::ZoneMinX<<','<<R::CanalMinY<<','<<R::MaxX<<','<<R::MinY
+        <<"],\"water_z_cm\":"<<R::WaterZ<<",\"bed_z_cm\":"<<R::BedZ
+        <<",\"bridge_cm\":["<<R::BridgeX<<','<<R::BridgeClearance<<"]}\n";
 }

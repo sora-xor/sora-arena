@@ -1,4 +1,5 @@
 #include "SoraFieldcraft.h"
+#include "SoraLandingSpaceRules.h"
 #include "SoraFuelCanister.h"
 #include "Game/SoraFieldcraftLayout.h"
 #include "Combat/SoraDamage.h"
@@ -439,6 +440,15 @@ void USoraFieldcraft::StageWorld(const FSoraBeat& Beat)
         const TCHAR* Surface = Layout::FloorLook(Patch.Kind, Color);
         Piece(FString::Printf(TEXT("Floor%d"), Index), Layout::Cube, Layout::Floor(Patch.Area.Center, Height + 1.f + Index * .1f),
             FVector(Patch.Area.Size.X / 100.f, Patch.Area.Size.Y / 100.f, .015f), Color, false, Surface);
+    }
+    if(Beat.Space.bLanding&&bZone)
+    {
+        namespace R=SoraLandingSpaceRules;
+        // Shallow canal footing is noisy at either stance. Keep the wet
+        // surface below boat decks and the dry bank; this is wading, not the
+        // later moat's swimming/dive encounter.
+        Stealth->AddSurface(FBox(FVector(R::ZoneMinX,R::CanalMinY,R::BedZ-10),
+            FVector(R::MaxX,R::MinY,R::WaterZ+20)),{2000,2000});
     }
     if (F.bWater && !FloodSpace && !MoatSpace)
     {

@@ -25,12 +25,17 @@ bool SoraCatalogLanding::Read(const FJsonObject& O,FSoraBeat& Beat,const FSoraSp
     auto& B=Beat.Space;
     if(!Value||Value->Type!=EJson::Object||!Space.Zones.IsValidIndex(B.Zone)||B.HeightCm!=0)return false;
     const auto H=Value->AsObject();const auto& Z=Space.Zones[B.Zone];bool Eight=false,PingPong=false;
-    if(H->Values.Num()!=5||!LandingNumbers(*H,TEXT("yard_cm"),{R::MinX,R::MinY,R::MaxX,R::MaxY})||
+    int32 WaterZ=0,BedZ=0;
+    if(H->Values.Num()!=9||!LandingNumbers(*H,TEXT("yard_cm"),{R::MinX,R::MinY,R::MaxX,R::MaxY})||
+       !LandingNumbers(*H,TEXT("canal_cm"),{R::ZoneMinX,R::CanalMinY,R::MaxX,R::MinY})||
+       !SoraCatalogJson::Int(*H,TEXT("water_z_cm"),WaterZ)||WaterZ!=R::WaterZ||
+       !SoraCatalogJson::Int(*H,TEXT("bed_z_cm"),BedZ)||BedZ!=R::BedZ||
+       !LandingNumbers(*H,TEXT("bridge_cm"),{R::BridgeX,R::BridgeClearance})||
        !LandingNumbers(*H,TEXT("altitudes_cm"),{R::Height(0),R::Height(1)})||
        !LandingNumbers(*H,TEXT("periods_ms"),{R::Period(0),R::Period(1)})||
        !H->TryGetBoolField(TEXT("figure_eight"),Eight)||!Eight||!H->TryGetBoolField(TEXT("canal_ping_pong"),PingPong)||!PingPong||
        Beat.Place!=TEXT("pl_horiwari")||Z.Id!=TEXT("pl_horiwari")||Z.Place!=Beat.Place||
-       Z.Rect.Min!=FVector2D(R::MinX,R::ZoneMinY)||Z.Rect.Max!=FVector2D(R::MaxX,R::ZoneMaxY)||
+       Z.Rect.Min!=FVector2D(R::ZoneMinX,R::ZoneMinY)||Z.Rect.Max!=FVector2D(R::MaxX,R::ZoneMaxY)||
        Z.Entry!=FVector2D(R::Entry.X,R::Entry.Y)||B.Entry!=Z.Entry||Z.EntryYaw!=0||B.EntryYaw!=0||
        Z.WallHeight!=360||Z.Walls.Num()!=4||!Z.Route.IsEmpty()||
        Z.Cover.Num()!=5||!Z.Props.IsEmpty()||B.Patrols.Num()!=2||
@@ -48,6 +53,8 @@ bool SoraCatalogLanding::Read(const FJsonObject& O,FSoraBeat& Beat,const FSoraSp
         for(int I=0;I<R::Count(G);++I)
         { const auto P=R::Point(G,I);if(B.Patrols[G][I]!=FVector2D(P.X,P.Y))return false; }
     }
+    if(Beat.Id==TEXT("ch03.b01")&&(!B.bCamera||B.CameraFrom!=FVector(-21800,-3300,40)||
+       B.CameraTo!=FVector(-11300,-2850,40)||B.CameraLook!=FVector(-11000,-2200,160)))return false;
     if(Beat.Id==TEXT("ch03.b02"))
     {
         if(B.Fieldcraft.Lamps.Num()!=3||B.Fieldcraft.Floors.Num()!=6)return false;
