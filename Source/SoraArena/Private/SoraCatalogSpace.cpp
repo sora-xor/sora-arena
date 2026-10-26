@@ -493,6 +493,17 @@ bool SpaceReadFieldcraft(const FJsonObject& O, const FSoraBeat& Beat, FSoraField
         Lamp.Kind = FName(*Kind); Lamp.RadiusCm = static_cast<float>(Radius);
         F.Lamps.Add(MoveTemp(Lamp));
     }
+    if(Beat.Id==TEXT("ch03.b10"))
+    {
+        int32 Count=0;
+        for(const auto& Lamp:F.Lamps)if(Lamp.Id==TEXT("terminal_glow_b10"))
+        {
+            ++Count;
+            if(Lamp.Kind!=TEXT("strip")||Lamp.RadiusCm!=600.f||Lamp.Snuff!=FSoraLamp::ESnuff::None||
+               Lamp.HoldMs!=0||Lamp.RelightMs!=0)return false;
+        }
+        if(Count!=1)return false;
+    }
     for (const auto& Row : *FloorRows)
     {
         const auto S = Row.IsValid() ? Row->AsObject() : nullptr;

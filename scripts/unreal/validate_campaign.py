@@ -654,6 +654,12 @@ def check_fieldcraft(beat, record, index, zones, zone_of, on_floor):
             require(_inside(rect, lamp['at'], 25), f"{what}: relay lamp leaves the room")
         else:
             on_floor(index, lamp["at"], f"{what} lamp {lamp['id']}")
+    if what == 'ch03.b10':
+        terminal = [lamp for lamp in craft['lamps'] if lamp['id'] == 'terminal_glow_b10']
+        require(len(terminal) == 1 and terminal[0]['kind'] == 'strip' and
+                terminal[0]['radius_cm'] == 600 and terminal[0]['snuff'] == 'none' and
+                terminal[0]['hold_ms'] == 0 and terminal[0]['relight_ms'] == 0,
+                f'{what}: the terminal keeps its unsnuffable six-metre cyan glow')
     roofs = {ladder["height_cm"] for ladder in craft["ladders"]}
     for surface in craft["surfaces"]:
         area(surface, f"{surface['kind']} floor")
@@ -1470,6 +1476,17 @@ def self_test(catalog, campaign, chapters, legacy, roster):
         record = space(data, 2, "ch03.b02")
         record["fieldcraft"]["lamps"][0]["at"] = [data[2][2]["space"]["zones"][record["zone"]]["rect"][0] - 50, 0]
 
+    def terminal_glow_snuffable(data):
+        lamp = next(l for l in space(data, 2, 'ch03.b10')['fieldcraft']['lamps'] if l['id'] == 'terminal_glow_b10')
+        lamp.update(snuff='hold', hold_ms=1000)
+
+    def terminal_glow_short_radius(data):
+        next(l for l in space(data, 2, 'ch03.b10')['fieldcraft']['lamps'] if l['id'] == 'terminal_glow_b10')['radius_cm'] = 450
+
+    def terminal_glow_missing(data):
+        lamps = space(data, 2, 'ch03.b10')['fieldcraft']['lamps']
+        lamps[:] = [lamp for lamp in lamps if lamp['id'] != 'terminal_glow_b10']
+
     def climb_around_the_face(data):
         space(data, 5, "ch06.b03")["fieldcraft"]["climb"]["width_cm"] -= 400
 
@@ -1530,7 +1547,8 @@ def self_test(catalog, campaign, chapters, legacy, roster):
                  boss_at_the_wrong_beat, duel_against_another, unknown_archetype, guard_without_archetype,
                  unguarded_work, guard_outside_stealth, guard_sees_in_the_dark, zone_without_rules, carryover_backwards,
                  unbound_key_token, bracketed_control,
-                 lamp_in_wall, climb_around_the_face, ally_joins_no_wave, party_without_escort, volley_rank_short,
+                 lamp_in_wall, terminal_glow_snuffable, terminal_glow_short_radius, terminal_glow_missing,
+                 climb_around_the_face, ally_joins_no_wave, party_without_escort, volley_rank_short,
                  net_wave_without_drones, netters_beyond_the_wave, crossing_off_the_road, drop_heard_past_the_rules,
                  fire_outside_the_hold, stakes_out_of_order,
                  copies_without_desks, copies_one_desk_repeated, copies_shortened, copies_ignore_guards)

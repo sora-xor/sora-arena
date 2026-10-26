@@ -1935,7 +1935,8 @@ beats:
     takedowns: {rear: true, lethal_default: true}
     nonlethal_types: [bound_conscript]
     light_sources: [tsuji_andon_sw, tsuji_andon_se]
-    x_static_lights: [terminal_glow_b10]
+    x_static_lights:
+      - {id: terminal_glow_b10, kind: cyan_ledger_strip, radius_cm: 600, extinguishable: false}
     noise_surfaces:
       - {kind: puddle, volumes: [pud_b10_01, pud_b10_02, pud_b10_03, pud_b10_04]}
       - {kind: x_dobuita, mult: 1.5, volumes: [vol_b10_dobuita_n, vol_b10_dobuita_s], silent_edge: true}
