@@ -275,7 +275,7 @@ bool FSoraDroneMeleeYariTest::RunTest(const FString&)
     // thrust where the campaign has taught and permits the yari, without
     // overriding any inventory or mission equipment restrictions.
     if(!FSoraCatalog::Get().Load())return false;
-    FBeatWorld W(*this,TEXT("DroneMeleeYari"),1,3);if(!W.Start())return false;
+    FBeatWorld W(*this,TEXT("DroneMeleeYari"),1,2);if(!W.Start())return false;
     W.Harden();
     for(TActorIterator<ASoraCharacterBase> It(W.World->GetTestWorld());It;++It)
         if(*It!=W.Hero())SoraLandingDroneTest::Freeze(**It);
