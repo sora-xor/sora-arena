@@ -143,6 +143,7 @@ public:
     bool CanReachHelm(const ASoraPlayerCharacter& Hero) const;
     void BuildFlood(const FSoraBeat& Beat);
     void BuildMoat(const FSoraBeat& Beat);
+    void BuildLanding(const FSoraZone& Zone);
     void BuildClimb(const FSoraBeat& Beat);
     void BuildRelayRoom(const FSoraBeat& Beat);
     void BuildPalace(const FSoraZone& Zone);

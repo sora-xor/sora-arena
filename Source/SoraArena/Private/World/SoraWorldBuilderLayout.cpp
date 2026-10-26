@@ -30,6 +30,8 @@ void ASoraWorldBuilder::BuildCampaign(const FSoraChapter& Chapter)
     else Lighting(Chapter.Map);
     for(int32 Index=0;Index<Space.Zones.Num();++Index)
     {
+        if(Chapter.Beats.ContainsByPredicate([Index](const FSoraBeat& B){return B.Space.Zone==Index&&B.Space.bLanding;}))
+        { BuildLanding(Space.Zones[Index]);continue; }
         const FSoraBeat* Recovery=Chapter.Beats.FindByPredicate([Index](const FSoraBeat& B)
             { return B.Space.Zone==Index&&B.Task.RecoveryWeapons!=0u; });
         const FSoraBeat* Spire=Chapter.Beats.FindByPredicate([Index](const FSoraBeat& B)

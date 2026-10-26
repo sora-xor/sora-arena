@@ -13,6 +13,7 @@
 #include "SoraCatalogPress.h"
 #include "SoraCatalogRelay.h"
 #include "SoraCatalogMoat.h"
+#include "SoraCatalogLanding.h"
 #include "SoraCatalog.h"
 #include "SoraCatalogJson.h"
 #include "SoraStealthRules.h"
@@ -1078,6 +1079,7 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
         if(!SoraCatalogFlood::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" flood route"));
         if(!SoraCatalogClimb::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" climb routes"));
         if(!SoraCatalogMoat::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" physical moat"));
+        if(!SoraCatalogLanding::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" west landing"));
         for (const FSoraDefendedPerson& Person : B.Fieldcraft.People)
             if (Person.Target == INDEX_NONE && (!S.Zones.IsValidIndex(B.Zone) ||
                 !S.Zones[B.Zone].Rect.IsInside(Person.At + FVector2D(80,80)) || !S.Zones[B.Zone].Rect.IsInside(Person.At - FVector2D(80,80)) ||

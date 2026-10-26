@@ -133,6 +133,8 @@ int32 USoraStealth::LightAt(const FVector& Location) const
         else if (Light->IsA<UDirectionalLightComponent>())
             KeyDeciLux = FMath::Max(KeyDeciLux, FMath::RoundToInt32(Light->Intensity * 10.f));
     }
+    for(TActorIterator<ASoraEnemy> It(GetWorld());It;++It)
+        Lamps+=It->LandingSearchlightAt(Location);
     return StealthRules::LightPermille(StealthRules::AmbientPermille(KeyDeciLux), Lamps);
 }
 

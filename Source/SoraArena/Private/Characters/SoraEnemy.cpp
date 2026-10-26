@@ -114,6 +114,7 @@ bool ASoraEnemy::InitArchetype(FName ArchetypeName,int32 Slot,const FSoraPatrolR
     Kind=Found; Variant=VariantName; VariantData=Chosen;
     CancelAttack();
     bLandingDrone=Kind->Behavior==ESoraEnemyBehavior::Drone&&Tuning&&Tuning->bLandingDrone;
+    bLandingCanalSearchlight=bLandingDrone&&Tuning->bLandingCanalSearchlight;
     bLandingFloorKnown=false;
     NetRootOverrideMs=Kind->Behavior==ESoraEnemyBehavior::Drone&&Tuning?FMath::Max(0,Tuning->NetRootMs):0;
     bDojoPupil=false; EnemyIndex=Slot; RangedShots=0; ShotsSinceRelocation=0;
@@ -766,6 +767,7 @@ void ASoraEnemy::LieDown(bool bBody)
     if(IsFlying())
     {
         // Losing the hover drive must not leave a corpse at the patrol height.
+        DisableLandingSearchlight();
         // The movement sphere falls against real terrain; the tilted disc stays
         // inside it. Guard remains persist for discovery, wave remains expire.
         if(DroneBody)

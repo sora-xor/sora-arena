@@ -16,6 +16,7 @@
 #include "Components/CapsuleComponent.h"
 #include "SoraEquipmentComponent.h"
 #include "SoraFieldcraft.h"
+#include "SoraLandingSpaceRules.h"
 #include "SoraPressRules.h"
 #include "SoraArchiveRules.h"
 #include "SoraLedgerRules.h"
@@ -1192,19 +1193,23 @@ ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int
             }
     // The senses the chapter authors for this guard.
     FSoraEnemyTuning Senses;
-    Senses.bLandingDrone=ActiveBeatData()->Id==TEXT("ch03.b02")&&Guard.Type==TEXT("drone");
+    Senses.bLandingDrone=Space->bLanding&&ActiveBeatData()->Id==TEXT("ch03.b02")&&Guard.Type==TEXT("drone");
+    Senses.bLandingCanalSearchlight=Senses.bLandingDrone&&GuardIndex==1;
     if(Senses.bLandingDrone)
     {
-        // D1's specified five-metre plane; D2 uses the same plane until its
-        // canal-edge route is authored. This does not certify either loop.
-        for(auto& Point:Route.Points) Point.Z=500.f;
-        Route.bThreeDimensional=true;
+        // The loader binds both circuits to the authored landing geometry.
+        Route.Points.Reset();
+        for(const auto& P:Space->Patrols[GuardIndex])Route.Points.Add(FVector(P,SoraLandingSpaceRules::Height(GuardIndex)));
+        Route.PeriodMs=SoraLandingSpaceRules::Period(GuardIndex);Route.PauseMs=0;
+        Route.bThreeDimensional=true;Route.bDirectFlightSegments=true;Route.bPingPong=GuardIndex==1;
         Post=Route.Points[0];
     }
     Senses.SightCm=Guard.SightCm; Senses.DarkSightCm=Guard.DarkSightCm; Senses.ViewDegrees=Guard.ViewDegrees;
     Senses.HearingCm=Guard.HearingCm; Senses.SuspicionPermille=Guard.SuspicionPermille;
     Senses.ScanDegrees=Guard.ScanDegrees; Senses.ScanMs=Guard.ScanMs; Senses.TurnMs=Guard.TurnMs;
     auto* GuardActor=ASoraEnemy::SpawnArchetype(*GetWorld(),Guard.Type,Slot,Post,FRotator(0,180,0),&Route,&Senses);
+    if(GuardActor&&Senses.bLandingDrone&&Route.Points.Num()>1)
+        GuardActor->SetActorRotation((Route.Points[1]-Route.Points[0]).Rotation());
     if(GuardActor&&Space->RelayRoom.bEnabled)
     {
         if(GuardIndex!=3)

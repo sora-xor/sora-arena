@@ -69,6 +69,7 @@ from campaign_relay import relay_valid
 from campaign_archive import archive_valid
 from campaign_palace import palace_valid
 from campaign_moat import moat_valid
+from campaign_landing import landing_valid
 from campaign_space import arena_blockers, spook_dismount
 from campaign_cargo import cargo_manifest
 from campaign_registry import validate_registry
@@ -413,6 +414,11 @@ def check_space(chapter, beats, rewards, labels, where):
 
     elevated_rect = None
     def on_floor(index, point, what, cover_margin=COVER_CLEAR):
+        if index>=0 and zones[index]['place']=='pl_horiwari' and chapter['id'].startswith('ch03_') and what.endswith(' patrol'):
+            # Exact authored flight paths/heights are fixed by landing_valid;
+            # the 4/5 m discs may pass above the 1.4 m cargo stacks.
+            require(_inside(zones[index]['rect'],point,40),f"{what}: flight path leaves its landing")
+            return
         if index>=0 and zones[index]['place']=='pl_ledger_corridors':
             require(ledger_supported(chapter,index,point,what.startswith('ch06.b06')),
                     f"{what} at {point[:2]} is outside the actual ledger/palace floor union")
@@ -431,6 +437,7 @@ def check_space(chapter, beats, rewards, labels, where):
     require(molten_valid(chapter), "casting channel contract")
     require(canisters_valid(chapter), "hangar fuel canister contract")
     require(moat_valid(chapter), f"{where}: authored physical moat/depth contract")
+    require(landing_valid(chapter), f"{where}: authored west-landing geometry and flight contract")
     records = space["beats"]
     require([record["beat"] for record in records] == [beat["id"] for beat in beats], f"{where}: one space per beat")
     require(space["start"] == records[0]["entry"], f"{where}: the chapter starts at its first beat")

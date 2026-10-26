@@ -3,6 +3,8 @@
 #include "SoraDroneRules.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/SpotLightComponent.h"
+#include "Engine/World.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/StaticMeshSocket.h"
 #include "PhysicsEngine/BodySetup.h"
@@ -19,6 +21,8 @@ void ASoraEnemy::ConfigureBodyCollision()
 
 bool ASoraEnemy::BuildSpecialBody()
 {
+    if(LandingSearchlight) LandingSearchlight->DestroyComponent();
+    LandingSearchlight=nullptr;
     DroneBody=nullptr;
     if(!IsFlying()) return false;
     const TCHAR* Path=TEXT("/Game/Generated/Characters/Enemies/InventoryDrone/SM_Drone_Inventory.SM_Drone_Inventory");
@@ -53,5 +57,43 @@ bool ASoraEnemy::BuildSpecialBody()
     Mesh->ComponentTags.Add(TEXT("InventoryDroneBody"));
     Mesh->RegisterComponent();AddInstanceComponent(Mesh);BodyParts.Add(Mesh);
     DroneBody=Mesh;
+    if(bLandingCanalSearchlight)
+    {
+        auto* Light=NewObject<USpotLightComponent>(this,MakeUniqueObjectName(this,USpotLightComponent::StaticClass(),TEXT("LandingCanalSearchlight")));
+        Light->SetupAttachment(Mesh);
+        Light->SetRelativeLocation(Asset->FindSocket(TEXT("Eye"))->RelativeLocation);
+        Light->SetRelativeRotation(FRotator(-45,0,0));
+        Light->SetMobility(EComponentMobility::Movable);
+        Light->SetIntensity(2200.f);
+        Light->SetAttenuationRadius(1600.f);
+        Light->SetInnerConeAngle(18.f);Light->SetOuterConeAngle(25.f);
+        Light->SetLightColor(FLinearColor(.64f,.86f,1.f));
+        Light->SetCastShadows(true);
+        Light->RegisterComponent();AddInstanceComponent(Light);
+        LandingSearchlight=Light;
+    }
     return true;
+}
+
+void ASoraEnemy::DisableLandingSearchlight()
+{
+    if(LandingSearchlight) LandingSearchlight->SetVisibility(false);
+}
+
+int32 ASoraEnemy::LandingSearchlightAt(const FVector& Location) const
+{
+    if(!IsAlive()||!LandingSearchlight||!LandingSearchlight->IsVisible())return 0;
+    const FVector Origin=LandingSearchlight->GetComponentLocation(),Delta=Location-Origin;
+    const float Distance=Delta.Size();
+    if(Distance>LandingSearchlight->AttenuationRadius||Distance<1.f||
+       FVector::DotProduct(Delta/Distance,LandingSearchlight->GetForwardVector())<
+       FMath::Cos(FMath::DegreesToRadians(LandingSearchlight->OuterConeAngle)))return 0;
+    // Use the same moving cone as the visible lamp. Real shed/boat/cargo
+    // geometry shadows it; being near the drone alone is not illumination.
+    FCollisionObjectQueryParams Objects;
+    Objects.AddObjectTypesToQuery(ECC_WorldStatic);Objects.AddObjectTypesToQuery(ECC_WorldDynamic);
+    FCollisionQueryParams Query(SCENE_QUERY_STAT(LandingSearchlight),false,this);
+    FHitResult Hit;
+    if(GetWorld()->LineTraceSingleByObjectType(Hit,Origin,Location,Objects,Query))return 0;
+    return SoraStealthRules::LampPermille(FMath::RoundToInt32(Distance),FMath::RoundToInt32(LandingSearchlight->AttenuationRadius));
 }

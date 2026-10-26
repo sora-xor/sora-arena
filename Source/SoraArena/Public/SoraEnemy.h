@@ -12,6 +12,7 @@
 enum class ESoraEnemyCue : uint8;
 class ASoraBoss;
 class ASoraProjectile;
+class USpotLightComponent;
 class USoraCampaignDirector;
 struct FSoraEnemyArchetype;
 struct FSoraEnemyAttack;
@@ -29,6 +30,7 @@ struct FSoraEnemyTuning
     int32 NetRootMs = 0;
     // Chapter 03's landing: mark, descend, net and a low wakizashi opening.
     bool bLandingDrone = false;
+    bool bLandingCanalSearchlight = false;
     int32 SightCm = 0;
     int32 ViewDegrees = 0;
     // Negative keeps the archetype's value; a zero hearing is deaf.
@@ -126,6 +128,7 @@ public:
     const SoraHorseShellRules::FState& HorseShellState() const { return HorseShellClock; }
     AActor* HorseShellWarning() const { return ShellWarning.Get(); }
     bool HasLandingDroneAssignment() const { return bLandingDrone; }
+    int32 LandingSearchlightAt(const FVector& Location) const;
     bool OwnsLandingDroneMotion() const { return bLandingDrone&&LandingDroneClock.Stage!=SoraLandingDroneRules::EStage::Idle; }
     bool IsLandingDroneLow() const;
     const SoraLandingDroneRules::FState& LandingDroneState() const { return LandingDroneClock; }
@@ -215,6 +218,9 @@ protected:
     int32 EnemyIndex = 0;
 private:
     UPROPERTY() TObjectPtr<UStaticMeshComponent> DroneBody;
+    UPROPERTY() TObjectPtr<USpotLightComponent> LandingSearchlight;
+    bool bLandingCanalSearchlight=false;
+    void DisableLandingSearchlight();
     void ConfigureBodyCollision();
     const TArray<FSoraEnemyAttack>& AttackSet() const;
     void ResetConstruct();
