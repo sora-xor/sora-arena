@@ -1,7 +1,34 @@
 # Runtime weapon sockets: the scoped export correction (measured)
 
-**Status (2026-10-26):** the CPU tools, the plan and the CPU results are signed. Section 8 records the staging
-re-exports and the real UE probes. Nothing in a kit folder has changed yet. Root owns the eventual runtime adoption.
+**Status (2026-10-26):** section 8 records Claude's staged re-exports and real UE probes. Root's source correction
+uses `apply_staged_weapon_sockets.py` to install those exact measured bytes. Runtime import and visual acceptance
+remain separate unfinished steps. The historical staging/probe results below are preserved, including W11's failure.
+
+## Root's installation procedure
+
+The old Blender `--apply` mode re-exported each destination before checking the result. A failure could leave an
+FBX changed while its record still described the original. That mode is removed. The CPU installer first verifies
+all selected staged files against the hashes in the signed UE receipt, rechecks the actual socket readbacks with
+the hardened finite-vector gates, rejects failed import comparisons, and verifies the destination records,
+manifest, original LODs, blends and textures. It installs the staged bytes without another export.
+
+Selection is explicit. Only manifest-listed FBXs and records can be changed. Root selects 20 socketed files from
+16 kits: W00, W01, W02, W04–W10, W12, W14, W15, W17, W19 and W20. W03, W11, W13 and W16 remain held;
+W18's two staged files belong to Claude's separate, unintegrated rebuild and are excluded. W19/W20 source
+correction does not change the runtime restriction on weapon IDs 18 and above.
+
+Run the installer with `--stage-report` for both s83 and s84 and `--assets` for the chosen mesh names. It defaults
+to a dry run. `--apply --archive Saved/<new-directory>` backs up every destination before replacing any file;
+ordinary errors roll back and retain a transaction journal. A process killed during replacement can leave a partial
+transaction; recover from that archive. This is not an atomic multi-file transaction.
+
+The manifest's scoped update binds the receipt, staged report hashes, exact old/new FBX hashes and installer hash.
+It retains source-only admission. The source checks run pure model, export/gate/record and installer tests on CI;
+the Blender parser and locally archived original byte tests are separate installed-tool checks, never silent passes.
+
+The s88 geometry arrays were not saved. The historical corner comparison remains evidence from that probe;
+it cannot be retroactively rerun through the later malformed-array checks. A fresh in-place Unreal import/probe
+is still required for runtime adoption. No material, texture, collision, LOD1/LOD2 or visual change is approved here.
 
 ## 1. The defect
 

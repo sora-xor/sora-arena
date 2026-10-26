@@ -13,8 +13,7 @@ Run: python3 -m unittest scripts/art/test_weapon_socket_export.py
 - **same_import** catches a moved vertex, another material slot and another collision count.
 - **amend_record** changes only LOD0's hash, the asset's socket_axes and the socket_fbx block, and refuses a stale
   LOD0.
-- **The staging preconditions** hold for every socketed kit LOD0 in this tree, except W14 if it is still stale here.
-  Root's 3b0a662d reconciled W14 in root's tree.
+- **The staging preconditions** hold for every socketed kit LOD0 in this tree, including reconciled W14.
 
 The tests that read FBX files need Blender's io_scene_fbx parser, and are skipped without it.
 """
@@ -113,6 +112,7 @@ class Screen(unittest.TestCase):
         with self.assertRaises(ValueError):
             F.interchange(s)
 
+class ScreenFBX(unittest.TestCase):
     @unittest.skipUnless(T.parser_available(), "needs Blender's io_scene_fbx parser")
     def test_the_committed_drone_lod0_passes(self):
         rows = S.screen(DRONE / "SM_Drone_Inventory.fbx")
@@ -306,6 +306,10 @@ class Malformed(unittest.TestCase):
 class Record(unittest.TestCase):
     def setUp(self):
         self.record = json.loads((RUNTIME / "W02_Kusarigama/build_record.json").read_text(encoding="utf-8"))
+        # Exercise the initial correction even after this tree installs it.
+        self.record.pop("socket_fbx", None)
+        for entry in self.record["assets"].values():
+            entry.pop("socket_axes", None)
 
     def test_amend_changes_only_the_socketed_lod0s_and_adds_the_blocks(self):
         rewritten, axes = {}, {}
@@ -331,7 +335,7 @@ class Record(unittest.TestCase):
 
 
 class Preconditions(unittest.TestCase):
-    def test_every_socketed_lod0_and_blend_matches_its_record_but_a_stale_w14(self):
+    def test_every_socketed_lod0_and_blend_matches_its_record(self):
         mismatched, socketed = set(), 0
         for rec_path in sorted(RUNTIME.glob("W*/build_record.json")):
             record = json.loads(rec_path.read_text(encoding="utf-8"))
@@ -343,7 +347,7 @@ class Preconditions(unittest.TestCase):
                 if sha(lod0) != entry["lods"][0]["sha256"] or sha(ROOT / record["blend"]["file"]) != record["blend"]["sha256"]:
                     mismatched.add(rec_path.parent.name)
         self.assertEqual(socketed, 26)
-        self.assertLessEqual(mismatched, {"W14_PlasmaMatchlock"})
+        self.assertEqual(mismatched, set())
 
 
 if __name__ == "__main__":

@@ -48,6 +48,10 @@ RAW_TESTS = {
 SOURCE_CLASSES = {
     # The other class loads and executes a staged kernel in subprocesses.
     "scripts/unreal/test_parity_guards.py": ("SourceIdentityCoverageTests",),
+    # FBX byte parsing uses Blender's installed parser; the archived original is
+    # local evidence. All pure models/gates/record checks run on every source CI host.
+    "scripts/art/test_fbx_unreal_sockets.py": ("Calibration", "Convention"),
+    "scripts/art/test_weapon_socket_export.py": ("Convention", "Screen", "Gates", "Malformed", "Record", "Preconditions"),
 }
 
 
@@ -168,6 +172,9 @@ def checks(python: str = sys.executable) -> list[Check]:
     script("assets", "source-images", "scripts/unreal/validate_source_images.py", "--json")
     unit("assets", "source-images-tests", "scripts/unreal/test_source_images.py")
     unit("assets", "inventory-drone-admission", "scripts/unreal/test_inventory_drone.py")
+    unit("assets", "weapon-socket-model", "scripts/art/test_fbx_unreal_sockets.py")
+    unit("assets", "weapon-socket-export", "scripts/art/test_weapon_socket_export.py")
+    unit("assets", "weapon-socket-staged-install", "scripts/art/test_apply_staged_weapon_sockets.py")
     script("assets", "asset-ledger", "scripts/assets/validate_asset_ledger.py", "--json")
     script("assets", "asset-notices", "scripts/assets/generate_asset_notices.py", "--check")
     unit("assets", "dojo-timber-binding", "scripts/art/test_bind_dojo_timbers.py")
@@ -229,7 +236,7 @@ def unit_tests(relative: str) -> int:
         print(f"OUTSIDE SOURCE SCOPE (private raw downloads): {name}", flush=True)
     classes = SOURCE_CLASSES.get(relative)
     if classes:
-        print(f"SOURCE TEST CLASSES: {', '.join(classes)}; native-dependent classes are outside scope", flush=True)
+        print(f"SOURCE TEST CLASSES: {', '.join(classes)}; native/installed-tool-dependent classes are outside scope", flush=True)
         loaded = unittest.defaultTestLoader.loadTestsFromNames(classes, module)
     else:
         loaded = unittest.defaultTestLoader.loadTestsFromModule(module)

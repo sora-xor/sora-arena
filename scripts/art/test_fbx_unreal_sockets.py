@@ -83,10 +83,6 @@ class Calibration(unittest.TestCase):
     def test_fc0858a9_nodes_give_root_readback(self):
         self.check_root_readback(FC0858A9)
 
-    @unittest.skipUnless(parser_available() and ORIGINAL.is_file(), "needs Blender's parser and the archived original")
-    def test_fc0858a9_bytes_give_root_readback(self):
-        self.check_root_readback(F.read_fbx(ORIGINAL))
-
     def check_rotators(self, scene, readback):
         got = F.interchange(scene)["sockets"]
         self.assertEqual(set(got), set(readback))
@@ -110,6 +106,12 @@ class Calibration(unittest.TestCase):
             np.testing.assert_allclose(x, -ax, atol=1e-6, err_msg=name)
             np.testing.assert_allclose(y, ay, atol=1e-6, err_msg=name)
             np.testing.assert_allclose(z, -az, atol=1e-6, err_msg=name)
+
+
+class CalibrationBytes(unittest.TestCase):
+    @unittest.skipUnless(parser_available() and ORIGINAL.is_file(), "needs Blender's parser and the archived original")
+    def test_fc0858a9_bytes_give_root_readback(self):
+        Calibration.check_root_readback(self, F.read_fbx(ORIGINAL))
 
 
 class Convention(unittest.TestCase):

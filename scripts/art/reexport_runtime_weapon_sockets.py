@@ -4,7 +4,7 @@
 Run (Blender 5.2.2, by the holder of the engine/Blender lane):
   blender -b --factory-startup --python-exit-code 1 --python scripts/art/reexport_runtime_weapon_sockets.py
       -- --stage Saved/<dir> [--source-root <tree>] [--only W02_Kusarigama,...] [--files SM_Weapon_02.fbx,...]
-  blender ... -- --apply --archive <dir> [--only ...]   (only with root's word, after the staged probe)
+  Install probed bytes with scripts/art/apply_staged_weapon_sockets.py, outside Blender.
 
 **Why.** Root's 0eb8c5e import of the drone, and fbx_unreal_sockets.py. screen_fbx_sockets.py predicts that all 83
 sockets of the 26 socketed weapon FBXs import at scale 100, with their forward and up reversed and their right kept.
@@ -21,10 +21,8 @@ That is a prediction until probe_runtime_weapon_sockets.py reads real imports ba
   - **--source-root** reads the kits from another tree instead, read-only. Root's reconciled W14 (3b0a662d) exists
     only in root's tree. Each report row names its tree, branch, HEAD and the kit's last commit, so provenance stays
     apart.
-- **--apply** archives each original FBX and record under --archive, then writes the corrected file in place.
-  - It amends the kit record (fbx_socket_export.amend_record).
-  - In the runtime weapons manifest, it updates the entries of the files it rewrote and appends a scoped update.
-  - It works only on this worktree, and refuses before writing if a record or the manifest would be reformatted.
+- **--apply is refused.** Re-exporting in place before validation could leave a changed FBX with an old record.
+  The separate CPU installer validates the whole selection and installs the exact previously probed bytes.
 
 **Checks, for every file, before anything is written outside the staging dir. It stops at the first failure.**
 - **Inputs:**
@@ -49,7 +47,6 @@ That is a prediction until probe_runtime_weapon_sockets.py reads real imports ba
 
 import json
 import os
-import shutil
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -84,15 +81,14 @@ def opt(name, default=None):
     return argv[argv.index(name) + 1] if name in argv else default
 
 
-STAGE, APPLY = opt("--stage"), "--apply" in argv
-assert bool(STAGE) != APPLY, "give exactly one of --stage <dir> and --apply"
+if "--apply" in argv:
+    raise ValueError("Use apply_staged_weapon_sockets.py to install the exact probed bytes; no in-place re-export")
+STAGE = opt("--stage")
+assert STAGE, "give --stage <dir>"
 SRC = Path(opt("--source-root", str(ROOT))).resolve()
 if STAGE:
     STAGE = (ROOT / STAGE).resolve() if not Path(STAGE).is_absolute() else Path(STAGE).resolve()
     assert STAGE.is_relative_to(ROOT / "Saved"), "the staging dir must be under this worktree's Saved/"
-ARCHIVE = Path(opt("--archive")).resolve() if APPLY else None
-assert not APPLY or (ARCHIVE and ARCHIVE.is_relative_to(ROOT / "Saved")), "--apply needs an --archive under Saved/"
-assert not APPLY or SRC == ROOT, "--apply works only on this worktree"
 RUNTIME = SRC / "Content/SourceArt/Weapons/Runtime"
 ONLY = set(opt("--only", "").split(",")) - {""}
 FILES = set(opt("--files", "").split(",")) - {""}
@@ -102,14 +98,6 @@ def git(*args):
     """Read-only git in the source tree: --no-optional-locks keeps status from refreshing another tree's index."""
     return subprocess.run(["git", "--no-optional-locks", "-C", str(SRC), *args], capture_output=True, text=True,
                           check=True).stdout.strip()
-
-
-def read_json_exactly(path):
-    """A record or manifest, refused unless rewriting it changes only what is amended (indent 1, UTF-8)."""
-    text = path.read_text(encoding="utf-8")
-    data = json.loads(text)
-    assert json.dumps(data, ensure_ascii=False, indent=1) + "\n" == text, f"{path} would be reformatted"
-    return data
 
 
 def work():
@@ -178,12 +166,8 @@ def unhide(objs):
         o.hide_viewport = False
 
 
-rows, rewritten = [], {}
+rows = []
 JOBS = work()
-if APPLY:                          # refuse before any file is written in place
-    read_json_exactly(RUNTIME / "manifest.json")
-    for kit, _record, _assets in JOBS:
-        read_json_exactly(kit / "build_record.json")
 tree = {"root": str(SRC), "branch": git("branch", "--show-current"), "head": git("rev-parse", "HEAD"),
         "clean_kits": git("status", "--porcelain", "--", "Content/SourceArt/Weapons/Runtime") == ""}
 for kit, record, assets in JOBS:
@@ -209,16 +193,9 @@ for kit, record, assets in JOBS:
             assert (got - Vector(sockets[o.name[len("SOCKET_"):]])).length < 1e-5, (asset, o.name, tuple(got))
         axes = X.socket_axes(empties)
         original = SRC / file
-        out = STAGE / kit.name / original.name if STAGE else original
-        if APPLY:
-            (ARCHIVE / kit.name).mkdir(parents=True, exist_ok=True)
-            kept = ARCHIVE / kit.name / original.name
-            assert not kept.exists(), f"the archive already holds {kept}"
-            shutil.copy2(original, kept)
-            original = kept
-        else:
-            out.parent.mkdir(parents=True, exist_ok=True)
-            assert not out.exists(), f"the staging dir already holds {out}"
+        out = STAGE / kit.name / original.name
+        out.parent.mkdir(parents=True, exist_ok=True)
+        assert not out.exists(), f"the staging dir already holds {out}"
         unhide([mesh, *empties])
         X.export(out, mesh, empties)
         unreal, baked = check_unreal(out, asset, sockets, axes)
@@ -229,7 +206,6 @@ for kit, record, assets in JOBS:
                      "sockets_in_unreal": unreal,
                      "predicted_original": socket_rows(F.interchange(F.read_fbx(original))["sockets"]),
                      "same_geometry": same})
-        rewritten.setdefault(kit, {})[asset] = (file, X.sha256(out), X.sha256(original), axes)
         print("WEAPON_SOCKETS_REEXPORTED " + json.dumps(rows[-1]), flush=True)
     for f, h in others.items():
         assert X.sha256(SRC / f) == h, f"changed by the re-export: {f}"
@@ -239,35 +215,9 @@ stamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S+00:00")
 report = {"tool": TOOL, "tool_sha256": X.sha256(ROOT / TOOL), "convention": X.SOCKET_FBX,
           "module_sha256": {p: X.sha256(ROOT / p) for p in ("scripts/art/fbx_socket_export.py",
                                                           "scripts/art/fbx_unreal_sockets.py")},
-          "blender": bpy.app.version_string, "mode": "apply" if APPLY else "stage", "recorded_at_utc": stamp,
+          "blender": bpy.app.version_string, "mode": "stage", "recorded_at_utc": stamp,
           "source": tree, "files": rows}
-if STAGE:
-    (STAGE / "stage_report.json").write_text(json.dumps(report, indent=1) + "\n", encoding="utf-8")
-else:
-    manifest_path = RUNTIME / "manifest.json"
-    shutil.copy2(manifest_path, ARCHIVE / "manifest.json")
-    manifest = read_json_exactly(manifest_path)
-    listed = {e["file"]: e for e in manifest.get("files", [])}
-    changed = []
-    for kit, assets in rewritten.items():
-        rec_path = kit / "build_record.json"
-        shutil.copy2(rec_path, ARCHIVE / kit.name / "build_record.json")
-        record = read_json_exactly(rec_path)
-        amended = X.amend_record(record, {a: v[:3] for a, v in assets.items()}, {a: v[3] for a, v in assets.items()}, TOOL)
-        rec_path.write_text(json.dumps(amended, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-        for f in [v[0] for v in assets.values()] + [str(rec_path.relative_to(ROOT))]:
-            entry = {"file": f, "bytes": (ROOT / f).stat().st_size, "sha256": X.sha256(ROOT / f)}
-            if f in listed:
-                listed[f].update(entry)
-            changed.append(entry)
-    manifest.setdefault("scoped_updates", []).append(
-        {"key": "socket_fbx", "recorded_at_utc": stamp, "scope": "the socketed LOD0 FBXs listed here, re-exported from "
-         "their reviewed blends in the socket convention, and their kit records. Nothing rebuilt or rebaked",
-         "generators": [{"path": p, "sha256": X.sha256(ROOT / p)} for p in
-                        (TOOL, "scripts/art/fbx_socket_export.py", "scripts/art/fbx_unreal_sockets.py")],
-         "files": changed})
-    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-    (ARCHIVE / "apply_report.json").write_text(json.dumps(report, indent=1) + "\n", encoding="utf-8")
+(STAGE / "stage_report.json").write_text(json.dumps(report, indent=1) + "\n", encoding="utf-8")
 print("WEAPON_SOCKETS_DONE " + json.dumps({"mode": report["mode"], "source": str(SRC), "files": len(rows),
                                            "sockets": sum(len(r["sockets_in_unreal"]) for r in rows)}))
 passed = True
