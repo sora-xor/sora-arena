@@ -160,7 +160,10 @@ def corner_pairs(x, y, tol=None):
     return pairs, "matched"
 
 
-def same_import(a, b):
+DEGENERATE = 0.5                # a packed tangent-basis vector shorter than this is degenerate (Unreal writes 0)
+
+
+def same_import(a, b, detail=0):
     """Two imports of one asset, compared corner by corner: each triangle's three corners, so that a vertex the
     importer shares in one import and splits in the other still compares like for like.
 
@@ -168,6 +171,9 @@ def same_import(a, b):
     The corners are paired by corner_pairs: in index order where that lines up, otherwise by matching triangles.
     Returns (gaps, failures). The gaps hold the worst position (cm) and UV distances, the worst normal and tangent
     differences in 8-bit steps and in degrees, how many corners differ, and each import's render vertex count.
+    Angles are measured only between valid vectors. A corner where one import's vector is degenerate (shorter than
+    DEGENERATE) and the other's is not is counted apart, and gated: run s87's angles missed one, because
+    atan2(0, 0) reads 0 deg. detail=N keeps the N corners with the largest normal or tangent steps, in full.
 
     Gates (SAME):
     - triangles in the same order;
@@ -180,7 +186,9 @@ def same_import(a, b):
     """
     gaps = {"positions_cm": 0.0, "uvs": 0.0, "normal_steps": 0, "normal_deg": 0.0, "tangent_steps": 0,
             "tangent_deg": 0.0, "corners": 0, "normal_corners_differing": 0, "tangent_corners_differing": 0,
-            "render_vertices": [sum(len(s["positions"]) for s in m["lod0"]["sections"]) for m in (a, b)], "pairing": []}
+            "render_vertices": [sum(len(s["positions"]) for s in m["lod0"]["sections"]) for m in (a, b)], "pairing": [],
+            "normal_degenerate_mismatches": 0, "tangent_degenerate_mismatches": 0}
+    worst_corners = []
     failures = []
     sa, sb = a["lod0"]["sections"], b["lod0"]["sections"]
     if len(sa) != len(sb):
@@ -199,16 +207,30 @@ def same_import(a, b):
             gaps["corners"] += 1
             gaps["positions_cm"] = max(gaps["positions_cm"], math.dist(x["positions"][i], y["positions"][j]))
             gaps["uvs"] = max(gaps["uvs"], math.dist(x["uvs"][i], y["uvs"][j]))
+            corner_steps = 0
             for key, name in (("normals", "normal"), ("tangents", "tangent")):
                 u, v = x[key][i], y[key][j]
                 steps = round(max(abs(p - q) for p, q in zip(u, v)) / STEP)
+                corner_steps = max(corner_steps, steps)
                 if steps:
                     gaps[f"{name}_corners_differing"] += 1
                     gaps[f"{name}_steps"] = max(gaps[f"{name}_steps"], steps)
-                    gaps[f"{name}_deg"] = max(gaps[f"{name}_deg"], _angle_deg(u, v))
+                    valid = [math.sqrt(sum(c * c for c in w)) >= DEGENERATE for w in (u, v)]
+                    if all(valid):
+                        gaps[f"{name}_deg"] = max(gaps[f"{name}_deg"], _angle_deg(u, v))
+                    elif any(valid):
+                        gaps[f"{name}_degenerate_mismatches"] += 1
+            if detail and corner_steps:
+                worst_corners.append((corner_steps, {key: [x[key][i], y[key][j]] for key in
+                                                     ("positions", "normals", "tangents", "uvs")}))
     for key in ("positions_cm", "uvs", "tangent_deg"):
         if gaps[key] > SAME[key]:
             failures.append(f"{key} differ by {gaps[key]}")
+    for name in ("normal", "tangent"):
+        if gaps[f"{name}_degenerate_mismatches"]:
+            failures.append(f"{gaps[f'{name}_degenerate_mismatches']} corners have a degenerate {name} in one import only")
+    if detail:
+        gaps["worst_corners"] = [c for _s, c in sorted(worst_corners, key=lambda w: -w[0])[:detail]]
     if gaps["normal_steps"] > SAME["normal_steps"]:
         failures.append(f"normals differ by {gaps['normal_steps']} steps")
     if a["materials"] != b["materials"]:

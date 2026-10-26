@@ -194,6 +194,16 @@ class Gates(unittest.TestCase):
         moved = copy.deepcopy(reordered)               # nor does a corner moved by 0.01 cm
         moved["lod0"]["sections"][0]["positions"][3] = [1, 1, 0.01]
         self.assertTrue(any("no match" in f for f in G.same_import(quad, moved)[1]))
+        # A zero tangent in one import only: atan2(0, 0) reads 0 deg (s87's blind spot), so it is counted apart.
+        zero = copy.deepcopy(quad)
+        zero["lod0"]["sections"][0]["tangents"][3] = [0, 0, 0]
+        gaps, failures = G.same_import(quad, zero, detail=4)
+        self.assertEqual(gaps["tangent_degenerate_mismatches"], 1)       # vertex 3 is one corner's (of 2, 1, 3)
+        self.assertEqual(gaps["tangent_deg"], 0.0)
+        self.assertTrue(any("degenerate tangent in one import only" in f for f in failures), failures)
+        self.assertEqual(gaps["worst_corners"][0]["tangents"], [[1, 0, 0], [0, 0, 0]])
+        both = copy.deepcopy(zero)                     # degenerate in both: equal, not a mismatch
+        self.assertEqual(G.same_import(zero, both)[1], [])
 
 
 class Record(unittest.TestCase):
