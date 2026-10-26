@@ -73,7 +73,11 @@ def compare(source, actual):
     for label, section in (("source", source), ("Unreal", actual)):
         R.require(bool(section["positions"]) and bool(section["indices"]), label + " empty section")
         R.require(not G.section_problems(section), label + " malformed section")
-    pairing = G.corner_pairs(source, actual, tol=.001)
+    # The source-to-render positions here differ only by float32 packing. A
+    # millimetre-scale matching radius can pair adjacent fine-detail triangles
+    # with different UVs/normals. Keep this stricter than the historical
+    # original-import vs corrected-import socket probe's matching radius.
+    pairing = G.corner_pairs(source, actual, tol=.00005)
     R.require(pairing is not None, "triangle geometry or winding changed")
     pairs, method = pairing
     result = {"corners": len(pairs), "pairing": method, "position_cm": 0.0, "uv": 0.0,
@@ -91,7 +95,7 @@ def compare(source, actual):
                 result["tangent_degrees"] = max(result["tangent_degrees"], G._angle_deg(a, b))
     # Unreal stores the basis as FPackedNormal; allow at most two component steps
     # for source-to-packed normals and two degrees for its tangent readback.
-    limits = {"position_cm": .001, "uv": .000002, "normal_component": 2/127,
+    limits = {"position_cm": .00005, "uv": .000002, "normal_component": 2/127,
               "tangent_degrees": 2.0, "degenerate_mismatches": 0}
     failed = [f"{key}={result[key]} > {limit}" for key, limit in limits.items() if result[key] > limit]
     return result, failed

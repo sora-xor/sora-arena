@@ -184,6 +184,18 @@ class WeaponReview(unittest.TestCase):
             with self.subTest(defect=defect), self.assertRaises(RuntimeError):
                 V.compare(source, damaged)
 
+    def test_fine_adjacent_triangles_are_not_paired_across_uv_seams(self):
+        points = [[0, 0, 0], [1, 0, 0], [0, 1, 0]]
+        source = {"positions": points + [[x+.0005, y, z] for x, y, z in points],
+                  "indices": [0, 1, 2, 3, 4, 5], "normals": [[0, 0, 1]]*6,
+                  "tangents": [[1, 0, 0]]*6,
+                  "uvs": [[0, 0], [.4, 0], [0, .4], [.6, .6], [1, .6], [.6, 1]]}
+        actual = copy.deepcopy(source)
+        actual["indices"] = [3, 4, 5, 0, 1, 2]
+        measured, failures = V.compare(source, actual)
+        self.assertEqual(failures, [])
+        self.assertEqual(measured["position_cm"], 0)
+
 
 if __name__ == "__main__":
     unittest.main()
