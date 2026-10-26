@@ -6,6 +6,7 @@
 #include "SoraPlayerCharacter.h"
 #include "SoraWorldBuilder.h"
 #include "SoraText.h"
+#include "SoraTenementRules.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -18,7 +19,8 @@ FVector USoraCampaignDirector::RecoveryApproach() const
     // its last movement step (and both landings remain exactly 700 cm apart).
     const float FloorGap=(UCharacterMovementComponent::MIN_FLOOR_DIST+UCharacterMovementComponent::MAX_FLOOR_DIST)*.5f;
     const float Height=Hero?Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+FloorGap:100.f;
-    return Space?FVector(Space->Recovery.X+270.f,Space->Recovery.Y+110.f,Height):FVector::ZeroVector;
+    return Space?FVector(Space->Recovery.X+(Space->bTenements?130.f:270.f),
+        Space->Recovery.Y+(Space->bTenements?0.f:110.f),Height):FVector::ZeroVector;
 }
 FVector USoraCampaignDirector::RecoveryBottom() const
 {
@@ -77,6 +79,9 @@ bool USoraCampaignDirector::InteractRecovery(ASoraPlayerCharacter& Hero)
         }
         else
         {
+            // The lining scroll shares this narrow shaft. The interaction
+            // at its actual height can take the find as the ascent begins.
+            if(ActiveSpace()->bTenements)PickUp();
             RecoveryClimb=ERecoveryClimb::Up;
             Hero.GetCharacterMovement()->SetMovementMode(MOVE_None);
         }
@@ -84,7 +89,7 @@ bool USoraCampaignDirector::InteractRecovery(ASoraPlayerCharacter& Hero)
     }
     if(FVector::Dist(Hero.GetActorLocation(),RecoveryApproach())<160.f)
     {
-        RecoveryClimb=ERecoveryClimb::Enter;
+        RecoveryClimb=ActiveSpace()->bTenements?ERecoveryClimb::Align:ERecoveryClimb::Enter;
         Hero.GetEquipment()->Halt();
         Hero.GetCharacterMovement()->StopMovementImmediately();
         Hero.GetCharacterMovement()->SetMovementMode(MOVE_None);
@@ -116,15 +121,21 @@ void USoraCampaignDirector::TickEquipmentRecovery(int32 DeltaMs)
         // Ordinary input begins and holds traversal. Each step sweeps the
         // real capsule, so blocked ropes cannot grant pickup or teleport.
         if(!Held) return;
-        FVector Target=RecoveryBottom()+FVector(0,0,Task.RecoveryDepthCm);
-        if(RecoveryClimb==ERecoveryClimb::Down) Target=RecoveryBottom();
-        else if(RecoveryClimb==ERecoveryClimb::Exit) Target=RecoveryApproach();
+        const float RimClear=ActiveSpace()->bTenements?SoraTenementRules::Curb+5.f:0.f;
+        FVector Target=RecoveryBottom()+FVector(0,0,Task.RecoveryDepthCm+RimClear);
+        if(RecoveryClimb==ERecoveryClimb::Align||RecoveryClimb==ERecoveryClimb::Lower)Target=RecoveryApproach();
+        else if(RecoveryClimb==ERecoveryClimb::Rise||RecoveryClimb==ERecoveryClimb::Exit)
+            Target=RecoveryApproach()+FVector(0,0,RimClear);
+        else if(RecoveryClimb==ERecoveryClimb::Down) Target=RecoveryBottom();
         const FVector Next=FMath::VInterpConstantTo(Hero->GetActorLocation(),Target,DeltaMs/1000.f,140.f);
         FHitResult Hit;
         Hero->SetActorLocation(Next,true,&Hit,ETeleportType::None);
         if(FVector::Dist(Hero->GetActorLocation(),Target)>1.f) return;
-        if(RecoveryClimb==ERecoveryClimb::Enter) RecoveryClimb=ERecoveryClimb::Down;
+        if(RecoveryClimb==ERecoveryClimb::Align) RecoveryClimb=ERecoveryClimb::Rise;
+        else if(RecoveryClimb==ERecoveryClimb::Rise) RecoveryClimb=ERecoveryClimb::Enter;
+        else if(RecoveryClimb==ERecoveryClimb::Enter) RecoveryClimb=ERecoveryClimb::Down;
         else if(RecoveryClimb==ERecoveryClimb::Up) RecoveryClimb=ERecoveryClimb::Exit;
+        else if(RecoveryClimb==ERecoveryClimb::Exit&&ActiveSpace()->bTenements)RecoveryClimb=ERecoveryClimb::Lower;
         else
         {
             const bool Bottom=RecoveryClimb==ERecoveryClimb::Down;

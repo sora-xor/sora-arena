@@ -152,8 +152,18 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
     if(Beat.Task.RecoveryWeapons!=0u)
     {
         const FVector P=Floor(Space.Recovery,-Beat.Task.RecoveryDepthCm+12.f);
-        RecoveryBundle.Add(KitShape(TEXT("SwordBundle"),KitCube,P+FVector(-65,65,5),FVector(1.1f,.35f,.2f),FLinearColor(.38f,.3f,.16f),TEXT("Timber")));
-        RecoveryBundle.Add(KitShape(TEXT("BowBag"),KitCube,P+FVector(-65,95,4),FVector(2.2f,.16f,.12f),FLinearColor(.24f,.27f,.2f)));
+        if(Space.bTenements)
+        {
+            // Long weapons stand against the lining; a two-metre horizontal
+            // bow bag cannot fit through the authored 90 cm bore.
+            RecoveryBundle.Add(KitShape(TEXT("SwordBundle"),KitCube,P+FVector(30,22,60),FVector(.08f,.16f,1.2f),FLinearColor(.38f,.3f,.16f),TEXT("Timber")));
+            RecoveryBundle.Add(KitShape(TEXT("BowBag"),KitCube,P+FVector(38,-5,110),FVector(.08f,.12f,2.2f),FLinearColor(.24f,.27f,.2f)));
+        }
+        else
+        {
+            RecoveryBundle.Add(KitShape(TEXT("SwordBundle"),KitCube,P+FVector(-65,65,5),FVector(1.1f,.35f,.2f),FLinearColor(.38f,.3f,.16f),TEXT("Timber")));
+            RecoveryBundle.Add(KitShape(TEXT("BowBag"),KitCube,P+FVector(-65,95,4),FVector(2.2f,.16f,.12f),FLinearColor(.24f,.27f,.2f)));
+        }
     }
     KitWork=Space.Work;
     KitAnchor=Floor(Space.Anchor,Space.HeightCm);
@@ -528,7 +538,7 @@ void ASoraWorldBuilder::ShowPickups(const FSoraChapter& Chapter,const TArray<int
         if(!Chapter.Space.Pickups.IsValidIndex(Index)) continue;
         const FSoraPickup& Pickup=Chapter.Space.Pickups[Index];
         const FString& Category=Chapter.Collectibles[Pickup.Collectible].Category;
-        const FVector P=Floor(Pickup.At);
+        const FVector P=Floor(Pickup.At,Pickup.HeightCm);
         auto Add=[&](const TCHAR* Asset,FVector Offset,FVector Scale,FLinearColor Color)
         {
             auto* Mesh=Shape(this,RootComponent,FString::Printf(TEXT("Pickup%d"),Index),Asset,P+Offset,Scale,Color);
@@ -538,7 +548,14 @@ void ASoraWorldBuilder::ShowPickups(const FSoraChapter& Chapter,const TArray<int
         };
         // A scroll on a low stand, a seizure notice with its seal, a stone
         // marked with the sky mon, a lacquered heirloom box, or a registry book.
-        if(Category==TEXT("scroll_fragment"))
+        if(Chapter.Collectibles[Pickup.Collectible].Id==TEXT("ch03.c03"))
+        {
+            // The dry-well find sits in the lining, leaving the 90 cm bore
+            // clear. The generic low stand would occupy the climber's feet.
+            Add(KitCube,FVector(-44,0,0),FVector(.02f,.38f,.12f),KitTimber);
+            Add(KitCylinder,FVector(-38,0,4),FVector(.08f,.08f,.32f),FLinearColor(.9f,.86f,.74f))->SetRelativeRotation(FRotator(0,0,90));
+        }
+        else if(Category==TEXT("scroll_fragment"))
         {
             Add(KitCube,FVector(0,0,20),FVector(.5f,.4f,.4f),KitTimber);
             Add(KitCylinder,FVector(0,0,46),FVector(.08f,.08f,.42f),FLinearColor(.9f,.86f,.74f))->SetRelativeRotation(FRotator(0,0,90));

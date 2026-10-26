@@ -652,6 +652,7 @@ struct FSoraBeatSpace
     bool bHorseTreatment=false;
     bool bLanding=false;
     bool bWardGate=false;
+    bool bTenements=false;
     bool bHorseShell=false;
     bool bHorseWithdrawal=false;
     FSoraHelmSpace Helm;
@@ -714,6 +715,7 @@ struct FSoraPickup
     int32 Collectible = INDEX_NONE;
     int32 Zone = INDEX_NONE;
     FVector2D At = FVector2D::ZeroVector;
+    int32 HeightCm = 0;
 };
 struct FSoraSpace
 {

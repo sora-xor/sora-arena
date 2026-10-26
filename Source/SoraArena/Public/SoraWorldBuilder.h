@@ -145,6 +145,7 @@ public:
     void BuildMoat(const FSoraBeat& Beat);
     void BuildLanding(const FSoraZone& Zone);
     void BuildWardGate(const FSoraZone& Zone);
+    void BuildTenements();
     void BuildClimb(const FSoraBeat& Beat);
     void BuildRelayRoom(const FSoraBeat& Beat);
     void BuildPalace(const FSoraZone& Zone);
@@ -216,7 +217,7 @@ public:
     TArray<FVector> NodePositions;
 private:
     // Campaign spaces (SoraWorldBuilderLayout.cpp, SoraWorldBuilderLayoutZones.cpp).
-    void BuildArena(int32 MapId, bool bSites);
+    void BuildArena(int32 MapId, bool bSites, bool bTenements=false);
     void BuildCampaign(const FSoraChapter& Chapter);
     void BuildChapterWood(const FSoraChapter& Chapter);
     TArray<FVector> WoodFloors;

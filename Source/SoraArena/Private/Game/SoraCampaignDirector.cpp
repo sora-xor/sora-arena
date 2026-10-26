@@ -1188,6 +1188,14 @@ ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int
         Route.bThreeDimensional=true;Route.bSupportedSegments=true;
         Post=Route.Points[0];
     }
+    if(Space->bTenements&&ActiveBeatData()->Id==TEXT("ch03.b05")&&Space->Patrols.IsValidIndex(GuardIndex))
+    {
+        Route.Points.Reset();
+        for(const auto& P:Space->Patrols[GuardIndex])Route.Points.Add(FVector(P,90));
+        Route.PeriodMs=45000;Route.PauseMs=0;
+        Route.bThreeDimensional=true;Route.bSupportedSegments=true;
+        Post=Route.Points[0];
+    }
     if(Route.Points.IsEmpty()) Route.Points.Add(FVector(Post.X,Post.Y,90.f));
     // A route of two points is walked back and forth; a longer one loops. A
     // guard the chapter posts keeps the first point of its round as its post.

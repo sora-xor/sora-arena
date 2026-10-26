@@ -209,7 +209,7 @@ void ASoraWorldBuilder::Build(int32 MapId,const FSoraChapter* Chapter)
     if(Chapter) BuildCampaign(*Chapter);
     else BuildArena(MapId,true);
 }
-void ASoraWorldBuilder::BuildArena(int32 MapId,bool bSites)
+void ASoraWorldBuilder::BuildArena(int32 MapId,bool bSites,bool bTenements)
 {
     const FLinearColor Accent=FSoraCatalog::Get().Map(MapId).Accent;
     Box(TEXT("Ground"),FVector(0,0,-50),FVector(6400,5200,100),FLinearColor(.14f,.16f,.13f),true,FRotator::ZeroRotator,TEXT("Soil"));
@@ -220,13 +220,33 @@ void ASoraWorldBuilder::BuildArena(int32 MapId,bool bSites)
         Box(TEXT("CentralRoad"),FVector(0,0,2),FVector(5600,660,5),FLinearColor(.29f,.30f,.28f),false,FRotator::ZeroRotator,TEXT("Stone"));
     for(int32 S:{-1,1})
     {
-        auto* WallX=Box(FString::Printf(TEXT("WallX%d"),S),FVector(S*3150,0,220),FVector(100,5200,540),FLinearColor(.2f,.23f,.23f),true,FRotator::ZeroRotator,TEXT("Stone"));
-        auto* WallY=Box(FString::Printf(TEXT("WallY%d"),S),FVector(0,S*2550,220),FVector(6400,100,540),FLinearColor(.2f,.23f,.23f),true,FRotator::ZeroRotator,TEXT("Stone"));
+        const bool WestJoin=bTenements&&MapId==1&&S==-1;
+        auto* WallX=Box(FString::Printf(TEXT("WallX%d"),S),FVector(S*3150,WestJoin?-1425:0,220),
+            FVector(100,WestJoin?2350:5200,540),FLinearColor(.2f,.23f,.23f),true,FRotator::ZeroRotator,TEXT("Stone"));
+        UStaticMeshComponent* WallY=nullptr;
+        if(bTenements&&MapId==1&&S==1)
+        {
+            // Keep the old wall outside the alley/court and the 1.2 m
+            // north passage. The new district owns those openings.
+            Box(TEXT("WardNorthWallWest"),FVector(-1630,2550,220),FVector(1140,100,540),
+                FLinearColor(.2f,.23f,.23f),true,FRotator::ZeroRotator,TEXT("Stone"));
+            WallY=Box(TEXT("WardNorthWallEast"),FVector(1130,2550,220),FVector(4140,100,540),
+                FLinearColor(.2f,.23f,.23f),true,FRotator::ZeroRotator,TEXT("Stone"));
+        }
+        else WallY=Box(FString::Printf(TEXT("WallY%d"),S),FVector(0,S*2550,220),FVector(6400,100,540),FLinearColor(.2f,.23f,.23f),true,FRotator::ZeroRotator,TEXT("Stone"));
         if(MapId==0) EstatePerimeter(S,WallX,WallY);
         for(int32 I=0;I<5;++I)
         {
             FVector P(-2000+I*1000,S*(MapId==1?1200:1800),0);
             const float Height=MapId==3?780.f:330.f+(I%2)*100.f;
+            if(bTenements&&MapId==1&&S==1&&I==1)
+            {
+                // Split this house around the authored side passage. Its
+                // foundations, rather than just the walls, clear all 120 cm.
+                for(float X:{-1201.25f,-798.75f})
+                    Building(FVector(X,P.Y,0),FVector(247.5f,700,Height),FLinearColor(.63f,.56f,.40f),false);
+                continue;
+            }
             const int32 BuildingStart=Pieces.Num();
             Building(P,FVector(650,700,Height),MapId==3?FLinearColor(.12f,.15f,.19f):FLinearColor(.63f,.56f,.40f),MapId>=2);
             if(MapId==0) EstateHall(I,S,P,BuildingStart);

@@ -15,6 +15,7 @@
 #include "SoraCatalogMoat.h"
 #include "SoraCatalogLanding.h"
 #include "SoraCatalogWardGate.h"
+#include "SoraCatalogTenements.h"
 #include "SoraCatalog.h"
 #include "SoraCatalogJson.h"
 #include "SoraStealthRules.h"
@@ -916,7 +917,7 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
         }
         const auto Lift=O->TryGetField(TEXT("lift"));
         if(!Int(*O,TEXT("height_cm"),B.HeightCm)||!Lift.IsValid()||
-            B.HeightCm!=((Beat.Id==TEXT("ch06.b09")||Beat.Id==TEXT("ch06.b10"))?600:Beat.Id==TEXT("ch08.b11")?2700:Beat.Id==TEXT("ch08.b12")?14200:SummitBeat?16000:0))
+            B.HeightCm!=(Beat.Id==TEXT("ch03.b13")?45:(Beat.Id==TEXT("ch06.b09")||Beat.Id==TEXT("ch06.b10"))?600:Beat.Id==TEXT("ch08.b11")?2700:Beat.Id==TEXT("ch08.b12")?14200:SummitBeat?16000:0))
             return Bad(Beat.Id+TEXT(" floor height"));
         B.Lift.bEnabled=Lift->Type!=EJson::Null;
         if(B.Lift.bEnabled!=(Beat.Id==TEXT("ch08.b11"))) return Bad(Beat.Id+TEXT(" physical lift"));
@@ -1083,6 +1084,7 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
         if(!SoraCatalogMoat::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" physical moat"));
         if(!SoraCatalogLanding::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" west landing"));
         if(!SoraCatalogWardGate::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" ward gate"));
+        if(!SoraCatalogTenements::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" back tenements"));
         for (const FSoraDefendedPerson& Person : B.Fieldcraft.People)
             if (Person.Target == INDEX_NONE && (!S.Zones.IsValidIndex(B.Zone) ||
                 !S.Zones[B.Zone].Rect.IsInside(Person.At + FVector2D(80,80)) || !S.Zones[B.Zone].Rect.IsInside(Person.At - FVector2D(80,80)) ||
@@ -1099,6 +1101,9 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
             !SpacePoint(O->TryGetField(TEXT("at")), Pickup.At))
             return Bad(TEXT("invalid pickup"));
         Pickup.Collectible = C.Collectibles.IndexOfByPredicate([&](const FSoraCollectible& Item) { return Item.Id == Id; });
+        if(O->HasField(TEXT("height_cm"))&&!Int(*O,TEXT("height_cm"),Pickup.HeightCm))return Bad(TEXT("pickup height"));
+        const int32 ExpectedHeight=Id==TEXT("ch03.c03")?-650:Id==TEXT("ch03.c05")?125:0;
+        if(Pickup.HeightCm!=ExpectedHeight)return Bad(TEXT("authored pickup height"));
         if (!C.Collectibles.IsValidIndex(Pickup.Collectible) || C.Collectibles[Pickup.Collectible].Pickup != INDEX_NONE)
             return Bad(FString::Printf(TEXT("pickup for %s"), *Id));
         C.Collectibles[Pickup.Collectible].Pickup = S.Pickups.Num();

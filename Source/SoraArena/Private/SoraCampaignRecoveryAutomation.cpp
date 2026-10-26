@@ -39,6 +39,10 @@ bool FSoraCampaignRecoveryTest::RunTest(const FString& Parameters)
     if(!TestTrue(TEXT("Recovery checkpoint starts"),Seed(4)&&Start())) return false;
     auto* Campaign=World->Mode()->Campaign();
     auto* Hero=World->Player();
+    const auto* Scroll=FSoraCatalog::Get().Chapter(2).Collectibles.FindByPredicate(
+        [](const FSoraCollectible& Item){return Item.Id==TEXT("ch03.c03");});
+    if(!TestNotNull(TEXT("The authored well scroll exists"),Scroll))return false;
+    const uint64 ScrollBit=SoraCampaignRules::CollectibleBit(2,Scroll->MaskBit);
     // Hold opponents in place to isolate this traversal test. The full
     // playthrough deals with these same guards before its retrieval.
     const auto HoldGuards=[&]() {
@@ -59,8 +63,12 @@ bool FSoraCampaignRecoveryTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("Wakizashi remains usable"),Campaign->ArmsReady(4,0,false));
     if(!World->PressKey(EKeys::E)) return false;
     TestTrue(TEXT("Distant Interact cannot recover equipment"),Campaign->NeedsEquipmentRecovery());
+    if(!TestTrue(TEXT("The court beside the well is reached through movement input"),
+        SoraRecoveryAutomation::WalkTo(*World,FVector(-3220,3350,90)))||!World->PressKey(EKeys::E))return false;
+    TestEqual(TEXT("Nearby court interaction cannot take the scroll seven metres below"),Campaign->CollectedMask()&ScrollBit,uint64(0));
     if(!TestTrue(TEXT("The rope is reached through movement input"),SoraRecoveryAutomation::WalkTo(*World,Campaign->RecoveryApproach()))) return false;
     const FVector Surface=Hero->GetActorLocation();
+    TestEqual(TEXT("The lining scroll cannot be collected from the surface"),Campaign->CollectedMask()&ScrollBit,uint64(0));
     if(!World->InjectKey(EKeys::E,IE_Pressed)||!World->Tick(180)||!World->InjectKey(EKeys::E,IE_Released)||!World->Tick(1)) return false;
     const FVector Paused=Hero->GetActorLocation();
     TestTrue(TEXT("The rope moves the capsule down the shaft"),Paused.Z<Surface.Z-50.f);
@@ -88,6 +96,7 @@ bool FSoraCampaignRecoveryTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("Restored bow can be selected"),Hero->GetEquipment()->EquipCampaignWeapon(18));
     if(!TestTrue(TEXT("Real held input climbs back to the courtyard"),SoraRecoveryAutomation::Rope(*World))) return false;
     TestTrue(TEXT("The player exits onto solid ground"),Hero->GetActorLocation().Z>0&&Hero->GetCharacterMovement()->IsMovingOnGround());
+    TestEqual(TEXT("The bottom interaction collects the lining scroll"),Campaign->CollectedMask()&ScrollBit,ScrollBit);
     auto* Save=Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(Slot,0));
     if(!TestNotNull(TEXT("Beat-start checkpoint still exists"),Save)) return false;
     TestEqual(TEXT("Retrieval alone does not invent a mid-beat checkpoint"),Save->CheckpointBeat,4);
@@ -95,6 +104,7 @@ bool FSoraCampaignRecoveryTest::RunTest(const FString& Parameters)
     if(!TestTrue(TEXT("Recovery beat reloads in a fresh world"),Start())) return false;
     Campaign=World->Mode()->Campaign(); Hero=World->Player();
     TestTrue(TEXT("Reload requires recovery again"),Campaign->NeedsEquipmentRecovery());
+    TestEqual(TEXT("The lining find persists across a fresh-world load"),Campaign->CollectedMask()&ScrollBit,ScrollBit);
     TestEqual(TEXT("Reload restores wakizashi restriction"),Hero->WeaponId,4);
     HoldGuards();
     if(!SoraRecoveryAutomation::WalkTo(*World,Campaign->RecoveryApproach())||

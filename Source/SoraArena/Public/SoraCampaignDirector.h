@@ -569,7 +569,7 @@ private:
     void TickRelay(float DeltaSeconds);
     bool InteractRelay();
     void RelayCaught(int32 AgeMs=0);
-    enum class ERecoveryClimb : uint8 { None, Enter, Down, Up, Exit };
+    enum class ERecoveryClimb : uint8 { None, Align, Rise, Enter, Down, Up, Exit, Lower };
     ERecoveryClimb RecoveryClimb=ERecoveryClimb::None;
     bool bStringingBow=false;
     void ResetEquipmentRecovery();

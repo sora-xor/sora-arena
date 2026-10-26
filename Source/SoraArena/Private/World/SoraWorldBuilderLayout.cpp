@@ -26,10 +26,13 @@ void ASoraWorldBuilder::BuildCampaign(const FSoraChapter& Chapter)
     const FSoraSpace& Space=Chapter.Space;
     RecoveryHatch=nullptr;
     // The hub arena brings its own light; a chapter without one is lit as its map.
-    if(Space.Hub!=INDEX_NONE) BuildArena(Space.Hub,false);
+    const bool bTenements=Chapter.Beats.ContainsByPredicate([](const FSoraBeat& B){return B.Space.bTenements;});
+    if(Space.Hub!=INDEX_NONE) BuildArena(Space.Hub,false,bTenements);
     else Lighting(Chapter.Map);
     for(int32 Index=0;Index<Space.Zones.Num();++Index)
     {
+        if(bTenements&&Space.Zones[Index].Id==TEXT("pl_ura_nagaya"))
+        { BuildTenements();continue; }
         if(Chapter.Beats.ContainsByPredicate([Index](const FSoraBeat& B){return B.Space.Zone==Index&&B.Space.bLanding;}))
         { BuildLanding(Space.Zones[Index]);continue; }
         if(Chapter.Beats.ContainsByPredicate([Index](const FSoraBeat& B){return B.Space.Zone==Index&&B.Space.bWardGate;}))
@@ -67,7 +70,7 @@ void ASoraWorldBuilder::BuildCampaign(const FSoraChapter& Chapter)
         const int32 Zone=Space.ZoneAt(P);
         NodePositions.Add(P);
         if(Chapter.Beats.ContainsByPredicate([Zone](const FSoraBeat& B)
-            { return B.Space.Zone==Zone&&(B.Space.RelayRoom.bEnabled||B.Space.RegistryHall.bEnabled); }))
+            { return B.Space.Zone==Zone&&(B.Space.RelayRoom.bEnabled||B.Space.RegistryHall.bEnabled||B.Space.bTenements); }))
         {
             // The relay controls or registry desks own this site's physical work.
             // A second generic production pedestal would obstruct the exit.

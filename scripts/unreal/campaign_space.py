@@ -661,6 +661,8 @@ def derive_space(chapter, beats, places, collectibles, triggers, layout, fail):
     place_landing(beats, records, zones, layout, fail)
     from campaign_ward_gate import place_ward_gate
     place_ward_gate(beats, records, zones, layout, fail)
+    from campaign_tenements import place_tenements
+    place_tenements(beats, records, zones, sites, pickups, layout, fail)
     from campaign_press import place_press_hall
     place_press_hall(beats, records, zones, pickups, fail)
     from campaign_relay import place_relay

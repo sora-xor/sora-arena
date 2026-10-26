@@ -601,7 +601,8 @@ TArray<int32> USoraCampaignDirector::LoosePickups() const
 FVector USoraCampaignDirector::PickupLocation(int32 Pickup) const
 {
     const FSoraChapter* Chapter=ActiveChapter();
-    return Chapter&&Chapter->Space.Pickups.IsValidIndex(Pickup)?ASoraWorldBuilder::Floor(Chapter->Space.Pickups[Pickup].At):FVector::ZeroVector;
+    return Chapter&&Chapter->Space.Pickups.IsValidIndex(Pickup)?ASoraWorldBuilder::Floor(
+        Chapter->Space.Pickups[Pickup].At,Chapter->Space.Pickups[Pickup].HeightCm):FVector::ZeroVector;
 }
 void USoraCampaignDirector::ShowPickups()
 {
@@ -614,7 +615,7 @@ bool USoraCampaignDirector::PickUp()
     if(!Chapter||!Save) return false;
     // A loose collectible within reach goes to the codex, and the find is kept at once.
     for(const int32 Index:LoosePickups())
-        if(Near(PickupLocation(Index),SoraCampaignReach::Interact))
+        if(NearFloor(PickupLocation(Index),SoraCampaignReach::Interact))
         {
             const FSoraCollectible& Item=Chapter->Collectibles[Chapter->Space.Pickups[Index].Collectible];
             Save->Collectibles=static_cast<int64>(CollectedMask()|SoraCampaignRules::CollectibleBit(ChapterId,Item.MaskBit));
