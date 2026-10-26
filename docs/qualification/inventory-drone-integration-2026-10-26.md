@@ -40,11 +40,12 @@ through the disc versus empty movement-sphere space, and falling defeat.
 AI is held in that collision fixture. The actual flight loops remain the
 responsibility of LedgerPatrols and the other encounter tests.
 
-Still required: a successful editor build and import, DroneBody,
+Still required: a successful import, DroneBody,
 LedgerPatrols with the 0.1 cm altitude check, LedgerRoute, RegistryPatrols,
 archery and horse-shell regressions, drone crossing/convoy/lift/boss routes,
 in-game visual review, cooked/package evidence, SM5/SM6 performance, and final
-art acceptance. No Unreal process has validated this checkpoint yet.
+art acceptance. The C++ editor build passes, but import admission is not yet
+complete, so none of the new runtime tests has run.
 
 CPU validation: 104 distinct source gates pass (59 gameplay, 27 tooling,
 18 assets). The first run retained four asset failures caused by existing
@@ -54,3 +55,30 @@ the same Git source identity. The eight drone admission tests include corrupt
 FBX bytes, a changed source record, wrong scale/pivot, an outlying vertex still
 inside the AABB, missing LODs, and reversed or scaled sockets. These source
 checks do not compile C++ or execute Unreal collisions.
+
+## Actual editor import attempts
+
+All three attempts below retain original logs, natural process exit receipts,
+source/native input hashes and Config/Generated snapshots in the complete-game
+worktree's `Saved/Qualification/2026-10-26`. No source input or Config changed
+during a run. Generated changes stayed inside the InventoryDrone folder.
+The editor returned zero even when Python raised; the enclosing harness
+correctly rejected each attempt.
+
+| Source | Build | Import result |
+| --- | --- | --- |
+| `4a7401a3` | Pass | LOD threshold readback failed after the material edit. |
+| `a1672075` | Pass | Moving threshold assignment after the material edit fixes the LOD check. Geometry passes; socket enumeration fails because UE 5.8 protects the array property. |
+| `0eb8c5e5` | Pass | Public component socket enumeration works. Both source sockets import at about 100× scale and point backward, so socket admission fails. |
+
+The final measured positions are correct: Eye is approximately
+(36.22, 0, 0) cm and NetMuzzle (7.677, 0, -15.177) cm. Their forward axes are
+(-1, 0, 0) and (-0.7071, 0, +0.7071), respectively. Expected scale remains one,
+with forward Eye +X and the net muzzle forward/down. No replacement sockets
+were created and the checks were not relaxed. Claude received the measured
+failure and the engine lane for a scoped source-export correction.
+
+Independent review SHA-256 values, in table order:
+`bcf8e33eeaeb6de82befc2bc3578e4ca17907f57ce8537e1e139e40dad0f80ec`,
+`522bcdd883ce8214ef596935408d3f8ec808c81560ad9e81de1bb39960f7db5d`,
+`d852e4263f89930e87fb2c504c7641f7350079950b943cbe4446f7d2c7932ce5`.

@@ -1784,6 +1784,23 @@ chapter-six data hash; no art mesh or texture was regenerated.
 
 ## Milestones and evidence
 
+The latest drone checkpoint `4a7401a3` passes all 113 source CI gates in run
+40258894484, with all five artifact groups, raw logs and identical tested/source
+tree independently authenticated. This does not qualify Unreal behavior.
+Its editor build passes. Two importer API/order corrections subsequently pass
+actual geometry and LOD readback at `0eb8c5e5`, but the FBX sockets arrive at
+100× scale and point backward. The import is rejected; the prepared 24 runtime
+regressions have not launched. Claude owns the engine lane for the scoped
+export correction. See the [drone record](qualification/inventory-drone-integration-2026-10-26.md).
+
+The [palace fusuma checkpoint](qualification/palace-fusuma-2026-10-26.md)
+adds three solid sliding leaves, occupied-path stop/resume, a 400 cm stealth
+noise impulse, pause/retry handling and bilingual prompts. All 59 CPU gameplay
+gates passed against its frozen working inputs. Its Unreal build, mapped
+interaction tests, audible slide asset and fitted artwork remain unqualified.
+The door implementation does not close ordinary stealth, alarm shutter,
+reinforcement, silent-edge-access or final-art gates.
+
 | ID | Deliverable | Owner | Current state / completion evidence |
 | --- | --- | --- | --- |
 | T1 | Reproducible Mac development toolchain | Codex toolchain lane | UE 5.8.3 / CL 58210709 installed and identity checked on M2 Ultra. Xcode 26.1.1 / 17B100, SDK 26.1 and Metal 17B54 installed; doctor and editor build pass. Full imports/validators pass for 280 original-art, 345 CC0 and 267 audio packages, 27 VFX systems, the craft prop and 12 dojo-kit modules. Actual SM5 and SM6 captures pass on this M2 Ultra. Xcode 27 and global selection are preserved; that compiler has not been qualified for this project. |
