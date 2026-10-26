@@ -630,7 +630,7 @@
      "outputs": {
       "Saved/NyaakotoThirdPerson/Unreal/s128_lod_materials_check.json": "2b0f9f6a60f0206d401dca5f13c0744877ddd999184b59029f7efadaec93e04a"
      },
-     "result": "PASS: on LOD0, LOD1 and LOD2, Unreal's 23 sections (each read through GetLODMaterialSlot, so through LODMaterialMap) pair with the export's 23 polygon runs, and the triangles Unreal renders per material equal ours by name. 17 of LOD2's sections are remapped, so the export's raw LOD2 indices are a permutation of ours (FbxSkeletalMeshExport.cpp:226 writes Section.MaterialIndex)."
+     "result": "PASS: on LOD0, LOD1 and LOD2, Unreal's 23 sections (each read through GetLODMaterialSlot, so through LODMaterialMap) pair with the export's 23 polygon runs, and the number of triangles Unreal renders with each material equals ours, by name (per-material triangle counts and routing, not per-face identity; root, 20:37 UTC). 17 of LOD2's sections are remapped, so the export's raw LOD2 indices are a permutation of ours (FbxSkeletalMeshExport.cpp:226 writes Section.MaterialIndex)."
     },
     {
      "check": "paw coat, reader v1",
@@ -666,7 +666,19 @@
       "Saved/W18Rebuild/coat_fbx_r3_v3/SK_NyaagyuSamurai_LOD2.json": "723ff090a37b64f25e8c95ece6cd6adff781bef5187ec2366165b201f1ec5a37",
       "Saved/W18Rebuild/coat_fbx_r3_v3/s128_SK_NyaagyuSamurai_lods_morphs.json": "dff14eefc58a6eb559c642b995fe5e839de473d33d2c0800953393dc6fa66034"
      },
-     "result": "A strand is an isolated polygon reaching more than FUZZ_MAX + 0.05 mm (0.85 mm) off the paw's surface: strands reach 0.9005 mm and more, Unreal's isolated skin triangles 0.6707 mm at most. Axis maps: ours half_turn_z, Unreal's identity, the skin's p99 0.626-0.634 mm off the surface (the next map 280 mm). In our LOD0, LOD1 and LOD2 and in Unreal's export of each, the paws' skin corners are equal (R/L 73,188/73,152; 32,232/32,232; 13,500/13,488) and so are the strands (5,277/5,278; 1,801/1,829; none). 78.88-79.46% of the skin corners are tabby (R < 0.05), 13.35-13.72% white (R > 0.95); every corner of the back (coat 0) is tabby, R 0.0; the largest difference from the coat the paw module computes is 0.0039 (one byte is 0.00392). The strands are 83.32-84.96% tabby and 9.72-10.88% white. Unreal's LOD2 lists M_Hero_IndigoSilk by the export's raw index; the LOD-material check above is what Unreal renders."
+     "result": "A strand is an isolated polygon reaching more than FUZZ_MAX + 0.05 mm (0.85 mm) off the paw's surface: strands reach 0.9005 mm and more, Unreal's isolated skin triangles 0.6707 mm at most. Axis maps: ours half_turn_z, Unreal's identity, the skin's p99 0.626-0.634 mm off the surface (the next map 280 mm). In our LOD0, LOD1 and LOD2 and in Unreal's export of each, the paws' skin corners are equal (R/L 73,188/73,152; 32,232/32,232; 13,500/13,488) and so are the strands (5,277/5,278; 1,801/1,829; none). 78.88-79.46% of the skin corners are tabby (R < 0.05), 13.35-13.72% white (R > 0.95); every corner of the back (coat 0) is tabby, R 0.0; the largest difference from the coat the paw module computes rounds to 0.0039 (one byte is 0.00392); v4 gives it unrounded. The strands are 83.32-84.96% tabby and 9.72-10.88% white. Unreal's LOD2 lists M_Hero_IndigoSilk by the export's raw index; the LOD-material check above is what Unreal renders."
+    },
+    {
+     "check": "paw coat, reader v4",
+     "at": "2026-10-26T20:41Z",
+     "command": "python3.11 scripts/art/inspect_fbx_paw_coat.py <fbx> Saved/W18Rebuild/coat_fbx_r3_v4/<name>.json, for the same four files",
+     "outputs": {
+      "Saved/W18Rebuild/coat_fbx_r3_v4/SK_NyaagyuSamurai.json": "09ac0e5d013fb3ebc4a72d4efa9248c23a122dde4dcd03ebffbf124d52eef161",
+      "Saved/W18Rebuild/coat_fbx_r3_v4/SK_NyaagyuSamurai_LOD1.json": "4a681d25e164ef5f240502ef167726692f31350afefc8342dc85c6f52e4a49f5",
+      "Saved/W18Rebuild/coat_fbx_r3_v4/SK_NyaagyuSamurai_LOD2.json": "5ee968b41c3b5797162a22290c052cd2a2c1436bb73443842ae116965dde3ed4",
+      "Saved/W18Rebuild/coat_fbx_r3_v4/s128_SK_NyaagyuSamurai_lods_morphs.json": "c74236ee3fa1066855bdf94623ae9ab5abfe382b17dfd4ce0771161b1d50f228"
+     },
+     "result": "v3 plus the unrounded error (root's precision probe, 20:37 UTC). The largest difference from the module's coat is one byte plus at most 3.35e-8: Unreal's export LOD0 R 0.003921602052800788 (19 corners beyond 1/255 + 1e-9), L 0.003921595975464487 (31); our LOD0 R 0.003921590599359259 (19), L 0.003921595975464487 (31); LOD1 and LOD2 in either file none beyond. Every other v3 value is unchanged."
     }
    ]
   },
@@ -686,6 +698,101 @@
     "Saved/W18Rebuild/s129_ue_morph_check.inputs": "c675c33b3c99029f5b2ec16300dd89666f7f39f93a6eebe9e8cc0620271cb7dd"
    },
    "result": "PASS, every LOD and both morphs, against each LOD's threshold as s128 saved it (0.015 cm on LOD0, LOD1 and LOD2): vertices the rule moves more than 0.15 mm are at the rule within 0.00075 mm (LOD0 9932/9869, LOD1 4158/4123, LOD2 1275/1266); Unreal dropped 618/621, 245/277 and 82/82 smaller deltas (largest 0.139-0.150 mm) and kept 0-3 under it; nothing outside the paws moved; largest move 3.01 cm. The paw module is the one that built the assets (62dc250c...)."
+  },
+  {
+   "run": "s130_pbr_import",
+   "command": "scripts/toolchain/run-editor-script.sh --rhi scripts/unreal/import_nyaakoto_pbr.py NYAAKOTO_PBR_READY Saved/W18Rebuild/s130_pbr_import.editor.log",
+   "start": "2026-10-26T20:39:02Z",
+   "pid": 98523,
+   "exit": 0,
+   "end": "2026-10-26T20:39:49Z",
+   "log": "Saved/W18Rebuild/s130_pbr_import.log",
+   "markers": [
+    "EDITOR_EXIT=0",
+    "NYAAKOTO_PBR_READY: 6 texture sets, 23 material instances"
+   ],
+   "outputs": {
+    "Saved/W18Rebuild/s130_pbr_import.inputs": "ab50c5e4c28350932a931565c064426dc0ba7cf2fc7304e15d7e6e2cf640e642",
+    "Saved/W18Rebuild/s130_pbr_import.outputs.sha256": "86ccbd72540573b39f0305a04c1fe03c821d175a823d12545eb07a69bdc94411"
+   },
+   "result": "PASS: the game's PBR materials, as SoraCharacterBase binds them at runtime (each M_Hero_X slot to /Game/Generated/Characters/Nyaakoto/MI_Nyaakoto_X; SoraCharacterBase.cpp:155-166), made in the art tree for the first time: 6 texture sets (18 maps) and the painted iris, the master M_Nyaakoto_PBR and 23 instances; only MI_Nyaakoto_GreyTabbyFur has CoatBlendEnabled 1 (the CoatBlend vertex colour blends the white fur). The folder was new (ignored Content/Generated/), so nothing was replaced; its 43 files are hashed in s130_pbr_import.outputs.sha256. The log has no warnings; its only error lines are the engine's 19 startup self-tests.",
+   "editor_pid": 98596,
+   "editor_exit": 0
+  },
+  {
+   "run": "s131_tp_review",
+   "command": "scripts/toolchain/run-editor-script.sh --editor scripts/unreal/render_nyaakoto_tp_review.py NYAAKOTO_TP_REVIEW_COMPLETE Saved/W18Rebuild/s131_tp_review.editor.log -- out=s131",
+   "start": "2026-10-26T20:59:36Z",
+   "pid": 20308,
+   "exit": 1,
+   "end": "2026-10-26T21:04:31Z",
+   "log": "Saved/W18Rebuild/s131_tp_review.log",
+   "markers": [
+    "EDITOR_EXIT=0",
+    "  [2026.10.26-21.04.25:883][166]LogPython: Error: NYAAKOTO_TP_REVIEW_FAILED: RuntimeError('nyaakoto TP review: LOD1 reads forced 2, predicted 0')",
+    "FAIL Saved/W18Rebuild/s131_tp_review.editor.log: 1 Python error lines; no completion marker 'NYAAKOTO_TP_REVIEW_COMPLETE'"
+   ],
+   "outputs": {
+    "Saved/NyaakotoThirdPerson/Review/s131/manifest.partial.json": "2b8528d90662fdadc4d04d43e9e9795b29c5c9a18f2a0efd7ea911515e6d5e3a",
+    "Saved/W18Rebuild/s131_tp_review.inputs": "ab1d05009d6f6302bffb63d5b9b9e6d7f311ceb79b217fa2b44da378a8f73386",
+    "Saved/W18Rebuild/s131_tp_review_check.json": "73778de110e32753818a3adece7020ab8c8cd2b6bfb572c4df070ec49f25d70e"
+   },
+   "result": "FAILED at its LOD gate on the 15th shot, guard_front_LOD1: 'LOD1 reads forced 2, predicted 0'. SetForcedLOD only stores the value and UpdateLODStatus applies it, which outside a tick runs only when the mesh asset is set (SkinnedMeshComponent.cpp:902, 1869, 2817); this editor-world component never ticks, so the renderer stayed at LOD0, and the gate stopped the run rather than save LOD0 under an LOD1 name. The editor exited naturally (0); the wrapper 1. Kept: 14 originals at 3840x2160 (the eight guard paw shots, four cuffs, guard_front_LOD0 and guard_side_LOD0) and manifest.partial.json. Every recorded gate passed: the guard grips 0.0021 cm from target before and after each shot; the morphs as set; the plan's 19 bind bones within 1.35e-5 cm of Unreal's reference pose; all 23 slots drawing MI_Nyaakoto_* (the game's binding); M_Nyaakoto_PBR opaque, default-lit, one-sided; recompute normals and tangents on every LOD. Views: R pads candidate 5 of 248 (47% of the pads seen holding, 33% empty), R back 2 (87%), L pads 66 (36%, 19%), L back 166 (54%): the rear paw's better views pass through the body; cuffs each their first. The host check (s131_tp_review_check.json) finds all 14 at their hashes, none blank or clipped, each holding/empty pair on one camera with 1.0-7.9% of pixels changed by the morph.",
+   "editor_pid": 20360,
+   "editor_exit": 0,
+   "camera_plans": [
+    {
+     "plan": "attempt 1",
+     "files": {
+      "Saved/W18Rebuild/tp_review_plan_attempt1.json": "75f9238f841c152958184432b280227d0d913d628b2cd52df43b8fbe64f6cb1f"
+     },
+     "result": "Superseded: capsule radii of about 180 cm, the LimbNodes' local chain read in metres against the vertices' centimetres."
+    },
+    {
+     "plan": "attempt 2",
+     "files": {
+      "Saved/W18Rebuild/tp_review_plan_attempt2.json": "e08359af0b046ce928570990e790cb6546c4b01033a7f23cb5b45be006f265f3"
+     },
+     "result": "Superseded: bone positions from the clusters' TransformLink, at the right scale, but the bow, quiver, arrows and saya gave the torso capsule a 99th-percentile radius of 89.5 cm, which encloses the guard's paws; body voxels replaced the capsules."
+    },
+    {
+     "plan": "attempt 3, s131's",
+     "files": {
+      "docs/art-direction/data/nyaakoto_tp_review_plan.json": "800a7a7abcc0f5759c7d0acd2163e7a5f41743b6995a893c87c9e730dec0e85e"
+     },
+     "result": "Both paws rebuilt to the record's skin counts and posed in the guard by their grip sockets; 1,700 directions ranked by the lower of holding and empty seen pad or back area; 4,864 LOD0 body voxels (none unweighted); hand_R bound on the record's wrist."
+    }
+   ]
+  },
+  {
+   "run": "s132_tp_review",
+   "command": "scripts/toolchain/run-editor-script.sh --editor scripts/unreal/render_nyaakoto_tp_review.py NYAAKOTO_TP_REVIEW_COMPLETE Saved/W18Rebuild/s132_tp_review.editor.log -- out=s132",
+   "start": "2026-10-26T21:10:08Z",
+   "pid": 26999,
+   "exit": 0,
+   "end": "2026-10-26T21:13:53Z",
+   "log": "Saved/W18Rebuild/s132_tp_review.log",
+   "markers": [
+    "EDITOR_EXIT=0",
+    "NYAAKOTO_TP_REVIEW_COMPLETE: 27 captures in /Users/mtakemiya/dev/sora-arena-wt/art/Saved/NyaakotoThirdPerson/Review/s132"
+   ],
+   "outputs": {
+    "Saved/NyaakotoThirdPerson/Review/s132/manifest.json": "e01aac98705e8a24eaa58f3a7b9cacd4be4605791d8480bbdffa0ff3e6791f08",
+    "Saved/W18Rebuild/s132_tp_review.inputs": "9bb7bfb1f693686466d2ef8d0a0098b81152222fec7d091ec3e3b5fdff118df7",
+    "Saved/W18Rebuild/s132_tp_review_check.json": "fc864c5b8bf66e6d35b733bc63fcdaad651b0f9fc177bc130eca816392fcac0f"
+   },
+   "result": "PASS: 27 originals at 3840x2160 in the game's materials (each M_Hero_X slot drawing MI_Nyaakoto_X, as SoraCharacterBase binds them; all 23 gated before every shot): both paws holding and empty, pads and back, in the guard and in the reference pose ('rest', not a game pose); four cuffs; the guard front at LOD0, LOD1 and LOD2 and its side; the strike raise front and side and the hit side. Gates before and after each shot: the guard grips 0.0021 cm and 0.0028 deg from target, the rest pose's 0.00001 cm, the raise 0.00055 cm, the hit 0.0059 cm; the morphs as set; every LOD forced and predicted as its name states (LOD1 and LOD2 after the mesh asset was set again: s131's fix); every view clear of the 4,864 posed body voxels. Views: guard as s131; rest pads the planner's best (seeing 48-49% of the pads holding, 35-36% empty: they face into the curl), rest backs candidate 22 and 24 (81%). The host check (s132_tp_review_check.json) finds all 27 at their hashes, PNG at 3840x2160, none blank or clipped, every holding/empty pair on one camera with 0.68-7.9% of pixels changed by the morph. Recorded, unchanged: every LOD recomputes normals and tangents (Interchange's default since s128), so the strands shade by their own faces; M_Nyaakoto_PBR opaque, default-lit, one-sided; r.ScreenPercentage 100, TSR with 16 history samples and a 32-frame run-up, texture streaming off, Lumen GI and reflections. No visual acceptance: the images are root's to review.",
+   "editor_pid": 27050,
+   "editor_exit": 0,
+   "camera_plan": {
+    "file": "docs/art-direction/data/nyaakoto_tp_review_plan_v2.json",
+    "sha256": "02e37c7af245bac93d060a91269371464bc9d2010cb7a7eb38d4e53f29931044",
+    "result": "s131's plan plus each camera ranked with only its own paw's skin in the way ('_solo', for the rest pose)."
+   },
+   "check": {
+    "command": "/usr/bin/python3 scripts/art/check_nyaakoto_tp_review.py Saved/NyaakotoThirdPerson/Review/s132 Saved/W18Rebuild/s132_tp_review_check.json",
+    "problems": []
+   }
   }
  ]
 }

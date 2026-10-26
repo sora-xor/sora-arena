@@ -518,7 +518,7 @@ consistent source, LODs, kamon and rig; furred paws instead of tube fingers; emp
 real FBX and Unreal morph import; every final-combination pose and clearance check again. This is a production
 direction, not photoreal acceptance.
 
-**Status (2026-10-26 20:16 UTC):**
+**Status (2026-10-26 21:20 UTC):**
 - **e8d5b587, built and checked in Blender 5.2.2:** the hero source on A (s101, its validator s102), the runtime rig
   (s103), the LODs (s104), and the runtime and LOD validators (s106, s107). Every gate passed.
 - **e8d5b587, read back in Unreal under --rhi (s110-s114, 7.7):** the sockets, the grips on the clips, every LOD's morph
@@ -529,7 +529,9 @@ direction, not photoreal acceptance.
   - s124 passed every gate and wrote the runtime body and clips.
   - Its LODs (s125), validators (s126, s127) and Unreal import and readbacks under --rhi (s128, s129, and the host
     checks of LOD materials and coat) passed (7.8).
-- Fur is still not resolved (7.9). No photoreal, visual, gameplay or root acceptance.
+  - Its actual-material Unreal originals are s132's: 27 at 3840x2160 in the game's own material instances (s130).
+    s131 failed at its own LOD gate (7.9).
+- Fur is still not resolved (7.10). No photoreal, visual, gameplay or root acceptance.
 
 ### 7.1 The hero source on A
 
@@ -729,13 +731,15 @@ any other module.
   - The exporter writes each section's raw `MaterialIndex` (FbxSkeletalMeshExport.cpp:226).
 - **The check.** readback_nyaakoto_lod_materials.py reads each section through `GetLODMaterialSlot`, which goes via the
   map. check_nyaakoto_lod_materials.py then pairs Unreal's 23 sections per LOD with the export's 23 polygon runs.
-- **The result.** On every LOD, the triangles Unreal renders per material equal ours by name; 17 of LOD2's sections
-  are remapped. The permutation is the export's alone.
+- **The result.** On every LOD, the number of triangles Unreal renders with each material equals ours, by name; 17 of
+  LOD2's sections are remapped. The permutation is the export's alone. This establishes per-material triangle counts
+  and the routing, not that each face keeps its own material (root, 20:37 UTC).
 
 **The coat** (`inspect_fbx_paw_coat.py`, host Python) was read in our three LOD FBXs and in Unreal's export of all
 three:
 - On both paws, 81.5-82.4% of the paw's corners are tabby and 11.8-12.3% white. All of the back is tabby. Every corner
-  is within one byte of the coat the paw module computes.
+  is within about one byte of the coat the paw module computes (that reader rounded to 4 decimals; r3's unrounded
+  reading, 7.8, finds a few LOD0 corners up to 3.35e-8 past one byte).
 - The paws' white look in s103's close renders is the light. The tabby back of `..._IdlePaw_Front.png` measures (171,
   166, 161) against the white toes' (176, 173, 171). In the side view, the hind foot's grey (92) and its white toes
   (212) part clearly.
@@ -877,25 +881,104 @@ and hash):
   - Unreal dropped 618/621, 245/277 and 82/82 smaller deltas (the largest 0.139-0.150 mm) and kept 0-3 under the
     threshold.
   - Nothing outside the paws moved.
-- **What Unreal renders per material** (`check_nyaakoto_lod_materials.py`): on every LOD it equals ours by name. 17 of
-  LOD2's sections are remapped by LODMaterialMap, as in s114.
+- **What Unreal renders per material** (`check_nyaakoto_lod_materials.py`): on every LOD, the number of triangles per
+  material equals ours, by name, through LODMaterialMap's routing; 17 of LOD2's sections are remapped, as in s114.
+  This establishes per-material triangle counts and routing, not per-face identity.
 - **The coat** (`inspect_fbx_paw_coat.py` v3, in our three FBXs and in Unreal's export of each):
   - **Matching counts.** The paws' skin corners and strands are equal in both. Every strand survives the import:
     5,277/5,278 on LOD0, 1,801/1,829 on LOD1.
-  - **The skin.** 78.88-79.46% is tabby and 13.35-13.72% white, and all of the back is tabby. The largest difference
-    from the module's coat is 0.0039; one byte is 0.00392.
+  - **The skin.** 78.88-79.46% is tabby and 13.35-13.72% white, and all of the back is tabby.
+  - **The largest difference from the module's coat** is one byte plus at most 3.35e-8 (reader v4, unrounded):
+    - Unreal's export, LOD0: R 0.003921602052800788, with 19 corners beyond 1/255 + 1e-9; L 0.003921595975464487,
+      with 31.
+    - Our LOD0: R 0.003921590599359259 (19 corners) and L 0.003921595975464487 (31).
+    - LOD1 and LOD2, in either file: none beyond.
+    - v3 rounded this to 0.0039, which root's precision probe (20:37 UTC) showed understates it.
   - **Telling strands from skin.** Unreal's export also isolates 34-122 skin triangles a paw at seams and section
     edges. A strand is told apart by its reach: 0.9005 mm and more off the skin, against those triangles' 0.6707 mm at
     most.
-  - **Reader versions.** v1 and v2 classified strands by topology alone; their reports are kept.
-- **Not shown by any of this:** how the fur looks in Unreal's actual materials and light. No third-person
-  actual-material capture exists yet.
+  - **Reader versions.** v1 and v2 classified strands by topology alone; v4 adds the unrounded error. All the reports
+    are kept.
+- **Not shown by any of this:** how the fur looks in Unreal's actual materials and light. That is 7.9's capture.
 
-### 7.9 What remains
+### 7.9 The actual-material Unreal review (s130-s132)
+
+Root asked (20:31 and 20:37 UTC) for the actual saved Unreal materials at original full resolution: both paws empty
+and holding, from their pads and their backs; the cuffs; the full guard and strike; each shot's LOD stated. The current
+state was to be captured before any change to the normals.
+
+**s130, the game's materials** (`import_nyaakoto_pbr.py`, 20:39:02-49 UTC, exit 0):
+- **Why it was needed:** the game draws each `M_Hero_X` slot with `/Game/Generated/Characters/Nyaakoto/MI_Nyaakoto_X`,
+  bound at runtime (SoraCharacterBase.cpp:155-166). The art tree had never made those instances.
+- **What it made:** the master M_Nyaakoto_PBR, 23 instances, 18 PBR maps and the painted iris, all new. Only
+  MI_Nyaakoto_GreyTabbyFur blends the white fur by the CoatBlend vertex colour.
+
+**The capture** (`render_nyaakoto_tp_review.py`, in the full editor):
+- **Materials:** the slots are bound as the game binds them, and all 23 are gated before every shot.
+- **Pose and LOD:** each pose is a clip held at its time. Both PawEmpty morphs are 0 for holding and 1 for empty.
+  Each shot's LOD is forced and read back, both the forced value and the predicted LOD.
+- **Gates:** before and after each image, the grips against the stance's targets and the morph weights.
+- **Light:** the yumi review's metered daylight, a 20,000 lux sun 50 deg up from the front left, with its sky light
+  and fixed exposure.
+- **Image:** 3840x2160 at r.ScreenPercentage 100, TSR with a 32-frame run-up, and texture streaming off.
+
+**The paw cameras** are measured, not placed by eye (`plan_nyaakoto_tp_review.py`, host numpy):
+- **The paws:** both are rebuilt to the record's exact skin counts and posed by their grip sockets.
+- **The ranking:** about 1,700 view directions are ranked by the pad or back area each actually sees, taking the
+  lower score of the holding and empty states.
+- **The choice:** Unreal takes the best-ranked view whose sight line clears the posed body. The body is 4,864 voxels
+  of LOD0's skin, each moved by its bone; the plan's 19 bind bones are within 1.35e-5 cm of Unreal's reference pose.
+- **Earlier plans:**
+  - Attempt 1 read the bones in metres against centimetre vertices.
+  - Attempt 2's body capsules were dominated by the bow, quiver and saya, which gave the torso capsule an 89.5 cm
+    radius.
+  - Both are kept.
+
+**s131 failed** (20:59:36-21:04:31) at its own LOD gate: "LOD1 reads forced 2, predicted 0".
+- **The cause:** SetForcedLOD only stores the value. UpdateLODStatus applies it, and outside a tick it runs only when
+  the mesh asset is set. This editor-world component never ticks.
+- **What was kept:** 14 originals, whose recorded gates all passed, and manifest.partial.json.
+
+**s132 passed** (21:10:08-21:13:53, exit 0; `Saved/NyaakotoThirdPerson/Review/s132/`, manifest e01aac98...):
+- **The fix:** when the LOD changes, the mesh asset is cleared and set again, and the materials, morphs and clip are
+  set again after it. LOD1 and LOD2 then read forced 2 and 3, predicted 1 and 2.
+- **27 originals:**
+  - **The guard's paws**, holding and empty, pads and back. In the guard the pads face into the curl, and the rear
+    left paw's better views pass through the body: the right pads' view sees 47% of them holding and 33% empty, the
+    left's 36% and 19%.
+  - **The same views in the reference pose** ("rest", not a game pose), where the paws hang clear. The pads' views
+    are the planner's best, seeing 48-49% holding and 35-36% empty; that is as much as the curl shows.
+  - **The cuffs** from outside and below.
+  - **The full body:** the guard front at LOD0, LOD1 and LOD2, the guard side, the strike raise front and side, and
+    the hit side.
+- **Gates:**
+  - **Grips:** the guard's within 0.0021 cm, the rest pose's 0.00001 cm, the raise 0.00055 cm, the hit 0.0059 cm.
+  - **Morphs and LODs:** as set, before and after every image.
+  - **Views:** every one clear of the body.
+- **The host check** (`check_nyaakoto_tp_review.py`): all 27 are at their hashes, PNG at 3840x2160, none blank or
+  clipped. Each holding/empty pair shares one camera, and 0.68-7.9% of its pixels change with the morph.
+- **Recorded, unchanged:**
+  - Every LOD recomputes normals and tangents, Interchange's default (`bRecomputeNormals = true`) since s128. The
+    strands therefore shade by their own faces, within their 8-24 deg lift of the skin normal, not by the root normals
+    they carry.
+  - The master is opaque, default-lit and one-sided.
+
+**What the images show** (described, not judged; the review is root's):
+- **The coat:** the grey tabby and the white coat blend as the game's material blends them.
+- **Strands:** fine dark strand marks lie over the grey, and the silhouettes are bristled.
+- **Coat edges:** where the coat turns white, the edge is jagged. This is unverified, but consistent with strands
+  carrying their root's colour across it. The pads' edges are jagged too, against uniform rose pads.
+- **The empty state:** the curl closes tighter.
+- **The cuffs:** they end in flat discs with hard rims at the wrist.
+- **LOD2:** it visibly drops the head's fibre cards.
+
+### 7.10 What remains
 
 - **Fur.**
-  - Sparse dark stubble lines and a pale band on the empty toes remain in the previews and renders (root, 19:00). They
-    are kept for the actual-material Unreal review, which needs a third-person capture script; none exists yet.
+  - Sparse dark stubble lines and a pale band on the empty toes remain in the previews and renders (root, 19:00). The
+    actual-material originals are s132's (7.9), for root's review.
+  - Whether to import the authored normals rather than recompute them (the strands' shading) is root's decision. It
+    comes after root's review of the current state.
   - Root's review of s124's full Guard Front and GuardPaws Below originals (with its 19:48 acceptance of the lane)
     also saw smooth toe surfaces and cuff faceting.
   - The empty fist's C-shaped opening remains: a closure tight enough to shut it fails the fold margin (below 0.22).

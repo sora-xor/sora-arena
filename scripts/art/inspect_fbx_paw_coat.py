@@ -194,6 +194,11 @@ for gid, geo in objects.items():
             "back_R_max": round(float(r[back].max()), 4) if back.any() else None,
             "back_share_near_tabby": round(float((r[back] < 0.05).mean()), 4) if back.any() else None,
             "max_abs_diff_from_recomputed": round(float(diff.max()), 4),
+            # Unrounded (root's precision probe, 20:37 UTC 2026-10-26): the rounded 0.0039 hides corners a few 1e-8
+            # past one byte.
+            "max_abs_diff_from_recomputed_unrounded": float(diff.max()),
+            "corners_beyond_one_byte_plus_1e-9": int((diff > 1.0 / 255.0 + 1e-9).sum()),
+            "max_excess_beyond_one_byte": float(max(0.0, diff.max() - 1.0 / 255.0)),
             "share_within_1_byte": round(float((diff <= 1.0 / 255.0 + 1e-9).mean()), 4),
             "rgb_equal": bool(np.allclose(corner_rgba[on, 0], corner_rgba[on, 1]) and np.allclose(corner_rgba[on, 0], corner_rgba[on, 2])),
         }
