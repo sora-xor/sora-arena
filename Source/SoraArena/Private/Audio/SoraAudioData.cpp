@@ -425,7 +425,7 @@ bool ReadAll(const FJsonObject& Root, FData& D, FString& Error)
     for (const auto& Pair : Emitters->Values)
     {
         FString CueId;
-        if (Pair.Key.IsEmpty() || Pair.Key.Equals(TEXT("None"), ESearchCase::IgnoreCase) ||
+        if (Pair.Key.IsEmpty() || MakeStringView(Pair.Key).Equals(TEXT("None"), ESearchCase::IgnoreCase) ||
             !R.Text(*Emitters, *Pair.Key, CueId))
             return R.Fail(*Pair.Key, TEXT("needs an emitter name and cue"));
         const FCue* Cue = D.Cue(FName(*CueId));
