@@ -87,7 +87,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraWorkshopCraftReleaseTest,"SoraArena.Campai
 bool FSoraWorkshopCraftReleaseTest::RunTest(const FString&)
 {
     using namespace SoraWorkshopCraftTest;
-    FWorld W(*this,TEXT("WorkshopCraftRelease"),2,8);if(!Ready(W)||!Station(W))return false;
+    FWorld W(*this,TEXT("WorkshopCraftRelease"),2,8);if(!SoraWorkshopCraftTest::Ready(W)||!Station(W))return false;
     auto* C=W.Campaign();
     if(!Hold(W,639))return false;
     TestEqual(TEXT("An early release splits the strip without adding a hoop"),C->TaskProgress().Done,0);
@@ -121,7 +121,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraWorkshopCraftInterruptTest,"SoraArena.Camp
 bool FSoraWorkshopCraftInterruptTest::RunTest(const FString&)
 {
     using namespace SoraWorkshopCraftTest;
-    FWorld W(*this,TEXT("WorkshopCraftInterrupt"),2,8);if(!Ready(W)||!Station(W)||!Hold(W,800))return false;
+    FWorld W(*this,TEXT("WorkshopCraftInterrupt"),2,8);if(!SoraWorkshopCraftTest::Ready(W)||!Station(W)||!Hold(W,800))return false;
     auto* C=W.Campaign();
     if(!W.World->InjectKey(EKeys::E,IE_Pressed)||!Milliseconds(W,800))return false;
     TestFalse(TEXT("Work reserves both hands against weapon selection"),W.Hero()->GetEquipment()->EquipCampaignWeapon(0));
@@ -167,7 +167,7 @@ bool FSoraWorkshopCraftRecipeTest::RunTest(const FString&)
 {
     using namespace SoraWorkshopCraftTest;
     {
-        FWorld W(*this,TEXT("WorkshopCraftRecipe"),2,8);if(!Ready(W)||!Windows(W,false))return false;
+        FWorld W(*this,TEXT("WorkshopCraftRecipe"),2,8);if(!SoraWorkshopCraftTest::Ready(W)||!Windows(W,false))return false;
         auto* Events=USoraGameEvents::Get(W.Mode());if(!TestNotNull(TEXT("Production events exist"),Events))return false;
         int Restored=0;const auto Handle=Events->OnSiteRestored.AddLambda([&](const FSoraSiteRestoredEvent& E)
             {if(E.bCampaign&&E.ChapterId==2&&E.SiteIndex==1)++Restored;});
@@ -195,7 +195,7 @@ bool FSoraWorkshopCraftRecipeTest::RunTest(const FString&)
         TestEqual(TEXT("Retry does not replay the production award"),Restored,1);
     }
     {
-        FWorld W(*this,TEXT("WorkshopCraftLater"),2,15);if(!Ready(W)||!Registry(W))return false;
+        FWorld W(*this,TEXT("WorkshopCraftLater"),2,15);if(!SoraWorkshopCraftTest::Ready(W)||!Registry(W))return false;
     }
     AddInfo(TEXT("The recipe uses mapped keys from a seeded checkpoint; station placement is assisted. Later checkpoint, real lights and registry are checked without claiming rendered or ordinary-play acceptance."));
     return !HasAnyErrors();

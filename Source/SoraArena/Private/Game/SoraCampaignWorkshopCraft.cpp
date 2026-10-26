@@ -16,7 +16,7 @@ bool USoraCampaignDirector::IsWorkshopCraft() const
 bool USoraCampaignDirector::AtWorkshopStation() const
 {
     const auto* Hero=Mode().Hero();const auto* Space=ActiveSpace();
-    if(!IsWorkshopCraft()||!Hero||!Hero->CanPlay()||Hero->IsStaggered()||!Space||
+    if(!IsWorkshopCraft()||!Hero||!Hero->CanPlay()||!Space||
        !Space->StepStations.IsValidIndex(TaskState.Step))return false;
     const auto* Kit=Hero->GetEquipment();
     if(!Kit||Kit->IsStaggered()||Kit->IsCommittedStrike()||Kit->IsStepping()||Kit->bReloading)return false;
