@@ -72,6 +72,9 @@ void ASoraEnemy::TickLandingDrone()
     if((LandingDroneClock.Stage==Landing::EStage::Mark||LandingDroneClock.Stage==Landing::EStage::Descending)&&
         (!LandingWarning.IsValid()||LandingWarning->IsActorBeingDestroyed())) { CancelAttack(); return; }
     ConsumeMovementInputVector(); GetCharacterMovement()->StopMovementImmediately();
+    // Recovery normally survives a stagger, but the body must still hold
+    // position until it can act again (including on the return ascent).
+    if(IsStaggered()) return;
     int32 Remaining=LandingDroneMilliseconds.Advance(Elapsed);
     while(Remaining>0&&OwnsLandingDroneMotion())
     {
