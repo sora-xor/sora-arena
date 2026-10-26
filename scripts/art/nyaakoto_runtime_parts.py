@@ -113,6 +113,67 @@ def arm_joints(by_name):
     return arms
 
 
+CHEST_FRONT = ("Indigo_samurai_haori", "Linen_under_kimono", "Under_kimono_cross_collar", "Do_",
+               "UserSupplied_SORAKamon_chest", "Resistance_insignia")
+
+
+def apply_variant(parts, by_name, variant):
+    """An anatomy and armour study variant, applied in memory to the source parts (never saved over the source):
+    - arm: stretch each upper arm along its shoulder-to-elbow axis about the shoulder, and each forearm along its
+      elbow-to-wrist axis about the moved elbow. The paw moves with the wrist; the shoulder ball stays rigid.
+    - palm: scale the palm (Paw_hand) about its centre; the channel and curled fingers follow it.
+    - chest: bring the front half (x > 0) of the haori, kimono, collar, dō, chest kamon and insignia toward the body,
+      x scaled about 0.
+    Each part's origin moves with its vertices. The joints are measured from the origins (arm_joints, cone_ends), so
+    a first version that moved only the vertices left them behind (Saved/W18Rebuild/s73_twopaw_v01). Returns what
+    moved, for the record."""
+    arm, palm, chest = (float(variant.get(k, 1.0)) for k in ("arm", "palm", "chest"))
+    if arm == palm == chest == 1.0:
+        return {}
+    joints = {side: (by_name[f"Shoulder_joint_{sign}"].matrix_world.translation.copy(),
+                     *sorted(cone_ends(by_name[f"Fur_forearm_{sign}"]), key=lambda q: -q.z)) for side, sign in (("R", -1), ("L", 1))}
+
+    def deform(name, p):
+        q = p.copy()
+        seg, _, side = rig_bone(name, p).partition("_")
+        if arm != 1.0 and seg in ("upperarm", "forearm", "hand"):
+            s_, e_, w_ = joints[side]
+            u, f = (e_ - s_).normalized(), (w_ - e_).normalized()
+            e2 = e_ + (arm - 1.0) * (e_ - s_).length * u
+            w2 = w_ + (e2 - e_) + (arm - 1.0) * (w_ - e_).length * f
+            if seg == "upperarm":
+                if not name.startswith("Shoulder_joint"):
+                    q = p + (arm - 1.0) * max(0.0, (p - s_).dot(u)) * u
+            elif seg == "forearm":
+                q = p + (e2 - e_) + (arm - 1.0) * max(0.0, (p - e_).dot(f)) * f
+            else:
+                q = p + (w2 - w_)
+        if chest != 1.0 and name.startswith(CHEST_FRONT) and q.x > 0.0:
+            q.x *= chest
+        return q
+
+    moved = 0
+    for obj in parts:
+        mw = obj.matrix_world.copy()
+        old = [mw @ v.co for v in obj.data.vertices]
+        new = [deform(obj.name, p) for p in old]
+        origin = deform(obj.name, mw.translation.copy())
+        if palm != 1.0 and obj.name.startswith("Paw_hand_"):
+            new = [origin + (q - origin) * palm for q in new]
+        if (origin - mw.translation).length < 1e-9 and all((a - b).length < 1e-9 for a, b in zip(old, new)):
+            continue
+        m2 = mw.copy()
+        m2.translation = origin
+        obj.matrix_world = m2
+        inv = m2.inverted()
+        for v, q in zip(obj.data.vertices, new):
+            v.co = inv @ q
+        obj.data.update()
+        moved += 1
+    bpy.context.view_layer.update()
+    return {"arm": arm, "palm": palm, "chest": chest, "parts_moved": moved}
+
+
 def narrow_palm(obj):
     """The palm (a copy of Paw_hand_) narrowed along Y to the closed paw's breadth."""
     ys = [v.co.y for v in obj.data.vertices]

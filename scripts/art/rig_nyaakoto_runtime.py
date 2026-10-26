@@ -39,6 +39,11 @@ slice A. Its part rules are shared with the LODs (nyaakoto_runtime_parts.py).
 
 `--explore` measures candidate stances and saya placements, and the clearance
 the two-paw grip lacks. It prints them and stops before writing anything.
+
+`--study two_paw [--variant arm=1.15,palm=0.85,chest=0.9] --study-out <name>`
+measures the contract's two-paw guard on an anatomy and armour variant. The
+variant (nyaakoto_runtime_parts.apply_variant) is applied in memory only. It
+writes its review renders to Saved/W18Rebuild/<name>/ and nothing else.
 """
 
 from __future__ import annotations
@@ -60,7 +65,11 @@ import mesh_clearance as MC  # noqa: E402
 import nyaakoto_runtime_parts as RP  # noqa: E402
 import third_person_rig as TP  # noqa: E402
 
-EXPLORE = "--explore" in sys.argv
+ARGS = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
+STUDY = ARGS[ARGS.index("--study") + 1] if "--study" in ARGS else None
+EXPLORE = "--explore" in ARGS or STUDY is not None                  # a study writes only to Saved/
+VARIANT = dict(kv.split("=") for kv in ARGS[ARGS.index("--variant") + 1].split(",")) if "--variant" in ARGS else {}
+STUDY_OUT = ARGS[ARGS.index("--study-out") + 1] if "--study-out" in ARGS else None
 
 ROOT = Path(__file__).resolve().parents[2]
 HERO = ROOT / "Content/SourceArt/Characters/Hero"
@@ -81,6 +90,9 @@ source = bpy.data.collections["NyaagyuHero_Editable"]
 parts = sorted((o for o in source.objects if o.type == "MESH"), key=lambda o: o.name)
 assert len(parts) == source_record["source_parts"]
 by_name = {o.name: o for o in parts}
+if VARIANT and STUDY is None:
+    raise SystemExit("--variant is for studies only: the source body is not changed by a build")
+variant_record = RP.apply_variant(parts, by_name, VARIANT)
 ARMS = RP.arm_joints(by_name)
 
 
@@ -347,6 +359,9 @@ SET = {
     "body": body_set(),
     "body_but_hand_R": body_set(exclude={"hand_R"}),
     "body_but_head_hand_R": body_set(exclude=HEAD | {"hand_R"}),
+    "hand_L": body_set({"hand_L"}), "hands": body_set({"hand_R", "hand_L"}),
+    "body_but_hands": body_set(exclude={"hand_R", "hand_L"}),
+    "body_but_head_hands": body_set(exclude=HEAD | {"hand_R", "hand_L"}),
     "obi": body_set(part_prefixes=TUCK),
 }
 DATA_KINDS = ("objects", "meshes", "materials", "images", "textures", "node_groups", "cameras", "lights", "actions",
@@ -415,6 +430,68 @@ def sheathed(saya_pos, saya_rot):
     return saya_pos + saya_rot @ np.array([-SEAT_X, 0.0, 0.0]), saya_rot
 
 
+def put(weapon, pos, rot):
+    """Move the imported weapon so its origin socket sits at pos, rot (Blender)."""
+    s = Matrix([[*rot[0], pos[0]], [*rot[1], pos[1]], [*rot[2], pos[2]], [0.0, 0.0, 0.0, 1.0]])
+    for o in weapon["objects"]:
+        if o.parent is None:
+            o.matrix_world = s @ weapon["inv"] @ weapon["imported"][o.name]
+
+
+REVIEW = {}
+VIEWS = {"Front": (1.0, 0.0, 0.0), "SideRight": (0.0, -1.0, 0.0), "SideLeft": (0.0, 1.0, 0.0)}
+
+
+def render_views(views, prefix, katana_at, saya_at_, samples=32, res=1100):
+    """Ortho review renders of the current pose with the W00 katana and saya placed, one per view at
+    "{prefix}_{view}.png". The source parts are hidden; the camera and sun are made once."""
+    scene = bpy.context.scene
+    for src in parts:
+        src.hide_render = True
+        src.hide_set(True)
+    if not REVIEW:
+        cam_data = bpy.data.cameras.new("SliceA_ReviewCam")
+        cam = bpy.data.objects.new("SliceA_ReviewCam", cam_data)
+        scene.collection.objects.link(cam)
+        cam_data.type = "ORTHO"
+        sun = bpy.data.objects.new("SliceA_ReviewSun", bpy.data.lights.new("SliceA_ReviewSun", "SUN"))
+        sun.data.energy = 3.0
+        scene.collection.objects.link(sun)
+        REVIEW.update(cam=cam, sun=sun, old=scene.camera)
+    cam, sun = REVIEW["cam"], REVIEW["sun"]
+    scene.render.engine = "CYCLES"
+    scene.cycles.samples = samples
+    scene.render.resolution_x = scene.render.resolution_y = res
+    scene.render.resolution_percentage = 100
+    (kp, kr), (sp, sr) = katana_at, saya_at_
+    put(SAYA, sp, sr)
+    put(KATANA, kp, kr)
+    every = np.concatenate([posed_points(), place(KATANA, kp, kr), place(SAYA, sp, sr)])
+    lo, hi = every.min(0), every.max(0)
+    centre = Vector(((lo + hi) / 2.0).tolist())
+    out = []
+    for view in views:
+        d = Vector(VIEWS[view])
+        span = max(float(np.abs((hi - lo) * (1.0 - np.abs(np.array(VIEWS[view]))))[:2].max()), float((hi - lo)[2]))
+        cam.location = centre + d * 4.0
+        cam.rotation_euler = (-d).to_track_quat("-Z", "Y").to_euler()
+        cam.data.ortho_scale = span * 1.08
+        sun.rotation_euler = (-(d * 0.6) - Vector((0.0, 0.0, 0.8))).normalized().to_track_quat("-Z", "Y").to_euler()
+        scene.camera = cam
+        path = Path(f"{prefix}_{view}.png")
+        scene.render.filepath = str(path)
+        bpy.ops.render.render(write_still=True)
+        out.append(path)
+    scene.camera = REVIEW["old"]
+    return out
+
+
+def end_review():
+    for key in ("cam", "sun"):
+        if key in REVIEW:
+            bpy.data.objects.remove(REVIEW.pop(key), do_unlink=True)
+
+
 def check_pose(saya_entry, held, only=None):
     """The visible-mesh checks at the current pose. held: the katana in the right paw (the guard), else sheathed.
     only: the names of the checks to run (all if None)."""
@@ -466,6 +543,75 @@ def brief(res):
                                    "first_visible_crossing")})
             for k, v in res.items()}
 
+
+if STUDY == "two_paw":
+    cal = MC.calibrate(BK)
+    assert cal["ok"], cal
+    lengths = {s: {"upper_arm_cm": round((ARMS[s]["elbow"] - ARMS[s]["shoulder"]).length * 100.0, 2),
+                   "forearm_cm": round((ARMS[s]["wrist"] - ARMS[s]["elbow"]).length * 100.0, 2),
+                   "channel_ue_cm": [round(float(v), 2) for v in UE(np.array(ARMS[s]["channel"]))]} for s in ("R", "L")}
+    print("STUDY_VARIANT " + json.dumps({"variant": variant_record or "baseline", "arms": lengths}), flush=True)
+    out_dir = ROOT / "Saved/W18Rebuild" / STUDY_OUT if STUDY_OUT else None
+    if out_dir:
+        out_dir.mkdir(parents=True, exist_ok=True)
+    # The contract's 4.5 target first. The palm reaches about 12 cm behind its grip and the haori's front is at x 20.6,
+    # so the two-paw chudan is also tried further forward, where longer arms buy reach, and with the elbows brought
+    # forward of the do.
+    # The second round (Saved/W18Rebuild/s76_*): the forearms converge along the haori's front quadrant, so the elbows
+    # are held forward and out of the chest, as a kendo chudan has them.
+    pole_sets = {"fwd": {"R": (0.3, -0.3, -1.0), "L": (0.3, 0.3, -1.0)},
+                 "out": {"R": (0.4, -1.0, -0.6), "L": (0.4, 1.0, -0.6)},
+                 "far_fwd": {"R": (1.0, -0.6, -0.5), "L": (1.0, 0.6, -0.5)}}
+    two_paw_stances = [{"grip_l": g, "elevation_deg": 30.0, "poles": poles, "pole_set": name}
+                       for g in ((24.0, 0.0, 100.0), (28.0, 0.0, 100.0), (30.0, 0.0, 102.0), (32.0, 0.0, 104.0),
+                                 (34.0, 0.0, 106.0))
+                       for name, poles in pole_sets.items()]
+    for k, c in enumerate(two_paw_stances):
+        reset_pose()
+        row = {"stance": c}
+        try:
+            row["reach"] = {s: round(v, 4) for s, v in pose_stance(c).items()}
+        except ValueError as exc:
+            row["unreachable"] = str(exc)
+            print("STUDY_TWO_PAW " + json.dumps(row, default=str), flush=True)
+            continue
+        pts = posed_points()
+        kp, kr = socket_now("R")
+        katana = place(KATANA, kp, kr)
+        res = {"forearms_paws_vs_torso": MC.measure(BK, SET["arms_low"], pts, SET["torso"], pts, limit=0.02, to_report=UE),
+               "katana_vs_body_but_paws": MC.measure(BK, K_ALL, katana, SET["body_but_hands"], pts, limit=0.02, to_report=UE),
+               "katana_vs_paws": MC.measure(BK, K_ALL, katana, SET["hands"], pts, limit=0.01, to_report=UE),
+               "blade_vs_head": MC.measure(BK, K_BLADE, katana, SET["head"], pts, limit=0.05, to_report=UE),
+               "blade_vs_body": MC.measure(BK, K_BLADE, katana, SET["body_but_head_hands"], pts, limit=0.03, to_report=UE),
+               "paw_vs_paw": MC.measure(BK, SET["hand_L"], pts, SET["hand_R"], pts, limit=0.02, to_report=UE),
+               "upper_arms_vs_torso": MC.measure(BK, SET["upper_arms"], pts, SET["torso"], pts, limit=0.0, to_report=UE)}
+        mins = {"blade_vs_head": 0.05, "blade_vs_body": 0.03}
+        row["gates"] = {g: MC.passes(v, mins.get(g, 0.0)) for g, v in res.items() if g != "upper_arms_vs_torso"}
+        row["checks"] = brief(res)
+        row["kissaki_ue_cm"] = [round(float(v), 2) for v in UE(kp + kr @ (np.array(TP.W00["muzzle"]) / 100.0))]
+        print("STUDY_TWO_PAW " + json.dumps(row, default=str), flush=True)
+        if out_dir and k == 0:
+            sp, sr = saya_at(SAYA_SOCKET)
+            render_views(("Front", "SideRight", "SideLeft"), out_dir / "TwoPaw", (kp, kr), (sp, sr), samples=24, res=900)
+    # How far each arm must still move forward at the contract's target to clear the torso by 5 mm.
+    reset_pose()
+    pose_stance(two_paw_stances[0])
+    pts0 = posed_points()
+    for side in ("L", "R"):
+        verts = np.unique(SET[f"arm_low_{side}"].used)
+        need, last = None, None
+        for dx in [0.5 * i for i in range(0, 41)]:
+            p = pts0.copy()
+            p[verts, 0] += dx / 100.0
+            r = MC.measure(BK, SET[f"arm_low_{side}"], p, SET["torso"], p, limit=0.005, to_report=UE)
+            last = (dx, r["crossing_pairs_visible"], r["contained"], r["crossing_parts_visible"][:3])
+            if MC.passes(r, 0.005):
+                need = dx
+                break
+        print("STUDY_SHIFT " + json.dumps({"side": side, "forward_shift_needed_cm": need, "last": last}, default=str),
+              flush=True)
+    print("STUDY_COMPLETE", flush=True)
+    sys.exit(0)
 
 if EXPLORE:
     cal = MC.calibrate(BK)
@@ -649,59 +795,15 @@ if failed or not socket_ok:
     os._exit(1)                                           # nothing exported, nothing written
 
 # --- Review renders: the guard and the sheathed carry, with the authored W00 at its sockets --------------------------
-for src in parts:
-    src.hide_render = True
-    src.hide_set(True)
-
-
-def put(weapon, pos, rot):
-    """Move the imported weapon so its origin socket sits at pos, rot (Blender)."""
-    s = Matrix([[*rot[0], pos[0]], [*rot[1], pos[1]], [*rot[2], pos[2]], [0.0, 0.0, 0.0, 1.0]])
-    for o in weapon["objects"]:
-        if o.parent is None:
-            o.matrix_world = s @ weapon["inv"] @ weapon["imported"][o.name]
-
-
-scene = bpy.context.scene
-scene.render.engine = "CYCLES"
-scene.cycles.samples = 32
-scene.render.resolution_x = scene.render.resolution_y = 1100
-scene.render.resolution_percentage = 100
-cam_data = bpy.data.cameras.new("SliceA_ReviewCam")
-cam = bpy.data.objects.new("SliceA_ReviewCam", cam_data)
-scene.collection.objects.link(cam)
-cam_data.type = "ORTHO"
-sun = bpy.data.objects.new("SliceA_ReviewSun", bpy.data.lights.new("SliceA_ReviewSun", "SUN"))
-sun.data.energy = 3.0
-scene.collection.objects.link(sun)
-old_camera = scene.camera
 renders = {}
-VIEWS = {"Front": (1.0, 0.0, 0.0), "SideRight": (0.0, -1.0, 0.0), "SideLeft": (0.0, 1.0, 0.0)}
 for clip, views in (("Guard", ("Front", "SideRight", "SideLeft")), ("Idle", ("Front", "SideLeft"))):
     at_frame(clip, 1)
     sp, sr = saya_at(SAYA_SOCKET)
-    kp, kr = socket_now("R") if clip == "Guard" else sheathed(sp, sr)
-    put(SAYA, sp, sr)
-    put(KATANA, kp, kr)
-    every = np.concatenate([posed_points(), place(KATANA, kp, kr), place(SAYA, sp, sr)])
-    lo, hi = every.min(0), every.max(0)
-    centre = Vector(((lo + hi) / 2.0).tolist())
-    for view in views:
-        d = Vector(VIEWS[view])
-        span = max(float(np.abs((hi - lo) * (1.0 - np.abs(np.array(VIEWS[view]))))[:2].max()), float((hi - lo)[2]))
-        cam.location = centre + d * 4.0
-        cam.rotation_euler = (-d).to_track_quat("-Z", "Y").to_euler()
-        cam_data.ortho_scale = span * 1.08
-        sun.rotation_euler = (-(d * 0.6) - Vector((0.0, 0.0, 0.8))).normalized().to_track_quat("-Z", "Y").to_euler()
-        scene.camera = cam
-        path = HERO / f"Nyaakoto_RuntimeSkin_{clip}_{view}.png"
-        scene.render.filepath = str(path)
-        bpy.ops.render.render(write_still=True)
+    held = socket_now("R") if clip == "Guard" else sheathed(sp, sr)
+    for path in render_views(views, HERO / f"Nyaakoto_RuntimeSkin_{clip}", held, (sp, sr)):
         renders[path.name] = path
-scene.camera = old_camera
+end_review()
 # Nothing imported or added for the checks and renders stays in the runtime blend.
-for o in (cam, sun):
-    bpy.data.objects.remove(o, do_unlink=True)
 for kind in DATA_KINDS:
     for d in [d for d in getattr(bpy.data, kind) if d not in data_before_weapons[kind] and d not in actions.values()
               and not (kind == "images" and d.type in {"RENDER_RESULT", "COMPOSITING"})]:

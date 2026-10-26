@@ -160,6 +160,8 @@ options.import_textures = False
 options.create_physics_asset = False
 options.mesh_type_to_import = unreal.FBXImportType.FBXIT_SKELETAL_MESH
 options.skeletal_mesh_import_data.set_editor_property("vertex_color_import_option", unreal.VertexColorImportOption.REPLACE)
+# The empty-fist shape keys (PawEmpty_R, PawEmpty_L) are morph targets. Unreal drops them unless asked.
+options.skeletal_mesh_import_data.set_editor_property("import_morph_targets", True)
 task = import_task(SOURCE / record["skeletal_fbx"], MESHES, "SK_NyaagyuSamurai", options)
 mesh = assets.load_asset(f"{MESHES}/SK_NyaagyuSamurai")
 if not isinstance(mesh, unreal.SkeletalMesh) or not mesh.has_vertex_colors():
