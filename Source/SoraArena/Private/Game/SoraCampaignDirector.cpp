@@ -1936,11 +1936,11 @@ bool USoraCampaignDirector::IsMechanicInPlay(FName Mechanic) const
         ?SoraBeatRules::InPlayMechanics(BeatState,Chapter->Rules.GetData(),Chapter->Rules.Num(),BeatIndex):BeatState.MechanicsMask;
     return (Learned&(1u<<Bit))!=0u;
 }
-bool USoraCampaignDirector::BeginSealCut(ASoraPlayerCharacter& Player)
+ASoraEnemy* USoraCampaignDirector::SealCutCandidate(const ASoraPlayerCharacter& Player) const
 {
     // The seal can be cut once the story teaches it (bible §12.1 seal_cut),
     // from the beat that teaches it on.
-    if(!IsMechanicInPlay(TEXT("seal_cut"))||!GetWorld()) return false;
+    if(!IsMechanicInPlay(TEXT("seal_cut"))||!GetWorld()) return nullptr;
     ASoraEnemy* Nearest=nullptr;
     float Best=SoraCampaignReach::Interact;
     for(const auto& Enemy:Enemies)
@@ -1957,6 +1957,11 @@ bool USoraCampaignDirector::BeginSealCut(ASoraPlayerCharacter& Player)
             const float Distance=FVector::Dist2D(It->GetActorLocation(),Player.GetActorLocation());
             if(Distance<Best) { Best=Distance; Nearest=*It; }
         }
+    return Nearest;
+}
+bool USoraCampaignDirector::BeginSealCut(ASoraPlayerCharacter& Player)
+{
+    ASoraEnemy* Nearest=SealCutCandidate(Player);
     if(!Nearest) return false;
     SealTarget=Nearest; SealStartedAt=GetWorld()->GetTimeSeconds();
     if(Nearest->IsCollateralConstruct())

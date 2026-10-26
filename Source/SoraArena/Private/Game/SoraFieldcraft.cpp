@@ -677,6 +677,11 @@ USoraFieldcraft::FHold USoraFieldcraft::WorkAt(const FVector& Where) const
             Consider(QuarryLocation(Quarry), EHoldKind::NetCut, Quarry, nullptr, Staged->Nets.Rules.CutMs);
     for (int32 Fire = 0; Fire < FiresLit.Num(); ++Fire)
         if (!FiresLit[Fire]) Consider(FireLocation(Fire), EHoldKind::Relight, Fire, nullptr, Staged->Fires.RelightMs);
+    // Keep both the prompt and action on the nearest eligible work. A lamp
+    // farther away must not consume the press meant for a conscript's seal.
+    if(Player&&Mode&&Mode->Campaign())
+        if(const auto* Seal=Mode->Campaign()->SealCutCandidate(*Player);
+           Seal&&FVector::Dist2D(Seal->GetActorLocation(),Where)<=BestDistance)return FHold();
     return Best;
 }
 

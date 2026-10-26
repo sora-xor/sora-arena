@@ -112,4 +112,35 @@ bool FSoraTerminalLoaderTest::RunTest(const FString&)
     }
     return !HasAnyErrors();
 }
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraTerminalSealLampTest,"SoraArena.Campaign.NoticeSquare.SealBesideLamp",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FSoraTerminalSealLampTest::RunTest(const FString&)
+{
+    if(!FSoraCatalog::Get().Load())return false;
+    for(bool NearSeal:{true,false})
+    {
+        SoraTerminalTest::FWorld W(*this,NearSeal?TEXT("NoticeSealNear"):TEXT("NoticeLampNear"),2,9);
+        if(!W.Start())return false;
+        for(int I=0;I<3000&&!W.Mode()->IsPlaying();++I)if(!W.Tick(1))return false;
+        W.Harden();ASoraEnemy* Conscript=nullptr;
+        for(TActorIterator<ASoraEnemy> It(W.World->GetTestWorld());It;++It)
+        {
+            if(!Conscript&&It->IsNonlethal())Conscript=*It;
+            else It->Destroy();
+        }
+        if(!TestNotNull(TEXT("The encounter supplies a debt-bound conscript"),Conscript))return false;
+        Conscript->GetCharacterMovement()->StopMovementImmediately();
+        Conscript->SetActorLocation(FVector(-800,-650,90.15));
+        UGameplayStatics::ApplyDamage(Conscript,Conscript->Health,W.Hero()->GetController(),W.Hero(),UDamageType::StaticClass());
+        if(!TestTrue(TEXT("The real nonlethal defeat exposes its seal"),Conscript->CanCutSeal()))return false;
+        const int Lamp=W.Craft().Lamps.IndexOfByPredicate([](const FSoraLamp& L){return L.Id==TEXT("tsuji_andon_sw");});
+        if(!TestTrue(TEXT("The nearby street lamp is present"),W.Fieldcraft()->Lamps().IsValidIndex(Lamp)))return false;
+        W.Stand(NearSeal?FVector(-750,-570,0):FVector(-930,-540,0));
+        if(!W.Tick(4)||!W.Hold(EKeys::E,150))return false;
+        TestEqual(TEXT("The closer seal is freed; the farther seal waits"),Conscript->IsFreed(),NearSeal);
+        TestEqual(TEXT("The closer lamp is snuffed; the farther lamp stays lit"),W.Fieldcraft()->Lamps()[Lamp]->IsLit(),NearSeal);
+    }
+    return !HasAnyErrors();
+}
 #endif

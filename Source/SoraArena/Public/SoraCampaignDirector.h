@@ -342,6 +342,8 @@ public:
     // (INDEX_NONE for the hub, -2 for none).
     FVector PartyLocation() const;
     int32 HeroZone() const;
+    // Read-only choice shared by the held cut and competing nearby work.
+    ASoraEnemy* SealCutCandidate(const ASoraPlayerCharacter& Player) const;
     // Seconds of the running cinematic, whether it opens a fresh chapter (the
     // title card shows first), and the camera it plays through.
     float CinematicElapsed() const;
