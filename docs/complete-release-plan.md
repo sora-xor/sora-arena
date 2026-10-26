@@ -27,22 +27,30 @@ shutter. [Fusuma evidence](qualification/palace-fusuma-2026-10-26.md) and
 [lockdown evidence](qualification/ledger-lockdown-2026-10-26.md) retain their
 isolated AI and placeholder-art limits.
 
-The assisted campaign stops at a relay control because a fallen drone takes
-body-drag priority. ConvoyNets commits the mounted sword swing but does not
-free its expected horse. Both failures recur in the diagnostic run at
-`95ef38ca`; they are being investigated. The first run also retains a walking
-simulation warning. These results do not establish ordinary controls, art,
-package or platform acceptance.
+The two runtime failures are resolved at `7b48ae3a`. The relay fixture samples
+additional legitimate ground approach positions and bounds long world ticks
+at 50 ms. The convoy production fix stops the entire tied string when the
+rider falls behind; previously individual distance stops collapsed all three
+horses onto one point. Seven focused regressions now pass without warnings,
+including the mounted net cut, new spacing check and complete assisted
+campaign. [Evidence and limits](qualification/convoy-spacing-2026-10-26.md)
+retain the original failed runs. Ordinary controls, final art, package and
+platform acceptance remain unfinished.
 
 Source CI run `40265805351` authenticates 112 passes and one failed
 asset-notices gate. Its tested merge tree matches `47b49669`; raw logs and all
 five artifacts verify. Review:
 `35ece511863ccaba2b074b13c9f27ab479ebebfd624f59bc0054fffb3813313f`.
-The stale notice is regenerated at `95ef38ca`; its CI is pending review.
-Claude is preparing a scoped correction for 83 weapon sockets in 25 FBXs,
-whose CPU-predicted scale/orientation defect still needs actual weapon import
-verification. Character and first-person fur presentation remain rejected.
-Root holds the engine lane for gameplay diagnosis; Claude is working on CPU.
+The stale notice is regenerated at `95ef38ca`; its run `40266330092` passes
+all 113 source checks with matching tested/source trees and verified artifacts
+and raw logs. Review:
+`6697cff7281fc84153ee0cfb4dc68659142182cec9a07a9c08abb0bee1cc5120`.
+Claude's updated inventory has 83 weapon sockets in 26 FBXs. These kits still
+need actual import verification and runtime adoption; the original weapon
+imports use older socketless meshes. The CPU rotation model is being corrected
+against full measured axes. Character and first-person fur presentation remain
+rejected. The engine/Blender lane was returned to Claude after the seven-test
+run; root is CPU-only until explicit handback.
 
 ## October 26 archive reveal validation
 

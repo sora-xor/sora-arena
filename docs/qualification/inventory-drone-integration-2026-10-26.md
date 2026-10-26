@@ -113,8 +113,8 @@ are unchanged; only six InventoryDrone generated packages change. Review:
 Attempt1 is retained as an unlaunched preflight failure: an abbreviated commit
 ID did not satisfy the harness's exact full-SHA comparison.
 
-Claude's CPU screen predicts the same malformed socket export convention in
-83 sockets across 25 weapon FBXs. That is not yet actual weapon-import proof.
+Claude's updated CPU inventory predicts malformed socket exports in 83 sockets
+across 26 weapon FBXs (correcting the initial count of 25). That is not yet actual weapon-import proof.
 The viewmodel's unit-scale admission gate and full socket transforms make it
 material; scoped real-import verification and correction remain open.
 
@@ -143,3 +143,15 @@ Two failures are retained, not reclassified:
 
 These results qualify the scoped collision, flight, door and alarm fixtures,
 not ordinary campaign controls, gameplay difficulty, final art or packaging.
+
+## Follow-up runtime at 7b48ae3a
+
+Both failures now pass in the seven-test convoy cohort, with no warnings.
+The relay fixture retains body-drag priority and finds a valid grounded work
+position around the fallen disc. Its long waits use bounded world ticks.
+The convoy bug was independent distance stops: all three pack horses collapsed
+onto one point, making the correctly committed cut free a different net.
+The tied string now stops together and keeps its 450 cm spacing. Mounted net,
+reload/protection, horse-fear, mounted combat, drone crossing and the full
+assisted campaign pass. See [the convoy evidence](convoy-spacing-2026-10-26.md).
+No final visual or ordinary-play acceptance is implied.
