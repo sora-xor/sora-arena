@@ -1,6 +1,7 @@
 #include "SoraHUD.h"
 #include "HUD/SoraHUDPanels.h"
 #include "SoraCatalog.h"
+#include "SoraCampaignDirector.h"
 #include "SoraFrontEnd.h"
 #include "SoraGameMode.h"
 #include "SoraPlayerCharacter.h"

@@ -21,7 +21,7 @@ TArray<ASoraWorkshopProp*> Props(FBeatWorld& W)
     Found.Sort([](const ASoraWorkshopProp& A,const ASoraWorkshopProp& B){return A.GetActorLocation().X<B.GetActorLocation().X;});
     return Found;
 }
-void Freeze(FBeatWorld& W)
+void FreezeWorkshopHazard(FBeatWorld& W)
 {
     for(TActorIterator<ASoraEnemy> It(W.World->GetTestWorld());It;++It)
     {
@@ -31,8 +31,8 @@ void Freeze(FBeatWorld& W)
     }
 }
 bool Tick(FBeatWorld& W,int Frames)
-{for(int I=0;I<Frames;++I){Freeze(W);if(!W.Tick(1))return false;}return true;}
-bool Ready(FBeatWorld& W)
+{for(int I=0;I<Frames;++I){FreezeWorkshopHazard(W);if(!W.Tick(1))return false;}return true;}
+bool WorkshopHazardReady(FBeatWorld& W)
 {
     if(!FSoraCatalog::Get().Load()||!W.Start())return false;
     W.Harden();for(int I=0;I<3000&&!W.Mode()->IsPlaying();++I)if(!Tick(W,1))return false;
@@ -71,7 +71,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraWorkshopOilIgnitionTest,"SoraArena.Campaig
 bool FSoraWorkshopOilIgnitionTest::RunTest(const FString&)
 {
     using namespace SoraWorkshopHazardTest;
-    FBeatWorld W(*this,TEXT("WorkshopOilIgnition"),2,7);if(!Ready(W))return false;
+    FBeatWorld W(*this,TEXT("WorkshopOilIgnition"),2,7);if(!WorkshopHazardReady(W))return false;
     auto* Oil=Props(W)[0];auto* Bus=USoraGameEvents::Get(W.Hero());
     Hit(W,*Oil,1000,false);Hit(W,*Oil,1000,true);
     Shell(W,FVector(2600,-1200,55),FVector(-1500,0,0),100,1000,true);
@@ -105,12 +105,13 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraWorkshopOilDamageTest,"SoraArena.Campaign.
 bool FSoraWorkshopOilDamageTest::RunTest(const FString&)
 {
     using namespace SoraWorkshopHazardTest;
-    FBeatWorld W(*this,TEXT("WorkshopOilDamage"),2,7);if(!Ready(W))return false;
+    FBeatWorld W(*this,TEXT("WorkshopOilDamage"),2,7);if(!WorkshopHazardReady(W))return false;
     Place(*W.Hero(),FVector(1900,-1660,0));if(!Tick(W,10)||!W.Hold(EKeys::E,125))return false;
-    Freeze(W);TArray<ASoraEnemy*> Enemies;
+    FreezeWorkshopHazard(W);TArray<ASoraEnemy*> Enemies;
     for(TActorIterator<ASoraEnemy> It(W.World->GetTestWorld());It;++It)if(It->IsAlive())Enemies.Add(*It);
     if(!TestEqual(TEXT("Seal releases three registered opponents"),Enemies.Num(),3))return false;
-    auto Found=Props(W);auto* Oil=Found[0];auto* Bus=USoraGameEvents::Get(W.Hero());
+    auto Found=Props(W);TArray<TWeakObjectPtr<ASoraWorkshopProp>> Old;for(auto* P:Found)Old.Add(P);
+    auto* Oil=Found[0];auto* Bus=USoraGameEvents::Get(W.Hero());
     if(!Ignite(W,*Oil))return false;
     const int Left=Oil->FireLeftMs(),Expected=Left*R::DamagePerSecond/1000;
     Place(*W.Hero(),FVector(2440,-1200,0));
@@ -142,7 +143,7 @@ bool FSoraWorkshopOilDamageTest::RunTest(const FString&)
     if(!TestTrue(TEXT("Fire fixture enters real defeat"),W.Mode()->bDefeated)||!W.Press(EKeys::Enter))return false;
     for(int I=0;I<3000&&!W.Mode()->IsPlaying();++I)if(!Tick(W,1))return false;
     const auto Fresh=Props(W);if(!TestEqual(TEXT("Retry recreates exactly four props"),Fresh.Num(),4))return false;
-    for(const auto* P:Found)TestFalse(TEXT("Retry destroys each old prop"),IsValid(P));
+    for(const auto& P:Old)TestFalse(TEXT("Retry destroys each old prop"),P.IsValid());
     TestTrue(TEXT("Retry restores sealed waves and unlit oil"),W.Fieldcraft()->NeedsWorkshopSeal()&&!Fresh[0]->IsSpent()&&Fresh[0]->FireLeftMs()==0);
     // Clear synchronously from the normal damage event while a fire tick has
     // queued victims: no old-stage hits may run after that callback.
@@ -161,7 +162,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraWorkshopCoverTest,"SoraArena.Campaign.Lant
 bool FSoraWorkshopCoverTest::RunTest(const FString&)
 {
     using namespace SoraWorkshopHazardTest;
-    FBeatWorld W(*this,TEXT("WorkshopCover"),2,7);if(!Ready(W))return false;
+    FBeatWorld W(*this,TEXT("WorkshopCover"),2,7);if(!WorkshopHazardReady(W))return false;
     auto Found=Props(W);auto* Rack=Found[1];
     Place(*W.Hero(),FVector(2770,-1100,0));W.Look(FRotator(0,90,0));
     if(!W.World->InjectKey(EKeys::W,IE_Pressed)||!Tick(W,60)||!W.World->InjectKey(EKeys::W,IE_Released))return false;
