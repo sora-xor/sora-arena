@@ -23,8 +23,15 @@ void ASoraWorldBuilder::BuildLanding(const FSoraZone& Zone)
         Slab(FString::Printf(TEXT("LandingStep%d"),I),-11600,-2850-I*50,-11000,-2800-I*50,
              (I+1)*(R::WaterZ/6.f),Stone,TEXT("Stone"));
     const float Rise=-float(R::BedZ),RampPitch=FMath::RadiansToDegrees(FMath::Atan2(Rise,500.f));
-    Box(TEXT("LandingEastGangplank"),FVector(-7900,-2950,R::BedZ*.5f-8),FVector(FMath::Sqrt(500.f*500.f+Rise*Rise),180,16),
-        Wood,true,FRotator(RampPitch,90,0),TEXT("Timber"));
+    const FRotator RampRotation(RampPitch,90,0);
+    // Align the walking surface with the bank edge, not a point 100 cm
+    // inland: the former placement met the ground's vertical face 40 cm
+    // below its top and stopped the crouched water route. Offset thickness
+    // along the plank normal so the surface reaches Z=0 at Y=MinY.
+    const FVector RampSurface(-7900,R::MinY-250,R::BedZ*.5f);
+    Box(TEXT("LandingEastGangplank"),RampSurface-RampRotation.RotateVector(FVector(0,0,8)),
+        FVector(FMath::Sqrt(500.f*500.f+Rise*Rise)+20,180,16),
+        Wood,true,RampRotation,TEXT("Timber"));
     Box(TEXT("LandingCanalWater"),FVector((R::ZoneMinX+R::MaxX)*.5f,(R::CanalMinY+R::MinY)*.5f,R::WaterZ-1),
         FVector(R::MaxX-R::ZoneMinX,R::MinY-R::CanalMinY,2),FLinearColor(.035f,.085f,.09f),false);
     // The land's bank is 1.6 m above the water, broken only at its steps and

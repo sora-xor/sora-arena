@@ -85,12 +85,17 @@ bool FSoraLandingSolidsTest::RunTest(const FString&)
 {
     using namespace SoraLandingSpaceTest;namespace R=SoraLandingSpaceRules;
     FBeatWorld W(*this,TEXT("LandingSolids"),2,1);if(!Start(W))return false;
+    // Runtime box components retain UStaticMeshComponent's BlockAllDynamic
+    // profile. Query both world object types, as character movement does.
+    FCollisionObjectQueryParams Objects(ECC_WorldStatic);
+    Objects.AddObjectTypesToQuery(ECC_WorldDynamic);
     const auto Floor=[&](FVector2D At,float Expected)
     {
-        FHitResult Hit;FCollisionObjectQueryParams Objects(ECC_WorldStatic);
+        FHitResult Hit;
         FCollisionQueryParams Query(SCENE_QUERY_STAT(LandingFloor),false,W.Hero());
         const bool Found=W.World->GetTestWorld()->LineTraceSingleByObjectType(Hit,FVector(At,200),FVector(At,-250),Objects,Query);
-        return TestTrue(FString::Printf(TEXT("Actual support at %s has top %.1f cm"),*At.ToString(),Expected),
+        return TestTrue(FString::Printf(TEXT("Actual support at %s has top %.1f cm (found=%d, component=%s, Z=%.3f)"),
+            *At.ToString(),Expected,Found,*GetNameSafe(Hit.GetComponent()),Hit.ImpactPoint.Z),
             Found&&!Hit.bStartPenetrating&&FMath::Abs(Hit.ImpactPoint.Z-Expected)<1.f);
     };
     Floor(FVector2D(R::Entry.X,R::Entry.Y),0);
@@ -100,9 +105,9 @@ bool FSoraLandingSolidsTest::RunTest(const FString&)
     for(int X:{-11440,-10520,-9600})Floor(FVector2D(X,-1270),1);
     for(const auto& P:{FVector2D(-21000,-3300),FVector2D(-17000,-3300),FVector2D(-10450,-3350),FVector2D(-9050,-3350)})
         Floor(P,R::BedZ);
+    for(int Y:{-3250,-3050,-2850})Floor(FVector2D(-7900,Y),(Y-R::MinY)*.4f);
     Floor(FVector2D(-10450,-4100),0);
     Floor(FVector2D(R::BridgeX,-3300),R::WaterZ+R::BridgeClearance+60);
-    FCollisionObjectQueryParams Objects(ECC_WorldStatic);
     FHitResult Bridge;
     const bool BridgeHit=W.World->GetTestWorld()->LineTraceSingleByObjectType(Bridge,
         FVector(R::BridgeX-150,-3300,R::WaterZ),FVector(R::BridgeX-150,-3300,500),Objects);

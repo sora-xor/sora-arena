@@ -1,9 +1,19 @@
 # West landing source checkpoint — not runtime qualified
 
-This prepares chapter 3's west landing and two timed patrols for an Unreal
-build. It is separate from the already exercised landing-drone attack. The
-new C++ has not been compiled or run in Unreal. Claude owns the engine and
-Blender lane while producing the character revision.
+This implements chapter 3's west landing and two timed patrols. The signed
+`53967094` compiled and completed fifteen Unreal NullRHI tests on October 26:
+thirteen passed and two failed. The original evidence is retained under
+`Saved/Qualification/2026-10-26/landing-space-53967094-runtime-attempt1`.
+The editor exited naturally with code 3; source, Config and Content/Generated
+were unchanged. This is not rendered or ordinary-play acceptance.
+
+The water route stopped against the bank at the top of the east gangplank.
+Its slope reached bank height 100 cm inland, leaving a 40 cm obstruction at
+the bank face. The revised plank reaches bank height at the actual edge,
+with thickness offset along its normal. The solids fixture also omitted
+WorldDynamic, the default collision type of the runtime box components;
+it now queries both world types and checks three points along the plank.
+These corrections await their own runtime result.
 
 The generated data now uses the authored 44 × 16 m yard, entry at the west
 steps, three lamp positions, six puddles, five cargo stacks and north-east
@@ -41,7 +51,8 @@ revision.
 Seven new Unreal cases are prepared under
 `SoraArena.Campaign.LandingSpace`: `Solids`, `Patrols`, `Searchlight` and
 `BlockedPatrol`, plus `Routes.Eaves`, `Routes.WaterEdge` and `Routes.Shed`.
-None has run. The patrol observer is deliberately held
+Five passed on `53967094`; `Solids` and `Routes.WaterEdge` failed as described
+above. The patrol observer is deliberately held
 inside a warehouse solid to isolate flight from detection. Passing those
 fixtures will still not establish an ordinary-control stealth route. The
 three route cases use mapped crouch, movement and lamp interaction from the
@@ -49,8 +60,9 @@ authored spawn without position warps, but freeze combat to isolate traversal.
 
 Open before integration or acceptance:
 
-- Compile and run the seven new cases and existing landing-drone attack
-  regressions. Check generated collision, imports, navigation and lighting.
+- Recheck the corrected collision and traversal fixtures. The three existing
+  landing-drone tests, DroneBody, DroneCrossing, LedgerPatrols,
+  HorseShellClockAndImpact and assisted Playthrough passed on `53967094`.
 - Physically play all three routes, snuff each lamp with its one-second
   interaction, and verify puddles, detection carryover and the real exit.
 - Review the shallow bed, boats, banks and east gangplank in actual play.
