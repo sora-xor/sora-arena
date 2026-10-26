@@ -9,7 +9,9 @@ inline constexpr FPoint Entry{-7820,-550};
 inline constexpr int FenceX=-6200,FenceHeight=240,GateWidth=360;
 inline constexpr int CulvertX=-6200,CulvertY=-650,CulvertFloor=-90,CulvertLength=300,CulvertWidth=100,CulvertHeight=90;
 inline constexpr int WicketY=135,WicketWidth=90,WicketHeight=120;
-inline constexpr int MinX=-8000,MinY=-1000,MaxX=-5600,MaxY=1100;
+inline constexpr int MinX=-8000,MinY=-1000,MaxX=-4700,MaxY=1100;
+inline constexpr int StreetStartX=-5600,StreetEndX=-4700,StreetHalfWidth=360;
+inline constexpr FPoint Exit{-4450,0};
 inline constexpr int Periods[]={0,40000,0,0,50000};
 inline constexpr FPoint Posts[]={{-6300,150},{-7900,-650},{-6660,-290},{-6300,0},{-7900,-500}};
 inline constexpr FPoint Ditch[]={{-7900,-650},{-7000,-650},{-7000,-800},{-6450,-800},{-7000,-800},{-7000,-650}};
@@ -20,6 +22,7 @@ struct FSlab { const char* Name; int X0,Y0,X1,Y1,Top; };
 // The landing owns X -8000..-7600, Y -1000..-660. Do not lay a second
 // floor over it. The bent western descent also stays outside the hut.
 inline constexpr FSlab Ground[]={
+    {"WardTenementStreet",StreetStartX,-StreetHalfWidth,StreetEndX,StreetHalfWidth,0},
     {"WardApproach",-8000,-660,-7600,1100,0},
     {"WardGroundNorth",-7600,-600,-5600,1100,0},
     {"WardGroundSouthWest",-7600,-870,-6440,-700,0},

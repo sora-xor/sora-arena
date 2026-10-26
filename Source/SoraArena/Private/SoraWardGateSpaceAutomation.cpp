@@ -52,7 +52,10 @@ bool WalkWard(FBeatWorld& W,FVector2D Point,bool Exit=false)
     {
         if(W.Campaign()->ActiveBeat()!=2)break;
         W.Look(FVector(Point-FVector2D(W.Hero()->GetActorLocation()),0).Rotation());
+        const FVector Before=W.Hero()->GetActorLocation();
         if(!W.World->InjectKey(EKeys::W,IE_Pressed)||!W.Tick(1))return false;
+        if(!W.Test.TestTrue(TEXT("Ward traversal and beat transition never warp the hero"),
+            FVector::Dist(Before,W.Hero()->GetActorLocation())<25.f))return false;
     }
     W.World->InjectKey(EKeys::W,IE_Released);
     if(!W.Tick(4))return false;
@@ -60,10 +63,28 @@ bool WalkWard(FBeatWorld& W,FVector2D Point,bool Exit=false)
         W.Campaign()->ActiveBeat(),FSoraCatalog::Get().Chapter(2).BeatIndex(TEXT("ch03.b05")))&&
         W.Test.TestTrue(TEXT("Leaving completes the ward without granting the optional finds"),
             (W.Campaign()->Progress().CompletedMask&SoraBeatRules::BeatBit(2))!=0&&
-            (W.Campaign()->Progress().CompletedMask&SoraBeatRules::BeatBit(3))==0);
+            (W.Campaign()->Progress().CompletedMask&SoraBeatRules::BeatBit(3))==0)&&
+        W.Test.TestTrue(TEXT("Normal progression arrives on foot inside the tenements, before their checkpoint spawn"),
+            FSoraCatalog::Get().Chapter(2).Space.ZoneAt(W.Hero()->GetActorLocation())==W.Campaign()->ActiveBeatData()->Space.Zone&&
+            W.Hero()->GetActorLocation().X < -4500.f);
     W.Test.AddInfo(FString::Printf(TEXT("Ward walk toward %s ends at %s, crouched=%d"),
         *Point.ToString(),*W.Hero()->GetActorLocation().ToString(),W.Hero()->IsCrouched()));
     return W.Test.TestTrue(TEXT("Mapped movement reaches its ward waypoint"),W.Campaign()->ActiveBeat()==2&&
+        FVector2D::Distance(FVector2D(W.Hero()->GetActorLocation()),Point)<30.f);
+}
+bool WalkTenementStreet(FBeatWorld& W,FVector2D Point)
+{
+    const int32 Beat=FSoraCatalog::Get().Chapter(2).BeatIndex(TEXT("ch03.b05"));
+    for(int Frame=0;Frame<1800&&FVector2D::Distance(FVector2D(W.Hero()->GetActorLocation()),Point)>15.f;++Frame)
+    {
+        if(!W.Test.TestEqual(TEXT("Street walking preserves the carry beat"),W.Campaign()->ActiveBeat(),Beat))return false;
+        const FVector Before=W.Hero()->GetActorLocation();
+        W.Look(FVector(Point-FVector2D(Before),0).Rotation());
+        if(!W.World->InjectKey(EKeys::W,IE_Pressed)||!W.Tick(1)||
+           !W.Test.TestTrue(TEXT("The tenement approach is walked without relocation"),FVector::Dist(Before,W.Hero()->GetActorLocation())<25.f))return false;
+    }
+    W.World->InjectKey(EKeys::W,IE_Released);
+    return W.Tick(4)&&W.Test.TestTrue(TEXT("Mapped input reaches the next district along its continuous street"),
         FVector2D::Distance(FVector2D(W.Hero()->GetActorLocation()),Point)<30.f);
 }
 bool Cut(FBeatWorld& W,ASoraEnemy& E,bool PlaceHero)
@@ -110,7 +131,8 @@ bool FSoraWardGateSolidsTest::RunTest(const FString&)
     FBeatWorld W(*this,TEXT("WardSolids"),2,2);if(!StartWard(W))return false;
     for(const FVector P:{FVector(-7820,-850,0),FVector(-7820,-630,0),FVector(-7300,-900,-40),
         FVector(-6390,-825,-30),FVector(-6390,-775,-60),FVector(-6390,-725,-90),
-        FVector(-6200,-650,-90),FVector(-5990,-650,-90),FVector(-5945,-650,-60),FVector(-5895,-650,-30)})
+        FVector(-6200,-650,-90),FVector(-5990,-650,-90),FVector(-5945,-650,-60),FVector(-5895,-650,-30),
+        FVector(-5590,0,0),FVector(-5200,0,0),FVector(-4710,0,0),FVector(-4690,0,0)})
     {
         FHitResult H;
         const bool Hit=Trace(W,FVector(P.X,P.Y,P.Z+25),FVector(P.X,P.Y,P.Z-80),H);
@@ -118,6 +140,8 @@ bool FSoraWardGateSolidsTest::RunTest(const FString&)
             Hit&&!H.bStartPenetrating&&FMath::IsNearlyEqual(H.ImpactPoint.Z,P.Z,1.f));
     }
     FHitResult H;
+    TestFalse(TEXT("The old east boundary opens into the continuous street"),
+        Trace(W,FVector(-5800,0,90),FVector(-4700,0,90),H));
     TestTrue(TEXT("Culvert ceiling is exactly 90 cm above its floor"),
         Trace(W,FVector(-6200,-650,-80),FVector(-6200,-650,50),H)&&FMath::Abs(H.ImpactPoint.Z)<1.f);
     TestTrue(TEXT("The wicket begins physically barred"),Trace(W,FVector(-6280,135,60),FVector(-6100,135,60),H));
@@ -230,7 +254,20 @@ bool FSoraWardGateRoutesTest::RunTest(const FString& Route)
     }
     else return false;
     TestFalse(TEXT("The alternate route avoids the scanner"),W.Raised(TEXT("scanner_enter:scan_arch_b03")));
-    if(!WalkWard(W,{-5800,0},true))return false;
+    if(!WalkWard(W,{-5800,0})||!WalkWard(W,{SoraWardGateRules::Exit.X,SoraWardGateRules::Exit.Y},true))return false;
+    HoldGuards(W);if(!WaitForControl(W))return false;
+    if(!WalkTenementStreet(W,{-4600,300})||!WalkTenementStreet(W,{-4200,300}))return false;
+    if(Route==TEXT("Culvert"))
+    {
+        // A real checkpoint retry still uses its entry; retaining the normal
+        // crossing must not turn a reload into an arbitrary saved position.
+        UGameplayStatics::ApplyDamage(W.Hero(),W.Hero()->Health,nullptr,nullptr,UDamageType::StaticClass());
+        if(!TestTrue(TEXT("Lethal damage opens retry after crossing"),W.Mode()->bDefeated)||!W.Press(EKeys::Enter))return false;
+        HoldGuards(W);if(!WaitForControl(W)||!W.Tick(30))return false;
+        TestTrue(TEXT("Retry places the hero at the authored tenement checkpoint entry"),
+            W.Campaign()->ActiveBeat()==FSoraCatalog::Get().Chapter(2).BeatIndex(TEXT("ch03.b05"))&&
+            FVector::Dist2D(W.Hero()->GetActorLocation(),FVector(-2800,450,0))<30.f);
+    }
     AddInfo(TEXT("Directed traversal from the ward spawn with mapped movement, crouch and ladder input; no hero position warps. AI is held, and the wicket fixture supplies a nonlethal damage hit. This is not ordinary stealth acceptance."));
     return !HasAnyErrors();
 }

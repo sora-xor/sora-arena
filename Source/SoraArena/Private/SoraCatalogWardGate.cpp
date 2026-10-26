@@ -23,8 +23,9 @@ bool SoraCatalogWardGate::Read(const FJsonObject& O,FSoraBeat& Beat,const FSoraS
     auto& B=Beat.Space;
     if(!Value||Value->Type!=EJson::Object||!Space.Zones.IsValidIndex(B.Zone))return false;
     const auto H=Value->AsObject();const auto& Z=Space.Zones[B.Zone];
-    if(H->Values.Num()!=10||!Numbers(*H,TEXT("plaza_cm"),{-8000,-700,-6200,700})||
+    if(H->Values.Num()!=11||!Numbers(*H,TEXT("plaza_cm"),{-8000,-700,-6200,700})||
        !Numbers(*H,TEXT("shared_landing_cm"),{-8000,-1000,-7600,-660})||
+       !Numbers(*H,TEXT("tenement_street_cm"),{R::StreetStartX,-R::StreetHalfWidth,R::StreetEndX,R::StreetHalfWidth})||
        !Number(*H,TEXT("fence_x_cm"),R::FenceX)||!Number(*H,TEXT("fence_height_cm"),R::FenceHeight)||
        !Number(*H,TEXT("gate_width_cm"),R::GateWidth)||
        !Numbers(*H,TEXT("wicket_cm"),{R::FenceX,R::WicketY,R::WicketWidth,R::WicketHeight})||
@@ -34,9 +35,13 @@ bool SoraCatalogWardGate::Read(const FJsonObject& O,FSoraBeat& Beat,const FSoraS
        Beat.Place!=TEXT("pl_kido")||Z.Place!=Beat.Place||Z.Id!=Beat.Place||
        Z.Rect.Min!=FVector2D(R::MinX,R::MinY)||Z.Rect.Max!=FVector2D(R::MaxX,R::MaxY)||
        Z.Entry!=FVector2D(R::Entry.X,R::Entry.Y)||B.Entry!=Z.Entry||B.HeightCm!=0||
-       Z.WallHeight!=420||!Z.Route.IsEmpty()||!Z.Props.IsEmpty()||!Z.Cover.IsEmpty()||Z.Walls.Num()!=4||
+       Z.WallHeight!=420||!Z.Route.IsEmpty()||!Z.Props.IsEmpty()||!Z.Cover.IsEmpty()||Z.Walls.Num()!=7||
        B.Patrols.Num()!=5||B.Spawns.Num()!=5||Beat.Guards.Num()!=5||
-       B.Exit.Center!=FVector2D(-5800,0)||B.Exit.Size!=FVector2D(400,720))return false;
+       B.Exit.Center!=FVector2D(R::Exit.X,R::Exit.Y)||B.Exit.Size!=FVector2D(300,720))return false;
+    const int32 ArrivalZone=Space.ZoneAt(FVector(B.Exit.Center,0));
+    if(!Space.Zones.IsValidIndex(ArrivalZone)||Space.Zones[ArrivalZone].Id!=TEXT("pl_ura_nagaya")||
+       !Space.Zones[ArrivalZone].Rect.IsInside(B.Exit.Center-B.Exit.Size*.5f)||
+       !Space.Zones[ArrivalZone].Rect.IsInside(B.Exit.Center+B.Exit.Size*.5f))return false;
     const auto* Ids=SoraCatalogJson::Rows(*H,TEXT("guard_ids"));
     const TCHAR* Names[]={TEXT("kidoban"),TEXT("g_b03_c2"),TEXT("g_b03_c3"),TEXT("g_b03_e1"),TEXT("g_b03_e2")};
     if(!Ids||Ids->Num()!=5)return false;
@@ -51,9 +56,9 @@ bool SoraCatalogWardGate::Read(const FJsonObject& O,FSoraBeat& Beat,const FSoraS
            Guard.bPost!=(G==0||G==2||G==3)||Guard.TurnMs!=(G==0?12000:0)||
            Guard.SuspicionPermille!=(G<3?700:0))return false;
     }
-    const FVector2D WallAt[]={{-8030,50},{-5570,50},{-6600,-1030},{-6800,1130}};
-    const FVector2D WallSize[]={{60,2220},{60,2220},{2000,60},{2400,60}};
-    for(int I=0;I<4;++I)if(Z.Walls[I].Center!=WallAt[I]||Z.Walls[I].Size!=WallSize[I]||Z.Walls[I].Height!=420)return false;
+    const FVector2D WallAt[]={{-8030,50},{-5570,-710},{-6600,-1030},{-6800,1130},{-5570,760},{-5120,-390},{-5120,390}};
+    const FVector2D WallSize[]={{60,2220},{60,700},{2000,60},{2400,60},{60,800},{840,60},{840,60}};
+    for(int I=0;I<7;++I)if(Z.Walls[I].Center!=WallAt[I]||Z.Walls[I].Size!=WallSize[I]||Z.Walls[I].Height!=420)return false;
     if(B.Fieldcraft.Lamps.Num()!=3||B.Fieldcraft.Floors.Num()!=4||B.Fieldcraft.Ladders.Num()!=1||B.Volumes.Num()!=2)return false;
     const FVector2D LampAt[]={{-6840,-430},{-6600,-380},{-6220,-70}};
     const TCHAR* LampIds[]={TEXT("andon_b03_bansho"),TEXT("brazier_b03"),TEXT("scan_arch_b03")};

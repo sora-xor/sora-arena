@@ -7,9 +7,12 @@ three-metre culvert governs the provisional two-metre layout volume.
 import copy
 from campaign_landing import WARD_APPROACH, ZONE as LANDING_ZONE
 
-ZONE = [-8000,-1000,-5600,1100]
+ZONE = [-8000,-1000,-4700,1100]
 ENTRY = [-7820,-550,0]
-EXIT = {'center':[-5800,0],'size':[400,720]}
+# Enter the next district on foot before advancing, so the ordinary zone
+# transition preserves the hero's position. Checkpoint entry stays separate.
+EXIT = {'center':[-4450,0],'size':[300,720]}
+STREET = [-5600,-360,-4700,360]
 IDS = ['kidoban','g_b03_c2','g_b03_c3','g_b03_e1','g_b03_e2']
 PATROLS = [
     [[-6300,150]],
@@ -35,11 +38,14 @@ def contract():
             'gate_width_cm':360,'wicket_cm':[-6200,135,90,120],
             'culvert_cm':[-6200,-650,-90,300,100,90],
             'scanner_cm':[-6220,-45,0,20,270,240],
-            'guard_ids':list(IDS),'periods_ms':list(PERIODS),'shared_landing_cm':list(WARD_APPROACH)}
+            'guard_ids':list(IDS),'periods_ms':list(PERIODS),'shared_landing_cm':list(WARD_APPROACH),
+            'tenement_street_cm':list(STREET)}
 
 
 def walls():
-    return [[-8030,50,60,2220,420],[-5570,50,60,2220,420],[-6600,-1030,2000,60,420],[-6800,1130,2400,60,420]]
+    return [[-8030,50,60,2220,420],[-5570,-710,60,700,420],[-6600,-1030,2000,60,420],
+            [-6800,1130,2400,60,420],[-5570,760,60,800,420],
+            [-5120,-390,840,60,420],[-5120,390,840,60,420]]
 
 
 def shared_approach(chapter, a, b):
@@ -50,6 +56,13 @@ def shared_approach(chapter, a, b):
             pair['pl_kido']['rect']==ZONE and
             any(r['beat']=='ch03.b03' and r.get('ward_gate',{}).get('shared_landing_cm')==WARD_APPROACH
                 for r in chapter['space']['beats']))
+
+
+def ward_hub_neighbour(chapter, zone, rect):
+    # The continuous street ends at the tenements, 15.5 m from the hub's
+    # west bound, inside the generic 20 m spacing for disconnected places.
+    return (chapter['id']=='ch03_lantern_ward' and zone['place']=='pl_kido' and
+            zone['rect']==ZONE and tuple(rect)==(-3150,-2550,3150,2550))
 
 
 def place_ward_gate(beats,records,zones,layout,fail):

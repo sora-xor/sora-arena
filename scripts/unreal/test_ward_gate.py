@@ -40,7 +40,12 @@ class WardGateTests(unittest.TestCase):
 
     def solids(self):
         walls=self.native['landing_walls']+ward.walls()
-        return self.native['solids']+[['boundary',x,y,h/2,w,d,h] for x,y,w,d,h in walls]
+        tenements=[]
+        for x,y,z,w,d,h,yaw,_ in self.native['tenement_solids']:
+            a=math.radians(yaw)
+            tenements.append(['tenement',x,y,z,abs(w*math.cos(a))+abs(d*math.sin(a)),
+                              abs(w*math.sin(a))+abs(d*math.cos(a)),h])
+        return self.native['solids']+tenements+[['boundary',x,y,h/2,w,d,h] for x,y,w,d,h in walls]
 
     @staticmethod
     def sample(points,step=5):
@@ -59,6 +64,8 @@ class WardGateTests(unittest.TestCase):
 
     def floor_at(self,p):
         heights=[top for _,x0,y0,x1,y1,top in self.native['ground'] if x0<=p[0]<=x1 and y0<=p[1]<=y1]
+        heights += [z+h/2 for x,y,z,w,d,h,yaw,surface in self.native['tenement_solids']
+                    if surface==0 and yaw==0 and abs(p[0]-x)<=w/2 and abs(p[1]-y)<=d/2]
         if -22000<=p[0]<=-7600 and -2800<=p[1]<=-660:heights.append(0)
         return max(heights,default=None)
 
@@ -95,6 +102,35 @@ class WardGateTests(unittest.TestCase):
             for solid in self.solids():self.assertFalse(self.capsule_hits(solid,point),(point,solid[0]))
         for name,x0,y0,x1,y1,_ in self.native['ground']:
             self.assertFalse(max(x0,-8000)<min(x1,-7600) and max(y0,-1000)<min(y1,-660),name)
+
+    def test_street_has_continuous_floor_and_a_body_wide_open_boundary(self):
+        solids=self.solids()
+        for y in (-325.9,0,325.9):
+            for point in self.sample([[-5900,y],[-4300,y]]):
+                self.assertEqual(self.floor_at(point),0,('street gap',point))
+                for solid in solids:self.assertFalse(self.capsule_hits(solid,point),(point,solid[0]))
+        # Joining floors meet at their edges without a duplicate surface.
+        _,x0,y0,x1,y1,top=next(s for s in self.native['ground'] if s[0]=='WardTenementStreet')
+        self.assertEqual([x0,y0,x1,y1],ward.STREET)
+        for x,y,z,w,d,h,_,surface in self.native['tenement_solids']:
+            if surface==0:
+                self.assertFalse(max(x0,x-w/2)<min(x1,x+w/2) and max(y0,y-d/2)<min(y1,y+d/2))
+
+    def test_exit_reaches_tenements_before_progression_can_move_the_hero(self):
+        record=self.record(self.chapter);zones=self.chapter['space']['zones']
+        def zone_at(x,y):
+            return next((i for i,z in enumerate(zones) if z['rect'][0]<=x<=z['rect'][2] and
+                         z['rect'][1]<=y<=z['rect'][3]),-2)
+        next_beat=next(r for r in self.chapter['space']['beats'] if r['beat']=='ch03.b05')
+        x,y=record['exit']['center'];w,d=record['exit']['size']
+        for dx in (-w/2,0,w/2):
+            for dy in (-d/2,0,d/2):self.assertEqual(zone_at(x+dx,y+dy),next_beat['zone'])
+        self.assertEqual(zone_at(-5800,0),record['zone'])
+        self.assertGreater(abs(x+5800),w/2,'old exit must not advance before the join')
+        for key,value in [('exit',{'center':[-5800,0],'size':[400,720]}),
+                          ('ward_gate',{**ward.contract(),'tenement_street_cm':[-5600,-360,-4800,360]})]:
+            c=copy.deepcopy(self.chapter);self.record(c)[key]=value
+            self.assertFalse(ward.ward_gate_valid(c))
 
     def test_culvert_is_authored_size_and_stair_descent_clears_hut(self):
         r=self.record(self.chapter)['ward_gate']
@@ -146,6 +182,13 @@ class WardGateTests(unittest.TestCase):
         self.assertFalse(ward.shared_approach(self.chapter,a,moved))
         for zone in zones:
             if zone not in (a,b):self.assertFalse(ward.shared_approach(self.chapter,a,zone))
+        hub=(-3150,-2550,3150,2550)
+        self.assertTrue(ward.ward_hub_neighbour(self.chapter,b,hub))
+        self.assertFalse(ward.ward_hub_neighbour(self.chapter,moved,hub))
+        self.assertFalse(ward.ward_hub_neighbour(self.chapter,a,hub))
+        self.assertFalse(ward.ward_hub_neighbour(self.chapter,b,(-3000,-2550,3150,2550)))
+        c=copy.deepcopy(self.chapter);c['id']='ch01_nyaagyu'
+        self.assertFalse(ward.ward_hub_neighbour(c,b,hub))
 
     def test_binding_is_required_once_and_isolated_from_other_chapters(self):
         c=copy.deepcopy(self.chapter);del self.record(c)['ward_gate']

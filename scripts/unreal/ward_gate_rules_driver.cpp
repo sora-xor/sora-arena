@@ -1,5 +1,6 @@
 #include "SoraWardGateRules.h"
 #include "SoraLandingSpaceRules.h"
+#include "SoraTenementRules.h"
 #include "SoraPatrolRules.h"
 #include <cassert>
 #include <iostream>
@@ -63,6 +64,12 @@ int main()
     {
         if(Comma)std::cout<<',';Comma=true;
         std::cout<<'['<<W.X<<','<<W.Y<<','<<W.Width<<','<<W.Depth<<','<<W.Height<<']';
+    }
+    std::cout<<"],\"tenement_solids\":[";Comma=false;
+    for(const auto& B:SoraTenementRules::Solids())
+    {
+        if(Comma)std::cout<<',';Comma=true;
+        std::cout<<'['<<B.X<<','<<B.Y<<','<<B.Z<<','<<B.SX<<','<<B.SY<<','<<B.SZ<<','<<B.Yaw<<','<<int(B.Surface)<<']';
     }
     std::cout<<"]}\n";
 }

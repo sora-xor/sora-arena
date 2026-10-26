@@ -70,7 +70,7 @@ from campaign_archive import archive_valid
 from campaign_palace import palace_valid
 from campaign_moat import moat_valid
 from campaign_landing import landing_valid
-from campaign_ward_gate import ward_gate_valid, shared_approach
+from campaign_ward_gate import ward_gate_valid, shared_approach, ward_hub_neighbour
 from campaign_tenements import tenements_valid, tenement_hub_overlap, tenement_neighbour
 from campaign_space import arena_blockers, spook_dismount
 from campaign_cargo import cargo_manifest
@@ -389,7 +389,7 @@ def check_space(chapter, beats, rewards, labels, where):
                 if shared_approach(chapter,zones[number],zones[other]):apart=True
                 if tenement_neighbour(chapter,zones[number],zones[other]):apart=True
             if not apart and number<len(zones) and other==len(zones):
-                apart=tenement_hub_overlap(chapter,zones[number],b)
+                apart=tenement_hub_overlap(chapter,zones[number],b) or ward_hub_neighbour(chapter,zones[number],b)
             require(apart, f"{where}: zones {a} and {b} overlap or touch")
     for zone in zones:
         expected_z = [-500,15800] if chapter["id"].startswith("ch08_") and zone["place"]=="pl_ledger_spire" else [15800,20000] if chapter["id"].startswith("ch08_") and zone["place"]=="pl_ledger_engine" else [-2000,2500] if chapter["id"].startswith("ch07_") and zone["place"]=="pl_hull_ridge" else None
@@ -398,7 +398,7 @@ def check_space(chapter, beats, rewards, labels, where):
         require(zone["style"] in ("estate", "ward", "foundry", "citadel") and
                 zone["form"] in ("hall", "yard", "field", "route"), f"{where}: zone {zone['id']} style or form")
         wood_counts = {"pl_matoba": 5, "pl_issoseki_wood": 0, "pl_dojo_smithy": 5} if chapter["id"].startswith("ch01_") else {}
-        if chapter['id']=='ch03_lantern_ward':wood_counts['pl_ura_nagaya']=0
+        if chapter['id']=='ch03_lantern_ward':wood_counts.update(pl_ura_nagaya=0,pl_kido=7)
         if chapter["id"].startswith("ch07_"): wood_counts.update(pl_hull_ridge=0,pl_hangar=0)
         if chapter["id"].startswith("ch06_"): wood_counts.update(pl_archive=5,pl_press_hall=5,pl_ledger_corridors=0,pl_uguisu_hall=5)
         require(len(zone["walls"]) == wood_counts.get(zone["place"], 4) and zone["wall_cm"] >= 200,
@@ -539,6 +539,8 @@ def check_space(chapter, beats, rewards, labels, where):
                         f"{what}: ledger/palace volume {volume} is outside its supported floor")
                 continue
             volume_rect = zones[next(r["zone"] for r in records if r["beat"]=="ch08.b13")]["rect"] if what=="ch08.b12" and volume.get("floor_cm")==16000 else rect
+            if what=="ch03.b03" and volume is record["exit"]:
+                volume_rect=zones[next(r["zone"] for r in records if r["beat"]=="ch03.b05")]["rect"]
             if what=="ch06.b10" and volume.get("event")=="volume_enter:vol_archive_press_landing":
                 volume_rect=zones[next(r["zone"] for r in records if r["beat"]=="ch06.b11")]["rect"]
             require(_inside(volume_rect, volume["center"], 0) and min(volume["size"]) >= (120 if what=="ch06.b10" and volume.get("event")=="volume_enter:vol_archive_press_landing" else 150 if what=="ch06.b14" else 300), f"{what}: volume {volume}")

@@ -129,7 +129,7 @@ def tenement_hub_overlap(chapter, zone, rect):
 def tenement_neighbour(chapter, a, b):
     pair={a['place']:a,b['place']:b}
     return (chapter['id']=='ch03_lantern_ward' and set(pair)=={'pl_kido','pl_ura_nagaya'} and
-            pair['pl_kido']['rect']==[-8000,-1000,-5600,1100] and pair['pl_ura_nagaya']['rect']==ZONE)
+            pair['pl_kido']['rect']==[-8000,-1000,-4700,1100] and pair['pl_ura_nagaya']['rect']==ZONE)
 
 
 def tenements_valid(chapter):
