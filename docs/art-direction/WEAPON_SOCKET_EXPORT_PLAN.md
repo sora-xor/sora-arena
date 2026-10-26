@@ -147,4 +147,23 @@ the forward and up are reversed, the right is kept, and the scale is 100.
 
 ## 8. Staging and UE results
 
-(Filled in by the evidence commit.)
+Logs are in `Saved/W18Rebuild/`; outputs are in `Saved/WeaponSocketFix/`. Every run ended in a natural exit.
+
+**s81, staging from this tree (failed, kept).** Blender pid 36515, 04:21:44-04:21:47Z, exit 1.
+- It stopped at its first file, SM_Weapon_00, on the tool's own array gate: `LayerElementBinormal[1].Binormals` was
+  4.7e-6 from the original, against 1e-6.
+- It wrote no staging report.
+
+**s82, a diagnosis** (`diagnose_weapon_socket_reexport.py`; pid 37447, 04:23:18-04:23:29Z, exit 0).
+- **What it did:** each of this tree's 25 socketed LOD0s was exported twice from its reloaded blend, once in the
+  library's convention (control) and once in the socket convention (corrected). W14 was skipped as stale here.
+- **What it found:** in all three comparisons (control against original, corrected against control, corrected
+  against original), every array but the tangent basis matches exactly: vertices ×100, indices, edges, normals,
+  UVs, materials and smoothing.
+- **The tangents and binormals do not reproduce** from one export to the next, even within one session.
+  - The worst is 7.1e-6, in W00.
+  - About 70,000 of W00's 195,816 loops differ by one float32 ulp (median 5.96e-8), and 6 by more than 1e-6.
+  - Those 6 are in the control export, not the corrected one.
+- So the 1e-6 gate was miscalibrated, for these two derived arrays only. The drone's one pair happened to show
+  1.8e-7. The tool now gates the tangent basis at 1e-4 and keeps every other array at 1e-6.
+- Data: `data/weapon_socket_reexport_diagnosis.json`.

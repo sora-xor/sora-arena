@@ -24,21 +24,24 @@ SOCKET_FBX = dict(apply_unit_scale=True, apply_scale_options="FBX_SCALE_NONE", g
 LIBRARY_LOD0_REST = dict(object_types={"MESH", "EMPTY"}, mesh_smooth_type="FACE", use_tspace=True, use_triangles=True,
                          use_mesh_modifiers=True, add_leaf_bones=False, bake_anim=False, path_mode="STRIP",
                          embed_textures=False, use_custom_props=False)
+# The library's own convention, for control exports only: with LIBRARY_LOD0_REST it is the library's whole call.
+LIBRARY_CONVENTION = dict(apply_unit_scale=True, apply_scale_options="FBX_SCALE_NONE", global_scale=1.0,
+                          axis_forward="-Y", axis_up="Z")
 
 
 def sha256(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
-def export(path, mesh, empties):
-    """Write mesh and its SOCKET_ empties to path in the socket convention (Blender only)."""
+def export(path, mesh, empties, convention=SOCKET_FBX):
+    """Write mesh and its SOCKET_ empties to path, in the socket convention unless told otherwise (Blender only)."""
     import bpy
     for obj in bpy.context.view_layer.objects:
         obj.select_set(False)
     for obj in (mesh, *empties):
         obj.select_set(True)
     bpy.context.view_layer.objects.active = mesh
-    bpy.ops.export_scene.fbx(filepath=str(path), use_selection=True, **SOCKET_FBX, **LIBRARY_LOD0_REST)
+    bpy.ops.export_scene.fbx(filepath=str(path), use_selection=True, **convention, **LIBRARY_LOD0_REST)
 
 
 def socket_axes(empties):

@@ -74,6 +74,7 @@ class Convention(unittest.TestCase):
         ours = {**X.SOCKET_FBX, **X.LIBRARY_LOD0_REST}
         self.assertEqual({k: (library.get(k), ours.get(k)) for k in set(library) | set(ours) if library.get(k) != ours.get(k)},
                          {"axis_forward": ("-Y", "Y"), "bake_space_transform": (None, True)})
+        self.assertEqual(library, {**X.LIBRARY_CONVENTION, **X.LIBRARY_LOD0_REST})   # the control export is the library's
 
 
 def scene(axes, mesh_r=(0, 0, 0), mesh_s=(1, 1, 1), socket_t=(0.3, 0, 0)):
