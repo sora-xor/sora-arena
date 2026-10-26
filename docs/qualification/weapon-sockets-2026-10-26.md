@@ -55,6 +55,16 @@ Installed CPU review SHA256:
 `c07c63ae420355ec95a33bb6c3bafb6b6444474c20266da139b2e24889e32cd0`.
 No Blender process, Unreal process, build or render was launched by root here.
 
+Signed source `afd3f806e73a5abcb4361c2bca38a58e2c881e93`, tree
+`e51f934cc92028f4d60c679a01a1914e7f9e7896`, then passes all **48 assets/tooling
+source gates** (21 assets, 27 tooling). The runner exits 0 with clean unchanged
+source; its exact command inventory, report and all 48 raw logs were independently
+checked. This includes the asset ledger/notices, framing, complete source images
+and the new socket tests. Review SHA256:
+`a8c4495e13023637ffa6d506e4dd81f265bdd22ec444957b8197f3760323c4f1`.
+Evidence directory: `Saved/Qualification/2026-10-26/weapon-socket-source-checks-attempt1`.
+Gameplay, Rust and audio groups were not rerun locally for this source-art/tooling change.
+
 ## Evidence limits and next work
 
 The historical s88 probe remains **editor exit 0 / wrapper exit 1**: W11 fails

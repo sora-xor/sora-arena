@@ -19,6 +19,8 @@ frame checks; the source records, OWN ledger and notices match. A new installer
 validates the entire selection and backs up originals before replacing files.
 W03/W11/W13/W16 remain held, both W18 files remain excluded, and the historical
 W11 probe failure remains a failure. Runtime import and final art are still open.
+Signed `afd3f806` passes all 48 local assets/tooling gates with clean unchanged
+source, including ledger, notices, framing and the new socket tests.
 [Scope and evidence](qualification/weapon-sockets-2026-10-26.md) retain these limits.
 
 The landing-drone checkpoint `a5942a6d` passes all 114 source CI gates in
