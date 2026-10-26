@@ -6,7 +6,7 @@ docs/art-direction/WEAPON_SOCKET_EXPORT_PLAN.md.
 Run (UE 5.8, headless, by the holder of the shared engine lane):
   scripts/toolchain/run-editor-script.sh scripts/unreal/probe_runtime_weapon_sockets.py
       RUNTIME_WEAPON_SOCKET_PROBE_DONE <log> -- out=<json> stage=<stage_report.json>[,<stage_report.json>...]
-      [controls=Saved/WeaponSocketFix/s82_diag]
+      [controls=Saved/WeaponSocketFix/s82_diag] [detail=SM_Weapon_11,SM_Weapon_13]
   ... -- out=<json> readonly=/Game/Generated/Meshes/SM_Weapon_02,/Game/Generated/Meshes/SM_Weapon_15
       (reads assets that already exist, and imports nothing)
 
@@ -155,6 +155,8 @@ report = {"engine": unreal.SystemLibrary.get_engine_version(), "probe_sha256": s
           "saved_packages": False}
 problems = []
 controls = {}
+# detail=SM_Weapon_11,SM_Weapon_13: keep each one's 24 worst-differing corners in full (weapon_socket_gates).
+DETAIL = {a: 24 for a in OPTS.get("detail", "").split(",") if a}
 if "controls" in OPTS:
     control_dir = resolve(OPTS["controls"])
     diagnosis = json.loads((control_dir / "diagnosis.json").read_text(encoding="utf-8"))
@@ -187,7 +189,8 @@ if "stage" in OPTS:
                             "model_agreement": agreement, "model_agrees": G.agrees(agreement)}
                 if not row[tag]["model_agrees"]:
                     problems.append(f"{f['asset']} {tag}: the import departs from the model {agreement}")
-            row["same_import_gaps"], same_failures = G.same_import(read["original"], read["corrected"])
+            row["same_import_gaps"], same_failures = G.same_import(read["original"], read["corrected"],
+                                                                   detail=DETAIL.get(f["asset"], 0))
             row["same_import_failures"] = same_failures
             if f["asset"] in controls:
                 path, digest = controls[f["asset"]]

@@ -217,3 +217,17 @@ pid was not sampled).
 - **W11 and W13** failed the corner gate. Unreal ordered their triangles differently, together with the one extra
   render vertex, so pairing corners in index order compared unrelated corners. same_import now matches triangles by
   their corners, keeping the winding, when index order does not line up (`corner_pairs`). Next run: s87.
+
+**s87, the probe with triangle matching** (wrapper 50281, 04:35:09-04:35:59Z; editor exit 0, wrapper 0, marker
+printed; the editor's pid was not sampled).
+- **It passed every gate of that probe version** (dabc60a1):
+  - all 83 corrected sockets pass, and the model matches every axis;
+  - W11 and W13 pair by matching ("matched"), with positions within 8.5e-6 cm and UVs exact;
+  - the worst over all 26 pairs: positions 3.2e-5 cm, normals one step (0.45°), tangents 1.43°;
+  - original against control is exact for all 25.
+- **That pass is not taken as clean.** W11's tangents differ by up to 125 8-bit steps while their worst angle is
+  1.39°, which two unit vectors cannot do.
+  - So at least one W11 corner has a degenerate (zero) tangent in one import only, and the angle check read it as
+    0°: atan2(0, 0).
+  - The gate now counts such corners apart and fails them (`tangent_degenerate_mismatches`), and `detail=` keeps
+    the worst corners in full. Next run: s88.
