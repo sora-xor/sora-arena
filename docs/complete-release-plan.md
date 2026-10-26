@@ -11,15 +11,19 @@ production. Work runs in isolated worktrees, with a single coordinated Unreal
 and GPU rendering lane. The shared checkout is not a build or render workspace.
 The local coordination mailboxes record current ownership, commits and lane use.
 
-## October 26 landing-drone source candidate
+## October 26 landing-drone attack
 
-Isolated `codex/drone-landing` adds ch03.b02's active 900 ms mark, physical
+Integrated ch03.b02 now has its active 900 ms mark, physical
 descent to 2.5 m, 1.5-second net and low wakizashi vulnerability. All 60 local
-CPU gameplay gates pass on signed `a705c7c6`, with unchanged source. Three
-Unreal fixtures are prepared but unbuilt/unrun while Claude owns the engine
-lane. The chapter's horizontal patrol shapes and periods remain unfinished.
-[Candidate scope and evidence](qualification/landing-drone-2026-10-26.md)
-record the implementation choices and pending collision/input checks.
+CPU gameplay gates pass on signed `a705c7c6`, with unchanged source. Signed
+`005dfb42` builds and passes all three new Unreal fixtures and five shared
+regressions, including the complete assisted campaign, without test warnings.
+The failed build and earlier fallen-guard fixture failure remain archived;
+the corrected fixture observes actual ground contact after a five-metre fall.
+The chapter's horizontal patrol shapes and periods remain unfinished.
+[Scope and evidence](qualification/landing-drone-2026-10-26.md) record the
+implementation choices and ordinary-input/visual limits. The engine lane
+returns to Claude for character art after this runtime window.
 
 The existing published checkpoint `63d7e487` separately passes all 113 source
 checks in CI run `40268131665`. Its tested merge `fe2fdf62` has the same tree;
