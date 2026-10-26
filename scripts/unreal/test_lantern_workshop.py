@@ -113,6 +113,28 @@ class LanternWorkshopTests(unittest.TestCase):
         self.clear([[1900,-1500,47.15],[1900,-1450,47.15]])
         self.clear([[2850,-1900,2.15],[2950,-1900,2.15]],True)
 
+    def test_craftspeople_shelter_inside_with_station_clearance(self):
+        self.assertEqual(len(self.native['craft_routes']),4)
+        for route in self.native['craft_routes']:
+            self.clear(route,True)
+            for x,y,z in route:
+                self.assertTrue(1780<x<2320 and -1500<y<-400)
+                self.assertEqual(z,47.15)
+
+    def test_seal_needs_yard_side_grounded_reach(self):
+        self.assertEqual(self.native['seal_reach'],[1,1,0,0,0,0,0])
+
+    def test_seal_requires_uninterrupted_two_second_hold(self):
+        # The common held-interaction rule consumes and clears a completed hold.
+        self.assertEqual(self.native['hold_ms'],0)
+
+    def test_seal_notice_waits_for_physical_cut(self):
+        lines={'ch03.b08.system.001','ch03.b08.nyaakoto.002','ch03.b08.tokichi.003'}
+        rows=[t for t in self.chapter['triggers'] if lines.intersection(t['lines'])]
+        self.assertTrue(rows)
+        self.assertEqual({line for t in rows for line in t['lines']},lines)
+        self.assertTrue(all(t['beat']=='ch03.b08' and t['on'].startswith('workshop_seal_cut') for t in rows))
+
     def test_staging_spawns_have_standing_clearance(self):
         for x,y in workshop.SPAWNS:self.clear([[x,y,2.15],[x,y,2.15]],True)
 

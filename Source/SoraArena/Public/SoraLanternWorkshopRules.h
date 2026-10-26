@@ -9,6 +9,18 @@ constexpr int MinX=1450,MinY=-2500,MaxX=3700,MaxY=200;
 struct FPoint { double X,Y; };
 constexpr FPoint Stations[]={{2100,-620},{2100,-950},{2100,-1300},{2790,-2050}};
 constexpr int StepStations[]={0,1,1,2,3,3};
+constexpr int SealHoldMs=2000,CraftspersonCount=4;
+constexpr FPoint SealApproach{1900,-1660};
+constexpr FPoint CraftStart(int I) { return {2250.,-1400.+I*200.}; }
+constexpr FPoint CraftShelter(int I) { return {2250.,-950.+I*150.}; }
+// The seal is on the yard face, above its step. Height and side matter:
+// neither the roof nor a matching position inside the room can cut it.
+constexpr bool CanCutSeal(double X,double Y,double Feet,bool Grounded)
+{
+    const double DX=X-1900,DY=Y+1500;
+    return Grounded&&Feet>=-4&&Feet<=26&&Y<=-1506&&
+        DX*DX+DY*DY<180*180;
+}
 constexpr double FloorAt(double X,double Y)
 {
     if(X>=1780&&X<=2320&&Y>=-1500&&Y<=-400)return 45;

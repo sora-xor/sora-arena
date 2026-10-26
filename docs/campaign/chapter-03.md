@@ -525,7 +525,7 @@ Waves:
 All enemies are lethal archetypes. The 8 defeats satisfy the catalog's `requires_kills` gates (4 before site 1, 8 before site 2).
 
 **Dialogue triggers:**
-- `beat_start` → ch03.b08.system.001, ch03.b08.nyaakoto.002, ch03.b08.tokichi.003 (ambient)
+- `workshop_seal_cut` → ch03.b08.system.001, ch03.b08.nyaakoto.002, ch03.b08.tokichi.003 (ambient)
 - `x_wave_start:1` → ch03.b08.enforcer.004 (ambient)
 - `pattern:grenadier_fire` → ch03.b08.grenadier.005 (ambient, repeatable, spoken by grenadier)
 - `x_ai:withdraw` → ch03.b08.enforcer.006 (ambient, repeatable, spoken by enforcer_rifle/blade_retainer/shield_enforcer)
@@ -1018,9 +1018,9 @@ HP on Normal is 2000 (Easy 1600, Hard 2400). Windups scale by +30% on Easy and �
 
 | Line id | Trigger | Speaker | Japanese | English subtitle | s | Notes (readings, register) |
 |---|---|---|---|---|---|---|
-| `ch03.b08.system.001` | `beat_start` | 信用院・告知音声 Credit House notice voice | 封印への接触を検知。執行班を要請します。 | Seal contact detected. Requesting an enforcement team. | 3.7 | The debt seal on the workshop door speaks with the Credit House notice voice (ch02 `credit_system`). Register `alien_device`. |
-| `ch03.b08.nyaakoto.002` | `beat_start +3 s` | ニャーコト Nyaakoto | 中へ！　戸を閉めて、伏せていろ。 | Inside! Close the door and stay down. | 3.1 | Register `samurai_bark`. |
-| `ch03.b08.tokichi.003` | `beat_start +6 s` | 灯吉 Tōkichi | 頼んだで……！ | We're counting on you…! | 1.6 | Register `artisan_gentle`. |
+| `ch03.b08.system.001` | `workshop_seal_cut` | 信用院・告知音声 Credit House notice voice | 封印への接触を検知。執行班を要請します。 | Seal contact detected. Requesting an enforcement team. | 3.7 | The debt seal on the workshop door speaks with the Credit House notice voice (ch02 `credit_system`). Register `alien_device`. |
+| `ch03.b08.nyaakoto.002` | `workshop_seal_cut +3 s` | ニャーコト Nyaakoto | 中へ！　戸を閉めて、伏せていろ。 | Inside! Close the door and stay down. | 3.1 | Register `samurai_bark`. |
+| `ch03.b08.tokichi.003` | `workshop_seal_cut +6 s` | 灯吉 Tōkichi | 頼んだで……！ | We're counting on you…! | 1.6 | Register `artisan_gentle`. |
 | `ch03.b08.enforcer.004` | `x_wave_start:1` | 執行兵 Enforcer | 業務妨害を確認。関係者全員が回収対象です。 | Obstruction confirmed. All involved parties are subject to collection. | 4.7 | 業務妨害（ぎょうむぼうがい）. Register `alien_corporate`. |
 | `ch03.b08.grenadier.005` | `pattern:grenadier_fire` | 執行兵 Enforcer | 区画を整理いたします。 | Clearing the section. | 2.3 | Audio telegraph at shell launch; shared grenadier bark. Repeatable. Register `alien_corporate_grenadier`. |
 | `ch03.b08.enforcer.006` | `x_ai:withdraw` | 執行兵 Enforcer | 損失を計上。後退いたします。 | Loss recorded. Withdrawing. | 2.7 | Shared retreat bark. Repeatable. Register `alien_corporate`. |
@@ -1839,7 +1839,7 @@ beats:
     x_hazards: [{id: oil_jars_b08, kind: fire_patch, ignite_on: explosion, duration_s: 6, dps: 12}]
     music: ch03_combat
     dialogue:
-      - {"on": beat_start, lines: [ch03.b08.system.001, ch03.b08.nyaakoto.002, ch03.b08.tokichi.003], mode: ambient}
+      - {"on": workshop_seal_cut, lines: [ch03.b08.system.001, ch03.b08.nyaakoto.002, ch03.b08.tokichi.003], mode: ambient}
       - {"on": "x_wave_start:1", lines: [ch03.b08.enforcer.004], mode: ambient}
       - {"on": "pattern:grenadier_fire", lines: [ch03.b08.grenadier.005], mode: ambient, x_source: [grenadier], repeatable: true}
       - "on": "x_ai:withdraw"
@@ -2528,9 +2528,9 @@ lines:
   - {id: ch03.b07.nyaakoto.008, speaker: samurai, ja: "立てるか。肩を貸す。", en: "Can you stand? Lean on me.", register: samurai_plain, mode: ambient, duration_s: 2.1, repeatable: true, trigger: "x_npc_revived:any"}
   - {id: ch03.b07.kohagi.009, speaker: scout, ja: "最後の組は蔵の裏。刀持ちがいる。", en: "Last patrol's behind the storehouse. One carries a blade.", register: terse, mode: radio, duration_s: 3.8, trigger: "volume_enter:vol_b07_patrol3"}
   - {id: ch03.b07.tokichi.010, speaker: lantern_maker, ja: "着いた……。ここが、わしの工房や。", en: "We made it… This is my workshop.", register: artisan_gentle, mode: ambient, duration_s: 3.2, trigger: beat_complete}
-  - {id: ch03.b08.system.001, speaker: credit_system, ja: "封印への接触を検知。執行班を要請します。", en: "Seal contact detected. Requesting an enforcement team.", register: alien_device, mode: ambient, duration_s: 3.7, trigger: beat_start}
-  - {id: ch03.b08.nyaakoto.002, speaker: samurai, ja: "中へ！　戸を閉めて、伏せていろ。", en: "Inside! Close the door and stay down.", register: samurai_bark, mode: ambient, duration_s: 3.1, trigger: "beat_start+3s"}
-  - {id: ch03.b08.tokichi.003, speaker: lantern_maker, ja: "頼んだで……！", en: "We're counting on you…!", register: artisan_gentle, mode: ambient, duration_s: 1.6, trigger: "beat_start+6s"}
+  - {id: ch03.b08.system.001, speaker: credit_system, ja: "封印への接触を検知。執行班を要請します。", en: "Seal contact detected. Requesting an enforcement team.", register: alien_device, mode: ambient, duration_s: 3.7, trigger: workshop_seal_cut}
+  - {id: ch03.b08.nyaakoto.002, speaker: samurai, ja: "中へ！　戸を閉めて、伏せていろ。", en: "Inside! Close the door and stay down.", register: samurai_bark, mode: ambient, duration_s: 3.1, trigger: "workshop_seal_cut+3s"}
+  - {id: ch03.b08.tokichi.003, speaker: lantern_maker, ja: "頼んだで……！", en: "We're counting on you…!", register: artisan_gentle, mode: ambient, duration_s: 1.6, trigger: "workshop_seal_cut+6s"}
   - {id: ch03.b08.enforcer.004, speaker: enforcer, ja: "業務妨害を確認。関係者全員が回収対象です。", en: "Obstruction confirmed. All involved parties are subject to collection.", register: alien_corporate, mode: ambient, duration_s: 4.7, trigger: "x_wave_start:1"}
   - {id: ch03.b08.grenadier.005, speaker: enforcer, ja: "区画を整理いたします。", en: "Clearing the section.", register: alien_corporate_grenadier, mode: ambient, duration_s: 2.3, repeatable: true, trigger: "pattern:grenadier_fire"}
   - {id: ch03.b08.enforcer.006, speaker: enforcer, ja: "損失を計上。後退いたします。", en: "Loss recorded. Withdrawing.", register: alien_corporate, mode: ambient, duration_s: 2.7, repeatable: true, trigger: "x_ai:withdraw"}

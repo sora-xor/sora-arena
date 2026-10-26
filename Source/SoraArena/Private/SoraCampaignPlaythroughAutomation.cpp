@@ -1232,6 +1232,15 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
                 return Fail(Test,State,TEXT("The range must complete through actual arrow impacts"));
             break;
         }
+        if(Beat.Id==TEXT("ch03.b08"))
+        {
+            MoveTo(State,FVector(1900,-1660,0));
+            if(!Advance(Test,State,10)||!State.World->InjectKey(EKeys::E,IE_Pressed))return false;
+            const bool Cut=Advance(Test,State,130);
+            State.World->InjectKey(EKeys::E,IE_Released);
+            if(!Cut||!USoraFieldcraft::Get(Player(State))||USoraFieldcraft::Get(Player(State))->NeedsWorkshopSeal())
+                return Fail(Test,State,TEXT("The workshop defense requires a real two-second seal hold"));
+        }
         // Fight what the waves send; walk into the volume that brings the next
         // one; let the clock run for timed waves and survivals.
         for (int32 Action = 0; Action < MaxActionsPerBeat * 4 && Active(); ++Action)

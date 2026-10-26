@@ -161,6 +161,7 @@ void SoraHUDPanels::DrawFieldcraft(const FSoraHUDFrame& Frame, const ASoraPlayer
     {
         const FText Pattern = Work == EHold::Snuff ? NSLOCTEXT("SoraArena.Fieldcraft", "Snuff", "{Key} 長押し：灯りを消す")
             : Work == EHold::Revive ? NSLOCTEXT("SoraArena.Fieldcraft", "Revive", "{Key} 長押し：助け起こす")
+            : Work == EHold::WorkshopSeal ? NSLOCTEXT("SoraArena.Fieldcraft", "WorkshopSeal", "{Key} 長押し：工房の借財の封印を断つ")
             : Work == EHold::Free ? NSLOCTEXT("SoraArena.Fieldcraft", "Free", "{Key} 長押し：首輪を断つ")
             : Work == EHold::NetCut ? NSLOCTEXT("SoraArena.Fieldcraft", "NetCut", "{Key} 長押し：網を切る")
             : Work == EHold::Relight ? NSLOCTEXT("SoraArena.Fieldcraft", "Relight", "{Key} 長押し：竈の火を点け直す")

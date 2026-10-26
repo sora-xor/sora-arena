@@ -194,6 +194,7 @@ void ASoraWorldBuilder::ClearArena()
     ArchivePage=nullptr; ArchivePageLight=nullptr; ArchiveNorthGate=nullptr; ArchiveEastRack=nullptr; ArchiveExposure=nullptr;
     RidgeAnchors.Reset(); RidgeOrigin=FVector2D::ZeroVector;
     SummitSpine=nullptr; SummitSeam=nullptr;
+    WorkshopDoor=nullptr; WorkshopSeal=nullptr; WorkshopBar=nullptr;
     SpireShutter=nullptr; SpirePanels.Reset(); SpirePanelGoals.Reset();
     for(const auto& A:DecorActors) if(A) A->Destroy(); DecorActors.Reset(); Nodes.Reset(); SiteEffects.Reset(); SiteRestoredColors.Reset(); Activated.Reset(); NodePositions.Reset();
     bCampaignSpace=false; CampaignStart=FVector::ZeroVector; CampaignStartYaw=0.f;

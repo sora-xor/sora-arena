@@ -1,4 +1,6 @@
 #include "SoraLanternWorkshopRules.h"
+#include "SoraFieldcraftRules.h"
+#include <cassert>
 #include <iomanip>
 #include <iostream>
 
@@ -25,5 +27,24 @@ int main()
         if(Comma)std::cout<<',';Comma=true;
         std::cout<<'['<<P.X<<','<<P.Y<<','<<R::FloorAt(P.X,P.Y)<<']';
     }
-    std::cout<<"]}\n";
+    std::cout<<"],\"craft_routes\":[";Comma=false;
+    for(int I=0;I<R::CraftspersonCount;++I)
+    {
+        if(Comma)std::cout<<',';Comma=true;
+        const auto A=R::CraftStart(I),B=R::CraftShelter(I);
+        std::cout<<"[["<<A.X<<','<<A.Y<<",47.15],["<<B.X<<','<<B.Y<<",47.15]]";
+    }
+    std::cout<<"],\"seal_reach\":[";
+    std::cout<<R::CanCutSeal(1900,-1660,0,true)<<','<<R::CanCutSeal(1900,-1540,22.5,true)<<','
+        <<R::CanCutSeal(1900,-1450,45,true)<<','<<R::CanCutSeal(1900,-1660,450,true)<<','
+        <<R::CanCutSeal(1900,-1700,0,true)<<','<<R::CanCutSeal(2120,-1550,0,true)<<','
+        <<R::CanCutSeal(1900,-1660,0,false);
+    int Hold=0;
+    assert(!SoraFieldcraftRules::Hold(Hold,true,1999,R::SealHoldMs));
+    assert(Hold==1999);
+    assert(!SoraFieldcraftRules::Hold(Hold,false,1,R::SealHoldMs));
+    assert(Hold==0);
+    assert(!SoraFieldcraftRules::Hold(Hold,true,1999,R::SealHoldMs));
+    assert(SoraFieldcraftRules::Hold(Hold,true,1,R::SealHoldMs));
+    std::cout<<"],\"hold_ms\":"<<Hold<<"}\n";
 }

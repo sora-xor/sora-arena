@@ -6953,7 +6953,7 @@
   },
   {
    "beat": "ch03.b08",
-   "on": "beat_start",
+   "on": "workshop_seal_cut",
    "mode": "ambient",
    "lines": [
     "ch03.b08.system.001",

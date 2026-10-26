@@ -147,6 +147,7 @@ public:
     void BuildWardGate(const FSoraZone& Zone);
     void BuildTenements();
     void BuildLanternWorkshop();
+    void ShowWorkshopDoor(bool FightComplete,bool SealCut);
     bool CanReachTenementFind(int32 Index,const ASoraPlayerCharacter& Hero) const;
     void BuildClimb(const FSoraBeat& Beat);
     void BuildRelayRoom(const FSoraBeat& Beat);
@@ -252,6 +253,9 @@ private:
     FVector SummitCenter=FVector::ZeroVector;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> SummitSpine;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> SummitSeam;
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> WorkshopDoor;
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> WorkshopSeal;
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> WorkshopBar;
     FVector BulkheadAt=FVector::ZeroVector;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> BulkheadLever;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> BulkheadHandle;

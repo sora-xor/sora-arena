@@ -676,6 +676,7 @@ private:
     // After any change to the task: plays the progress triggers crossed,
     // releases and spawns due waves and completes the beat once its task is done.
     void Progressed(int32 PermilleBefore);
+    unsigned ReleaseReadyWaves();
     void QueueWaves(unsigned Waves);
     // Releases the volume and event waves an event names.
     void ReleaseEventWaves(const FString& Event);

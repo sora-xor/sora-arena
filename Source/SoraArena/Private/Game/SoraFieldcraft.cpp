@@ -1,6 +1,7 @@
 #include "SoraFieldcraft.h"
 #include "SoraAudio.h"
 #include "SoraLandingSpaceRules.h"
+#include "SoraLanternWorkshopRules.h"
 #include "SoraFuelCanister.h"
 #include "Game/SoraFieldcraftLayout.h"
 #include "Combat/SoraDamage.h"
@@ -332,6 +333,7 @@ void USoraFieldcraft::Clear()
     bWardGate=bWardWicketOpen=bWardHavePosition=bWardScannerInside=false;
     WardKidoban.Reset();WardWicket.Reset();
     Fusuma.Reset();
+    ClearWorkshop();
     ClearLedger();
     ClearRegistry();
     ClearRelayRoom();
@@ -388,7 +390,7 @@ void USoraFieldcraft::Stage(const FSoraBeat& Beat)
 {
     Clear();
     ClimbSpace=Beat.Space.Climb.bEnabled?&Beat.Space.Climb:nullptr;
-    if ((Beat.Space.Fieldcraft.IsEmpty() && !Beat.Space.Molten.bEnabled && Beat.Space.FuelCanisters.IsEmpty() && !Beat.Space.PressHall.bEnabled && !Beat.Space.RelayRoom.bEnabled) || !GetWorld()) return;
+    if ((Beat.Space.Fieldcraft.IsEmpty() && !Beat.Space.Molten.bEnabled && Beat.Space.FuelCanisters.IsEmpty() && !Beat.Space.PressHall.bEnabled && !Beat.Space.RelayRoom.bEnabled && !Beat.Space.bLanternWorkshop) || !GetWorld()) return;
     Staged = &Beat.Space.Fieldcraft;
     BeatId = Beat.Id;
     FActorSpawnParameters Params;
@@ -410,6 +412,7 @@ void USoraFieldcraft::Stage(const FSoraBeat& Beat)
     StageRegistry(Beat);
     StageCompanions(Beat);
     StageKitchenQueue(Beat);
+    StageWorkshop(Beat);
     StageFlood(Beat);
     StageMoat();
     StageNets();
@@ -608,6 +611,7 @@ void USoraFieldcraft::Tick(float DeltaTime)
     TickHolds(DtMs);
     if (Staged) TickCompanions(DtMs);
     if (Staged) TickKitchenQueue();
+    if (Staged) TickWorkshop();
     if (Staged) TickNets(DtMs);
     if (Staged) TickVolley(DtMs);
     if (Staged) TickSmoke(DtMs);
@@ -658,6 +662,8 @@ USoraFieldcraft::FHold USoraFieldcraft::WorkAt(const FVector& Where) const
     for (int32 Door = 0; Door < DoorsOpen.Num(); ++Door)
         if (!DoorsOpen[Door]) Consider(Layout::Floor(Staged->Releases[Door].At), EHoldKind::Release, Door, nullptr, Staged->Releases[Door].HoldMs);
     const auto* Player=Hero();
+    if(Player&&CanCutWorkshopSeal(*Player))
+        Consider(FVector(1900,-1500,145),EHoldKind::WorkshopSeal,INDEX_NONE,nullptr,SoraLanternWorkshopRules::SealHoldMs);
     const bool bRelayLampReach=!RelayRoom||(Player&&Player->GetCharacterMovement()->IsMovingOnGround()&&
         FMath::Abs(Where.Z-Player->GetCapsuleComponent()->GetScaledCapsuleHalfHeight())<=45.f);
     for (int32 Lamp = 0; bRelayLampReach&&Lamp < LampStates.Num(); ++Lamp)
@@ -708,19 +714,21 @@ void USoraFieldcraft::TickHolds(int32 DtMs)
     else if (Holding.Kind == EHoldKind::Release) At = Layout::Floor(Staged->Releases[Holding.Index].At);
     else if (Holding.Kind == EHoldKind::NetCut) At = QuarryLocation(Holding.Index);
     else if (Holding.Kind == EHoldKind::Relight) At = FireLocation(Holding.Index);
+    else if (Holding.Kind == EHoldKind::WorkshopSeal) At = FVector(1900,-1500,145);
     else At = Layout::Floor(Staged->Lamps[Holding.Index].At);
     // The work holds only while Interact stays down beside it.
     const bool bHeld = Player && Player->IsActionHeld(TEXT("Interact")) &&
         FVector::Dist2D(At, Player->GetActorLocation()) < Layout::WorkReach + 60.f&&
         (!RelayRoom||Holding.Kind!=EHoldKind::Snuff||(Player->GetCharacterMovement()->IsMovingOnGround()&&
             FMath::Abs(Player->GetActorLocation().Z-Player->GetCapsuleComponent()->GetScaledCapsuleHalfHeight())<=45.f));
-    if (!bHeld) { Holding = FHold(); return; }
+    if (!bHeld || (Holding.Kind==EHoldKind::WorkshopSeal&&!CanCutWorkshopSeal(*Player))) { Holding = FHold(); return; }
     // A companion counts the hand on it in its own rules (TickCompanions), a net in its own (TickNets).
     if (Holding.Kind == EHoldKind::Companion || Holding.Kind == EHoldKind::NetCut) return;
     if (!Craft::Hold(Holding.HeldMs, true, DtMs, Holding.NeedMs)) return;
     const FHold Done = Holding;
     Holding = FHold();
-    if (Done.Kind == EHoldKind::Snuff) SnuffLamp(Done.Index);
+    if (Done.Kind == EHoldKind::WorkshopSeal) CutWorkshopSeal();
+    else if (Done.Kind == EHoldKind::Snuff) SnuffLamp(Done.Index);
     else if (Done.Kind == EHoldKind::Relight)
     {
         // The cook-fire burns again and the hold goes on.
@@ -1526,6 +1534,7 @@ FSoraFieldcraftReadout USoraFieldcraft::Readout(const ASoraPlayerCharacter& Play
     {
         switch (Work.Kind)
         {
+        case EHoldKind::WorkshopSeal: return FSoraFieldcraftReadout::EHold::WorkshopSeal;
         case EHoldKind::Snuff: return FSoraFieldcraftReadout::EHold::Snuff;
         case EHoldKind::Release: return FSoraFieldcraftReadout::EHold::Release;
         case EHoldKind::NetCut: return FSoraFieldcraftReadout::EHold::NetCut;

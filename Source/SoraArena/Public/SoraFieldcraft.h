@@ -119,7 +119,7 @@ struct FSoraFieldcraftReadout
     bool bCandle = false;
     bool bCupped = false;
     // What Interact held would work now, how far a hold has come (0-1).
-    enum class EHold : uint8 { None, Snuff, Revive, Free, Release, NetCut, Relight };
+    enum class EHold : uint8 { None, Snuff, Revive, Free, Release, NetCut, Relight, WorkshopSeal };
     EHold HoldHere = EHold::None;
     EHold Holding = EHold::None;
     float HoldProgress = 0.f;
@@ -288,6 +288,8 @@ public:
     void TargetChanged(int32 Target, int32 HealthPermille);
     const TArray<TObjectPtr<ASoraCompanion>>& PeopleInPlay() const { return People; }
     const TArray<TObjectPtr<ASoraCompanion>>& KitchenResidents() const { return KitchenQueue; }
+    bool NeedsWorkshopSeal() const { return bWorkshopFight&&!bWorkshopSealCut; }
+    const TArray<TObjectPtr<ASoraCompanion>>& WorkshopCraftspeople() const { return WorkshopPeople; }
     // The pace at which the hero's held work fills (a cupped candle halves it).
     int32 WorkRatePermille() const;
     // The events the beat raises, so allies that wait for a wave join it.
@@ -468,7 +470,7 @@ private:
     bool bPressLadderUp=false;
     bool bPressFalling=false;
     float PressFallPeak=0;
-    enum class EHoldKind : uint8 { None, Snuff, Companion, Release, NetCut, Relight };
+    enum class EHoldKind : uint8 { None, Snuff, Companion, Release, NetCut, Relight, WorkshopSeal };
     struct FHold
     {
         EHoldKind Kind = EHoldKind::None;
@@ -487,6 +489,13 @@ private:
     void ClearMolten();
     void TickMolten(int32 DtMs);
     void StageCompanions(const FSoraBeat& Beat);
+    void StageWorkshop(const FSoraBeat& Beat);
+    void ClearWorkshop();
+    void TickWorkshop();
+    bool CanCutWorkshopSeal(const ASoraPlayerCharacter& Player) const;
+    void CutWorkshopSeal();
+    UPROPERTY() TArray<TObjectPtr<ASoraCompanion>> WorkshopPeople;
+    bool bWorkshopFight=false,bWorkshopSealCut=false;
     void StageKitchenQueue(const FSoraBeat& Beat);
     void TickKitchenQueue();
     void TickHolds(int32 DtMs);

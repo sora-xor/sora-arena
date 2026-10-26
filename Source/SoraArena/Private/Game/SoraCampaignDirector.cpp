@@ -501,6 +501,7 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     if(Task.Goal==SoraBeatRules::EGoal::Elapsed) M.TitleCardTime=Task.DurationMs/1000.f;
     // The beat's place: a travel cut to its entry, its kit, horse and camera.
     EnterBeatSpace(bResumed);
+    if(ChapterId==2&&M.Arena())M.Arena()->ShowWorkshopDoor((BeatState.CompletedMask&SoraBeatRules::BeatBit(7))!=0u,false);
     // A stealth beat opens its zone before its guards take their posts; a
     // restored checkpoint opens it afresh. Its fieldcraft follows, so its
     // floors and the candle join the zone.
@@ -526,7 +527,7 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
         Fire(FString::Printf(TEXT("%s_phase:%d"),Beat.Is(SoraBeatRules::EType::Duel)?TEXT("duel"):TEXT("boss"),Phase+1));
     // A lesson whose forms are already learned opens on its first bout.
     if(Task.Goal==SoraBeatRules::EGoal::Lessons&&(TaskState.Forms&Task.LessonMask)==Task.LessonMask) OpenBout();
-    QueueWaves(SoraBeatRules::ReleaseWaves(TaskState,Task));
+    QueueWaves(ReleaseReadyWaves());
     UpdateObjective();
     BroadcastBeat(true,bResumed);
     Telemetry(bResumed?TEXT("resume"):TEXT("start"));
@@ -542,7 +543,7 @@ void USoraCampaignDirector::RetryBeatInPlace()
     Kills=0; ClearOpponents();
     if(ASoraPlayerCharacter* Player=M.Hero()) Player->Heal(Player->MaxHealth);
     SpawnCast(false);
-    QueueWaves(SoraBeatRules::ReleaseWaves(TaskState,Task));
+    QueueWaves(ReleaseReadyWaves());
     Fire(TEXT("match_lost"));
     Notify(TEXT("一本取られた。構え直して、もう一度。"),TEXT("The bout is lost. Take your stance and go again."),6.f);
     UpdateObjective();
@@ -961,9 +962,17 @@ void USoraCampaignDirector::Progressed(int32 PermilleBefore)
             }
         UpdateObjective();
     }
-    QueueWaves(SoraBeatRules::ReleaseWaves(TaskState,Task));
+    QueueWaves(ReleaseReadyWaves());
     SpawnPending();
     if(SoraBeatRules::TaskComplete(TaskState,Task)&&LiftReadyToComplete()&&SpireReadyToComplete()&&RidgeReadyToComplete()&&FoundryReadyToComplete()) CompleteActiveBeat();
+}
+unsigned USoraCampaignDirector::ReleaseReadyWaves()
+{
+    // Start means the defense starts after the physical debt-seal cut.
+    // Keep the waves unreleased, so waiting alone can never clear this beat.
+    if(const auto* Beat=ActiveBeatData();Beat&&Beat->Id==TEXT("ch03.b08"))
+        if(const auto* Craft=USoraFieldcraft::Get(this);!Craft||Craft->NeedsWorkshopSeal())return 0u;
+    return SoraBeatRules::ReleaseWaves(TaskState,Task);
 }
 void USoraCampaignDirector::QueueWaves(unsigned Waves)
 {

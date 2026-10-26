@@ -1085,6 +1085,12 @@ msgctxt "SoraArena.Fieldcraft,VolleyOutOfReach"
 msgid "的が遠い。{Range} m 以内の地面を示せ。"
 msgstr "Too far. Mark the ground within {Range} m."
 
+#. Key:	WorkshopSeal
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,WorkshopSeal"
+msgid "{Key} 長押し：工房の借財の封印を断つ"
+msgstr "Hold {Key}: cut the workshop debt seal"
+
 #. Key:	Ammo.Arrows
 #: Source/SoraArena/Private/HUD/SoraHUDWeaponPanel.cpp
 msgctxt "SoraArena.HUD,Ammo.Arrows"

@@ -46,6 +46,9 @@ bool USoraCampaignDirector::ObjectivePoint(FVector& Location,bool& bInteract) co
 {
     const FSoraBeat* Beat=ActiveBeatData();
     if(!Beat||Mode().bChapterComplete||bWoodTransit) return false;
+    if(Beat->Id==TEXT("ch03.b08"))
+        if(const auto* Craft=USoraFieldcraft::Get(this);Craft&&Craft->NeedsWorkshopSeal())
+        { Location=FVector(1900,-1660,0);bInteract=true;return true; }
     if(HelmNeedsTrim()) { Location=HelmWheelPoint(); bInteract=true; return true; }
     if(IsToriiEpilogue()) return EpilogueObjective(Location,bInteract);
     if(IsRelayRoom())
