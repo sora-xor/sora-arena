@@ -51,6 +51,10 @@ bool FSoraLedgerPatrolsTest::RunTest(const FString& Parameters)
     {
         Starts[I]=Guards[I]->GetActorLocation();
         if(!TestEqual(TEXT("Each slot retains its authored guard type"),Guards[I]->ArchetypeId(),W.BeatData().Guards[I].Type)) return false;
+        if(R::HeightCm[I]>0)
+            AddInfo(FString::Printf(TEXT("Ledger drone %d initial body: center=%s radius=%.3f half-height=%.3f ceiling=%d"),
+                I,*Starts[I].ToString(),Guards[I]->GetCapsuleComponent()->GetScaledCapsuleRadius(),
+                Guards[I]->GetCapsuleComponent()->GetScaledCapsuleHalfHeight(),R::HallHeight));
         if(I==4||I==5)
         {
             TestEqual(TEXT("Cross-aisle rifle sweep is ninety degrees"),Guards[I]->PostScanDegrees(),90);
@@ -78,7 +82,12 @@ bool FSoraLedgerPatrolsTest::RunTest(const FString& Parameters)
             Travel[I]=FMath::Max(Travel[I],static_cast<float>(FVector::Dist2D(At,Starts[I])));
             if(R::HeightCm[I]>0)
             {
-                if(!TestTrue(TEXT("Ledger drones stay at their actual 5.5 metre flight layer"),FMath::IsNearlyEqual(At.Z,550.f,5.f))) return false;
+                if(!FMath::IsNearlyEqual(At.Z,550.f,.1f))
+                {
+                    AddError(FString::Printf(TEXT("Ledger drone %d leaves its authored flight plane: frame=%d center=%s half-height=%.3f ceiling=%d"),
+                        I,Frame,*At.ToString(),Guard->GetCapsuleComponent()->GetScaledCapsuleHalfHeight(),R::HallHeight));
+                    return false;
+                }
                 // Altitude alone must not pass a body that clips the ceiling.
                 // Use this archetype's real scaled capsule, not the player's
                 // dimensions or a hand-picked smaller probe.
@@ -156,7 +165,9 @@ bool FSoraLedgerRouteTest::RunTest(const FString& Parameters)
         FVector(720,1200,0),FVector(720,2800,0),FVector(1600,2800,0),FVector(1600,4400,0),
         FVector(2040,4400,0),FVector(2040,6000,0),FVector(2100,6300,0),FVector(2100,6535,0)})
         if(!Walk(O+At)) return false;
-    for(const FVector At:{FVector(-300,-135,0),FVector(250,-135,0),FVector(250,-670,0),
+    // The held leg-A rifle occupies (-300,-135). Walk around its real body
+    // along the south side instead of asking the hero to stand inside it.
+    for(const FVector At:{FVector(-420,-135,0),FVector(-420,-230,0),FVector(250,-230,0),FVector(250,-670,0),
         FVector(2150,-670,0),FVector(2150,-135,0),FVector(2430,-135,0),FVector(2430,1900,0),FVector(2430,2250,0)})
         if(!Walk(P+At)) return false;
     TestTrue(TEXT("Crossing the hall alone does not complete the palace exit"),W.Campaign()->ActiveBeat()==5);
