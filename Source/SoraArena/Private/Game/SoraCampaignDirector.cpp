@@ -2090,6 +2090,12 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
         if(!Space.StepStations.IsValidIndex(Step)||
             !Near(ASoraWorldBuilder::Floor(Space.Stations[Space.StepStations[Step]]),Reach))
             break;
+        if(Space.bLanternWorkshop)
+        {
+            const auto At=Space.Stations[Space.StepStations[Step]];
+            const double Feet=Player.GetActorLocation().Z-Player.GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+            if(!Player.GetCharacterMovement()->IsMovingOnGround()||FMath::Abs(Feet-Space.FloorAt(At))>8.)break;
+        }
         if(SoraRhythmRules::Supported(TaskState,Task)) { WorkPlayerRhythm(); return; }
         const EStroke Struck=SoraBeatRules::Stroke(TaskState,Task);
         bWorked=Struck!=EStroke::Refused;

@@ -10,8 +10,8 @@
 // arena when one of its places is the arena itself, a walled zone for every
 // other place and a corridor for every ride and escort
 // (SoraWorldBuilderLayoutZones.cpp), and the chapter's three production
-// sites where their beats restore them. Every floor is at z 0, so a point of
-// the space is a location on the ground.
+// sites where their beats restore them. Authored buildings may also have
+// raised floors; each beat's FloorAt resolves its interaction heights.
 namespace
 {
 // The arena map whose dressing a zone's style borrows.
@@ -27,12 +27,15 @@ void ASoraWorldBuilder::BuildCampaign(const FSoraChapter& Chapter)
     RecoveryHatch=nullptr;
     // The hub arena brings its own light; a chapter without one is lit as its map.
     const bool bTenements=Chapter.Beats.ContainsByPredicate([](const FSoraBeat& B){return B.Space.bTenements;});
-    if(Space.Hub!=INDEX_NONE) BuildArena(Space.Hub,false,bTenements);
+    const bool bLanternWorkshop=Chapter.Beats.ContainsByPredicate([](const FSoraBeat& B){return B.Space.bLanternWorkshop;});
+    if(Space.Hub!=INDEX_NONE) BuildArena(Space.Hub,false,bTenements,bLanternWorkshop);
     else Lighting(Chapter.Map);
     for(int32 Index=0;Index<Space.Zones.Num();++Index)
     {
         if(bTenements&&Space.Zones[Index].Id==TEXT("pl_ura_nagaya"))
         { BuildTenements();continue; }
+        if(bLanternWorkshop&&Space.Zones[Index].Id==TEXT("pl_chochin_kobo"))
+        { BuildLanternWorkshop();continue; }
         if(Chapter.Beats.ContainsByPredicate([Index](const FSoraBeat& B){return B.Space.Zone==Index&&B.Space.bLanding;}))
         { BuildLanding(Space.Zones[Index]);continue; }
         if(Chapter.Beats.ContainsByPredicate([Index](const FSoraBeat& B){return B.Space.Zone==Index&&B.Space.bWardGate;}))
@@ -66,11 +69,13 @@ void ASoraWorldBuilder::BuildCampaign(const FSoraChapter& Chapter)
     const FLinearColor Accent=FSoraCatalog::Get().Map(Chapter.Map).Accent;
     for(int32 Site=0;Site<Space.Sites.Num();++Site)
     {
-        const FVector P=Floor(Space.Sites[Site]);
+        const auto* Workshop=Chapter.Beats.FindByPredicate([Site,&Space](const FSoraBeat& B)
+            { return B.Space.bLanternWorkshop&&B.Space.Anchor==Space.Sites[Site]; });
+        const FVector P=Floor(Space.Sites[Site],Workshop?Workshop->Space.FloorAt(Space.Sites[Site]):0.f);
         const int32 Zone=Space.ZoneAt(P);
         NodePositions.Add(P);
         if(Chapter.Beats.ContainsByPredicate([Zone](const FSoraBeat& B)
-            { return B.Space.Zone==Zone&&(B.Space.RelayRoom.bEnabled||B.Space.RegistryHall.bEnabled||B.Space.bTenements); }))
+            { return B.Space.Zone==Zone&&(B.Space.RelayRoom.bEnabled||B.Space.RegistryHall.bEnabled||B.Space.bTenements||B.Space.bLanternWorkshop); }))
         {
             // The relay controls or registry desks own this site's physical work.
             // A second generic production pedestal would obstruct the exit.

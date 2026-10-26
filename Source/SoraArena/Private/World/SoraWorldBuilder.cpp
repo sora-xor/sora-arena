@@ -210,7 +210,7 @@ void ASoraWorldBuilder::Build(int32 MapId,const FSoraChapter* Chapter)
     if(Chapter) BuildCampaign(*Chapter);
     else BuildArena(MapId,true);
 }
-void ASoraWorldBuilder::BuildArena(int32 MapId,bool bSites,bool bTenements)
+void ASoraWorldBuilder::BuildArena(int32 MapId,bool bSites,bool bTenements,bool bLanternWorkshop)
 {
     const FLinearColor Accent=FSoraCatalog::Get().Map(MapId).Accent;
     Box(TEXT("Ground"),FVector(0,0,-50),FVector(6400,5200,100),FLinearColor(.14f,.16f,.13f),true,FRotator::ZeroRotator,TEXT("Soil"));
@@ -222,8 +222,11 @@ void ASoraWorldBuilder::BuildArena(int32 MapId,bool bSites,bool bTenements)
     for(int32 S:{-1,1})
     {
         const bool WestJoin=bTenements&&MapId==1&&S==-1;
-        auto* WallX=Box(FString::Printf(TEXT("WallX%d"),S),FVector(S*3150,WestJoin?-1425:0,220),
-            FVector(100,WestJoin?2350:5200,540),FLinearColor(.2f,.23f,.23f),true,FRotator::ZeroRotator,TEXT("Stone"));
+        const bool EastJoin=bLanternWorkshop&&MapId==1&&S==1;
+        auto* WallX=Box(FString::Printf(TEXT("WallX%d"),S),FVector(S*3150,WestJoin?-1425:EastJoin?1400:0,220),
+            FVector(100,WestJoin?2350:EastJoin?2400:5200,540),FLinearColor(.2f,.23f,.23f),true,FRotator::ZeroRotator,TEXT("Stone"));
+        if(EastJoin)Box(TEXT("WardEastWallSouth"),FVector(3150,-2500,220),FVector(100,200,540),
+            FLinearColor(.2f,.23f,.23f),true,FRotator::ZeroRotator,TEXT("Stone"));
         UStaticMeshComponent* WallY=nullptr;
         if(bTenements&&MapId==1&&S==1)
         {
@@ -238,6 +241,7 @@ void ASoraWorldBuilder::BuildArena(int32 MapId,bool bSites,bool bTenements)
         if(MapId==0) EstatePerimeter(S,WallX,WallY);
         for(int32 I=0;I<5;++I)
         {
+            if(bLanternWorkshop&&MapId==1&&S==-1&&I==4)continue;
             FVector P(-2000+I*1000,S*(MapId==1?1200:1800),0);
             const float Height=MapId==3?780.f:330.f+(I%2)*100.f;
             if(bTenements&&MapId==1&&S==1&&I==1)
@@ -256,6 +260,7 @@ void ASoraWorldBuilder::BuildArena(int32 MapId,bool bSites,bool bTenements)
     if(MapId==0) EstateGrounds();
     for(int32 I=0;I<12;++I)
     {
+        if(bLanternWorkshop&&MapId==1&&I==5)continue;
         const float X=-2300+(I%6)*900; const float Y=(I<6?-1:1)*(680+(I%2)*200);
         auto* Cover=Box(FString::Printf(TEXT("Cover%d"),I),FVector(X,Y,70),FVector(230,180,140),I%2?FLinearColor(.29f,.19f,.09f):FLinearColor(.23f,.27f,.28f),true,FRotator::ZeroRotator,I%2?TEXT("Timber"):TEXT("Stone"));
         // Keep the established cover volume for campaign combat. Dressing
@@ -269,7 +274,7 @@ void ASoraWorldBuilder::BuildArena(int32 MapId,bool bSites,bool bTenements)
     if(bSites) ProductionSites(MapId,Accent);
     if(MapId==3) DebtCitadelKiosk();
     if(MapId==1) LanternWardTerminal();
-    Lanterns();
+    Lanterns(bLanternWorkshop&&MapId==1);
     Lighting(MapId);
 }
 void ASoraWorldBuilder::ProductionSites(int32 MapId,FLinearColor Accent)
@@ -332,10 +337,11 @@ void ASoraWorldBuilder::SiteStructure(int32 I,FVector P,const FString& Kind,int3
         }
     }
 }
-void ASoraWorldBuilder::Lanterns()
+void ASoraWorldBuilder::Lanterns(bool bLanternWorkshop)
 {
     for(int32 I=0;I<10;++I)
     {
+        if(bLanternWorkshop&&I==4)continue;
         FVector P(-2250+(I%5)*1125,(I<5?-1:1)*470,0);
         const bool HasAuthoredLantern=ImportedProp(TEXT("SM_Edo_LanternPost"),P,FRotator::ZeroRotator);
         if(HasAuthoredLantern)

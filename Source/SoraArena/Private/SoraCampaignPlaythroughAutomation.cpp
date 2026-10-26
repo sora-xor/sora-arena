@@ -339,7 +339,8 @@ void MoveTo(FState& State, const FVector& Location)
     // use ordinary movement helpers; summit combat stays at its real Z.
     const float Half = Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
     const auto* Beat=Director?Director->ActiveBeatData():nullptr;
-    const float Floor=Beat&&Beat->Space.Summit.Enabled()?Beat->Space.HeightCm:0.f;
+    const float Floor=Beat&&Beat->Space.bLanternWorkshop?Beat->Space.FloorAt(FVector2D(Location)):
+        Beat&&Beat->Space.Summit.Enabled()?Beat->Space.HeightCm:0.f;
     Hero->SetActorLocation(FVector(Location.X, Location.Y, Floor+Half+2.f), false, nullptr, ETeleportType::TeleportPhysics);
 }
 
@@ -577,6 +578,10 @@ bool WorkAtAnchor(FAutomationTestBase& Test, FState& State)
     FVector Anchor;
     if (!Director->ObjectiveAnchor(Anchor))
         return Fail(Test, State, Where(State) + TEXT(": no objective to work"));
+    // This assisted fixture places the hero beside the actual bench on its
+    // raised floor. The workshop route fixture separately walks there.
+    if(Director->ActiveSpace()&&Director->ActiveSpace()->bLanternWorkshop&&
+       Director->ActiveTask().Goal==SoraBeatRules::EGoal::Steps)Anchor.X-=140.f;
     MoveTo(State, Anchor);
     if (!Advance(Test, State, 1))
         return false;

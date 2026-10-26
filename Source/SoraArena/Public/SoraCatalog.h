@@ -10,6 +10,7 @@
 #include "SoraSpireRules.h"
 #include "SoraHelmRules.h"
 #include "SoraCacheRewardRules.h"
+#include "SoraLanternWorkshopRules.h"
 
 struct FSoraWeapon
 {
@@ -642,7 +643,8 @@ struct FSoraBeatSpace
 {
     FSoraLedgerHall LedgerHall;
     FSoraRegistryHall RegistryHall;
-    float FloorAt(const FVector2D& At) const { return RegistryHall.bEnabled?RegistryHall.FloorAt(At):HeightCm; }
+    float FloorAt(const FVector2D& At) const
+    { return bLanternWorkshop?SoraLanternWorkshopRules::FloorAt(At.X,At.Y):RegistryHall.bEnabled?RegistryHall.FloorAt(At):HeightCm; }
     FSoraPressHall PressHall;
     FSoraRelayRoom RelayRoom;
     TArray<FSoraFuelCanister> FuelCanisters;
@@ -653,6 +655,7 @@ struct FSoraBeatSpace
     bool bLanding=false;
     bool bWardGate=false;
     bool bTenements=false;
+    bool bLanternWorkshop=false;
     bool bTenementDefense=false;
     bool bHorseShell=false;
     bool bHorseWithdrawal=false;

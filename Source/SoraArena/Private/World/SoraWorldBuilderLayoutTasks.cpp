@@ -166,7 +166,7 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
         }
     }
     KitWork=Space.Work;
-    KitAnchor=Floor(Space.Anchor,Space.HeightCm);
+    KitAnchor=Floor(Space.Anchor,Space.bLanternWorkshop?Space.FloorAt(Space.Anchor):Space.HeightCm);
     const FVector A=KitAnchor;
     if(Space.Lift.bEnabled)
     {
@@ -277,7 +277,7 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
     {
         for(int32 Station=0;Station<Space.Stations.Num();++Station)
         {
-            const FVector P=Floor(Space.Stations[Station]);
+            const FVector P=Floor(Space.Stations[Station],Space.bLanternWorkshop?Space.FloorAt(Space.Stations[Station]):0.f);
             KitShape(TEXT("Bench"),KitCube,P+FVector(0,0,40),FVector(1.2f,.8f,.8f),KitTimber,TEXT("Timber"),true);
             KitStations.Add(KitShape(TEXT("StationMark"),KitCube,P+FVector(0,0,84),FVector(.9f,.5f,.06f),KitDim));
         }

@@ -146,6 +146,7 @@ public:
     void BuildLanding(const FSoraZone& Zone);
     void BuildWardGate(const FSoraZone& Zone);
     void BuildTenements();
+    void BuildLanternWorkshop();
     bool CanReachTenementFind(int32 Index,const ASoraPlayerCharacter& Hero) const;
     void BuildClimb(const FSoraBeat& Beat);
     void BuildRelayRoom(const FSoraBeat& Beat);
@@ -218,7 +219,7 @@ public:
     TArray<FVector> NodePositions;
 private:
     // Campaign spaces (SoraWorldBuilderLayout.cpp, SoraWorldBuilderLayoutZones.cpp).
-    void BuildArena(int32 MapId, bool bSites, bool bTenements=false);
+    void BuildArena(int32 MapId, bool bSites, bool bTenements=false, bool bLanternWorkshop=false);
     void BuildCampaign(const FSoraChapter& Chapter);
     void BuildChapterWood(const FSoraChapter& Chapter);
     TArray<FVector> WoodFloors;
@@ -388,7 +389,7 @@ private:
     bool ImportedProp(const FString& Name, FVector Location, FRotator Rotation, float Scale = 1.f);
     void Torii(FVector Location, float Yaw);
     void ProductionSites(int32 MapId, FLinearColor Accent);
-    void Lanterns();
+    void Lanterns(bool bLanternWorkshop=false);
     void ClearArena();
     // Sun, sky, fog and grade per map (SoraWorldBuilderLighting.cpp).
     void Lighting(int32 MapId);

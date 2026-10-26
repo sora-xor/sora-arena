@@ -72,6 +72,7 @@ from campaign_moat import moat_valid
 from campaign_landing import landing_valid
 from campaign_ward_gate import ward_gate_valid, shared_approach, ward_hub_neighbour
 from campaign_tenements import tenements_valid, tenement_hub_overlap, tenement_neighbour
+from campaign_lantern_workshop import workshop_valid, workshop_hub_overlap, workshop_neighbour
 from campaign_space import arena_blockers, spook_dismount
 from campaign_cargo import cargo_manifest
 from campaign_registry import validate_registry
@@ -388,8 +389,10 @@ def check_space(chapter, beats, rewards, labels, where):
                     apart=ledger['rect'][2]==palace['rect'][0]
                 if shared_approach(chapter,zones[number],zones[other]):apart=True
                 if tenement_neighbour(chapter,zones[number],zones[other]):apart=True
+                if workshop_neighbour(chapter,zones[number],zones[other]):apart=True
             if not apart and number<len(zones) and other==len(zones):
-                apart=tenement_hub_overlap(chapter,zones[number],b) or ward_hub_neighbour(chapter,zones[number],b)
+                apart=(tenement_hub_overlap(chapter,zones[number],b) or ward_hub_neighbour(chapter,zones[number],b) or
+                       workshop_hub_overlap(chapter,zones[number],b))
             require(apart, f"{where}: zones {a} and {b} overlap or touch")
     for zone in zones:
         expected_z = [-500,15800] if chapter["id"].startswith("ch08_") and zone["place"]=="pl_ledger_spire" else [15800,20000] if chapter["id"].startswith("ch08_") and zone["place"]=="pl_ledger_engine" else [-2000,2500] if chapter["id"].startswith("ch07_") and zone["place"]=="pl_hull_ridge" else None
@@ -398,7 +401,7 @@ def check_space(chapter, beats, rewards, labels, where):
         require(zone["style"] in ("estate", "ward", "foundry", "citadel") and
                 zone["form"] in ("hall", "yard", "field", "route"), f"{where}: zone {zone['id']} style or form")
         wood_counts = {"pl_matoba": 5, "pl_issoseki_wood": 0, "pl_dojo_smithy": 5} if chapter["id"].startswith("ch01_") else {}
-        if chapter['id']=='ch03_lantern_ward':wood_counts.update(pl_ura_nagaya=0,pl_kido=7)
+        if chapter['id']=='ch03_lantern_ward':wood_counts.update(pl_ura_nagaya=0,pl_kido=7,pl_chochin_kobo=0)
         if chapter["id"].startswith("ch07_"): wood_counts.update(pl_hull_ridge=0,pl_hangar=0)
         if chapter["id"].startswith("ch06_"): wood_counts.update(pl_archive=5,pl_press_hall=5,pl_ledger_corridors=0,pl_uguisu_hall=5)
         require(len(zone["walls"]) == wood_counts.get(zone["place"], 4) and zone["wall_cm"] >= 200,
@@ -421,6 +424,9 @@ def check_space(chapter, beats, rewards, labels, where):
 
     elevated_rect = None
     def on_floor(index, point, what, cover_margin=COVER_CLEAR):
+        if index>=0 and zones[index]['place']=='pl_chochin_kobo' and chapter['id']=='ch03_lantern_ward':
+            require(_inside(zones[index]['rect'],point,60),f"{what}: workshop point leaves its floor")
+            return
         if index>=0 and zones[index]['place']=='pl_ura_nagaya' and chapter['id']=='ch03_lantern_ward':
             require(_inside(zones[index]['rect'],point,60),f"{what}: tenement point leaves its floor")
             return
@@ -455,6 +461,7 @@ def check_space(chapter, beats, rewards, labels, where):
     require(moat_valid(chapter), f"{where}: authored physical moat/depth contract")
     require(ward_gate_valid(chapter), f"{where}: authored ward-gate geometry and sensor contract")
     require(tenements_valid(chapter), f"{where}: authored tenement placement contract")
+    require(workshop_valid(chapter), f"{where}: authored lantern workshop placement contract")
     require(landing_valid(chapter), f"{where}: authored west-landing geometry and flight contract")
     records = space["beats"]
     require([record["beat"] for record in records] == [beat["id"] for beat in beats], f"{where}: one space per beat")

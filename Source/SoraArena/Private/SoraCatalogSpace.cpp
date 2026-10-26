@@ -16,6 +16,7 @@
 #include "SoraCatalogLanding.h"
 #include "SoraCatalogWardGate.h"
 #include "SoraCatalogTenements.h"
+#include "SoraCatalogLanternWorkshop.h"
 #include "SoraCatalog.h"
 #include "SoraCatalogJson.h"
 #include "SoraStealthRules.h"
@@ -722,7 +723,7 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
             !SpaceVector(O->TryGetField(TEXT("rect")), 4, Rect) || Rect[0] >= Rect[2] || Rect[1] >= Rect[3] ||
             !Int(*O, TEXT("wall_cm"), Wall) || Wall <= 0 || !SpacePose(*O, TEXT("entry"), Zone.Entry, Zone.EntryYaw) ||
             !SpaceBoxes(Rows(*O, TEXT("walls")), Zone.Walls) ||
-            Zone.Walls.Num() != (C.Id.StartsWith(TEXT("ch03_"))&&Zone.Place==TEXT("pl_ura_nagaya")?0:
+            Zone.Walls.Num() != (C.Id.StartsWith(TEXT("ch03_"))&&(Zone.Place==TEXT("pl_ura_nagaya")||Zone.Place==TEXT("pl_chochin_kobo"))?0:
                 C.Id.StartsWith(TEXT("ch03_"))&&Zone.Place==TEXT("pl_kido")?7:
                 C.Id.StartsWith(TEXT("ch06_"))&&Zone.Place==TEXT("pl_ledger_corridors")?0:
                 C.Id.StartsWith(TEXT("ch06_"))&&(Zone.Place==TEXT("pl_archive")||Zone.Place==TEXT("pl_press_hall")||Zone.Place==TEXT("pl_uguisu_hall"))?5:C.Id.StartsWith(TEXT("ch07_"))&&(Zone.Place==TEXT("pl_hull_ridge")||Zone.Place==TEXT("pl_hangar"))?0:C.Id.StartsWith(TEXT("ch01_"))&&Zone.Place==TEXT("pl_issoseki_wood")?0:
@@ -1092,6 +1093,7 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
         if(!SoraCatalogLanding::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" west landing"));
         if(!SoraCatalogWardGate::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" ward gate"));
         if(!SoraCatalogTenements::Read(*O,Beat,C)) return Bad(Beat.Id+TEXT(" back tenements"));
+        if(!SoraCatalogLanternWorkshop::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" lantern workshop"));
         for (const FSoraDefendedPerson& Person : B.Fieldcraft.People)
             if (Person.Target == INDEX_NONE && (!S.Zones.IsValidIndex(B.Zone) ||
                 !S.Zones[B.Zone].Rect.IsInside(Person.At + FVector2D(80,80)) || !S.Zones[B.Zone].Rect.IsInside(Person.At - FVector2D(80,80)) ||
@@ -1111,6 +1113,9 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
         if(O->HasField(TEXT("height_cm"))&&!Int(*O,TEXT("height_cm"),Pickup.HeightCm))return Bad(TEXT("pickup height"));
         const int32 ExpectedHeight=Id==TEXT("ch03.c03")?-650:Id==TEXT("ch03.c05")?125:0;
         if(Pickup.HeightCm!=ExpectedHeight)return Bad(TEXT("authored pickup height"));
+        if(Id==TEXT("ch03.c04")&&(!S.Zones.IsValidIndex(Pickup.Zone)||
+           S.Zones[Pickup.Zone].Id!=TEXT("pl_chochin_kobo")||Pickup.At!=FVector2D(3150,-2000)))
+            return Bad(TEXT("workshop heirloom must be inside the storehouse"));
         if (!C.Collectibles.IsValidIndex(Pickup.Collectible) || C.Collectibles[Pickup.Collectible].Pickup != INDEX_NONE)
             return Bad(FString::Printf(TEXT("pickup for %s"), *Id));
         C.Collectibles[Pickup.Collectible].Pickup = S.Pickups.Num();
