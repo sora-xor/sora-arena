@@ -182,6 +182,8 @@ struct FData
     TMap<FName, float> HoofbeatsPerSecond;
     float HorseRangeCm = 0.f;
     TMap<FName, FName> Attached;
+    // Authored stationary emitter name -> spatial Ambience loop.
+    TMap<FName, FName> Emitters;
     // "boss_id/attack_id", and an enemy attack's cue.
     TMap<FString, FTelegraph> BossTelegraphs;
     TMap<FName, FTelegraph> EnemyTelegraphs;

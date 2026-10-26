@@ -59,7 +59,7 @@ OWN_MANIFESTS = (ROOT / SOURCE / 'Original/manifest.json', ROOT / SOURCE / 'Musi
 CC0_MANIFEST = ROOT / SOURCE / 'CC0/manifest.json'
 READY = ('ready-own', 'ready-cc0')
 TOP = {'schema_version', 'source', 'sample_rate_hz', 'buses', 'ducking', 'attenuation', 'cues', 'bindings',
-       'unbound_events', 'music', 'beats', 'maps', 'weather', 'footsteps', 'horses', 'attached', 'telegraphs'}
+       'unbound_events', 'music', 'beats', 'maps', 'weather', 'footsteps', 'horses', 'attached', 'emitters', 'telegraphs'}
 STATES = {'menu', 'exploration', 'stealth', 'combat', 'boss'}
 SPARRING = {'', 'bokuto', 'fukuro_shinai'}
 TELEGRAPH_CLASSES = {'none', 'lock', 'cleave', 'area', 'margin_call', 'reload'}
@@ -341,12 +341,17 @@ def played_cues(data):
     for beat in list(data['beats'].values()) + list(data['maps'].values()):
         played |= {beat['bed'], data['weather'][beat['weather']]}
     played |= set(data['attached'].values())
+    played |= set(data['emitters'].values())
     if any(beat['thunder_s'] for beat in data['beats'].values()):
         played.add('amb.thunder')
     return played - {''}
 
 
 def check_coverage(data, cues):
+    for name, cue_id in data['emitters'].items():
+        cue = cues.get(cue_id)
+        if not name or name.lower() == 'none' or not cue or not cue['spatial'] or not cue['loop'] or cue['bus'] != 'Ambience':
+            error(f'emitter {name}: needs a named spatial Ambience loop')
     played = played_cues(data)
     for name, cue in cues.items():
         if cue['unbound'] and name in played:

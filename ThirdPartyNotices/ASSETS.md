@@ -8,7 +8,7 @@ Policy: `docs/art-research/free-asset-acquisition-plan.md` section 2. Every asse
 
 | Tier | Records | Files | Bytes recorded |
 |---|---:|---:|---:|
-| PUB-CC0 | 192 | 2571 | 4,584,606,249 |
+| PUB-CC0 | 192 | 2572 | 4,591,086,361 |
 | PUB-BY | 11 | 12 | 206,629,366 |
 | OWN | 14 | 558 | 906,751,823 |
 | REF | 6 | 6 | 9,778,972 |
@@ -89,7 +89,7 @@ These assets are dedicated to the public domain under CC0 1.0 (<https://creative
 | opengameart/fireplace-sound-loop | Fireplace Sound loop | PagDev | CC0-1.0 | repository (LFS) | 1 | <https://opengameart.org/content/fireplace-sound-loop> |
 | opengameart/medieval-sound-effects-weapon-textures | Medieval sound effects - Weapon Textures | Ben Jaszczak & Brian Nelson | CC0-1.0 | repository (LFS) | 19 | <https://opengameart.org/content/medieval-sound-effects-weapon-textures> |
 | opengameart/muffled-distant-explosion | Muffled Distant Explosion | NenadSimic | CC0-1.0 | repository (LFS) | 0 | <https://opengameart.org/content/muffled-distant-explosion> |
-| opengameart/park-ambiences | Park ambiences | Thimras | CC0-1.0 | repository (LFS) | 2 | <https://opengameart.org/content/park-ambiences> |
+| opengameart/park-ambiences | Park ambiences | Thimras | CC0-1.0 | repository (LFS) | 3 | <https://opengameart.org/content/park-ambiences> |
 | opengameart/rain-long-thunder | Rain + Long Thunder | WuxiaScrub | CC0-1.0 | repository (LFS) | 1 | <https://opengameart.org/content/rain-long-thunder> |
 | opengameart/rain-loopable | Rain (loopable) | Ylmir | CC0-1.0 | repository (LFS) | 2 | <https://opengameart.org/content/rain-loopable> |
 | opengameart/the-free-firearm-sound-library | The Free Firearm Sound Library | Ben Jaszczak, et al. | CC0-1.0 | repository (LFS) | 8 | <https://opengameart.org/content/the-free-firearm-sound-library> |

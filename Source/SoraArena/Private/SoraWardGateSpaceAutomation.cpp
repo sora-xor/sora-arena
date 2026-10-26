@@ -1,6 +1,7 @@
 #include "SoraGameMode.h"
 #if WITH_DEV_AUTOMATION_TESTS
 #include "SoraFieldcraftTestWorld.h"
+#include "SoraAudio.h"
 #include "SoraEnemy.h"
 #include "SoraEnemyController.h"
 #include "SoraWardGateRules.h"
@@ -102,6 +103,29 @@ bool FSoraWardGateSolidsTest::RunTest(const FString&)
         Trace(W,FVector(-6400,900,400),FVector(-6400,900,250),H)&&FMath::IsNearlyEqual(H.ImpactPoint.Z,320.,1.));
     TestEqual(TEXT("Only the below-ground culvert surface halves noise"),W.Stealth()->SurfaceAt(FVector(-6200,-650,-89)).StepPermille,500);
     TestTrue(TEXT("The ground above it does not inherit submerged noise suppression"),W.Stealth()->SurfaceAt(FVector(-6200,-650,2)).StepPermille!=500);
+    return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraWardGateAmbienceTest,"SoraArena.Campaign.WardGate.Ambience",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraWardGateAmbienceTest::RunTest(const FString&)
+{
+    using namespace SoraWardGateTest;
+    FBeatWorld W(*this,TEXT("WardAmbience"),2,2);if(!StartWard(W))return false;
+    auto* Audio=USoraAudioSubsystem::Get(W.World->GetTestWorld());
+    if(!TestNotNull(TEXT("Ward audio subsystem"),Audio))return false;
+    const FSoraAudioPlay* Stream=nullptr;
+    for(const auto& Play:Audio->Plays())if(Play.Cue==TEXT("amb.stream"))Stream=&Play;
+    TestTrue(TEXT("Staging the actual ward starts its positioned culvert loop"),Stream&&Stream->IsVoiced()&&
+        Stream->bSpatial&&Stream->bLoop&&Stream->Location.Equals(FVector(-6200,-650,-85))&&
+        Audio->LiveLoops().Contains(TEXT("amb.stream")));
+    const FSoraBeat* Beat=W.Campaign()->ActiveBeatData();
+    if(!TestNotNull(TEXT("Current ward beat"),Beat))return false;
+    W.Fieldcraft()->Clear();
+    TestFalse(TEXT("Clearing the ward stops its stream"),Audio->LiveLoops().Contains(TEXT("amb.stream")));
+    W.Fieldcraft()->Stage(*Beat);
+    const auto Streams=Audio->LiveLoops().FilterByPredicate([](FName Cue){return Cue==TEXT("amb.stream");});
+    TestEqual(TEXT("Restaging leaves exactly one stream"),Streams.Num(),1);
     return !HasAnyErrors();
 }
 

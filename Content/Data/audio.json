@@ -571,8 +571,10 @@
   {
    "id": "amb.stream",
    "bus": "Ambience",
-   "status": "layers-cc0",
-   "waves": [],
+   "status": "ready-cc0",
+   "waves": [
+    "CC0/Ambience/cc0_amb_stream_loop"
+   ],
    "spatial": true,
    "attenuation": "ambient_emitter",
    "loop": true,
@@ -591,8 +593,8 @@
    "stinger": false,
    "strike_ms": 0,
    "sustain": null,
-   "needs": "CC0 small-river recording",
-   "unbound": "a positioned emitter at streams; the chapter layouts name no stream emitters yet",
+   "needs": "listening and in-game mix review; the Adelaide park recording includes wildlife and is not verified as Japanese ecology; currently positioned only at the Chapter 03 ward culvert",
+   "unbound": "",
    "notes": ""
   },
   {
@@ -6357,6 +6359,9 @@
  "attached": {
   "drone": "amb.alien.drone",
   "seizure_walker": "amb.alien.seizure_field"
+ },
+ "emitters": {
+  "ward_culvert": "amb.stream"
  },
  "telegraphs": {
   "boss": {

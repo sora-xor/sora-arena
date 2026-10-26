@@ -305,14 +305,14 @@ bool ReadAll(const FJsonObject& Root, FData& D, FString& Error)
     int32 Schema = 0;
     const FValues* Buses = nullptr;
     const FValues* Cues = nullptr;
-    FObject Attenuation, Bindings, Music, Beats, Maps, Weather, Footsteps, Horses, Attached, Telegraphs;
+    FObject Attenuation, Bindings, Music, Beats, Maps, Weather, Footsteps, Horses, Attached, Emitters, Telegraphs;
     if (!R.Int(Root, TEXT("schema_version"), Schema) || Schema != 1 || !R.Int(Root, TEXT("sample_rate_hz"), D.SampleRate) ||
         !R.Array(Root, TEXT("buses"), Buses) || !R.Array(Root, TEXT("cues"), Cues) ||
         !R.Object(Root, TEXT("attenuation"), Attenuation) || !R.Object(Root, TEXT("bindings"), Bindings) ||
         !R.Object(Root, TEXT("music"), Music) || !R.Object(Root, TEXT("beats"), Beats) || !R.Object(Root, TEXT("maps"), Maps) ||
         !R.Object(Root, TEXT("weather"), Weather) || !R.Object(Root, TEXT("footsteps"), Footsteps) ||
         !R.Object(Root, TEXT("horses"), Horses) || !R.Object(Root, TEXT("attached"), Attached) ||
-        !R.Object(Root, TEXT("telegraphs"), Telegraphs))
+        !R.Object(Root, TEXT("emitters"), Emitters) || !R.Object(Root, TEXT("telegraphs"), Telegraphs))
         return R.Fail(TEXT("schema_version"), TEXT("needs schema 1 and every section"));
 
     static const TCHAR* const Sliders[] = {TEXT("Master"), TEXT("Music"), TEXT("SFX"), TEXT("Voice"), TEXT("UI"), TEXT("Ambience")};
@@ -421,6 +421,18 @@ bool ReadAll(const FJsonObject& Root, FData& D, FString& Error)
         D.HoofbeatsPerSecond.Add(FName(*Pair.Key), static_cast<float>(Pair.Value->AsNumber()));
     for (const auto& Pair : Attached->Values)
         D.Attached.Add(FName(*Pair.Key), FName(*Pair.Value->AsString()));
+    R.Where = TEXT("emitters");
+    for (const auto& Pair : Emitters->Values)
+    {
+        FString CueId;
+        if (Pair.Key.IsEmpty() || Pair.Key.Equals(TEXT("None"), ESearchCase::IgnoreCase) ||
+            !R.Text(*Emitters, *Pair.Key, CueId))
+            return R.Fail(*Pair.Key, TEXT("needs an emitter name and cue"));
+        const FCue* Cue = D.Cue(FName(*CueId));
+        if (!Cue || !Cue->bLoop || !Cue->bSpatial || Cue->Bus != TEXT("Ambience"))
+            return R.Fail(*Pair.Key, TEXT("needs a spatial Ambience loop"));
+        D.Emitters.Add(FName(*Pair.Key), Cue->Id);
+    }
 
     R.Where = TEXT("telegraphs");
     FObject Boss, Enemy;

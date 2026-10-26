@@ -3,6 +3,7 @@
 
 Run: python3 scripts/audio/test_build_cc0_audio.py
 """
+import copy
 import sys
 import unittest
 from pathlib import Path
@@ -76,6 +77,47 @@ class LevelTests(unittest.TestCase):
         out = cc0.level(noise, {'I': -26.0, 'tp': cc0.BED_TP})
         ratio = out / noise
         self.assertAlmostEqual(float(ratio.min()), float(ratio.max()), places=9)
+
+
+class PartialLedgerTests(unittest.TestCase):
+    def setUp(self):
+        record = {'asset_id': 'park', 'license': 'CC0-1.0', 'tier': 'PUB-CC0',
+                  'files': [{'file': 'birds.wav', 'bytes': 80, 'sha256': 'old'},
+                            {'file': 'stream.wav', 'bytes': 20, 'sha256': 'before'}],
+                  'used_by': ['birds.object', 'stream.object'], 'layered_into': ['storm.wav']}
+        self.existing = {'records': [record, {'asset_id': 'other', 'files': [{'file': 'fire.wav', 'bytes': 50}]}],
+                         'total_bytes': 150, 'format': 'old'}
+        self.fresh = {'records': [{**copy.deepcopy(record),
+                                  'files': [{'file': 'stream.wav', 'bytes': 30, 'sha256': 'after'}],
+                                  'used_by': ['stream.object'], 'layered_into': []}], 'format': 'new'}
+
+    def test_partial_rebuild_preserves_siblings_and_unrelated_sources(self):
+        before = copy.deepcopy(self.existing)
+        merged = cc0.merge_partial(self.existing, self.fresh)
+        park = next(r for r in merged['records'] if r['asset_id'] == 'park')
+        self.assertEqual(park['files'][0], before['records'][0]['files'][0])
+        self.assertEqual(park['files'][1], self.fresh['records'][0]['files'][0])
+        self.assertEqual(park['used_by'], before['records'][0]['used_by'])
+        self.assertEqual(park['layered_into'], ['storm.wav'])
+        self.assertEqual(next(r for r in merged['records'] if r['asset_id'] == 'other'), before['records'][1])
+        self.assertEqual(merged['total_bytes'], 160)
+        self.assertEqual(self.existing, before)
+        self.assertEqual(cc0.merge_partial(merged, self.fresh), merged)
+
+    def test_changed_rights_are_refused_in_a_partial_rebuild(self):
+        self.fresh['records'][0]['license'] = 'CC-BY-4.0'
+        with self.assertRaisesRegex(SystemExit, 'metadata: license'):
+            cc0.merge_partial(self.existing, self.fresh)
+
+    def test_derivative_cannot_silently_move_to_another_source(self):
+        self.fresh['records'][0]['asset_id'] = 'replacement'
+        with self.assertRaisesRegex(SystemExit, 'upstream owner'):
+            cc0.merge_partial(self.existing, self.fresh)
+
+    def test_budget_includes_derivatives_not_rebuilt(self):
+        self.fresh['records'][0]['files'][0]['bytes'] = cc0.BUDGET_BYTES - 100
+        with self.assertRaisesRegex(SystemExit, 'exceed the audio budget'):
+            cc0.merge_partial(self.existing, self.fresh)
 
 
 if __name__ == '__main__':

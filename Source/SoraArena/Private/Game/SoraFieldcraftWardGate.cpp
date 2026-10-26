@@ -1,4 +1,5 @@
 #include "SoraFieldcraft.h"
+#include "SoraAudio.h"
 #include "SoraWardGateRules.h"
 #include "Game/SoraFieldcraftLayout.h"
 #include "Combat/SoraStealth.h"
@@ -22,6 +23,8 @@ void USoraFieldcraft::StageWardGate(const FSoraBeat& Beat)
         FVector(.12f,.1f,2.44f),FLinearColor(.055f,.065f,.075f),false,SoraFieldcraftLayout::Metal);
     Piece(TEXT("WardScannerHeader"),SoraFieldcraftLayout::Cube,FVector(-6220,-45,248),
         FVector(.12f,2.9f,.12f),FLinearColor(.055f,.065f,.075f),false,SoraFieldcraftLayout::Metal);
+    if (auto* Audio = USoraAudioSubsystem::Get(this))
+        Audio->StartAmbientEmitter(Props, TEXT("ward_culvert"), FVector(-6200,-650,-85));
     bWardHavePosition=false;bWardWicketOpen=false;bWardScannerInside=false;
 }
 void USoraFieldcraft::AssignWardGuard(ASoraEnemy& Guard,int32 Index)

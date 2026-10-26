@@ -39,10 +39,10 @@ class AudioSpecTests(unittest.TestCase):
 
     def test_project_sources_pass(self):
         audio = spec.load(ROOT)
-        self.assertEqual(audio["cc0_waves"], 88)
-        self.assertEqual(len(audio["waves"]), 149 + 88)
-        self.assertEqual(sum(wave["loop"] for wave in audio["waves"]), 19 + 6)
-        self.assertEqual(len(audio["expected"]), 149 + 88 + 14 + 14 + 3 + 1)
+        self.assertEqual(audio["cc0_waves"], 89)
+        self.assertEqual(len(audio["waves"]), 149 + 89)
+        self.assertEqual(sum(wave["loop"] for wave in audio["waves"]), 19 + 7)
+        self.assertEqual(len(audio["expected"]), 149 + 89 + 14 + 14 + 3 + 1)
         buses = {wave["source"].rsplit("/", 1)[1]: wave["bus"] for wave in audio["waves"]}
         self.assertEqual(buses["mus_sting_site_restored.wav"], "Music")
         self.assertEqual(buses["mus_sting_duel_point.wav"], "UI")

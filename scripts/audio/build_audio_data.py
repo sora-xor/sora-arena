@@ -129,7 +129,6 @@ UNBOUND_CUES = {
     'melee.parry.layers': 'clang, scrape, sparks and body layers for the parry MetaSound (scaled by parry quality)',
     'weapon.yumi.nock': 'no nock event yet: the hero nocks as part of the draw',
     'projectile.arrow.flyby': 'needs a pass-by detector for arrows near the listener',
-    'amb.stream': 'a positioned emitter at streams; the chapter layouts name no stream emitters yet',
     'amb.smithy': 'a positioned emitter at forges; the chapter layouts name no forge emitters yet',
     'amb.alien.debt_terminal': 'a positioned emitter at debt terminals; the layouts name none yet',
     'barrier.hum': 'needs the boss shield state; ASoraBoss exposes only its shield events',
@@ -202,6 +201,8 @@ STILL_WANTED = {
     'amb.estate.day': 'uguisu and pheasant calls over the CC0 park birds',
     'amb.typhoon': 'wind beds in three intensities and a gust riser; CC0 park wind and rain stand in',
     'amb.festival': 'crowd and 祭囃子 under the CC0 fireworks',
+    'amb.stream': 'listening and in-game mix review; the Adelaide park recording includes wildlife and is not '
+                  'verified as Japanese ecology; currently positioned only at the Chapter 03 ward culvert',
 }
 
 # ---------------------------------------------------------------------------
@@ -739,6 +740,7 @@ def build():
         'footsteps': FOOTSTEPS,
         'horses': HORSES,
         'attached': ATTACHED,
+        'emitters': {'ward_culvert': 'amb.stream'},
         'telegraphs': build_telegraphs(),
     }
 

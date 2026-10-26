@@ -1,4 +1,5 @@
 #include "SoraFieldcraft.h"
+#include "SoraAudio.h"
 #include "SoraLandingSpaceRules.h"
 #include "SoraFuelCanister.h"
 #include "Game/SoraFieldcraftLayout.h"
@@ -327,6 +328,7 @@ UStaticMeshComponent* USoraFieldcraft::Piece(const FString& Name, const TCHAR* M
 
 void USoraFieldcraft::Clear()
 {
+    if (auto* Audio = USoraAudioSubsystem::Get(this)) Audio->StopAmbientEmitters(Props);
     bWardGate=bWardWicketOpen=bWardHavePosition=bWardScannerInside=false;
     WardKidoban.Reset();WardWicket.Reset();
     Fusuma.Reset();

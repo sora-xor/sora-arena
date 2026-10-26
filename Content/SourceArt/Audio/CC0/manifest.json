@@ -7,10 +7,10 @@
  "purpose": "The CC0 recordings the runtime cues play, cut and levelled from the raw ledger (scripts/assets/manifests/audio_*.json); docs/audio.md sections 1 and 2.1.",
  "generator": "scripts/audio/build_cc0_audio.py",
  "regenerate": "python3 scripts/audio/build_cc0_audio.py --local-root <tree holding Local/ThirdPartyRaw/audio>",
- "format": "48 kHz / 24-bit PCM WAV, mono or stereo as recorded; beds carry a RIFF smpl loop over the whole file",
+ "format": "48 kHz / 24-bit PCM WAV, mono or stereo; positioned stream downmixed to mono; beds carry a RIFF smpl loop over the whole file",
  "loudness_policy": "docs/audio.md section 4: transients peak-referenced (\"P\" after \"limit\" dB of soft-clip density), sustained one-shots by maximum momentary loudness (\"M\"), beds by integrated loudness (\"I\", gain only, <= -3 dBTP)",
  "budget_bytes": 500000000,
- "total_bytes": 101343032,
+ "total_bytes": 107823144,
  "records": [
   {
    "tier": "PUB-CC0",
@@ -3403,6 +3403,7 @@
    "fallback": null,
    "used_by": [
     "/Game/Generated/Audio/CC0/Ambience/cc0_amb_estate_day_loop.cc0_amb_estate_day_loop",
+    "/Game/Generated/Audio/CC0/Ambience/cc0_amb_stream_loop.cc0_amb_stream_loop",
     "/Game/Generated/Audio/CC0/Ambience/cc0_amb_typhoon_loop.cc0_amb_typhoon_loop"
    ],
    "layered_into": [],
@@ -3452,6 +3453,53 @@
       "fail": [],
       "warn": []
      }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Ambience/cc0_amb_stream_loop.wav",
+     "bytes": 6480112,
+     "sha256": "e7259184cb084f4fd5aa0ae1b1fe2aa6bd5dfe631e531114d8a4bde1e2b97438",
+     "cue": "amb.stream",
+     "loop": true,
+     "target": {
+      "I": -26.0,
+      "tp": -3.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/park-ambiences",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/park-ambiences/download/park_ambience_river.wav",
+       "sha256": "da0c0c9b1249a83a1611cc116d5737b0864a8db9f45f1ae8dcc079d0f7c0bbbf",
+       "start_s": 272.0,
+       "end_s": 321.0
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 1,
+      "subtype": "PCM_24",
+      "seconds": 45.0,
+      "sample_peak_dbfs": -10.72,
+      "true_peak_dbtp": -10.69,
+      "integrated_lufs": -26.0,
+      "momentary_max_lufs": -25.03,
+      "rms_dbfs": -27.3,
+      "dc_offset_dbfs": -144.5,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.0,
+      "trailing_silence_ms": 0.0,
+      "loop": [
+       0,
+       2159999
+      ],
+      "wrap_hf_ratio_vs_p95": 0.672,
+      "wrap_jump_vs_p999_step": 0.322,
+      "wrap_curvature_vs_p999": 0.233,
+      "wrap_level_delta_db": -0.02,
+      "loop_click": false,
+      "fail": [],
+      "warn": []
+     },
+     "processing": "49 s level-selected source span including 1 s filter pre-roll; stereo averaged to mono; second-order 80 Hz high-pass; 45 s loop with 3 s equal-power crossfade; circular DC removal and gain-only -26 LUFS / <= -3 dBTP. No listening or ecology approval."
     },
     {
      "file": "Content/SourceArt/Audio/CC0/Ambience/cc0_amb_typhoon_loop.wav",
