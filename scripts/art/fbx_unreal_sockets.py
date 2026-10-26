@@ -144,6 +144,41 @@ def global_matrix(nodes, name):
     return global_matrix(nodes, node["parent"]) @ m if node["parent"] else m
 
 
+def model_globals(root):
+    """Each Model's global matrix by its UID, its FBX parents followed by UID. Names may repeat: Unreal's skeletal
+    export of SK_NyaagyuSamurai_R4Paws (s142) names its root Null and its mesh alike, and global_matrix, which follows
+    names, then recurses without end. Raises on a node property the model does not compose, as read_fbx does."""
+    objects = {o.props[0]: o for o in _child(root, b"Objects").elems}
+    parent = {}
+    for c in _child(root, b"Connections").elems:
+        src = objects.get(c.props[1])
+        if c.props[0] == b"OO" and src is not None and src.id == b"Model":
+            parent[c.props[1]] = c.props[2]
+    local = {}
+    for uid, o in objects.items():
+        if o.id != b"Model":
+            continue
+        p = _props(o)
+        for key, default in DEFAULTS.items():
+            if key in p and not np.allclose(np.array(p[key], float), default, atol=1e-9):
+                raise ValueError(f"{o.props[1]!r}: {key} {p[key]} is not modelled")
+        local[uid] = local_matrix({"T": tuple(float(v) for v in p.get("Lcl Translation", (0, 0, 0))),
+                                   "R": tuple(float(v) for v in p.get("Lcl Rotation", (0, 0, 0))),
+                                   "S": tuple(float(v) for v in p.get("Lcl Scaling", (1, 1, 1)))})
+    out = {}
+
+    def glob(uid, depth=0):
+        if depth > len(local):
+            raise ValueError("the FBX's model parents form a cycle")
+        if uid not in out:
+            par = parent.get(uid)
+            out[uid] = glob(par, depth + 1) @ local[uid] if par in local else local[uid]
+        return out[uid]
+    for uid in local:
+        glob(uid)
+    return out
+
+
 def axis_frame(axes):
     """Columns: the file's coord, front and up vectors."""
     frame = np.zeros((3, 3))

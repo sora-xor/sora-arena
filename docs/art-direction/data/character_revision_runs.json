@@ -861,6 +861,181 @@
     },
     "result": "On the right paw's LOD0 skin the CoatBlend is continuous (its largest step across any edge is 0). Two per-face choices draw staircases on the 3 mm grid: corner_uvs maps 6,950 of 24,396 faces planar (|n . Y| > 0.75) and the rest round the channel, unrelated mappings whose 873-edge, 2.32 m boundary jumps the fur texture by a median 17.6 cm of texture space; pad_faces gives whole faces M_Hero_RoseNose, a 292-edge, 0.81 m outline. Rendered from s132's own cameras, the planar region and the pad faces fall exactly on the originals' sharp light patches and jagged pad outlines."
    }
+  },
+  {
+   "run": "s135_inspect_blend",
+   "command": "/Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup --python-exit-code 1 Content/SourceArt/Characters/Hero/Nyaakoto_RuntimeSkin.blend --python scripts/art/inspect_nyaakoto_runtime_blend.py -- Saved/NyaakotoThirdPerson/Candidates/r4/s135_runtime_blend.json",
+   "start": "2026-10-26T22:13:48Z",
+   "pid": 17980,
+   "exit": 0,
+   "end": "2026-10-26T22:13:52Z",
+   "log": "Saved/W18Rebuild/s135_inspect_blend.log",
+   "outputs": {
+    "Saved/NyaakotoThirdPerson/Candidates/r4/s135_runtime_blend.json": "21e0c09cc01fc6945ad48528213da92c6d4b50119b79869ae8eaf60cab9380f5",
+    "Saved/W18Rebuild/s135_inspect_blend.inputs": "b7c17477a73d6ef47f6f9192bd1ff034b4c82efa7ff70a143557a18ebb7ce417"
+   },
+   "result": "PASS (read-only; nothing saved): the runtime blend's SK_NyaagyuSamurai, parented to RIG_NyaagyuSamurai at 0.85 scale: 201,632 vertices, 152,846 faces, 488,528 corners; shape keys Basis, PawEmpty_R, PawEmpty_L; UVMap; CoatBlend (byte colour, per corner); custom normals (INT16_2D); 23 slots (9 M_Hero_GreyTabbyFur, 17 M_Hero_RoseNose). Each paw is one block weighted 1.0 to its hand alone: R 28,029 vertices (24,396 skin faces, 5,277 strands), L 28,026 (24,384, 5,278). Not posted at launch; recorded at 22:36."
+  },
+  {
+   "run": "s136_r4_paw_prep",
+   "host": true,
+   "command": "/usr/bin/python3 scripts/art/prepare_nyaakoto_r4_paws.py Saved/NyaakotoThirdPerson/Candidates/r4/s136_paws",
+   "outputs": {
+    "Saved/NyaakotoThirdPerson/Candidates/r4/s136_paws/record.json": "7817aab664de39800307a77f06ab8b148395871f3ff91aacaaa9aa426fc060f5",
+    "Saved/NyaakotoThirdPerson/Candidates/r4/s136_paws/paw_R.npz": "d787c8009b70e48d1b850d89bb1e166002656196ffb64e305a5882ff8c4b643f",
+    "Saved/NyaakotoThirdPerson/Candidates/r4/s136_paws/paw_L.npz": "c9492c100dfc42f278523622571da6ff7128211b1c5763366eafa33559ff502d"
+   },
+   "result": "PASS (host): each paw rebuilt as built; cut_exact(move=False) along pad_field (every baseline vertex kept; new vertices on edges at the field's roots): R 25,004 faces (+304 vertices, 75 contour vertices through), L 24,988 (+302, 74). Closed oriented manifolds, Euler 0. Periodic ARAP 2x1 UVs, untangled: 0 folded faces after (5 and 2 before), 0 visible seams (baseline 2.74 m and 2.89 m). Coat by rule, equal to mesh_paw's at baseline vertices (0.0). Empty fist turns 0 faces. Slivers: 29 (R) and 31 (L) faces between 5 and 10 deg; the 2 per paw under 5 deg are the baseline's own, untouched. Field margin |f| along the cut p100 1.15 mm (R), 1.24 mm (L); the first-order |f|/|grad f| estimate's 55.3905 mm (L) is ill-conditioned (gradient 0.0224 there); root's nearest field-zero vertex bounds 1.76256 mm (L), 1.56130 mm (R); none is a Hausdorff distance. Strands replayed equal to nyaakoto_tp_fur.strands/grow: 5,277 and 5,278, every root in its cut piece, none on a pad."
+  },
+  {
+   "run": "s137_r4_assembly",
+   "command": "/Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup -t 8 --python-exit-code 1 Content/SourceArt/Characters/Hero/Nyaakoto_RuntimeSkin.blend --python scripts/art/assemble_nyaakoto_r4_paws.py -- Saved/NyaakotoThirdPerson/Candidates/r4/s136_paws Saved/NyaakotoThirdPerson/Candidates/r4/s137_assembly",
+   "start": "2026-10-26T22:46:09Z",
+   "pid": 42133,
+   "exit": 1,
+   "end": "2026-10-26T22:46:12Z",
+   "log": "Saved/W18Rebuild/s137_r4_assembly.log",
+   "outputs": {
+    "Saved/NyaakotoThirdPerson/Candidates/r4/s137_assembly/SK_NyaagyuSamurai_control.fbx": "b1a195a256d65def1bb9c2207b8e6e71f5cc9d82c26feac111b2452a6cade7f4",
+    "Saved/W18Rebuild/s137_r4_assembly.inputs": "b479be9bab222dc4d0f8d650b2a0dbc6477346d269324d01f627ff858942b675"
+   },
+   "result": "FAIL (natural EOF, exit 1, nothing saved; only the control FBX written): the pre-modification check stopped on a 0.0237 deg corner-normal spread: float32 arccos of equal unit vectors (root's review note), not a real spread; replaced by float64 atan2 with component differences."
+  },
+  {
+   "run": "s138_r4_assembly",
+   "command": "/Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup -t 8 --python-exit-code 1 Content/SourceArt/Characters/Hero/Nyaakoto_RuntimeSkin.blend --python scripts/art/assemble_nyaakoto_r4_paws.py -- Saved/NyaakotoThirdPerson/Candidates/r4/s136_paws Saved/NyaakotoThirdPerson/Candidates/r4/s138_assembly",
+   "start": "2026-10-26T22:50:51Z",
+   "pid": 44319,
+   "exit": 1,
+   "end": "2026-10-26T22:50:53Z",
+   "log": "Saved/W18Rebuild/s138_r4_assembly.log",
+   "outputs": {
+    "Saved/NyaakotoThirdPerson/Candidates/r4/s138_assembly/SK_NyaagyuSamurai_control.fbx": "2280adcd43a7d7b59b21ec14fff787c9e7ae025b4068664f211467e40de066d9",
+    "Saved/W18Rebuild/s138_r4_assembly.inputs": "56505600bbc4c6dac6426d4fcc05a6711cc9e00211d72574570c7cb7a9612225"
+   },
+   "result": "FAIL (natural EOF, exit 1, nothing saved; only the control FBX written): BMesh's vertex index table outdated by the right paw's new vertices before the left paw's lookups (my bug); fixed by collecting both paws' vertices first."
+  },
+  {
+   "run": "s139_r4_assembly",
+   "command": "/Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup -t 8 --python-exit-code 1 Content/SourceArt/Characters/Hero/Nyaakoto_RuntimeSkin.blend --python scripts/art/assemble_nyaakoto_r4_paws.py -- Saved/NyaakotoThirdPerson/Candidates/r4/s136_paws Saved/NyaakotoThirdPerson/Candidates/r4/s139_assembly",
+   "start": "2026-10-26T22:51:37Z",
+   "pid": 44516,
+   "exit": 1,
+   "end": "2026-10-26T22:51:40Z",
+   "log": "Saved/W18Rebuild/s139_r4_assembly.log",
+   "outputs": {
+    "Saved/NyaakotoThirdPerson/Candidates/r4/s139_assembly/SK_NyaagyuSamurai_control.fbx": "b0a6f75c31d9492f249e620b44316826693f7b726bbc0b4cde576ca244e286c3",
+    "Saved/W18Rebuild/s139_r4_assembly.inputs": "381235d64037c7e0d8fd8a8407b40a3c2718d3d7fa8eac694ba7436a4c18baa4"
+   },
+   "result": "FAIL (natural EOF, exit 1, nothing saved; only the control FBX written): BMesh's faces.sort needs a numeric key; mine returned tuples (my bug)."
+  },
+  {
+   "run": "s140_r4_assembly",
+   "command": "/Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup -t 8 --python-exit-code 1 Content/SourceArt/Characters/Hero/Nyaakoto_RuntimeSkin.blend --python scripts/art/assemble_nyaakoto_r4_paws.py -- Saved/NyaakotoThirdPerson/Candidates/r4/s136_paws Saved/NyaakotoThirdPerson/Candidates/r4/s140_assembly",
+   "start": "2026-10-26T22:52:25Z",
+   "pid": 45012,
+   "exit": 1,
+   "end": "2026-10-26T22:52:33Z",
+   "log": "Saved/W18Rebuild/s140_r4_assembly.log",
+   "outputs": {
+    "Saved/NyaakotoThirdPerson/Candidates/r4/s140_assembly/SK_NyaagyuSamurai_control.fbx": "7bae2ac9ffc27b1b5b88dd4b604bd8f9ed5d7619590c8c4c622eb44bbe76ad24",
+    "Saved/W18Rebuild/s140_r4_assembly.inputs": "a95fe3fb0148687c733b24cb4feb05b0f74713f9690bdf6a8e361064995a3167"
+   },
+   "result": "FAIL (natural EOF, exit 1, nothing saved; only the control FBX written): the final normals gate: normals_split_custom_set re-encodes every corner, averaging fans, and moved 9.25% of kept corners by up to 0.238 deg; fixed by restoring the kept corners' INT16 codes and rebuilding through BMesh."
+  },
+  {
+   "run": "s141_r4_assembly",
+   "command": "/Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup -t 8 --python-exit-code 1 Content/SourceArt/Characters/Hero/Nyaakoto_RuntimeSkin.blend --python scripts/art/assemble_nyaakoto_r4_paws.py -- Saved/NyaakotoThirdPerson/Candidates/r4/s136_paws Saved/NyaakotoThirdPerson/Candidates/r4/s141_assembly",
+   "start": "2026-10-26T22:56:34Z",
+   "pid": 46663,
+   "exit": 0,
+   "end": "2026-10-26T22:56:43Z",
+   "log": "Saved/W18Rebuild/s141_r4_assembly.log",
+   "markers": [
+    "NYAAKOTO_R4_ASSEMBLED {\"mesh\": {\"vertices\": 202238, \"faces\": 154058, \"corners\": 492164, \"vertices_before\": 201632, \"faces_before\": 152846, \"corners_before\": 488528, \"kept_faces\": 104066, \"material_triangles\": {\"M_Hero_CharcoalStripeFur\": 17737, \"M_Hero_WhiteFur\": 27999, \"M_Hero_BlackUrushi\": 1568, \""
+   ],
+   "outputs": {
+    "Saved/NyaakotoThirdPerson/Candidates/r4/s141_assembly/SK_NyaagyuSamurai_R4Paws.fbx": "fcde34217323a5aa098e2092869d3082e706f6a8cd4fde0c6bb6d2897d793433",
+    "Saved/NyaakotoThirdPerson/Candidates/r4/s141_assembly/SK_NyaagyuSamurai_control.fbx": "54bbdfbe6419ddb72e675fefab67065a64844d7c34c160a26e422d6d5381874d",
+    "Saved/NyaakotoThirdPerson/Candidates/r4/s141_assembly/record.json": "b22f266b278da0214bf3e6911930ad5937370b2925bcbc3d1c3eab89beaf5957",
+    "Saved/W18Rebuild/s141_r4_assembly.inputs": "8c6f0aa68e1224cb7518a45ed28e89501297804b14f11e88011164c37e19c56f"
+   },
+   "result": "PASS (blend never saved): only the paw skins swapped in memory; 202,238 vertices (+606 on baseline edges), 154,058 faces (104,066 kept, then 25,004 R and 24,988 L cut faces). Keys, positions, UVs (strands at their roots' new UVs), coat bytes (equal to the old skin's at baseline vertices), groups and materials read back. Normals: kept corners bit-identical (their INT16 codes restored; re-encoding alone had moved 9.25% by up to 0.238 deg); cut skin at its parent faces' old corner normals, interpolated at new vertices (Blender's own bisector would be 2.3 deg median, 12.2 max off): within 0.0232 deg; no fan split.",
+   "host_checks": [
+    {
+     "check": "FBX: control vs production, candidate vs control, paw semantics (first report; UIDs compared raw)",
+     "command": "/usr/bin/python3 scripts/art/check_nyaakoto_r4_fbx.py Saved/NyaakotoThirdPerson/Candidates/r4/s141_assembly Saved/NyaakotoThirdPerson/Candidates/r4/s136_paws Saved/NyaakotoThirdPerson/Candidates/r4/s141_fbx_check.json",
+     "outputs": {
+      "Saved/NyaakotoThirdPerson/Candidates/r4/s141_fbx_check.json": "cfcf1cdc0ece5ec5a55318c052d33ee4bbe69ec34892786fe2f743417563eee6"
+     },
+     "result": "FAIL as written: 822 control-vs-production differences, all object UIDs (Blender's exporter hashes strings with a per-process seed); kept"
+    },
+    {
+     "check": "FBX: v2, UIDs compared by the object they name",
+     "command": "/usr/bin/python3 scripts/art/check_nyaakoto_r4_fbx.py Saved/NyaakotoThirdPerson/Candidates/r4/s141_assembly Saved/NyaakotoThirdPerson/Candidates/r4/s136_paws Saved/NyaakotoThirdPerson/Candidates/r4/s141_fbx_check_v2.json",
+     "outputs": {
+      "Saved/NyaakotoThirdPerson/Candidates/r4/s141_fbx_check_v2.json": "528931329615e6717e0fd578d8855d15370159ccbc70e962663b5b0d5ae70606"
+     },
+     "result": "PASS: control = production SK FBX (0 differences outside the header); candidate vs control 21 elements, all the paws' (mesh arrays, hand clusters, PawEmpty shapes and channel weights); cut faces as prepared; kept UVs, colours, materials and normals exact; new-vertex coat within 1 byte of the sRGB rule; cut normals within 0.0232 deg; new vertices on their edges to 3e-8; hand clusters gain exactly the new vertices at 1.0; new vertices' morph at empty_points within 1.01e-7 m; cut skins closed, oriented, Euler 0, 0 UV folds"
+    }
+   ]
+  },
+  {
+   "run": "s142_r4_import",
+   "command": "scripts/toolchain/run-editor-script.sh --rhi scripts/unreal/import_nyaakoto_r4_candidate.py NYAAKOTO_R4_CANDIDATE_READY Saved/W18Rebuild/s142_r4_import.editor.log -- --assembly Saved/NyaakotoThirdPerson/Candidates/r4/s141_assembly --fbx-check Saved/NyaakotoThirdPerson/Candidates/r4/s141_fbx_check_v2.json --baseline-inputs Saved/W18Rebuild/s132_tp_review.inputs --s133-readback Saved/NyaakotoThirdPerson/Unreal/s133_authored_normals_readback.json --readback Saved/NyaakotoThirdPerson/Unreal/s142_r4_candidate_readback.json --export Saved/NyaakotoThirdPerson/Unreal/s142_SK_NyaagyuSamurai_R4Paws.fbx",
+   "start": "2026-10-26T22:59:13Z",
+   "pid": 49196,
+   "exit": 0,
+   "end": "2026-10-26T23:00:00Z",
+   "editor_pid": 49251,
+   "editor_exit": 0,
+   "log": "Saved/W18Rebuild/s142_r4_import.log",
+   "markers": [
+    "EDITOR_EXIT=0",
+    "NYAAKOTO_R4_CANDIDATE_READY {\"lod0_vertices\": 210307, \"slots_in_baseline_order\": true, \"export_sha256\": \"c7f18cdf0258eb6e2edf9ba65a5ed2cbf58be3d49d2f8380290150a2a5e73b80\", \"preserved\": true}"
+   ],
+   "outputs": {
+    "Saved/NyaakotoThirdPerson/Unreal/s142_r4_candidate_readback.json": "058ac9a3b61971f8719a89030c2f111a3276796aa1dffb9a8c490e07aa345af1",
+    "Saved/NyaakotoThirdPerson/Unreal/s142_SK_NyaagyuSamurai_R4Paws.fbx": "c7f18cdf0258eb6e2edf9ba65a5ed2cbf58be3d49d2f8380290150a2a5e73b80",
+    "Content/Generated/Candidates/R4Paws/SK_NyaagyuSamurai_R4Paws.uasset": "2443d8bb36e0ef86464b11fedd78fb916d330e3ed5c254b90299c01925904088",
+    "Saved/W18Rebuild/s142_r4_import.inputs": "13ef26203e337cecdc2de099a77bb8cf153662ffe7b55df76cb57be2dc595003"
+   },
+   "result": "PASS: the separate candidate /Game/Generated/Candidates/R4Paws/SK_NyaagyuSamurai_R4Paws, the only object imported, on the baseline's skeleton, with PawEmpty_L/R, vertex colours, the 23 slots in the baseline's order, 1 LOD and the three sockets copied; LOD0's build settings equal s133's field for field (recompute_normals false; tangents recomputed, MikkTSpace, 8-bit). 210,307 render vertices (baseline 212,573, s133 212,753). Baseline, skeleton and s133 packages unchanged before and after. The editor log's 19 LogAutomationTest 'Condition failed' lines are start-up self-test output, also in s130's and s133's logs.",
+   "host_checks": [
+    {
+     "check": "normals: the r4 candidate (s142's export) against our authored LOD0",
+     "command": "python3.11 scripts/art/compare_fbx_normals.py Saved/NyaakotoThirdPerson/Candidates/r4/s141_assembly/SK_NyaagyuSamurai_R4Paws.fbx Saved/NyaakotoThirdPerson/Unreal/s142_SK_NyaagyuSamurai_R4Paws.fbx Saved/W18Rebuild/normals_candidate_s142_vs_authored.json 0",
+     "outputs": {
+      "Saved/W18Rebuild/normals_candidate_s142_vs_authored.json": "10dffab0a8003e2380af36fd639cd10664192c1b7f53d930a7db985356ebb19e"
+     },
+     "result": "PASS: all 492,164 corners matched; 0.0 deg at p100 on the paw skin (149,976), strands, head cards and head skin; 0.0011 deg at p100 elsewhere, as s133. The tool now follows FBX parents by UID (Unreal names the root Null and mesh alike); s133's comparison rerun reproduces its recorded JSON exactly"
+    }
+   ]
+  },
+  {
+   "run": "s143_r4_comparison",
+   "command": "scripts/toolchain/run-editor-script.sh --editor scripts/unreal/render_nyaakoto_r4_comparison.py NYAAKOTO_R4_COMPARISON_COMPLETE Saved/W18Rebuild/s143_r4_comparison.editor.log -- out=s143 s133=Saved/NyaakotoThirdPerson/Unreal/s133_authored_normals_readback.json r4=Saved/NyaakotoThirdPerson/Unreal/s142_r4_candidate_readback.json",
+   "start": "2026-10-26T23:02:50Z",
+   "pid": 54213,
+   "exit": 0,
+   "end": "2026-10-26T23:06:13Z",
+   "editor_pid": 54267,
+   "editor_exit": 0,
+   "log": "Saved/W18Rebuild/s143_r4_comparison.log",
+   "markers": [
+    "EDITOR_EXIT=0",
+    "NYAAKOTO_R4_COMPARISON_COMPLETE: 27 captures in Saved/NyaakotoThirdPerson/Review/s143"
+   ],
+   "outputs": {
+    "Saved/NyaakotoThirdPerson/Review/s143/manifest.json": "b070825cb53a6ea1d91479542f366a3bd20e647f175289430c4602146628129b",
+    "Saved/W18Rebuild/s143_r4_comparison.inputs": "3108d425c63d940fb3496fe13be91a9775ff57821a78eb2330a21bcc88c35ffe",
+    "Saved/W18Rebuild/s143_r4_comparison_check.json": "275da41667868f2ec7079cc7801d5d44dd6826445889ed13bf946cfa5c571454"
+   },
+   "result": "PASS: 27 originals at 3840x2160: nine LOD0 views (guard_front, paw_R_back_empty, cuff_R_outside; R/L pads holding, L back empty, R/L pads empty rest, R pads holding rest), each as baseline, s133 authored normals, then r4 paws, in one level and light; s132's cameras replayed (rotation within 0.001 deg); all three packages checked first; gates before and after every image. Host check (check_nyaakoto_r4_comparison.py): no problems; r4 against s133 changes pixels on the paws (e.g. paw_R_back_empty 788,814 inside the projected paw mask, 579 outside, against a repeat of 681 outside). Seen in the originals, not accepted: the planar light patches with jagged edges, the concentric banding and the sawtooth pad outlines no longer appear; the fur pattern is finer than the body's, stretched and streaked on the toes, thumb and inner digits; the stubble stays sparse and the pads flat.",
+   "host_check": {
+    "command": "/usr/bin/python3 scripts/art/check_nyaakoto_r4_comparison.py Saved/NyaakotoThirdPerson/Review/s143 Saved/NyaakotoThirdPerson/Review/s132 Saved/NyaakotoThirdPerson/Review/s134 Saved/W18Rebuild/s143_r4_comparison_check.json",
+    "problems": []
+   }
   }
  ]
 }

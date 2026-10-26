@@ -50,15 +50,16 @@ def read_meshes(path):
     root, _ = FUS.parser().parse(str(path))
     objects = {o.props[0]: o for o in FUS._child(root, b"Objects").elems}
     links = [(c.props[0], c.props[1], c.props[2]) for c in FUS._child(root, b"Connections").elems]
-    nodes = FUS.read_fbx(path)["nodes"]
+    globals_ = FUS.model_globals(root)
     name = lambda o: o.props[1].split(b"\x00\x01")[0].decode()  # noqa: E731
     out = {}
     for gid, geo in objects.items():
         if geo.id != b"Geometry" or geo.props[2] != b"Mesh":
             continue
-        model = next(name(objects[d]) for k, s, d in links if k == b"OO" and s == gid and objects.get(d) is not None
-                     and objects[d].id == b"Model")
-        g = FUS.global_matrix(nodes, model)
+        model_uid = next(d for k, s, d in links if k == b"OO" and s == gid and objects.get(d) is not None
+                         and objects[d].id == b"Model")
+        model = name(objects[model_uid])
+        g = globals_[model_uid]                                 # by UID: Unreal may give the mesh its root's name
         v = np.array(FUS._child(geo, b"Vertices").props[0], float).reshape(-1, 3)
         pvi = np.array(FUS._child(geo, b"PolygonVertexIndex").props[0], np.int64)
         corner_vertex = np.where(pvi < 0, ~pvi, pvi)

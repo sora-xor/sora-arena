@@ -533,7 +533,7 @@ direction, not photoreal acceptance.
     s131 failed at its own LOD gate (7.9).
   - The authored-normal candidate (s133) and its three-view comparison (s134) are in 7.10. So is the diagnosis of the
     sawtooth boundaries.
-- Fur is still not resolved (7.11). No photoreal, visual, gameplay or root acceptance.
+- Fur is still not resolved (7.12). No photoreal, visual, gameplay or root acceptance.
 
 ### 7.1 The hero source on A
 
@@ -1026,13 +1026,108 @@ baseline with our LOD0 FBX, corner by corner:
   - **For the pads:** cut the faces along a smooth contour of a per-vertex pad field, or blend the pad colour in the
     fur's material by such a field.
 
-### 7.11 What remains
+### 7.11 The r4 repaired-paw candidate (s135-s143)
+
+Root (21:53 UTC) gave the lane for a CPU prototype of a continuous paw UV mapping and of pads cut along a smooth
+contour of a per-vertex field. The pads' geometric separation and the PBR material's semantics were to be kept. Once
+the topology, morph and weight, foldover and stretch checks justified it, a separate candidate could be built,
+imported with authored normals and captured in matched views. s132, s133 and s134 were to be preserved.
+
+**The prototypes** (`nyaakoto_tp_paw_surface.py`, measured by `measure_paw_surface_prototypes.py`):
+- **The surface.** The paw is a torus round the grip channel (V - F/2 = 0). Its area is about 0.24 of one fur tile at
+  the body's density, so a seamless map with whole tiles must be denser on average.
+- **The mappings tried:**
+  - **round:** the baseline's round mapping everywhere. It folds where it shears (about 10,700 faces).
+  - **torus_arc:** arc length round the cross-section. It shears more than the baseline.
+  - **torus_tiles:** whole tiles by arc fraction. It folds on 8% of the faces, on the toes.
+  - **The periodic harmonic map:** fold-free by construction (Gortler, Gotsman and Thurston). Its density runs from
+    0.24x on the back to 2.9x on the inner wall.
+  - **A free-boundary ARAP unwrap:** it squashes the back. Cut along the inner wall, the paw is a strip whose middle is
+    three times longer than its edges.
+  - **The choice:** the periodic map at 2x1 tiles, refined as rigidly as possible toward one uniform scale, and
+    untangled locally.
+- **The chosen map's seams:** the shortest longitude (the inner wall, about 140 mm) and the thumb and toes' junction.
+  Both jumps are whole tiles, and the fur maps tile exactly.
+- **The pads:** pad_field is a smooth margin built from pad_faces' own criteria (smooth minimum and maximum, 0.8 mm
+  rounding).
+  - cut_exact puts each crossing at the field's root.
+  - Within 15% of an edge's end, the contour runs through the vertex, so no vertex moves.
+  - Quads split along their better diagonal.
+
+**s136, the paws prepared on the host** (`prepare_nyaakoto_r4_paws.py`; per paw, right then left):
+- **The cut:** 25,004 and 24,988 faces, with 304 and 302 new vertices on baseline edges.
+  - Closed, oriented manifolds, Euler 0.
+  - Pads: 38.70 and 38.76 cm2, against the field's true 38.89 and 38.99, and the baseline staircase's 39.55 and 39.42.
+- **UVs:** 0 faces folded after untangling (5 and 2 before), and 0 visible seams (the baseline has 2.74 m and 2.89 m).
+- **Anisotropy, median and p90:**
+  - the back: 1.25 and 1.58 (baseline 2.60 and 6.2);
+  - the toes: 1.61 and 2.65 (baseline 3.0 and 19.4);
+  - the sides: 1.86 and 3.6 (baseline 1.12 and 1.28).
+- **Density against the body's:** about 1.2x on the back, 1.3x on the sides, 2.1x on the toes, and denser on the
+  hidden inner wall.
+- **Slivers:** 29 and 31 faces between 5 and 10 deg (the baseline has none). The 2 faces under 5 deg in each paw are the
+  baseline's own, untouched.
+- **The contour's error, three measures, none of them a Hausdorff distance:**
+  - the field's margin |f| along the cut: p99 0.26 mm, at most 1.15 and 1.24 mm;
+  - the first-order estimate |f| / |grad f|: p99 0.36 mm, at most 1.48 and 55.39 mm. It is ill-conditioned where the
+    gradient nearly vanishes (0.0224 at the left paw's sample);
+  - root's independent nearest field-zero vertex bounds: 1.56130 mm (right) and 1.76256 mm (left).
+  The baseline staircase's first-order error is p99 1.61 and 1.66 mm.
+- **Coat:** by rule, equal to mesh_paw's at baseline vertices; it differs from interpolation by at most 0.022 at new
+  vertices.
+- **The empty fist** turns 0 faces over. New vertices sit at most 0.098 mm off their edge's interpolated rule.
+- **The strands:** the built ones are replayed exactly (5,277 and 5,278), each root is located in its cut piece, and
+  none is on a pad. They take their roots' new UVs and keep their coat and normals.
+
+**s137-s141, the assembly in Blender** (`assemble_nyaakoto_r4_paws.py`). It loads the runtime blend in memory, swaps
+only the two paw skins, exports, and never saves.
+- **s137 to s140 failed safely.** Each stopped at its own check, wrote only a control FBX and saved nothing:
+  - s137: float32 arccos read equal normals as 0.024 deg apart;
+  - s138: an outdated BMesh index table;
+  - s139: a tuple sort key;
+  - s140: whole-mesh normal re-encoding moved 9.25% of the kept corners by up to 0.238 deg.
+- **s141 passed.** The mesh has 202,238 vertices and 154,058 faces: the kept faces in their order, then the cut faces.
+  - **Read back:** keys, positions, UVs, coat bytes, groups and materials.
+  - **Kept corners' normals:** bit-identical. Their INT16 codes are restored, and the mesh is rebuilt through BMesh.
+  - **The cut skin's normals:** its parent faces' old corner normals, interpolated at new vertices, within 0.0232 deg.
+    Blender's own bisector there would be 2.3 deg off at the median, and up to 12.2.
+- **The host check** (`check_nyaakoto_r4_fbx.py`):
+  - **Control:** equal to the production SK FBX outside the header. UIDs are compared by the object they name; Blender's
+    exporter hashes strings with a per-process seed, and the first report counted them as 822 differences.
+  - **Candidate against the control:** 21 elements differ, all the paws': the mesh arrays, the hand clusters, and the
+    PawEmpty shapes and their channel weights.
+  - **The paws' semantics:** all as prepared, with the new vertices' morph at empty_points within 1.01e-7 m.
+
+**s142, the Unreal import** (`import_nyaakoto_r4_candidate.py`):
+- **The asset:** the separate `/Game/Generated/Candidates/R4Paws/SK_NyaagyuSamurai_R4Paws`, on the baseline's
+  skeleton, with the sockets copied. It has LOD0 only; LOD1 and LOD2 are not part of the candidate.
+- **LOD0's build settings:** s133's candidate's, field for field (authored normals, explicit MikkTSpace tangents).
+- **Normals:** its built LOD0 normals equal ours, 0.0 deg on the paw skin and strands, over all 492,164 corners.
+- **Render vertices:** 210,307, against the baseline's 212,573. The continuous UVs need fewer seam splits.
+- **Preserved:** the baseline, its skeleton and s133's packages are unchanged.
+
+**s143, the matched views** (`render_nyaakoto_r4_comparison.py`):
+- **The shots:** nine LOD0 views, each as the baseline, s133's candidate and r4, in one level and light, with s132's
+  cameras replayed and every gate kept.
+- **The host check** (`check_nyaakoto_r4_comparison.py`) finds no problems.
+  - r4 against s133 changes pixels on the projected paws. paw_R_back_empty, for one: 788,814 inside the mask, and 579
+    outside against a repeat of 681.
+- **Seen in the originals** (root's reading at Coordination 228 agrees):
+  - the planar light patches with jagged edges, the paw backs' concentric banding and the sawtooth pad outlines no
+    longer appear;
+  - new in r4: the fur pattern is finer than the body's, and stretched and streaked on the toes, thumb and inner digits;
+  - remaining: the stubble is sparse, the toes are smooth and pale, the pads are flat, and the face's strokes are
+    unchanged.
+- **Adoption:** none. Adopting r4 is root's decision, and root has rejected the remaining defects.
+
+### 7.12 What remains
 
 - **Fur.**
   - Sparse dark stubble lines and a pale band on the empty toes remain in the previews and renders (root, 19:00). The
     actual-material originals are s132's (7.9), and the authored-normal comparison is s134's (7.10), for root's review.
-  - **The sawtooth boundaries** are the paws' per-face UV projection switch and per-face pads (7.10). A fix waits on
-    root's choice.
+  - **The sawtooth boundaries** were the paws' per-face UV projection switch and per-face pads (7.10). The separate r4
+    candidate removes them in s143's views (7.11), but finer, streaked fur on the toes and inner digits comes with it.
+    Adopting it is root's decision. LOD1 and LOD2 would need the same cut and map.
   - **The face's dark broken lines** at LOD0 are its fur cards, whose normals authored normals do not change.
   - Whether to adopt authored normals is root's decision.
   - Root's review of s124's full Guard Front and GuardPaws Below originals (with its 19:48 acceptance of the lane)
