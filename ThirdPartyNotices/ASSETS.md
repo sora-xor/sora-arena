@@ -10,7 +10,7 @@ Policy: `docs/art-research/free-asset-acquisition-plan.md` section 2. Every asse
 |---|---:|---:|---:|
 | PUB-CC0 | 192 | 2571 | 4,584,606,249 |
 | PUB-BY | 11 | 12 | 206,629,366 |
-| OWN | 14 | 558 | 906,514,915 |
+| OWN | 14 | 558 | 906,751,823 |
 | REF | 6 | 6 | 9,778,972 |
 
 ## Public domain and CC0 (PUB-CC0, PUB-PD)

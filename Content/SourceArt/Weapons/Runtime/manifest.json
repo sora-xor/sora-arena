@@ -458,8 +458,8 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00.fbx",
-   "bytes": 7850540,
-   "sha256": "2631bad6a4c5e2436916410b4d2d93a9d6d4bb2166bab57005254498c8e085f9"
+   "bytes": 7873036,
+   "sha256": "87ed13c67772c4bd7359107787c180e5775c839a6cfcc8507c9ad36f3acf5005"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00_LOD1.fbx",
@@ -473,8 +473,8 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00_Saya.fbx",
-   "bytes": 2845420,
-   "sha256": "c85210574b2b25a0f951af37188b5c3d08a96f0f40a342ec0f8be7f07c1c91cd"
+   "bytes": 2859868,
+   "sha256": "c57e623ac6961ec567eaa5295f48b1f4b6fe001edbc24ed3bb5b000965f75a48"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00_Saya_LOD1.fbx",
@@ -508,8 +508,8 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W00_Katana/build_record.json",
-   "bytes": 6443,
-   "sha256": "abb0fa88aa5e68174e8f0d4309a17a9c9d90fa6c023aada75e0a5184d3a25efe"
+   "bytes": 8620,
+   "sha256": "738655d5934b50ebf9c834e4c27aafb02a4231f69bb14f91006c962dbc94015d"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/SM_Weapon_01.blend",
@@ -518,8 +518,8 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/SM_Weapon_01.fbx",
-   "bytes": 4488332,
-   "sha256": "fe6731a19ca6fad58f423752db4390b5d5ff38c68960f8f817f52e477ae43e1e"
+   "bytes": 4494524,
+   "sha256": "ce1635bd9ce6fc7c87f42ec24655c494baaed4e9f02f5bc04f5b7dabff6449f5"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/SM_Weapon_01_LOD1.fbx",
@@ -553,8 +553,8 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/build_record.json",
-   "bytes": 5106,
-   "sha256": "69a119fff82666da8a1027e85d83690434ccace7b04fa1f8e109265aa9803666"
+   "bytes": 6720,
+   "sha256": "3a078c093f40c162451cde8d2ee04ad3ae87b78bb1e415429108caf191b4c2f3"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02.blend",
@@ -563,13 +563,13 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02.fbx",
-   "bytes": 462412,
-   "sha256": "7bafa3ee11a13e3e9315f38b01a63a21d31a12ae771da127981f21fa3271a39b"
+   "bytes": 462396,
+   "sha256": "2db173c731c4d3e5f77ce2b8df77622849311273a83804610fdb6a7f7b7ca9a8"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02_Chain.fbx",
-   "bytes": 4310540,
-   "sha256": "8c25b5624e6007f95f50b9d989b08417217d5b7ea3938d08c2de777af19b0395"
+   "bytes": 4340588,
+   "sha256": "7986789b9a47c17679252619d16a233def7c3e12695ab0c013f14bb93cee1644"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02_Chain_LOD1.fbx",
@@ -613,8 +613,8 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/build_record.json",
-   "bytes": 5856,
-   "sha256": "4639627c3663a1e02ef101e9bf95eae95c12343afa5e694889668d79bfe3c1af"
+   "bytes": 8150,
+   "sha256": "d45fb87167d1102db43750887b604abf59083cceb8956ea876e92d1611b821f0"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04.blend",
@@ -623,8 +623,8 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04.fbx",
-   "bytes": 5872732,
-   "sha256": "5412c5d8fa2ab9b450f2e6ce831200535838fe2bd92f237d02c41eee98fcb99f"
+   "bytes": 5887772,
+   "sha256": "f84769b607c43b2b23ec7e7b31ef3143f7915b0bf1a83d270ad69a7fbd832dc8"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04_LOD1.fbx",
@@ -638,8 +638,8 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04_Saya.fbx",
-   "bytes": 2289420,
-   "sha256": "8a3c8e96ee40fa8d44132465313ac3b8776819d99ca550596cb54bdb9ace115a"
+   "bytes": 2301164,
+   "sha256": "5119770fe95dc997ba9f202c52e9b6da31021d0695dd9e40811934f28227b506"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04_Saya_LOD1.fbx",
@@ -673,8 +673,8 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/build_record.json",
-   "bytes": 6269,
-   "sha256": "8234cdc6507c7eff50d41bed97ff57a20caa29b0a550510a2029181166392a25"
+   "bytes": 8452,
+   "sha256": "e202c803da882c3b995d06dd016c6cb3234db43740e29073ddf1d49deb05fd1e"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/SM_Weapon_05.blend",
@@ -683,8 +683,8 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/SM_Weapon_05.fbx",
-   "bytes": 4283420,
-   "sha256": "98557c042574829a3b241a41df14f02982f119a9fce94f213eceb8c363a3ec4c"
+   "bytes": 4293148,
+   "sha256": "b8e9e82aba31aaf8c9d21eafe0834827ac18ba70734876c73fb900355e739c52"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/SM_Weapon_05_LOD1.fbx",
@@ -718,8 +718,8 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/build_record.json",
-   "bytes": 5725,
-   "sha256": "00d6c5d133b4e57edb077157c19ebbb16799d0249d9019291dbf9c014501e950"
+   "bytes": 7593,
+   "sha256": "2bf9eddeed86585ceb7bf05c882e41a8b63cb8785f7f9228cda8ada40ca89f45"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W06_Kanabo/SM_Weapon_06.blend",
@@ -728,8 +728,8 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W06_Kanabo/SM_Weapon_06.fbx",
-   "bytes": 6399692,
-   "sha256": "95caa016ffae4e4cb3ff2507b4c9841e603efdc09c16c10f395851ad7406c70d"
+   "bytes": 6423484,
+   "sha256": "5bfedd72a428fed2f2433cd53721132d91d76e03f70141f7807b213041239e8a"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W06_Kanabo/SM_Weapon_06_LOD1.fbx",
@@ -763,8 +763,8 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W06_Kanabo/build_record.json",
-   "bytes": 4970,
-   "sha256": "23c8ab4a153a663a49b936398bec67bf0c42d1714f6a0ae57fe8893efd7aeea2"
+   "bytes": 6581,
+   "sha256": "a2407d41dfe1e30b55b8c065724a23f204762319994e8f2382adf2531c81019a"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/SM_Weapon_07.blend",
@@ -773,8 +773,8 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/SM_Weapon_07.fbx",
-   "bytes": 6337388,
-   "sha256": "ce7a08f78d87165fa6c65ef62612e618fa1ed15ed4202cfb07c2828fc48f1c1b"
+   "bytes": 6369564,
+   "sha256": "491e0c888d874362846113c0594c2ed1c5ad154a440d53f88bf0b62d24c94a95"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/SM_Weapon_07_LOD1.fbx",
@@ -808,8 +808,8 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/build_record.json",
-   "bytes": 5176,
-   "sha256": "6159b7d6be8bec4be2006678b0c3fdced4c3ae3a939686ec5b26b5c0bcb7cb3b"
+   "bytes": 6919,
+   "sha256": "9f2e3cacba44e38970beacc6d46e9054eac965c5cbe97022d235869d4095d323"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/SM_Weapon_08.blend",
@@ -818,8 +818,8 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/SM_Weapon_08.fbx",
-   "bytes": 506204,
-   "sha256": "bd513b0cced41d792bd6a057df0e077197bebc2725acd9fc39bd31c70d0f1a80"
+   "bytes": 506124,
+   "sha256": "c7f50f8bf9ac822a1b6fdc8d083acac1664ffdee2e77b41458debe4cc1bd5baa"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/SM_Weapon_08_LOD1.fbx",
@@ -853,8 +853,8 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/build_record.json",
-   "bytes": 4217,
-   "sha256": "b2c118fa3cc2ddac135594552278ea0ced6a43895c104e58de2b8129a75b2daa"
+   "bytes": 5833,
+   "sha256": "002a35cdebb68dd49a838201bea5a9b3caa18f69499868329bf7356706077889"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W09_Repeater/SM_Weapon_09.blend",
@@ -863,8 +863,8 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W09_Repeater/SM_Weapon_09.fbx",
-   "bytes": 3561276,
-   "sha256": "e891f3d30d5d491872f49187ea533989ca171556271fb789c3ea30b193fdb840"
+   "bytes": 3561084,
+   "sha256": "9744b4c9717489b726d8f3ddbd5d40543392537808db261a914e4160b7af340b"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W09_Repeater/SM_Weapon_09_LOD1.fbx",
@@ -898,8 +898,8 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W09_Repeater/build_record.json",
-   "bytes": 4481,
-   "sha256": "7220d698afb2004fd4e0489505e30a28b62a7aafb3733227b3bfd6b3c870969c"
+   "bytes": 6221,
+   "sha256": "3876dee589a25dd75d00a5d602baf44f1c6345381fc46fc3b15773f6a428e08e"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10.blend",
@@ -908,8 +908,8 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10.fbx",
-   "bytes": 1268988,
-   "sha256": "1711779cdc03aabd4902d05dfeee61464d05d68c8366f46492d4248586d850ab"
+   "bytes": 1269244,
+   "sha256": "95066f9b61a711e34a5879133fafe966d61c0b072c6b90235f697414f227f77f"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10_LOD1.fbx",
@@ -923,8 +923,8 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10_Saya.fbx",
-   "bytes": 1610956,
-   "sha256": "fe4d9f73332d0eeacbe50e343d0b8f1673504bfe1d9920a90e6ed15d2873ab01"
+   "bytes": 1618764,
+   "sha256": "4953d0df312cb48e6936a2bada327d022a0a48918e8827451d53d6f99740f69b"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10_Saya_LOD1.fbx",
@@ -958,8 +958,8 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/build_record.json",
-   "bytes": 5819,
-   "sha256": "9dfdc63a627dd49e5d32755bcf4be7867dabf24cabd88d642cfc24dc6aabedd0"
+   "bytes": 7994,
+   "sha256": "31bbc01ac8a41134ecf86427e1964021a3ec537c00710d0deeef456be2ca30d0"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/SM_Weapon_12.blend",
@@ -968,8 +968,8 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/SM_Weapon_12.fbx",
-   "bytes": 5247276,
-   "sha256": "2c45fd89fdc8a5213118c85e900bc1568b6cc74de18532f2aa286fdd23e471e8"
+   "bytes": 5263356,
+   "sha256": "174f5ed2195074cb6440dfc95067a61d8ac4c483d140cdca03d4ee172fb5d54a"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/SM_Weapon_12_LOD1.fbx",
@@ -1003,8 +1003,8 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/build_record.json",
-   "bytes": 5766,
-   "sha256": "7d35ddde95b1c3a9abade3e8d8dbb2dbf9e186d0f17d0928cc0a1e2a485ad6ae"
+   "bytes": 7411,
+   "sha256": "2d8994e79f1ad709c6985724eec33863ba2bf423c5560aebd2d0633ad3d6ee30"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/SM_Weapon_14.blend",
@@ -1013,8 +1013,8 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/SM_Weapon_14.fbx",
-   "bytes": 2821388,
-   "sha256": "2ebadea5743f61694a17a4223ebdf5ff657e1fea9067bddc216845f7262bccf8"
+   "bytes": 2829052,
+   "sha256": "acad09a530acfcce463e0d10228bd9cdf89fca856b9746ea76151bc7c52067f2"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/SM_Weapon_14_LOD1.fbx",
@@ -1048,8 +1048,8 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/build_record.json",
-   "bytes": 4351,
-   "sha256": "bd195358d90edbf7e2869fff67ef2d9f546d7ac1058462c48bcb77880011d746"
+   "bytes": 6096,
+   "sha256": "b47fa583afc2f257e3775146d9a8af92d6397145ec67b566f044b3d710a2d133"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/SM_Weapon_15.blend",
@@ -1058,8 +1058,8 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/SM_Weapon_15.fbx",
-   "bytes": 1540028,
-   "sha256": "781583bb73e8b1f8cd04d38122e1955e2cb91c5d8088debba70ef71332682ed5"
+   "bytes": 1540556,
+   "sha256": "7d41679179397d14ffb43d30da1e9d7e812dc4dee3c51de8bb9f6a479a79626e"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/SM_Weapon_15_LOD1.fbx",
@@ -1093,8 +1093,8 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/build_record.json",
-   "bytes": 4673,
-   "sha256": "41be5fc604cc179505c50bb14341467d6e2de5df2ac54dbfdfa321a73c5fd26d"
+   "bytes": 6413,
+   "sha256": "111e776eba4ab24a120022b20db4087b9de1d6faf10c68b3f4fa47ca820d6b78"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/SM_Weapon_17.blend",
@@ -1103,8 +1103,8 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/SM_Weapon_17.fbx",
-   "bytes": 4208044,
-   "sha256": "34d59a959f4f2e6797ee07a9e9d956572b298d241decba7dd17604719d012fa8"
+   "bytes": 4219852,
+   "sha256": "d08177941afdb1441a3b470b82a141aad2c21c7c914065b14c93f9da80537476"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/SM_Weapon_17_LOD1.fbx",
@@ -1138,8 +1138,8 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/build_record.json",
-   "bytes": 4780,
-   "sha256": "0a0aed1341398a1e413aef06c480faca19b30bcb91ad84b920ce84111cf94187"
+   "bytes": 6522,
+   "sha256": "d492a20d7a287c4eb339a2c8b0b39c8e17b85fe25fe6f0fdd694c538ebcb77fc"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18.blend",
@@ -1208,8 +1208,8 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W19_Yari/SM_Weapon_19.fbx",
-   "bytes": 1406396,
-   "sha256": "1325df31fdb759598b6de6f1a352280adfc437f7b217e40d5ee2aedcd3fc8045"
+   "bytes": 1404780,
+   "sha256": "e6f5e20b5ac36f3be382c5932017ad9846f9adc14d61f120c928fb728597b60b"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W19_Yari/SM_Weapon_19_LOD1.fbx",
@@ -1243,8 +1243,8 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W19_Yari/build_record.json",
-   "bytes": 4279,
-   "sha256": "d9fe909033d2e2eb4aed30ef5b6fc1b7aeb5ccee1f1637f43dfd17b5785a312c"
+   "bytes": 5887,
+   "sha256": "fa1be883ddfdbeb48bca7aaa8c19900daa1a54591a23a607245a09a473db2ec5"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W20_Naginata/SM_Weapon_20.blend",
@@ -1253,8 +1253,8 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W20_Naginata/SM_Weapon_20.fbx",
-   "bytes": 2344876,
-   "sha256": "14bc7cddd44eba4ae423277b0e0f9fd06056a9f16017c585cefff2351615f5f5"
+   "bytes": 2344748,
+   "sha256": "ef0e5bc3a89da56313d964d91e67ca2e865a2dc9f1bb241fc7b02f252d983808"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W20_Naginata/SM_Weapon_20_LOD1.fbx",
@@ -1288,13 +1288,337 @@
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/W20_Naginata/build_record.json",
-   "bytes": 4698,
-   "sha256": "06548c8b390250fca44462b075be5f8264b8428585af34946b976d493e552751"
+   "bytes": 6329,
+   "sha256": "bd7c74f63421d9db85433ef3508e03b458510f7f90d7d68e5efaaf4300b48d74"
   },
   {
    "file": "Content/SourceArt/Weapons/Runtime/metric_report.json",
    "bytes": 29138,
    "sha256": "b8065692efe0d364868a6ce2fd889afc7d47773daeb75d1f3e389c79ad723cf4"
+  }
+ ],
+ "scoped_updates": [
+  {
+   "key": "socket_fbx",
+   "recorded_at_utc": "2026-10-26T05:13:53.279577+00:00",
+   "scope": "Exact staged LOD0 bytes from the recorded UE probe; no re-export, runtime import or visual approval.",
+   "tool": {
+    "path": "scripts/art/apply_staged_weapon_sockets.py",
+    "sha256": "04c490b61227d426bd19031342d8b9c618864d6bdd88925109298ed929e3f849"
+   },
+   "receipt": {
+    "path": "docs/art-direction/data/runtime_weapon_ue_socket_probe.json",
+    "sha256": "de97d992cac7dcf353fc695e1d82695935db3552f90b7d7477cbe61753888460",
+    "run": "s88"
+   },
+   "stage_report_sha256": [
+    "d1041136cc6e72d4556338a682e37c681570eb41df85453735daebe799d84ee1",
+    "dbc5e056b68f0ea1adb7581c278bc8d91f4a9d3ff33c9165a922b8c49d7ddb2d"
+   ],
+   "replacements": [
+    {
+     "asset": "SM_Weapon_00",
+     "file": "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00.fbx",
+     "sha256": "87ed13c67772c4bd7359107787c180e5775c839a6cfcc8507c9ad36f3acf5005",
+     "replaces_sha256": "2631bad6a4c5e2436916410b4d2d93a9d6d4bb2166bab57005254498c8e085f9"
+    },
+    {
+     "asset": "SM_Weapon_00_Saya",
+     "file": "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00_Saya.fbx",
+     "sha256": "c57e623ac6961ec567eaa5295f48b1f4b6fe001edbc24ed3bb5b000965f75a48",
+     "replaces_sha256": "c85210574b2b25a0f951af37188b5c3d08a96f0f40a342ec0f8be7f07c1c91cd"
+    },
+    {
+     "asset": "SM_Weapon_01",
+     "file": "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/SM_Weapon_01.fbx",
+     "sha256": "ce1635bd9ce6fc7c87f42ec24655c494baaed4e9f02f5bc04f5b7dabff6449f5",
+     "replaces_sha256": "fe6731a19ca6fad58f423752db4390b5d5ff38c68960f8f817f52e477ae43e1e"
+    },
+    {
+     "asset": "SM_Weapon_02",
+     "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02.fbx",
+     "sha256": "2db173c731c4d3e5f77ce2b8df77622849311273a83804610fdb6a7f7b7ca9a8",
+     "replaces_sha256": "7bafa3ee11a13e3e9315f38b01a63a21d31a12ae771da127981f21fa3271a39b"
+    },
+    {
+     "asset": "SM_Weapon_02_Chain",
+     "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02_Chain.fbx",
+     "sha256": "7986789b9a47c17679252619d16a233def7c3e12695ab0c013f14bb93cee1644",
+     "replaces_sha256": "8c25b5624e6007f95f50b9d989b08417217d5b7ea3938d08c2de777af19b0395"
+    },
+    {
+     "asset": "SM_Weapon_04",
+     "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04.fbx",
+     "sha256": "f84769b607c43b2b23ec7e7b31ef3143f7915b0bf1a83d270ad69a7fbd832dc8",
+     "replaces_sha256": "5412c5d8fa2ab9b450f2e6ce831200535838fe2bd92f237d02c41eee98fcb99f"
+    },
+    {
+     "asset": "SM_Weapon_04_Saya",
+     "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04_Saya.fbx",
+     "sha256": "5119770fe95dc997ba9f202c52e9b6da31021d0695dd9e40811934f28227b506",
+     "replaces_sha256": "8a3c8e96ee40fa8d44132465313ac3b8776819d99ca550596cb54bdb9ace115a"
+    },
+    {
+     "asset": "SM_Weapon_05",
+     "file": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/SM_Weapon_05.fbx",
+     "sha256": "b8e9e82aba31aaf8c9d21eafe0834827ac18ba70734876c73fb900355e739c52",
+     "replaces_sha256": "98557c042574829a3b241a41df14f02982f119a9fce94f213eceb8c363a3ec4c"
+    },
+    {
+     "asset": "SM_Weapon_06",
+     "file": "Content/SourceArt/Weapons/Runtime/W06_Kanabo/SM_Weapon_06.fbx",
+     "sha256": "5bfedd72a428fed2f2433cd53721132d91d76e03f70141f7807b213041239e8a",
+     "replaces_sha256": "95caa016ffae4e4cb3ff2507b4c9841e603efdc09c16c10f395851ad7406c70d"
+    },
+    {
+     "asset": "SM_Weapon_07",
+     "file": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/SM_Weapon_07.fbx",
+     "sha256": "491e0c888d874362846113c0594c2ed1c5ad154a440d53f88bf0b62d24c94a95",
+     "replaces_sha256": "ce7a08f78d87165fa6c65ef62612e618fa1ed15ed4202cfb07c2828fc48f1c1b"
+    },
+    {
+     "asset": "SM_Weapon_08",
+     "file": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/SM_Weapon_08.fbx",
+     "sha256": "c7f50f8bf9ac822a1b6fdc8d083acac1664ffdee2e77b41458debe4cc1bd5baa",
+     "replaces_sha256": "bd513b0cced41d792bd6a057df0e077197bebc2725acd9fc39bd31c70d0f1a80"
+    },
+    {
+     "asset": "SM_Weapon_09",
+     "file": "Content/SourceArt/Weapons/Runtime/W09_Repeater/SM_Weapon_09.fbx",
+     "sha256": "9744b4c9717489b726d8f3ddbd5d40543392537808db261a914e4160b7af340b",
+     "replaces_sha256": "e891f3d30d5d491872f49187ea533989ca171556271fb789c3ea30b193fdb840"
+    },
+    {
+     "asset": "SM_Weapon_10",
+     "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10.fbx",
+     "sha256": "95066f9b61a711e34a5879133fafe966d61c0b072c6b90235f697414f227f77f",
+     "replaces_sha256": "1711779cdc03aabd4902d05dfeee61464d05d68c8366f46492d4248586d850ab"
+    },
+    {
+     "asset": "SM_Weapon_10_Saya",
+     "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10_Saya.fbx",
+     "sha256": "4953d0df312cb48e6936a2bada327d022a0a48918e8827451d53d6f99740f69b",
+     "replaces_sha256": "fe4d9f73332d0eeacbe50e343d0b8f1673504bfe1d9920a90e6ed15d2873ab01"
+    },
+    {
+     "asset": "SM_Weapon_12",
+     "file": "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/SM_Weapon_12.fbx",
+     "sha256": "174f5ed2195074cb6440dfc95067a61d8ac4c483d140cdca03d4ee172fb5d54a",
+     "replaces_sha256": "2c45fd89fdc8a5213118c85e900bc1568b6cc74de18532f2aa286fdd23e471e8"
+    },
+    {
+     "asset": "SM_Weapon_14",
+     "file": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/SM_Weapon_14.fbx",
+     "sha256": "acad09a530acfcce463e0d10228bd9cdf89fca856b9746ea76151bc7c52067f2",
+     "replaces_sha256": "2ebadea5743f61694a17a4223ebdf5ff657e1fea9067bddc216845f7262bccf8"
+    },
+    {
+     "asset": "SM_Weapon_15",
+     "file": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/SM_Weapon_15.fbx",
+     "sha256": "7d41679179397d14ffb43d30da1e9d7e812dc4dee3c51de8bb9f6a479a79626e",
+     "replaces_sha256": "781583bb73e8b1f8cd04d38122e1955e2cb91c5d8088debba70ef71332682ed5"
+    },
+    {
+     "asset": "SM_Weapon_17",
+     "file": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/SM_Weapon_17.fbx",
+     "sha256": "d08177941afdb1441a3b470b82a141aad2c21c7c914065b14c93f9da80537476",
+     "replaces_sha256": "34d59a959f4f2e6797ee07a9e9d956572b298d241decba7dd17604719d012fa8"
+    },
+    {
+     "asset": "SM_Weapon_19",
+     "file": "Content/SourceArt/Weapons/Runtime/W19_Yari/SM_Weapon_19.fbx",
+     "sha256": "e6f5e20b5ac36f3be382c5932017ad9846f9adc14d61f120c928fb728597b60b",
+     "replaces_sha256": "1325df31fdb759598b6de6f1a352280adfc437f7b217e40d5ee2aedcd3fc8045"
+    },
+    {
+     "asset": "SM_Weapon_20",
+     "file": "Content/SourceArt/Weapons/Runtime/W20_Naginata/SM_Weapon_20.fbx",
+     "sha256": "ef0e5bc3a89da56313d964d91e67ca2e865a2dc9f1bb241fc7b02f252d983808",
+     "replaces_sha256": "14bc7cddd44eba4ae423277b0e0f9fd06056a9f16017c585cefff2351615f5f5"
+    }
+   ],
+   "files": [
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00.fbx",
+     "bytes": 7873036,
+     "sha256": "87ed13c67772c4bd7359107787c180e5775c839a6cfcc8507c9ad36f3acf5005"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00_Saya.fbx",
+     "bytes": 2859868,
+     "sha256": "c57e623ac6961ec567eaa5295f48b1f4b6fe001edbc24ed3bb5b000965f75a48"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W00_Katana/build_record.json",
+     "bytes": 8620,
+     "sha256": "738655d5934b50ebf9c834e4c27aafb02a4231f69bb14f91006c962dbc94015d"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/SM_Weapon_01.fbx",
+     "bytes": 4494524,
+     "sha256": "ce1635bd9ce6fc7c87f42ec24655c494baaed4e9f02f5bc04f5b7dabff6449f5"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/build_record.json",
+     "bytes": 6720,
+     "sha256": "3a078c093f40c162451cde8d2ee04ad3ae87b78bb1e415429108caf191b4c2f3"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02.fbx",
+     "bytes": 462396,
+     "sha256": "2db173c731c4d3e5f77ce2b8df77622849311273a83804610fdb6a7f7b7ca9a8"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02_Chain.fbx",
+     "bytes": 4340588,
+     "sha256": "7986789b9a47c17679252619d16a233def7c3e12695ab0c013f14bb93cee1644"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/build_record.json",
+     "bytes": 8150,
+     "sha256": "d45fb87167d1102db43750887b604abf59083cceb8956ea876e92d1611b821f0"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04.fbx",
+     "bytes": 5887772,
+     "sha256": "f84769b607c43b2b23ec7e7b31ef3143f7915b0bf1a83d270ad69a7fbd832dc8"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04_Saya.fbx",
+     "bytes": 2301164,
+     "sha256": "5119770fe95dc997ba9f202c52e9b6da31021d0695dd9e40811934f28227b506"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/build_record.json",
+     "bytes": 8452,
+     "sha256": "e202c803da882c3b995d06dd016c6cb3234db43740e29073ddf1d49deb05fd1e"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/SM_Weapon_05.fbx",
+     "bytes": 4293148,
+     "sha256": "b8e9e82aba31aaf8c9d21eafe0834827ac18ba70734876c73fb900355e739c52"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/build_record.json",
+     "bytes": 7593,
+     "sha256": "2bf9eddeed86585ceb7bf05c882e41a8b63cb8785f7f9228cda8ada40ca89f45"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W06_Kanabo/SM_Weapon_06.fbx",
+     "bytes": 6423484,
+     "sha256": "5bfedd72a428fed2f2433cd53721132d91d76e03f70141f7807b213041239e8a"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W06_Kanabo/build_record.json",
+     "bytes": 6581,
+     "sha256": "a2407d41dfe1e30b55b8c065724a23f204762319994e8f2382adf2531c81019a"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/SM_Weapon_07.fbx",
+     "bytes": 6369564,
+     "sha256": "491e0c888d874362846113c0594c2ed1c5ad154a440d53f88bf0b62d24c94a95"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/build_record.json",
+     "bytes": 6919,
+     "sha256": "9f2e3cacba44e38970beacc6d46e9054eac965c5cbe97022d235869d4095d323"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/SM_Weapon_08.fbx",
+     "bytes": 506124,
+     "sha256": "c7f50f8bf9ac822a1b6fdc8d083acac1664ffdee2e77b41458debe4cc1bd5baa"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/build_record.json",
+     "bytes": 5833,
+     "sha256": "002a35cdebb68dd49a838201bea5a9b3caa18f69499868329bf7356706077889"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W09_Repeater/SM_Weapon_09.fbx",
+     "bytes": 3561084,
+     "sha256": "9744b4c9717489b726d8f3ddbd5d40543392537808db261a914e4160b7af340b"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W09_Repeater/build_record.json",
+     "bytes": 6221,
+     "sha256": "3876dee589a25dd75d00a5d602baf44f1c6345381fc46fc3b15773f6a428e08e"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10.fbx",
+     "bytes": 1269244,
+     "sha256": "95066f9b61a711e34a5879133fafe966d61c0b072c6b90235f697414f227f77f"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10_Saya.fbx",
+     "bytes": 1618764,
+     "sha256": "4953d0df312cb48e6936a2bada327d022a0a48918e8827451d53d6f99740f69b"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/build_record.json",
+     "bytes": 7994,
+     "sha256": "31bbc01ac8a41134ecf86427e1964021a3ec537c00710d0deeef456be2ca30d0"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/SM_Weapon_12.fbx",
+     "bytes": 5263356,
+     "sha256": "174f5ed2195074cb6440dfc95067a61d8ac4c483d140cdca03d4ee172fb5d54a"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/build_record.json",
+     "bytes": 7411,
+     "sha256": "2d8994e79f1ad709c6985724eec33863ba2bf423c5560aebd2d0633ad3d6ee30"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/SM_Weapon_14.fbx",
+     "bytes": 2829052,
+     "sha256": "acad09a530acfcce463e0d10228bd9cdf89fca856b9746ea76151bc7c52067f2"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/build_record.json",
+     "bytes": 6096,
+     "sha256": "b47fa583afc2f257e3775146d9a8af92d6397145ec67b566f044b3d710a2d133"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/SM_Weapon_15.fbx",
+     "bytes": 1540556,
+     "sha256": "7d41679179397d14ffb43d30da1e9d7e812dc4dee3c51de8bb9f6a479a79626e"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/build_record.json",
+     "bytes": 6413,
+     "sha256": "111e776eba4ab24a120022b20db4087b9de1d6faf10c68b3f4fa47ca820d6b78"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/SM_Weapon_17.fbx",
+     "bytes": 4219852,
+     "sha256": "d08177941afdb1441a3b470b82a141aad2c21c7c914065b14c93f9da80537476"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/build_record.json",
+     "bytes": 6522,
+     "sha256": "d492a20d7a287c4eb339a2c8b0b39c8e17b85fe25fe6f0fdd694c538ebcb77fc"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W19_Yari/SM_Weapon_19.fbx",
+     "bytes": 1404780,
+     "sha256": "e6f5e20b5ac36f3be382c5932017ad9846f9adc14d61f120c928fb728597b60b"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W19_Yari/build_record.json",
+     "bytes": 5887,
+     "sha256": "fa1be883ddfdbeb48bca7aaa8c19900daa1a54591a23a607245a09a473db2ec5"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W20_Naginata/SM_Weapon_20.fbx",
+     "bytes": 2344748,
+     "sha256": "ef0e5bc3a89da56313d964d91e67ca2e865a2dc9f1bb241fc7b02f252d983808"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W20_Naginata/build_record.json",
+     "bytes": 6329,
+     "sha256": "bd7c74f63421d9db85433ef3508e03b458510f7f90d7d68e5efaaf4300b48d74"
+    }
+   ]
   }
  ]
 }
