@@ -1,4 +1,4 @@
-# Ward-gate light correction — source checkpoint
+# Ward-gate light correction — directed runtime check
 
 Chapter 3 specifies a permanent charcoal brazier with a four-metre light
 radius. Its machine-readable entry previously supplied only an ID, so the
@@ -11,10 +11,14 @@ The new authoring checks cover the generated ward brazier, rejection of
 invalid explicit radii, independent extinguish/relight settings and unchanged
 defaults. Only chapter 3's generated file changes. These are source/data checks.
 
-Prepared `SoraArena.Fieldcraft.WardGateBrazier` checks the actual point-light
+`SoraArena.Fieldcraft.WardGateBrazier` checks the actual point-light
 radius, absence of a snuff prompt, held player interaction and the lamp damage
 interface, followed by snuffing the nearby andon. Threats are held to isolate
-the light contract. This new C++ fixture has not been compiled or run.
+the light contract. The editor compiled and this case passed at signed
+`25789bc5`, with no test errors or warnings. Source, Config and Generated
+inputs were unchanged. The enclosing run had a separate melee-fixture failure;
+it is retained as failed, not relabeled as a passing run. See
+[runtime evidence](landing-melee-runtime-2026-10-26.md).
 
 The complete ward-gate encounter remains unfinished. A focused review at
 `a8f6455b` found these separate gaps:
