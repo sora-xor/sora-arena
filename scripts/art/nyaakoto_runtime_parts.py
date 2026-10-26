@@ -25,6 +25,7 @@ import numpy as np
 from mathutils import Vector
 
 import nyaakoto_fp_paws as FP
+import nyaakoto_tp_fur as TPF
 import nyaakoto_tp_paws as TPP
 import third_person_rig as TP
 
@@ -213,14 +214,20 @@ def palm_radii(by_name, sign):
     return tuple(float(x) for x in (co.max(0) - co.min(0)) / 2.0)
 
 
-def fur_paw(side, arms, by_name, step=TPP.LOD_STEPS[0]):
-    """The furred paw for one side as an unlinked Blender part, PawFur_{sign}: its vertices in world metres (identity
-    transform), the UVMap and CoatBlend per corner, M_Hero_GreyTabbyFur, smooth shading. Returns the object and the
-    nyaakoto_tp_paws mesh (its skeleton gives the empty fist)."""
+def fur_paw(side, arms, by_name, step=TPP.LOD_STEPS[0], strands=TPF.LOD_DENSITY[0]):
+    """The furred paw for one side as an unlinked Blender part, PawFur_{sign}: its skin (nyaakoto_tp_paws) and its fur
+    strands (nyaakoto_tp_fur, this share of LOD0's density), its vertices in world metres (identity transform), the
+    UVMap and CoatBlend per corner, M_Hero_GreyTabbyFur, smooth shading. Returns the object and the mesh: the skin's
+    own arrays under "skin_*", the whole part's under verts and tris (its skeleton gives the empty fist)."""
     arm = arms[side]
     sign = arm["sign"]
     m = TPP.mesh_paw(arm, palm_radii(by_name, sign), step=step)
     m["palm_radii"] = palm_radii(by_name, sign)
+    sv, st, suv, scoat, pruned = TPF.grow(m, strands)
+    n = len(m["verts"])
+    m.update(skin_verts=m["verts"], skin_tris=m["tris"], strands=int(len(st)), strands_pruned=int(pruned),
+             strand_share=strands, verts=np.concatenate([m["verts"], sv]), tris=np.concatenate([m["tris"], st + n]),
+             uvs=np.concatenate([m["uvs"], suv]), coat=np.concatenate([m["coat"], scoat]))
     name = f"PawFur_{sign}"
     me = bpy.data.meshes.new(name)
     me.from_pydata(m["verts"].tolist(), [], m["tris"].tolist())
@@ -241,14 +248,16 @@ def fur_paw(side, arms, by_name, step=TPP.LOD_STEPS[0]):
 
 
 def fur_paw_record(side, arms, m):
-    """The paw's own checks, both states: a closed outward 2-manifold, no self-crossing, nothing within the carve of
-    the channel and no vertex inside it, the breadth along it (the rig's 4.2 gate), no face turned over by the
-    empty fist, and the closure's fold margin. "failed" names any that fail."""
+    """The paw's own checks, both states. The skin: a closed outward 2-manifold, no self-crossing, nothing within the
+    carve of the channel, no face turned over by the empty fist, and the closure's fold margin. The whole part, its
+    strands with it: no vertex inside the channel, the breadth along it (the rig's 4.2 gate), and no strand crossing
+    the skin. "failed" names any that fail."""
     arm = arms[side]
-    V, T = m["verts"], m["tris"]
+    V, T = m["skin_verts"], m["skin_tris"]
+    A = m["verts"]
     E = TPP.empty_points(V, m["skeleton"])
     _, _, e = TPP.channel_coords(V, m["skeleton"]["frame"])
-    loc = (V - np.array([float(v) for v in arm["channel"]])) @ np.asarray(arm["socket_rot"])
+    loc = (A - np.array([float(v) for v in arm["channel"]])) @ np.asarray(arm["socket_rot"])
     inside = (np.abs(loc[:, 0]) <= PAW_HALF) & ((loc[:, 1] / CHANNEL_HALF[0]) ** 2 + (loc[:, 2] / CHANNEL_HALF[1]) ** 2 < 1.0)
     n0 = np.cross(V[T[:, 1]] - V[T[:, 0]], V[T[:, 2]] - V[T[:, 0]])
     n1 = np.cross(E[T[:, 1]] - E[T[:, 0]], E[T[:, 2]] - E[T[:, 0]])
@@ -257,7 +266,14 @@ def fur_paw_record(side, arms, m):
         return float(np.einsum("ij,ij->i", X[T[:, 0]], np.cross(X[T[:, 1]], X[T[:, 2]])).sum() / 6.0)
 
     fr = m["skeleton"]["frame"]
-    row = {"step_m": m["step"], "vertices": int(len(V)), "triangles": int(len(T)),
+    sv, st = A[len(V):], m["tris"][len(T):] - len(V)
+    strand_x = {state: int(len(TPF.skin_crossing_strands(
+        V if state == "grip" else E, T, sv if state == "grip" else TPP.empty_points(sv, m["skeleton"]), st)))
+        for state in ("grip", "empty")}
+    row = {"step_m": m["step"], "vertices": int(len(A)), "triangles": int(len(m["tris"])),
+           "skin": {"vertices": int(len(V)), "triangles": int(len(T))},
+           "strands": {"count": int(len(st)), "share_of_lod0": m["strand_share"], "pruned": m["strands_pruned"],
+                       "crossing_the_skin": strand_x},
            "palm_radii_m": [float(r) for r in m["palm_radii"]],
            "frame": {k: ([float(x) for x in v] if isinstance(v, np.ndarray) else v) for k, v in fr.items()},
            "closed_manifold": FP.is_closed_manifold(T),
@@ -276,5 +292,6 @@ def fur_paw_record(side, arms, m):
                                       ("channel", row["vertices_inside_channel"] > 0),
                                       ("breadth", row["breadth_along_channel_cm"] > TP.PAW_BREADTH_MAX_CM + 1e-3),
                                       ("turned_over", row["faces_turned_over_by_morph"] > 0),
+                                      ("strands", any(strand_x.values())),
                                       ("fold_margin", row["fold_margin"] <= 0.0)) if bad]
     return row

@@ -9,7 +9,8 @@ The same 20-bone armature, 23 material identities and exact vector kamon remain.
 Every LOD carries LOD0's body (nyaakoto_runtime_parts.py, the third-person
 grip contract's slice A): anatomical sides, the sheathed sword set and the
 source's open paws left out. The furred paws are meshed again for each LOD at
-its own step (nyaakoto_tp_paws.LOD_STEPS), and each LOD's PawEmpty_R and
+its own step (nyaakoto_tp_paws.LOD_STEPS) with its share of the fur strands
+(nyaakoto_tp_fur.LOD_DENSITY: all, a third, none), and each LOD's PawEmpty_R and
 PawEmpty_L shape keys come from the same rule as LOD0's (empty_points, a rule
 of position), so the empty and holding states hold at every distance. The
 bounds are LOD0's.
@@ -30,6 +31,7 @@ from mathutils import Vector
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import nyaakoto_runtime_parts as RP  # noqa: E402
+import nyaakoto_tp_fur as TPF  # noqa: E402
 import nyaakoto_tp_paws as TPP  # noqa: E402
 
 
@@ -104,7 +106,8 @@ for level in (1, 2):
     collection = bpy.data.collections.new(f"Nyaakoto_LOD{level}_Export")
     bpy.context.scene.collection.children.link(collection)
     pieces = []
-    paws = {side: RP.fur_paw(side, ARMS, by_name, step=TPP.LOD_STEPS[level]) for side in ("R", "L")}
+    paws = {side: RP.fur_paw(side, ARMS, by_name, step=TPP.LOD_STEPS[level], strands=TPF.LOD_DENSITY[level])
+            for side in ("R", "L")}
     paw_side = {paws[side][0].name: k + 1 for k, side in enumerate(("R", "L"))}   # 1 right, 2 left; 0 the rest
     for src in [p for p in parts if RP.kept(p.name)] + [paws[side][0] for side in ("R", "L")]:
         name = src.name
@@ -168,7 +171,9 @@ for level in (1, 2):
         kco = co.reshape(-1, 3).copy()
         kco[idx] = (TPP.empty_points(world[idx], paws[side][1]["skeleton"]) @ inv[:3, :3].T + inv[:3, 3]).astype(np.float32)
         key.data.foreach_set("co", kco.ravel())
-        moved = np.linalg.norm(kco[idx] - co.reshape(-1, 3)[idx], axis=1)
+        # in world metres: the joined mesh's local frame is its first piece's, which need not be unit (s104 reported
+        # 3.541 "cm" at LOD1 in local units; s107 measured 3.01 cm in world)
+        moved = np.linalg.norm(TPP.empty_points(world[idx], paws[side][1]["skeleton"]) - world[idx], axis=1)
         morph[f"PawEmpty_{side}"] = {"paw_vertices": int(len(idx)), "moved_vertices": int((moved > 1e-7).sum()),
                                      "max_move_cm": round(float(moved.max()) * 100.0, 3)}
     assert [(kb.name, kb.value) for kb in mesh.data.shape_keys.key_blocks[1:]] == [("PawEmpty_R", 0.0), ("PawEmpty_L", 0.0)]

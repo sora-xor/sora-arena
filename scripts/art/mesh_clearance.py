@@ -349,8 +349,110 @@ def triangle_distances_v(t1, t2):
 KINDS = ("crossing", "vertex-face", "edge-edge")
 
 
-def touching_pairs(pa, tris_a, pb, tris_b, eps=CONTACT_EPS, chunk=128):
-    """Every pair of triangles within eps of each other (exact triangle distance), as (index in a, index in b)."""
+def bbox_pairs(alo, ahi, blo, bhi, grow, rows=None):
+    """Every pair (i in a, j in b) whose bounds, a's grown by grow, overlap on all three axes: exactly the set the
+    pairwise test (lo_a - grow <= hi_b and hi_a + grow >= lo_b) selects, sorted by (i, j), found through a grid.
+
+    The broad-phase is a grid whose cell is the finer set's 99th-percentile triangle extent (h0) plus grow.
+    - **Small triangles** (extent at most h0, in either set) sit in the cell of their low corner. The low corners of
+      two small triangles that overlap lie within one cell of each other on every axis, so each small triangle of a
+      is matched against b's small triangles in its 27 neighbouring cells.
+    - **A large triangle** gathers the other set's small triangles from every cell their low corners can occupy and
+      still overlap it: its grown bounds, reaching h0 further down. Large triangles of the two sets meet directly.
+    - Every candidate takes the exact test as it is found, and only the answer is sorted. The paths are disjoint and
+      each finds a pair once, so the answer is the pairwise test's, each pair once.
+    rows limits a to those indices (ascending).
+
+    The coarser set's extent set the cell until s117. The katana's p99 is 15 mm against the paws' 7 mm, so tens of
+    millions of candidates came out to find 69 overlapping pairs at StrikeMakko@16, and sorting them was most of each
+    check."""
+    rows = np.arange(len(alo)) if rows is None else np.asarray(rows, np.int64)
+    if not len(rows) or not len(blo):
+        return np.zeros((0, 2), np.int64)
+    alo_r, ahi_r = alo[rows], ahi[rows]
+    ext_a, ext_b = (ahi_r - alo_r).max(1), (bhi - blo).max(1)
+    h0 = max(min(float(np.percentile(ext_a, 99)), float(np.percentile(ext_b, 99))), 1e-9)
+    big_a, big_b = ext_a > h0, ext_b > h0
+    h = h0 + grow
+    origin = np.minimum(alo_r.min(0), blo.min(0)) - h                # every gather's reach has a cell of 0 or more
+    top = np.maximum(ahi_r.max(0), bhi.max(0)) + grow
+    dims = np.floor((top - origin) / h).astype(np.int64) + 3
+
+    def cells(lo):
+        return np.floor((lo - origin) / h).astype(np.int64)
+
+    def keys(c):                                                    # cells shifted by one, so a neighbour of 0 is valid
+        return ((c[..., 0] + 1) * dims[1] + (c[..., 1] + 1)) * dims[2] + (c[..., 2] + 1)
+
+    def binned(lo, idx):
+        k = keys(cells(lo[idx]))
+        order = np.argsort(k, kind="stable")
+        return k[order], idx[order]
+
+    def take(sorted_keys, members, want):
+        start, stop = np.searchsorted(sorted_keys, want, "left"), np.searchsorted(sorted_keys, want, "right")
+        count = stop - start
+        n = int(count.sum())
+        if not n:
+            return np.zeros(0, np.int64), count
+        return members[np.repeat(start, count) + (np.arange(n) - np.repeat(np.cumsum(count) - count, count))], count
+
+    def test(i, j):                                                  # the pairwise test (i into rows, j into b)
+        return np.all((alo_r[i] - grow <= bhi[j]) & (ahi_r[i] + grow >= blo[j]), 1)
+
+    def reach(lo, hi, members):
+        """The other set's small triangles a large box gathers: those binned in the cells their low corners can
+        occupy and still overlap it. A box reaching more cells than there are members takes them all instead; the
+        exact test follows either way."""
+        c0, c1 = cells(lo - grow - h0), cells(hi + grow)
+        if int(np.prod(c1 - c0 + 1)) > len(members):
+            return None
+        g = np.meshgrid(*(np.arange(c0[d], c1[d] + 1) for d in range(3)), indexing="ij")
+        return keys(np.stack([x.ravel() for x in g], 1))
+
+    sa, sb = np.nonzero(~big_a)[0], np.nonzero(~big_b)[0]
+    la, lb = np.nonzero(big_a)[0], np.nonzero(big_b)[0]
+    found = []
+    if len(sb):
+        skb, mb = binned(blo, sb)
+        if len(sa):                                                  # small against small
+            ca = cells(alo_r[sa])
+            for dx in (-1, 0, 1):
+                for dy in (-1, 0, 1):
+                    for dz in (-1, 0, 1):
+                        j, count = take(skb, mb, keys(ca + np.array([dx, dy, dz])))
+                        if len(j):
+                            i = np.repeat(sa, count)
+                            ok = test(i, j)
+                            found.append(np.stack([i[ok], j[ok]], 1))
+        for k in la:                                                 # a's large triangles: b's small ones
+            want = reach(alo_r[k], ahi_r[k], mb)
+            j = mb if want is None else take(skb, mb, want)[0]
+            if len(j):
+                ok = test(np.full(len(j), k), j)
+                found.append(np.stack([np.full(int(ok.sum()), k), j[ok]], 1))
+    if len(sa) and len(lb):
+        ska, ma = binned(alo_r, sa)
+        for k in lb:                                                 # b's large triangles: a's small ones
+            want = reach(blo[k], bhi[k], ma)
+            i = ma if want is None else take(ska, ma, want)[0]
+            if len(i):
+                ok = test(i, np.full(len(i), k))
+                found.append(np.stack([i[ok], np.full(int(ok.sum()), k)], 1))
+    if len(lb):
+        for k in la:                                                 # large against large
+            ok = test(np.full(len(lb), k), lb)
+            found.append(np.stack([np.full(int(ok.sum()), k), lb[ok]], 1))
+    if not found:
+        return np.zeros((0, 2), np.int64)
+    c = np.concatenate(found)
+    key = np.unique(c[:, 0] * np.int64(len(blo)) + c[:, 1])          # sorted by (row, j); unique as a guard
+    return np.stack([rows[key // len(blo)], key % len(blo)], 1)
+
+
+def touching_pairs(pa, tris_a, pb, tris_b, eps=CONTACT_EPS, chunk=200000):
+    """Every pair of triangles within eps of each other (exact triangle distance), as (index in a, index in b),
+    ordered by (a, b). Candidates come from bbox_pairs, the pairwise bounds test's own set."""
     A, Bt = np.asarray(pa, np.float64)[tris_a], np.asarray(pb, np.float64)[tris_b]
     out = []
     if not len(A) or not len(Bt):
@@ -358,22 +460,59 @@ def touching_pairs(pa, tris_a, pb, tris_b, eps=CONTACT_EPS, chunk=128):
     alo, ahi, blo, bhi = A.min(1), A.max(1), Bt.min(1), Bt.max(1)
     ia = np.nonzero(np.all((alo <= bhi.max(0) + eps) & (ahi >= blo.min(0) - eps), 1))[0]
     ib = np.nonzero(np.all((blo <= ahi.max(0) + eps) & (bhi >= alo.min(0) - eps), 1))[0]
-    for s in range(0, len(ia), chunk):
-        ca = ia[s:s + chunk]
-        near = np.all((alo[ca][:, None] - eps <= bhi[ib][None]) & (ahi[ca][:, None] + eps >= blo[ib][None]), 2)
-        ii, jj = np.nonzero(near)
-        if not len(ii):
-            continue
-        d = triangle_distances_v(A[ca[ii]], Bt[ib[jj]])[0]
+    pairs = bbox_pairs(alo, ahi, blo[ib], bhi[ib], eps, rows=ia)
+    for s in range(0, len(pairs), chunk):
+        q = pairs[s:s + chunk]
+        ii, jj = q[:, 0], ib[q[:, 1]]
+        d = triangle_distances_v(A[ii], Bt[jj])[0]
         keep = d <= eps
-        out += list(zip(ca[ii][keep].tolist(), ib[jj][keep].tolist()))
+        out += list(zip(ii[keep].tolist(), jj[keep].tolist()))
     return out
 
 
-def exact_separation(pa, tris_a, pb, tris_b, limit, chunk=128):
-    """The exact least distance between two triangle sets, if it is below limit (else None): every pair whose
-    bounds, grown by limit, overlap is measured by triangle_distances_v. Returns a dict with the distance, its
-    points (as given), its kind, and how many pairs were measured."""
+def nearest_vertex_gap(va, vb, limit):
+    """The least distance between a vertex of va and a vertex of vb, if below limit (else limit), through a grid of
+    cells of size limit: any two points within it lie in neighbouring cells. An upper bound on the two surfaces'
+    distance, since each vertex lies on its surface."""
+    if not len(va) or not len(vb):
+        return limit
+    origin = np.minimum(va.min(0), vb.min(0))
+    ca = np.floor((va - origin) / limit).astype(np.int64)
+    cb = np.floor((vb - origin) / limit).astype(np.int64)
+    dims = np.maximum(ca.max(0), cb.max(0)) + 3
+    kb = ((cb[:, 0] + 1) * dims[1] + (cb[:, 1] + 1)) * dims[2] + (cb[:, 2] + 1)
+    order = np.argsort(kb, kind="stable")
+    skb = kb[order]
+    best = limit
+    for dx in (-1, 0, 1):
+        for dy in (-1, 0, 1):
+            for dz in (-1, 0, 1):
+                ka = ((ca[:, 0] + 1 + dx) * dims[1] + (ca[:, 1] + 1 + dy)) * dims[2] + (ca[:, 2] + 1 + dz)
+                start, stop = np.searchsorted(skb, ka, "left"), np.searchsorted(skb, ka, "right")
+                count = stop - start
+                total = int(count.sum())
+                for s0 in range(0, len(va), 50000):        # bounded memory
+                    cnt = count[s0:s0 + 50000]
+                    n = int(cnt.sum())
+                    if not n:
+                        continue
+                    i = np.repeat(np.arange(s0, s0 + len(cnt)), cnt)
+                    j = order[np.repeat(start[s0:s0 + 50000], cnt) + (np.arange(n) - np.repeat(np.cumsum(cnt) - cnt, cnt))]
+                    best = min(best, float(np.sqrt(((va[i] - vb[j]) ** 2).sum(1)).min()))
+                del total
+    return best
+
+
+def exact_separation(pa, tris_a, pb, tris_b, limit, batch=200000):
+    """The exact least distance between two triangle sets, if it is below limit (else None), with its points (as
+    given), its kind, and how many pairs were measured.
+
+    The least vertex-to-vertex distance (nearest_vertex_gap) bounds the surfaces' distance from above. Every pair of
+    triangles whose bounds, grown by that bound, overlap is then measured by triangle_distances_v: any pair at the
+    least distance is among them, so the distance, its points and its kind are those of the first such pair in (a, b)
+    order, as before. (The pairwise loop this replaces grew the bounds by the limit and shrank them as it went; it
+    measured more pairs, so pairs_measured is smaller now. Its candidate test was |a| x |b|: the furred paws made it
+    take minutes a check, s103.)"""
     A, Bt = np.asarray(pa, np.float64)[tris_a], np.asarray(pb, np.float64)[tris_b]
     out = {"separation_m": None, "at": None, "kind": None, "pairs_measured": 0, "limit_m": limit}
     if not len(A) or not len(Bt):
@@ -381,19 +520,23 @@ def exact_separation(pa, tris_a, pb, tris_b, limit, chunk=128):
     alo, ahi, blo, bhi = A.min(1), A.max(1), Bt.min(1), Bt.max(1)
     ia = np.nonzero(np.all((alo <= bhi.max(0) + limit) & (ahi >= blo.min(0) - limit), 1))[0]
     ib = np.nonzero(np.all((blo <= ahi.max(0) + limit) & (bhi >= alo.min(0) - limit), 1))[0]
-    best = limit
-    for s in range(0, len(ia), chunk):
-        ca = ia[s:s + chunk]
-        near = np.all((alo[ca][:, None] - best <= bhi[ib][None]) & (ahi[ca][:, None] + best >= blo[ib][None]), 2)
-        ii, jj = np.nonzero(near)
-        if not len(ii):
-            continue
-        d, q1, q2, kind = triangle_distances_v(A[ca[ii]], Bt[ib[jj]])
-        out["pairs_measured"] += int(len(d))
+    if not len(ia) or not len(ib):
+        return out
+    pa_, pb_ = np.asarray(pa, np.float64), np.asarray(pb, np.float64)
+    bound = nearest_vertex_gap(pa_[np.unique(np.asarray(tris_a)[ia])], pb_[np.unique(np.asarray(tris_b)[ib])], limit)
+    pairs = bbox_pairs(alo, ahi, blo[ib], bhi[ib], bound, rows=ia)
+    out["pairs_measured"] = int(len(pairs))
+    if not len(pairs):
+        return out
+    ii, jj = pairs[:, 0], ib[pairs[:, 1]]
+    best_d, best_k, keep = np.inf, -1, None
+    for s0 in range(0, len(pairs), batch):
+        d, q1, q2, kind = triangle_distances_v(A[ii[s0:s0 + batch]], Bt[jj[s0:s0 + batch]])
         k = int(np.argmin(d))
-        if d[k] < best:
-            best = float(d[k])
-            out.update(separation_m=best, at=[q1[k], q2[k]], kind=KINDS[int(kind[k])])
+        if d[k] < best_d:
+            best_d, best_k, keep = float(d[k]), s0 + k, (q1[k], q2[k], int(kind[k]))
+    if best_d < limit:
+        out.update(separation_m=best_d, at=[keep[0], keep[1]], kind=KINDS[keep[2]])
     return out
 
 
@@ -439,7 +582,7 @@ class BlenderBackend:
         self.vector, self.bvh = Vector, BVHTree
 
     def tree(self, pts, tris):
-        return self.bvh.FromPolygons([tuple(map(float, p)) for p in pts], [tuple(map(int, t)) for t in tris],
+        return self.bvh.FromPolygons(np.asarray(pts, np.float64).tolist(), np.asarray(tris, np.int64).tolist(),
                                      all_triangles=True)
 
     def crossings(self, ta, tb):
@@ -487,6 +630,27 @@ def _top(counter, n=8):
     return [[*k, v] for k, v in sorted(counter.items(), key=lambda kv: -kv[1])[:n]]
 
 
+_TREES = []                                          # (full point array, {set: tree}), the few most recent
+
+
+def _tree(backend, tset, pts_full, pos):
+    """The backend's tree for a set at these positions, kept while the same full point array is in use: a pose's
+    checks measure several sets against a few arrays (the posed body, the placed katana and saya), and Blender builds
+    each tree from Python lists. Arrays are held and matched by identity, so a new pose (new arrays) builds afresh;
+    the four most recent are kept."""
+    for held, trees in _TREES:
+        if held is pts_full:
+            break
+    else:
+        trees = {}
+        _TREES.insert(0, (pts_full, trees))
+        del _TREES[4:]
+    key = (id(tset), id(backend))
+    if key not in trees:
+        trees[key] = (tset, backend, backend.tree(pos, tset.tris))
+    return trees[key][2]
+
+
 def measure(backend, set_a, pts_a, set_b, pts_b, limit=0.10, hide=None, allowed=(), to_report=lambda p: p):
     """Crossings, containment and separation between set_a and set_b at these positions (full point arrays, each
     indexed as its set's triangles are).
@@ -495,7 +659,7 @@ def measure(backend, set_a, pts_a, set_b, pts_b, limit=0.10, hide=None, allowed=
     - allowed: part-name prefixes in set_b whose crossings are intended (the obi's tuck), counted as allowed.
     - to_report maps a position to the report's frame."""
     pa, pb = set_a.positions(pts_a), set_b.positions(pts_b)
-    ta, tb = backend.tree(pa, set_a.tris), backend.tree(pb, set_b.tris)
+    ta, tb = _tree(backend, set_a, pts_a, pa), _tree(backend, set_b, pts_b, pb)
     pairs = [tuple(map(int, ij)) for ij in backend.crossings(ta, tb)]
     reported = set(pairs)
     touching, coplanar = 0, set()

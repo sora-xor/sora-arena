@@ -38,6 +38,8 @@ generate_nyaakoto_lods.py:
 The readback (a new file, never overwritten) records:
 - each body socket's component transform at the reference pose, against the record: within 0.1 cm and 0.5 deg;
 - the morph targets' names, and the file Unreal exported them to (check_nyaakoto_ue_morph_export.py reads it);
+- each saved LOD's build settings (its MorphThresholdPosition, which the morph check uses) and each LOD section's
+  material slot through LODMaterialMap (check_nyaakoto_lod_materials.py pairs them with the export);
 - each weapon socket against build_record.json: within 0.1 cm;
 - both grip sockets at the guard's first frame, and at the strike's raise and hit frames, against the two-paw
   stances' targets: within 1 cm and 2 deg.
@@ -243,9 +245,33 @@ export.options = export_options
 MORPH_EXPORT.parent.mkdir(parents=True, exist_ok=True)
 if not unreal.Exporter.run_asset_export_task(export) or not MORPH_EXPORT.is_file():
     fail(f"Unreal did not export {MORPH_EXPORT.name}")
-readback["morph_targets"] = {"names": names, "lods": lods, "export": str(MORPH_EXPORT.relative_to(ROOT)),
-                             "export_sha256": sha256(MORPH_EXPORT),
+# Each saved LOD's own build settings: the morph check takes its threshold from here, not from the engine's default
+# (root, 13:19 UTC 2026-10-26). And each LOD section's material slot as the renderer routes it (LODMaterialMap), which
+# the export does not carry (check_nyaakoto_lod_materials.py; s114 read the same for e8d5b587).
+sub = unreal.get_editor_subsystem(unreal.SkeletalMeshEditorSubsystem)
+require_api(unreal.SkeletalMeshEditorSubsystem, "get_lod_build_settings", "get_num_sections", "get_lod_material_slot")
+lod_build = []
+for lod in range(lods):
+    settings = unreal.SkeletalMeshEditorSubsystem.get_lod_build_settings(mesh, lod)
+    lod_build.append({"lod": lod, "morph_threshold_position_cm": float(settings.get_editor_property("morph_threshold_position")),
+                      "recompute_normals": bool(settings.get_editor_property("recompute_normals"))})
+slots = []
+for i, m in enumerate(mesh.get_editor_property("materials")):
+    mi = m.get_editor_property("material_interface")
+    slots.append({"slot": i, "material": mi.get_name() if mi else None,
+                  "imported_slot_name": str(m.get_editor_property("imported_material_slot_name"))})
+lod_sections = []
+for lod in range(lods):
+    n = sub.get_num_sections(mesh, lod)
+    if n is None or n < 1:
+        fail(f"LOD{lod} has no sections ({n})")
+    section_slots = [int(sub.get_lod_material_slot(mesh, lod, s)) for s in range(n)]
+    lod_sections.append({"lod": lod, "sections": int(n), "section_slots": section_slots})
+readback["morph_targets"] = {"names": names, "lods": lods, "lod_build": lod_build,
+                             "export": str(MORPH_EXPORT.relative_to(ROOT)), "export_sha256": sha256(MORPH_EXPORT),
                              "checked_by": "scripts/art/check_nyaakoto_ue_morph_export.py"}
+readback["lod_materials"] = {"slots": slots, "lods": lod_sections,
+                             "checked_by": "scripts/art/check_nyaakoto_lod_materials.py"}
 relative = {}
 for name, s in tp["sockets"].items():
     bone = unreal.AnimPoseExtensions.get_ref_bone_pose(ref, s["bone"], world)

@@ -91,6 +91,12 @@ EXPLORE = "--explore" in ARGS or STUDY is not None                  # a study wr
 VARIANT = dict(kv.split("=") for kv in ARGS[ARGS.index("--variant") + 1].split(",")) if "--variant" in ARGS else {}
 STUDY_OUT = ARGS[ARGS.index("--study-out") + 1] if "--study-out" in ARGS else None
 STANCE = ARGS[ARGS.index("--stance") + 1] if "--stance" in ARGS else None    # "34,0,106:far_fwd", two_paw only
+# A finished search's keys (a runtime_skin_manifest.json whose third_person.strike.keys to try first): each is checked
+# again with its path, and only a key that fails is searched for.
+STRIKE_KEYS_FROM = ARGS[ARGS.index("--strike-keys") + 1] if "--strike-keys" in ARGS else None
+# Diagnosis only (s117's StrikeMakko@16): check just these frames ("Clip@frame", comma-separated), print each check in
+# full, and exit 0 before anything is rendered, exported or written.
+CHECK_ONLY = ARGS[ARGS.index("--check-frames") + 1].split(",") if "--check-frames" in ARGS else None
 
 ROOT = Path(__file__).resolve().parents[2]
 HERO = ROOT / "Content/SourceArt/Characters/Hero"
@@ -592,9 +598,14 @@ def render_views(views, prefix, katana_at, saya_at_, samples=32, res=1100):
 
 
 def render_close(path, centre, direction, katana_at, saya_at_, distance=0.55, lens=55.0, samples=48, res=1000):
-    """A perspective close view of the current pose, from centre + direction * distance (Blender metres)."""
+    """A perspective close view of the current pose, from centre + direction * distance (Blender metres).
+    Lit by the review sun and the world alone: under the source's three studio lights as well, s103's close views
+    washed the paws' tabby back out to white (the full-body views keep the studio, as the earlier reviews had)."""
     scene = bpy.context.scene
     render_views((), Path(str(path)[:-4]), katana_at, saya_at_, samples=samples, res=res)   # hides parts, places W00
+    studio = [o for o in scene.objects if o.type == "LIGHT" and o is not REVIEW["sun"] and not o.hide_render]
+    for o in studio:
+        o.hide_render = True
     cam = REVIEW["cam"]
     cam.data.type = "PERSP"
     cam.data.lens = lens
@@ -606,6 +617,8 @@ def render_close(path, centre, direction, katana_at, saya_at_, distance=0.55, le
     scene.camera = cam
     scene.render.filepath = str(path)
     bpy.ops.render.render(write_still=True)
+    for o in studio:
+        o.hide_render = False
     cam.data.type = "ORTHO"
     scene.camera = REVIEW["old"]
     return Path(path)
@@ -686,12 +699,16 @@ def gates_of(res):
     return out
 
 
+BRIEF = ("crossing_pairs_visible", "crossing_pairs_hidden", "crossing_pairs_allowed", "crossing_parts_visible",
+         "contained", "contained_parts", "contained_allowed", "ambiguous", "ambiguous_parts", "open_islands",
+         "separation_m", "separation_kind", "first_visible_crossing")
+
+
 def brief(res):
-    return {k: (v if not isinstance(v, dict) else
-                {f: v[f] for f in ("crossing_pairs_visible", "crossing_pairs_hidden", "crossing_pairs_allowed",
-                                   "crossing_parts_visible", "contained", "contained_parts", "contained_allowed",
-                                   "ambiguous", "open_islands", "separation_m", "separation_kind",
-                                   "first_visible_crossing")})
+    """A frame's checks cut to their findings: each clearance result (mesh_clearance.measure's) to BRIEF; every other
+    entry (the sockets' errors, the left grip, the paws' fit, the kissaki) as it is. s117's report took the held
+    frames' socket errors for clearance results, raised KeyError and printed nothing."""
+    return {k: ({f: v.get(f) for f in BRIEF} if isinstance(v, dict) and "crossing_pairs_visible" in v else v)
             for k, v in res.items()}
 
 
@@ -947,8 +964,25 @@ assert calibration["ok"], calibration
 
 
 # --- The strike's keys, searched on this body (STRIKE's notes) ---------------------------------------------------------
+QUICK = {"forearms_paws_vs_torso": ("arms_low", "torso"), "forearms_paws_vs_head": ("arms_low", "head"),
+         "paw_vs_paw": ("hand_L", "hand_R")}
+
+
+def quick_crossings(pts):
+    """The search's cheap pre-check: which of the body-only gates (no hide, no tuck) have any crossing at all, by the
+    backend's triangle overlap alone. Any crossing fails its gate, so the full measure is not needed to reject one.
+    (s103 measured every rejected candidate in full: about 80 s each.)"""
+    out = []
+    for gate, (a, b) in QUICK.items():
+        ta = BK.tree(SET[a].positions(pts), SET[a].tris)
+        tb = BK.tree(SET[b].positions(pts), SET[b].tris)
+        if BK.crossings(ta, tb):
+            out.append(gate)
+    return out
+
+
 def strike_try(stance):
-    """One stance with both paws holding: its reach, and every gate (gates_of) at the pose."""
+    """One stance with both paws holding: its reach, the quick pre-check, then every gate (gates_of) at the pose."""
     reset_pose()
     row = {"grip_l": [round(float(v), 3) for v in stance["grip_l"]], "elevation_deg": round(float(stance["elevation_deg"]), 3),
            "pole_set": stance.get("pole_set")}
@@ -958,6 +992,10 @@ def strike_try(stance):
         row["unreachable"] = str(exc)
         return row, False
     set_empty(0, 0)
+    quick = quick_crossings(posed_points())
+    if quick:
+        row["failed"], row["quick"] = sorted(quick), True
+        return row, False
     res = check_pose(SAYA_SOCKET, held="RL")
     g = gates_of(res)
     row["failed"] = sorted(k for k, ok in g.items() if not ok)
@@ -972,13 +1010,22 @@ def between(a, b, f):
             "pole_set": f"{a.get('pole_set', 'guard')}>{b.get('pole_set', 'guard')}@{f:.2f}"}
 
 
+PRIOR_KEYS = (json.loads((ROOT / STRIKE_KEYS_FROM).read_text())["third_person"]["strike"]["keys"]
+              if STRIKE_KEYS_FROM else {})
+
+
 def strike_search(name, frm, target, elevation, offsets):
     """The nearest stance to the contract's target (Grip_L in Unreal cm) at this elevation, over offsets (dx, dz) and the
-    pole sets, that passes every gate at its key and a third and two thirds of the way from the key before it."""
+    pole sets, that passes every gate at its key and a third and two thirds of the way from the key before it. With
+    --strike-keys, that run's key is tried first."""
     cands = [{"grip_l": (target[0] + dx, 0.0, target[2] + dz), "elevation_deg": elevation, "poles": poles,
               "pole_set": pole_name} for dx, dz in offsets for pole_name, poles in POLE_SETS.items()]
     cands.sort(key=lambda c: (math.hypot(c["grip_l"][0] - target[0], c["grip_l"][2] - target[2]),
                               list(POLE_SETS).index(c["pole_set"])))
+    if name in PRIOR_KEYS:
+        k = PRIOR_KEYS[name]
+        cands.insert(0, {"grip_l": tuple(k["grip_l"]), "elevation_deg": k["elevation_deg"], "pole_set": k["pole_set"],
+                         "poles": {side: tuple(k["poles"][side]) for side in ("R", "L")}})
     tried = []
     for c in cands:
         row, ok = strike_try(c)
@@ -1070,19 +1117,54 @@ checks, gate_rows = {}, {}
 # strike is keyed at every frame, so every frame. The loops' last frame is their first.
 CHECK_FRAMES = {"Idle": range(1, 97, 2), "Walk": range(1, 33, 2), "Guard": range(1, 97, 2),
                 "StrikeMakko": range(1, STRIKE_FRAMES + 2)}
+
+
+def frame_check(clip, f):
+    """One checked frame: its pose and empty fists, every check, and with both paws holding, the sockets' errors."""
+    at_frame(clip, f)
+    set_empty(*EMPTY_BY_CLIP[clip])
+    res = check_pose(SAYA_SOCKET, held=HELD_BY_CLIP[clip])
+    if HELD_BY_CLIP[clip]:
+        tgs = (TP.socket_targets(GUARD, math.sin((f - 1) / 96 * math.tau) * 0.004) if clip == "Guard"
+               else TP.socket_targets(strike_stance((f - 1) / STRIKE_FRAMES)))
+        res["socket_error_cm"] = {s: round(float(np.linalg.norm(socket_now(s)[0] - tg[0])) * 100.0, 4)
+                                  for s, tg in tgs.items()}
+        res["socket_error_deg"] = {s: round(TP.angle_deg(socket_now(s)[1], tg[1]), 3) for s, tg in tgs.items()}
+    return res
+
+
+def failure_detail(res, failed_gates):
+    """What each failed gate found, printed with its frame: s117's StrikeMakko@16 lost this when its final report
+    crashed."""
+    out = {}
+    for g in failed_gates:
+        if g in res:
+            out[g] = brief({g: res[g]})[g]
+        elif g == "left_grip_closure":
+            out[g] = {"left_grip_error_cm": res.get("left_grip_error_cm"), "left_grip_error_deg": res.get("left_grip_error_deg")}
+        elif g == "paws_on_the_tsuka":
+            out[g] = res.get("paw_fit_cm")
+    return out
+
+
+if CHECK_ONLY:
+    # Diagnosis only: these frames' checks in full, then exit 0 with nothing keyed into the outputs or written.
+    for key in CHECK_ONLY:
+        clip, f = key.split("@")
+        res = frame_check(clip, int(f))
+        print(f"CHECK_ONLY {clip}@{f} " + json.dumps({"gates": gates_of(res), "checks": res}, default=str), flush=True)
+    print("NYAAKOTO_RUNTIME_SKIN_CHECK_ONLY_DONE " + json.dumps(CHECK_ONLY), flush=True)
+    sys.stdout.flush()
+    os._exit(0)
 for clip, frames in CLIPS:
     for f in CHECK_FRAMES[clip]:
-        at_frame(clip, f)
-        set_empty(*EMPTY_BY_CLIP[clip])
-        res = check_pose(SAYA_SOCKET, held=HELD_BY_CLIP[clip])
-        if HELD_BY_CLIP[clip]:
-            tgs = (TP.socket_targets(GUARD, math.sin((f - 1) / 96 * math.tau) * 0.004) if clip == "Guard"
-                   else TP.socket_targets(strike_stance((f - 1) / STRIKE_FRAMES)))
-            res["socket_error_cm"] = {s: round(float(np.linalg.norm(socket_now(s)[0] - tg[0])) * 100.0, 4)
-                                      for s, tg in tgs.items()}
-            res["socket_error_deg"] = {s: round(TP.angle_deg(socket_now(s)[1], tg[1]), 3) for s, tg in tgs.items()}
+        res = frame_check(clip, f)
         checks[f"{clip}@{f}"] = res
         gate_rows[f"{clip}@{f}"] = gates_of(res)
+        failed_here = sorted(g for g, ok in gate_rows[f"{clip}@{f}"].items() if not ok)
+        print(f"CHECKED {clip}@{f} " + json.dumps({"failed": failed_here, "socket_error_cm": res.get("socket_error_cm"),
+                                                  "socket_error_deg": res.get("socket_error_deg"),
+                                                  "detail": failure_detail(res, failed_here)}, default=str), flush=True)
 reset_pose()
 rig.animation_data.action = None
 set_empty(0, 0)                                           # the bind pose: no morph

@@ -19,10 +19,15 @@ coordinates are:
 - e, its distance outside the oval along the oval's normal.
 
 **The shape** is a signed distance field from nyaakoto_fp_paws' primitives:
-- **the palm:** the source palm's ellipsoid, narrowed along Y to the paw's breadth (as narrow_palm did);
-- **four digits:** chains of tapered capsules on the old tubes' paths round the channel. Each thins from the
-  knuckle and swells to a toe bulb before its rounded tip;
-- **the dewclaw-thumb,** wrapping the other way.
+- **the palm:** the source palm's ellipsoid, narrowed along Y to the paw's breadth and to PALM_SCALE of its depth and
+  height. It shrinks about its point nearest the channel, so it still meets the grip there. s97's palm read as an egg,
+  and r2's, scaled about its centre to 0.92, still did (root's 12:53 UTC review of e8d5b587: "the thumb/hand mass
+  remains bulky");
+- **four digits:** chains of tapered capsules on the old curled tubes' paths round the channel. Each thins from the
+  knuckle and swells to a toe bulb before its rounded tip. The two middle toes lead; the outer two are smaller and end
+  sooner (DIGIT_SCALE, DIGIT_END), so the tips make a cat's arc, not s97's mitten-like row;
+- **the dewclaw-thumb,** wrapping the other way, slimmer than s97's, whose base read as a bulb under the empty fist,
+  and again than r2's.
 The digits and thumb meet each other by a smooth minimum whose reach (DIGIT_BLEND) runs from long over the knuckles to
 short at the toes. Fur fills between the toes, so the back of the paw reads as one furred mass with toes parted
 toward their tips, not four tubes (s96's first preview), and the mesher never meets a pinch. They blend into the palm
@@ -50,11 +55,20 @@ it is measured from closes up:
 - each oval point moves toward the palm-side edge, E'(t) = E(0) + k(t) (E(t) - E(0));
 - k(t) is 1 up to the knuckles (|t| <= CURL_RAMP[0]) and eases to EMPTY_CHANNEL by CURL_RAMP[1] in log scale,
   k = EMPTY_CHANNEL ** smoothstep, which spends the fold budget (|k'| / k) evenly along the curl;
-- the displacement is (k(t) - 1)(E(t) - E(0)), a function of t alone, weighted by the digit weight, so the palm
-  stays where it is.
-The old fist (nyaakoto_runtime_parts.empty_arm) shrank the whole oval to EMPTY_CHANNEL. That slid every knuckle
+- the displacement is (k(t) - 1)(E(t) - E(0)), weighted by the digit weight, so the palm stays where it is;
+- **the toes' arc:** the closure's end, k at CURL_RAMP[1], is EMPTY_CHANNEL + ARC_OPEN over the middle toes,
+  easing back to EMPTY_CHANNEL by ARC_S[1] along the channel (closure_end). The middle toes close a little less,
+  so their curl stands some 5 mm proud of the outer toes'.
+  - Root's 12:53 UTC review of e8d5b587's IdlePaw_Front: "the idle digit row is nearly straight".
+  - DIGIT_END's stagger alone nearly vanishes in the fist: every tip past CURL_RAMP[1] closes to the same share of
+    its oval chord.
+  - k depends on s as well as t, but the displacement never moves a point along the channel, so the closed fist's
+    fold margin is still the oval's, slice by slice (fold_margin takes the least over s). The thumb, inboard at
+    one pitch, is almost untouched.
+The old fist (the curled tubes rebuilt round a shrunk channel) shrank the whole oval to EMPTY_CHANNEL. That slid every knuckle
 about 1 cm along the channel: harmless for separate tubes, a fold for one surface. Here the knuckles do not move,
-and the tips close almost as far as the old fist's (k 0.32 at the digits' tips, 0.43 at the thumb's). The ramp is
+and the tips close almost as far as the old fist's (k 0.30 at the outer toes' tips, 0.44 at the middle toes' and the
+thumb's). The ramp is
 slow enough that the closed oval never turns back on itself (fold_margin). A linear ramp to 0.30 over 40-160 deg
 did (a margin of -0.04 on this oval). The rule is a function of position, so it gives every LOD's morph.
 """
@@ -69,12 +83,19 @@ import third_person_rig as TP
 
 CHANNEL_HALF = (TP.CHANNEL_CM[0] / 200.0, TP.CHANNEL_CM[1] / 200.0)   # m: across (along w), deep (along z)
 PAW_HALF = TP.PAW_BREADTH_MAX_CM / 200.0                                # m: the paw's half breadth along the channel
-DIGIT_PITCH = 0.026            # m between the four digits' planes (nyaakoto_runtime_parts.FINGER_PITCH)
-DIGIT_SWEEP = (50.0, 200.0)    # deg round the channel, from the palm's top over the front (FINGER_SWEEP)
-THUMB_SWEEP = (-40.0, -130.0)  # deg, the other way round: from the palm's back under the channel (THUMB_SWEEP)
+DIGIT_PITCH = 0.026            # m between the four digits' planes (the curled tubes' FINGER_PITCH)
+DIGIT_SWEEP = (50.0, 200.0)    # deg round the channel, from the palm's top over the front (the tubes' FINGER_SWEEP)
+THUMB_SWEEP = (-40.0, -130.0)  # deg, the other way round: from the palm's back under the channel
 # m: each digit's radius at its sweep's samples, base to tip. It thins from the knuckle, then swells to the toe bulb.
 DIGIT_RADII = (0.0140, 0.0134, 0.0122, 0.0116, 0.0120, 0.0100)
-THUMB_RADII = (0.0190, 0.0168, 0.0146, 0.0128, 0.0108)
+# The toes' arc (root's 07:12 review of s97: "a regular mitten-like row"): a cat's two middle toes lead, the outer two
+# are a little smaller and end sooner, so the tips make an arc. Per digit, outer to outer: the radii's scale and the
+# sweep's end (deg).
+DIGIT_SCALE = (0.90, 1.0, 1.0, 0.90)
+DIGIT_END = (186.0, 200.0, 200.0, 186.0)
+# s97's 19 mm base read as a bulb under the empty fist; r2's 16.5 mm still read bulky (root, 12:53 UTC)
+THUMB_RADII = (0.0150, 0.0139, 0.0126, 0.0114, 0.0100)
+PALM_SCALE = (0.82, 0.80)      # the palm's x and z radii against the source's, about its point nearest the channel
 SKIN = 0.0004                  # m: a digit's inner surface outside the channel, before the carve
 CARVE_MARGIN = 0.0010          # m: the carve's reach outside the oval; nothing of the paw comes nearer
 PALM_BLEND = 0.008             # m: the digits' smooth-minimum reach into the palm
@@ -83,8 +104,10 @@ PALM_BLEND = 0.008             # m: the digits' smooth-minimum reach into the pa
 # left four tubes (s96). 12 to 5 mm over 95-150 deg pinched notches where the grooves deepen (s97's empty fist).
 DIGIT_BLEND = (0.011, 0.007)
 BLEND_TURN = (85.0, 175.0)
-EMPTY_CHANNEL = 0.30           # the empty fist's closure (nyaakoto_runtime_parts.EMPTY_CHANNEL), reached at CURL_RAMP[1]
+EMPTY_CHANNEL = 0.30           # the empty fist's closure (the tubes' fist used it throughout), reached at CURL_RAMP[1]
 CURL_RAMP = (40.0, 180.0)      # deg of |t|: the fist closes from the knuckles to the tips
+ARC_OPEN = 0.12                # the toes' arc: how much less the middle toes close (closure_end)
+ARC_S = (0.5 * DIGIT_PITCH, 0.0300)   # m of |s|: the full opening over the middle toes, none from here outward
 DIGIT_RAMP = 0.006             # m: the knuckle band where the digit weight eases from palm (0) to digit (1)
 COAT_RAMP = 0.009              # m: the same band for the white coat, softer
 COAT_TURN = (100.0, 140.0)     # deg of |t|: the white coat eases in along the toes
@@ -160,47 +183,69 @@ def _curl_x(t):
     return np.clip((np.degrees(np.abs(t)) - CURL_RAMP[0]) / (CURL_RAMP[1] - CURL_RAMP[0]), 0.0, 1.0)
 
 
-def closure(t):
-    """k(t): 1 up to the knuckles, easing to EMPTY_CHANNEL by CURL_RAMP[1] in log scale (both sides of the channel)."""
+def closure_end(s=None):
+    """k at CURL_RAMP[1] for points at s along the channel: EMPTY_CHANNEL + ARC_OPEN over the middle toes
+    (|s| <= ARC_S[0]), easing to EMPTY_CHANNEL by ARC_S[1]. s None is EMPTY_CHANNEL, the outer toes'."""
+    if s is None:
+        return EMPTY_CHANNEL
+    return EMPTY_CHANNEL + ARC_OPEN * (1.0 - ease(ARC_S[0], ARC_S[1], np.abs(np.asarray(s, float))))
+
+
+def closure(t, s=None):
+    """k(t, s): 1 up to the knuckles, easing to closure_end(s) by CURL_RAMP[1] in log scale (both sides of the
+    channel)."""
     x = _curl_x(t)
-    return EMPTY_CHANNEL ** (x * x * (3.0 - 2.0 * x))
+    return closure_end(s) ** (x * x * (3.0 - 2.0 * x))
 
 
-def closure_slope(t):
-    """dk/dt, per radian."""
+def closure_slope(t, s=None):
+    """dk/dt, per radian, at fixed s."""
     x = _curl_x(t)
     span = math.radians(CURL_RAMP[1] - CURL_RAMP[0])
-    return np.sign(t) * closure(t) * math.log(EMPTY_CHANNEL) * 6.0 * x * (1.0 - x) / span
+    return np.sign(t) * closure(t, s) * np.log(closure_end(s)) * 6.0 * x * (1.0 - x) / span
 
 
-def closed_shift(t, fr):
-    """The empty fist's displacement at t, (k(t) - 1)(E(t) - E(0)), as (along z, along w)."""
+def closed_shift(t, fr, s=None):
+    """The empty fist's displacement at (t, s), (k(t, s) - 1)(E(t) - E(0)), as (along z, along w)."""
     ou, ov = oval(t, fr)
-    k = closure(t)
+    k = closure(t, s)
     return (k - 1.0) * (ou - fr["a"]), (k - 1.0) * ov
 
 
-def fold_margin(fr, samples=4001):
-    """The smallest forward speed of the closed oval E'(t) along the original tangent, over |E_t|: positive means the
-    closed oval runs the same way as the original everywhere, so no offset surface (e >= 0) folds. 1 is no closure."""
+def fold_margin(fr, samples=4001, s_samples=13):
+    """The smallest forward speed of the closed oval E'(t) along the original tangent, over |E_t|, the least over the
+    paw's breadth along the channel: positive means the closed oval runs the same way as the original everywhere, so
+    no offset surface (e >= 0) folds. 1 is no closure. The displacement never moves a point along the channel, so each
+    slice of fixed s is the oval's own case."""
     t = np.linspace(-math.pi, math.pi, samples)
     a, b = fr["a"], fr["b"]
-    k, dk = closure(t), closure_slope(t)
     eu, ev = -a * np.sin(t), b * np.cos(t)                         # E_t
-    du, dv = dk * (a * np.cos(t) - a) + k * eu, dk * (b * np.sin(t)) + k * ev
     speed = np.hypot(eu, ev)
-    return float(np.min((du * eu + dv * ev) / (speed * speed)))
+    worst = math.inf
+    for s in np.linspace(0.0, PAW_HALF, s_samples):
+        k, dk = closure(t, s), closure_slope(t, s)
+        du, dv = dk * (a * np.cos(t) - a) + k * eu, dk * (b * np.sin(t)) + k * ev
+        worst = min(worst, float(np.min((du * eu + dv * ev) / (speed * speed))))
+    return worst
 
 
 def skeleton(fr, palm_radii):
     """The paw's masses: the palm ellipsoid, and each digit's and the thumb's capsule chain (points and radii)."""
     sign = fr["sign"]
-    palm = {"c": fr["palm"], "axes": np.eye(3), "r": np.array([palm_radii[0], PALM_HALF_Y, palm_radii[2]])}
+    source = np.array([palm_radii[0], PALM_HALF_Y, palm_radii[2]])
+    r = source * np.array([PALM_SCALE[0], 1.0, PALM_SCALE[1]])
+    toward = (fr["c"] - fr["palm"]) / np.linalg.norm(fr["c"] - fr["palm"])
+
+    def reach(radii):                                              # the ellipsoid's extent along toward
+        return 1.0 / math.sqrt(float(((toward / radii) ** 2).sum()))
+
+    # Shrunk about its point nearest the channel, which arm_joints set on the oval: the palm still meets the grip.
+    palm = {"c": fr["palm"] + (reach(source) - reach(r)) * toward, "axes": np.eye(3), "r": r}
     digits = []
     for d in range(4):
         s = (d - 1.5) * DIGIT_PITCH
-        th = np.radians(np.linspace(DIGIT_SWEEP[0], DIGIT_SWEEP[1], len(DIGIT_RADII)))
-        r = np.array(DIGIT_RADII)
+        th = np.radians(np.linspace(DIGIT_SWEEP[0], DIGIT_END[d], len(DIGIT_RADII)))
+        r = np.array(DIGIT_RADII) * DIGIT_SCALE[d]
         digits.append({"pts": from_channel(np.full(len(th), s), th, r + SKIN, fr), "r": r, "s": s})
     s_t = (-1.0 if sign > 0 else 1.0) * DIGIT_PITCH                # over the index digit, inboard
     th = np.radians(np.linspace(THUMB_SWEEP[0], THUMB_SWEEP[1], len(THUMB_RADII)))
@@ -284,8 +329,8 @@ def empty_points(points, skel):
     """The empty fist: each digit vertex moved with its oval point as the oval closes; the palm stays (module notes)."""
     p = np.atleast_2d(points).astype(float)
     fr = skel["frame"]
-    _, t, _ = channel_coords(p, fr)
-    du, dv = closed_shift(t, fr)
+    s, t, _ = channel_coords(p, fr)
+    du, dv = closed_shift(t, fr, s)
     w = digit_weight(p, skel)
     return p + (w * du)[:, None] * fr["z"] + (w * dv)[:, None] * fr["w"]
 

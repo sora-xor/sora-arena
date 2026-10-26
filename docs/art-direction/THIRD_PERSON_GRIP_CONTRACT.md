@@ -518,13 +518,15 @@ consistent source, LODs, kamon and rig; furred paws instead of tube fingers; emp
 real FBX and Unreal morph import; every final-combination pose and clearance check again. This is a production
 direction, not photoreal acceptance.
 
-**Status (2026-10-26 09:46 UTC):**
-- Built and checked in Blender 5.2.2: the hero source on A (s101, its validator s102), the runtime rig (s103), the
-  LODs (s104), the runtime and LOD validators (s106, s107). Every gate passed.
-- The Unreal import (s108) imported the body, its LODs and four clips, and read back the morph target names, then
-  crashed in its new morph re-export (7.6). Not yet read back in Unreal: the sockets, the grips on the clips, every
-  LOD's morph deltas.
-- Fur is still not resolved (7.7). No photoreal, visual, gameplay or root acceptance.
+**Status (2026-10-26 18:00 UTC):**
+- **e8d5b587, built and checked in Blender 5.2.2:** the hero source on A (s101, its validator s102), the runtime rig
+  (s103), the LODs (s104), and the runtime and LOD validators (s106, s107). Every gate passed.
+- **e8d5b587, read back in Unreal under --rhi (s110-s114, 7.7):** the sockets, the grips on the clips, every LOD's morph
+  deltas, and what each LOD renders. s108, under -nullrhi, crashed in the morph re-export.
+- **r3** (fur strands, the toes' arc, a slimmer thumb and palm; 7.8) is previewed (s115, s116). Its production rig
+  build, s117, failed one gate (StrikeMakko@16, the katana against the holding paws) and wrote nothing. That failure
+  is not yet diagnosed.
+- Fur is still not resolved (7.9). No photoreal, visual, gameplay or root acceptance.
 
 ### 7.1 The hero source on A
 
@@ -682,14 +684,131 @@ joined mesh's local units (3.541 at LOD1); s107 measures 3.01 cm in world at eve
   spawned component (FFbxMaterialBakingMeshData, FMeshMergeHelpers::RetrieveMesh,
   USkinnedMeshComponent::GetCPUSkinnedVertices), which asserts on a missing render MeshObject under -nullrhi. The
   editor hung in its crash handler and was terminated (SIGKILL, 137): a failed run, its log, sample and exit kept.
-- Next: the same import under `--rhi`, then check_nyaakoto_ue_morph_export.py on Unreal's export.
+- Next: the same import under `--rhi`, then check_nyaakoto_ue_morph_export.py on Unreal's export (7.7).
 
-### 7.7 What remains
+### 7.7 The Unreal readback under --rhi (s110-s114, e8d5b587's assets)
 
-- **Fur.** Root's 07:12 review of s97 stands: smooth rounded digits, no resolved short fur, no furry silhouette. The
-  next pass, prepared on the CPU, grows opaque fur strands on the paws within the 23 slots (nyaakoto_tp_fur), and makes
-  the toes an arc and the thumb slimmer. The body's fur (forearms, tail, feet) and the fur material's response are
-  open.
+**The import** (s110, `run-editor-script.sh --rhi`: UnrealEditor-Cmd with -RenderOffscreen; the art worktree, no
+weapons; 61 s, editor exit 0):
+- **Why --rhi:** `FApp::CanEverRender()` is false whenever -nullrhi is on the command line
+  (Core/Public/Misc/App.h:400-406). So no skinned component gets the render MeshObject that the exporter's
+  material-baking data asks for (SkinnedMeshComponent.cpp:1231 and 4987). Under -RenderOffscreen it gets one.
+- **Sockets:** hand_r_grip 0.0 cm and 0.0°, hand_l_grip 0.00001 cm, gear_saya_l 0.0 cm.
+- **Both grips on the clips**, at the guard's first frame and at the strike's raise (frame 11) and hit (14): within
+  0.00005 cm and 0.001° of the two-paw stances' targets.
+- **Morph targets:** PawEmpty_L and PawEmpty_R on three LODs; render vertices 186,876, 84,678 and 36,002.
+
+**Every LOD's morph deltas** (s113). check_nyaakoto_ue_morph_export.py reads Unreal's own FBX export of the
+imported mesh in Blender. It checks the deltas against the rule of the paw module that built the assets, and refuses
+any other module.
+
+| LOD, paw | paw vertices | moved over 0.15 mm by the rule: count, worst error | dropped by Unreal, largest | moved outside the paws |
+| --- | ---: | --- | --- | ---: |
+| LOD0 R / L | 17,282 / 17,190 | 5,945 / 5,881; 0.0005 / 0.0001 mm | 356 / 366; 0.148 / 0.150 mm | 0 |
+| LOD1 R / L | 8,059 / 7,985 | 2,844 / 2,785; 0.0003 / 0.0001 mm | 207 / 197; 0.150 / 0.143 mm | 0 |
+| LOD2 R / L | 3,471 / 3,438 | 1,239 / 1,209; 0.0009 / 0.0010 mm | 94 / 91; 0.149 / 0.140 mm | 0 |
+
+- **Unreal's threshold.** A delta is kept only if the vertex moves more than the LOD's MorphThresholdPosition,
+  0.015 cm by default (EngineTypes.h:3181), or, when normals are computed, if its normal turns enough
+  (LODUtilities.cpp:3132). The import leaves the threshold at the default, and s114 reads 0.015 cm on every LOD.
+- **The model.** Below the threshold, the check accepts either outcome (at the rule, or unmoved), each at the same
+  0.05 mm. 1-5 such deltas a morph were kept.
+- **The failed first check.** s111 held every vertex to the rule alone, and failed at 0.140-0.150 mm on every LOD: the
+  dropped deltas. It also counted --factory-startup's default cube as a mesh. s112 passed, but counted palm vertices
+  as kept deltas; s113 fixed the count.
+
+**What each LOD renders** (s114, read-only):
+- **The question.** In Unreal's export, LOD2's paws are labelled M_Hero_IndigoSilk, and LOD2's triangles per material
+  are a permutation of ours by name.
+- **The cause.** Our LOD2 FBX lists its 23 materials in another order than LOD0's.
+  - Unreal routes an imported LOD's sections through `LODMaterialMap`, built by imported slot name
+    (`FLODUtilities::MatchImportedMaterials`, LODUtilities.cpp:3948-3981).
+  - The exporter writes each section's raw `MaterialIndex` (FbxSkeletalMeshExport.cpp:226).
+- **The check.** readback_nyaakoto_lod_materials.py reads each section through `GetLODMaterialSlot`, which goes via the
+  map. check_nyaakoto_lod_materials.py then pairs Unreal's 23 sections per LOD with the export's 23 polygon runs.
+- **The result.** On every LOD, the triangles Unreal renders per material equal ours by name; 17 of LOD2's sections
+  are remapped. The permutation is the export's alone.
+
+**The coat** (`inspect_fbx_paw_coat.py`, host Python) was read in our three LOD FBXs and in Unreal's export of all
+three:
+- On both paws, 81.5-82.4% of the paw's corners are tabby and 11.8-12.3% white. All of the back is tabby. Every corner
+  is within one byte of the coat the paw module computes.
+- The paws' white look in s103's close renders is the light. The tabby back of `..._IdlePaw_Front.png` measures (171,
+  166, 161) against the white toes' (176, 173, 171). In the side view, the hind foot's grey (92) and its white toes
+  (212) part clearly.
+- r2's `render_close` therefore keeps only the review sun and the world.
+
+### 7.8 r3: fur strands, the toes' arc, a slimmer thumb and palm (s115-s117)
+
+Root's 12:53 UTC review of e8d5b587's original renders (2026-10-26) asked for three things:
+- "smooth white parallel finger/ring forms, with no visible tabby contrast on the back";
+- "the idle digit row is nearly straight";
+- "the thumb/hand mass remains bulky".
+Its 07:12 review of s97 asked for credible fur direction, density and silhouette.
+
+**Fur strands** (`nyaakoto_tp_fur.py`):
+- **The strands:** single tapered triangles of M_Hero_GreyTabbyFur on the paw's own surface, within the 23 slots, as
+  the head's fur cards are. Each leans along the coat's flow: along the toes, and down the back toward the knuckles.
+- **Where none grow:** within 6 mm of the grip channel.
+- **What is kept:** a strand whose tip is outside the skin and inside the 11 cm breadth, and which crosses the skin in
+  neither state.
+- **The empty fist:** the strands are vertices of the paw part, so the empty-fist rule moves them with the skin.
+- **Per LOD:** LOD0 has the full density (8 per cm², about 5,240 strands a paw on r3), LOD1 35% of it, LOD2 none.
+
+**The toes' arc:**
+- `closure_end(s)`: the empty fist's closure ends at EMPTY_CHANNEL + 0.12 over the middle toes, easing to
+  EMPTY_CHANNEL by |s| 30 mm.
+- DIGIT_END's stagger alone nearly vanishes in the fist, because every tip past 180° closes to the same share of its
+  chord. With the arc, the middle toes stand 20.8-21.1 mm proud of the channel in the empty fist and the outer toes
+  12.0-12.2 mm.
+- The grip is untouched. The fold margin stays 0.0759: the displacement never moves along the channel, and
+  fold_margin takes the least over s.
+
+**The thumb and palm:**
+- the thumb 15.0 to 10.0 mm (r2 16.5 to 10.6; s97 19.0 to 10.8);
+- the palm at 0.82 × 0.80 of the source's x and z radii, shrunk about its point nearest the channel, so it still
+  meets the grip;
+- grip volume 1,142 cm³ a paw (r2 1,422; r1 1,671).
+
+**The previews** (form only, one sun and a grey world): s115 (r2 with fur) and s116 (r3 with fur). Every paw check
+passes, and both empty fists show the arc. Root's review of s116 (14:38 UTC):
+- the arc and the grey/white separation now show;
+- the surface still reads as sparse stubble with a bright bristled fringe;
+- the empty fist's inner view keeps a large C-shaped opening and smooth white patches. Those are the toes' grip-side
+  faces, which strands avoid; anatomically they are the pads, so a pad material from an existing slot is proposed;
+- the cuff and forearm stay faceted.
+
+**The production rig build, s117** (13:37:44-17:18:50 UTC, exit 1, nothing written):
+- **What passed:**
+  - s103's strike keys at the first try, their thirds and the recovery path;
+  - 136 of the 137 checked frames (48 Idle, 16 Walk, 48 Guard, 25 Strike).
+- **What failed:** StrikeMakko@16, katana_vs_holding_paws; frames 15 and 17 pass.
+- **The report crashed.** After the checks, the failure report's `brief()` took the held frames' socket errors for
+  clearance results (KeyError), so the failure's parts and place were never printed. The rest pose's result was
+  lost with it. Fixed: `brief()` handles any entry, and each CHECKED line carries its socket angle errors and the
+  detail of any failing gate.
+- **Not yet diagnosed.** On the CPU, with the katana and the r3 paws rebuilt from the FBX and the manifest's frames
+  (the right paw's skin 1.819 mm from the katana, s103's 1.82 mm):
+  - seated exactly, then turned up to ±2° about each socket axis, nothing crosses;
+  - s103 recorded the left paw within 0.015° at that frame;
+  - a replay of the gate's containment test at frames 15-17 finds nothing inside or ambiguous.
+
+  So the failure lies in Blender's own evaluation, which the float64 replay does not reproduce. The next lane window
+  reruns those frames alone (`--check-frames`, which builds, checks, prints in full and writes nothing).
+- **The cost** was 3 h 41 min. Not the strands: on the CPU, katana_vs_holding_paws at frame 16 takes the same with or
+  without them. It was `mesh_clearance.bbox_pairs`, whose grid cell the coarser set's 99th-percentile triangle set: the
+  katana's 15.3 mm against the paws' 6.9 mm, tens of millions of candidates for 69 overlapping pairs.
+  - The cell is now the finer set's. A larger triangle gathers only the cells its bounds reach (or takes the pairwise
+    test directly when it would reach more cells than the other set has members), and every candidate takes the exact
+    test.
+  - On frame 16's katana and paws, the answers are identical to s117's module, and 7-12× faster.
+
+### 7.9 What remains
+
+- **StrikeMakko@16** (7.8): to be diagnosed in Blender, then fixed without relaxing any gate, before the r3 rebuild,
+  its LODs, validators and Unreal readback.
+- **Fur.** The strands break the outline and show the coat's direction, but still read as sparse stubble on a smooth
+  skin (root, 14:38). The pads, the body's fur (forearms, tail, feet) and the fur material's response are open.
 - **The faceted body and wardrobe** (root, 05:15) are the hero source's blockout primitives. This revision does not
   address them.
 - **The generator's nondeterminism** (7.1).

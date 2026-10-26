@@ -6,15 +6,16 @@ The arms are the hero source's own, unvaried: the palm's centre and radii from c
 channel placed as nyaakoto_runtime_parts.arm_joints places it. Each paw is meshed at the three LOD steps.
 
 - **Channel coordinates:** they round-trip; Newton finds the nearest point of the oval.
-- **The closure:** it is 1 at the knuckles and EMPTY_CHANNEL at the end of its ramp, and its slope is its derivative.
-  The closed oval never turns back on itself, and fold_margin catches a ramp too steep.
+- **The closure:** it is 1 at the knuckles and closure_end at the end of its ramp: EMPTY_CHANNEL + ARC_OPEN over the
+  middle toes, EMPTY_CHANNEL from ARC_S[1] outward. Its slope is its derivative. The closed oval never turns back on
+  itself, and fold_margin catches a ramp too steep.
 - **The mesher:** manifold_surface_nets closes a face whose corners alternate, with its centre in or out (a pipe).
   Naive surface nets does not. On a ball it gives naive surface nets' own mesh.
 - **self_crossings:** it finds a crossing pair and a cap pushed through a ball, and passes a closed ball.
 - **Every paw, both states:** each is a closed, outward 2-manifold without self-crossings. No facet comes within
   half a millimetre of the channel, and the breadth stays within the contract.
 - **The empty fist:** the palm and the knuckles stay put. Each digit vertex moves exactly by its oval point's shift,
-  no face turns over, and every LOD closes to the same fist.
+  no face turns over, and every LOD closes to the same fist. The middle toes stand proud of the outer toes (the arc).
 - **The coat, UVs and fuzz** are in range: white on the toes, tabby on the back of the paw, the body's density,
   and no seam across a face.
 """
@@ -107,12 +108,25 @@ class Closure(unittest.TestCase):
             self.assertEqual(P.closed_shift(np.radians(deg), self.fr), (0.0, 0.0))
         for deg in (P.CURL_RAMP[1], -P.CURL_RAMP[1]):
             self.assertAlmostEqual(float(P.closure(np.radians(deg))), P.EMPTY_CHANNEL, places=12)
+            for s, end in ((0.0, P.EMPTY_CHANNEL + P.ARC_OPEN), (P.ARC_S[0], P.EMPTY_CHANNEL + P.ARC_OPEN),
+                           (-P.ARC_S[1], P.EMPTY_CHANNEL), (P.PAW_HALF, P.EMPTY_CHANNEL)):
+                self.assertAlmostEqual(float(P.closure(np.radians(deg), s)), end, places=12)
+
+    def test_the_arc_eases_between_the_middle_and_outer_toes(self):
+        s = np.linspace(-P.PAW_HALF, P.PAW_HALF, 2001)
+        end = P.closure_end(s)
+        self.assertTrue(np.allclose(end, end[::-1]))
+        half = s >= 0.0
+        self.assertTrue((np.diff(end[half]) <= 1e-15).all())                      # never opens outward
+        self.assertLess(float(np.abs(np.diff(end)).max()), 2.0 * P.ARC_OPEN * (s[1] - s[0]) / (P.ARC_S[1] - P.ARC_S[0]))
 
     def test_slope_is_the_derivative(self):
         t = np.radians(np.linspace(-179.0, 179.0, 359))
         h = 1e-6
-        fd = (P.closure(t + h) - P.closure(t - h)) / (2 * h)
-        self.assertLess(np.abs(fd - P.closure_slope(t)).max(), 1e-6)
+        for s in (None, 0.0, 0.5 * (P.ARC_S[0] + P.ARC_S[1]), P.PAW_HALF):
+            fd = (P.closure(t + h, s) - P.closure(t - h, s)) / (2 * h)
+            with self.subTest(s=s):
+                self.assertLess(np.abs(fd - P.closure_slope(t, s)).max(), 1e-6)
 
     def test_the_closed_oval_never_turns_back(self):
         for sign in (1, -1):
@@ -257,11 +271,26 @@ class EmptyFist(unittest.TestCase):
         w = P.digit_weight(m["verts"], m["skeleton"])
         on = w == 1.0
         self.assertGreater(int(on.sum()), 1000)
-        _, t, _ = P.channel_coords(m["verts"][on], fr)
-        du, dv = P.closed_shift(t, fr)
+        s, t, _ = P.channel_coords(m["verts"][on], fr)
+        du, dv = P.closed_shift(t, fr, s)
         expect = m["verts"][on] + du[:, None] * fr["z"] + dv[:, None] * fr["w"]
         self.assertLess(np.abs(m["empty"][on] - expect).max(), 1e-12)
         self.assertGreater(np.linalg.norm(m["empty"][on] - m["verts"][on], axis=1).max(), 0.02)   # the tips close
+
+    def test_the_middle_toes_stand_proud_of_the_outer_toes(self):
+        """The arc: in the empty fist, each middle toe reaches further from the palm's side (along -z) than either
+        outer toe, by at least 5 mm. Root's 12:53 UTC review of e8d5b587: "the idle digit row is nearly straight"."""
+        for sign in (1, -1):
+            m = paw(sign, 1)
+            fr = m["skeleton"]["frame"]
+            s, t, _ = P.channel_coords(m["verts"], fr)
+            w = P.digit_weight(m["verts"], m["skeleton"])
+            reach = []
+            for d in range(4):
+                on = (w > 0.999) & (np.abs(s - (d - 1.5) * P.DIGIT_PITCH) < 0.006) & (np.abs(t) > math.radians(90.0))
+                reach.append(float(((m["empty"][on] - fr["c"]) @ -fr["z"]).max()))
+            with self.subTest(sign=sign, reach_mm=[round(r * 1000.0, 1) for r in reach]):
+                self.assertGreater(min(reach[1], reach[2]) - max(reach[0], reach[3]), 0.005)
 
     def test_no_face_turns_over(self):
         for sign in (1, -1):

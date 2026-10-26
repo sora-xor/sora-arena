@@ -20,7 +20,18 @@ Each LOD's morph is the same rule as LOD0's (`empty_points`, a rule of position)
 on its own vertices, so a paw is empty or holding at every distance. The validator
 re-derives every morphed vertex from the exported bind and the record's paw frame;
 Unreal's own FBX export of the imported mesh is checked the same way
-(`scripts/art/check_nyaakoto_ue_morph_export.py`).
+(`scripts/art/check_nyaakoto_ue_morph_export.py`, modelling Unreal's
+MorphThresholdPosition).
+
+**Fur strands (r3).** LOD0's paws carry opaque tapered fur strands
+(`nyaakoto_tp_fur`) at their full density, LOD1's 35 % of it, LOD2's none. They
+are vertices of the paw part, so the empty-fist morph moves them with the skin.
+
+**Materials per LOD in Unreal.** This LOD2 FBX lists its 23 materials in another
+order than LOD0's. Unreal maps an imported LOD's sections to the base slots by
+imported slot name (`LODMaterialMap`). Its FBX export does not: it writes the raw
+section indices. `scripts/unreal/readback_nyaakoto_lod_materials.py` and
+`scripts/art/check_nyaakoto_lod_materials.py` check what Unreal renders on each LOD.
 
 The FBXs preserve the same 20-bone hierarchy, all 23 PBR material identities,
 the supplied SORA crest paths, and the full character bounds. `import_nyaakoto_lods.py`

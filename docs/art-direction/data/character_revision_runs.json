@@ -239,6 +239,162 @@
     "Saved/W18Rebuild/s108_ue_import.crash_sample.txt": "2cba904f8fc8a3e04c9c68f443ecb2d8cf3c0763ec546e22d8db5e469a2a7d6a"
    },
    "result": "FAILED: imported the body (coat colours, morph targets), LOD1/2 (render vertices 186876, 84678, 36002) and the four clips, and read back the morph target names; then UnrealEditor-Cmd (PID 25341) asserted 'MeshObject' in USkinnedMeshComponent::GetCPUSkinnedVertices under the skeletal FBX exporter's material-baking mesh data (NullRHI), SIGSEGV, and hung in FMacApplicationErrorOutputDevice::HandleErrorRestoreUI. SIGTERM 09:44:16Z ignored, SIGKILL 09:44:46Z: editor 137, wrapper 1. A manually terminated failed run; the export needs --rhi."
+  },
+  {
+   "run": "s110_ue_import",
+   "command": "scripts/toolchain/run-editor-script.sh --rhi scripts/unreal/import_nyaakoto_third_person.py NYAAKOTO_TP_UE_READY Saved/W18Rebuild/s110_ue_import.editor.log -- --readback Saved/NyaakotoThirdPerson/Unreal/s110_readback.json --morph-export Saved/NyaakotoThirdPerson/Unreal/s110_SK_NyaagyuSamurai_lods_morphs.fbx --skip-weapons",
+   "start": "2026-10-26T13:09:33Z",
+   "pid": 17624,
+   "exit": 0,
+   "end": "2026-10-26T13:10:34Z",
+   "log": "Saved/W18Rebuild/s110_ue_import.log",
+   "markers": [
+    "EDITOR_EXIT=0",
+    "NYAAKOTO_TP_UE_READY {\"sockets\": {\"hand_r_grip\": 0.0, \"hand_l_grip\": 1e-05, \"gear_saya_l\": 0.0}, \"guard\": {\"hand_r_grip\": 0.0, \"hand_l_grip\": 0.0}} {\"raise\": {\"hand_r_grip\": 0.0, \"hand_l_grip\": 0.0}, \"hit\": {\"hand_r_grip\": 0.0, \"hand_l_grip\": 0.0}}"
+   ],
+   "outputs": {
+    "Saved/NyaakotoThirdPerson/Unreal/s110_readback.json": "e88a066161197cf398b5fc2074bfd90d4c599bf718bc71dff32c4bf5748fd577",
+    "Saved/NyaakotoThirdPerson/Unreal/s110_SK_NyaagyuSamurai_lods_morphs.fbx": "d79ea8434e3984a36d9cb639fe23a5c1b56687b6b825deb441f2dde5e54a0355",
+    "Saved/W18Rebuild/s110_ue_import.inputs": "1c953d9459a6ffe5409b5883891d2949b65e9485d4dc46fb06d93eaff1f45b35"
+   },
+   "result": "PASS: e8d5b587's assets imported under -RenderOffscreen (s108's -nullrhi cannot make the skinned MeshObject the FBX exporter needs: FApp::CanEverRender). Sockets hand_r_grip 0.0 cm, hand_l_grip 0.00001 cm, gear_saya_l 0.0 cm; both grips at the guard's first frame and the strike's raise (11) and hit (14) within 0.00005 cm and 0.001 deg; morphs PawEmpty_L/R on 3 LODs; runtime vertices [186876, 84678, 36002]; Unreal's FBX export of every LOD with its morph deltas.",
+   "editor_pid": 17678,
+   "inputs": "Saved/W18Rebuild/s110_ue_import.inputs",
+   "replaced_import_archived": "Saved/W18Rebuild/s108_generated/ (s108_generated.sha256)"
+  },
+  {
+   "run": "s111_ue_morph_check",
+   "command": "Blender -b --factory-startup --python-exit-code 1 --python Saved/W18Rebuild/s111_ue_morph_check.wrapper.py -- Saved/NyaakotoThirdPerson/Unreal/s110_SK_NyaagyuSamurai_lods_morphs.fbx Saved/NyaakotoThirdPerson/Unreal/s111_ue_morph_check.json",
+   "start": "2026-10-26T13:11:54Z",
+   "pid": 19676,
+   "exit": 1,
+   "end": "2026-10-26T13:11:57Z",
+   "log": "Saved/W18Rebuild/s111_ue_morph_check.log",
+   "markers": [
+    "S111_MODULE {\"nyaakoto_tp_paws\": \"/Users/mtakemiya/dev/sora-arena-wt/art/Saved/W18Rebuild/s111_r1_module/nyaakoto_tp_paws.py\", \"sha256\": \"8c90f9635a5cdba2f2d1327d50bfaa755784c0238127b298aa710d210bca7437\"}",
+    "NYAAKOTO_UE_MORPH_EXPORT {\"meshes\": 4, \"failed\": [\"Cube\", \"SK_NyaagyuSamurai_LOD0:PawEmpty_R\", \"SK_NyaagyuSamurai_LOD0:PawEmpty_L\", \"SK_NyaagyuSamurai_LOD1:PawEmpty_R\", \"SK_NyaagyuSamurai_LOD1:PawEmpty_L\", \"SK_NyaagyuSamurai_LOD2:PawEmpty_R\", \"SK_NyaagyuSamurai_LOD2:PawEmpty_L\"]}",
+    "NYAAKOTO_UE_MORPH_EXPORT_FAILED ['Cube', 'SK_NyaagyuSamurai_LOD0:PawEmpty_R', 'SK_NyaagyuSamurai_LOD0:PawEmpty_L', 'SK_NyaagyuSamurai_LOD1:PawEmpty_R', 'SK_NyaagyuSamurai_LOD1:PawEmpty_L', 'SK_NyaagyuSamurai_LOD2:PawEmpty_R', 'SK_NyaagyuSamurai_LOD2:PawEmpty_L'] meshes=4"
+   ],
+   "outputs": {
+    "Saved/NyaakotoThirdPerson/Unreal/s111_ue_morph_check.json": "00d039c242c2943a1ea6c899bda7882ef5cf0bb70fd6def3f1a5f805a26317d5",
+    "Saved/W18Rebuild/s111_ue_morph_check.wrapper.py": "475b1a25e16fc8e22ad46e4e912470bf1eb19fefef2a55371d0845b5acb03415",
+    "Saved/W18Rebuild/s111_r1_module/nyaakoto_tp_paws.py": "8c90f9635a5cdba2f2d1327d50bfaa755784c0238127b298aa710d210bca7437"
+   },
+   "result": "FAILED, the check's fault: it counted --factory-startup's own cube as a fourth mesh, and it held every paw vertex to the rule at 0.05 mm, where Unreal drops deltas of 0.015 cm or less (MorphThresholdPosition, LODUtilities.cpp:3132). Every LOD's worst error was 0.140-0.150 mm: the dropped deltas."
+  },
+  {
+   "run": "s112_ue_morph_check",
+   "command": "Blender -b --factory-startup --python-exit-code 1 --python Saved/W18Rebuild/s111_ue_morph_check.wrapper.py -- Saved/NyaakotoThirdPerson/Unreal/s110_SK_NyaagyuSamurai_lods_morphs.fbx Saved/NyaakotoThirdPerson/Unreal/s112_ue_morph_check.json",
+   "start": "2026-10-26T13:14:13Z",
+   "pid": 22469,
+   "exit": 0,
+   "end": "2026-10-26T13:14:15Z",
+   "log": "Saved/W18Rebuild/s112_ue_morph_check.log",
+   "markers": [
+    "S111_MODULE {\"nyaakoto_tp_paws\": \"/Users/mtakemiya/dev/sora-arena-wt/art/Saved/W18Rebuild/s111_r1_module/nyaakoto_tp_paws.py\", \"sha256\": \"8c90f9635a5cdba2f2d1327d50bfaa755784c0238127b298aa710d210bca7437\"}",
+    "NYAAKOTO_UE_MORPH_EXPORT {\"meshes\": 3, \"failed\": []}"
+   ],
+   "outputs": {
+    "Saved/NyaakotoThirdPerson/Unreal/s112_ue_morph_check.json": "994aa7026f374e519097419b7c7cce51c4cced41edfbccf96d6ada6706fac6c6",
+    "Saved/W18Rebuild/s112_ue_morph_check.inputs": "cd60e50299508377ee92f0427a5d891c58826848bacc7844c10c87a86d782ce0"
+   },
+   "result": "PASS with Unreal's threshold modelled (above it a vertex is at the rule, at or below it at the rule or unmoved, both to 0.05 mm). Its 'kept' count included palm vertices the rule never moves; s113 counts them apart."
+  },
+  {
+   "run": "s113_ue_morph_check",
+   "command": "Blender -b --factory-startup --python-exit-code 1 --python Saved/W18Rebuild/s111_ue_morph_check.wrapper.py -- Saved/NyaakotoThirdPerson/Unreal/s110_SK_NyaagyuSamurai_lods_morphs.fbx Saved/NyaakotoThirdPerson/Unreal/s113_ue_morph_check.json",
+   "start": "2026-10-26T13:14:46Z",
+   "pid": 22830,
+   "exit": 0,
+   "end": "2026-10-26T13:14:48Z",
+   "log": "Saved/W18Rebuild/s113_ue_morph_check.log",
+   "markers": [
+    "S111_MODULE {\"nyaakoto_tp_paws\": \"/Users/mtakemiya/dev/sora-arena-wt/art/Saved/W18Rebuild/s111_r1_module/nyaakoto_tp_paws.py\", \"sha256\": \"8c90f9635a5cdba2f2d1327d50bfaa755784c0238127b298aa710d210bca7437\"}",
+    "NYAAKOTO_UE_MORPH_EXPORT {\"meshes\": 3, \"failed\": []}"
+   ],
+   "outputs": {
+    "Saved/NyaakotoThirdPerson/Unreal/s113_ue_morph_check.json": "3b554aa6eb22c424648ba9af697fa160b8fa81b16b2f1a57865fce091f4ee2a3",
+    "Saved/W18Rebuild/s113_ue_morph_check.inputs": "15381ead24e3e5206c3a3e0afdd930ee2668b6c4e0c279905a9ec5511b6094bc"
+   },
+   "result": "PASS, every LOD and both morphs: vertices the rule moves more than 0.15 mm are at the rule within 0.0010 mm (LOD0 5945/5881, LOD1 2844/2785, LOD2 1239/1209); Unreal dropped 356/366, 207/197, 94/91 smaller deltas (largest 0.140-0.150 mm) and kept 1-5; nothing outside the paws moved; largest move 3.01 cm."
+  },
+  {
+   "run": "s114_lod_materials",
+   "command": "scripts/toolchain/run-editor-script.sh scripts/unreal/readback_nyaakoto_lod_materials.py NYAAKOTO_LOD_MATERIALS_READY Saved/W18Rebuild/s114_lod_materials.editor.log -- --out Saved/NyaakotoThirdPerson/Unreal/s114_lod_materials.json",
+   "start": "2026-10-26T13:22:24Z",
+   "pid": 33187,
+   "exit": 0,
+   "end": "2026-10-26T13:23:03Z",
+   "log": "Saved/W18Rebuild/s114_lod_materials.log",
+   "markers": [
+    "EDITOR_EXIT=0",
+    "NYAAKOTO_LOD_MATERIALS_READY [{\"lod\": 0, \"sections\": 23, \"vertices\": 186876, \"morph_threshold_position_cm\": 0.014999999664723873}, {\"lod\": 1, \"sections\": 23, \"vertices\": 84678, \"morph_threshold_position_cm\": 0.014999999664723873}, {\"lod\": 2, \"sections\": 23, \"vertices\": 36002, \"morph_threshold_position_cm\": 0.014999999664723873}]"
+   ],
+   "outputs": {
+    "Saved/NyaakotoThirdPerson/Unreal/s114_lod_materials.json": "51ef538a1232db0241c875f08619c9b293723b5ebafb3b1abb608a6f86b47de6",
+    "Saved/NyaakotoThirdPerson/Unreal/s114_lod_materials_check.json": "b89d1e74046e1b276afa91f05a693c83a0f833bafc2808e09e61a94602322917",
+    "Saved/W18Rebuild/s114_lod_materials.inputs": "bd5ec31c7c2b0af9b4c6af87f3dd08823800b2acd6144dec1d9a4a50c0475357"
+   },
+   "result": "PASS: each LOD's 23 sections, through GetLODMaterialSlot (LODMaterialMap), pair with the s110 export's 23 polygon runs; the triangles Unreal renders per material equal ours by name on LOD0, LOD1 and LOD2 (17 LOD2 sections remapped). The export's LOD2 names are a permutation of ours because the exporter writes raw Section.MaterialIndex (FbxSkeletalMeshExport.cpp:226). MorphThresholdPosition 0.015 cm on all three LODs.",
+   "editor_pid": 33241,
+   "host_check": "python3 scripts/art/check_nyaakoto_lod_materials.py Saved/NyaakotoThirdPerson/Unreal/s114_lod_materials.json Saved/NyaakotoThirdPerson/Unreal/s110_SK_NyaagyuSamurai_lods_morphs.fbx Content/SourceArt/SK_NyaagyuSamurai.fbx Content/SourceArt/Characters/Hero/LOD/SK_NyaagyuSamurai_LOD1.fbx Content/SourceArt/Characters/Hero/LOD/SK_NyaagyuSamurai_LOD2.fbx Saved/NyaakotoThirdPerson/Unreal/s114_lod_materials_check.json (exit 0)"
+  },
+  {
+   "run": "s115_tp_paws_preview_r2",
+   "command": "Blender -b --factory-startup --python-exit-code 1 --python scripts/art/preview_nyaakoto_tp_paws.py -- --out s115_tp_paws_preview_r2 --fur",
+   "start": "2026-10-26T13:28:19Z",
+   "pid": 37992,
+   "exit": 0,
+   "end": "2026-10-26T13:30:57Z",
+   "log": "Saved/W18Rebuild/s115_tp_paws_preview_r2.log",
+   "markers": [
+    "NYAAKOTO_TP_PAW R {\"vertices\": 14094, \"triangles\": 28192, \"closed_manifold\": true, \"volume_cm3\": {\"grip\": 1422.28, \"empty\": 1340.41}, \"self_crossings\": {\"grip\": 0, \"empty\": 0}, \"min_offset_from_channel_mm\": 1.0233, \"vertices_inside_channel\": 0, \"breadth_along_channel_cm\": 10.827, \"faces_turned_over_by_morph\": 0, \"max_morph_move_cm\": 3.01, \"fold_margin\": 0.0759, \"failed\": [], \"palm_radii_m\": [0.069, 0.078, 0.09], \"mesh_s\": 3.51, \"channel_m\": [0.1699, -0.512, 0.6794], \"strands\": {\"count\": 6269, \"pruned_for_crossing_the_skin\": 2}}",
+    "NYAAKOTO_TP_PAW L {\"vertices\": 14096, \"triangles\": 28196, \"closed_manifold\": true, \"volume_cm3\": {\"grip\": 1422.32, \"empty\": 1340.39}, \"self_crossings\": {\"grip\": 0, \"empty\": 0}, \"min_offset_from_channel_mm\": 1.0233, \"vertices_inside_channel\": 0, \"breadth_along_channel_cm\": 10.833, \"faces_turned_over_by_morph\": 0, \"max_morph_move_cm\": 3.01, \"fold_margin\": 0.0759, \"failed\": [], \"palm_radii_m\": [0.069, 0.078, 0.09], \"mesh_s\": 2.12, \"channel_m\": [0.1699, 0.512, 0.6794], \"strands\": {\"count\": 6262, \"pruned_for_crossing_the_skin\": 2}}"
+   ],
+   "outputs": {
+    "Saved/W18Rebuild/s115_tp_paws_preview_r2/preview.json": "0a217e21017d3004916c4f8e2471139b05d632da2599a11b13fba36bfaba5fbc",
+    "Saved/W18Rebuild/s115_tp_paws_preview_r2.inputs": "581e4e9522c511c383d59fe28a0e76cc11f08d58addfe3059967d5a498ca6cc8"
+   },
+   "result": "PASS (preview, form only): r2 with fur strands, every paw check passing; about 6.3k strands a paw, 2 pruned. The strands break the outline but read as sparse stubble on a smooth skin; the empty-fist toe row is still straight."
+  },
+  {
+   "run": "s116_tp_paws_preview_r3",
+   "command": "Blender -b --factory-startup --python-exit-code 1 --python scripts/art/preview_nyaakoto_tp_paws.py -- --out s116_tp_paws_preview_r3 --fur",
+   "start": "2026-10-26T13:34:35Z",
+   "pid": 41707,
+   "exit": 0,
+   "end": "2026-10-26T13:36:47Z",
+   "log": "Saved/W18Rebuild/s116_tp_paws_preview_r3.log",
+   "markers": [
+    "NYAAKOTO_TP_PAW R {\"vertices\": 12198, \"triangles\": 24396, \"closed_manifold\": true, \"volume_cm3\": {\"grip\": 1142.06, \"empty\": 1069.11}, \"self_crossings\": {\"grip\": 0, \"empty\": 0}, \"min_offset_from_channel_mm\": 1.0233, \"vertices_inside_channel\": 0, \"breadth_along_channel_cm\": 10.827, \"faces_turned_over_by_morph\": 0, \"max_morph_move_cm\": 3.01, \"fold_margin\": 0.0759, \"failed\": [], \"palm_radii_m\": [0.069, 0.078, 0.09], \"mesh_s\": 1.52, \"channel_m\": [0.1699, -0.512, 0.6794], \"strands\": {\"count\": 5237, \"pruned_for_crossing_the_skin\": 1}}",
+    "NYAAKOTO_TP_PAW L {\"vertices\": 12192, \"triangles\": 24384, \"closed_manifold\": true, \"volume_cm3\": {\"grip\": 1141.98, \"empty\": 1068.96}, \"self_crossings\": {\"grip\": 0, \"empty\": 0}, \"min_offset_from_channel_mm\": 1.0233, \"vertices_inside_channel\": 0, \"breadth_along_channel_cm\": 10.81, \"faces_turned_over_by_morph\": 0, \"max_morph_move_cm\": 3.01, \"fold_margin\": 0.0759, \"failed\": [], \"palm_radii_m\": [0.069, 0.078, 0.09], \"mesh_s\": 1.42, \"channel_m\": [0.1699, 0.512, 0.6794], \"strands\": {\"count\": 5244, \"pruned_for_crossing_the_skin\": 0}}"
+   ],
+   "outputs": {
+    "Saved/W18Rebuild/s116_tp_paws_preview_r3/preview.json": "58c2bbbcf5e37f3dead2741623d1e9d7efe0cb5f0bb4bd2eecd19addd8f4837f",
+    "Saved/W18Rebuild/s116_tp_paws_preview_r3.inputs": "c0516de19e31847eea8d1093bbefa335c3825fb6777b0ba3998ef4075205fe4b"
+   },
+   "result": "PASS (preview, form only): r3, the toes' arc (closure_end), a slimmer thumb and a palm shrunk about its channel side; every paw check passing; grip volume 1142 cm3 a paw (r2 1422, r1 1671). Both empty fists show the arc. The toes' grip-side faces, kept clear of strands, show as smooth white patches in the empty fist."
+  },
+  {
+   "run": "s117_rig_production",
+   "command": "Blender -b --factory-startup -t 8 --python-exit-code 1 --python scripts/art/rig_nyaakoto_runtime.py -- --strike-keys Saved/W18Rebuild/s103_strike_keys.json",
+   "start": "2026-10-26T13:37:44Z",
+   "pid": 43178,
+   "exit": 1,
+   "end": "2026-10-26T17:18:50Z",
+   "log": "Saved/W18Rebuild/s117_rig_production.log",
+   "markers": [
+    "CHECKED StrikeMakko@16 {\"failed\": [\"katana_vs_holding_paws\"], \"socket_error_cm\": {\"R\": 0.0, \"L\": 0.0}}",
+    "KeyError: 'crossing_pairs_visible'",
+    "Error: script failed, file: 'scripts/art/rig_nyaakoto_runtime.py', exiting."
+   ],
+   "outputs": {
+    "Saved/W18Rebuild/s117_rig.originals/SHA256SUMS": "dc3e4a3e0354717daaca1fc3db30851921b6f84641a80f85c6f7b25b3d931c6e",
+    "Saved/W18Rebuild/s117_rig_production.inputs/SHA256SUMS": "c86c1f9b3c22cf6c6efccb782f950316de156e759a111f12717ffc611bf22ef9"
+   },
+   "result": "FAILED, nothing exported or written. s103's strike keys passed at the first try (raise, hit, follow-through, the thirds of each path, the recovery path); 136 of the 137 checked frames passed every gate (48 Idle, 16 Walk, 48 Guard, 25 Strike); the rest pose's check ran after them, and its result was lost with the report. StrikeMakko@16 failed katana_vs_holding_paws (frames 15 and 17 pass). Then the failure report crashed (brief() took the held frames' socket_error dicts for clearance results: KeyError 'crossing_pairs_visible'), so the failure's parts and place were not printed. 3 h 41 min. Not the strands (my first reading, corrected): on the CPU, katana_vs_holding_paws at frame 16 takes the same with or without them. Its cost was mesh_clearance.bbox_pairs, whose cell the katana's 15 mm triangles set: tens of millions of candidates for 69 overlapping pairs.",
+   "inputs": "Saved/W18Rebuild/s117_rig_production.inputs/",
+   "originals": "Saved/W18Rebuild/s117_rig.originals/"
   }
  ]
 }

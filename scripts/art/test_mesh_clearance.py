@@ -259,5 +259,121 @@ class Measure(unittest.TestCase):
         self.assertEqual(r["contained_parts"][0][:2], ["cube", "tetra"])
 
 
+class BroadPhase(unittest.TestCase):
+    """The grid broad-phase finds the pairwise bounds test's own pairs, and the separation it bounds is the pairwise
+    loop's (s103 found that loop |a| x |b|: minutes a check with the furred paws)."""
+
+    @staticmethod
+    def soup(rng, n, centre, size, big=0):
+        c = np.asarray(centre) + rng.normal(0, 0.05, (n, 3))
+        tri = c[:, None, :] + rng.normal(0, size, (n, 3, 3))
+        if big:
+            k = rng.choice(n, big, replace=False)
+            tri[k] = c[k, None, :] + rng.normal(0, size * 40, (big, 3, 3))
+        return tri.reshape(-1, 3), np.arange(3 * n).reshape(-1, 3)
+
+    @staticmethod
+    def pairwise(alo, ahi, blo, bhi, grow):
+        ok = np.all((alo[:, None] - grow <= bhi[None]) & (ahi[:, None] + grow >= blo[None]), 2)
+        return np.argwhere(ok)
+
+    def test_bbox_pairs_is_the_pairwise_set(self):
+        rng = np.random.default_rng(7)
+        for trial in range(20):
+            pa, ta = self.soup(rng, int(rng.integers(1, 400)), (0, 0, 0), 0.004, big=int(rng.integers(0, 3)))
+            pb, tb = self.soup(rng, int(rng.integers(1, 400)), (0.02, 0, 0), 0.004, big=int(rng.integers(0, 3)))
+            A, Bt = pa[ta], pb[tb]
+            for grow in (0.0, 1e-7, 0.003, 0.02):
+                want = self.pairwise(A.min(1), A.max(1), Bt.min(1), Bt.max(1), grow)
+                got = MC.bbox_pairs(A.min(1), A.max(1), Bt.min(1), Bt.max(1), grow)
+                with self.subTest(trial=trial, grow=grow):
+                    self.assertTrue(np.array_equal(got, want))
+
+    def test_bbox_pairs_with_a_coarse_and_a_fine_set(self):
+        """s117's case: a coarse set with long triangles (the katana) against a fine, dense one (the furred paws), so
+        the cell is the fine set's and many triangles are large. A rows subset, and a large triangle reaching more
+        cells than the other set has members (the guard), give the pairwise set too."""
+        rng = np.random.default_rng(17)
+        for trial in range(12):
+            pa, ta = self.soup(rng, int(rng.integers(50, 500)), (0, 0, 0), 0.006, big=int(rng.integers(5, 40)))
+            pb, tb = self.soup(rng, int(rng.integers(50, 900)), (0.01, 0, 0), 0.0012, big=int(rng.integers(0, 3)))
+            if trial % 3 == 0:                                       # one triangle across the whole scene
+                pa[:3] = [(-0.4, -0.3, -0.2), (0.4, 0.3, 0.25), (0.3, -0.35, 0.3)]
+            A, Bt = pa[ta], pb[tb]
+            rows = np.sort(rng.choice(len(A), max(1, len(A) // 2), replace=False))
+            for grow in (0.0, 1e-7, 0.002, 0.03):
+                want = self.pairwise(A.min(1), A.max(1), Bt.min(1), Bt.max(1), grow)
+                for swap in (False, True):
+                    if swap:
+                        w = self.pairwise(Bt.min(1), Bt.max(1), A.min(1), A.max(1), grow)
+                        got = MC.bbox_pairs(Bt.min(1), Bt.max(1), A.min(1), A.max(1), grow)
+                    else:
+                        w = want
+                        got = MC.bbox_pairs(A.min(1), A.max(1), Bt.min(1), Bt.max(1), grow)
+                    with self.subTest(trial=trial, grow=grow, swap=swap):
+                        self.assertTrue(np.array_equal(got, w))
+                sub = MC.bbox_pairs(A.min(1), A.max(1), Bt.min(1), Bt.max(1), grow, rows=rows)
+                with self.subTest(trial=trial, grow=grow, rows=True):
+                    self.assertTrue(np.array_equal(sub, want[np.isin(want[:, 0], rows)]))
+
+    def test_nearest_vertex_gap_is_the_least_vertex_distance(self):
+        rng = np.random.default_rng(8)
+        for trial in range(10):
+            va, vb = rng.normal(0, 0.05, (300, 3)), rng.normal(0.03, 0.05, (200, 3))
+            d = float(np.linalg.norm(va[:, None] - vb[None], axis=2).min())
+            for limit in (0.001, 0.01, 0.1):
+                with self.subTest(trial=trial, limit=limit):
+                    self.assertAlmostEqual(MC.nearest_vertex_gap(va, vb, limit), min(d, limit), places=12)
+
+    def test_separation_is_the_pairwise_loops(self):
+        rng = np.random.default_rng(9)
+        for trial in range(12):
+            pa, ta = self.soup(rng, int(rng.integers(20, 300)), (0, 0, 0), 0.003, big=int(rng.integers(0, 2)))
+            pb, tb = self.soup(rng, int(rng.integers(20, 300)), (0.12 * rng.random(), 0, 0), 0.003)
+            for limit in (0.005, 0.02, 0.1):
+                got = MC.exact_separation(pa, ta, pb, tb, limit)
+                # the pairwise reference: every pair whose bounds come within the limit, measured
+                A, Bt = pa[ta], pb[tb]
+                q = self.pairwise(A.min(1), A.max(1), Bt.min(1), Bt.max(1), limit)
+                with self.subTest(trial=trial, limit=limit):
+                    if not len(q):
+                        self.assertIsNone(got["separation_m"])
+                        continue
+                    d, q1, q2, kind = MC.triangle_distances_v(A[q[:, 0]], Bt[q[:, 1]])
+                    k = int(np.argmin(d))
+                    if d[k] < limit:
+                        self.assertEqual(got["separation_m"], float(d[k]))
+                        self.assertTrue(np.array_equal(got["at"][0], q1[k]) and np.array_equal(got["at"][1], q2[k]))
+                        self.assertEqual(got["kind"], MC.KINDS[int(kind[k])])
+                    else:
+                        self.assertIsNone(got["separation_m"])
+
+
+class TreeCache(unittest.TestCase):
+    def test_a_pose_reuses_its_trees_and_a_new_array_builds_afresh(self):
+        class Counting(MC.BruteBackend):
+            built = 0
+
+            def tree(self, pts, tris):
+                Counting.built += 1
+                return super().tree(pts, tris)
+
+        bk = Counting()
+        va, fa = MC.cube((0.0, 0.0, 0.0), 0.1)
+        vb, fb = MC.cube((0.2, 0.0, 0.0), 0.1)
+        pts = np.concatenate([va, vb])
+        sa, sb = MC.TriSet(fa, ["a"] * len(fa)), MC.TriSet(fb + len(va), ["b"] * len(fb))
+        r1 = MC.measure(bk, sa, pts, sb, pts, limit=0.2)
+        n1 = Counting.built
+        r2 = MC.measure(bk, sa, pts, sb, pts, limit=0.2)
+        self.assertEqual(Counting.built, n1)                 # the same array: no new tree
+        self.assertEqual(r1, r2)
+        moved = pts.copy()
+        moved[len(va):, 0] -= 0.05
+        r3 = MC.measure(bk, sa, moved, sb, moved, limit=0.2)
+        self.assertGreater(Counting.built, n1)               # a new array: built afresh
+        self.assertAlmostEqual(r3["separation_m"], 0.05, places=9)
+
+
 if __name__ == "__main__":
     unittest.main()
