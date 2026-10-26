@@ -1,7 +1,7 @@
-#include "SoraGameMode.h"
-#if WITH_DEV_AUTOMATION_TESTS
-#include "SoraFieldcraftTestWorld.h"
 #include "SoraTerminalChargeAutomation.h"
+#if WITH_DEV_AUTOMATION_TESTS
+#include "SoraGameMode.h"
+#include "SoraFieldcraftTestWorld.h"
 #include "SoraEnemy.h"
 #include "SoraWorldBuilder.h"
 #include "SoraEquipmentComponent.h"

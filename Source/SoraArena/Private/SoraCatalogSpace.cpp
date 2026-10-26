@@ -735,7 +735,7 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
             !SpaceVector(O->TryGetField(TEXT("rect")), 4, Rect) || Rect[0] >= Rect[2] || Rect[1] >= Rect[3] ||
             !Int(*O, TEXT("wall_cm"), Wall) || Wall <= 0 || !SpacePose(*O, TEXT("entry"), Zone.Entry, Zone.EntryYaw) ||
             !SpaceBoxes(Rows(*O, TEXT("walls")), Zone.Walls) ||
-            Zone.Walls.Num() != (C.Id.StartsWith(TEXT("ch03_"))&&(Zone.Place==TEXT("pl_ura_nagaya")||Zone.Place==TEXT("pl_chochin_kobo"))?0:
+            Zone.Walls.Num() != (C.Id.StartsWith(TEXT("ch03_"))&&(Zone.Place==TEXT("pl_ura_nagaya")||Zone.Place==TEXT("pl_chochin_kobo")||Zone.Place==TEXT("pl_kosatsuba"))?0:
                 C.Id.StartsWith(TEXT("ch03_"))&&Zone.Place==TEXT("pl_kido")?7:
                 C.Id.StartsWith(TEXT("ch06_"))&&Zone.Place==TEXT("pl_ledger_corridors")?0:
                 C.Id.StartsWith(TEXT("ch06_"))&&(Zone.Place==TEXT("pl_archive")||Zone.Place==TEXT("pl_press_hall")||Zone.Place==TEXT("pl_uguisu_hall"))?5:C.Id.StartsWith(TEXT("ch07_"))&&(Zone.Place==TEXT("pl_hull_ridge")||Zone.Place==TEXT("pl_hangar"))?0:C.Id.StartsWith(TEXT("ch01_"))&&Zone.Place==TEXT("pl_issoseki_wood")?0:
