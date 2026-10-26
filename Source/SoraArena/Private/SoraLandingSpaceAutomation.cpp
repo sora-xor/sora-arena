@@ -70,7 +70,7 @@ bool Walk(FBeatWorld& W,FVector2D Point,bool Exit=false)
 }
 bool Snuff(FBeatWorld& W,int Index)
 {
-    auto* Lamp=W.Fieldcraft()->Lamps()[Index];
+    ASoraLamp* Lamp=W.Fieldcraft()->Lamps()[Index];
     W.LookAt(Lamp->Glow());
     if(!W.Hold(EKeys::E,29))return false;
     if(!W.Test.TestTrue(TEXT("Half a second of interaction leaves the landing lamp lit"),Lamp->IsLit()))return false;
