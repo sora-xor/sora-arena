@@ -117,7 +117,10 @@ options.mesh_type_to_import = unreal.FBXImportType.FBXIT_STATIC_MESH
 data = options.static_mesh_import_data
 data.combine_meshes = True
 data.generate_lightmap_u_vs = False
-data.auto_generate_collision = False
+# UE 5.8's FbxImportUI converter also gates imported UCX on this flag.
+# Custom UCX suppresses generated fallback collision; the readback below
+# still requires exactly three convex hulls and zero other simple shapes.
+data.auto_generate_collision = True
 data.one_convex_hull_per_ucx = True
 data.set_editor_property("build_nanite", False)
 mesh = import_file(root / record["assets"][NAME]["lods"][0]["file"], DESTINATION, NAME, options)

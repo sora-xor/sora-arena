@@ -3,7 +3,7 @@
   "kind": "asset-ledger",
   "ledger_id": "own-inventory-drone",
   "source": "project",
-  "purpose": "OWN record for the signed fc0858a9 Inventory drone source kit and six Blender review originals. Source integration only; Unreal collisions, routes, platform performance and final appearance remain unqualified.",
+  "purpose": "OWN record for fc0858a9 Inventory drone source kit with independently reviewed 45a2af0a LOD0 socket export correction. Original six Blender reviews retained. Full Unreal import, gameplay and final appearance remain unqualified.",
   "generator": "scripts/assets/write_own_ledger.py",
   "records": [
     {
@@ -13,7 +13,7 @@
       "tier": "OWN",
       "license": "project-owned",
       "license_url": null,
-      "origin_url": "scripts/art/create_inventory_drone.py, scripts/art/create_runtime_weapon_lib.py",
+      "origin_url": "scripts/art/create_inventory_drone.py, scripts/art/create_runtime_weapon_lib.py, scripts/art/reexport_inventory_drone_lod0.py",
       "mirror_url": null,
       "commercial_use": true,
       "redistribution": "unrestricted",
@@ -33,7 +33,8 @@
       "fallback": null,
       "generator": [
         "scripts/art/create_inventory_drone.py",
-        "scripts/art/create_runtime_weapon_lib.py"
+        "scripts/art/create_runtime_weapon_lib.py",
+        "scripts/art/reexport_inventory_drone_lod0.py"
       ],
       "derived_from": [],
       "files": [
@@ -44,8 +45,8 @@
         },
         {
           "path": "Content/SourceArt/Characters/Enemies/InventoryDrone/SM_Drone_Inventory.fbx",
-          "bytes": 1398044,
-          "sha256": "bc17dbb160e37e03f4b430b4c2a54a574ab539b802c3785c075c1a4c622c2bd0"
+          "bytes": 1398124,
+          "sha256": "f7057061ddf3c2de8ab6d42d505793c70e6fc0fbe706630214bd7070962283be"
         },
         {
           "path": "Content/SourceArt/Characters/Enemies/InventoryDrone/SM_Drone_Inventory_LOD1.fbx",

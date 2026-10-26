@@ -1,6 +1,7 @@
 """Source admission and measured Unreal readback for the Inventory drone.
 
-No editor import at module load. The reviewed kit is fc0858a9; replacing its
+No editor import at module load. The reviewed kit is fc0858a9 with 45a2af0a's
+verified LOD0 socket export correction; replacing its
 record requires another source/visual review, not a silent importer fallback.
 """
 from __future__ import annotations
@@ -14,7 +15,7 @@ import struct
 SOURCE = Path("Content/SourceArt/Characters/Enemies/InventoryDrone")
 NAME = "SM_Drone_Inventory"
 DESTINATION = "/Game/Generated/Characters/Enemies/InventoryDrone"
-RECORD_SHA256 = "346a2b86cdc626b57cb1ee245dce38b3948b35aedc0625d10e87b1d75530aedb"
+RECORD_SHA256 = "eec9c2f4c38160feea3317cf05edd63b7f90af11197d53bcccfdd3cd63c74251"
 
 
 def require(condition, message):
