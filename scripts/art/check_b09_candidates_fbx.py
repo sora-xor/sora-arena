@@ -39,6 +39,13 @@ TOL_AXIS = 1e-6
 TOL_UV = 1e-6
 
 
+# The intentionally open surfaces, kept apart from the closed/outward check (Coordination 242): {asset: (open parts,
+# why)}. Every other part of every asset is a closed solid facing out. The gauge's sectors, the dish bracket's ring,
+# the shell's neck and twine, the hoops' scarf runs and the split strip's halves were open until this check found them.
+_GORES = "single-layer washi gores on the two-sided washi master (M_B09_WashiCandidate), open as paper is"
+OPEN_SURFACES = {**{f"SM_B09_Washi{k}": (1, _GORES) for k in range(1, 5)}, "SM_B09_LanternFinished": (4, _GORES)}
+
+
 def sha256(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
@@ -153,6 +160,10 @@ def check_asset(name, mesh, socks, lantern_frame, path, entry):
                     "closed_inward": sum(1 for c, vol in parts if c and vol <= 0.0)}
     if row["parts"]["closed_inward"]:
         problems.append(f"{row['parts']['closed_inward']} closed parts face inward")
+    want_open = OPEN_SURFACES.get(name, (0, ""))[0]
+    row["parts"]["open_allowed"] = want_open
+    if row["parts"]["open"] != want_open:
+        problems.append(f"{row['parts']['open']} open parts, {want_open} intended (OPEN_SURFACES)")
     lay = layers(path)[name]
     names = [u[0] for u in lay["uvs"]]
     row["uv_layers"] = names

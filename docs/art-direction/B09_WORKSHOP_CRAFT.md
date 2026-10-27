@@ -20,14 +20,27 @@ clearances, proposed before integration. Root owns state, accounting and collisi
 
 ## 1. Inputs and root's decisions
 
-The design reads root's tree at commit `102c18d9`, each file pinned by its git blob in `INPUTS`.
-`scripts/art/check_b09_root_inputs.py` verifies the pins and the constants, read-only. Its record is
-`Saved/W18Rebuild/b09_root_inputs_check_v6.json`:
-- no problems, and no pinned file changed at root's head `102c18d9`;
+The design reads root's tree at commit `c096eb98`, each file pinned by its git blob in `INPUTS`.
+`scripts/art/check_b09_root_inputs.py` verifies the pins and the constants, read-only. Its latest run (v9):
+- no problems, and no pinned file changed at root's head `c096eb98`;
+- it also checks FView's `LastAction` (`FAction`: Serial, Step, Unit, AgeMs) and `ActionPresentationMs` = 1200;
 - it now also compares the room's solids with the header box by box: centre, size and surface. The module's copy
   leaves out the ground slab;
 - the earlier pins stay recorded: `c1f0b5af` (v1), and `2a846a6a` (v2 and v4; v3 read the wrong tree and failed,
   empty).
+
+**From `102c18d9` to `541c61ae`** (Coordinations 242, 243 and 248), the full diff read, four pinned files changed, all
+additively:
+- `SoraWorkshopCraftRules.h` adds `ActionPresentationMs` = 1200 and `FView.LastAction`;
+- `SoraCampaignWorkshopCraft.cpp` records it on each credited unit;
+- `SoraWorldBuilder.h` adds the station marks;
+- `SoraPlayerCharacter.cpp` stops crouching on a ladder.
+
+The action contract (`workshop-action-view.md`) is pinned with them.
+
+**From `541c61ae` to `c096eb98`** (Coordination 256), only `SoraPlayerCharacter.cpp` changed. It refuses the guard and
+taking up an arm while the hands are stowed. Timing, eligibility, the trace, the stations, the recipe, the capsule and
+the eye are unchanged throughout.
 
 **From `2a846a6a` to `fcf3ffb5`,** only `chapter_03.json` changed, for b10's ground routes in `ch03_lantern_ward`. The
 `ch03.b09` beat is identical.
@@ -125,11 +138,11 @@ the split pose, pause or cancel clears held work, and a retry clears the failure
 | | |
 |---|---|
 | Body | a barrel 44 cm tall and 30 cm across, with 18 cm openings (superellipse profile, exponent 2.2) |
-| Hoops (輪骨) | six bamboo strips 4 × 1.6 mm, evenly spaced between the rims (radii 13.5–15.0 cm). Each overlaps its ends by 25° with a small hook. |
+| Hoops (輪骨) | six bamboo strips 4 × 1.6 mm, evenly spaced between the rims (radii 13.5–15.0 cm). Each is hooked into its notch at one end and wound on as the form turns (385°); its ends are scarfed and lap by 25° within the strip's thickness. |
 | Washi | four gores, each a quarter of the round plus 4° at each seam (8° of overlap per seam), over the hoops |
-| Rims (口輪) | top and bottom, 2.0 cm tall and 0.8 cm thick, black lacquer |
-| Bail | an iron arc rising 9 cm above the top rim. Its ring is the **hang point**, (0, 0, 32) from the centre. |
-| Form (型) | a spindle, two collars and eight radial boards just inside the hoops. A collapsed state (boards at 40%) for drawing it out. |
+| Rims (口輪) | top and bottom, 2.0 cm tall and 0.8 cm thick, black lacquer. Each sits **on** its mouth, its face against the paper's edge and the boards' ends (centred across the mouth, they crossed the paper and the boards). |
+| Bail | an iron arc set on the top rim's upper face, rising 9 cm, with a ring at its crown **across** the arc's plane, so a hook in the arc's plane threads it. The ring's top is the **hang point**, (0, 0, 34.2) from the centre. |
+| Form (型) | a spindle, two collars and eight notched radial boards just inside the hoops; it turns on its spindle as each strip winds on. A collapsed state (boards at 40%) for drawing it out. |
 
 **Stages:**
 - **frame:** the form and six hoops;
@@ -141,10 +154,12 @@ the split pose, pause or cancel clears held work, and a retry clears the failure
 **lantern frame**, whose origin is its centre.
 
 **Lantern height by station** (`LANTERN_Z`). The station point stays at the trace's 110.
-- **The rib form:** the lantern's centre is at 110, where all six hoops show from the stand.
-- **The paste bench and the oil rack:** it is at **130**, chest height.
-- **Why 130:** at 110, the lower shoulder of a seam or stroke hid behind the lantern's belly from standing eye height
-  (152). At 130 the front seam shows in full.
+- **The rib form: 120,** so its lowest hoop is in reach from the craft stand.
+- **The paste bench: 110; the oil rack: 116** (the view repair, Coordinations 252 and 257).
+  - From the craft stand, a lantern whose top is at eye height spans 55° of height, more than 21:9's 45.4°.
+  - At these heights every stroke sample is in frame and unoccluded at 16:9 and 21:9, except the one at the bottom
+    mouth (`B09_CRAFT_PAWS.md` §6.1).
+  - The earlier 130, chosen from the old framing stand at −80, no longer holds at the craft stand.
 
 ## 4. Stations
 
@@ -156,138 +171,124 @@ the split pose, pause or cancel clears held work, and a retry clears the failure
 - The same check from every eligible working-side position (in front of the bench, within 60° of the approach, on a
   20 cm grid), with the share that passes recorded.
 
-| Station | Capsule gap at the stand | Eye to work, pitch | Stand (16:9 and 21:9) | Working side that passes |
-|---|---|---|---|---|
-| rib form | 16 cm | 86.8 cm, −28.9° | dial and hoops pass | dial 92%, hoops 100% (152 positions) |
-| paste bench | 11 cm | 79.1 cm, −16.1° | seam passes; its bottom end at the rim is hidden, reported only | seam 100%; the bottom end 95%, reported only (153) |
-| oil rack | 11 cm | 79.1 cm, −16.1° | front stroke passes | front stroke 97%; side strokes 47%, reported only (149) |
+Measured from the **craft stand**, the capsule 1 cm off the proxy (the stand the craft poses work from):
 
-**What changed in the 48-row gores.** The washi now rests on the ribs and is sampled 48 × 32 (§11). The finer rows
-resolve the lantern's lower flare.
-- From standing eye height, that flare hides the paste seam's bottom end at the rim, as a real lantern's would. It is
-  now reported, like the oil's side strokes. The v5 gores' coarse facets dipped inside the flare and passed it.
-- The oil's front stroke passes from 97% of the working side (was 100%), and its side strokes from 47% (was 66%).
-| shell bench | 11 cm | 96.9 cm, −48.0° | shells and fuse pass | 100% (129) |
+| Station | Capsule gap to the parts | Eye to work, pitch | At the craft stand (16:9 and 21:9) | Working side that passes |
+|---|---|---|---|---|
+| rib form | 3 cm | 57.7 cm, −33.7° | dial and hoops pass | dial 93 %, hoops 100 % (152 positions) |
+| paste bench | −4.6 cm: the lantern frame overhangs its proxy (reported) | 58.3 cm, −46.0° | seam passes; its bottom end at the rim is hidden, reported only | seam 100 %; the bottom end 69 %, reported only (153) |
+| oil rack | 2 cm | 61.6 cm, −35.8° | **front stroke FAILS, open:** its bottom socket hides under the lower bulge | **front stroke 78 %, open** (under the required 90 %; it was 97 % at z 130); side strokes 23 %, reported only (149) |
+| shell bench | 3 cm | 58.0 cm, −43.6° | shells and fuse pass | 100 % (129) |
+
+These element checks are separate from the active-contact view of each stroke (`B09_CRAFT_PAWS.md` §6.1).
 
 **Shell bench:** of its 1,336 eligible positions, 386 lie inside the storehouse. Their trace already meets its wall
 today, by design.
 
 ### 4.1 Rib form (型台), `st_b09_rib_form`
 
-**Static parts** (station frame):
-- `SM_B09_RibFormBench`: top 60 × 100 cm at 75.
-- `SM_B09_FormBase`.
-- `SM_B09_Form`, its lantern centre at 110.
-- `SM_B09_FlexGauge`.
-- `SM_B09_StripStock`: twelve strips at the back edge.
+All positions below are in the station frame, cm. The spec (`docs/art-direction/data/b09_workshop_craft_spec.json`)
+is the source of truth.
 
-**The flex gauge.** Root's v2 review found the old gauge low at the front-left, partly outside the frame, in one colour
-and with no readable band. The new gauge:
-- **Placement:** a dial on a post at the bench's right (the hero's right, +Y), facing the hero. Its pivot is at (−4, 34,
-  132): above the highest hoop and beside the form, so the bending strip's free ends never sweep through it.
-- **Face and marks:** a cream half-disc (radius 13.5). A dark scale rim, and dark ticks at 0, 400 and 800 ms and at
-  the band's edges.
-- **The needle** sweeps the whole half-dial, **−90° to +90° over 0–960 ms**, so the band spans 60°. Root turns it to
-  point along (0, sin a, cos a), with a = `gauge_angle(HeldMs)`. At rest (`HeldStep` −1) it points to −90°.
-- **The release band** is fixed and green, the 640–960 ms window: **+30° to +90°**, radii 8.0–12.0 cm.
-- **Measured at the stand:** 28.7° off the dial's face, and the band subtends 6.2°: about 130 px at 1920 across.
-- **Measured from the working side:** it reads from 92% of positions. The rest are at the far edge of reach, where the
-  band falls under 2° or the dial is seen too far from its face (over 65°).
+**Static parts:**
+- `SM_B09_RibFormBench`: top 60 × 100 cm at 75.
+- `SM_B09_FormBase`: a turned pedestal, centred at (−15, 0).
+- `SM_B09_FlexGauge`.
+- `SM_B09_StripQuiver` at (−22, 38), with `SM_B09_StripStock`: twelve strips standing in it.
+- **The turning form** `SM_B09_RibForm` is its own asset. It is placed at `LanternCentre` (−15, 0, 120) and turned
+  by `wind_deg` × (Committed[0] + the flex stage of HeldMs), with `wind_deg` = 385.
+
+**The flex gauge:**
+- **Placement:** a dial on a post at the bench's front-left (−Y), facing the hero, its pivot at (−19, −34, 128). The
+  one-ended winding's free strip leaves toward the hero's right, so it never sweeps the gauge. At pivot height 142
+  the dial's upper half left the 21:9 frame from the craft stand.
+- **Post:** it stands behind the face and carries it. It had stood 0.8 cm in front of the face, under the needle's
+  hub, and stopped short of it.
+- **Needle and band:** the needle's hub sits on its pin. The needle sweeps −90° to +90° over 0–960 ms. The release
+  band (640–960 ms) is +30° to +90°.
 
 **State meshes:**
-- `SM_B09_Hoop1..6` (lantern frame).
-- `SM_B09_Hoop{k}_Flex000/025/050/075`, the strip being bent: straight and tangent to the form on the hero's side at 0,
-  wrapping outward to the closed hoop at 1. Its length is the same at every stage (tested).
-- `SM_B09_SplitStrip`.
-- `SM_B09_GaugeNeedle`, its hinge at the origin.
+- `SM_B09_Hoop1..6` (the form's frame).
+- `SM_B09_Hoop{k}_Flex000/025/050/075`: hooked at one end, wound on as the form turns, the free end straight toward
+  the hero's right.
+- `SM_B09_SplitStrip`: it lies along the bench's back at (20, 0). Its 91 cm used to lie across the gauge's foot and
+  overhang the bench by 25 cm.
+- `SM_B09_GaugeNeedle`.
 
-| View | Shows |
-|---|---|
-| `Committed[0]` = n (0..6) | `Hoop1..n` |
-| `HeldStep == 0`, `HeldMs` | hoop n+1's strip at `flex_stage(HeldMs)` (fully bent at 800 ms); the needle at `gauge_angle(HeldMs)` |
-| `HeldStep == −1` | the needle at rest; no strip on the form |
-| `FailedStripAgeMs ≥ 0` | `SplitStrip` at its rest while under 1,200 ms (a suggestion), then a fresh strip; a new press clears it |
-| `Assist` | the same; the strip completes at 800 ms, as the rules' assist does |
+**Sockets:**
+- `StationPoint`, `WorkStand` (the craft stand, −67), `LanternCentre`, `FormSpindle`, `HoopSeat1..6`;
+- `WindPress1..6`: the left paw's press, its normal the form's own, tilted with the profile;
+- `WindGuide1..6`;
+- `GaugePivot`, `StripStock`, `SplitStripRest`.
 
-**Sockets:** `StationPoint`, `WorkStand`, `LanternCentre`, `HoopSeat1..6`, `GaugePivot`, `StripStock`,
-`SplitStripRest`, `StripHoldL/R` (hand targets for a future first-person pose).
-
-**Proxy:** 64 × 104 × 78 cm. The dial (to 145.5 cm) and the spindle (to 148) are visual only.
+**Proxy:** 64 × 104 × 78 cm.
 
 ### 4.2 Paste bench (糊台), `st_b09_paste_bench`
 
 **Static parts:**
 - `SM_B09_PasteBench`: top 70 × 110 cm at 75.
-- `SM_B09_FormBase`: a turned pedestal and turntable, bringing the lantern's centre to 130.
-- The form with all six hoops: the bends are done before this station.
-- `SM_B09_PastePot`.
+- `SM_B09_FormBase`: a plinth turntable at (−27.5, 0), its plate at 80.
+- `SM_B09_PaperStand`: (−35, −52)–(−7, −22), top at 114. It carries the whole sheet stack, which overhung it by 5 cm.
+- `SM_B09_PotStand`: (−35, 22)–(−7, 55), top at 108. It carries the paste pot at (−28.5, 29) and the top rim's rest
+  at (−16.6, 44.5). The rim's rest used to run through the pot.
+- `SM_B09_PasteFrame`, a separate asset: the form and six hoops. It is placed at `LanternCentre` (−27.5, 0, 110) and
+  turned −90° × n by the turntable.
 
 **State meshes:**
-- `SM_B09_Washi1..4` (lantern frame), with per-vertex `height_frac` and `azimuth_frac`.
-- `SM_B09_WashiSheet1..4`.
-- `SM_B09_RimTop` and `SM_B09_RimBottom`, centred on their rings.
-- `SM_B09_PasteBrush`: the bristles' tip at the origin.
+- `SM_B09_Washi1..4`;
+- `SM_B09_WashiSheet1..4` at (−21, −37), stacked;
+- `SM_B09_RimTop` and `SM_B09_RimBottom`. The bottom rim's rest is its seat: it is fitted to the frame before the
+  paper. The rims step seats the top rim.
+- `SM_B09_PasteBrush`: its `BrushRest` is in the pot. The bristles' tip is on the pot's floor, and the handle leans
+  back on the far lip with a 0.3 mm stand-off; its rotation is in the socket.
 
-| View | Shows |
-|---|---|
-| `Committed[1]` = n (0..4) | `Washi1..n`; sheets 1..4 − n on the stack (1..3 − n while a paste is held, since its sheet is `Washi{n+1}`); the turntable turns the lantern −90° × n, so seam n+1 faces the hero |
-| `HeldStep == 1`, `HeldMs` | `Washi{n+1}` revealed to height_frac ≤ HeldMs / 1500; the brush along `Seam{n+1}_0..8`, bottom to top |
-| `Committed[2] == 1` | the rims move from `Rim*Rest` (stacked on the bench) to `Rim*Seat` |
+**Sockets:** `StationPoint`, `WorkStand` (−72), `LanternCentre`, `Turntable`, `HoopSeat1..6`, `Seam1..4_0..8`,
+`PasteDip`, `BrushRest`, `RimTopRest`, `RimTopSeat`, `RimBottomRest` (its seat), `RimBottomSeat`, `WashiSheet1..4`.
 
-**Sockets:** `StationPoint`, `WorkStand`, `LanternCentre`, `Turntable`, `HoopSeat1..6`, `Seam1..4_0..8`, `BrushRest`,
-`Rim*Rest`, `Rim*Seat`, `WashiSheet1..4`.
-
-**Proxy:** 74 × 114 × 78 cm. The pedestal is visual only.
+**Proxy:** 74 × 114 × 78 cm. **Overhang, reported:** the lantern frame's front reaches up to 5.6 cm past the proxy,
+at least 17.4 cm from the standing torso (`proxy_overhangs`).
 
 ### 4.3 Oil rack (油掛け), `st_b09_oil_rack`
 
 **Static parts:**
-- `SM_B09_OilRack`: two posts to 185 cm, a crossbar at 175–180, sled feet and a shelf at 20.
-- `SM_B09_RackHook`: its tip at 162, so the lantern's centre hangs at 130.
-- `SM_B09_OilJar` (荏油) on the shelf.
-- `SM_B09_DripTray`.
+- `SM_B09_OilRack`: two posts, a crossbar, sled feet and a low shelf.
+- `SM_B09_RackHook`: it leaves the crossbar's face and bends down into a U in the bail's plane. The bail's ring,
+  across that plane, rests with its top wire 0.5 mm over the U's. The old hook and ring lay in one plane and crossed
+  (134 pairs).
+- `SM_B09_DishBracket`: the arm squares off the post's face, then runs to its ring. The ring's profile is now closed.
+- `SM_B09_OilDish` at (−30.5, 24, 118).
+- `SM_B09_OilJar`, `SM_B09_DripTray`.
 
-**State meshes:** `SM_B09_LanternFinished` (lantern frame, hung from its hang point at `LanternHang`), and
-`SM_B09_OilBrush`.
+**State meshes:**
+- `SM_B09_LanternFinished`, its centre at (−19, 0, 116), hung from its hang point at `LanternHang`;
+- `SM_B09_OilBrush`: its `BrushRest` lies across the dish on the rim at both sides, the handle back over the dish.
 
-| View | Shows |
-|---|---|
-| `Committed[2] == 1`, `Committed[3] == 0` | the finished lantern on the rack, dry washi. Before that the rack is empty. |
-| `HeldStep == 3`, `HeldMs` | oil wetness to height_frac ≥ 1 − HeldMs / 1500 (top down); the brush along `OilStroke0_0..8` |
-| `Committed[3] == 1` | the rack empties; the lantern hangs at slot 36 in the rafters |
-
-**Side strokes.** The ±45° strokes are reported, not required: their lowest samples, on the bottom shoulder, hide
-behind the belly from standing eye height, as a real lantern's do.
-
-**Proxy:** the sled and shelf only, 76 × 104 × 22 cm. The posts, crossbar and lantern are visual only.
+**Proxy:** 76 × 104 × 24 cm.
 
 ### 4.4 Tamakichi's shell bench (玉台), `st_b09_shell_bench`
 
 **Static parts:**
 - `SM_B09_ShellBench`: top 70 × 120 cm at 72.
-- `SM_B09_WeaponCradle`: two V-blocks.
-- `SM_B09_ShellRack`: three seats matched to the bore.
-- `SM_B09_ShellTray`.
-- `SM_B09_WrapPaper`.
-- `SM_B09_FuseCoil`.
+- `SM_B09_ShellStand`: (−35, −50)–(−12, 30), top at 106.
+- `SM_B09_ShellRack`: a plank with three cups bored to weapon 7's 5.6 cm bore, at y −42, −34 and −26. The old solid
+  block sank the shells 2 cm into it.
+- `SM_B09_ShellTray` at (−26.4, 19), with the cores 120° apart on its floor. They had overlapped and floated 5 mm.
+- `SM_B09_WrapPaper`, `SM_B09_FuseCoil`.
+- `SM_B09_WeaponCradle`: two V-blocks on posts from the bench. They hold weapon 7's two clean cylinders, measured on
+  `SM_Weapon_07.fbx` (LOD0): the oak collar (r 4.02) and the bare muzzle end (r 3.80), each with a 0.3 mm stand-off.
+  The old blocks were sized to the bare culm and stood inside the real rope wrap.
 
 **Weapon 7** is the existing `SM_Weapon_07`, placed at `WeaponRest`:
-- origin (12, −22, 81.8);
-- its bore (X) along +Y, its Z toward −X;
-- so its handle lies toward the back, and its fuse faces the hero.
-- **Derived sockets:** `Muzzle` (12, 42, 81.8) and `FuseInspect` (6.0, −21.8, 83.0).
+- origin (−29, 40, 112): the bore along +X, away from the hero, the fuse up and its cord hanging;
+- `FuseInspect` (−28.8, 38.8, 118), `Muzzle` (35, 40, 112);
+- **reported:** its handle reaches 14 cm past the bench's front edge and 12 cm past the proposed proxy. It stays at
+  least 10 cm from the standing torso. With a horizontal weapon, nothing else on this bench keeps the fuse in reach
+  without covering the shells' work.
 
 **State meshes:**
-- `SM_B09_ShellCore`: 4.8 cm.
-- `SM_B09_ShellWrapped`: 5.4 cm, its paper gathered into a tied neck. It seats in the 5.6 cm bore with 1.0 mm clear
-  all round.
-
-| View | Shows |
-|---|---|
-| `Committed[4]` = n (0..3) | n wrapped shells in `ShellSeat1..n`; 3 − n cores at `ShellCore*` |
-| `Committed[5] == 1` | the fuse inspected (`FuseInspect`); weapon 7 is handed over at the beat's end |
-
-The bench is about 10 m from the oil jars and away from flame.
+- `SM_B09_ShellCore`: 4.8 cm, with its fuse stub.
+- `SM_B09_ShellWrapped`: 5.4 cm. Its gathered paper is a solid bunch, with the twine drawn into it. As an open skirt
+  it showed its back through the one-sided paper material.
 
 **Proxy:** 74 × 124 × 75 cm.
 
@@ -296,14 +297,15 @@ The bench is about 10 m from the oil jars and away from flame.
 - **The poles:** four bamboo drying poles (⌀ 4 cm) at Y −560, −820, −1080 and −1340.
   - They span X 1795–2305, inside the walls' inner faces.
   - They sit at Z 395, hung by cords from the ceiling (its underside at 430).
-- **The hooks:** ten per pole, 50 cm apart, giving **40 slots**. Each slot has a fixed yaw.
-- **Clearances:**
-  - every lantern bottom is at least 96 cm above a 195 cm head (ears included) on its floor;
-  - the hooks' tops are 33 cm under the ceiling;
-  - neighbours are 20 cm apart, and poles 230 cm.
+- **The hooks:** ten per pole, 50 cm apart, giving **40 slots**.
+  - Each slot hook is an S: an arc resting on the pole 0.2 mm off, a shank down outside it, and a U.
+  - The old hook began inside its pole (72 crossing pairs each).
+  - The lantern's ring rests in the U with a 0.5 mm stand-off.
+- **Lantern yaw:** each lantern faces +X or −X (90° or 270°, alternating). The ring threads a hook only lying across
+  the hook's plane; the earlier free yaw jitter ran rings through hooks.
+- **Clearances:** every lantern bottom stays well above a 195 cm head on its floor; neighbours are 20 cm apart.
 - **The player's lantern** takes slot 36: pole 4, nearest the oil rack. It hangs there once `Committed[3] == 1`.
-- **The fill is root's.** A suggestion: 24 of the craftspeople's lanterns from the start, the player's after the oil,
-  and all 40 at `RecipeComplete`.
+- **The fill is root's.**
 
 ## 6. Collision and the station trace
 
@@ -312,12 +314,11 @@ The bench is about 10 m from the oil jars and away from flame.
 - **The proxies:** each station gets one box under its bench or sled, each under 86 cm. A standing station ray starts
   at 88 cm, so no proxy can block a standing trace from any position.
 - **Tested, standing only:** on a 10 cm grid of eligible positions at every station, no standing ray meets a proxy.
-- **Not covered: crouching** (root, Coordination 236). Station eligibility has no standing-only gate, and a crouched
-  capsule's half-height is 44 cm. Its trace starts at 44 cm, and proxy tops of 75–78 cm can block close crouched
-  approaches, as today's generic benches can.
-  - So this is not yet a regression.
-  - `clearance()` reports a crouched CPU estimate, labelled as one.
-  - Crouched and native collision coverage are root's.
+- **Crouching:** root's standing-only rule (SOURCE `d52d428c`, Coordinations 257–258) refuses crafting while
+  crouched or requesting crouch. `clearance()` still reports a crouched CPU estimate, labelled as one. Native
+  collision coverage is root's.
+- **The working region and matching proxies are open** (`B09_CRAFT_PAWS.md` §6.3). The proxies here are proposals
+  that the next iteration will reshape with the region.
 - **Tall parts carry no collision:** the dial, the spindles, the pedestal, the rack's posts, the poles and the lanterns.
 - **Root decides,** after its own trace and traversal review. The current generic boxes are not an approved footprint.
 
@@ -330,9 +331,9 @@ shows the station's props being worked.
   side.
 - **They are geometric estimates of framing.** They are not Unreal framing; actual Unreal captures from these
   positions are the next step (§10).
-- **No shipped first-person paws work the props.** `StripHoldL/R`, `BrushRest`, the seam and stroke paths and
-  `WrapSpot` are hand targets only. Paws, strip and brush contact, and the craftspeople's animation remain production
-  work.
+- **No shipped first-person paws work the props.** The pose targets (`b09_craft_poses.py`: `WindPress`, `WindGuide`,
+  the seam and stroke paths along the paper, `WrapSpot`, `FuseInspect`) are gated designs only. Paw meshes, rig, keys
+  and the craftspeople's animation remain production work.
 
 ## 8. Previews (presentation only)
 
@@ -463,3 +464,29 @@ log, outputs and failure are kept.
 - **Action presentation** for the press-committed steps.
 - **A rebuild and recapture,** in a later lane window.
 
+## 12. The CPU repair pass after s154 (2026-10-27, Coordinations 241–261)
+
+**New gates, all CPU and triangle-exact:**
+- **The prop-clash gate** (`b09_prop_clash.py`) tests every station's states and the rafters. No prop may cross or
+  contain another, and every resting prop must sit on its support within 1.2 mm.
+  - Its crossing test runs twice, jiggled each way, so grid-aligned boxes cannot hide a crossing.
+  - The real weapon 7 mesh is read from its FBX.
+  - It found the rims through the paper and the form, the rims' rests through the pot and the sheet stack, the bail's
+    ring through its hook, the slot hooks through their poles, the shells sunk into a solid rack, overlapping cores,
+    the split strip across the gauge's foot, the gauge's post under the needle, the brushes through their rims, and
+    weapon 7's real rope inside its cradle.
+  - It records the state before repair in `Saved/Qualification/2026-10-27/b09-craft-gates/prop-clash-before.json`.
+- **The closed/outward check** now keeps the intentionally open surfaces apart (`OPEN_SURFACES` in
+  `check_b09_candidates_fbx.py`): only the washi gores, on the two-sided washi master.
+  - It fixed the gauge's sectors (no ends, wound inward), the dish bracket's ring, the shell's neck and twine, and
+    the edge-to-edge scarf runs and split-strip halves.
+- **The same-stand pose gate** is described in `B09_CRAFT_PAWS.md`.
+- **The view repair** is in `B09_CRAFT_PAWS.md` §6.1.
+
+**Still open, as failures:**
+- **The bottom-mouth contact sample** (`B09_CRAFT_PAWS.md` §6.1). Its 1.4 cm bristle convention is a design candidate
+  until the bristles' real footprint is shown reaching the rim, wetness coverage is physical, and the view gate
+  follows that contact (Coordination 261).
+- **The working region and its matching proxies** (`B09_CRAFT_PAWS.md` §6.3).
+- **The oil front stroke's bottom socket**, hidden under the lower bulge (`OPEN_VIEW_DEFECTS`).
+- **Two reported overhangs:** the paste lantern's front and weapon 7's handle.

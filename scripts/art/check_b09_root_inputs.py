@@ -11,7 +11,8 @@ The constants the design rests on are parsed from the pinned files and compared 
 - the reach;
 - the hero's capsule and standing eye;
 - the station trace's end height;
-- the view the presentation reads (SoraWorkshopCraftRules::FView, FSoraKitView::LanternCraft);
+- the view the presentation reads (SoraWorkshopCraftRules::FView, FSoraKitView::LanternCraft), its LastAction record
+  (FAction: Serial, Step, Unit, AgeMs) and the presentation cap ActionPresentationMs;
 - the b09 recipe and output;
 - weapon 7's bore, culm, muzzle and fuse.
 
@@ -75,9 +76,16 @@ def main():
     if eye != B.EYE[2]:
         problems.append(f"eye {eye}")
     view = re.search(r"struct FView\s*\{(.*?)\};", timing, re.S)
-    want_fields = ("Active", "RecipeComplete", "Assist", "Step", "Committed[6]", "HeldStep", "HeldMs", "FailedStripSerial", "FailedStripAgeMs")
+    want_fields = ("Active", "RecipeComplete", "Assist", "Step", "Committed[6]", "HeldStep", "HeldMs", "FailedStripSerial",
+                   "FailedStripAgeMs", "FAction LastAction")
     if view is None or any(f not in view.group(1) for f in want_fields):
         problems.append("SoraWorkshopCraftRules::FView lacks a field the presentation reads")
+    action = re.search(r"struct FAction\s*\{(.*?)\};", timing, re.S)
+    if action is None or any(f not in action.group(1) for f in ("unsigned Serial", "Step", "Unit", "AgeMs")):
+        problems.append("SoraWorkshopCraftRules::FAction lacks Serial, Step, Unit or AgeMs")
+    cap = re.search(r"ActionPresentationMs=(\d+)", timing)
+    if cap is None or int(cap.group(1)) != B.ACTION_PRESENTATION_MS:
+        problems.append(f"ActionPresentationMs {cap.group(1) if cap else None}, module {B.ACTION_PRESENTATION_MS}")
     if "SoraWorkshopCraftRules::FView LanternCraft;" not in show("Source/SoraArena/Public/SoraWorldBuilder.h"):
         problems.append("FSoraKitView::LanternCraft is missing")
     trace = show("Source/SoraArena/Private/Game/SoraCampaignWorkshopCraft.cpp")

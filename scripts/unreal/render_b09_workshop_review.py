@@ -343,16 +343,22 @@ def shots(spec):
     # The rib form (step 0).
     st = S[0]
     lc, work = sock(st, "LanternCentre"), world_of(st, st["work_point_cm"])
+    stages = spec["lantern"]["flex_stages"]
     for label, committed, ms, failed in (("rib_midbend", 3, 640, False), ("rib_split", 2, -1, True), ("rib_six", 6, -1, False)):
-        items = [(f"SM_B09_Hoop{k}", lc, None, None) for k in range(1, committed + 1)]
+        # The form turns on its spindle as each strip winds on (one-ended winding): the form and its hoops, in the
+        # form's frame, at LanternCentre, turned by wind_deg * (Committed[0] + the flex stage of HeldMs).
+        flex = stages[int(round(min(max(ms, 0) / spec["recipe"]["bend_ms"][0], 1.0) * (len(stages) - 1)))] if ms >= 0 else 0.0
+        turn = spec["lantern"]["wind_deg"] * (committed + flex)
+        items = [("SM_B09_RibForm", lc, yaw(turn), None)]
+        items += [(f"SM_B09_Hoop{k}", lc, yaw(turn), None) for k in range(1, committed + 1)]
         if ms >= 0:
-            items.append((f"SM_B09_Hoop{committed + 1}_Flex075", lc, None, None))
+            items.append((f"SM_B09_Hoop{committed + 1}_Flex{int(round(flex * 100)):03d}", lc, yaw(turn), None))
         needle = gauge_angle(spec, ms if ms >= 0 else 0)
         items.append(("SM_B09_GaugeNeedle", sock(st, "GaugePivot"), unreal.Rotator(roll=needle, pitch=0.0, yaw=0.0), None))
         if failed:
             items.append(("SM_B09_SplitStrip", sock(st, "SplitStripRest"), sock_rot(st, "SplitStripRest"), None))
         state = {"Committed": [committed, 0, 0, 0, 0, 0], "HeldStep": 0 if ms >= 0 else -1, "HeldMs": max(ms, 0),
-                 "FailedStripAgeMs": 300 if failed else -1, "needle_roll_deg": needle}
+                 "FailedStripAgeMs": 300 if failed else -1, "needle_roll_deg": needle, "form_yaw_deg": turn}
         shot(label, 0, items, stand_eye(st), work, state)
         if label == "rib_midbend":
             shot(label + "_21x9", 0, items, stand_eye(st), work, state, (2520, 1080))

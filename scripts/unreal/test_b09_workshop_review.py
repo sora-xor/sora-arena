@@ -165,7 +165,8 @@ class Capture(unittest.TestCase):
         rows = rotation_rows(rot)
         np.testing.assert_allclose(rows[0], r[:, 0], atol=1e-9)                                     # the bore
         np.testing.assert_allclose(rows[2], r[:, 2], atol=1e-9)                                     # the fuse side
-        self.assertLess(rows[2][0], 0.0)                                                            # toward the hero
+        np.testing.assert_allclose(rows[0], [1.0, 0.0, 0.0], atol=1e-9)                             # away from the hero
+        np.testing.assert_allclose(rows[2], [0.0, 0.0, 1.0], atol=1e-9)                             # the fuse up
 
     def test_the_exposure_is_metered_from_the_lamps(self):
         ev, lux = self.R.metered_ev100(self.spec)

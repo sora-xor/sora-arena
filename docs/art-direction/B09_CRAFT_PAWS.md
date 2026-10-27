@@ -1,124 +1,162 @@
-# b09 craft paws: projection, reach and contact (CPU design, for root's decisions)
+# b09 craft paws: projection, same-stand poses, contact and view (CPU design, for root's decisions)
 
-Root's integration audit makes the authored craft paws, arm poses and believable hand-tool contact Claude's work
+Root's integration audit makes the authored craft paws, arm poses and believable hand-tool contact Claude's
 (`Saved/Qualification/2026-10-27/b09-integration-review.json`). The presenter, state and collision stay root's.
 
-**Status: a CPU design proposal.**
+**Status: a signed CPU work in progress, not an admission.**
 - No paw is built, posed or imported, and nothing is adopted.
-- The station props it reads are b09's candidates (`B09_WORKSHOP_CRAFT.md`, spec `b3222418`).
+- The gates below pass where stated. The open items (§6) are failures, kept as expected failures in the tests; they
+  are not accepted exceptions.
 
 **Source of truth:**
-- `scripts/art/b09_craft_reach.py`, tested by `scripts/art/test_b09_craft_reach.py`.
-- `b09_workshop_craft.py`, which supplies the sockets, paths and proxies.
+- `scripts/art/b09_craft_poses.py` (the same-stand pose gate), tested by `test_b09_craft_poses.py`;
+- `scripts/art/b09_prop_clash.py` (props through props, and supports), tested by `test_b09_prop_clash.py`;
+- `b09_workshop_craft.py`, which supplies the layout, sockets and proxies.
+
+The first reach study (`b09_craft_reach.py`, in `3c6b3f70`) let every contact choose its own stand and sometimes its
+paw. Root's correction (Coordination 241) retired it: both paws and every sample of an action must work from one
+stand.
 
 ## 1. Projection: world-space paws at the world's 94°
 
-**The decision:** the craft paws are world-space parts, drawn at the world's 94° in the same depth buffer as the
-props they touch. They are not 70° first-person primitives.
-- **The 70° primitive doesn't line up.** The hero's camera draws the world at 94° and first-person primitives at 70°
-  (`SoraPlayerCharacter.cpp`).
-  - A primitive drawn at 70° appears tan 47° / tan 35° = **1.53 times** larger on screen than the same point at 94°.
-  - A paw point 12 cm right and 25 cm ahead of the eye lands about **228 px** from its world contact at 1920 wide.
-- **No correction helps here.**
-  - `FirstPersonScale` (0.6) moves geometry along the view rays only, so it changes nothing on screen.
-  - Root's `TransformFirstPersonToWorld` corrects a direction (the drawn bow's arrow), not a contact point.
-  - Correcting a primitive to meet a world point would squash it 0.65× across the view: a visibly distorted paw.
-- **World-space parts meet their props exactly,** and their contact can be gated triangle-exactly
-  (`mesh_clearance.py`), as the props' own clearances are.
-- **What it costs:** world-space paws can clip into world geometry, so every craft pose needs a clearance gate
-  against its station's props. That is the same kind of gate as the b09 strip/paper clearance.
+**The decision (root, Coordination 241):** the craft paws are world-space parts, drawn at the world's 94° in the same
+depth buffer as the props they touch. They are not 70° first-person primitives.
+- A primitive drawn at 70° appears tan 47° / tan 35° = 1.53 times larger on screen than the same point at 94°. A paw
+  point 12 cm right and 25 cm ahead of the eye would land about 228 px from its world contact at 1920 wide.
+- `FirstPersonScale` and `TransformFirstPersonToWorld` do not correct a contact point.
+- World-space parts meet their props exactly, and their contact is gated triangle-exactly, as below.
 
-## 2. Reach: the hero can't reach the work as laid out
+## 2. The hero and the paw
 
-**The hero** (Unreal cm):
-- the standing eye is at the capsule's centre + (4, 0, 64), with capsule radius 34 and half-height 88;
-- the shoulders are (−4, ±27.7, −24.5) from the eye (production body, `runtime_skin_manifest.json`);
-- upper arm 29.05 cm and forearm 25.00 cm, so reach is at most 98 % of shoulder to wrist: **52.97 cm**.
+| | |
+|---|---|
+| Standing eye | capsule centre + (4, 0, 64); capsule radius 34, half-height 88 (`SoraPlayerCharacter.cpp`) |
+| Shoulders | (−4, ±27.7, −24.5) from the eye (`runtime_skin_manifest.json`) |
+| Arm | upper arm 29.05 cm, forearm 25.00 cm; reach at most 98 % of shoulder to wrist |
+| Paw (`nyaakoto_fp_paws.py`) | the carpus 4.1 cm behind the knuckle line; palm half-thickness 1.05 cm; the metacarpal pad under the knuckles |
+| Sleeve (kote) | the upper arm a 4.5 cm tube; the forearm a cone from 3.8 cm at the elbow to 3.0 cm at the cuff, 2 cm short of the wrist |
 
-**Stands.** The stand nearest the work is the capsule touching the front of the station's proposed proxy: x −66, −71,
-−72 and −71 at the four stations. The framing stand of the first-person checks is at −80.
+The earlier study put the wrist 6 cm behind the palm. That understated the reach by about 2 cm; the shell bench was
+then at 100.1–100.9 % of the arm, and its work moved 4–5 cm toward the hero and up 4 cm.
 
-**From the nearest stand, no station's contacts are within reach.** Shortfalls against 52.97 cm:
+**Targets follow the part:**
+- **press:** the pads flat on a surface, along its own normal. The rib form's press tilts with the profile, which
+  slopes 0.26 at the end hoops.
+- **grip:** round a strip, a rim's edge or a paper's edge.
+- **claw:** a small part taken from above. The palm is clear of the core's fuse stub (5.45 cm over its centre) or the
+  wrapped shell's tied neck (7.35 cm), and the digits reach down round it.
+- **brush:** held as a pencil is. The digits pinch it 6 cm up from the bristles; the handle is 35° from the fingers.
+  As a dagger grip, it bent the wrist 80°.
 
-| Station | Required contacts | Short by |
-|---|---|---|
-| rib form | the strip held to the form, and guided, at each hoop's front | up to 9.0 cm (hoop 1, lowest) |
-| rib form | today's two-ended bend: the strip's ends at flex 0.25–1 | 31–43 cm. The ends pass behind the form (reported) |
-| paste bench | the brush along seam 1, `Seam1_0..8` | 2.3 cm in the middle, 11–13 cm at the ends |
-| paste bench | the rims' seats, at the lantern's top and bottom | up to 22.1 cm |
-| oil rack | the brush along `OilStroke0_0..8` | 3.2 cm in the middle, up to 13.8 cm at the ends |
-| shell bench | cores, wrap spot, shell seats, fuse inspection | 19–36 cm |
+## 3. The gate: one stand, both paws, every sample
 
-The rests and stock at the backs of the benches are 18–62 cm short. They are reported, since a presentation could
-stage them nearer.
+**The stand** is the craft stand: the capsule 1 cm clear of the station's proposed proxy, facing +X.
 
-**Why.** The 34 cm capsule holds the shoulder about 36 cm behind a bench's front edge. A 75 cm bench top lies 52.5 cm
-below the 127.5 cm shoulder. So a 53 cm arm can't reach even the bench's front edge, and the work must come forward
-and up to chest height.
-- **Stretched first-person arms would need about 92 cm** to reach the shell bench's fuse, 1.7× the anatomical arm.
-  That isn't credible.
-- **A body lean** would move the first-person camera, and root keeps the camera player-controlled.
+**Every sample** of every phase and transition, for both paws, is checked against:
+- **reach:** two-bone IK at most 98 %;
+- **elbow:** flexion at most 145°, and the elbow outside the torso;
+- **wrist:** at most 75° from the forearm;
+- **clearance, triangle-exact:** the sleeves 0.5 cm from every prop; the palm 0.5 cm from the parts it does not work,
+  and never into those it works; the two arms 0.5 cm apart;
+- **continuity:** the elbow moves at most 5 cm between samples.
 
-## 3. Proposed layout changes (root's decision)
+Each phase keeps one elbow swivel. A transition turns it from the phase before to the phase after. Where that fails a
+gate, the elbow swings out of the way and back smoothly, by a swivel of b · sin(πu).
 
-**The smallest moves of each station's whole work group** that bring every required contact within reach, with
-3 cm to spare (`layout_shift`; the proxies stay as proposed):
+**The props are those each phase shows:**
+- **the rib form,** turned for the hoops wound, with the next hoop at the flex stage of the sample's HeldMs;
+- **the shell bench,** with its cores and seated shells as the clip has them;
+- **weapon 7,** as its real LOD0 mesh: the rope, the fibre cards and the cord included.
 
-| Station | Toward the hero | Up | Notes |
+**Result (current bytes; rerun on the signed bytes):** every action passes at every station.
+
+| Station | Highest reach | Highest wrist | Least clearance | Largest elbow step |
+|---|---|---|---|---|
+| rib form (6 hoops) | 88.7 % | 58.8° | 1.73 cm | 3.9 cm |
+| paste bench (paste, rims) | 88.2 % | 64.7° | 0.74 cm | 2.7 cm |
+| oil rack | 89.5 % | 65.1° | 2.33 cm | 2.2 cm |
+| shell bench (3 shells, inspection) | 94.5 % | 52.9° | 0.73 cm | 3.7 cm |
+
+The inspection needs a 30° elbow swing to clear weapon 7's overhanging handle.
+
+**Findings kept as evidence** (`Saved/Qualification/2026-10-27/b09-craft-gates/`):
+- **The first every-sample run failed the inspection:** the elbow jumped 14.8 cm. A per-sample swivel repair caused
+  it; the smooth swivel replaced it. The run is `pose-gate-every-sample-first-run.json`.
+- **The pose gate before the clearance repairs** is `pose-gate-before.json`.
+
+## 4. The craft actions
+
+| Step | Left paw | Right paw | Driven by |
 |---|---|---|---|
-| rib form | 15 cm | 0 | With a **one-ended winding** (below). Today's two-ended bend can't be reached from in front at any shift. |
-| paste bench | 28 cm | 0 | The lantern's centre comes to x −28, over the bench's front edge (−35) on the turntable's pedestal. The rims' seats set the shift. |
-| oil rack | 19 cm | 0 | The hook comes forward on an arm from the rack's bar. |
-| shell bench | 40 cm | 11 cm | A rigid move leaves the bench. Instead, the work goes to the bench's front edge, raised: a wrapping tray on a block about 11 cm high, and weapon 7 brought forward with its fuse toward the hero. |
+| bend ×6 | steadies the form at its front-left, then presses the wound strip, fingers along it | takes a strip from the quiver, hooks its end, slides to the guide, guides it in | `flex_stage(HeldMs)`; the form turns `wind_deg` × (n + flex) |
+| paste ×4 | takes a sheet by its near edge, then holds the panel at 245° | dips the brush in the pot, then brushes up the seam along the paper's own profile | `HeldMs / 1500` |
+| rims ×1 (clip ≤ 1200 ms) | steadies the frame | sets the top rim on the top mouth; the bottom rim is on the frame from the start | `LastAction` |
+| oil ×1 | steadies the lantern at 245° | dips in the dish, then oils down the front | `HeldMs / 1500` |
+| shells ×3 (clips ≤ 1200 ms) | holds the shell on the paper, then seats it by its neck | takes the core, then twists the neck | `LastAction` |
+| inspect ×1 (clip ≤ 900 ms) | keeps the third shell seated | the index pad on the fuse | `LastAction` |
 
-**The one-ended winding** replaces today's two-ended bend (`hoop_path`), which carries both of the strip's ends round
-the form at once:
-- the strip's end hooks into the form's notch, which the form's boards gain (notches, §11 of the workshop doc);
-- the form turns on its spindle as the strip winds on, 385° over the bend;
-- the left paw presses the wound strip to the form at the front, and the right paw guides the free strip in.
-- Both paws stay at the form's front for every hoop. With the 15 cm move, every hoop is in reach.
-- Root's bend contract is unchanged: `HeldStep == 0`, with `HeldMs` setting `flex_stage`. The form's turn is
-  presentation, derived from the same flex.
+## 5. The standing-only contract (proposed to root, 05:10 UTC; root's SOURCE `d52d428c` implements 1–3)
 
-**A layout move touches the first-person checks** (`first_person()`): the dial's band, the seam and the strokes must
-stay in frame and clear of the paws. The CPU checks are rerun for any layout root accepts.
+1. **Admission:** refuse the craft input unless the hero is standing (not IsCrouched and not bWantsToCrouch) and at
+   a working stand. A working stand is inside the station's working region (§6.3), facing +X within its yaw band.
+2. **Cancellation:** a crouch request, or leaving the region or the yaw band, cancels a held step at once, with no
+   unit. The hands are freed, and a release plus a fresh press is needed. Completed units stay.
+3. **Press clips:** a press is refused unless admissible. If the stance becomes invalid during a clip, the credit
+   stands, the presenter ends the clip at once and consumes its serial, and nothing replays.
+4. **The presenter** never stretches an arm, moves the camera or player, or delays accounting.
 
-## 4. The craft actions and their contacts
+**Crouch** fails reach at every station, at 105–192 % of the arm, so no crouched craft pose exists.
 
-Each pose is a paw target: the palm centre, palm normal and finger direction in the station frame. The pads on the
-part are gated triangle-exactly: in contact within 0.1 mm to 1.2 mm, never through it. That is the yumi paw's
-convention: a 1.2 mm squeeze, carved back to a 0.15 mm gap.
+## 6. Open: not passing
 
-| Step (root's FView) | Left paw | Right paw | Driven by |
-|---|---|---|---|
-| bend ×6 (`HeldStep 0`, `HeldMs`) | presses the wound strip to the form at the front | guides the free strip; at a split, lets go | `flex_stage(HeldMs)`; the split strip lies at `SplitStripRest` for `FailedStripAgeMs` |
-| paste ×4 (`HeldStep 1`, `HeldMs`) | flat on the panel beside the seam, holding it | the paste brush up seam n+1, `Seam{n+1}_0..8`, bottom to top | `HeldMs / 1500` |
-| rims ×1 (a press) | the bottom rim onto its seat | the top rim onto its seat | **needs a short action clip:** root's state commits on the press |
-| oil ×1 (`HeldStep 3`, `HeldMs`) | steadies the lantern at its bottom rim | the oil brush down the front stroke, `OilStroke0_0..8` | `HeldMs / 1500` |
-| shells ×3 (presses) | holds the core in the paper | wraps, twists the neck, ties, then seats it on the rack | **needs a short action clip** |
-| inspect ×1 (a press) | steadies weapon 7 | the pad of the index digit on the fuse (`FuseInspect`) | **needs a short action clip** |
+### 6.1 Active contact at the bottom mouth (both aspects)
 
-**The press-committed steps.** Rims, shells and inspection have no hold to drive their poses. Root's audit already
-names the need: a read-only last-action serial and age in the view (as `FailedStripSerial` and `FailedStripAgeMs` are
-for the split), so a clip of about 0.6–1.2 s plays after the press. The clip would delay and duplicate no
-accounting.
+**The view repair:**
+- the paste lantern is lowered to 110 and the oil lantern to 116;
+- the holds move to 245°;
+- the bottom rim is fitted to the frame before the paper;
+- the strokes follow the paper's own profile. Chords between the seam sockets had cut up to 0.56 cm inside the washi.
 
-## 5. Decisions for root
+**Measured** from the craft stand at the natural look, samples in frame and unoccluded:
+- the paste stroke and the oil stroke: 33 of 34 at 16:9 and at 21:9;
+- the rim clip: 2 of 2 at both aspects.
 
-1. **World-space craft paws at 94° (§1),** with a clearance gate per pose.
-2. **The layout moves (§3)**, or another arrangement that meets the same reach.
-3. **The one-ended winding** for the bend's presentation.
-4. **A last-action serial and age** in `SoraWorkshopCraftRules::FView` for the press steps.
+The paste seam is whole at 21:9.
 
-## 6. Next, once root decides
+**The one sample left** in each stroke is the brush tip exactly at the bottom mouth, under the lantern's lower bulge
+from a standing eye. The oil front stroke's bottom socket (`OilStroke0_8`) is hidden for the same reason.
 
-- **The layout:** move the work groups, add the form's notches and the turning form, then rerun every CPU gate. The
-  gates cover reach, the paper and strip clearances, first person and the short edges.
-- **The paws:** a craft paw pair from the production anatomy (`nyaakoto_fp_paws.py`: pads, digits, dewclaw).
-  - It would use a rig like the bokuto viewmodel's 15 bones (forearm, wrist, four digits and thumb per paw).
-  - Each pose is two-bone IK from the shoulders, gated for reach (98 %), pad contact and clearance against the
-    station's props.
-- **The poses,** keyed per action phase, with contact checked at each key.
+**Proposed convention (root to accept or reject):** the tip's contact stops 1.4 cm above the bottom mouth. The flat
+brush's bristles (6 cm paste, 5 cm oil) cover the rim line, and the reveal and wetness still reach the rim per root's
+contract. With it every sample is visible. Until root accepts, it stays open.
+
+### 6.2 The original view failures (kept)
+
+Before the repair, from the craft stand:
+- **paste:** the seam spanned 55.5° of height against 21:9's 45.4°, and active contact was 23–24 of 34;
+- **rims:** the clip was 0 of 2, occluded;
+- **oil:** active contact was 29–33 of 34.
+
+### 6.3 The working region (root's Coordination 259)
+
+The admitted stands must include the natural stop reached by walking against the proxy, with practical depth, lateral
+room and yaw. Walking moves 8.4–11 cm per 60 Hz frame and 16.8–22 cm at 30 Hz.
+
+**Today it fails.** On a grid to 22 cm deep, ±15 cm lateral and ±15° yaw, 1–10 of 90 stands pass per station:
+- the depth at the centre is at most 4 cm;
+- the shell bench passes only at its contact stand.
+
+**Proposed target, for root to confirm:** 22 cm deep, ±15 cm, ±15°, tested at the region's corners, edges and
+centre and through every intervening pose.
+
+**The repair:** bring each station's work within reach of the whole region, and set its matching proxy so that the
+natural stop lies inside the region with the body still clear of the bench. The capsule's 34 cm radius keeps the
+shoulders far from a bench whose proxy is at its front edge. This is the next CPU iteration. Its bounds, origins and
+axes, yaw band and proxies will come together in the signed spec.
+
+## 7. What comes after root decides
+
+- **The paws:** a craft paw pair from the production anatomy (`nyaakoto_fp_paws.py`).
+  - It would use a rig like the bokuto viewmodel's 15 bones.
+  - Its poses would be keyed from these targets, and gated again triangle-exactly with the real meshes.
 - **Then** an Unreal capture of the paws at the stands, in its own bounded sequence.
-
-The craftspeople's animation stays open.
