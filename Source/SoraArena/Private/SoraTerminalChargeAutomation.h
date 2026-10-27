@@ -3,14 +3,24 @@
 #include "SoraRecoveryAutomation.h"
 #include "SoraLiftAutomation.h"
 #include "SoraEquipmentComponent.h"
+#include "SoraGameEvents.h"
 #include "Combat/SoraStealth.h"
 #include "Components/CapsuleComponent.h"
+#include "Misc/ScopeExit.h"
 namespace SoraTerminalChargeAutomation
 {
 inline bool HoldTo(FSoraAutomationWorld& W,SoraTerminalChargeRules::EStage Stage)
 {
     auto* C=W.Mode()->Campaign();
     if(!W.InjectKey(EKeys::E,IE_Pressed))return false;
+    auto* Events=USoraGameEvents::Get(W.GetTestWorld());
+    FString DamageSource=TEXT("none");
+    const auto Damaged=Events->OnDamaged.AddLambda([&](const FSoraDamagedEvent& E)
+    {
+        if(E.Victim==W.Player())DamageSource=FString::Printf(TEXT("%s (%s), %.2f HP"),
+            *GetNameSafe(E.Causer),E.Causer?*E.Causer->GetActorLocation().ToString():TEXT("no actor"),E.Amount);
+    });
+    ON_SCOPE_EXIT { Events->OnDamaged.Remove(Damaged); };
     if(!C->TerminalOccupiesHands()&&C->TerminalState().Stage!=Stage)
     {
         const auto* H=W.Player();const auto* K=H->GetEquipment();const auto* S=USoraStealth::Get(H);
@@ -31,10 +41,10 @@ inline bool HoldTo(FSoraAutomationWorld& W,SoraTerminalChargeRules::EStage Stage
             const auto* H=W.Player();const auto* K=H->GetEquipment();
             FHitResult Hit;FCollisionQueryParams Q(SCENE_QUERY_STAT(TerminalCancelDiagnostic),false,H);
             W.GetTestWorld()->LineTraceSingleByChannel(Hit,H->GetActorLocation(),FVector(-730,560,110),ECC_Visibility,Q);
-            UE_LOG(LogTemp,Error,TEXT("Terminal work cancelled at frame=%d: hero=%s playable=%d ground=%d feet=%.3f key=%d wait_release=%d health=%.2f->%.2f stagger=%d strike=%d step=%d reload=%d dialogue=%d ray=%s/%s"),
+            UE_LOG(LogTemp,Error,TEXT("Terminal work cancelled at frame=%d: hero=%s playable=%d ground=%d feet=%.3f key=%d wait_release=%d health=%.2f->%.2f stagger=%d strike=%d step=%d reload=%d dialogue=%d ray=%s/%s damage=%s"),
                 I,*H->GetActorLocation().ToString(),H->CanPlay(),H->GetCharacterMovement()->IsMovingOnGround(),H->GetActorLocation().Z-H->GetCapsuleComponent()->GetScaledCapsuleHalfHeight(),
                 H->IsActionHeld(TEXT("Interact")),C->TerminalState().WaitRelease,Health,H->Health,K->IsStaggered(),K->IsCommittedStrike(),K->IsStepping(),K->bReloading,C->IsDialogueBlocking(),
-                *GetNameSafe(Hit.GetActor()),*GetNameSafe(Hit.GetComponent()));
+                *GetNameSafe(Hit.GetActor()),*GetNameSafe(Hit.GetComponent()),*DamageSource);
             break;
         }
     }

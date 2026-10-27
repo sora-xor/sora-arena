@@ -1387,7 +1387,13 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
     {
         if(Beat.Id==TEXT("ch03.b10"))
         {
-            if(!ClearField(Test,State,Index)||!FreeConscripts(Test,State)||!WaitForDialogue(Test,State)||
+            if(!ClearField(Test,State,Index)||!FreeConscripts(Test,State)||!WaitForDialogue(Test,State))return false;
+            // Freeing the remaining conscripts can raise the alarm after the
+            // first patrol is cleared. Deal with those reinforcements too;
+            // their hits correctly interrupt planting in ordinary play.
+            Test.AddInfo(FString::Printf(TEXT("Terminal approach: %d live opponents after freeing conscripts"),LiveEnemies(State).Num()));
+            if(!ClearField(Test,State,Index)||!WaitForDialogue(Test,State)||
+               !Test.TestTrue(TEXT("The assisted terminal traversal starts after its patrol and reinforcements fall"),LiveEnemies(State).IsEmpty())||
                !Test.TestTrue(TEXT("Terminal charge requires two holds and a physical timed escape"),SoraTerminalChargeAutomation::Escape(*State.World)))return false;
             State.ObjectivesHeld+=2;break;
         }
