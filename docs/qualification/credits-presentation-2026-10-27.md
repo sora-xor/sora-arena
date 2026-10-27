@@ -68,3 +68,15 @@ checkout at `c096eb98`. Evidence is under SOURCE's ignored
 `credits-rendered-558df255-ui-review`. These are editor results; fresh packaged
 staging/runtime remain pending. The full lane returned to Claude under
 Coordination 263 after terminal processes and an empty inventory were verified.
+
+The collector now recognizes the menu tour's original `LogCore` screenshot
+acknowledgements and binds all 19 names to the run's committed source inventory.
+It rejects incomplete, duplicate, reordered, replayed or wrong-size records,
+and stale, missing, corrupt or symlinked originals, retaining authenticated
+frames when a tour fails. All 54 capture-report host tests pass. A CPU replay
+against the preserved `558df255` capture archives all 19 original PNGs with
+hashes identical to the independent recovery above; 41 original evidence and
+image files remain unchanged. Replay review digest:
+`37fba23ff4638687af8166ab48bff0b5f8555c61ccf848fce7d8bb8a2b78a617`.
+This fixes future collection without changing the original failed wrapper or
+claiming another engine run, visual approval, or packaged qualification.

@@ -66,6 +66,63 @@ class CampaignCaptureEvidenceError(ValueError):
         self.frames = frames
 
 
+class FrontEndCaptureEvidenceError(ValueError):
+    """Keep authenticated menu originals when the tour is incomplete."""
+    def __init__(self, message, frames):
+        super().__init__(message)
+        self.frames = frames
+
+
+def frontend_frames(log: str, report: dict, project: Path, output: Path,
+                    width: int, height: int) -> tuple[list[tuple[str, dict]], list[str]]:
+    """The menu tour uses engine screenshot acknowledgements, not art markers."""
+    tests = [test.get("fullTestPath", "") for test in report.get("tests", [])
+             if test.get("fullTestPath", "").startswith("SoraArena.UIRendered.")]
+    if not tests:
+        return [], []
+    if tests != ["SoraArena.UIRendered.FrontEndScreens"]:
+        raise ValueError("unsupported or duplicate rendered front-end tour")
+    # Execution order differs from the numeric filenames: settings precede
+    # the controller tour. Bind this supported inventory to the run's source.
+    expected = ("01_Title", "02_MainKeyboard", "03_ChapterSelect", "04_PracticeLobby",
+                "05_Wallet", "06_Settings", "07_Credits", "08_CreditsScrolled", "09_QuitConfirm",
+                "12_Graphics", "13_Audio", "14_Subtitles", "15_Controls", "16_ControlsBindings",
+                "17_Rebind", "18_Accessibility", "10_MainPad", "11_TitlePad", "19_Pause")
+    commit = (output / "source-commit.txt").read_text().strip()
+    if not re.fullmatch(r"[0-9a-f]{40}", commit):
+        raise ValueError("front-end archive requires its exact source commit")
+    source_path = "Source/SoraArena/Private/SoraFrontEndAutomation.cpp"
+    result = subprocess.run(["git", "-C", str(project), "show", f"{commit}:{source_path}"], capture_output=True)
+    if result.returncode:
+        raise ValueError("cannot authenticate front-end tour source")
+    source = result.stdout.decode().split("bool FSoraFrontEndRenderedTest::RunTest", 1)
+    inventory = re.findall(r'TEXT\("([0-9]{2}_[A-Za-z0-9_]+)"\)', source[1]) if len(source) == 2 else []
+    if Counter(inventory) != Counter(expected):
+        raise ValueError("unsupported committed front-end screenshot inventory")
+    records = re.findall(r'^(?:\[[^\]\r\n]*\])*[ \t]*LogCore: Display: Tracing Screenshot '
+                         r'"([0-9]{2}_[A-Za-z0-9_]+)" taken with size: ([0-9]+) x ([0-9]+)[ \t]*$',
+                         log, re.MULTILINE)
+    counts = Counter(name for name, _, _ in records)
+    errors = []
+    if [name for name, _, _ in records] != list(expected):
+        errors.append("front-end tour has missing, duplicate, unknown or reordered screenshot acknowledgements")
+    frames = []
+    for name, shot_width, shot_height in records:
+        if name not in expected or counts[name] != 1:
+            continue  # A duplicate may have overwritten its first original.
+        if (int(shot_width), int(shot_height)) != (width, height):
+            errors.append(f"front-end acknowledgement has wrong dimensions: {name}")
+            continue
+        path = project.resolve() / "Saved/Screenshots/SoraFrontEnd" / f"{width}x{height}" / (name + ".png")
+        if path.resolve() != path:
+            errors.append(f"front-end original path is a symlink: {name}")
+            continue
+        frames.append((str(path), dict(test=tests[0], screen=name, source_commit=commit,
+            shot_inventory_path=source_path, shot_inventory_sha256=hashlib.sha256(result.stdout).hexdigest(),
+            acknowledgement=f'Tracing Screenshot "{name}" taken with size: {width} x {height}')))
+    return frames, errors
+
+
 def campaign_frames(log: str, report: dict, project: Path, output: Path,
                     width: int, height: int) -> tuple[list[tuple[str, dict]], list[str]]:
     """Bind original campaign acknowledgements to exact committed shot/catalog data."""
@@ -275,6 +332,10 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
     campaign_metadata = {path: data for path, data in campaign}
     names.extend(("SORA_CAPTURE", path) for path, _ in campaign)
     kinds["SORA_CAPTURE"] = ("SoraCapture.Campaign.", "assisted campaign checkpoint/camera capture; not playthrough or art acceptance")
+    frontend, frontend_errors = frontend_frames(log, report, project, output, width, height)
+    frontend_metadata = dict(frontend)
+    names.extend(("SORA_FRONTEND", path) for path, _ in frontend)
+    kinds["SORA_FRONTEND"] = ("SoraArena.UIRendered.", "rendered menu navigation tour; not visual approval or playthrough evidence")
     screenshot_root = (project / "Saved/Screenshots").resolve()
     frames = []
     bow_sequences = {}
@@ -297,6 +358,9 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
             if png_dimensions(data) != (width, height):
                 raise ValueError(f"unexpected screenshot dimensions: {relative}")
         except (OSError, ValueError, zlib.error) as error:
+            if marker == "SORA_FRONTEND":
+                frontend_errors.append(str(error))
+                continue
             if marker != "SORA_CAPTURE":
                 raise
             campaign_errors.append(str(error))
@@ -310,6 +374,8 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
                        "capture_kind": kinds[marker][1]}
         if marker == "SORA_CAPTURE":
             frame["campaign"] = campaign_metadata[name]
+        if marker == "SORA_FRONTEND":
+            frame["frontend"] = frontend_metadata[name]
         if marker == "SORA_BOW_AIM_FRAME":
             sidecar = path.with_suffix(".json")
             if sidecar.stat().st_mtime_ns < start_ns:
@@ -483,6 +549,8 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
         bow_capture_validation.verify_sequence(sequence)
     if campaign_errors:
         raise CampaignCaptureEvidenceError("; ".join(campaign_errors), frames)
+    if frontend_errors:
+        raise FrontEndCaptureEvidenceError("; ".join(frontend_errors), frames)
     return frames
 
 
@@ -534,7 +602,8 @@ def main() -> int:
         try:
             frames = archive_frames(log, report, project, engine_base, output, start_ns, width, height)
         except (OSError, ValueError, zlib.error) as error:
-            if isinstance(error, (NaniteDrawEvidenceError, CargoCaptureEvidenceError, CampaignCaptureEvidenceError, WithdrawalCaptureEvidenceError)):
+            if isinstance(error, (NaniteDrawEvidenceError, CargoCaptureEvidenceError, CampaignCaptureEvidenceError,
+                                  WithdrawalCaptureEvidenceError, FrontEndCaptureEvidenceError)):
                 frames = error.frames
             failures.append(f"screenshot archive: {error}")
         manifest = {"source_commit": (output / "source-commit.txt").read_text().strip(),

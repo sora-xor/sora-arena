@@ -195,6 +195,96 @@ class CaptureArchiveTests(unittest.TestCase):
         self.log='\n'.join(records)
         return source_name
 
+    def frontend(self):
+        source_name = 'Source/SoraArena/Private/SoraFrontEndAutomation.cpp'
+        target = self.project / source_name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes((Path(__file__).resolve().parents[2] / source_name).read_bytes())
+        def git(*args):
+            return subprocess.check_output(['git', '-C', str(self.project), *args], stderr=subprocess.DEVNULL, text=True).strip()
+        self.frontend_git = git
+        git('init', '--quiet'); git('add', source_name)
+        git('-c', 'user.name=Archive Test', '-c', 'user.email=archive@example.invalid', '-c', 'commit.gpgsign=false',
+            'commit', '--quiet', '-m', 'Frozen menu inventory')
+        self.campaign_commit = git('rev-parse', 'HEAD')  # archive() writes this run's source-commit.txt.
+        self.report = {'tests': [{'fullTestPath': 'SoraArena.UIRendered.FrontEndScreens'}]}
+        names = ['01_Title', '02_MainKeyboard', '03_ChapterSelect', '04_PracticeLobby', '05_Wallet', '06_Settings',
+                 '07_Credits', '08_CreditsScrolled', '09_QuitConfirm', '12_Graphics', '13_Audio', '14_Subtitles',
+                 '15_Controls', '16_ControlsBindings', '17_Rebind', '18_Accessibility', '10_MainPad', '11_TitlePad', '19_Pause']
+        self.frontend_paths = []
+        for name in names:
+            path = self.project / 'Saved/Screenshots/SoraFrontEnd/2x1' / (name + '.png')
+            path.parent.mkdir(parents=True, exist_ok=True); path.write_bytes(self.png)
+            self.frontend_paths.append(path)
+        self.log = '\n'.join(f'[2026.10.27-05.34.17:856][880]LogCore: Display: Tracing Screenshot "{name}" taken with size: 2 x 1'
+                             for name in names)
+        return source_name
+
+    def test_frontend_archives_all_originals_against_frozen_source(self):
+        source_name = self.frontend()
+        (self.project / source_name).write_text('Mutable checkout is not the run inventory')
+        frames = self.archive()
+        self.assertEqual(len(frames), 19)
+        self.assertEqual(frames[6]['frontend']['screen'], '07_Credits')
+        for frame in frames:
+            self.assertEqual((self.root / 'run-sm6' / frame['path']).read_bytes(), self.png)
+            self.assertEqual(frame['frontend']['source_commit'], self.campaign_commit)
+            self.assertEqual(frame['sha256'], hashlib.sha256(self.png).hexdigest())
+            self.assertIn('not visual approval', frame['capture_kind'])
+
+    def test_frontend_rejects_incomplete_duplicate_replayed_and_reordered_acks(self):
+        self.frontend(); lines = self.log.splitlines()
+        cases = [(lines[:-1], 18), (lines + [lines[-1]], 18), (lines[::-1], 19),
+                 (['LogAutomationController: ' + line + ' [log]' for line in lines], 0),
+                 ([line + ' [log]' for line in lines], 0),
+                 (lines[:-1] + [lines[-1].replace('19_Pause', '20_Unknown')], 18),
+                 (lines[:-1] + [lines[-1].replace('2 x 1', '3 x 1')], 18)]
+        for index, (records, count) in enumerate(cases):
+            with self.subTest(index=index), self.assertRaises(VERIFY.FrontEndCaptureEvidenceError) as failure:
+                self.archive(f'bad-menu-acks-{index}', log='\n'.join(records))
+            self.assertEqual(len(failure.exception.frames), count)
+
+    def test_frontend_does_not_archive_unacknowledged_images(self):
+        self.frontend()
+        with self.assertRaises(VERIFY.FrontEndCaptureEvidenceError) as failure:
+            self.archive(log='')
+        self.assertEqual(failure.exception.frames, [])
+        self.report = {'tests': [{'fullTestPath': 'SoraExample'}]}
+        self.assertEqual(self.archive('unrelated-report'), [])
+
+    def test_frontend_rejects_bad_originals_and_retains_the_rest(self):
+        self.frontend()
+        first = self.frontend_paths[0]
+        for kind in ('stale', 'missing', 'corrupt', 'wrong-size', 'symlink'):
+            with self.subTest(kind=kind):
+                first.unlink(missing_ok=True); first.write_bytes(self.png)
+                if kind == 'stale': os.utime(first, ns=(self.started - 1, self.started - 1))
+                elif kind == 'missing': first.unlink()
+                elif kind == 'corrupt': first.write_bytes(self.png[:-5])
+                elif kind == 'wrong-size':
+                    first.write_bytes(self.png[:8] + self.chunk(b'IHDR', struct.pack('>IIBBBBB', 1, 2, 8, 2, 0, 0, 0))
+                                      + self.chunk(b'IDAT', zlib.compress(b'\0\xff\0\0\0\0\xff\0')) + self.chunk(b'IEND', b''))
+                else:
+                    first.unlink(); first.symlink_to(self.frontend_paths[1])
+                with self.assertRaises(VERIFY.FrontEndCaptureEvidenceError) as failure:
+                    self.archive('bad-menu-' + kind)
+                self.assertEqual(len(failure.exception.frames), 18)
+
+    def test_frontend_requires_supported_report_and_committed_inventory(self):
+        source_name = self.frontend()
+        self.report['tests'] *= 2
+        with self.assertRaisesRegex(ValueError, 'duplicate'):
+            self.archive('duplicate-tour')
+        self.report['tests'] = self.report['tests'][:1]
+        target = self.project / source_name
+        target.write_text(target.read_text().replace('19_Pause', '20_Changed'))
+        self.frontend_git('add', source_name)
+        self.frontend_git('-c', 'user.name=Archive Test', '-c', 'user.email=archive@example.invalid',
+                          '-c', 'commit.gpgsign=false', 'commit', '--quiet', '-m', 'Changed tour inventory')
+        self.campaign_commit = self.frontend_git('rev-parse', 'HEAD')
+        with self.assertRaisesRegex(ValueError, 'inventory'):
+            self.archive('changed-inventory')
+
     def test_campaign_uses_committed_inventory_and_preserves_original_scope(self):
         source_name=self.campaign()
         # A later mutable source file cannot redefine the frozen run's shots.
