@@ -25,6 +25,7 @@
 #include "InputCoreTypes.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/AutomationTest.h"
+#include "Misc/ScopeExit.h"
 #include "Templates/UniquePtr.h"
 
 // The campaign's arms and fieldcraft in real game worlds, through the
@@ -549,21 +550,49 @@ bool FSoraFieldcraftStonesTest::RunTest(const FString& Parameters)
         if (!Guard && It->IsAlive() && It->ArchetypeId() == TEXT("auditor")) Guard = *It; else It->Destroy();
     if (!TestNotNull(TEXT("An auditor stands in the zone"), Guard))
         return false;
-    const ASoraEnemyController* Brain = Cast<ASoraEnemyController>(Guard->GetController());
-    // Behind him, so he cannot see the thrower; the stone flies at his back.
-    const FVector Back = -Guard->GetActorForwardVector().GetSafeNormal2D();
-    W.Stand(Guard->GetActorLocation() + Back * 700.f);
-    W.Look(FRotator(0.f, (Guard->GetActorLocation() - W.Hero()->GetActorLocation()).Rotation().Yaw, 0.f));
+    auto* Brain = Cast<ASoraEnemyController>(Guard->GetController());
+    if(!TestNotNull(TEXT("The auditor has a live hearing controller"),Brain)) return false;
+    // Use the interior of the authored first corridor. Placing the hero
+    // behind its initial end post can put the thrower through the end wall.
+    // A level lob can also overshoot the auditor's actual hearing radius.
+    const auto& Route=W.BeatData().Space.Patrols[0];
+    const FVector2D Along=(Route[1]-Route[0]).GetSafeNormal();
+    const FVector2D Post=Route[0]+(Route[1]-Route[0])*.25;
+    Guard->GetCharacterMovement()->StopMovementImmediately();
+    Guard->SetActorLocation(FVector(Post,Guard->GetActorLocation().Z),false,nullptr,ETeleportType::TeleportPhysics);
+    Guard->SetActorRotation(FVector(Along,0).Rotation());
+    FSoraPatrolRoute Listen;
+    Listen.Points.Add(Guard->GetActorLocation());
+    Brain->BeginPatrol(Listen);
+    W.Stand(FVector(Post-Along*700,0));
+    W.Look(FRotator(-15.f,FVector(Along,0).Rotation().Yaw,0.f));
+    if(!W.Tick(2)||!TestTrue(TEXT("The observer and auditor begin inside the corridor on its floor"),
+        W.Hero()->GetCharacterMovement()->IsMovingOnGround()&&Guard->GetCharacterMovement()->IsMovingOnGround())||
+        !TestTrue(TEXT("The listening auditor begins unaware"),Brain->State()==SoraStealthRules::EState::Unaware)) return false;
+    FVector Landing=FVector::ZeroVector;
+    bool bLanded=false;
+    const FDelegateHandle LandingHandle=Fieldcraft->OnEvent.AddLambda([&](FName Event)
+    {
+        if(Event!=TEXT("lure_triggered")) return;
+        for(TActorIterator<ASoraThrownStone> It(W.World->GetTestWorld());It;++It)
+        { Landing=It->GetActorLocation();bLanded=true;break; }
+    });
+    ON_SCOPE_EXIT { Fieldcraft->OnEvent.Remove(LandingHandle); };
     if (!W.Tick(1) || !W.Press(EKeys::Q))
         return false;
     TestEqual(TEXT("A throw spends a stone"), Fieldcraft->StonesCarried(), Stones.Max - 1);
     for (int32 Frame = 0; Frame < 240 && !W.Raised(TEXT("lure_triggered")); ++Frame)
         if (!W.Tick(1)) return false;
     TestTrue(TEXT("The stone lands and the beat hears it"), W.Raised(TEXT("lure_triggered")));
+    AddInfo(FString::Printf(TEXT("Stone listening fixture: hero=%s guard=%s landing=%s captured=%d"),
+        *W.Hero()->GetActorLocation().ToString(),*Guard->GetActorLocation().ToString(),*Landing.ToString(),bLanded));
+    TestTrue(TEXT("The physical thrown stone lands close to the listening auditor"),
+        bLanded&&FVector::Dist(Landing,Guard->GetActorLocation())<400.f);
     if (!W.Tick(10))
         return false;
     TestTrue(TEXT("The auditor in earshot goes to look"), Brain && Brain->State() == SoraStealthRules::EState::Suspicious);
     TestFalse(TEXT("but a stone never gives the hero away, even to an alarmist"), W.Stealth()->IsDetected());
+    AddInfo(TEXT("Directed lure/hearing integration: one live auditor posted in its actual corridor; ordinary patrol difficulty is not qualified."));
     return true;
 }
 

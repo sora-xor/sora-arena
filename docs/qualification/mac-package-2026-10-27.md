@@ -67,4 +67,32 @@ and explicitly checks that entering water cancels its held guard, fresh guard an
 weapon-wheel inputs are refused, and those inputs work again on the bank. The
 player's guard and central arm-selection paths now respect stowed hands. Five
 moat and seven infiltration host tests pass; this repair has **not** yet run in
-Unreal or a package. The other failures and warnings remain open.
+Unreal or a package.
+
+The next isolated CPU checkpoint also revises `Spaces` to probe the actual
+working side of permanent benches, local tenement floor elevations, the dry
+well bottom and the manager's chest approach. Landing drones get swept checks
+at their authored flight altitudes. Ladder guards get checks on the active
+beat's staged roof, rather than the ground beneath it. These remain collision
+checks; no test is disabled or converted to an expected failure.
+
+`GuardedWork` now holds the mapped interaction at a real desk before, during
+and after an explicit guard alarm, then checks release. Guards are frozen to
+isolate that contract, and the desk's auditor is placed at its authored far
+patrol corner. `Stones` uses a live auditor posted inside its actual corridor
+and checks that the physical projectile lands within 4 m; the previous fixture
+could place the thrower behind the corridor's end wall or overshoot hearing
+range. Neither fixture establishes ordinary encounter difficulty.
+
+Optional timber variants now use the mounted package-store existence query
+before loading; the own-log/pool/box coverage report and fallback remain.
+Restaged candles receive distinct UObject names so an earlier component can
+finish destruction before collection. These are candidate fixes for the
+reported warnings, not evidence that the warnings are gone. Movement timestep
+and repeated console-lookup warnings remain open.
+
+Six affected host suites pass: fieldcraft rules, stealth rules, 20 tenement
+tests, 22 workshop tests, eight landing tests and nine timber-binding tests.
+They do not compile or execute the changed Unreal code. All four failed
+runtime cases require a new native run and fresh package; the original
+`541c61ae` qualification remains failed and its evidence is preserved.

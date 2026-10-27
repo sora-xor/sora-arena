@@ -528,7 +528,10 @@ void USoraFieldcraft::StageWorld(const FSoraBeat& Beat)
     if (F.bCandle)
         if (ASoraPlayerCharacter* Player = Hero())
         {
-            CandleLight = NewObject<UPointLightComponent>(Player, TEXT("TeshokuCandle"));
+            // A beat can restage before the previous destroyed component is
+            // collected. Give each lifetime its own UObject identity.
+            CandleLight = NewObject<UPointLightComponent>(Player,
+                MakeUniqueObjectName(Player, UPointLightComponent::StaticClass(), TEXT("TeshokuCandle")));
             CandleLight->SetupAttachment(Player->GetRootComponent());
             CandleLight->SetRelativeLocation(FVector(35.f, 20.f, 30.f));
             CandleLight->SetAttenuationRadius(F.CandleRadiusCm);

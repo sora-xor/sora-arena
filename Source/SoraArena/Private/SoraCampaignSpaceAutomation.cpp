@@ -3,6 +3,7 @@
 #if WITH_DEV_AUTOMATION_TESTS
 #include "SoraAutomationWorld.h"
 #include "SoraCampaignDirector.h"
+#include "SoraFieldcraft.h"
 #include "SoraCatalog.h"
 #include "SoraPlayerCharacter.h"
 #include "SoraSaveGame.h"
@@ -11,6 +12,9 @@
 #include "SoraFloodRules.h"
 #include "SoraMoatRules.h"
 #include "SoraRidgeRules.h"
+#include "SoraTenementRules.h"
+#include "SoraLandingSpaceRules.h"
+#include "SoraDroneRules.h"
 #include "Algo/AllOf.h"
 #include "Components/PrimitiveComponent.h"
 #include "Engine/World.h"
@@ -45,7 +49,20 @@ struct FProbe
     const FSoraBeatSpace* SupportSpace = nullptr;
     float FloorHeight(const FVector2D& Point) const
     {
-        if(SupportSpace&&SupportSpace->RegistryHall.bEnabled) return SupportSpace->FloorAt(Point);
+        if(SupportSpace&&(SupportSpace->RegistryHall.bEnabled||SupportSpace->bLanternWorkshop)) return SupportSpace->FloorAt(Point);
+        if(SupportSpace&&SupportSpace->bTenements)
+        {
+            // The oath begins in the raised manager room, but its street
+            // spawns and exit still stand at ground level.
+            if(Point.X>=-3200&&Point.X<=-2400&&Point.Y>=3600&&Point.Y<=4200) return 45.f;
+            if((Point.X>=-2520&&Point.X<=-2400&&Point.Y>=3530&&Point.Y<3600)||
+               (Point.X>-2400&&Point.X<=-2330&&Point.Y>=3600&&Point.Y<=3720)) return 22.5f;
+            if(Point.Y>=1200&&Point.Y<=2820&&
+               ((Point.X>=-3250&&Point.X<=-2890)||(Point.X>=-2710&&Point.X<=-2350))) return 15.f;
+            if(FMath::Abs(Point.X-SoraTenementRules::WellX)<SoraTenementRules::Bore/2.f&&
+               FMath::Abs(Point.Y-SoraTenementRules::WellY)<SoraTenementRules::Bore/2.f) return -SoraTenementRules::Depth;
+            return 0.f;
+        }
         if(SupportSpace&&SupportSpace->Moat.bEnabled)
         {
             const FVector2D P=Point-SupportSpace->Moat.Origin;
@@ -83,7 +100,10 @@ struct FProbe
     // require actual channel support, not a standing body at the water line.
     bool Floor(const FVector2D& Point, const FString& What)
     {
-        const float Expected=FloorHeight(Point);
+        return FloorAt(Point,FloorHeight(Point),What);
+    }
+    bool FloorAt(const FVector2D& Point,float Expected,const FString& What)
+    {
         FHitResult Hit;
         FCollisionQueryParams Params(SCENE_QUERY_STAT(SpaceFloor), false, Hero);
         const bool bTraced = World.LineTraceSingleByChannel(Hit, FVector(Point.X, Point.Y, Expected+60.f), FVector(Point.X, Point.Y, Expected-200.f),
@@ -116,7 +136,16 @@ struct FProbe
                 return !Blocked||(bOk=Test.TestFalse(*(What+TEXT(" has room for the authored swimmer")),true));
             }
         }
-        const bool bBlocked = World.OverlapBlockingTestByChannel(FVector(Point.X, Point.Y, FloorHeight(Point)+CapsuleHalfHeight + 4.f), FQuat::Identity,
+        return Room(Point,FloorHeight(Point),What);
+    }
+    bool StandAt(const FVector2D& Point,float Height,const FString& What)
+    {
+        return FloorAt(Point,Height,What)&&Room(Point,Height,What);
+    }
+    bool Room(const FVector2D& Point,float Height,const FString& What)
+    {
+        FCollisionQueryParams Params(SCENE_QUERY_STAT(SpaceRoom),false,Hero);
+        const bool bBlocked = World.OverlapBlockingTestByChannel(FVector(Point.X, Point.Y, Height+CapsuleHalfHeight + 4.f), FQuat::Identity,
             ECC_Pawn, FCollisionShape::MakeCapsule(CapsuleRadius, CapsuleHalfHeight), Params);
         return !bBlocked || (bOk = Test.TestFalse(*(What + TEXT(" has room to stand")), true));
     }
@@ -127,7 +156,7 @@ const FSoraBeatSpace* SupportForZone(const FSoraChapter& Chapter,int32 Zone)
     // A later beat can revisit a previously built hangar without enabling
     // wind. Its support still belongs to the same physical place.
     for(const FSoraBeat& Beat:Chapter.Beats)
-        if(Beat.Space.Zone==Zone && (Beat.Space.RegistryHall.bEnabled || Beat.Space.Wind.Enabled() || Beat.Space.Flood.bEnabled || Beat.Space.Climb.bEnabled || Beat.Space.Moat.bEnabled)) return &Beat.Space;
+        if(Beat.Space.Zone==Zone && (Beat.Space.bTenements || Beat.Space.bLanternWorkshop || Beat.Space.RegistryHall.bEnabled || Beat.Space.Wind.Enabled() || Beat.Space.Flood.bEnabled || Beat.Space.Climb.bEnabled || Beat.Space.Moat.bEnabled)) return &Beat.Space;
     return nullptr;
 }
 
@@ -169,17 +198,22 @@ bool CheckChapter(FAutomationTestBase& Test, int32 Chapter)
             const FVector2D At = Data.Space.Sites[Site];
             const int32 SiteZone=Data.Space.ZoneAt(FVector(At,0));
             const bool OwnControls=Data.Beats.ContainsByPredicate([SiteZone](const FSoraBeat& Beat)
-                { return Beat.Space.Zone==SiteZone&&(Beat.Space.RelayRoom.bEnabled||Beat.Space.RegistryHall.bEnabled); });
+                { return Beat.Space.Zone==SiteZone&&(Beat.Space.RelayRoom.bEnabled||Beat.Space.RegistryHall.bEnabled||Beat.Space.bTenements||Beat.Space.bLanternWorkshop); });
+            Probe.SupportSpace=SupportForZone(Data,SiteZone);
+            const bool Workshop=Probe.SupportSpace&&Probe.SupportSpace->bLanternWorkshop;
+            // The workshop's site marker lies on its bench. Work is done
+            // from the open aisle, whose physical support is checked here.
+            const FVector2D Approach=At+(Workshop?FVector2D(-150,0):FVector2D::ZeroVector);
+            const float Expected=Probe.FloorHeight(Approach);
             const bool Traced=World.GetTestWorld()->LineTraceSingleByChannel(Hit,
-                FVector(At.X,At.Y,OwnControls?200.f:600.f),FVector(At.X,At.Y,-100.f),ECC_Visibility);
+                FVector(Approach,OwnControls?Expected+60.f:600.f),FVector(Approach,Expected-200.f),ECC_Visibility);
             bOk &= Test.TestTrue(*FString::Printf(TEXT("%s site %d has its authored support"), *Name, Site),
-                Traced&&!Hit.bStartPenetrating&&(OwnControls?FMath::IsNearlyZero(Hit.ImpactPoint.Z,2.f):Hit.ImpactPoint.Z>50.f)&&
+                Traced&&!Hit.bStartPenetrating&&(OwnControls?FMath::IsNearlyEqual(Hit.ImpactPoint.Z,Expected,2.f):Hit.ImpactPoint.Z>50.f)&&
                 World.Mode()->Arena()->NodePositions.IsValidIndex(Site)&&
                 FVector2D::Distance(FVector2D(World.Mode()->Arena()->NodePositions[Site]),At)<1.f);
             if(OwnControls)
             {
-                Probe.SupportSpace=nullptr;
-                bOk &= Probe.Stand(At,Name+TEXT(" authored site has clear standing room without a generic pedestal"));
+                bOk &= Probe.Stand(Approach,Name+TEXT(" authored site has clear standing room without a generic pedestal"));
             }
         }
         for (const FSoraBeat& Beat : Data.Beats)
@@ -198,9 +232,12 @@ bool CheckChapter(FAutomationTestBase& Test, int32 Chapter)
                 // The capstan occupies the anchor; its bars are worked from
                 // this clear deck position, as LiftMotion boards by input.
                 Probe.Stand(Space.Anchor+(Space.Lift.bEnabled?FVector2D(-180,0):FVector2D::ZeroVector), What + TEXT(" anchor"));
-            for (const TArray<FVector2D>* Points : {&Space.Objectives, &Space.Pickups, &Space.Dropoffs, &Space.Targets, &Space.Stations})
+            for (const TArray<FVector2D>* Points : {&Space.Objectives, &Space.Pickups, &Space.Dropoffs, &Space.Targets})
                 for (const FVector2D& Point : *Points)
                     Probe.Stand(Point, What + TEXT(" point"));
+            for(const FVector2D& Point:Space.Stations)
+                Probe.Stand(Point+(Space.bLanternWorkshop?FVector2D(-150,0):FVector2D::ZeroVector),
+                    What+TEXT(" station working position"));
             for(int32 Landing=0;Landing<(Space.Lift.bEnabled?3:1);++Landing)
             {
                 Probe.HeightCm=Space.Lift.bEnabled?SoraLiftRules::Gantry(Landing+1):Space.HeightCm;
@@ -215,9 +252,42 @@ bool CheckChapter(FAutomationTestBase& Test, int32 Chapter)
                 }
             }
             Probe.HeightCm=Space.HeightCm;
+            // Ladder roofs are owned by the active beat's fieldcraft, not
+            // the chapter's base buildings. Stage their real collision for
+            // assigned roof guards rather than tracing the street beneath.
+            USoraFieldcraft* Craft=USoraFieldcraft::Get(World.GetTestWorld());
+            if(!Space.Fieldcraft.Ladders.IsEmpty())
+            {
+                bOk&=Test.TestNotNull(TEXT("The chapter has its fieldcraft subsystem"),Craft);
+                if(Craft) Craft->Stage(Beat);
+            }
             for(int32 Route=0;Route<Space.Patrols.Num();++Route)
                 for(const FVector2D& Post:Space.Patrols[Route])
                 {
+                    if(Space.bLanding)
+                    {
+                        // Both landing patrols are airborne. Check their
+                        // real altitude and swept corridor over the cargo.
+                        const auto& Posts=Space.Patrols[Route];
+                        const int32 Index=int32(&Post-Posts.GetData());
+                        const FVector2D Next=Posts[(Index+1)%Posts.Num()];
+                        FCollisionQueryParams Q(SCENE_QUERY_STAT(LandingDroneRoom),false,Hero);
+                        FHitResult Hit;
+                        bOk&=Test.TestFalse(*(What+TEXT(" landing drone corridor is clear")),
+                            World.GetTestWorld()->SweepSingleByChannel(Hit,FVector(Post,SoraLandingSpaceRules::Height(Route)),
+                                FVector(Next,SoraLandingSpaceRules::Height(Route)),FQuat::Identity,ECC_Pawn,
+                                FCollisionShape::MakeSphere(SoraDroneRules::MovementRadiusCm),Q));
+                        continue;
+                    }
+                    const FSoraLadder* Roof=Space.Fieldcraft.Ladders.FindByPredicate([Route](const FSoraLadder& L)
+                        {return L.Guards.Contains(Route);});
+                    if(Roof)
+                    {
+                        bOk&=Test.TestTrue(*(What+TEXT(" roof guard lies inside its assigned roof")),
+                            Roof->Roof.Contains(FVector(Post,Roof->HeightCm+1)));
+                        Probe.StandAt(Post,Roof->HeightCm,What+TEXT(" roof patrol support"));
+                        continue;
+                    }
                     Probe.Stand(Post,What+TEXT(" patrol post support"));
                     if(Space.Moat.bEnabled&&Route==2)
                     {
@@ -229,6 +299,7 @@ bool CheckChapter(FAutomationTestBase& Test, int32 Chapter)
                                 FCollisionShape::MakeCapsule(34,88),Q));
                     }
                 }
+            if(Craft&&!Space.Fieldcraft.Ladders.IsEmpty()) Craft->Clear();
             for (const FSoraVolume& Volume : Space.Volumes)
             {
                 Probe.HeightCm=Volume.bHeight?Volume.FloorCm:Space.HeightCm;
@@ -253,7 +324,15 @@ bool CheckChapter(FAutomationTestBase& Test, int32 Chapter)
         for (const FSoraPickup& Pickup : Data.Space.Pickups)
         {
             Probe.SupportSpace=SupportForZone(Data,Pickup.Zone);
-            Probe.Stand(Pickup.At, Name + TEXT(" ") + Data.Collectibles[Pickup.Collectible].Id);
+            const FString What=Name+TEXT(" ")+Data.Collectibles[Pickup.Collectible].Id;
+            if(Data.Collectibles[Pickup.Collectible].Id==TEXT("ch03.c05"))
+            {
+                // This book rests on the manager's 125 cm chest. The hero
+                // reads it from the raised floor beside the chest.
+                Probe.FloorAt(Pickup.At,Pickup.HeightCm,What+TEXT(" chest support"));
+                Probe.Stand(Pickup.At+FVector2D(0,-110),What+TEXT(" beside-chest approach"));
+            }
+            else Probe.Stand(Pickup.At,What);
         }
         bOk &= Probe.bOk;
         // Explore caches stand still while the objective refreshes (many times
@@ -302,7 +381,7 @@ bool FSoraCampaignSpaceTest::RunTest(const FString& Parameters)
     for (int32 Chapter = 0; Chapter < FSoraCatalog::ChapterCount; ++Chapter)
         bOk &= SoraCampaignSpace::CheckChapter(*this, Chapter);
     if (bOk)
-        UE_LOG(LogTemp, Display, TEXT("SORA_CAMPAIGN_SPACES_OK: eight chapters built and every beat point stands on a floor with room"));
+        UE_LOG(LogTemp, Display, TEXT("SORA_CAMPAIGN_SPACES_OK: eight chapters built with authored ground, roof, work-position and flight clearance"));
     return bOk;
 }
 #endif

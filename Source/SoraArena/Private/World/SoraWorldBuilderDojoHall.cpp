@@ -4,6 +4,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "HAL/IConsoleManager.h"
+#include "Misc/PackageName.h"
 #include "World/SoraPresentationCapabilities.h"
 
 // The estate hall interior: the Tsumagizaka dojo kit
@@ -53,7 +54,13 @@ const TCHAR* DojoTimbers=TEXT("/Game/Generated/Environment/DojoTimbers/");
 
 UStaticMesh* TimberMesh(const FString& Name)
 {
-    return LoadObject<UStaticMesh>(nullptr,*FString::Printf(TEXT("%s%s.%s"),DojoTimbers,*Name,*Name),nullptr,LOAD_NoWarn|LOAD_Quiet);
+    // Per-hall logs are optional: unbound halls use the conventional pool.
+    // Query the mounted package store before loading so an absent variant
+    // does not produce an async-loader warning for every placement. Keep
+    // the hall's own-log/pool/box coverage report below unchanged.
+    const FString Package=FString(DojoTimbers)+Name;
+    if(!FPackageName::DoesPackageExist(Package)) return nullptr;
+    return LoadObject<UStaticMesh>(nullptr,*(Package+TEXT(".")+Name),nullptr,LOAD_NoWarn|LOAD_Quiet);
 }
 
 TArray<UStaticMesh*> TimberPool(const TCHAR* Kind)
