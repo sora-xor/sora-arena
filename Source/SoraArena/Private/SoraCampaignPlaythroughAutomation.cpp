@@ -421,10 +421,11 @@ bool FreeConscripts(FAutomationTestBase& Test, FState& State)
         if (!bLearned)
             continue;
         FVector CutApproach=Conscript->GetActorLocation();
-        // This fixture later walks from the street to the well. Placing the
-        // hero at the fallen conscript's centre traps it inside the restored
-        // standing capsule; stand beside this guard before cutting instead.
-        if(Campaign(State)->ActiveBeatData()->Id==TEXT("ch03.b05"))CutApproach.Y+=120.f;
+        // The well and terminal fixtures walk away after cutting. Starting
+        // at the fallen body's centre traps the hero in the restored capsule.
+        const FString& BeatId=Campaign(State)->ActiveBeatData()->Id;
+        const bool StandBeside=BeatId==TEXT("ch03.b05")||BeatId==TEXT("ch03.b10");
+        if(StandBeside)CutApproach.Y+=120.f;
         MoveTo(State, CutApproach);
         const FVector CutStart=Player(State)->GetActorLocation(),BodyStart=Conscript->GetActorLocation();
         const auto* CutStealth=USoraStealth::Get(Player(State));
@@ -443,6 +444,9 @@ bool FreeConscripts(FAutomationTestBase& Test, FState& State)
                 Campaign(State)->NeedsEquipmentRecovery(),Campaign(State)->IsClimbingRecoveryWell(),*Mode(State)->NoticeEnglish));
             return Fail(Test, State, Where(State) + TEXT(": a conscript's seal was not cut"));
         }
+        if(StandBeside&&!Test.TestTrue(TEXT("The assisted seal approach stays outside the freed conscript's standing body"),
+            FVector::Dist2D(Player(State)->GetActorLocation(),Conscript->GetActorLocation())>
+            Player(State)->GetCapsuleComponent()->GetScaledCapsuleRadius()+Conscript->GetCapsuleComponent()->GetScaledCapsuleRadius()))return false;
         ++State.ConscriptsFreed;
     }
     return true;

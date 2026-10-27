@@ -178,7 +178,7 @@ class TenementTests(unittest.TestCase):
         self.assertEqual(self.native['kept_houses'],[0,1,3,4])
         self.assertNotIn([-500,-680],self.native['kept_cover'])
         self.assertNotIn([-500,680],self.native['kept_cover'])
-        boxes=self.solids+self.native['notice_solids']+self.native['north_walls']+self.native['street_walls']
+        boxes=self.solids+self.native['notice_solids']+self.native['north_walls']+self.native['street_walls']+self.native['workshop_solids']
         boxes += [[x,y,70,230,180,140,0,1] for x,y in self.native['kept_cover']]
         # The generic row's foundations are wider than its walls. The side
         # passage splits its northwest house; that house is away from these
@@ -187,7 +187,7 @@ class TenementTests(unittest.TestCase):
                   for side in (-1,1) for i in self.native['kept_houses']]
         boxes += [[-2000+i*1000,side*1200,(330+(i%2)*100)/2,650,700,330+(i%2)*100,0,1]
                   for side in (-1,1) for i in self.native['kept_houses']]
-        floors=self.native['street_floors']
+        floors=self.native['street_floors']+[b for b in self.native['workshop_solids'] if b[2]+b[5]/2==0]
         for route in square.ground_patrols():
             for point in self.sample([p+[2.15] for p in route+route[:1]],step=10):
                 self.assertTrue(self.floor_at(*point[:2])==0 or any(
@@ -199,8 +199,18 @@ class TenementTests(unittest.TestCase):
         self.assertTrue(self.hits([0,1200,24,685,735,48,0,2],[0,1200,2.15]))
         self.assertTrue(self.hits([1130,2550,220,4140,100,540,0,1],[0,2550,2.15]))
         for point in ([0,3900,2.15],[-400,3250,2.15],[400,3250,2.15],
-                      [4100,0,2.15],[3650,-400,2.15],[3650,400,2.15]):
+                      [4100,0,2.15],[3900,-400,2.15],[3650,400,2.15]):
             self.assertTrue(any(self.hits(b,point) for b in self.native['street_walls']),('open edge',point))
+        # Neighbouring districts share one continuous floor, with no slab
+        # overlap and no new wall across the workshop's existing side route.
+        for point in self.sample([[3480,-1030,2.15],[3480,0,2.15],[4000,0,2.15]]):
+            for box in boxes:self.assertFalse(self.hits(box,point),(point,box))
+        self.assertTrue(self.hits([3700,-1150,100,12,2700,200,0,1],[3700,0,2.15]))
+        for i,a in enumerate(floors):
+            for b in floors[i+1:]:
+                overlap_x=min(a[0]+a[3]/2,b[0]+b[3]/2)-max(a[0]-a[3]/2,b[0]-b[3]/2)
+                overlap_y=min(a[1]+a[4]/2,b[1]+b[4]/2)-max(a[1]-a[4]/2,b[1]-b[4]/2)
+                self.assertFalse(overlap_x>0 and overlap_y>0,('coplanar floor overlap',a,b))
 
     def test_notice_panel_and_north_escape_clear_actual_solids(self):
         self.clear([[-1000,2800,2.15],[-1000,540,2.15],[-730,548,2.15]])

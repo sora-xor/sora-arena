@@ -58,7 +58,9 @@ inline const std::vector<FBox>& Solids()
         Box(1755,-2200,100,310,12,200);
         Box(2495,-2200,100,810,12,200);
         Box(3400,-1375,80,12,450,160); // Leave the north-east yard entrance open.
-        Box(3700,-1150,100,12,2700,200,ESurface::Stone);
+        // End at the crossing's south edge, where its boundary turns east.
+        // Continuing to y=200 would wall off the main street's turnaround.
+        Box(3700,-1450,100,12,2100,200,ESurface::Stone);
         // Well curb is hard cover, with a clear route on both sides.
         for(int S:{-1,1})
         {

@@ -222,7 +222,7 @@ void ASoraWorldBuilder::BuildArena(int32 MapId,bool bSites,bool bTenements,bool 
     if(NoticeSquare)
     {
         namespace N=SoraNoticeSquareRules;
-        for(int I=0;I<2;++I)
+        for(int I=0;I<3;++I)
         {
             const auto B=N::StreetFloors[I];
             Box(FString::Printf(TEXT("NoticeSquareStreet%d"),I),FVector(B.X,B.Y,B.Z),FVector(B.SX,B.SY,B.SZ),

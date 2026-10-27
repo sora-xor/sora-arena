@@ -24,6 +24,14 @@ bool FSoraNoticeStreetRoutesTest::RunTest(const FString&)
     {
         const bool Reached=SoraLiftAutomation::Walk(*W.World,To);
         const auto* H=W.Hero();
+        if(!Reached)
+        {
+            FHitResult Hit;FCollisionQueryParams Query(SCENE_QUERY_STAT(NoticeStreetRoute),false,H);
+            W.World->GetTestWorld()->LineTraceSingleByChannel(Hit,H->GetActorLocation(),
+                FVector(To.X,To.Y,H->GetActorLocation().Z),ECC_Visibility,Query);
+            AddInfo(FString::Printf(TEXT("Street route blocked: hero=%s destination=%s hit=%s/%s"),
+                *H->GetActorLocation().ToString(),*To.ToString(),*GetNameSafe(Hit.GetActor()),*GetNameSafe(Hit.GetComponent())));
+        }
         return TestTrue(TEXT("The real street segment reaches its destination on the street floor"),
             Reached&&H->GetCharacterMovement()->IsMovingOnGround()&&
             FMath::Abs(H->GetActorLocation().Z-H->GetCapsuleComponent()->GetScaledCapsuleHalfHeight())<=8.f);
@@ -37,7 +45,7 @@ bool FSoraNoticeStreetRoutesTest::RunTest(const FString&)
         {FVector(0,3250,90),FVector(-500,3250,90)},
         {FVector(0,3250,90),FVector(500,3250,90)},
         {FVector(4000,0,90),FVector(4300,0,90)},
-        {FVector(3650,0,90),FVector(3650,-500,90)},
+        {FVector(3900,0,90),FVector(3900,-500,90)},
         {FVector(3650,0,90),FVector(3650,500,90)}};
     for(const auto& Edge:Edges)
     {
