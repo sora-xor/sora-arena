@@ -21,6 +21,14 @@ unchanged. Existing NonUFS directory staging includes both generated files
 and the separate licenses. Generator `--check` rejects either missing or stale
 output. Repository asset-ledger instructions describe this two-file contract.
 
+The Mac candidate verifier now compares the staged Arabic face against source,
+alongside the Japanese face and notices. Previously the build staged the Arabic
+font, but the verifier omitted it from the source comparison and only recorded
+whatever bytes were in the finished bundle. All 18 package-provenance tests
+pass, including rejection of substituted or missing Arabic font and credits
+bytes, followed by acceptance after restoring the exact source bytes. Actual
+fresh package staging remains pending.
+
 CPU validation in the isolated source worktree:
 
 - All 32 asset-ledger/notices tests pass, including complete attribution,

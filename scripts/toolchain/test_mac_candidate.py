@@ -109,6 +109,25 @@ class MacCandidateTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Staged bridge/sidecar differs'):
             candidate.stage_finish(self.root, self.root / candidate.RECEIPTS / 'stage-start.json', app, record)
 
+    def test_stage_rejects_changed_or_missing_credit_face_and_text(self):
+        self.put('ThirdPartyNotices/CREDITS.md', 'Original source acknowledgements')
+        self.commit()
+        app, record, source = self.stage()
+        start = self.root / candidate.RECEIPTS / 'stage-start.json'
+        for name in ('Content/SourceArt/Fonts/NotoNaskhArabicUI-Regular.ttf', 'ThirdPartyNotices/CREDITS.md'):
+            with self.subTest(path=name):
+                staged = app / 'Contents/UE/SoraArena' / name
+                original = staged.read_bytes()
+                staged.write_text('Substituted staged credit content')
+                with self.assertRaisesRegex(ValueError, 'Staged non-UFS content differs'):
+                    candidate.stage_finish(self.root, start, app, record)
+                staged.unlink()
+                with self.assertRaisesRegex(ValueError, 'Missing artifact|Staged non-UFS content differs'):
+                    candidate.stage_finish(self.root, start, app, record)
+                staged.write_bytes(original)
+        candidate.stage_finish(self.root, start, app, record)
+        candidate.verify(app, record, app.parent / 'verified-credits.json', source, self.native)
+
     def test_stage_records_added_crypto_cache_without_rewriting_cook(self):
         app, record, source = self.stage()
         cook = self.root / candidate.RECEIPTS / 'cook.json'

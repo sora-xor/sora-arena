@@ -31,6 +31,7 @@ SCHEMA = 'sora.mac.artifact.v1'
 CANDIDATE = 'sora.mac.package_candidate.v1'
 STAGE_CRYPTO = 'Saved/Cooked/Mac/SoraArena/Metadata/Crypto.json'
 NON_UFS = ['Content/Data', 'Content/SourceArt/Fonts/NotoSansCJKjp-Regular.otf',
+           'Content/SourceArt/Fonts/NotoNaskhArabicUI-Regular.ttf',
            'Content/SourceArt/Fonts/OFL.txt', 'ThirdPartyNotices',
            'crates/arena-core/data/arena-map-v1.json']
 
