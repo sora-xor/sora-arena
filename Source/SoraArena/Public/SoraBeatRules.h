@@ -1,4 +1,5 @@
 #pragma once
+#include "SoraMaaiRules.h"
 
 // Offline chapter beat rules for catalog schema 4, shared by the Unreal
 // campaign director and a host-compiled acceptance driver. A chapter is an
@@ -300,6 +301,9 @@ struct FStep
     // A rhythm step: every stroke after the first lands BeatMs after the last, within ToleranceMs.
     int BeatMs = 0;
     int ToleranceMs = 0;
+    // Authored call/response units: hammer phrases 8/6, weaving picks 1/1.
+    int PhraseStrikes = 0;
+    int PhrasePass = 0;
 };
 enum class EContest : unsigned char { None, Pause, Decay };
 // How a boss, or a duel fought to its end, ends (bible §3.2, §8): the
@@ -348,6 +352,7 @@ struct FTask
     // repetitions each wants (awase ×2), and whether a bout scores only
     // straight after a 転 flank (ch01.b04).
     unsigned LessonMask = 0u;
+    SoraMaaiRules::FConfig Maai;
     int FormReps[4] = {1, 1, 1, 1};
     bool FlankBouts = false;
     ELoss Loss = ELoss::Checkpoint;
@@ -356,17 +361,43 @@ struct FTask
     // second, or for a crank permille of the turns required per second.
     EContest Contest = EContest::None;
     int DecayPermille = 0;
+    // A copying hold is worked separately at every named desk. Other holds
+    // keep their ordinary volume clock (both values zero).
+    int HoldPointCount = 0;
+    int HoldPointMs = 0;
     // A crank's rate band as turn intervals: faster slips, slower lets it decay.
     int MinTurnMs = 0;
     int MaxTurnMs = 0;
+    int StaminaPerTurn = 0;
+    // Zero except the bellows' authored x2 overspeed penalty.
+    int OverspeedCostMultiplier = 0;
+    bool CrankTwoHanded = false;
+    bool AlternateTreads = false;
+    // Only an authored accessibility cadence may repeat held input.
+    int HoldMilliTurnsS = 0;
+    // Each available named worker contributes this physical turn rate,
+    // credited at the authored multiplier (the bellows boy: 40%).
+    int CoopCount = 0;
+    int CoopMilliTurnsS = 0;
+    int CoopProgressPermille = Permille;
+    bool CoopSuspendsDecay = false;
+    int CoopRetreatCm = 0;
+    int RatchetCount = 0;
+    int Ratchets[3] = {};
     // Escort: the party's pace, how far the hero may range from it, and its
     // route (0 until the world lays the route out).
     int SpeedCmS = 0;
     int WaitCm = 0;
     int PathCm = 0;
-    // Carry or cargo points; every drop-off takes an equal share of the goods.
+    // Carry or cargo points. Explicit capacities follow the named drop-off
+    // order; an absent map (count 0) retains the derived equal ceiling share.
     int Pickups = 0;
     int Dropoffs = 0;
+    int DropoffCapacityCount = 0;
+    int DropoffCapacities[MaxPoints] = {};
+    // Easy, Normal, Hard. The effective policy is chosen when a beat starts,
+    // including checkpoint retry/reload, like boss and stealth difficulty.
+    bool DropOnHitByDifficulty[3] = {};
     bool DropOnHit = false;
     // A carried load slows the hero to this permille of his pace and leaves
     // only these weapons in hand (the katana in one paw, or nothing).
@@ -374,6 +405,17 @@ struct FTask
     unsigned CarryWeaponsMask = 0u;
     // Each load is hoisted at its pickup with Interact held this long (0: taken at once).
     int PickupHoldMs = 0;
+    // Cargo rides unload one share at each destination with a continuous hold.
+    int UnloadHoldMs = 0;
+    // A sealed store must be pried open before any load can leave it.
+    int CarryGateMs = 0;
+    // Temporary chapter equipment restriction; recovery is earned at the
+    // bottom of a real shaft before any goods can be hoisted.
+    unsigned EquipmentMask = (1u << WeaponCount) - 1u;
+    unsigned RecoveryWeapons = 0u;
+    int RecoveryDepthCm = 0;
+    int RecoveryStringMs = 0;
+    int RecoveryQuiver = 0;
     int StepCount = 0;
     FStep Steps[MaxSteps] = {};
     int TargetCount = 0;
@@ -383,11 +425,18 @@ struct FTask
     int TargetLossLimit = 0;
     EDetected OnDetected = EDetected::Combat;
     int ReinforceWave = -1;
+    // An authored alarm wave waits for the alarm event, even after detection.
+    bool ReinforceOnDetection = true;
     // A ride whose horse going down returns to the checkpoint (else the rider goes on foot).
     bool HorseDownRetries = false;
     // Failures the beat's `fail` rows return to the checkpoint.
     unsigned FailMask = 0u;
 };
+
+constexpr void ApplyCarryDifficulty(FTask& Task, int Difficulty)
+{
+    Task.DropOnHit = Task.DropOnHitByDifficulty[Difficulty >= 0 && Difficulty < 3 ? Difficulty : 1];
+}
 
 struct FTaskState
 {
@@ -401,21 +450,36 @@ struct FTaskState
     int RivalPoints = 0;
     int Losses = 0;
     unsigned Forms = 0u;
+    SoraMaaiRules::FState Maai;
+    int RecoveryHeldMs = 0;
+    bool EquipmentRecovered = false;
     // Clean repetitions of each form still being learned.
     int FormReps[4] = {};
     // Decay not yet worn into progress, in millionths of the hold or of the
     // turns required, so no frame boundary loses a fraction.
     int DecayCarry = 0;
+    // Signed fractional crank progress, shared by cooperation and decay.
+    int CrankCarry = 0;
+    int CrankFloor = 0;
     // A hold worked at a reduced rate (a cupped candle): thousandths of a
     // millisecond not yet counted.
     int RateCarry = 0;
+    int HoldProgress[MaxPoints] = {};
+    int HoldRateCarry[MaxPoints] = {};
     int Step = 0;
     int StepDone = 0;
+    int RhythmCarry = 0;
     // The last counted crank turn or rhythm stroke, or -1.
     int LastActionMs = -1;
+    // Last affordable player cycle: 1 below, 2 in band, 3 above. Helpers do not set this.
+    int CrankNotches = 1;
     // Objectives worked, or distinct goods picked up.
     unsigned PointsMask = 0u;
     int CarriedFrom = -1;
+    int CarryGateHeldMs = 0;
+    bool CarryGateOpen = false;
+    unsigned LooseLoads = 0u;
+    int LooseFrom[MaxPoints] = {};
     int DropoffUses[MaxPoints] = {};
     unsigned Released = 0u;
     int Down[MaxWaves] = {};
@@ -445,6 +509,11 @@ struct FTick
     bool Seen = false;
     // The pace a hold fills at, x1000 (a cupped candle copies at half speed).
     int RatePermille = Permille;
+    int CrankHelpers = 0;
+    // Live physical cutter contact on the lift hawser; ordinary cranks use 1.
+    int CrankDecayMultiplier = 1;
+    // The desk whose Interact is held, or -1. Time never spills to another desk.
+    int HoldPoint = -1;
 };
 
 constexpr int Bits(unsigned Mask)
@@ -520,9 +589,38 @@ constexpr bool RequiredWavesReleased(const FTaskState& State, const FTask& Task)
     return true;
 }
 
-constexpr int DropoffShare(const FTask& Task)
+constexpr bool DropoffCapacitiesValid(const FTask& Task)
 {
-    return Task.Dropoffs <= 0 ? 0 : (Task.Count + Task.Dropoffs - 1) / Task.Dropoffs;
+    if (Task.DropoffCapacityCount < 0 || Task.DropoffCapacityCount > MaxPoints) return false;
+    if (Task.DropoffCapacityCount > 0 && (Task.Type != EType::ProductionTask || Task.Task != ETask::Carry ||
+        Task.Goal != EGoal::Deliveries || Task.Dropoffs != Task.DropoffCapacityCount ||
+        Task.Count < 1 || Task.Count > MaxGoalCount)) return false;
+    int Total = 0;
+    for (int Index = 0; Index < MaxPoints; ++Index)
+    {
+        const int Capacity = Task.DropoffCapacities[Index];
+        if (Index < Task.DropoffCapacityCount)
+        {
+            if (Capacity < 1 || Capacity > MaxGoalCount) return false;
+            Total += Capacity;
+        }
+        else if (Capacity != 0) return false;
+    }
+    return Task.DropoffCapacityCount == 0 || Total >= Task.Count;
+}
+
+constexpr int DropoffCapacity(const FTask& Task, int Index)
+{
+    if (Index < 0 || Index >= Task.Dropoffs || Task.Dropoffs > MaxPoints || Task.Count < 1 || Task.Count > MaxGoalCount)
+        return 0;
+    return Task.DropoffCapacityCount == 0 ? (Task.Count + Task.Dropoffs - 1) / Task.Dropoffs :
+        Task.DropoffCapacityCount == Task.Dropoffs ? Task.DropoffCapacities[Index] : 0;
+}
+
+constexpr bool DropoffHasRoom(const FTaskState& State, const FTask& Task, int Index)
+{
+    return Index >= 0 && Index < Task.Dropoffs && Index < MaxPoints && State.Done < Task.Count &&
+        State.DropoffUses[Index] < DropoffCapacity(Task, Index);
 }
 
 constexpr int ProgressPermille(const FTaskState& State, const FTask& Task)
@@ -536,8 +634,8 @@ constexpr int ProgressPermille(const FTaskState& State, const FTask& Task)
     case EGoal::Points:
     case EGoal::Deliveries: return Ratio(State.Done, Task.Count);
     case EGoal::Lessons:
-        return Ratio(Bits(State.Forms & Task.LessonMask) + (State.Done < Task.Count ? State.Done : Task.Count),
-            Bits(Task.LessonMask) + Task.Count);
+        return Ratio(Bits(State.Forms & Task.LessonMask) + (State.Done < Task.Count ? State.Done : Task.Count) + State.Maai.Done,
+            Bits(Task.LessonMask) + Task.Count + Task.Maai.Count);
     case EGoal::Survive:
     case EGoal::Hold: return Ratio(State.Progress, Task.DurationMs);
     case EGoal::OpponentDown: return Permille - (State.OpponentPermille < 0 ? 0 : State.OpponentPermille);
@@ -563,9 +661,13 @@ constexpr bool GoalMet(const FTaskState& State, const FTask& Task)
     case EGoal::Points:
     case EGoal::Deliveries: return Task.Count > 0 && State.Done >= Task.Count;
     case EGoal::Lessons:
-        return (State.Forms & Task.LessonMask) == Task.LessonMask && State.Done >= Task.Count;
-    case EGoal::Survive:
-    case EGoal::Hold: return Task.DurationMs > 0 && State.Progress >= Task.DurationMs;
+        return (State.Forms & Task.LessonMask) == Task.LessonMask && State.Done >= Task.Count && SoraMaaiRules::Complete(State.Maai,Task.Maai);
+    case EGoal::Survive: return Task.DurationMs > 0 && State.Progress >= Task.DurationMs;
+    case EGoal::Hold:
+        if (Task.HoldPointCount > MaxPoints) return false;
+        for (int Point = 0; Point < Task.HoldPointCount; ++Point)
+            if (State.HoldProgress[Point] != Task.HoldPointMs) return false;
+        return Task.DurationMs > 0 && State.Progress >= Task.DurationMs;
     case EGoal::OpponentDown: return State.OpponentPermille <= 0 && (Task.Defeat != EDefeat::Capture || State.Captured);
     case EGoal::Turns: return Task.Count > 0 && State.Progress >= Task.Count * Permille;
     // An escort without a route (PathCm 0) cannot arrive.
@@ -584,7 +686,8 @@ constexpr bool GoalMet(const FTaskState& State, const FTask& Task)
 // standing when any other goal is met withdraw (bible §12.2, chapter-02 b06).
 constexpr bool TaskComplete(const FTaskState& State, const FTask& Task)
 {
-    return GoalMet(State, Task) || State.Conceded;
+    return (Task.RecoveryWeapons == 0u || State.EquipmentRecovered) &&
+        (Task.CarryGateMs == 0 || State.CarryGateOpen) && (GoalMet(State, Task) || State.Conceded);
 }
 
 constexpr int PhaseStartPermille(const FTask& Task, int Phase)
@@ -672,6 +775,16 @@ constexpr void Decay(FTaskState& State, const FTask& Task, long long Whole, int 
     State.Progress = State.Progress > Loss ? State.Progress - static_cast<int>(Loss) : 0;
 }
 
+// A reached pawl never releases until the whole task retries.
+constexpr void LatchCrank(FTaskState& State, const FTask& Task)
+{
+    for (int Index = 0; Index < Task.RatchetCount && Index < 3; ++Index)
+    {
+        const int Floor = Task.Count * Task.Ratchets[Index];
+        if (State.Progress >= Floor && Floor > State.CrankFloor) State.CrankFloor = Floor;
+    }
+}
+
 // Advances the beat clock: holds fill while the hero stands in them, a crank
 // slips back once he stops, the escorted party walks while he keeps up, and a
 // survival counts down. A completed task no longer moves.
@@ -690,7 +803,26 @@ constexpr bool Tick(FTaskState& State, const FTask& Task, FTick Step)
         State.Progress = State.Progress + Delta > Task.DurationMs ? Task.DurationMs : State.Progress + Delta;
         break;
     case EGoal::Hold:
-        if (Step.Contested && Task.Contest == EContest::Decay)
+        if (Task.HoldPointCount > 0)
+        {
+            const int Point = Step.HoldPoint;
+            if (Point < 0 || Point >= Task.HoldPointCount || Point >= MaxPoints ||
+                !Step.AtTask || Watched || Step.Contested || State.HoldProgress[Point] >= Task.HoldPointMs) break;
+            const long long Paced = State.HoldRateCarry[Point] + static_cast<long long>(Delta) *
+                (Step.RatePermille < 0 ? 0 : Step.RatePermille > Permille ? Permille : Step.RatePermille);
+            const int Filled = static_cast<int>(Paced / Permille);
+            const int Left = Task.HoldPointMs - State.HoldProgress[Point];
+            const int Added = Filled < Left ? Filled : Left;
+            State.HoldProgress[Point] += Added;
+            State.Progress += Added;
+            State.HoldRateCarry[Point] = Filled < Left ? static_cast<int>(Paced % Permille) : 0;
+            if (State.HoldProgress[Point] == Task.HoldPointMs)
+            {
+                State.PointsMask |= 1u << Point;
+                ++State.Done;
+            }
+        }
+        else if (Step.Contested && Task.Contest == EContest::Decay)
             Decay(State, Task, Task.DurationMs, Delta);
         else if (Step.AtTask && !Watched && !(Step.Contested && Task.Contest == EContest::Pause))
         {
@@ -703,15 +835,21 @@ constexpr bool Tick(FTaskState& State, const FTask& Task, FTick Step)
         }
         break;
     case EGoal::Turns:
-        // Only the time past the slowest turn slips.
         if (State.LastActionMs >= 0)
         {
             const int Slack = State.ElapsedMs - State.LastActionMs - Task.MaxTurnMs;
-            if (Slack > 0)
-            {
-                Decay(State, Task, static_cast<long long>(Task.Count) * Permille, Slack < Delta ? Slack : Delta);
-                State.Done = State.Progress / Permille;
-            }
+            const int DecayMs = Slack <= 0 || (Step.CrankHelpers > 0 && Task.CoopSuspendsDecay) ? 0 : Slack < Delta ? Slack : Delta;
+            const int Helpers = Step.CrankHelpers < 0 ? 0 : Step.CrankHelpers > Task.CoopCount ? Task.CoopCount : Step.CrankHelpers;
+            const int DecayMultiplier=Step.CrankDecayMultiplier<1?1:Step.CrankDecayMultiplier>3?3:Step.CrankDecayMultiplier;
+            const long long Total = State.CrankCarry + static_cast<long long>(Delta) * Helpers * Task.CoopMilliTurnsS * Task.CoopProgressPermille -
+                static_cast<long long>(Task.DecayPermille) * Task.Count * Permille * DecayMs * DecayMultiplier;
+            const int Change = static_cast<int>(Total / DecayUnit);
+            State.CrankCarry = static_cast<int>(Total - static_cast<long long>(Change) * DecayUnit);
+            State.Progress += Change;
+            if (State.Progress <= State.CrankFloor && Total < 0) { State.Progress = State.CrankFloor; State.CrankCarry = 0; }
+            if (State.Progress >= Task.Count * Permille) { State.Progress = Task.Count * Permille; State.CrankCarry = 0; }
+            LatchCrank(State, Task);
+            State.Done = State.Progress / Permille;
         }
         break;
     case EGoal::Escort:
@@ -885,29 +1023,92 @@ constexpr bool WorkObjective(FTaskState& State, const FTask& Task, int Index)
     return true;
 }
 
-enum class ETurn : unsigned char { Refused, TooFast, InBand, Slow };
+enum class ETurn : unsigned char { Refused, TooFast, InBand, Slow, Exhausted };
 
 // One crank turn. A turn faster than the band slips and restarts the rhythm,
 // so hammering the crank never counts.
-constexpr ETurn Turn(FTaskState& State, const FTask& Task)
+constexpr ETurn Turn(FTaskState& State, const FTask& Task, int Credit = Permille)
 {
     if (Task.Goal != EGoal::Turns || GoalMet(State, Task))
         return ETurn::Refused;
     const int Since = State.LastActionMs < 0 ? -1 : State.ElapsedMs - State.LastActionMs;
     State.LastActionMs = State.ElapsedMs;
     if (Since >= 0 && Since < Task.MinTurnMs)
-        return ETurn::TooFast;
+    { State.CrankNotches = 3; return ETurn::TooFast; }
+    State.CrankNotches = Since > Task.MaxTurnMs ? 1 : 2;
     const int Full = Task.Count * Permille;
-    State.Progress = State.Progress + Permille > Full ? Full : State.Progress + Permille;
+    State.Progress = State.Progress + Credit > Full ? Full : State.Progress + Credit;
+    LatchCrank(State, Task);
     State.Done = State.Progress / Permille;
     return Since > Task.MaxTurnMs ? ETurn::Slow : ETurn::InBand;
+}
+// A live rate gauge, independent of accumulated production. Idle cools to one notch.
+constexpr int CrankFlameNotches(const FTaskState& State, const FTask& Task)
+{
+    return State.LastActionMs < 0 || State.ElapsedMs - State.LastActionMs > Task.MaxTurnMs ? 1 : State.CrankNotches;
+}
+struct FPlayerTurn
+{
+    ETurn Result = ETurn::Refused;
+    int Cost = 0;
+};
+// Preview on a copy: insufficient resource changes neither progress nor the
+// timing baseline. Affordable overspeed still resets rhythm, as Turn does.
+constexpr FPlayerTurn PlayerTurn(FTaskState& State, const FTask& Task, int AvailableStamina, int Credit = Permille)
+{
+    FTaskState Next = State;
+    const ETurn Result = Turn(Next, Task, Credit);
+    const int Cost = Result == ETurn::TooFast ? Task.StaminaPerTurn * Task.OverspeedCostMultiplier :
+        Result == ETurn::InBand || Result == ETurn::Slow ? Task.StaminaPerTurn : 0;
+    if (AvailableStamina < Cost) return {ETurn::Exhausted, 0};
+    State = Next;
+    return {Result, Cost};
+}
+
+
+constexpr bool EquipmentReady(const FTaskState& State, const FTask& Task)
+{
+    return Task.RecoveryWeapons == 0u || State.EquipmentRecovered;
+}
+constexpr bool EquipmentAllows(const FTaskState& State, const FTask& Task, int Weapon)
+{
+    return Weapon >= 0 && Weapon < WeaponCount &&
+        (((State.EquipmentRecovered ? Task.RecoveryWeapons : Task.EquipmentMask) & (1u << Weapon)) != 0u);
+}
+// Stringing must be continuous, at the bundle. Leaving it or releasing
+// Interact loses partial work; the completed pickup is raised exactly once.
+constexpr bool RecoverEquipment(FTaskState& State, const FTask& Task, int DeltaMs, bool AtBundle, bool Held)
+{
+    if (EquipmentReady(State, Task)) return false;
+    if (!AtBundle || !Held) { State.RecoveryHeldMs = 0; return false; }
+    if (DeltaMs <= 0) return false;
+    State.RecoveryHeldMs = DeltaMs >= Task.RecoveryStringMs - State.RecoveryHeldMs ? Task.RecoveryStringMs : State.RecoveryHeldMs + DeltaMs;
+    if (State.RecoveryHeldMs < Task.RecoveryStringMs) return false;
+    State.EquipmentRecovered = true;
+    return true;
+}
+
+constexpr bool CarryGateReady(const FTaskState& State, const FTask& Task)
+{
+    return Task.CarryGateMs == 0 || State.CarryGateOpen;
+}
+// The authored contest is pause: a hit, releasing Interact or leaving the
+// seal stops work without erasing it. Only checkpoint retry resets it.
+constexpr bool PryCarryGate(FTaskState& State, const FTask& Task, int DeltaMs, bool AtSeal, bool Held, bool Hit)
+{
+    if (Task.Task != ETask::Carry || CarryGateReady(State,Task) || DeltaMs <= 0 || !AtSeal || !Held || Hit) return false;
+    State.CarryGateHeldMs = DeltaMs >= Task.CarryGateMs - State.CarryGateHeldMs ? Task.CarryGateMs : State.CarryGateHeldMs + DeltaMs;
+    if (State.CarryGateHeldMs < Task.CarryGateMs) return false;
+    State.CarryGateOpen = true;
+    return true;
 }
 
 // Takes an item at a pickup. Distinct goods (a pickup per item) are each
 // taken once; a single store is revisited.
 constexpr bool Pickup(FTaskState& State, const FTask& Task, int Index)
 {
-    if (Task.Task != ETask::Carry || State.Carrying || State.Done >= Task.Count || Index < 0 ||
+    if (!EquipmentReady(State, Task) || !CarryGateReady(State, Task) || Task.Task != ETask::Carry || State.Carrying ||
+        State.Done + Bits(State.LooseLoads) >= Task.Count || Index < 0 ||
         Index >= Task.Pickups || Index >= MaxPoints)
         return false;
     if (Task.Pickups >= Task.Count)
@@ -921,20 +1122,45 @@ constexpr bool Pickup(FTaskState& State, const FTask& Task, int Index)
     return true;
 }
 
-// Delivers the carried item, or a ride's cargo, at a drop-off with room left.
-constexpr bool Deliver(FTaskState& State, const FTask& Task, int Index)
+// A manual set-down keeps the item out of its store and remembers its
+// original source. The world owns the reachable position for each slot.
+constexpr int SetDownCarried(FTaskState& State, const FTask& Task)
 {
-    if (Index < 0 || Index >= Task.Dropoffs || Index >= MaxPoints || State.Done >= Task.Count ||
-        State.DropoffUses[Index] >= DropoffShare(Task))
+    if (Task.Task != ETask::Carry || !CarryGateReady(State,Task) || !State.Carrying) return -1;
+    for (int Slot = 0; Slot < MaxPoints; ++Slot)
+        if ((State.LooseLoads & (1u << Slot)) == 0u)
+        {
+            State.LooseLoads |= 1u << Slot;
+            State.LooseFrom[Slot] = State.CarriedFrom;
+            State.CarriedFrom = -1; State.Carrying = false;
+            return Slot;
+        }
+    return -1;
+}
+constexpr bool PickupLoose(FTaskState& State, const FTask& Task, int Slot)
+{
+    if (Task.Task != ETask::Carry || !EquipmentReady(State,Task) || !CarryGateReady(State,Task) || State.Carrying || State.Done>=Task.Count ||
+        Slot < 0 || Slot >= MaxPoints || (State.LooseLoads & (1u << Slot)) == 0u) return false;
+    State.CarriedFrom = State.LooseFrom[Slot];
+    State.LooseLoads &= ~(1u << Slot);
+    State.Carrying = true;
+    return true;
+}
+
+// Delivers the carried item, or a ride's cargo, at a drop-off with room left.
+constexpr bool Deliver(FTaskState& State, const FTask& Task, int Index, int HeldMs = 0)
+{
+    if (!DropoffHasRoom(State, Task, Index))
         return false;
     if (Task.Task == ETask::Carry)
     {
-        if (!State.Carrying)
+        if (!CarryGateReady(State,Task) || !State.Carrying)
             return false;
         State.Carrying = false;
         State.CarriedFrom = -1;
     }
-    else if (Task.Type != EType::HorsebackRide || Task.Goal != EGoal::Deliveries)
+    else if (Task.Type != EType::HorsebackRide || Task.Goal != EGoal::Deliveries ||
+        Task.UnloadHoldMs <= 0 || HeldMs < Task.UnloadHoldMs)
         return false;
     ++State.DropoffUses[Index];
     ++State.Done;
@@ -953,7 +1179,19 @@ constexpr bool DropCarried(FTaskState& State, const FTask& Task)
     return true;
 }
 
-enum class EStroke : unsigned char { Refused, Counted, Missed, StepDone, Finished };
+enum class EStroke : unsigned char { Refused, Counted, Missed, StepDone, Finished, Credited };
+
+// Count a unit only after its interaction has admitted it (stroke timing,
+// release timing or a continuous hold). All share the same step accounting.
+constexpr EStroke CreditStroke(FTaskState& State,const FTask& Task)
+{
+    if(Task.Goal!=EGoal::Steps||State.Step<0||State.Step>=Task.StepCount||State.Step>=MaxSteps)return EStroke::Refused;
+    State.LastActionMs=State.ElapsedMs;
+    ++State.StepDone;++State.Done;
+    if(State.StepDone<Task.Steps[State.Step].Count)return EStroke::Counted;
+    ++State.Step;State.StepDone=0;State.LastActionMs=-1;
+    return State.Step>=Task.StepCount?EStroke::Finished:EStroke::StepDone;
+}
 
 // One stroke at the current manufacturing step. Off the beat, a rhythm step
 // starts again from that stroke (pass or fail, no quality grades).
@@ -962,6 +1200,7 @@ constexpr EStroke Stroke(FTaskState& State, const FTask& Task)
     if (Task.Goal != EGoal::Steps || State.Step >= Task.StepCount || State.Step >= MaxSteps)
         return EStroke::Refused;
     const FStep& Current = Task.Steps[State.Step];
+    if (Current.PhraseStrikes > 0) return EStroke::Refused; // resolved by the cue/phrase clock
     if (Current.BeatMs > 0 && State.StepDone > 0)
     {
         const int Off = State.ElapsedMs - State.LastActionMs - Current.BeatMs;
@@ -973,15 +1212,7 @@ constexpr EStroke Stroke(FTaskState& State, const FTask& Task)
             return EStroke::Missed;
         }
     }
-    State.LastActionMs = State.ElapsedMs;
-    ++State.StepDone;
-    ++State.Done;
-    if (State.StepDone < Current.Count)
-        return EStroke::Counted;
-    ++State.Step;
-    State.StepDone = 0;
-    State.LastActionMs = -1;
-    return State.Step >= Task.StepCount ? EStroke::Finished : EStroke::StepDone;
+    return CreditStroke(State,Task);
 }
 
 // Damage to a defended target; true when it is destroyed by this hit.
@@ -1076,7 +1307,7 @@ constexpr ERetry Fail(FTaskState& State, const FTask& Task, EFail Event)
             return ERetry::None;
         if (Task.OnDetected == EDetected::Restart)
             return ERetry::Checkpoint;
-        if (Task.OnDetected == EDetected::Reinforce)
+        if (Task.OnDetected == EDetected::Reinforce && Task.ReinforceOnDetection)
             ReleaseWave(State, Task, Task.ReinforceWave);
         return ERetry::Continue;
     case EFail::HorseDown:
@@ -1105,8 +1336,8 @@ constexpr FTaskState RetryTask(const FTaskState& State, const FTask& Task)
 // Only a boss, or a duel fought to its end, saves at a later phase.
 constexpr bool TaskCheckpointValid(const FTask& Task, int Phase)
 {
-    return Phase == 0 || ((Task.Type == EType::Boss || Task.Type == EType::Duel) &&
-        Task.Goal == EGoal::OpponentDown && Phase > 0 && Phase < Task.PhaseCount);
+    return DropoffCapacitiesValid(Task) && (Phase == 0 || ((Task.Type == EType::Boss || Task.Type == EType::Duel) &&
+        Task.Goal == EGoal::OpponentDown && Phase > 0 && Phase < Task.PhaseCount));
 }
 
 constexpr bool WavesValid(const FTask& Task)
@@ -1138,6 +1369,21 @@ constexpr bool PhasesValid(const FTask& Task)
     return true;
 }
 
+// Easy widens timing tolerance, never slows the authored cue clock.
+constexpr void ApplyRhythmDifficulty(FTask& Task,int Difficulty)
+{
+    if(Difficulty!=0) return;
+    for(int Step=0;Step<Task.StepCount;++Step)
+        if(Task.Steps[Step].PhraseStrikes>0) Task.Steps[Step].ToleranceMs=Task.Steps[Step].ToleranceMs*3/2;
+    if(Task.AlternateTreads&&Task.MinTurnMs>0&&Task.MaxTurnMs<=MaxClockMs&&5LL*Task.MinTurnMs>Task.MaxTurnMs)
+    {
+        // Widen the rate band by 1.5 about its midpoint; convert back to
+        // bounded integer intervals. .8–1.3 becomes .675–1.425 turns/s.
+        const long long Min=Task.MinTurnMs,Max=Task.MaxTurnMs;
+        Task.MinTurnMs=(4*Min*Max+(5*Max-Min)-1)/(5*Max-Min);
+        Task.MaxTurnMs=4*Min*Max/(5*Min-Max);
+    }
+}
 constexpr bool StepsValid(const FTask& Task)
 {
     if (Task.StepCount < 1 || Task.StepCount > MaxSteps)
@@ -1146,7 +1392,8 @@ constexpr bool StepsValid(const FTask& Task)
     {
         const FStep& Row = Task.Steps[Step];
         if (Row.Count < 1 || Row.Count > MaxGoalCount || Row.BeatMs < 0 || Row.ToleranceMs < 0 ||
-            (Row.BeatMs == 0 && Row.ToleranceMs != 0) || (Row.BeatMs > 0 && Row.ToleranceMs >= Row.BeatMs))
+            (Row.PhraseStrikes != 0 && (Row.BeatMs <= 0 || Row.PhraseStrikes < 1 || Row.PhraseStrikes > 8 || Row.PhrasePass < 1 || Row.PhrasePass > Row.PhraseStrikes)) ||
+            (Row.PhraseStrikes == 0 && Row.PhrasePass != 0) || (Row.BeatMs == 0 && Row.ToleranceMs != 0) || (Row.BeatMs > 0 && Row.ToleranceMs >= Row.BeatMs))
             return false;
     }
     return true;
@@ -1172,6 +1419,43 @@ constexpr bool PointsValid(int Count)
 // wave, phase and step can be met.
 constexpr bool TaskValid(const FTask& Task)
 {
+    if (Task.HoldPointCount < 0 || Task.HoldPointCount > MaxPoints ||
+        (Task.HoldPointCount == 0 ? Task.HoldPointMs != 0 :
+            Task.Type != EType::ProductionTask || Task.Task != ETask::Hold || Task.Goal != EGoal::Hold ||
+            Task.HoldPointMs <= 0 || Task.HoldPointMs > MaxClockMs / Task.HoldPointCount ||
+            Task.DurationMs != Task.HoldPointCount * Task.HoldPointMs || Task.Contest != EContest::Pause || Task.DecayPermille != 0)) return false;
+    if (Task.Task == ETask::Crank)
+    {
+        if (Task.StaminaPerTurn < 1 || Task.StaminaPerTurn > 100 ||
+            Task.OverspeedCostMultiplier < 0 || Task.OverspeedCostMultiplier > 2 ||
+            Task.StaminaPerTurn * Task.OverspeedCostMultiplier > 100 ||
+            Task.HoldMilliTurnsS < 0 || Task.HoldMilliTurnsS > 1000 ||
+            (Task.HoldMilliTurnsS > 0 && (1000000 / Task.HoldMilliTurnsS < Task.MinTurnMs ||
+                (1000000 + Task.HoldMilliTurnsS - 1) / Task.HoldMilliTurnsS > Task.MaxTurnMs))) return false;
+    }
+    else if (Task.StaminaPerTurn != 0 || Task.OverspeedCostMultiplier != 0 || Task.CrankTwoHanded || Task.AlternateTreads || Task.HoldMilliTurnsS != 0) return false;
+    if (!DropoffCapacitiesValid(Task)) return false;
+    const bool Cargo = Task.Type == EType::HorsebackRide && Task.Goal == EGoal::Deliveries;
+    if (Task.UnloadHoldMs < 0 || Task.UnloadHoldMs > MaxClockMs ||
+        (Cargo ? Task.UnloadHoldMs == 0 : Task.UnloadHoldMs != 0)) return false;
+    if (Task.CarryGateMs < 0 || Task.CarryGateMs > MaxClockMs || (Task.CarryGateMs > 0 && Task.Task != ETask::Carry)) return false;
+    if (Task.CoopCount < 0 || Task.CoopCount > 3 || ((Task.CoopCount == 0) != (Task.CoopMilliTurnsS == 0)) ||
+        (Task.CoopCount == 0 && (Task.CoopSuspendsDecay || Task.CoopRetreatCm > 0)) ||
+        Task.CoopMilliTurnsS < 0 || Task.CoopMilliTurnsS > 10000 || Task.CoopProgressPermille <= 0 || Task.CoopProgressPermille > Permille ||
+        Task.CoopRetreatCm < 0 || Task.CoopRetreatCm > 10000 || Task.RatchetCount < 0 || Task.RatchetCount > 3 ||
+        ((Task.CoopMilliTurnsS > 0 || Task.RatchetCount > 0 || Task.CoopSuspendsDecay || Task.CoopRetreatCm > 0) && Task.Task != ETask::Crank)) return false;
+    for (int Index = 0; Index < Task.RatchetCount; ++Index)
+        if (Task.Ratchets[Index] <= 0 || Task.Ratchets[Index] >= Permille || (Index > 0 && Task.Ratchets[Index] <= Task.Ratchets[Index-1])) return false;
+    const unsigned AllWeapons = (1u << WeaponCount) - 1u;
+    if (Task.EquipmentMask == 0u || (Task.EquipmentMask & ~AllWeapons) != 0u) return false;
+    if (Task.RecoveryWeapons != 0u)
+    {
+        if (Task.Task != ETask::Carry || Task.RecoveryWeapons != ((1u << 0) | (1u << 4) | (1u << 18)) ||
+            Task.EquipmentMask != (1u << 4) || Task.RecoveryDepthCm != 700 || Task.RecoveryStringMs != 3000 || Task.RecoveryQuiver != 12) return false;
+    }
+    else if (Task.RecoveryDepthCm != 0 || Task.RecoveryStringMs != 0 || Task.RecoveryQuiver != 0) return false;
+    if (!SoraMaaiRules::Valid(Task.Maai) || (Task.Maai.Count > 0 &&
+        (Task.Type != EType::Duel || Task.Goal != EGoal::Lessons || Task.LessonMask != 1u || Task.Count != 0))) return false;
     if (!WavesValid(Task) || !PhasesValid(Task) || Task.Count < 0 || Task.Count > MaxGoalCount ||
         Task.DurationMs < 0 || Task.DurationMs > MaxClockMs || Task.DecayPermille < 0 ||
         Task.DecayPermille > Permille || (Task.Task != ETask::None) != (Task.Type == EType::ProductionTask) ||
@@ -1218,7 +1502,7 @@ constexpr bool TaskValid(const FTask& Task)
         return Task.Goal == EGoal::Exit ||
             (Task.Goal == EGoal::Deliveries && PointsValid(Task.Dropoffs) && Task.Count == Task.Dropoffs);
     case EType::Boss: return Task.Goal == EGoal::OpponentDown && NoWaves;
-    case EType::ExploreOptional: return Task.Goal == EGoal::Cache && NoWaves;
+    case EType::ExploreOptional: return (Task.Goal == EGoal::Cache || Task.Goal == EGoal::Exit) && NoWaves;
     case EType::Collectible: return Task.Goal == EGoal::Found && NoWaves;
     }
     return false;

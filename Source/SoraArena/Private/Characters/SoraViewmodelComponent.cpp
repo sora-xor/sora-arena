@@ -3,11 +3,45 @@
 #include "SoraWorldBuilder.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
+#include "Engine/StaticMeshSocket.h"
+#include "Engine/World.h"
 #include "GameFramework/Actor.h"
+#include "Materials/MaterialInterface.h"
+#include "Misc/Paths.h"
 
-void USoraViewmodelComponent::Build(int32 WeaponId,bool bDojoBokken,bool bFirstPerson)
+namespace
+{
+bool AdmittedSocketsAndMaterials(UStaticMesh* Mesh,const SoraViewmodelPresentation::FWeapon& Entry)
+{
+    // Approximate hero sockets are not admission. The static yumi alone is
+    // also insufficient: its authored arrow plus string/draw package is pending.
+    // Yari/naginata await separate import/original-capture qualification too.
+    if(!Mesh||Entry.bApproximateSockets||Entry.Id>=18||Mesh->GetPathName()!=Entry.Mesh+TEXT(".")+FPaths::GetCleanFilename(Entry.Mesh)||
+       Mesh->GetNumLODs()<1||Mesh->GetNumVertices(0)<=0||Mesh->GetStaticMaterials().IsEmpty()) return false;
+    for(const auto& Material:Mesh->GetStaticMaterials())
+        if(!Material.MaterialInterface||!Material.MaterialInterface->GetPathName().StartsWith(TEXT("/Game/Generated/"))) return false;
+    for(const FName SocketName:{FName(TEXT("Grip_R")),FName(TEXT("Grip_L")),FName(TEXT("Muzzle"))})
+    {
+        const UStaticMeshSocket* Socket=Mesh->FindSocket(SocketName);
+        if(!Socket||Socket->RelativeLocation.ContainsNaN()||Socket->RelativeRotation.ContainsNaN()||Socket->RelativeScale.ContainsNaN()||
+           !Socket->RelativeScale.Equals(FVector::OneVector,1e-4)) return false;
+    }
+    return true;
+}
+}
+
+void USoraViewmodelComponent::Clear()
 {
     for(const auto& P:Parts) if(P) P->DestroyComponent(); Parts.Reset();
+    PrimaryMesh=nullptr; bFirstPersonMode=false; bPresentationReady=false;
+    bAuthoredPresentation=false; bFallbackBowPresentation=false; ActivePose.Reset();
+    PresentationWeapon=INDEX_NONE;
+}
+void USoraViewmodelComponent::Build(int32 WeaponId,bool bDojoBokken,bool bFirstPerson)
+{
+    Clear(); bFirstPersonMode=bFirstPerson;
+    if(bFirstPerson) { SetRelativeLocation(RestLocation()); SetRelativeRotation(FQuat::Identity); }
+    PresentationWeapon=bDojoBokken?SoraViewmodelPresentation::BokkenId:WeaponId;
     if(!FSoraCatalog::Get().IsReady()) return;
     AActor* Owner=GetOwner();
     const auto& W=FSoraCatalog::Get().Weapon(WeaponId);
@@ -25,14 +59,28 @@ void USoraViewmodelComponent::Build(int32 WeaponId,bool bDojoBokken,bool bFirstP
         const FString Asset=FString::Printf(TEXT("/Game/Generated/Meshes/SM_Weapon_%02d.SM_Weapon_%02d"),WeaponId,WeaponId);
         AuthoredMesh=LoadObject<UStaticMesh>(nullptr,*Asset);
     }
+    const auto* Contract=bFirstPerson?SoraViewmodelPresentation::Get():nullptr;
+    const auto* Presentation=Contract?Contract->Weapons.Find(PresentationWeapon):nullptr;
     if(AuthoredMesh)
     {
         auto* Mesh=NewObject<UStaticMeshComponent>(Owner,MakeUniqueObjectName(Owner,UStaticMeshComponent::StaticClass(),TEXT("OriginalWeaponMesh")));
         // Visual only, so never in the navigation octree (ASoraWorldBuilder::Shape).
         Mesh->SetCanEverAffectNavigation(false); Mesh->SetStaticMesh(AuthoredMesh);
         Mesh->SetupAttachment(this); Mesh->SetRelativeScale3D(FVector(.75)); Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+        if(bFirstPerson&&Presentation&&AdmittedSocketsAndMaterials(AuthoredMesh,*Presentation))
+        {
+            const auto& Pose=Contract->Poses.FindChecked(Presentation->Pose);
+            const UStaticMeshSocket* Anchor=AuthoredMesh->FindSocket(Pose.Anchor);
+            // Qrest is in mesh axes. Recenter at the socket's position; do not
+            // undo its rotation (W15's grip axes intentionally rotate 90 degrees).
+            Mesh->SetRelativeScale3D(FVector(Contract->MeshScale));
+            Mesh->SetRelativeLocation(-Anchor->RelativeLocation*Contract->MeshScale);
+            bAuthoredPresentation=true;
+        }
         if(bFirstPerson) Mesh->SetFirstPersonPrimitiveType(EFirstPersonPrimitiveType::FirstPerson);
         Mesh->SetOnlyOwnerSee(bFirstPerson); Mesh->SetVisibility(true); Mesh->RegisterComponent(); Owner->AddInstanceComponent(Mesh); Parts.Add(Mesh);
+        PrimaryMesh=Mesh;
+        if(bAuthoredPresentation) BeginPresentation(false);
         return;
     }
     auto Add=[&](FString N,FVector L,FVector S,FLinearColor C)
@@ -78,14 +126,118 @@ void USoraViewmodelComponent::Build(int32 WeaponId,bool bDojoBokken,bool bFirstP
         Add(TEXT("Sight"),FVector(22,0,10),FVector(.08,.065,.06),FLinearColor(.65,.39,.08));
     }
     Add(TEXT("FurPaw"),FVector(-13,-2,-10),FVector(.13,.15,.13),FLinearColor(.69,.47,.25));
+    if(bFirstPerson&&WeaponId==18&&Presentation)
+    {
+        // This is the existing proxy's actual grip, not an authored socket.
+        // Recenter the unchanged proxy geometry as a group, and label it fallback.
+        const FVector ProxyGrip(7,0,-5);
+        for(const auto& Part:Parts) if(Part) Part->SetRelativeLocation(Part->GetRelativeLocation()-ProxyGrip);
+        BeginPresentation(true);
+    }
 }
-void USoraViewmodelComponent::Sway(float LifeTime,float Moving,float Pitch,float Roll)
+void USoraViewmodelComponent::BeginPresentation(bool bFallbackBow)
 {
+    const auto* Contract=SoraViewmodelPresentation::Get();
+    const auto* Entry=Contract?Contract->Weapons.Find(PresentationWeapon):nullptr;
+    if(!Entry) return;
+    const auto Pose=bFallbackBow?SoraViewmodelPresentation::FallbackBowPose(false):Contract->Poses.FindChecked(Entry->Pose);
+    bPresentationReady=true; bFallbackBowPresentation=bFallbackBow;
+    SmoothedAnchor=Pose.Location; SmoothedRest=Pose.Rotation; ActivePose=Pose.Name;
+    SmoothedPitch=SmoothedRoll=SmoothedLift=0;
+    SetRelativeLocation(SmoothedAnchor); SetRelativeRotation(SmoothedRest);
+}
+void USoraViewmodelComponent::Present(float DeltaSeconds,float LifeTime,float Moving,float Pitch,float Roll,float Lift,
+    bool bDrawn,const FMinimalViewInfo* View,const FVector& GameplayRay)
+{
+    const auto* Contract=SoraViewmodelPresentation::Get();
+    const auto& Entry=Contract->Weapons.FindChecked(PresentationWeapon);
+    const auto Pose=bFallbackBowPresentation?SoraViewmodelPresentation::FallbackBowPose(bDrawn):
+        Contract->Poses.FindChecked(bDrawn?TEXT("bow.drawn"):Entry.Pose);
+    ActivePose=Pose.Name;
+    const float Alpha=SoraViewmodelPresentation::BlendAlpha(DeltaSeconds,Contract->BlendPerSecond);
+    SmoothedAnchor=FMath::Lerp(SmoothedAnchor,Pose.Location,Alpha);
+    SmoothedRest=FQuat::Slerp(SmoothedRest,Pose.Rotation,Alpha).GetNormalized();
+    SmoothedPitch=FMath::Lerp(SmoothedPitch,Pitch,Alpha); SmoothedRoll=FMath::Lerp(SmoothedRoll,Roll,Alpha);
+    SmoothedLift=FMath::Lerp(SmoothedLift,Lift,Alpha);
+    const FQuat Action=FRotator(SmoothedPitch,0,SmoothedRoll).Quaternion();
+    FQuat Aim=FQuat::Identity;
+    if(bDrawn&&View&&GetAttachParent())
+    {
+        const FVector Desired=GetAttachParent()->GetComponentQuat().UnrotateVector(
+            SoraViewmodelPresentation::CorrectedWorldDirection(*View,GameplayRay));
+        // Keep the current live ray outside every state/rest interpolation.
+        Aim=FQuat::FindBetweenNormals((Action*SmoothedRest).GetForwardVector(),Desired);
+    }
+    SetRelativeLocation(SmoothedAnchor+FVector(0,FMath::Sin(LifeTime*Contract->BobYRate)*Moving*Contract->BobY,
+        FMath::Cos(LifeTime*Contract->BobZRate)*Moving*Contract->BobZ+SmoothedLift));
+    SetRelativeRotation(SoraViewmodelPresentation::Compose(Aim,Action,SmoothedRest));
+}
+void USoraViewmodelComponent::Sway(float DeltaSeconds,float LifeTime,float Moving,bool bReloading,bool bStrike,
+    bool bSprint,bool bBowDrawing,const FMinimalViewInfo& View,const FVector& GameplayRay)
+{
+    if(bFirstPersonMode&&bPresentationReady)
+    {
+        const auto* Contract=SoraViewmodelPresentation::Get();
+        const auto Pose=bFallbackBowPresentation?SoraViewmodelPresentation::FallbackBowPose(false):
+            Contract->Poses.FindChecked(Contract->Weapons.FindChecked(PresentationWeapon).Pose);
+        Present(DeltaSeconds,LifeTime,Moving,bReloading?Pose.ReloadPitch:bStrike?Contract->StrikePitch:0.f,
+            bSprint?Contract->SprintRoll:0.f,0.f,PresentationWeapon==18&&bBowDrawing,&View,GameplayRay);
+        return;
+    }
+    // Unadmitted meshes retain their prior framing. No authored paw is invented.
+    const float Pitch=bReloading?-30.f:bStrike?25.f:bBowDrawing?-15.f:0.f,Roll=bSprint?-15.f:0.f;
     SetRelativeLocation(FVector(40,18+FMath::Sin(LifeTime*8)*Moving*.7,-18+FMath::Cos(LifeTime*16)*Moving*.6));
-    SetRelativeRotation(FRotator(Pitch,0,Roll));
+    // Gameplay offset is camera-component-local. The presentation view can
+    // include an additive camera rotation, which must not counter-rotate this
+    // legacy branch (or change the old BowAimOffset * action composition).
+    const FVector EyeRay=GetAttachParent()?GetAttachParent()->GetComponentQuat().UnrotateVector(GameplayRay):GameplayRay;
+    SetRelativeRotation(EyeRay.Rotation().Quaternion()*FRotator(Pitch,0,Roll).Quaternion());
 }
 void USoraViewmodelComponent::KernelPose(float Windup,bool bReloading)
 {
+    if(bFirstPersonMode&&bPresentationReady)
+    {
+        const auto* Contract=SoraViewmodelPresentation::Get();
+        const auto Pose=bFallbackBowPresentation?SoraViewmodelPresentation::FallbackBowPose(false):
+            Contract->Poses.FindChecked(Contract->Weapons.FindChecked(PresentationWeapon).Pose);
+        Present(GetWorld()?GetWorld()->GetDeltaSeconds():0.f,0,0,bReloading?Pose.ReloadPitch:Contract->WindupPitch*Windup,
+            0,Contract->WindupLift*Windup,false,nullptr,FVector::ForwardVector);
+        return;
+    }
+    // World-visible NPC/practice transforms intentionally remain exact.
     SetRelativeLocation(FVector(40,18,-18+8.f*Windup));
     SetRelativeRotation(FRotator(bReloading?-30.f:28.f*Windup,0,0));
+}
+bool USoraViewmodelComponent::PresentationSocketWorld(FName Socket,FTransform& Transform) const
+{
+    if(!bAuthoredPresentation||!PrimaryMesh||!PrimaryMesh->DoesSocketExist(Socket)) return false;
+    Transform=PrimaryMesh->GetSocketTransform(Socket,RTS_World);
+    return !Transform.ContainsNaN();
+}
+bool USoraViewmodelComponent::FallbackBowBounds(TArray<SoraViewmodelPresentation::FPartBounds>& Bounds) const
+{
+    Bounds.Reset();
+    if(!bFallbackBowPresentation||bAuthoredPresentation||Parts.Num()!=7) return false;
+    TSet<FString> Seen;
+    for(const auto& Part:Parts)
+    {
+        if(!Part||!Part->GetStaticMesh()) return false;
+        const FBox Box=Part->GetStaticMesh()->GetBoundingBox();
+        if(!Box.IsValid||Box.Min.ContainsNaN()||Box.Max.ContainsNaN()) return false;
+        SoraViewmodelPresentation::FPartBounds Row;
+        for(const TCHAR* Name:{TEXT("YumiLower"),TEXT("YumiUpper"),TEXT("YumiGrip"),TEXT("YumiString"),
+            TEXT("NockedArrow"),TEXT("Arrowhead"),TEXT("FurPaw")})
+            if(Part->GetName()==Name||Part->GetName().StartsWith(FString(Name)+TEXT("_"))) { Row.Name=Name; break; }
+        if(Row.Name.IsEmpty()||Seen.Contains(Row.Name)) return false;
+        Seen.Add(Row.Name); Row.bArrow=Row.Name==TEXT("NockedArrow")||Row.Name==TEXT("Arrowhead");
+        for(int32 Corner=0;Corner<8;++Corner)
+        {
+            const FVector Local(Corner&1?Box.Max.X:Box.Min.X,Corner&2?Box.Max.Y:Box.Min.Y,Corner&4?Box.Max.Z:Box.Min.Z);
+            const FVector World=Part->GetComponentTransform().TransformPosition(Local);
+            if(World.ContainsNaN()) return false;
+            Row.WorldCorners.Add(World);
+        }
+        Bounds.Add(MoveTemp(Row));
+    }
+    return Bounds.Num()==7;
 }

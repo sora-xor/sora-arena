@@ -1415,6 +1415,7 @@ beats:
     x_max_blocking_s: 20
     unlocks: {weapons: [10], mechanics: []}
     music: "ch06_pledge"
+    complete: "volume_enter:vol_archive_press_landing"
     lines:
       - "ch06.b10.toranosuke.001"
       - "ch06.b10.toranosuke.002"

@@ -70,22 +70,31 @@ bool SoraUI::LoadCredits(TArray<FCreditLine>& Out, SoraText::FLine& Error)
     AddCredit(Out, FCreditLine::Entry, SoraText::Line(NSLOCTEXT("SoraArena.Credits", "MadeBy", "制作 SORA")));
     AddCredit(Out, FCreditLine::Entry, SoraText::Line(NSLOCTEXT("SoraArena.Credits", "Insignia", "紋章：SORA ロゴ")));
     AddCredit(Out, FCreditLine::Heading, SoraText::Line(NSLOCTEXT("SoraArena.Credits", "Typeface", "書体")));
-    AddCredit(Out, FCreditLine::Entry, TEXT("Noto Sans CJK JP  —  SIL Open Font License 1.1  —  Content/SourceArt/Fonts/OFL.txt"));
-    // Every notice the package stages; a missing directory is reported, not hidden.
+    AddCredit(Out, FCreditLine::Entry, TEXT("Noto Sans CJK JP  —  SIL Open Font License 1.1  —  http://scripts.sil.org/OFL"));
     const FString Directory = FPaths::ProjectDir() / TEXT("ThirdPartyNotices");
+    // The same ledger generates this readable view and the complete staged audit.
+    // Require the view even if other license files are present.
+    TArray<FString> AssetCredits;
+    if (!FFileHelper::LoadFileToStringArray(AssetCredits, *(Directory / TEXT("CREDITS.md"))) || AssetCredits.IsEmpty())
+    {
+        Error = SoraText::Format(NSLOCTEXT("SoraArena.Credits", "Missing", "権利表記を読み込めません：{Directory}"),
+            {{TEXT("Directory"), Directory / TEXT("CREDITS.md")}});
+        return false;
+    }
+    AddMarkdown(Out, AssetCredits);
     TArray<FString> Files;
     IFileManager::Get().FindFiles(Files, *(Directory / TEXT("*.md")), true, false);
+    Files.Remove(TEXT("ASSETS.md"));
+    Files.Remove(TEXT("CREDITS.md"));
     TArray<FString> TextFiles;
     IFileManager::Get().FindFiles(TextFiles, *(Directory / TEXT("*.txt")), true, false);
     Files.Append(TextFiles);
     Files.Sort();
-    int32 Read = 0;
     for (const FString& File : Files)
     {
         TArray<FString> Lines;
         if (!FFileHelper::LoadFileToStringArray(Lines, *(Directory / File)))
             continue;
-        ++Read;
         if (File.EndsWith(TEXT(".md")))
         {
             AddMarkdown(Out, Lines);
@@ -95,12 +104,6 @@ bool SoraUI::LoadCredits(TArray<FCreditLine>& Out, SoraText::FLine& Error)
         for (const FString& Line : Lines)
             if (!Line.TrimStartAndEnd().IsEmpty())
                 AddCredit(Out, FCreditLine::Text, Line.TrimStartAndEnd());
-    }
-    if (Read == 0)
-    {
-        Error = SoraText::Format(NSLOCTEXT("SoraArena.Credits", "Missing", "権利表記を読み込めません：{Directory}"),
-            {{TEXT("Directory"), Directory}});
-        return false;
     }
     return true;
 }

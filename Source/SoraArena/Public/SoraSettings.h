@@ -143,6 +143,11 @@ public:
     // horse follows the route while the player keeps gait and aim.
     bool AutoSteer() const;
     void SetAutoSteer(bool bEnabled);
+    // Only a crank with an authored assist rate repeats held Interact.
+    bool RhythmAssist() const;
+    void SetRhythmAssist(bool bEnabled);
+    bool HoldToCrank() const;
+    void SetHoldToCrank(bool bEnabled);
     // On Easy (稽古), the League's volley ranks order themselves on the
     // opponent nearest the hero when their front rank stands loaded (ch08
     // easy_auto_order); no effect on Normal or Hard.

@@ -2,6 +2,8 @@
 
 #if WITH_DEV_AUTOMATION_TESTS
 #include "SoraAutomationWorld.h"
+#include "SoraMaaiAutomation.h"
+#include "SoraSummitAutomation.h"
 #include "Combat/SoraBossCatalog.h"
 #include "SoraBoss.h"
 #include "SoraCampaignDirector.h"
@@ -549,7 +551,11 @@ FString Dojo(FAutomationTestBase& Test, FEventLog* Log = nullptr)
     FRun Run(Test, TEXT("Dojo"), Log);
     if (!Run.Seed(0, 1) || !Run.Start() || !Run.Key(EKeys::Enter) || !Run.Key(EKeys::Enter))
         return FString();
-    if (!Test.TestTrue(TEXT("Dojo scenario is in play"), Run.Mode()->IsPlaying()) || !Run.Place(Run.Foe(0), FVector(150, 0, 0)))
+    // The opening lesson is now a measured distance drill before any pupil
+    // attacks. Keep the trace's guard/parry section at its original start.
+    if(!Run.Down(EKeys::LeftControl)||!Run.World->Tick(45)||!Run.Up(EKeys::LeftControl)||
+        !SoraMaaiAutomation::Walk(*Run.World)) return FString();
+    if (!Test.TestTrue(TEXT("Dojo scenario is in play"), Run.Mode()->IsPlaying()) || !Run.Place(Run.Foe(0), FVector(150, 0, 0)) || !Run.Aim(Run.Foe(0)))
         return FString();
     double WindupAt = -1.0;
     bool bGuardUp = false, bSecondStepsIn = false;
@@ -606,13 +612,50 @@ FString Dojo(FAutomationTestBase& Test, FEventLog* Log = nullptr)
     return bOk ? Hash : FString();
 }
 
+// Follow the real navigation route and held input, recording every extra
+// world tick in the same combat trace rather than teleporting to the seam.
+bool CutCollectorSpine(FRun& R)
+{
+    auto* Hero=R.Hero();
+    auto* Arena=R.Mode()->Arena();
+    auto* Nav=USoraNavigation::Get(R.Get());
+    const FVector Goal=Arena->SummitSpineApproach();
+    TArray<FVector> Route;
+    if(!Nav||!Nav->Settle()||!Nav->FindPath(Hero->GetActorLocation(),Goal+FVector(0,0,90),*Hero,Route)||
+        Route.IsEmpty()||FVector::Dist2D(Route.Last(),Goal)>60||FMath::Abs(Route.Last().Z-Goal.Z)>30)
+        return R.Fail(TEXT("The yielded collector has no complete walking route to the spine"));
+    Route.Add(Goal);
+    for(const FVector& Point:Route)
+    {
+        for(int32 Frame=0;Frame<1800&&FVector::Dist2D(Hero->GetActorLocation(),Point)>20;++Frame)
+        {
+            const FRotator Facing=(Point-Hero->GetActorLocation()).GetSafeNormal2D().Rotation();
+            Hero->GetController()->SetControlRotation(Facing); Hero->FaceRotation(Facing,0.f);
+            if(!R.Down(EKeys::W)||!R.Step()) return false;
+        }
+        if(!R.Up(EKeys::W)) return false;
+        for(int32 Frame=0;Frame<4;++Frame) if(!R.Step()) return false;
+        if(FVector::Dist2D(Hero->GetActorLocation(),Point)>30)
+            return R.Fail(TEXT("The ordinary spine approach walk did not reach its waypoint"));
+    }
+    SoraSummitAutomation::FaceSpine(*R.World);
+    if(!R.Expect(TEXT("the spine seam is reachable from grounded dais traversal"),Arena->CanReachSummitSpine(*Hero))) return false;
+    // The authored disarm interval must finish before a fresh Interact press.
+    for(int32 Frame=0;Frame<95;++Frame) if(!R.Step()) return false;
+    if(!R.Down(EKeys::E)) return false;
+    for(int32 Frame=0;Frame<120&&R.Mode()->Campaign()->AwaitingCapture();++Frame)
+        if(!R.Step()) return false;
+    return R.Up(EKeys::E)&&R.Expect(TEXT("the held draw-cut completes the spine capture"),!R.Mode()->Campaign()->AwaitingCapture());
+}
+
 // The final chapter restored at its boss (ch08.b14): High Collector Val Amort
 // with his beam and cleave, and carbine fire his ledger shards intercept. The
 // story's blow then brings him to his cane phase (the phases between are
 // SoraArena.Boss.ValAmort's), where no weapon finishes him: the katana goes
 // into its scabbard on the Sheathe key, and a guard pressed just before his
-// final foreclosure lands takes his cane (mutō-dori). He yields and E binds
-// him (captured, not killed), Enter skips the aftermath cinematic and the
+// final foreclosure lands takes his cane (mutō-dori). He yields; walking to
+// the dais and holding E cuts the spine, preserving his capture alive. Enter
+// skips the aftermath cinematic and the
 // registry is carried to the last site. With a listener attached the chapter
 // then plays out to liberation.
 constexpr int32 CollectorChapter = 7, CollectorBeat = 13, BossSlot = 0;
@@ -622,10 +665,19 @@ FString Collector(FAutomationTestBase& Test, FEventLog* Log = nullptr)
     if (!Run.Seed(CollectorChapter, CollectorBeat) || !Run.Start() || !Run.Key(EKeys::Enter))
         return FString();
     if (!Test.TestTrue(TEXT("Collector scenario is in play"), Run.Mode()->IsPlaying()) ||
-        !Test.TestNotNull(TEXT("The collector waits at its checkpoint"), Run.Mode()->Campaign()->CampaignBoss()) ||
-        !Run.Place(Run.Foe(BossSlot), FVector(600, 0, 0)))
+        !Test.TestNotNull(TEXT("The collector waits at its checkpoint"), Run.Mode()->Campaign()->CampaignBoss()))
         return FString();
-    int32 TakenAt = INDEX_NONE, GuardAt = INDEX_NONE, Attempts = 0;
+    // Keep this isolated combat setup on clear summit floor, outside the
+    // central dais/spine and inside the open edge. Traversal is tested separately.
+    const FVector ArenaCenter=Run.Mode()->Campaign()->CampaignBoss()->ArenaCenter();
+    Run.Hero()->SetActorLocation(FVector(ArenaCenter.X-800,ArenaCenter.Y-900,Run.Hero()->GetActorLocation().Z),
+        false,nullptr,ETeleportType::TeleportPhysics);
+    if(!Run.Place(Run.Foe(BossSlot),FVector(600,0,0))) return FString();
+    // Let the collector finish his 1.2-second cleave before the injected
+    // phase change. Cancelling its windup would leave no resolved melee hit
+    // for the listener contract to observe.
+    constexpr int32 CaneAt = 450;
+    int32 TakenAt = INDEX_NONE, CaneReadyAt = INDEX_NONE, GuardAt = INDEX_NONE, Attempts = 0;
     const bool bOk = Run.Play(900, [&](FRun& R, int32 F)
     {
         const auto MoveTo = [&R](const FVector& Point)
@@ -635,13 +687,12 @@ FString Collector(FAutomationTestBase& Test, FEventLog* Log = nullptr)
         if (TakenAt != INDEX_NONE)
         {
             FVector Point;
-            // The yielded collector waits where he knelt; E beside him binds him.
+            // A yielded collector cannot be captured by tapping E beside him.
             if (F == TakenAt + 5)
             {
-                if (!R.Mode()->Campaign()->AwaitingCapture() || !R.Mode()->Campaign()->ObjectiveAnchor(Point))
+                if (!R.Mode()->Campaign()->AwaitingCapture())
                     return R.Fail(TEXT("The collector did not yield to be captured"));
-                MoveTo(Point);
-                return R.Tap(EKeys::E);
+                return CutCollectorSpine(R);
             }
             // Enter skips the aftermath cinematic; the registry box is carried
             // from the canal steps to the notice board at the last site.
@@ -658,7 +709,7 @@ FString Collector(FAutomationTestBase& Test, FEventLog* Log = nullptr)
         }
         FFoe* Foe = R.Foe(BossSlot);
         const ASoraBoss* Boss = Cast<ASoraBoss>(Foe);
-        if (F > 330 && (!Boss || Boss->IsDefeated()))
+        if (F > CaneAt && (!Boss || Boss->IsDefeated()))
         {
             if (!Boss)
                 return R.Fail(TEXT("The collector is gone before his capture"));
@@ -675,28 +726,27 @@ FString Collector(FAutomationTestBase& Test, FEventLog* Log = nullptr)
         case 150: return R.Place(Foe, FVector(250, 0, 0)) && R.Aim(Foe);
         case 160: return R.Down(EKeys::LeftMouseButton);
         case 300: return R.Up(EKeys::LeftMouseButton);
-        case 330:
+        case CaneAt:
             if (!Foe)
                 return R.Fail(TEXT("The collector is gone before his cane phase"));
             UGameplayStatics::ApplyDamage(Foe, Foe->Health - Foe->MaxHealth * .4f, R.Controller(), R.Hero(), UDamageType::StaticClass());
             return true;
-        case 332: return R.Tap(EKeys::One);
-        case 334:
-        {
-            // The cane phase is fought at his arena's centre, the hero two
-            // metres off, facing him.
-            if (!Boss)
-                return R.Fail(TEXT("The collector is gone before his cane phase"));
-            const FVector Stand(Boss->ArenaCenter().X, Boss->ArenaCenter().Y, Foe->GetActorLocation().Z);
-            Foe->SetActorLocation(Stand, false, nullptr, ETeleportType::TeleportPhysics);
-            MoveTo(Stand - FVector(220.f, 0.f, 0.f));
-            return R.Aim(Foe);
-        }
-        case 340: return R.Tap(EKeys::V);
         default: break;
         }
-        if (F <= 340 || !Boss)
-            return true;
+        if(F<=CaneAt||!Boss||Boss->IsPhaseTransitioning()) return true;
+        if(CaneReadyAt==INDEX_NONE) CaneReadyAt=F;
+        const int32 ReadyFrame=F-CaneReadyAt;
+        if(ReadyFrame==2) return R.Tap(EKeys::One);
+        if(ReadyFrame==4)
+        {
+            // Test positioning starts only after the real P3 draw interval.
+            const FVector Stand(Boss->ArenaCenter().X,Boss->ArenaCenter().Y-1000,Foe->GetActorLocation().Z);
+            Foe->SetActorLocation(Stand,false,nullptr,ETeleportType::TeleportPhysics);
+            MoveTo(Stand-FVector(220.f,0.f,0.f));
+            return R.Aim(Foe);
+        }
+        if(ReadyFrame==10) return R.Tap(EKeys::V);
+        if(ReadyFrame<=10) return true;
         // Sheathed and facing him, a guard pressed in the foreclosure's last
         // 100 ms; released after it, ready for the next if one is needed.
         const FSoraBossAttack* Attack = Boss->BossAttack();
@@ -721,19 +771,28 @@ FString Collector(FAutomationTestBase& Test, FEventLog* Log = nullptr)
         bOk && !Campaign->CampaignBoss() && Run.Mode()->Arena()->ActivatedMask() == 7 && Campaign->ActiveBeat() == 16);
     if (bOk && Log)
     {
-        // The festival's closing lines play on, then Nyaakoto rehangs the plaque
-        // and Enter skips the final cinematic into liberation.
-        for (int32 Frame = 0; Frame < 400 && Campaign->ActiveBeat() == 16 && Campaign->LinesQueued() > 0; ++Frame)
-            if (!Run.World->Tick(1, .5f))
-                return FString();
-        FVector Plaque;
-        if (!Campaign->ObjectiveAnchor(Plaque))
+        // Arrival at the torii starts walk-and-talk. Interact at the name
+        // board then starts the plaque exchange; only its final line unlocks
+        // the closing cinematic. Enter cannot replace either world event.
+        const auto WaitForLines=[&]()
         {
-            Run.Fail(TEXT("The plaque has no anchor"));
-            return FString();
-        }
-        Run.Hero()->SetActorLocation(FVector(Plaque.X, Plaque.Y, Run.Hero()->GetActorLocation().Z), false, nullptr, ETeleportType::TeleportPhysics);
-        if (!Run.World->Tick(2) || !Run.Key(EKeys::Enter))
+            for(int32 Frame=0;Frame<600&&Campaign->LinesQueued()>0;++Frame)
+                if(!Run.World->Tick(1,.1f)) return false;
+            return Run.Expect(TEXT("the epilogue dialogue finishes without skipping"),Campaign->LinesQueued()==0);
+        };
+        if(!WaitForLines()) return FString();
+        FVector At;
+        if(!Run.Expect(TEXT("the epilogue first requires torii arrival"),
+            Campaign->ObjectiveAnchor(At)&&!Campaign->AnchorTakesInteract())) return FString();
+        Run.Hero()->SetActorLocation(FVector(At.X,At.Y,Run.Hero()->GetActorLocation().Z),false,nullptr,ETeleportType::TeleportPhysics);
+        if(!Run.World->Tick(2)||!WaitForLines()) return FString();
+        if(!Run.Expect(TEXT("the name board requires ordinary Interact"),
+            Campaign->ObjectiveAnchor(At)&&Campaign->AnchorTakesInteract())) return FString();
+        Run.Hero()->SetActorLocation(FVector(At.X,At.Y,Run.Hero()->GetActorLocation().Z),false,nullptr,ETeleportType::TeleportPhysics);
+        if(!Run.Key(EKeys::E)||!WaitForLines()||!Run.World->Tick(1)) return FString();
+        if(!Run.Expect(TEXT("the plaque exchange unlocks the closing cinematic"),
+            Campaign->ActiveBeat()==17&&Run.Mode()->Arena()->RehungPlaques()==2)) return FString();
+        if (!Run.Key(EKeys::Enter)||!Run.World->Tick(1))
             return FString();
         Run.Expect(TEXT("Nyaagyu is liberated"), Run.Mode()->bChapterComplete && Campaign->bCampaignComplete);
     }
@@ -847,7 +906,7 @@ bool FSoraCombatTraceTest::RunTest(const FString& Parameters)
     TestFalse(TEXT("Dojo lessons and bouts complete"), Dojo(*this).IsEmpty());
     TestFalse(TEXT("Collector fight completes"), Collector(*this).IsEmpty());
     TestFalse(TEXT("Training arena fight completes"), Training(*this).IsEmpty());
-    return true;
+    return !HasAnyErrors();
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
@@ -943,6 +1002,8 @@ bool FSoraScriptedFightEventsTest::RunTest(const FString& Parameters)
     Expect(*this, CollectorLog, Scenario, TEXT("BeatCompleted chapter=7 beat=ch08.b14"));
     Expect(*this, CollectorLog, Scenario, TEXT("BeatCompleted chapter=7 beat=ch08.b15"));
     Expect(*this, CollectorLog, Scenario, TEXT("SiteRestored chapter=7 site=2 campaign=1"));
+    Expect(*this, CollectorLog, Scenario, TEXT("BeatCompleted chapter=7 beat=ch08.b17"));
+    Expect(*this, CollectorLog, Scenario, TEXT("BeatStarted chapter=7 beat=ch08.b18 resumed=0 phase=0"));
     Expect(*this, CollectorLog, Scenario, TEXT("ChapterCompleted chapter=7 liberated=1"));
 
     Scenario = TEXT("Training arena");
@@ -958,6 +1019,7 @@ bool FSoraScriptedFightEventsTest::RunTest(const FString& Parameters)
     Expect(*this, TrainingLog, Scenario, TEXT("Resolved attacker=Hero target=Retainer0 weapon=6 hit=1"));
 
     KernelEvents(*this, KernelLog);
+    if(HasAnyErrors()) return false;
     UE_LOG(LogTemp, Display, TEXT("SORA_SCRIPTED_FIGHT_EVENTS_OK: invasion=%d carbine=%d dojo=%d collector=%d training=%d kernel=%d"),
         RetainerLog.Lines.Num(), CarbineLog.Lines.Num(), DojoLog.Lines.Num(), CollectorLog.Lines.Num(), TrainingLog.Lines.Num(), KernelLog.Lines.Num());
     return true;

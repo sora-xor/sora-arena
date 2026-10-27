@@ -1,0 +1,7 @@
+# Python 3.11 is used in CI; these existing pins also support it.
+-r ../requirements.txt
+-r ../audio/requirements.txt
+Pillow==11.3.0
+# Freeze the transitive soundfile CFFI dependencies as well.
+cffi==2.1.1
+pycparser==3.11

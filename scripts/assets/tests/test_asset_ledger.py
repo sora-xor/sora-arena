@@ -133,6 +133,64 @@ class ValidatorRepo(RepoCase):
         self.assertEqual(report.errors, [])
         self.assertEqual(report.stats.get("schema2_covered"), 1)
 
+    def test_lfs_pointer_detection_reads_the_complete_header(self):
+        rel = "Content/SourceArt/Env/Foo/tex.png"
+        payload = self.good_repo()
+        path = self.tmp / rel
+        pointer = (f"version https://git-lfs.github.com/spec/v1\n"
+                   f"oid sha256:{sha(payload)}\nsize {len(payload)}\n").encode()
+        self.assertFalse(L.is_lfs_pointer(path))
+        path.write_bytes(pointer)
+        self.assertTrue(L.is_lfs_pointer(path))
+        # Without the LFS index identity, pointer text is not the asset content.
+        self.assertIsNone(L.tracked_content_sha256(self.tmp, rel, {}))
+        self.assertEqual(L.tracked_content_sha256(self.tmp, rel, {rel: sha(payload)}), sha(payload))
+        path.write_bytes(pointer[:40])
+        self.assertFalse(L.is_lfs_pointer(path))
+        self.assertFalse(L.is_lfs_pointer(self.tmp / "missing.png"))
+
+    def test_real_lfs_pointer_fails_validation_until_materialized(self):
+        rel = "Content/SourceArt/Env/Foo/tex.png"
+        payload = self.good_repo()
+        subprocess.run(["git", "-C", str(self.tmp), "lfs", "install", "--local", "--skip-smudge"],
+                       check=True, capture_output=True)
+        self.write(".gitattributes", b"*.png filter=lfs diff=lfs merge=lfs -text\n")
+        self.add(".gitattributes", rel)
+        subprocess.run(["git", "-C", str(self.tmp), "add", "--renormalize", rel], check=True)
+        subprocess.run(["git", "-C", str(self.tmp), "-c", "user.name=Ledger Test",
+                        "-c", "user.email=ledger-test@example.test", "commit", "--no-gpg-sign",
+                        "-qm", "LFS fixture"], check=True, capture_output=True)
+        pointer = subprocess.check_output(["git", "-C", str(self.tmp), "show", f":{rel}"])
+        self.assertIn(f"oid sha256:{sha(payload)}\n".encode(), pointer)
+        self.assertIn(f"size {len(payload)}\n".encode(), pointer)
+        self.write(rel, pointer)
+        for with_size in (True, False):
+            with self.subTest(with_size=with_size):
+                entry = {"path": rel, "sha256": sha(payload)}
+                if with_size:
+                    entry["bytes"] = len(payload)
+                self.ledger("foo", [record("tex", [entry])])
+                out = io.StringIO()
+                with redirect_stdout(out):
+                    code = validate_asset_ledger.main(["--root", str(self.tmp), "--json"])
+                report = json.loads(out.getvalue())
+                self.assertEqual(code, 1)
+                self.assertEqual(len(report["errors"]), 1, report)
+                self.assertIn(rel, report["errors"][0])
+                self.assertIn("unmaterialized Git LFS pointer", report["errors"][0])
+                self.assertIn("git lfs checkout", report["errors"][0])
+                self.assertEqual(report["stats"].get("verified_files", 0), 0)
+        subprocess.run(["git", "-C", str(self.tmp), "lfs", "checkout", "--", rel],
+                       check=True, capture_output=True)
+        self.assertEqual((self.tmp / rel).read_bytes(), payload)
+        out = io.StringIO()
+        with redirect_stdout(out):
+            code = validate_asset_ledger.main(["--root", str(self.tmp), "--json"])
+        report = json.loads(out.getvalue())
+        self.assertEqual(code, 0, report)
+        self.assertEqual(report["errors"], [])
+        self.assertEqual(report["stats"].get("verified_files"), 1)
+
     def test_planted_restricted_file_in_tracked_path_fails(self):
         self.good_repo()
         self.write("Content/ThirdPartyRestricted/Fab/Sample.uasset", b"restricted")
@@ -335,6 +393,73 @@ class RestrictedChecker(RepoCase):
 
 
 class Notices(RepoCase):
+    def test_player_credits_preserve_attribution_without_audit_fields(self):
+        self.ledger("polyhaven", [record("arabic", [], name="قط شوارع.jpg", authors=["Original author"])],
+                    credit="Source courtesy")
+        by = record("scan", [], tier="PUB-BY", license_id="CC-BY-4.0", name="Cat CT", authors=["Open.Ed"],
+                    attribution_text="Required attribution", changes="Decimated and retopologised",
+                    mirror_url="https://example.test/mirror", mirror_license={"dataset": "Dataset", "license": "ODC-By-1.0",
+                    "license_url": "https://example.test/dataset-license"}, derived_art=["Content/SourceArt/Cat"])
+        self.ledger("scans", [by], credits=["Dataset acknowledgement"])
+        self.ledger("project", [record("owned", [], tier="OWN", generator="scripts/art/generate.py")])
+        self.ledger("references", [record("reference", [], tier="REF", reason="Internal review note")], restricted=True)
+        self.add("scripts")
+        text = generate_asset_notices.render_credits(self.tmp)
+        for expected in ("قط شوارع.jpg", "Original author", "Source courtesy", '"Cat CT" by Open.Ed',
+                         "Required attribution", "Decimated and retopologised", "https://example.test/a/scan",
+                         "https://example.test/license", "https://example.test/mirror", "Dataset acknowledgement",
+                         "ODC-By-1.0", "https://example.test/dataset-license", "Reference acknowledgements", '"reference"'):
+            self.assertIn(expected, text)
+        for internal in ("Content/SourceArt/Cat", "scripts/art/generate.py", "repository (LFS)",
+                         "Internal review note", "Schema-1", "Generated by", "Bytes recorded"):
+            self.assertNotIn(internal, text)
+        self.assertEqual(text, generate_asset_notices.render_credits(self.tmp))
+
+    def test_legacy_credits_keep_complete_license_and_sources(self):
+        statement = "CC0 notice " + "complete license statement " * 10 + "end of statement"
+        self.write("Content/SourceArt/OldScans/manifest.json", json.dumps({
+            "license": statement, "source_url": "https://example.test/legacy"}).encode())
+        self.add("Content")
+        text = generate_asset_notices.render_credits(self.tmp)
+        self.assertIn("Additional source acknowledgements", text)
+        self.assertIn("Old Scans", text)
+        self.assertIn(statement, text)
+        self.assertIn("https://example.test/legacy", text)
+        self.assertNotIn("manifest.json", text)
+        self.assertIn(statement[:157] + "...", generate_asset_notices.render(self.tmp))
+
+    def test_check_rejects_either_missing_or_stale_output(self):
+        self.ledger("source", [record("asset", [])])
+        self.add("scripts")
+        args = ["--root", str(self.tmp)]
+        with redirect_stdout(io.StringIO()):
+            for name in (generate_asset_notices.OUT, generate_asset_notices.CREDITS_OUT):
+                self.assertEqual(generate_asset_notices.main(args), 0)
+                path = self.tmp / name
+                path.unlink()
+                self.assertEqual(generate_asset_notices.main(args + ["--check"]), 1)
+                self.assertEqual(generate_asset_notices.main(args), 0)
+                path.write_text("stale output")
+                self.assertEqual(generate_asset_notices.main(args + ["--check"]), 1)
+            self.assertEqual(generate_asset_notices.main(args), 0)
+            self.assertEqual(generate_asset_notices.main(args + ["--check"]), 0)
+
+    def test_own_generator_lists_and_source_objects_read_as_paths(self):
+        self.ledger("project", [
+            record("crafted", [], tier="OWN", license_id="project-owned",
+                   generator=["scripts/art/craft.py", "scripts/art/mark.py"],
+                   derived_from=[{"path": "Content/SourceArt/UI/mark.svg", "sha256": "b" * 64}, "wood_planks"]),
+            record("legacy", [], tier="OWN", license_id="project-owned", generator="scripts/art/legacy.py"),
+            record("fallback", [], tier="OWN", license_id="project-owned", origin_url="scripts/art/fallback.py")])
+        self.add("scripts")
+        text = generate_asset_notices.render(self.tmp)
+        self.assertIn("generator `scripts/art/craft.py`, `scripts/art/mark.py`, derived from `Content/SourceArt/UI/mark.svg`, `wood_planks`", text)
+        self.assertIn("generator `scripts/art/legacy.py`, derived from -", text)
+        self.assertIn("generator `scripts/art/fallback.py`, derived from -", text)
+        self.assertNotIn("['", text)
+        self.assertNotIn("{'path'", text)
+
+
     def test_render_lists_credit_attribution_and_check(self):
         data = b"jpg"
         self.write("Content/SourceArt/Env/a.jpg", data)

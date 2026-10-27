@@ -1,0 +1,347 @@
+{
+ "what": "UE 5.8 import readback of the Inventory drone's LOD0, before (fc0858a9, bc17dbb1) and after (f7057061) the socket export fix",
+ "probe": "scripts/unreal/probe_inventory_drone_sockets.py (s79 ran the version kept at Saved/InventoryDrone/UnrealProbe/s79/probe_inventory_drone_sockets.s79.py, which matches its probe_sha256)",
+ "options": "root's 0eb8c5e FbxImportUI options; s80 changes auto_generate_collision to True only",
+ "saved_packages": false,
+ "runs": {
+  "s79": {
+   "command": "scripts/toolchain/run-editor-script.sh scripts/unreal/probe_inventory_drone_sockets.py INVENTORY_DRONE_PROBE_DONE Saved/W18Rebuild/s79_ue_drone_socket_probe.editor.log -- out=Saved/InventoryDrone/UnrealProbe/s79/readback.json original=<archived bc17dbb1> corrected=<kit LOD0>",
+   "start": "2026-10-26T03:35:39Z",
+   "end": "2026-10-26T03:36:16Z",
+   "wrapper_pid": 30836,
+   "editor_pid": 30884,
+   "exit": {
+    "editor": 0,
+    "wrapper": 1
+   },
+   "result": "the probe's collision gate raised on the corrected file: 0 convex hulls with root's options (both files)",
+   "probe_sha256": "c3248c35e572751fecb3d9b1dbd58c9b8752a00fea46b3c155b16f593c9a8941",
+   "readback": {
+    "engine": "5.8.3-58210709+++UE5+Release-5.8",
+    "probe_sha256": "c3248c35e572751fecb3d9b1dbd58c9b8752a00fea46b3c155b16f593c9a8941",
+    "record_sha256": "eec9c2f4c38160feea3317cf05edd63b7f90af11197d53bcccfdd3cd63c74251",
+    "saved_packages": false,
+    "imports": {
+     "original": {
+      "fbx": "Saved/InventoryDrone/Archive/socket_fix_original_fc0858a9/SM_Drone_Inventory.fbx",
+      "sha256": "bc17dbb160e37e03f4b430b4c2a54a574ab539b802c3785c075c1a4c622c2bd0",
+      "sockets": {
+       "Eye": {
+        "position": [
+         36.2199991941448,
+         5.469067717207298e-06,
+         0.0
+        ],
+        "scale": [
+         100.00000000000003,
+         100.00000000000003,
+         99.99999999999999
+        ],
+        "forward": [
+         -0.9999999999999886,
+         -1.5099579909783707e-07,
+         0.0
+        ],
+        "rotation_pyr": [
+         0.0,
+         -179.999991348578,
+         180.0
+        ]
+       },
+       "NetMuzzle": {
+        "position": [
+         7.6769545674323165,
+         1.1591878886070896e-06,
+         -15.176954865455624
+        ],
+        "scale": [
+         99.99998807907107,
+         99.99999403953555,
+         99.99998807907104
+        ],
+        "forward": [
+         -0.7071067657322291,
+         -1.0677015113922622e-07,
+         0.7071067966408575
+        ],
+        "rotation_pyr": [
+         45.00000125223908,
+         -179.999991348578,
+         180.0
+        ]
+       }
+      },
+      "lod0": {
+       "triangles": 10386,
+       "mesh_triangles": 10386,
+       "vertices": 8871,
+       "min_cm": [
+        -35.60000228881836,
+        -35.60000228881836,
+        -17.581119537353516
+       ],
+       "max_cm": [
+        36.21999740600586,
+        35.60000228881836,
+        9.350000381469727
+       ],
+       "radius_cm": 36.21999740600627
+      },
+      "convex_count": 0,
+      "other_simple_count": 0,
+      "root_gate_failures": [
+       "Eye is scaled: [100.00000000000003, 100.00000000000003, 99.99999999999999]",
+       "Eye points the wrong way: [-0.9999999999999886, -1.5099579909783707e-07, 0.0]",
+       "NetMuzzle is scaled: [99.99998807907107, 99.99999403953555, 99.99998807907104]",
+       "NetMuzzle points the wrong way: [-0.7071067657322291, -1.0677015113922622e-07, 0.7071067966408575]",
+       "collision 0 convex, 0 other"
+      ]
+     },
+     "corrected": {
+      "fbx": "Content/SourceArt/Characters/Enemies/InventoryDrone/SM_Drone_Inventory.fbx",
+      "sha256": "f7057061ddf3c2de8ab6d42d505793c70e6fc0fbe706630214bd7070962283be",
+      "sockets": {
+       "Eye": {
+        "position": [
+         36.21999740600586,
+         0.0,
+         0.0
+        ],
+        "scale": [
+         1.0,
+         1.0,
+         1.0
+        ],
+        "forward": [
+         1.0,
+         0.0,
+         0.0
+        ],
+        "rotation_pyr": [
+         -0.0,
+         0.0,
+         -0.0
+        ]
+       },
+       "NetMuzzle": {
+        "position": [
+         7.676954746246338,
+         0.0,
+         -15.176955223083496
+        ],
+        "scale": [
+         0.9999998807907104,
+         0.9999998807907104,
+         0.9999998807907104
+        ],
+        "forward": [
+         0.7071067657322372,
+         0.0,
+         -0.7071067966408575
+        ],
+        "rotation_pyr": [
+         -45.00000125223908,
+         0.0,
+         -0.0
+        ]
+       }
+      },
+      "lod0": {
+       "triangles": 10386,
+       "mesh_triangles": 10386,
+       "vertices": 8871,
+       "min_cm": [
+        -35.60000228881836,
+        -35.60000228881836,
+        -17.581119537353516
+       ],
+       "max_cm": [
+        36.21999740600586,
+        35.60000228881836,
+        9.350000381469727
+       ],
+       "radius_cm": 36.21999740600586
+      },
+      "convex_count": 0,
+      "other_simple_count": 0,
+      "root_gate_failures": [
+       "collision 0 convex, 0 other"
+      ]
+     }
+    },
+    "status": "asset readback only: sockets, LOD0 render vertices and hull counts as UE 5.8 imports them"
+   }
+  },
+  "s80": {
+   "command": "scripts/toolchain/run-editor-script.sh scripts/unreal/probe_inventory_drone_sockets.py INVENTORY_DRONE_PROBE_DONE Saved/W18Rebuild/s80_ue_drone_socket_probe_collision.editor.log -- out=Saved/InventoryDrone/UnrealProbe/s80/readback.json collision=import original=<archived bc17dbb1> corrected=<kit LOD0>",
+   "start": "2026-10-26T03:38:01Z",
+   "end": "2026-10-26T03:38:21Z",
+   "wrapper_pid": 31969,
+   "editor_pid": null,
+   "exit": {
+    "editor": 0,
+    "wrapper": 0
+   },
+   "result": "marker printed; the corrected file passes every gate",
+   "probe_sha256": "cadf8c6794c967cbe50fb375f7aa5cd41d38154898f04565315eb0f420d84cf5",
+   "readback": {
+    "engine": "5.8.3-58210709+++UE5+Release-5.8",
+    "probe_sha256": "cadf8c6794c967cbe50fb375f7aa5cd41d38154898f04565315eb0f420d84cf5",
+    "record_sha256": "eec9c2f4c38160feea3317cf05edd63b7f90af11197d53bcccfdd3cd63c74251",
+    "saved_packages": false,
+    "options": {
+     "collision": "import",
+     "auto_generate_collision": true,
+     "otherwise": "root's 0eb8c5e FbxImportUI options"
+    },
+    "imports": {
+     "original": {
+      "fbx": "Saved/InventoryDrone/Archive/socket_fix_original_fc0858a9/SM_Drone_Inventory.fbx",
+      "sha256": "bc17dbb160e37e03f4b430b4c2a54a574ab539b802c3785c075c1a4c622c2bd0",
+      "sockets": {
+       "Eye": {
+        "position": [
+         36.2199991941448,
+         5.469067717207298e-06,
+         0.0
+        ],
+        "scale": [
+         100.00000000000003,
+         100.00000000000003,
+         99.99999999999999
+        ],
+        "forward": [
+         -0.9999999999999886,
+         -1.5099579909783707e-07,
+         0.0
+        ],
+        "rotation_pyr": [
+         0.0,
+         -179.999991348578,
+         180.0
+        ]
+       },
+       "NetMuzzle": {
+        "position": [
+         7.6769545674323165,
+         1.1591878886070896e-06,
+         -15.176954865455624
+        ],
+        "scale": [
+         99.99998807907107,
+         99.99999403953555,
+         99.99998807907104
+        ],
+        "forward": [
+         -0.7071067657322291,
+         -1.0677015113922622e-07,
+         0.7071067966408575
+        ],
+        "rotation_pyr": [
+         45.00000125223908,
+         -179.999991348578,
+         180.0
+        ]
+       }
+      },
+      "lod0": {
+       "triangles": 10386,
+       "mesh_triangles": 10386,
+       "vertices": 8871,
+       "min_cm": [
+        -35.60000228881836,
+        -35.60000228881836,
+        -17.581119537353516
+       ],
+       "max_cm": [
+        36.21999740600586,
+        35.60000228881836,
+        9.350000381469727
+       ],
+       "radius_cm": 36.21999740600627
+      },
+      "convex_count": 3,
+      "other_simple_count": 0,
+      "root_gate_failures": [
+       "Eye is scaled: [100.00000000000003, 100.00000000000003, 99.99999999999999]",
+       "Eye points the wrong way: [-0.9999999999999886, -1.5099579909783707e-07, 0.0]",
+       "NetMuzzle is scaled: [99.99998807907107, 99.99999403953555, 99.99998807907104]",
+       "NetMuzzle points the wrong way: [-0.7071067657322291, -1.0677015113922622e-07, 0.7071067966408575]"
+      ]
+     },
+     "corrected": {
+      "fbx": "Content/SourceArt/Characters/Enemies/InventoryDrone/SM_Drone_Inventory.fbx",
+      "sha256": "f7057061ddf3c2de8ab6d42d505793c70e6fc0fbe706630214bd7070962283be",
+      "sockets": {
+       "Eye": {
+        "position": [
+         36.21999740600586,
+         0.0,
+         0.0
+        ],
+        "scale": [
+         1.0,
+         1.0,
+         1.0
+        ],
+        "forward": [
+         1.0,
+         0.0,
+         0.0
+        ],
+        "rotation_pyr": [
+         -0.0,
+         0.0,
+         -0.0
+        ]
+       },
+       "NetMuzzle": {
+        "position": [
+         7.676954746246338,
+         0.0,
+         -15.176955223083496
+        ],
+        "scale": [
+         0.9999998807907104,
+         0.9999998807907104,
+         0.9999998807907104
+        ],
+        "forward": [
+         0.7071067657322372,
+         0.0,
+         -0.7071067966408575
+        ],
+        "rotation_pyr": [
+         -45.00000125223908,
+         0.0,
+         -0.0
+        ]
+       }
+      },
+      "lod0": {
+       "triangles": 10386,
+       "mesh_triangles": 10386,
+       "vertices": 8871,
+       "min_cm": [
+        -35.60000228881836,
+        -35.60000228881836,
+        -17.581119537353516
+       ],
+       "max_cm": [
+        36.21999740600586,
+        35.60000228881836,
+        9.350000381469727
+       ],
+       "radius_cm": 36.21999740600586
+      },
+      "convex_count": 3,
+      "other_simple_count": 0,
+      "root_gate_failures": []
+     }
+    },
+    "status": "asset readback only: sockets, LOD0 render vertices and hull counts as UE 5.8 imports them"
+   }
+  }
+ },
+ "not_covered": "LOD1 and LOD2 were not imported, and nothing was rendered: root's importer does both"
+}

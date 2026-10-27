@@ -140,6 +140,7 @@ void USoraAudioSubsystem::Deinitialize()
             Component->Stop();
     Held.Reset();
     Loops.Reset();
+    AmbientOwners.Reset();
     Super::Deinitialize();
 }
 
@@ -151,6 +152,7 @@ void USoraAudioSubsystem::Tick(float DeltaTime)
         return;
     const double Now = World->GetTimeSeconds();
     BindSettings();
+    TickAmbientEmitters();
     TickPending(Now);
     TickSustains(Now);
     TickMusic();
@@ -562,6 +564,8 @@ bool USoraAudioSubsystem::IsLooping(const FString& Key) const { return Loops.Con
 
 void USoraAudioSubsystem::StopLoop(const FString& Key, float FadeSeconds)
 {
+    // A distance-delayed loop must not spawn after its owning beat cleared.
+    Pending.RemoveAll([&Key](const FPending& Wait) { return Wait.LoopKey == Key; });
     FLoop Loop;
     if (!Loops.RemoveAndCopyValue(Key, Loop))
         return;

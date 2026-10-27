@@ -80,6 +80,18 @@ SITE_RESTORED_BUS = 'Music'
 # Beds the proposal left as one-shots because nothing plays them yet.
 LOOP_EDITS = {'amb.night_insects', 'amb.typhoon', 'amb.festival'}
 ADDED_CUES = [
+    {'id': 'workshop.hammer.cue', 'bus': 'SFX_Telegraph', 'status': 'ready-cc0',
+     'waves': ['CC0/Workshop/cc0_workshop_small_hammer'], 'attenuation': 'foley_short', 'loop': False,
+     'max_instances': 2, 'pitch_cents': [0, 0],
+     'notes': 'Ch05 §2.5: small-hammer cue at the anvil; first cue is a count-in, response due 600 ms later. SFX remains audible with Music at 0.'},
+    {'id': 'workshop.hammer.hit', 'bus': 'SFX_Foley', 'status': 'ready-cc0',
+     'waves': ['CC0/Workshop/cc0_workshop_sledge'], 'attenuation': 'foley_short', 'loop': False,
+     'max_instances': 2, 'pitch_cents': [0, 0],
+     'notes': 'Ch05 §5.6: stronger recorded anvil response on an accepted player/assisted strike, independent of whole-phrase completion.'},
+    {'id': 'workshop.loom.call', 'bus': 'Voice_Barks', 'status': 'needed',
+     'waves': [], 'attenuation': 'foley_short', 'loop': False, 'max_instances': 2, 'pitch_cents': [0, 0],
+     'needs': "A cleared recording of Okinu's rhythmic call; no source voice exists in this repository.",
+     'notes': 'Ch05 §2.5: a voice call every 750 ms. The shuttle/cord visual cue works; no unrelated sound or synthesized impersonation stands in for the missing voice.'},
     {'id': 'weapon.loop.shock_emitter', 'bus': 'SFX_Weapons', 'status': 'ready-own',
      'waves': ['Original/Weapons/wpn_shock_emitter_loop'], 'attenuation': 'weapon_mid', 'loop': True,
      'max_instances': 3, 'notes': 'Sustain loop while the Shock Emitter keeps firing (weapon.fired.shock_emitter).'},
@@ -117,7 +129,6 @@ UNBOUND_CUES = {
     'melee.parry.layers': 'clang, scrape, sparks and body layers for the parry MetaSound (scaled by parry quality)',
     'weapon.yumi.nock': 'no nock event yet: the hero nocks as part of the draw',
     'projectile.arrow.flyby': 'needs a pass-by detector for arrows near the listener',
-    'amb.stream': 'a positioned emitter at streams; the chapter layouts name no stream emitters yet',
     'amb.smithy': 'a positioned emitter at forges; the chapter layouts name no forge emitters yet',
     'amb.alien.debt_terminal': 'a positioned emitter at debt terminals; the layouts name none yet',
     'barrier.hum': 'needs the boss shield state; ASoraBoss exposes only its shield events',
@@ -190,6 +201,8 @@ STILL_WANTED = {
     'amb.estate.day': 'uguisu and pheasant calls over the CC0 park birds',
     'amb.typhoon': 'wind beds in three intensities and a gust riser; CC0 park wind and rain stand in',
     'amb.festival': 'crowd and 祭囃子 under the CC0 fireworks',
+    'amb.stream': 'listening and in-game mix review; the Adelaide park recording includes wildlife and is not '
+                  'verified as Japanese ecology; currently positioned only at the Chapter 03 ward culvert',
 }
 
 # ---------------------------------------------------------------------------
@@ -304,6 +317,11 @@ BINDINGS = {
         rule('ui.slider', {'Sound': 'Slider'}),
         rule('ui.menu.open', {'Sound': 'MenuOpen'}),
         rule('ui.menu.close', {'Sound': 'MenuClose'}),
+    ],
+    'Workshop': [
+        rule('workshop.hammer.cue', {'Action': 'HammerCue'}),
+        rule('workshop.hammer.hit', {'Action': 'HammerHit'}),
+        rule('workshop.loom.call', {'Action': 'LoomCall'}),
     ],
     'Hero': [
         rule('weapon.reload.cell_eject', {'Action': 'ReloadStarted', 'WeaponId': [1, 3, 11, 13, 14, 16, 17]}),
@@ -722,6 +740,7 @@ def build():
         'footsteps': FOOTSTEPS,
         'horses': HORSES,
         'attached': ATTACHED,
+        'emitters': {'ward_culvert': 'amb.stream'},
         'telegraphs': build_telegraphs(),
     }
 

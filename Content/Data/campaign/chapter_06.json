@@ -217,6 +217,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -224,6 +225,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -231,12 +233,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -262,7 +272,13 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": [
+     0,
+     4
+    ],
+    "recovery": null
    },
    "ext": {}
   },
@@ -408,6 +424,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -415,6 +432,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -422,12 +440,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -500,7 +526,13 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": [
+     0,
+     4
+    ],
+    "recovery": null
    },
    "ext": {
     "traversal": {
@@ -648,6 +680,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -655,6 +688,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -662,12 +696,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -716,7 +758,14 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": [
+     0,
+     4,
+     18
+    ],
+    "recovery": null
    },
    "ext": {
     "setup": {
@@ -939,6 +988,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -946,6 +996,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -953,12 +1004,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -1048,12 +1107,19 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
+    "unload_hold_ms": 0,
     "objective_hold_ms": [
      3000,
      3000,
      3000,
      0
-    ]
+    ],
+    "equipment_weapons": [
+     0,
+     4,
+     18
+    ],
+    "recovery": null
    },
    "ext": {
     "sensors": [
@@ -1145,6 +1211,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -1152,6 +1219,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -1159,12 +1227,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -1190,7 +1266,15 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": [
+     0,
+     3,
+     4,
+     18
+    ],
+    "recovery": null
    },
    "ext": {
     "max_blocking_s": 20,
@@ -1497,6 +1581,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -1504,6 +1589,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -1511,12 +1597,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -1697,7 +1791,15 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": [
+     0,
+     3,
+     4,
+     18
+    ],
+    "recovery": null
    },
    "ext": {
     "places_also": [
@@ -1801,6 +1903,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -1808,6 +1911,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -1815,12 +1919,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -1846,7 +1958,16 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": [
+     0,
+     3,
+     4,
+     13,
+     18
+    ],
+    "recovery": null
    },
    "ext": {
     "auto_grant_if_missed": "ch07.b01"
@@ -1958,6 +2079,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -1965,6 +2087,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -1972,12 +2095,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -1990,7 +2121,11 @@
     "fail_events": {
      "player_died": "player_died"
     },
-    "objectives": [],
+    "objectives": [
+     "desk_tagata",
+     "desk_machikata",
+     "desk_shokukata"
+    ],
     "lines_event": null,
     "closing_event": null,
     "exit_event": null,
@@ -2074,7 +2209,20 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [
+     30000,
+     30000,
+     30000
+    ],
+    "equipment_weapons": [
+     0,
+     3,
+     4,
+     13,
+     18
+    ],
+    "recovery": null
    },
    "ext": {
     "light_carried": {
@@ -2165,6 +2313,7 @@
     ],
     "defeat": "spare",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -2172,6 +2321,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "retry",
     "loss_limit": 0,
@@ -2179,12 +2329,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2212,7 +2370,16 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": [
+     0,
+     3,
+     4,
+     13,
+     18
+    ],
+    "recovery": null
    },
    "ext": {
     "opponent_hp": 600,
@@ -2275,6 +2442,10 @@
     "trigger": "beat_start",
     "mode": "ambient",
     "camera": "soft_lookat",
+    "complete": {
+     "kind": "volume_enter",
+     "volume": "vol_archive_press_landing"
+    },
     "lines": [
      "ch06.b10.toranosuke.001",
      "ch06.b10.toranosuke.002",
@@ -2295,7 +2466,7 @@
     "count": 10,
     "duration_ms": 0,
     "skippable": false,
-    "anchor_after_lines": false,
+    "anchor_after_lines": true,
     "pause_when_seen": false,
     "max_alive": 6,
     "waves": [],
@@ -2304,6 +2475,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -2311,6 +2483,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -2318,12 +2491,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2338,7 +2519,7 @@
     },
     "objectives": [],
     "lines_event": "beat_start",
-    "closing_event": null,
+    "closing_event": "volume_enter:vol_archive_press_landing",
     "exit_event": null,
     "guards": [],
     "stealth": null,
@@ -2349,7 +2530,17 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": [
+     0,
+     3,
+     4,
+     10,
+     13,
+     18
+    ],
+    "recovery": null
    },
    "ext": {
     "max_blocking_s": 20
@@ -2565,6 +2756,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -2572,6 +2764,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -2579,12 +2772,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2698,12 +2899,22 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
+    "unload_hold_ms": 0,
     "objective_hold_ms": [
      4000,
      4000,
      4000,
      0
-    ]
+    ],
+    "equipment_weapons": [
+     0,
+     3,
+     4,
+     10,
+     13,
+     18
+    ],
+    "recovery": null
    },
    "ext": {
     "noise_mask": {
@@ -2778,6 +2989,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -2785,6 +2997,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -2792,12 +3005,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2823,7 +3044,17 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": [
+     0,
+     3,
+     4,
+     10,
+     13,
+     18
+    ],
+    "recovery": null
    },
    "ext": {}
   },
@@ -2904,6 +3135,7 @@
     ],
     "defeat": "capture",
     "capture_event": "interact:bulkhead_lever",
+    "capture_hold_ms": 2000,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -2911,6 +3143,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -2918,12 +3151,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2949,7 +3190,17 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": [
+     0,
+     3,
+     4,
+     10,
+     13,
+     18
+    ],
+    "recovery": null
    },
    "ext": {
     "boss_hp": 1800,
@@ -3128,6 +3379,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -3135,6 +3387,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -3142,12 +3395,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -3256,7 +3517,17 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": [
+     0,
+     3,
+     4,
+     10,
+     13,
+     18
+    ],
+    "recovery": null
    },
    "ext": {
     "hazard": {
@@ -3332,6 +3603,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -3339,6 +3611,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -3346,12 +3619,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -3377,7 +3658,17 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": [
+     0,
+     3,
+     4,
+     10,
+     13,
+     18
+    ],
+    "recovery": null
    },
    "ext": {}
   },
@@ -3434,6 +3725,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -3441,6 +3733,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -3448,12 +3741,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -3479,7 +3780,17 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": [
+     0,
+     3,
+     4,
+     10,
+     13,
+     18
+    ],
+    "recovery": null
    },
    "ext": {}
   }
@@ -8253,7 +8564,7 @@
   "ext": {}
  },
  "space": {
-  "frame": "Unreal world cm; origin at the arena centre; every floor at z 0",
+  "frame": "Unreal world cm; origin at the arena centre; per-beat height_cm overrides floor z 0",
   "hub": 3,
   "hub_place": "pl_citadel_moat",
   "start": [
@@ -8458,11 +8769,11 @@
     "form": "hall",
     "rect": [
      15400,
-     -1300,
-     19000,
-     1300
+     -500,
+     17400,
+     500
     ],
-    "wall_cm": 700,
+    "wall_cm": 800,
     "entry": [
      15680,
      0,
@@ -8473,123 +8784,33 @@
       15370,
       0,
       60,
-      2720,
-      700
+      1120,
+      800
      ],
      [
-      19030,
+      17430,
       0,
       60,
-      2720,
-      700
+      1120,
+      800
      ],
      [
-      17200,
-      -1330,
-      3600,
+      16400,
+      -530,
+      2000,
       60,
-      700
+      800
      ],
      [
-      17200,
-      1330,
-      3600,
+      16400,
+      530,
+      2000,
       60,
-      700
+      800
      ]
     ],
-    "cover": [
-     [
-      16480,
-      -780,
-      230,
-      180,
-      140
-     ],
-     [
-      16480,
-      780,
-      230,
-      180,
-      140
-     ],
-     [
-      17056,
-      -780,
-      230,
-      180,
-      140
-     ],
-     [
-      17056,
-      780,
-      230,
-      180,
-      140
-     ],
-     [
-      17632,
-      -780,
-      230,
-      180,
-      140
-     ],
-     [
-      17632,
-      780,
-      230,
-      180,
-      140
-     ],
-     [
-      18208,
-      -780,
-      230,
-      180,
-      140
-     ],
-     [
-      18208,
-      780,
-      230,
-      180,
-      140
-     ]
-    ],
-    "props": [
-     {
-      "mesh": "SM_Edo_LanternPost",
-      "at": [
-       15544,
-       -1144,
-       0
-      ]
-     },
-     {
-      "mesh": "SM_Edo_LanternPost",
-      "at": [
-       15544,
-       1144,
-       0
-      ]
-     },
-     {
-      "mesh": "SM_Edo_LanternPost",
-      "at": [
-       18892,
-       -1144,
-       0
-      ]
-     },
-     {
-      "mesh": "SM_Edo_LanternPost",
-      "at": [
-       18892,
-       1144,
-       0
-      ]
-     }
-    ],
+    "cover": [],
+    "props": [],
     "route": []
    },
    {
@@ -8598,139 +8819,20 @@
     "style": "citadel",
     "form": "hall",
     "rect": [
-     22000,
-     -1300,
-     25600,
-     1300
+     24800,
+     -8235,
+     28200,
+     -1565
     ],
-    "wall_cm": 700,
+    "wall_cm": 600,
     "entry": [
-     22280,
-     0,
+     25100,
+     -7835,
      0
     ],
-    "walls": [
-     [
-      21970,
-      0,
-      60,
-      2720,
-      700
-     ],
-     [
-      25630,
-      0,
-      60,
-      2720,
-      700
-     ],
-     [
-      23800,
-      -1330,
-      3600,
-      60,
-      700
-     ],
-     [
-      23800,
-      1330,
-      3600,
-      60,
-      700
-     ]
-    ],
-    "cover": [
-     [
-      23080,
-      -780,
-      230,
-      180,
-      140
-     ],
-     [
-      23080,
-      780,
-      230,
-      180,
-      140
-     ],
-     [
-      23656,
-      -780,
-      230,
-      180,
-      140
-     ],
-     [
-      23656,
-      780,
-      230,
-      180,
-      140
-     ],
-     [
-      24232,
-      -780,
-      230,
-      180,
-      140
-     ],
-     [
-      24232,
-      780,
-      230,
-      180,
-      140
-     ],
-     [
-      24808,
-      -780,
-      230,
-      180,
-      140
-     ],
-     [
-      24808,
-      780,
-      230,
-      180,
-      140
-     ]
-    ],
-    "props": [
-     {
-      "mesh": "SM_Edo_LanternPost",
-      "at": [
-       22144,
-       -1144,
-       0
-      ]
-     },
-     {
-      "mesh": "SM_Edo_LanternPost",
-      "at": [
-       22144,
-       1144,
-       0
-      ]
-     },
-     {
-      "mesh": "SM_Edo_LanternPost",
-      "at": [
-       25492,
-       -1144,
-       0
-      ]
-     },
-     {
-      "mesh": "SM_Edo_LanternPost",
-      "at": [
-       25492,
-       1144,
-       0
-      ]
-     }
-    ],
+    "walls": [],
+    "cover": [],
+    "props": [],
     "route": []
    },
    {
@@ -8739,139 +8841,56 @@
     "style": "citadel",
     "form": "hall",
     "rect": [
-     28600,
-     -1300,
-     32200,
-     1300
+     28200,
+     -2635,
+     33200,
+     1835
     ],
-    "wall_cm": 700,
+    "wall_cm": 500,
     "entry": [
-     28880,
-     0,
-     0
+     31400,
+     935,
+     180
     ],
     "walls": [
      [
-      28570,
-      0,
+      28170,
+      -2235,
       60,
-      2720,
-      700
+      800,
+      500
      ],
      [
-      32230,
-      0,
+      28170,
+      135,
       60,
-      2720,
-      700
+      3400,
+      500
      ],
      [
-      30400,
-      -1330,
-      3600,
+      33230,
+      -400,
       60,
-      700
+      4590,
+      500
      ],
      [
-      30400,
-      1330,
-      3600,
+      30700,
+      -2665,
+      5000,
       60,
-      700
+      500
+     ],
+     [
+      30700,
+      1865,
+      5000,
+      60,
+      500
      ]
     ],
-    "cover": [
-     [
-      29680,
-      -780,
-      230,
-      180,
-      140
-     ],
-     [
-      29680,
-      780,
-      230,
-      180,
-      140
-     ],
-     [
-      30256,
-      -780,
-      230,
-      180,
-      140
-     ],
-     [
-      30256,
-      780,
-      230,
-      180,
-      140
-     ],
-     [
-      30832,
-      -780,
-      230,
-      180,
-      140
-     ],
-     [
-      30832,
-      780,
-      230,
-      180,
-      140
-     ],
-     [
-      31408,
-      -780,
-      230,
-      180,
-      140
-     ],
-     [
-      31408,
-      780,
-      230,
-      180,
-      140
-     ]
-    ],
-    "props": [
-     {
-      "mesh": "SM_Edo_LanternPost",
-      "at": [
-       28744,
-       -1144,
-       0
-      ]
-     },
-     {
-      "mesh": "SM_Edo_LanternPost",
-      "at": [
-       28744,
-       1144,
-       0
-      ]
-     },
-     {
-      "mesh": "SM_Edo_LanternPost",
-      "at": [
-       32092,
-       -1144,
-       0
-      ]
-     },
-     {
-      "mesh": "SM_Edo_LanternPost",
-      "at": [
-       32092,
-       1144,
-       0
-      ]
-     }
-    ],
+    "cover": [],
+    "props": [],
     "route": []
    },
    {
@@ -8881,138 +8900,84 @@
     "form": "hall",
     "rect": [
      35200,
-     -1300,
-     38800,
-     1300
+     -900,
+     37800,
+     900
     ],
-    "wall_cm": 700,
+    "wall_cm": 600,
     "entry": [
-     35480,
-     0,
-     0
+     36500,
+     -700,
+     90
     ],
     "walls": [
      [
       35170,
       0,
       60,
-      2720,
-      700
+      1920,
+      600
      ],
      [
-      38830,
+      37830,
       0,
       60,
-      2720,
-      700
+      1920,
+      600
      ],
      [
-      37000,
-      -1330,
-      3600,
+      36500,
+      -930,
+      2600,
       60,
-      700
+      600
      ],
      [
-      37000,
-      1330,
-      3600,
+      35790,
+      930,
+      1180,
       60,
-      700
+      600
+     ],
+     [
+      37210,
+      930,
+      1180,
+      60,
+      600
      ]
     ],
     "cover": [
      [
-      36280,
-      -780,
-      230,
-      180,
-      140
+      36100,
+      -300,
+      60,
+      60,
+      600
      ],
      [
-      36280,
-      780,
-      230,
-      180,
-      140
+      36900,
+      -300,
+      60,
+      60,
+      600
      ],
      [
-      36856,
-      -780,
-      230,
-      180,
-      140
+      36100,
+      300,
+      60,
+      60,
+      600
      ],
      [
-      36856,
-      780,
-      230,
-      180,
-      140
-     ],
-     [
-      37432,
-      -780,
-      230,
-      180,
-      140
-     ],
-     [
-      37432,
-      780,
-      230,
-      180,
-      140
-     ],
-     [
-      38008,
-      -780,
-      230,
-      180,
-      140
-     ],
-     [
-      38008,
-      780,
-      230,
-      180,
-      140
+      36900,
+      300,
+      60,
+      60,
+      600
      ]
     ],
-    "props": [
-     {
-      "mesh": "SM_Edo_LanternPost",
-      "at": [
-       35344,
-       -1144,
-       0
-      ]
-     },
-     {
-      "mesh": "SM_Edo_LanternPost",
-      "at": [
-       35344,
-       1144,
-       0
-      ]
-     },
-     {
-      "mesh": "SM_Edo_LanternPost",
-      "at": [
-       38692,
-       -1144,
-       0
-      ]
-     },
-     {
-      "mesh": "SM_Edo_LanternPost",
-      "at": [
-       38692,
-       1144,
-       0
-      ]
-     }
-    ],
+    "props": [],
     "route": []
    },
    {
@@ -9022,11 +8987,11 @@
     "form": "hall",
     "rect": [
      41800,
-     -1300,
-     45400,
-     1300
+     -1200,
+     46000,
+     1200
     ],
-    "wall_cm": 700,
+    "wall_cm": 900,
     "entry": [
      42080,
      0,
@@ -9037,123 +9002,40 @@
       41770,
       0,
       60,
-      2720,
-      700
+      2520,
+      900
      ],
      [
-      45430,
+      46030,
       0,
       60,
-      2720,
-      700
+      2520,
+      900
      ],
      [
-      43600,
-      -1330,
-      3600,
+      43900,
+      -1230,
+      4200,
       60,
-      700
+      900
      ],
      [
-      43600,
-      1330,
-      3600,
+      41890,
+      1230,
+      180,
       60,
-      700
+      900
+     ],
+     [
+      44110,
+      1230,
+      3780,
+      60,
+      900
      ]
     ],
-    "cover": [
-     [
-      42880,
-      -780,
-      230,
-      180,
-      140
-     ],
-     [
-      42880,
-      780,
-      230,
-      180,
-      140
-     ],
-     [
-      43456,
-      -780,
-      230,
-      180,
-      140
-     ],
-     [
-      43456,
-      780,
-      230,
-      180,
-      140
-     ],
-     [
-      44032,
-      -780,
-      230,
-      180,
-      140
-     ],
-     [
-      44032,
-      780,
-      230,
-      180,
-      140
-     ],
-     [
-      44608,
-      -780,
-      230,
-      180,
-      140
-     ],
-     [
-      44608,
-      780,
-      230,
-      180,
-      140
-     ]
-    ],
-    "props": [
-     {
-      "mesh": "SM_Edo_LanternPost",
-      "at": [
-       41944,
-       -1144,
-       0
-      ]
-     },
-     {
-      "mesh": "SM_Edo_LanternPost",
-      "at": [
-       41944,
-       1144,
-       0
-      ]
-     },
-     {
-      "mesh": "SM_Edo_LanternPost",
-      "at": [
-       45292,
-       -1144,
-       0
-      ]
-     },
-     {
-      "mesh": "SM_Edo_LanternPost",
-      "at": [
-       45292,
-       1144,
-       0
-      ]
-     }
-    ],
+    "cover": [],
+    "props": [],
     "route": []
    },
    {
@@ -9428,19 +9310,172 @@
      }
     ],
     "route": []
+   },
+   {
+    "id": "ch06_flood_exfil",
+    "place": "pl_citadel_moat",
+    "style": "citadel",
+    "form": "hall",
+    "rect": [
+     65200,
+     -4600,
+     87400,
+     1100
+    ],
+    "wall_cm": 300,
+    "entry": [
+     76600,
+     0,
+     0
+    ],
+    "walls": [
+     [
+      65170,
+      -1750,
+      60,
+      5820,
+      300
+     ],
+     [
+      87430,
+      -1750,
+      60,
+      5820,
+      300
+     ],
+     [
+      76300,
+      -4630,
+      22200,
+      60,
+      300
+     ],
+     [
+      76300,
+      1130,
+      22200,
+      60,
+      300
+     ]
+    ],
+    "cover": [],
+    "props": [],
+    "route": []
+   },
+   {
+    "id": "ch06_corner_climb",
+    "place": "pl_ishigaki",
+    "style": "citadel",
+    "form": "yard",
+    "rect": [
+     106400,
+     -4400,
+     109600,
+     1000
+    ],
+    "wall_cm": 360,
+    "entry": [
+     107000,
+     70,
+     0
+    ],
+    "walls": [
+     [
+      106370,
+      -1700,
+      60,
+      5520,
+      360
+     ],
+     [
+      109630,
+      -1700,
+      60,
+      5520,
+      360
+     ],
+     [
+      108000,
+      -4430,
+      3200,
+      60,
+      360
+     ],
+     [
+      108000,
+      1030,
+      3200,
+      60,
+      360
+     ]
+    ],
+    "cover": [],
+    "props": [],
+    "route": []
+   },
+   {
+    "id": "ch06_physical_moat",
+    "place": "pl_citadel_moat",
+    "style": "citadel",
+    "form": "yard",
+    "rect": [
+     128600,
+     -1000,
+     152600,
+     5500
+    ],
+    "wall_cm": 360,
+    "entry": [
+     130600,
+     -100,
+     0
+    ],
+    "walls": [
+     [
+      128570,
+      2250,
+      60,
+      6620,
+      360
+     ],
+     [
+      152630,
+      2250,
+      60,
+      6620,
+      360
+     ],
+     [
+      140600,
+      -1030,
+      24000,
+      60,
+      360
+     ],
+     [
+      140600,
+      5530,
+      24000,
+      60,
+      360
+     ]
+    ],
+    "cover": [],
+    "props": [],
+    "route": []
    }
   ],
   "sites": [
    [
-    18496,
+    17120,
     0
    ],
    [
-    31696,
-    0
+    30700,
+    935
    ],
    [
-    44896,
+    45412,
     0
    ]
   ],
@@ -9552,6 +9587,8 @@
     "step_stations": [],
     "cache": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -9582,19 +9619,21 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch06.b02",
-    "zone": -1,
+    "zone": 10,
     "entry": [
-     -2700,
-     0,
+     130600,
+     -100,
      0
     ],
     "anchor": [
-     -400,
-     -220
+     150400,
+     3400
     ],
     "objectives": [],
     "pickups": [],
@@ -9602,122 +9641,124 @@
     "targets": [],
     "volumes": [
      {
-      "event": "volume_enter:vol_moat_pilings",
       "center": [
-       -1080,
-       0
+       138800,
+       1800
       ],
       "size": [
-       400,
-       1100
-      ]
+       800,
+       2800
+      ],
+      "event": "volume_enter:vol_moat_pilings"
      },
      {
-      "event": "volume_enter:vol_moat_boom",
       "center": [
-       -360,
-       0
+       142800,
+       1800
       ],
       "size": [
        400,
-       1100
-      ]
+       3600
+      ],
+      "event": "volume_enter:vol_moat_boom"
      },
      {
-      "event": "volume_enter:vol_moat_wallbase",
       "center": [
-       360,
-       0
+       141100,
+       3300
       ],
       "size": [
-       400,
-       1100
-      ]
+       17000,
+       600
+      ],
+      "event": "volume_enter:vol_moat_wallbase"
      },
      {
-      "event": "volume_enter:vol_moat_lotus_1",
       "center": [
-       1080,
-       0
+       135100,
+       900
       ],
       "size": [
-       400,
-       1100
-      ]
+       3000,
+       1000
+      ],
+      "event": "volume_enter:vol_moat_lotus_1"
      }
     ],
     "exit": {
      "center": [
-      2000,
-      0
+      150500,
+      4100
      ],
      "size": [
-      500,
-      900
+      1000,
+      800
      ]
     },
     "closing": null,
     "spawns": [
      [
-      2700,
-      -1100
+      149100,
+      4860
      ],
      [
-      2700,
-      1100
-     ],
-     [
-      500,
-      1800
-     ],
-     [
-      -500,
-      -1850
-     ],
-     [
-      2100,
-      450
-     ],
-     [
-      500,
-      -1400
+      150100,
+      4860
      ]
     ],
     "patrols": [
      [
       [
-       -1650,
-       -330
+       132600,
+       4860
       ],
       [
-       1650,
-       -330
-      ],
-      [
-       1650,
-       330
-      ],
-      [
-       -1650,
-       330
+       139600,
+       4860
       ]
      ],
      [
       [
-       -900,
-       -330
+       140600,
+       4860
       ],
       [
-       900,
-       -330
+       148600,
+       4860
+      ]
+     ],
+     [
+      [
+       133600,
+       1800
       ],
       [
-       900,
-       330
+       137100,
+       2800
       ],
       [
-       -900,
-       330
+       140600,
+       1800
+      ],
+      [
+       144100,
+       800
+      ],
+      [
+       147600,
+       1800
+      ],
+      [
+       144100,
+       2800
+      ],
+      [
+       140600,
+       1800
+      ],
+      [
+       137100,
+       800
       ]
      ]
     ],
@@ -9726,6 +9767,8 @@
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -9740,12 +9783,12 @@
      "surfaces": [],
      "water": {
       "center": [
-       0,
-       0
+       140600,
+       2050
       ],
       "size": [
-       6000,
-       4800
+       22000,
+       4900
       ],
       "surface_cm_s": 180,
       "dive_cm_s": 140,
@@ -9756,74 +9799,54 @@
       "cover": [
        {
         "center": [
-         -1549,
-         -276
+         130600,
+         -100
         ],
         "size": [
-         520,
-         420
+         2000,
+         600
         ]
        },
        {
         "center": [
-         1080,
-         0
+         135100,
+         900
         ],
         "size": [
-         400,
+         3000,
+         1000
+        ]
+       },
+       {
+        "center": [
+         140850,
+         2600
+        ],
+        "size": [
+         2500,
+         1200
+        ]
+       },
+       {
+        "center": [
+         147100,
          1100
-        ]
-       },
-       {
-        "center": [
-         1679,
-         171
         ],
         "size": [
-         520,
-         420
-        ]
-       },
-       {
-        "center": [
-         -1760,
-         -105
-        ],
-        "size": [
-         520,
-         420
-        ]
-       },
-       {
-        "center": [
-         -1080,
-         0
-        ],
-        "size": [
-         400,
-         1100
-        ]
-       },
-       {
-        "center": [
-         -527,
-         -1104
-        ],
-        "size": [
-         520,
-         420
+         2000,
+         1000
         ]
        }
       ],
       "lines": [
        {
         "center": [
-         -360,
-         0
+         142800,
+         1800
         ],
         "size": [
          400,
-         1100
+         3600
         ],
         "noise_cm": 1400
        }
@@ -9848,8 +9871,8 @@
        "rank": -1,
        "joins": null,
        "at": [
-        -2370,
-        0
+        130800,
+        -50
        ]
       }
      ],
@@ -9861,12 +9884,12 @@
       {
        "id": "s_searchlight_1",
        "at": [
-        -1050,
-        2300
+        135600,
+        4800
        ],
        "height_cm": 1750,
        "yaw": -90,
-       "reach_cm": 2300,
+       "reach_cm": 3000,
        "road_from_cm": 0,
        "road_to_cm": 0,
        "sweep_deg": 70,
@@ -9881,12 +9904,12 @@
       {
        "id": "s_searchlight_2",
        "at": [
-        1050,
-        2300
+        144600,
+        4800
        ],
        "height_cm": 1750,
        "yaw": -90,
-       "reach_cm": 2300,
+       "reach_cm": 3000,
        "road_from_cm": 0,
        "road_to_cm": 0,
        "sweep_deg": 70,
@@ -9903,19 +9926,52 @@
      "fires": null,
      "ladders": [],
      "charge": null
+    },
+    "height_cm": 0,
+    "lift": null,
+    "moat": {
+     "origin": [
+      129600,
+      0
+     ],
+     "length_cm": 22000,
+     "width_cm": 3600,
+     "surface_cm": 0,
+     "bed_cm": -240,
+     "gate_bed_cm": -300,
+     "parapet_walk_cm": 1750,
+     "parapet_y_cm": 4860,
+     "gate_x_cm": [
+      20600,
+      21000
+     ],
+     "gate_y_cm": [
+      3560,
+      3640
+     ],
+     "gate_bottom_cm": -180,
+     "gate_top_cm": -120,
+     "float_clear_depth_cm": 80,
+     "hitscan_clear_depth_cm": 100,
+     "swim_radius_cm": 28,
+     "swim_half_height_cm": 28,
+     "head_offset_cm": 18,
+     "surface_center_cm": -6,
+     "dive_center_cm": -150,
+     "provisional_posture": true
     }
    },
    {
     "beat": "ch06.b03",
-    "zone": 0,
+    "zone": 9,
     "entry": [
-     8280,
-     0,
+     107000,
+     70,
      0
     ],
     "anchor": [
-     8968,
-     -448
+     109100,
+     0
     ],
     "objectives": [],
     "pickups": [],
@@ -9925,95 +9981,41 @@
      {
       "event": "volume_enter:vol_climb_start",
       "center": [
-       10420,
-       0
+       107150,
+       70
       ],
       "size": [
        400,
-       2560
+       400
       ]
      }
     ],
     "exit": {
      "center": [
-      12000,
+      109100,
       0
      ],
      "size": [
-      500,
-      2560
-     ]
+      300,
+      300
+     ],
+     "floor_cm": 1650
     },
     "closing": null,
     "spawns": [
      [
-      12136,
-      -1376
-     ],
-     [
-      12136,
-      1376
-     ],
-     [
-      11432,
-      -1376
-     ],
-     [
-      11432,
-      1376
-     ],
-     [
-      10200,
-      -1376
-     ],
-     [
-      10200,
-      1376
+      108050,
+      -3800
      ]
     ],
-    "patrols": [
-     [
-      [
-       9320,
-       -640
-      ],
-      [
-       11300,
-       -640
-      ],
-      [
-       11300,
-       640
-      ],
-      [
-       9320,
-       640
-      ]
-     ],
-     [
-      [
-       9980,
-       -320
-      ],
-      [
-       10728,
-       -320
-      ],
-      [
-       10728,
-       320
-      ],
-      [
-       9980,
-       320
-      ]
-     ]
-    ],
+    "patrols": [],
     "stations": [],
     "step_stations": [],
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -10033,8 +10035,8 @@
        "hold_ms": 0,
        "relight_ms": 0,
        "at": [
-        11080,
-        -448
+        107750,
+        -1000
        ]
       }
      ],
@@ -10042,13 +10044,13 @@
      "water": null,
      "climb": {
       "at": [
-       11700,
+       107400,
        0
       ],
       "yaw": 180,
-      "width_cm": 3200,
-      "depth_cm": 640,
-      "height_cm": 900,
+      "width_cm": 5400,
+      "depth_cm": 650,
+      "height_cm": 1600,
       "holds": 14,
       "grip_per_hold": 6,
       "regen_per_s": 25,
@@ -10083,8 +10085,8 @@
        "rank": -1,
        "joins": null,
        "at": [
-        8610,
-        0
+        107000,
+        70
        ]
       }
      ],
@@ -10097,35 +10099,196 @@
      "fires": null,
      "ladders": [],
      "charge": null
+    },
+    "height_cm": 0,
+    "lift": null,
+    "climb_routes": {
+     "origin": [
+      107400,
+      0
+     ],
+     "height_cm": 1600,
+     "corner": {
+      "id": "spl_climb_corner",
+      "points_cm": [
+       [
+        -70,
+        70,
+        0
+       ],
+       [
+        -6,
+        70,
+        110
+       ],
+       [
+        57,
+        70,
+        220
+       ],
+       [
+        121,
+        70,
+        330
+       ],
+       [
+        38,
+        70,
+        440
+       ],
+       [
+        248,
+        70,
+        550
+       ],
+       [
+        291,
+        70,
+        680
+       ],
+       [
+        315,
+        70,
+        820
+       ],
+       [
+        155,
+        70,
+        960
+       ],
+       [
+        365,
+        70,
+        1100
+       ],
+       [
+        382,
+        70,
+        1200
+       ],
+       [
+        400,
+        70,
+        1300
+       ],
+       [
+        417,
+        70,
+        1400
+       ],
+       [
+        435,
+        70,
+        1500
+       ],
+       [
+        453,
+        70,
+        1600
+       ]
+      ],
+      "rest_holds": [
+       5,
+       9
+      ],
+      "step_ms": 1800,
+      "exposed": false
+     },
+     "extrusion": {
+      "id": "spl_climb_extrusion",
+      "points_cm": [
+       [
+        -70,
+        -1000,
+        0
+       ],
+       [
+        45,
+        -1000,
+        200
+       ],
+       [
+        161,
+        -1000,
+        400
+       ],
+       [
+        276,
+        -1000,
+        600
+       ],
+       [
+        312,
+        -1000,
+        800
+       ],
+       [
+        347,
+        -1000,
+        1000
+       ],
+       [
+        382,
+        -1000,
+        1200
+       ],
+       [
+        417,
+        -1000,
+        1400
+       ],
+       [
+        453,
+        -1000,
+        1600
+       ]
+      ],
+      "rest_holds": [],
+      "step_ms": 1800,
+      "exposed": true
+     },
+     "lookdown": {
+      "period_ms": 20000,
+      "hold_ms": 4000,
+      "guard_index": 0
+     },
+     "crawl": {
+      "floor_cm": 1650,
+      "height_cm": 60,
+      "half_width_cm": 60,
+      "entry_x_cm": 1100,
+      "exit_x_cm": 1400
+     },
+     "provisional_geometry": true
     }
    },
    {
     "beat": "ch06.b04",
     "zone": 1,
     "entry": [
-     15680,
+     15580,
      0,
      0
     ],
     "anchor": [
-     18496,
+     15800,
      0
     ],
     "objectives": [
      [
-      17920,
+      16200,
       0
      ],
      [
-      17920,
-      -364
+      16600,
+      0
      ],
      [
-      17920,
-      364
+      16400,
+      190
      ],
      [
-      17344,
+      17250,
       0
      ]
     ],
@@ -10136,87 +10299,71 @@
      {
       "event": "volume_enter:vol_relay_entry",
       "center": [
-       17380,
+       15580,
        0
       ],
       "size": [
-       400,
-       2080
-      ]
+       300,
+       300
+      ],
+      "floor_cm": 0
      }
     ],
     "exit": {
      "center": [
-      18600,
+      17250,
       0
      ],
      "size": [
-      500,
-      2080
-     ]
+      300,
+      300
+     ],
+     "floor_cm": 0
     },
     "closing": null,
     "spawns": [
      [
-      18784,
-      -1118
+      16050,
+      -300
      ],
      [
-      18784,
-      1118
+      15910,
+      -340
      ],
      [
-      18208,
-      -1118
+      15700,
+      0
      ],
      [
-      18208,
-      1118
+      16650,
+      0
      ],
      [
-      17200,
-      -1118
+      17250,
+      -100
      ],
      [
-      17200,
-      1118
+      17250,
+      100
      ]
     ],
     "patrols": [
      [
       [
-       16480,
-       -520
+       16050,
+       -300
       ],
       [
-       18100,
-       -520
+       16750,
+       -300
       ],
       [
-       18100,
-       520
+       16750,
+       300
       ],
       [
-       16480,
-       520
-      ]
-     ],
-     [
-      [
-       17020,
-       -260
-      ],
-      [
-       17632,
-       -260
-      ],
-      [
-       17632,
-       260
-      ],
-      [
-       17020,
-       260
+       16050,
+       300
       ]
      ]
     ],
@@ -10225,6 +10372,8 @@
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -10239,38 +10388,38 @@
       {
        "id": "l_worklamp_se",
        "kind": "lamp",
+       "at": [
+        17300,
+        -400
+       ],
        "radius_cm": 700,
        "snuff": "hold",
        "hold_ms": 1000,
-       "relight_ms": 0,
-       "at": [
-        16768,
-        -364
-       ]
+       "relight_ms": 0
       },
       {
        "id": "l_worklamp_nw",
        "kind": "lamp",
+       "at": [
+        15500,
+        400
+       ],
        "radius_cm": 700,
        "snuff": "hold",
        "hold_ms": 1000,
-       "relight_ms": 0,
-       "at": [
-        16768,
-        364
-       ]
+       "relight_ms": 0
       }
      ],
      "surfaces": [
       {
        "kind": "gravel",
        "center": [
-        16630,
-        -368
+        17000,
+        330
        ],
        "size": [
-        520,
-        520
+        300,
+        200
        ],
        "height_cm": 0,
        "step_permille": 1500,
@@ -10279,12 +10428,12 @@
       {
        "kind": "gravel",
        "center": [
-        17965,
-        228
+        17000,
+        -220
        ],
        "size": [
-        520,
-        520
+        300,
+        200
        ],
        "height_cm": 0,
        "step_permille": 1500,
@@ -10311,8 +10460,8 @@
        "rank": -1,
        "joins": null,
        "at": [
-        16010,
-        0
+        16400,
+        600
        ]
       }
      ],
@@ -10325,19 +10474,83 @@
      "fires": null,
      "ladders": [],
      "charge": null
+    },
+    "height_cm": 0,
+    "lift": null,
+    "relay_room": {
+     "origin_cm": [
+      15400,
+      -500
+     ],
+     "period_ms": 12000,
+     "exposed_ms": 8000,
+     "gap_ms": 4000,
+     "pull_ms": 3000,
+     "caught_suspicion_permille": 600,
+     "fan_lock_ms": 2000,
+     "nodes_lock_ms": 30000,
+     "reinforcement_delay_ms": 8000,
+     "reinforcement_count": 2,
+     "lamp_notice_ms": 5000,
+     "gallery_height_cm": 400,
+     "gallery_width_cm": 180,
+     "nodes_cm": [
+      [
+       16320,
+       0,
+       120
+      ],
+      [
+       16480,
+       0,
+       120
+      ],
+      [
+       16400,
+       80,
+       520
+      ]
+     ],
+     "work_cm": [
+      [
+       16200,
+       0,
+       0
+      ],
+      [
+       16600,
+       0,
+       0
+      ],
+      [
+       16400,
+       190,
+       400
+      ]
+     ],
+     "window_cm": [
+      16400,
+      500,
+      550
+     ],
+     "lookout_cm": [
+      16400,
+      600,
+      550
+     ]
     }
    },
    {
     "beat": "ch06.b05",
     "zone": 2,
     "entry": [
-     22280,
-     0,
+     25100,
+     -7835,
      0
     ],
     "anchor": [
-     22792,
-     -364
+     25450,
+     -7835
     ],
     "objectives": [],
     "pickups": [],
@@ -10346,76 +10559,50 @@
     "volumes": [],
     "exit": {
      "center": [
-      25200,
-      0
+      26080,
+      -7835
      ],
      "size": [
-      500,
-      2080
+      300,
+      300
      ]
     },
     "closing": null,
     "spawns": [
      [
-      25384,
-      -1118
+      26080,
+      -7635
      ],
      [
-      25384,
-      1118
+      26080,
+      -7635
      ],
      [
-      24808,
-      -1118
+      26080,
+      -7635
      ],
      [
-      24808,
-      1118
+      26080,
+      -7635
      ],
      [
-      23800,
-      -1118
+      26080,
+      -7635
      ],
      [
-      23800,
-      1118
+      26080,
+      -7635
      ]
     ],
     "patrols": [
      [
       [
-       23080,
-       -520
+       26080,
+       -7635
       ],
       [
-       24700,
-       -520
-      ],
-      [
-       24700,
-       520
-      ],
-      [
-       23080,
-       520
-      ]
-     ],
-     [
-      [
-       23620,
-       -260
-      ],
-      [
-       24232,
-       -260
-      ],
-      [
-       24232,
-       260
-      ],
-      [
-       23620,
-       260
+       26080,
+       -7235
       ]
      ]
     ],
@@ -10424,6 +10611,8 @@
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -10454,19 +10643,32 @@
      "fires": null,
      "ladders": [],
      "charge": null
+    },
+    "height_cm": 0,
+    "lift": null,
+    "ledger_hall": {
+     "origin_cm": [
+      25800,
+      -8235
+     ],
+     "palace_origin_cm": [
+      28800,
+      -1565
+     ],
+     "palace_zone": 3
     }
    },
    {
     "beat": "ch06.b06",
     "zone": 2,
     "entry": [
-     22280,
-     0,
-     0
+     26080,
+     -7835,
+     90
     ],
     "anchor": [
-     23368,
-     364
+     26960,
+     -7035
     ],
     "objectives": [],
     "pickups": [],
@@ -10476,120 +10678,244 @@
      {
       "event": "volume_enter:vol_rubble_c1",
       "center": [
-       23440,
-       0
+       26960,
+       -7035
       ],
       "size": [
-       400,
-       2080
+       320,
+       320
       ]
      },
      {
       "event": "volume_enter:vol_aisle_c2",
       "center": [
-       23800,
-       0
+       26960,
+       -5435
       ],
       "size": [
-       400,
-       2080
+       2400,
+       320
       ]
      },
      {
       "event": "volume_enter:vol_uguisu_entry",
       "center": [
-       24160,
-       0
+       28500,
+       -1700
       ],
       "size": [
        400,
-       2080
+       270
       ]
      },
      {
       "event": "volume_enter:vol_sugido",
       "center": [
-       24520,
-       0
+       31340,
+       935
       ],
       "size": [
-       400,
-       2080
+       500,
+       400
       ]
      }
     ],
     "exit": {
      "center": [
-      25200,
-      0
+      31340,
+      935
      ],
      "size": [
       500,
-      2080
+      400
      ]
     },
     "closing": null,
     "spawns": [
      [
-      25384,
-      -1118
+      26080,
+      -7635
      ],
      [
-      25384,
-      1118
+      26520,
+      -7235
      ],
      [
-      24808,
-      -1118
+      27400,
+      -2835
      ],
      [
-      24808,
-      1118
+      27840,
+      -2635
      ],
      [
-      23800,
-      -1118
+      26960,
+      -5435
      ],
      [
-      23800,
-      1118
+      26960,
+      -2235
+     ],
+     [
+      26080,
+      -7035
+     ],
+     [
+      26520,
+      -5435
+     ],
+     [
+      31335,
+      -1665
+     ],
+     [
+      31335,
+      -1165
+     ],
+     [
+      28500,
+      -1700
+     ],
+     [
+      31340,
+      575
      ]
     ],
     "patrols": [
      [
       [
-       23080,
-       -520
+       26080,
+       -7635
       ],
       [
-       24700,
-       -520
-      ],
-      [
-       24700,
-       520
-      ],
-      [
-       23080,
-       520
+       26080,
+       -2635
       ]
      ],
      [
       [
-       23620,
-       -260
+       26520,
+       -7235
       ],
       [
-       24232,
-       -260
+       26520,
+       -2835
+      ]
+     ],
+     [
+      [
+       27400,
+       -2835
       ],
       [
-       24232,
-       260
+       27400,
+       -7435
+      ]
+     ],
+     [
+      [
+       27840,
+       -2635
       ],
       [
-       23620,
-       260
+       27840,
+       -7235
+      ]
+     ],
+     [
+      [
+       26960,
+       -5435
+      ],
+      [
+       26960,
+       -5435
+      ]
+     ],
+     [
+      [
+       26960,
+       -2235
+      ],
+      [
+       26960,
+       -2235
+      ]
+     ],
+     [
+      [
+       26080,
+       -7035
+      ],
+      [
+       27840,
+       -7035
+      ],
+      [
+       27840,
+       -3835
+      ],
+      [
+       26080,
+       -3835
+      ]
+     ],
+     [
+      [
+       26520,
+       -5435
+      ],
+      [
+       27840,
+       -5435
+      ],
+      [
+       27840,
+       -2235
+      ],
+      [
+       26520,
+       -2235
+      ]
+     ],
+     [
+      [
+       31335,
+       -1665
+      ],
+      [
+       31335,
+       -1665
+      ]
+     ],
+     [
+      [
+       31335,
+       -1165
+      ],
+      [
+       31335,
+       335
+      ]
+     ],
+     [
+      [
+       28500,
+       -1700
+      ],
+      [
+       31000,
+       -1700
+      ]
+     ],
+     [
+      [
+       31340,
+       575
+      ],
+      [
+       31340,
+       575
       ]
      ]
     ],
@@ -10598,6 +10924,8 @@
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -10613,54 +10941,40 @@
       {
        "kind": "nightingale_floor",
        "center": [
-        23800,
-        0
+        29700,
+        -1700
        ],
        "size": [
-        3300,
-        2300
+        3000,
+        270
        ],
        "height_cm": 0,
        "step_permille": 4000,
        "crouch_permille": 5000
       },
       {
-       "kind": "edge_strip",
+       "kind": "nightingale_floor",
        "center": [
-        23800,
-        1105
+        31335,
+        -600
        ],
        "size": [
-        3300,
-        90
+        270,
+        2470
        ],
        "height_cm": 0,
        "step_permille": 4000,
-       "crouch_permille": 0
+       "crouch_permille": 5000
       },
       {
        "kind": "gravel",
        "center": [
-        23800,
-        0
+        30000,
+        -765
        ],
        "size": [
-        3300,
-        2300
-       ],
-       "height_cm": 0,
-       "step_permille": 1500,
-       "crouch_permille": 1500
-      },
-      {
-       "kind": "puddle",
-       "center": [
-        23230,
-        -368
-       ],
-       "size": [
-        360,
-        360
+        2400,
+        1600
        ],
        "height_cm": 0,
        "step_permille": 1500,
@@ -10669,16 +10983,100 @@
       {
        "kind": "tatami",
        "center": [
-        24565,
-        228
+        29400,
+        -2235
        ],
        "size": [
-        600,
-        600
+        1200,
+        800
        ],
        "height_cm": 0,
        "step_permille": 500,
        "crouch_permille": 500
+      },
+      {
+       "kind": "tatami",
+       "center": [
+        30600,
+        -2235
+       ],
+       "size": [
+        1200,
+        800
+       ],
+       "height_cm": 0,
+       "step_permille": 500,
+       "crouch_permille": 500
+      },
+      {
+       "kind": "puddle",
+       "center": [
+        26080,
+        -7735
+       ],
+       "size": [
+        200,
+        200
+       ],
+       "height_cm": 0,
+       "step_permille": 1500,
+       "crouch_permille": 1500
+      },
+      {
+       "kind": "puddle",
+       "center": [
+        26960,
+        -2035
+       ],
+       "size": [
+        200,
+        200
+       ],
+       "height_cm": 0,
+       "step_permille": 1500,
+       "crouch_permille": 1500
+      },
+      {
+       "kind": "puddle",
+       "center": [
+        27840,
+        -7635
+       ],
+       "size": [
+        200,
+        200
+       ],
+       "height_cm": 0,
+       "step_permille": 1500,
+       "crouch_permille": 1500
+      },
+      {
+       "kind": "edge_strip",
+       "center": [
+        29700,
+        -1825
+       ],
+       "size": [
+        3000,
+        20
+       ],
+       "height_cm": 0,
+       "step_permille": 4000,
+       "crouch_permille": 0
+      },
+      {
+       "kind": "edge_strip",
+       "center": [
+        31460,
+        -465
+       ],
+       "size": [
+        20,
+        2200
+       ],
+       "height_cm": 0,
+       "step_permille": 4000,
+       "crouch_permille": 0
       }
      ],
      "water": null,
@@ -10690,16 +11088,16 @@
       "investigate_ms": 8000,
       "piles": [
        [
-        23440,
-        0
+        26960,
+        -7035
        ],
        [
-        22915,
-        -141
+        26520,
+        -3835
        ],
        [
-        24250,
-        455
+        27400,
+        -2235
        ]
       ]
      },
@@ -10715,15 +11113,15 @@
       {
        "id": "alarm_c2_a1",
        "at": [
-        24520,
-        -364
+        26080,
+        -5435
        ]
       },
       {
        "id": "alarm_c3_a5",
        "at": [
-        24520,
-        364
+        27840,
+        -3835
        ]
       }
      ],
@@ -10733,19 +11131,32 @@
      "fires": null,
      "ladders": [],
      "charge": null
+    },
+    "height_cm": 0,
+    "lift": null,
+    "ledger_hall": {
+     "origin_cm": [
+      25800,
+      -8235
+     ],
+     "palace_origin_cm": [
+      28800,
+      -1565
+     ],
+     "palace_zone": 3
     }
    },
    {
     "beat": "ch06.b07",
     "zone": 3,
     "entry": [
-     28880,
-     0,
-     0
+     31400,
+     935,
+     180
     ],
     "anchor": [
-     29392,
-     -364
+     32500,
+     935
     ],
     "objectives": [],
     "pickups": [],
@@ -10755,131 +11166,179 @@
      {
       "event": "volume_enter:vol_vault_armory",
       "center": [
-       30040,
-       0
+       32300,
+       935
       ],
       "size": [
-       400,
-       2080
+       300,
+       300
       ]
      },
      {
       "event": "volume_enter:vol_poi_contraband",
       "center": [
-       30400,
-       0
+       32900,
+       935
       ],
       "size": [
-       400,
-       2080
+       300,
+       300
       ]
      },
      {
       "event": "volume_enter:vol_poi_heirloom_map",
       "center": [
-       30760,
-       0
+       32200,
+       1235
       ],
       "size": [
-       400,
-       2080
+       300,
+       300
       ]
      },
      {
       "event": "volume_enter:vol_poi_vista",
       "center": [
-       31120,
-       0
+       32500,
+       635
       ],
       "size": [
-       400,
-       2080
+       300,
+       300
       ]
      }
     ],
     "exit": {
      "center": [
-      31800,
-      0
+      30600,
+      1635
      ],
      "size": [
-      500,
-      2080
+      300,
+      300
      ]
     },
     "closing": null,
     "spawns": [
      [
-      31984,
-      -1118
-     ],
-     [
-      31984,
-      1118
-     ],
-     [
-      31408,
-      -1118
-     ],
-     [
-      31408,
-      1118
-     ],
-     [
       30400,
-      -1118
+      1225
      ],
      [
-      30400,
-      1118
+      29400,
+      1225
+     ],
+     [
+      28600,
+      1225
+     ],
+     [
+      30600,
+      755
+     ],
+     [
+      29100,
+      1435
+     ],
+     [
+      30600,
+      1635
      ]
     ],
     "patrols": [
      [
       [
-       29680,
-       -520
+       30400,
+       1225
       ],
       [
-       31300,
-       -520
+       30650,
+       1135
       ],
       [
-       31300,
-       520
+       30650,
+       1635
       ],
       [
-       29680,
-       520
+       30250,
+       1635
       ]
      ],
      [
       [
-       30220,
-       -260
+       29400,
+       1225
       ],
       [
-       30832,
-       -260
+       29650,
+       1135
       ],
       [
-       30832,
-       260
+       29650,
+       1635
       ],
       [
-       30220,
-       260
+       29250,
+       1635
+      ]
+     ],
+     [
+      [
+       28600,
+       1225
+      ],
+      [
+       28850,
+       1135
+      ],
+      [
+       28850,
+       1635
+      ],
+      [
+       28450,
+       1635
+      ]
+     ],
+     [
+      [
+       30600,
+       755
+      ],
+      [
+       28500,
+       755
+      ]
+     ],
+     [
+      [
+       29100,
+       1435
+      ],
+      [
+       30600,
+       1435
+      ],
+      [
+       30600,
+       1635
+      ],
+      [
+       29100,
+       1635
       ]
      ]
     ],
     "cache": [
-     28960,
-     -988
+     32500,
+     1035
     ],
     "stations": [],
     "step_stations": [],
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -10910,21 +11369,60 @@
      "fires": null,
      "ladders": [],
      "charge": null
+    },
+    "height_cm": 0,
+    "lift": null,
+    "registry_hall": {
+     "origin_cm": [
+      28800,
+      -1565
+     ],
+     "desks_cm": [
+      [
+       30400,
+       1335,
+       0
+      ],
+      [
+       29400,
+       1335,
+       15
+      ],
+      [
+       28600,
+       1335,
+       30
+      ]
+     ],
+     "perimeter_width_cm": 180
     }
    },
    {
     "beat": "ch06.b08",
     "zone": 3,
     "entry": [
-     28880,
-     0,
-     0
+     31400,
+     935,
+     180
     ],
     "anchor": [
-     31696,
-     0
+     30700,
+     935
     ],
-    "objectives": [],
+    "objectives": [
+     [
+      30400,
+      1225
+     ],
+     [
+      29400,
+      1225
+     ],
+     [
+      28600,
+      1225
+     ]
+    ],
     "pickups": [],
     "dropoffs": [],
     "targets": [],
@@ -10932,87 +11430,134 @@
      {
       "event": "volume_enter:vol_kicho_chudan",
       "center": [
-       30580,
-       0
+       29400,
+       935
       ],
       "size": [
-       400,
-       2080
-      ]
+       600,
+       300
+      ],
+      "floor_cm": 15
      }
     ],
     "exit": {
      "center": [
-      31800,
-      0
+      30600,
+      1635
      ],
      "size": [
-      500,
-      2080
+      300,
+      300
      ]
     },
     "closing": null,
     "spawns": [
      [
-      31984,
-      -1118
-     ],
-     [
-      31984,
-      1118
-     ],
-     [
-      31408,
-      -1118
-     ],
-     [
-      31408,
-      1118
-     ],
-     [
       30400,
-      -1118
+      1225
      ],
      [
-      30400,
-      1118
+      29400,
+      1225
+     ],
+     [
+      28600,
+      1225
+     ],
+     [
+      30600,
+      755
+     ],
+     [
+      29100,
+      1435
+     ],
+     [
+      30600,
+      1635
      ]
     ],
     "patrols": [
      [
       [
-       29680,
-       -520
+       30400,
+       1225
       ],
       [
-       31300,
-       -520
+       30650,
+       1135
       ],
       [
-       31300,
-       520
+       30650,
+       1635
       ],
       [
-       29680,
-       520
+       30250,
+       1635
       ]
      ],
      [
       [
-       30220,
-       -260
+       29400,
+       1225
       ],
       [
-       30832,
-       -260
+       29650,
+       1135
       ],
       [
-       30832,
-       260
+       29650,
+       1635
       ],
       [
-       30220,
-       260
+       29250,
+       1635
+      ]
+     ],
+     [
+      [
+       28600,
+       1225
+      ],
+      [
+       28850,
+       1135
+      ],
+      [
+       28850,
+       1635
+      ],
+      [
+       28450,
+       1635
+      ]
+     ],
+     [
+      [
+       30600,
+       755
+      ],
+      [
+       28500,
+       755
+      ]
+     ],
+     [
+      [
+       29100,
+       1435
+      ],
+      [
+       30600,
+       1435
+      ],
+      [
+       30600,
+       1635
+      ],
+      [
+       29100,
+       1635
       ]
      ]
     ],
@@ -11021,6 +11566,8 @@
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": "hold",
      "item": null,
@@ -11056,19 +11603,45 @@
      "fires": null,
      "ladders": [],
      "charge": null
+    },
+    "height_cm": 0,
+    "lift": null,
+    "registry_hall": {
+     "origin_cm": [
+      28800,
+      -1565
+     ],
+     "desks_cm": [
+      [
+       30400,
+       1335,
+       0
+      ],
+      [
+       29400,
+       1335,
+       15
+      ],
+      [
+       28600,
+       1335,
+       30
+      ]
+     ],
+     "perimeter_width_cm": 180
     }
    },
    {
     "beat": "ch06.b09",
     "zone": 4,
     "entry": [
-     35480,
-     0,
-     0
+     36500,
+     -700,
+     90
     ],
     "anchor": [
-     35992,
-     -364
+     36500,
+     0
     ],
     "objectives": [],
     "pickups": [],
@@ -11077,84 +11650,49 @@
     "volumes": [],
     "exit": {
      "center": [
-      38400,
-      0
+      36500,
+      700
      ],
      "size": [
-      500,
-      2080
+      400,
+      300
      ]
     },
     "closing": null,
     "spawns": [
      [
-      38584,
-      -1118
+      36500,
+      400
      ],
      [
-      38584,
-      1118
+      36500,
+      -400
      ],
      [
-      38008,
-      -1118
+      36300,
+      0
      ],
      [
-      38008,
-      1118
+      36700,
+      0
      ],
      [
-      37000,
-      -1118
+      36300,
+      -400
      ],
      [
-      37000,
-      1118
+      36700,
+      400
      ]
     ],
-    "patrols": [
-     [
-      [
-       36280,
-       -520
-      ],
-      [
-       37900,
-       -520
-      ],
-      [
-       37900,
-       520
-      ],
-      [
-       36280,
-       520
-      ]
-     ],
-     [
-      [
-       36820,
-       -260
-      ],
-      [
-       37432,
-       -260
-      ],
-      [
-       37432,
-       260
-      ],
-      [
-       36820,
-       260
-      ]
-     ]
-    ],
+    "patrols": [],
     "stations": [],
     "step_stations": [],
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -11185,105 +11723,88 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 600,
+    "lift": null
    },
    {
     "beat": "ch06.b10",
     "zone": 4,
     "entry": [
-     35480,
-     0,
-     0
+     36500,
+     -700,
+     90
     ],
     "anchor": [
-     36568,
-     364
+     36500,
+     0
     ],
     "objectives": [],
     "pickups": [],
     "dropoffs": [],
     "targets": [],
-    "volumes": [],
+    "volumes": [
+     {
+      "event": "volume_enter:vol_archive_press_landing",
+      "center": [
+       42100,
+       1140
+      ],
+      "size": [
+       300,
+       120
+      ],
+      "floor_cm": 400
+     }
+    ],
     "exit": {
      "center": [
-      38400,
-      0
+      36500,
+      700
      ],
      "size": [
-      500,
-      2080
+      400,
+      300
      ]
     },
-    "closing": null,
+    "closing": [
+     42100,
+     1140
+    ],
     "spawns": [
      [
-      38584,
-      -1118
+      36500,
+      400
      ],
      [
-      38584,
-      1118
+      36500,
+      -400
      ],
      [
-      38008,
-      -1118
+      36300,
+      0
      ],
      [
-      38008,
-      1118
+      36700,
+      0
      ],
      [
-      37000,
-      -1118
+      36300,
+      -400
      ],
      [
-      37000,
-      1118
+      36700,
+      400
      ]
     ],
-    "patrols": [
-     [
-      [
-       36280,
-       -520
-      ],
-      [
-       37900,
-       -520
-      ],
-      [
-       37900,
-       520
-      ],
-      [
-       36280,
-       520
-      ]
-     ],
-     [
-      [
-       36820,
-       -260
-      ],
-      [
-       37432,
-       -260
-      ],
-      [
-       37432,
-       260
-      ],
-      [
-       36820,
-       260
-      ]
-     ]
-    ],
+    "patrols": [],
     "stations": [],
     "step_stations": [],
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -11314,36 +11835,38 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 600,
+    "lift": null
    },
    {
     "beat": "ch06.b11",
     "zone": 5,
     "entry": [
-     42080,
-     0,
-     0
+     42100,
+     1140,
+     -90
     ],
     "anchor": [
-     44896,
-     0
+     45300,
+     -400
     ],
     "objectives": [
      [
-      44320,
-      0
+      43600,
+      -940
      ],
      [
-      44320,
-      -364
+      43600,
+      -240
      ],
      [
-      44320,
-      364
+      43000,
+      460
      ],
      [
-      43744,
-      0
+      45800,
+      -1000
      ]
     ],
     "pickups": [],
@@ -11353,98 +11876,101 @@
      {
       "event": "volume_enter:vol_press_floor",
       "center": [
-       43480,
+       43900,
        0
       ],
       "size": [
-       400,
-       2080
-      ]
+       4000,
+       2200
+      ],
+      "floor_cm": 0
      },
      {
       "event": "volume_enter:vol_press_binding",
       "center": [
-       44080,
-       0
+       45400,
+       -950
       ],
       "size": [
-       400,
-       2080
-      ]
+       800,
+       300
+      ],
+      "floor_cm": 0
      }
     ],
     "exit": {
      "center": [
-      45000,
-      0
+      45800,
+      -1000
      ],
      "size": [
-      500,
-      2080
-     ]
+      300,
+      300
+     ],
+     "floor_cm": 0
     },
     "closing": null,
     "spawns": [
      [
-      45184,
-      -1118
+      42300,
+      -940
      ],
      [
-      45184,
-      1118
+      44800,
+      460
      ],
      [
-      44608,
-      -1118
+      42800,
+      -350
      ],
      [
-      44608,
-      1118
+      44400,
+      350
      ],
      [
-      43600,
-      -1118
+      45800,
+      800
      ],
      [
-      43600,
-      1118
+      45100,
+      0
      ]
     ],
     "patrols": [
      [
       [
-       42880,
-       -520
+       42300,
+       -400
       ],
       [
-       44500,
-       -520
+       45000,
+       -400
       ],
       [
-       44500,
-       520
+       45000,
+       -220
       ],
       [
-       42880,
-       520
+       42300,
+       -220
       ]
      ],
      [
       [
-       43420,
-       -260
+       42300,
+       280
       ],
       [
-       44032,
-       -260
+       45000,
+       280
       ],
       [
-       44032,
-       260
+       45000,
+       460
       ],
       [
-       43420,
-       260
+       42300,
+       460
       ]
      ]
     ],
@@ -11453,6 +11979,8 @@
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -11466,47 +11994,47 @@
      "lamps": [
       {
        "id": "l_die_lamp_a2",
-       "kind": "lamp",
+       "kind": "die",
+       "at": [
+        43600,
+        -700
+       ],
        "radius_cm": 700,
        "snuff": "shot",
        "hold_ms": 0,
-       "relight_ms": 0,
-       "at": [
-        43168,
-        -364
-       ]
+       "relight_ms": 0
       },
       {
        "id": "l_die_lamp_b2",
-       "kind": "lamp",
+       "kind": "die",
+       "at": [
+        43600,
+        0
+       ],
        "radius_cm": 700,
        "snuff": "shot",
        "hold_ms": 0,
-       "relight_ms": 0,
-       "at": [
-        43168,
-        364
-       ]
+       "relight_ms": 0
       },
       {
        "id": "l_die_lamp_c1",
-       "kind": "lamp",
+       "kind": "die",
+       "at": [
+        43000,
+        700
+       ],
        "radius_cm": 700,
        "snuff": "shot",
        "hold_ms": 0,
-       "relight_ms": 0,
-       "at": [
-        43744,
-        -364
-       ]
+       "relight_ms": 0
       }
      ],
      "surfaces": [
       {
        "kind": "gravel",
        "center": [
-        43030,
-        -368
+        44792,
+        210
        ],
        "size": [
         520,
@@ -11519,8 +12047,8 @@
       {
        "kind": "gravel",
        "center": [
-        44365,
-        228
+        42867,
+        -130
        ],
        "size": [
         520,
@@ -11549,6 +12077,327 @@
      "fires": null,
      "ladders": [],
      "charge": null
+    },
+    "height_cm": 0,
+    "lift": null,
+    "press_hall": {
+     "origin_cm": [
+      41800,
+      -1200
+     ],
+     "period_ms": 1600,
+     "window_ms": 500,
+     "radius_cm": 800,
+     "noise_permille": 200,
+     "inspection_ms": 20000,
+     "lamp_suspicion_ms": 5000,
+     "patrols": [
+      {
+       "guard_index": 0,
+       "period_ms": 45000,
+       "dwell_ms": 700,
+       "floor_cm": 0,
+       "points_cm": [
+        [
+         42600,
+         -940
+        ],
+        [
+         43600,
+         -940
+        ],
+        [
+         44600,
+         -940
+        ],
+        [
+         44600,
+         -240
+        ],
+        [
+         44200,
+         460
+        ],
+        [
+         43000,
+         460
+        ],
+        [
+         42600,
+         -240
+        ],
+        [
+         43600,
+         -240
+        ]
+       ]
+      },
+      {
+       "guard_index": 1,
+       "period_ms": 45000,
+       "dwell_ms": 700,
+       "floor_cm": 0,
+       "points_cm": [
+        [
+         44200,
+         460
+        ],
+        [
+         43000,
+         460
+        ],
+        [
+         42600,
+         -240
+        ],
+        [
+         43600,
+         -240
+        ],
+        [
+         42600,
+         -940
+        ],
+        [
+         43600,
+         -940
+        ],
+        [
+         44600,
+         -940
+        ],
+        [
+         44600,
+         -240
+        ]
+       ]
+      },
+      {
+       "guard_index": 2,
+       "period_ms": 0,
+       "dwell_ms": 1500,
+       "floor_cm": 0,
+       "points_cm": [
+        [
+         42300,
+         -400
+        ],
+        [
+         45000,
+         -400
+        ],
+        [
+         45000,
+         -220
+        ],
+        [
+         42300,
+         -220
+        ]
+       ]
+      },
+      {
+       "guard_index": 3,
+       "period_ms": 0,
+       "dwell_ms": 1500,
+       "floor_cm": 0,
+       "points_cm": [
+        [
+         42300,
+         280
+        ],
+        [
+         45000,
+         280
+        ],
+        [
+         45000,
+         460
+        ],
+        [
+         42300,
+         460
+        ]
+       ]
+      },
+      {
+       "guard_index": 4,
+       "period_ms": 0,
+       "dwell_ms": 1500,
+       "floor_cm": 400,
+       "points_cm": [
+        [
+         45940,
+         1140
+        ],
+        [
+         45940,
+         -1140
+        ],
+        [
+         41860,
+         -1140
+        ],
+        [
+         41860,
+         1140
+        ]
+       ]
+      },
+      {
+       "guard_index": 5,
+       "period_ms": 30000,
+       "dwell_ms": 0,
+       "floor_cm": 450,
+       "points_cm": [
+        [
+         42300,
+         -700
+        ],
+        [
+         45000,
+         -700
+        ],
+        [
+         45000,
+         700
+        ],
+        [
+         42300,
+         700
+        ]
+       ]
+      }
+     ],
+     "catwalk": {
+      "height_cm": 400,
+      "width_cm": 120,
+      "guard_index": 4,
+      "ladder_foot_cm": [
+       42100,
+       940
+      ],
+      "ladder_top_cm": [
+       42100,
+       1140
+      ],
+      "guard_route_cm": [
+       [
+        45940,
+        1140
+       ],
+       [
+        45940,
+        -1140
+       ],
+       [
+        41860,
+        -1140
+       ],
+       [
+        41860,
+        1140
+       ]
+      ]
+     },
+     "presses": [
+      {
+       "id": "press_a1",
+       "center_cm": [
+        42600,
+        -700
+       ],
+       "work_cm": [
+        42600,
+        -940
+       ],
+       "objective": -1
+      },
+      {
+       "id": "press_a2",
+       "center_cm": [
+        43600,
+        -700
+       ],
+       "work_cm": [
+        43600,
+        -940
+       ],
+       "objective": 0
+      },
+      {
+       "id": "press_a3",
+       "center_cm": [
+        44600,
+        -700
+       ],
+       "work_cm": [
+        44600,
+        -940
+       ],
+       "objective": -1
+      },
+      {
+       "id": "press_b1",
+       "center_cm": [
+        42600,
+        0
+       ],
+       "work_cm": [
+        42600,
+        -240
+       ],
+       "objective": -1
+      },
+      {
+       "id": "press_b2",
+       "center_cm": [
+        43600,
+        0
+       ],
+       "work_cm": [
+        43600,
+        -240
+       ],
+       "objective": 1
+      },
+      {
+       "id": "press_b3",
+       "center_cm": [
+        44600,
+        0
+       ],
+       "work_cm": [
+        44600,
+        -240
+       ],
+       "objective": -1
+      },
+      {
+       "id": "press_c1",
+       "center_cm": [
+        43000,
+        700
+       ],
+       "work_cm": [
+        43000,
+        460
+       ],
+       "objective": 2
+      },
+      {
+       "id": "press_c2",
+       "center_cm": [
+        44200,
+        700
+       ],
+       "work_cm": [
+        44200,
+        460
+       ],
+       "objective": -1
+      }
+     ]
     }
    },
    {
@@ -11658,6 +12507,8 @@
     "step_stations": [],
     "cache": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -11688,7 +12539,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch06.b13",
@@ -11787,6 +12640,8 @@
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -11817,19 +12672,25 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null,
+    "bulkhead": [
+     48680,
+     180
+    ]
    },
    {
     "beat": "ch06.b14",
-    "zone": -1,
+    "zone": 8,
     "entry": [
-     -2700,
+     76600,
      0,
      0
     ],
     "anchor": [
-     2050,
-     -220
+     85900,
+     -4300
     ],
     "objectives": [],
     "pickups": [],
@@ -11839,128 +12700,94 @@
      {
       "event": "volume_enter:vol_ankyo_start",
       "center": [
-       -1080,
+       76700,
        0
       ],
       "size": [
-       400,
-       1100
+       600,
+       240
       ]
      },
      {
       "event": "volume_enter:vol_ankyo_grate_1",
       "center": [
-       -360,
+       78400,
        0
       ],
       "size": [
-       400,
-       1100
+       300,
+       240
       ]
      },
      {
       "event": "volume_enter:vol_ankyo_deep",
       "center": [
-       360,
+       83900,
        0
       ],
       "size": [
-       400,
-       1100
+       150,
+       240
       ]
      },
      {
       "event": "volume_enter:vol_water_gate_exit",
       "center": [
-       1080,
-       0
+       85900,
+       -400
       ],
       "size": [
        400,
-       1100
+       150
       ]
      }
     ],
     "exit": {
      "center": [
-      2000,
-      0
+      85900,
+      -4300
      ],
      "size": [
-      500,
-      900
-     ]
+      400,
+      300
+     ],
+     "floor_cm": 200
     },
     "closing": null,
     "spawns": [
      [
-      2700,
-      -1100
+      78400,
+      0
      ],
      [
-      2700,
-      1100
+      80900,
+      0
      ],
      [
-      500,
-      1800
+      83400,
+      0
      ],
      [
-      -500,
-      -1850
+      85900,
+      -700
      ],
      [
-      2100,
-      450
+      80400,
+      -2100
      ],
      [
-      500,
-      -1400
+      80550,
+      -2100
      ]
     ],
-    "patrols": [
-     [
-      [
-       -1650,
-       -330
-      ],
-      [
-       1650,
-       -330
-      ],
-      [
-       1650,
-       330
-      ],
-      [
-       -1650,
-       330
-      ]
-     ],
-     [
-      [
-       -900,
-       -330
-      ],
-      [
-       900,
-       -330
-      ],
-      [
-       900,
-       330
-      ],
-      [
-       -900,
-       330
-      ]
-     ]
-    ],
+    "patrols": [],
     "stations": [],
     "step_stations": [],
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -11972,29 +12799,14 @@
     "mount": null,
     "fieldcraft": {
      "lamps": [],
-     "surfaces": [
-      {
-       "kind": "running_water",
-       "center": [
-        0,
-        0
-       ],
-       "size": [
-        6000,
-        4800
-       ],
-       "height_cm": 0,
-       "step_permille": 500,
-       "crouch_permille": 500
-      }
-     ],
+     "surfaces": [],
      "water": {
       "center": [
-       0,
-       0
+       76300,
+       -2000
       ],
       "size": [
-       6000,
+       22000,
        4800
       ],
       "surface_cm_s": 180,
@@ -12003,7 +12815,18 @@
       "recover_ms": 3000,
       "drown_hp_s": 10,
       "surface_step_permille": 2000,
-      "cover": [],
+      "cover": [
+       {
+        "center": [
+         85900,
+         -3900
+        ],
+        "size": [
+         1600,
+         300
+        ]
+       }
+      ],
       "lines": []
      },
      "climb": null,
@@ -12025,7 +12848,7 @@
        "rank": -1,
        "joins": null,
        "at": [
-        -2370,
+        76500,
         0
        ]
       },
@@ -12040,8 +12863,8 @@
        "rank": -1,
        "joins": null,
        "at": [
-        -2370,
-        480
+        76500,
+        0
        ]
       },
       {
@@ -12055,8 +12878,8 @@
        "rank": -1,
        "joins": null,
        "at": [
-        -2370,
-        -480
+        86250,
+        -230
        ]
       }
      ],
@@ -12064,11 +12887,134 @@
      "volley": null,
      "alarms": [],
      "nets": null,
-     "searchlights": [],
+     "searchlights": [
+      {
+       "id": "grate_lamp_1",
+       "at": [
+        78400,
+        0
+       ],
+       "height_cm": 210,
+       "yaw": 0,
+       "reach_cm": 1,
+       "road_from_cm": 0,
+       "road_to_cm": 0,
+       "sweep_deg": 1,
+       "period_ms": 6000,
+       "spot_cm": 180,
+       "suspicious_ms": 400,
+       "alert_ms": 1100,
+       "lock_ms": 0,
+       "active_on": null,
+       "spooks": false
+      },
+      {
+       "id": "grate_lamp_2",
+       "at": [
+        80900,
+        0
+       ],
+       "height_cm": 210,
+       "yaw": 0,
+       "reach_cm": 1,
+       "road_from_cm": 0,
+       "road_to_cm": 0,
+       "sweep_deg": 1,
+       "period_ms": 6000,
+       "spot_cm": 180,
+       "suspicious_ms": 400,
+       "alert_ms": 1100,
+       "lock_ms": 0,
+       "active_on": null,
+       "spooks": false
+      },
+      {
+       "id": "grate_lamp_3",
+       "at": [
+        83400,
+        0
+       ],
+       "height_cm": 210,
+       "yaw": 0,
+       "reach_cm": 1,
+       "road_from_cm": 0,
+       "road_to_cm": 0,
+       "sweep_deg": 1,
+       "period_ms": 6000,
+       "spot_cm": 180,
+       "suspicious_ms": 400,
+       "alert_ms": 1100,
+       "lock_ms": 0,
+       "active_on": null,
+       "spooks": false
+      },
+      {
+       "id": "s_searchlight_1",
+       "at": [
+        71100,
+        800
+       ],
+       "height_cm": 1750,
+       "yaw": -90,
+       "reach_cm": 3000,
+       "road_from_cm": 0,
+       "road_to_cm": 0,
+       "sweep_deg": 70,
+       "period_ms": 10000,
+       "spot_cm": 800,
+       "suspicious_ms": 500,
+       "alert_ms": 1500,
+       "lock_ms": 6000,
+       "active_on": null,
+       "spooks": false
+      },
+      {
+       "id": "s_searchlight_2",
+       "at": [
+        80100,
+        800
+       ],
+       "height_cm": 1750,
+       "yaw": -90,
+       "reach_cm": 3000,
+       "road_from_cm": 0,
+       "road_to_cm": 0,
+       "sweep_deg": 70,
+       "period_ms": 10000,
+       "spot_cm": 800,
+       "suspicious_ms": 500,
+       "alert_ms": 1500,
+       "lock_ms": 6000,
+       "active_on": null,
+       "spooks": false
+      }
+     ],
      "bell": null,
      "fires": null,
      "ladders": [],
      "charge": null
+    },
+    "height_cm": 0,
+    "lift": null,
+    "flood": {
+     "origin": [
+      76400,
+      0
+     ],
+     "length_cm": 9000,
+     "width_cm": 240,
+     "height_cm": 220,
+     "deep_start_cm": 7500,
+     "deep_floor_cm": -200,
+     "deep_roof_cm": 20,
+     "air_shaft_cm": [
+      8150,
+      8350
+     ],
+     "from_cm": 40,
+     "to_cm": 160,
+     "rise_ms": 150000,
+     "provisional_air_shaft": true
     }
    },
    {
@@ -12168,6 +13114,8 @@
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -12198,7 +13146,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch06.b16",
@@ -12307,6 +13257,8 @@
     "step_stations": [],
     "cache": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -12337,40 +13289,42 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    }
   ],
   "pickups": [
    {
     "collectible": "ch06.c01",
-    "zone": -1,
+    "zone": 10,
     "at": [
-     -1850,
-     700
+     150400,
+     3500
     ]
    },
    {
     "collectible": "ch06.c02",
     "zone": 1,
     "at": [
-     15760,
-     988
+     17050,
+     350
     ]
    },
    {
     "collectible": "ch06.c05",
     "zone": 2,
     "at": [
-     22360,
-     988
+     25050,
+     -7635
     ]
    },
    {
     "collectible": "ch06.c06",
     "zone": 5,
     "at": [
-     42160,
-     988
+     45400,
+     -950
     ]
    }
   ]

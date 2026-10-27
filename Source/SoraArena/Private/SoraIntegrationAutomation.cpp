@@ -18,10 +18,12 @@
 #include "SoraStealthRules.h"
 #include "SoraWorldBuilder.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Algo/AllOf.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/DamageType.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "InputCoreTypes.h"
 #include "Kismet/GameplayStatics.h"
 #include "Materials/MaterialInstanceDynamic.h"
@@ -428,33 +430,52 @@ bool FSoraIntegrationGuardedWorkTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("All five stand guard on their patrols"), Desks.Count(true), 5);
     TestEqual(TEXT("Nobody hunts the hero"), Desks.Count(false), 0);
     Desks.Harden();
-    FVector Anchor;
-    if (!TestTrue(TEXT("The hold has its desks"), Campaign->ObjectiveAnchor(Anchor)))
+    const FSoraBeatSpace& Space=Desks.BeatData().Space;
+    if (!TestEqual(TEXT("The hold has three distinct desks"), Space.Objectives.Num(), 3))
         return false;
-    // The guards are sent to the zone's entry, too far to contest the desks,
-    // and the hero sits at them.
-    const FVector Entry = ASoraWorldBuilder::Floor(Desks.BeatData().Space.Entry, 120.f);
-    if (!TestTrue(TEXT("The entry lies beyond the desks' contest"), FVector::Dist2D(Entry, Anchor) > 1500.f))
-        return false;
+    const FVector Desk(Space.Objectives[2],Space.FloorAt(Space.Objectives[2]));
+    // Isolate the detection-to-work contract at a real desk. Stop patrol and
+    // movement while the fixture supplies one explicit alarm. Move the desk's
+    // own auditor to the far corner of its authored route so physical contest
+    // cannot substitute for detection; CopyDesks covers that separate cause.
     const TArray<ASoraEnemy*> Guards = Desks.Opponents([](const ASoraEnemy& Enemy) { return FZoneWorld::IsGuard(Enemy) && Enemy.IsAlive(); });
-    for (int32 Index = 0; Index < Guards.Num(); ++Index)
-        Guards[Index]->SetActorLocation(Entry + FVector(0.f, 120.f * Index, 0.f), false, nullptr, ETeleportType::TeleportPhysics);
-    Desks.Stand(Anchor);
+    if(!TestEqual(TEXT("All five live guards are available to the fixture"),Guards.Num(),5)) return false;
+    for (ASoraEnemy* Guard : Guards)
+    {
+        Guard->SetActorTickEnabled(false);
+        Guard->GetCharacterMovement()->StopMovementImmediately();
+        Guard->GetCharacterMovement()->SetComponentTickEnabled(false);
+        if(FVector::Dist2D(Guard->GetActorLocation(),Desk)<300.f)
+        {
+            const FVector2D Post=Space.Patrols[2][2];
+            Guard->SetActorLocation(FVector(Post,Space.FloorAt(Post)+Guard->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2),
+                false,nullptr,ETeleportType::TeleportPhysics);
+        }
+        auto* Brain=Cast<ASoraEnemyController>(Guard->GetController());
+        Brain->BeginPatrol(FSoraPatrolRoute{});
+        Brain->SetActorTickEnabled(false);
+    }
+    Desks.Hero()->SetActorLocation(Desk+FVector(0,0,Desks.Hero()->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2),
+        false,nullptr,ETeleportType::TeleportPhysics);
+    if(!Desks.Tick(2)||!Desks.World->InjectKey(EKeys::E,IE_Pressed)||!Desks.Tick(30)) return false;
+    if(!TestTrue(TEXT("A held mapped interaction copies the third desk before the alarm"),
+        Campaign->IsCopying()&&Campaign->TaskProgress().HoldProgress[2]>0&&!Campaign->IsHeldWorkWatched())) return false;
     // A guard that has placed the hero pauses the copying.
     Cast<ASoraEnemyController>(Guards[0]->GetController())->Rouse(Desks.Hero()->GetActorLocation());
     if (!Desks.Tick(2))
         return false;
     TestTrue(TEXT("The guard's detection reaches the zone"), Stealth->IsDetected());
     TestTrue(TEXT("Work under guard pauses while a guard is alarmed"), Stealth->IsWorkPaused());
+    TestTrue(TEXT("The held desk operation remains admitted but watched"),Campaign->IsCopying()&&Campaign->IsHeldWorkWatched());
     const int32 Paused = Campaign->TaskProgress().Progress;
     if (!Desks.Tick(30))
         return false;
     TestEqual(TEXT("No copying is done while seen"), Campaign->TaskProgress().Progress, Paused);
-    // Once no guard sees him the copying goes on: the detection left nothing behind.
+    // Once no guard sees him the same held interaction resumes. The alarm
+    // must not clear partial work or require an unrelated new interaction.
     for (ASoraEnemy* Guard : Guards)
         if (IsValid(Guard) && Guard->IsAlive())
             Desks.Defeat(*Guard);
-    Desks.Stand(Anchor);
     if (!Desks.Tick(2))
         return false;
     TestFalse(TEXT("With no guard standing the work is not paused"), Stealth->IsWorkPaused());
@@ -462,6 +483,12 @@ bool FSoraIntegrationGuardedWorkTest::RunTest(const FString& Parameters)
     if (!Desks.Tick(60))
         return false;
     TestTrue(TEXT("The copying goes on once no guard sees the hero"), Campaign->TaskProgress().Progress > Resumed);
+    Desks.World->InjectKey(EKeys::E,IE_Released);
+    const int32 Released=Campaign->TaskProgress().Progress;
+    if(!Desks.Tick(30)) return false;
+    TestTrue(TEXT("Releasing the mapped key stops copying at its retained progress"),
+        !Campaign->IsCopying()&&Campaign->TaskProgress().Progress==Released);
+    AddInfo(TEXT("Directed detection-to-copying integration: guards are frozen and the desk's auditor is placed at its authored far patrol corner; ordinary stealth difficulty is not qualified here."));
     return true;
 }
 

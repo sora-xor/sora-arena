@@ -1,0 +1,90 @@
+# West landing — directed runtime checks; visual and ordinary play remain open
+
+This implements chapter 3's west landing and two timed patrols. The signed
+`53967094` compiled and completed fifteen Unreal NullRHI tests on October 26:
+thirteen passed and two failed. The original evidence is retained under
+`Saved/Qualification/2026-10-26/landing-space-53967094-runtime-attempt1`.
+The editor exited naturally with code 3; source, Config and Content/Generated
+were unchanged. This is not rendered or ordinary-play acceptance.
+
+The water route stopped against the bank at the top of the east gangplank.
+Its slope reached bank height 100 cm inland, leaving a 40 cm obstruction at
+the bank face. The revised plank reaches bank height at the actual edge,
+with thickness offset along its normal. The solids fixture also omitted
+WorldDynamic, the default collision type of the runtime box components;
+it now queries both world types and checks three points along the plank.
+Signed `febc3900` then compiled and passed all seven landing cases, with a
+natural editor exit 0 and unchanged source, Config and Content/Generated.
+Evidence: `Saved/Qualification/2026-10-26/landing-space-febc3900-runtime-attempt1`.
+All twenty recorded files were independently hash-verified. The first failed
+run remains archived; it is not overwritten by the passing correction.
+
+The generated data now uses the authored 44 × 16 m yard, entry at the west
+steps, three lamp positions, six puddles, five cargo stacks and north-east
+exit. Both b01 and b02 share that place. Every other zone retains its existing
+placement. The scene now includes the 100 m approach, ten-metre-wide canal
+and timber bridge at X −160 m. Its lowest stringer is 240 cm above the water;
+the opening camera follows a continuous path beneath it. The actual boat,
+character performance and final cinematic direction remain outstanding.
+
+Banks are 160 cm above the water. A physical bed replaces the provisional
+lower quay; six west steps descend to it and an east gangplank returns to
+the landing. The bed is 40 cm below water, an implementation choice sent to
+Claude for design review, not a depth specified by the chapter. It supports
+wading and the moored hulls' 35 cm draft. Wet footsteps double in either
+stance; dry boat decks and bank heights are excluded. The outer south wall
+now sits beyond the opposite bank. Water shading and finished bank/boat art
+still need visual review.
+
+D1's 40 s route is a sampled figure-eight at 500 cm. The chapter's proposed
+four knots would form a diamond; the prose's figure-eight governs, retaining
+the proposed centre and bounds. D2 retains the authored canal endpoints,
+400 cm altitude and 30 s out-and-back period. Both use swept character
+movement and arrival-gated deadlines. D2 also carries a shadow-casting
+downward spotlight; the stealth light query checks that actual cone and
+opaque cover and extinguishes it when the drone is downed.
+
+Eight CPU tests pass, including compiled C++/generated-data parity, a genuine
+crossing with oppositely oriented lobes, reachable leg speeds, blocked
+scheduler deadlines, mutation rejection, binding isolation and camera/bridge
+clearance. These are source checks, not proof of Unreal movement or ordinary
+play. The earlier signed `22eacc89` passed all 88 selected gameplay/tooling
+source gates with a clean, unchanged tree; that result predates this canal
+revision.
+
+Seven new Unreal cases are prepared under
+`SoraArena.Campaign.LandingSpace`: `Solids`, `Patrols`, `Searchlight` and
+`BlockedPatrol`, plus `Routes.Eaves`, `Routes.WaterEdge` and `Routes.Shed`.
+Five passed on `53967094`; `Solids` and `Routes.WaterEdge` failed as described
+above. The patrol observer is deliberately held
+inside a warehouse solid to isolate flight from detection. Passing those
+fixtures will still not establish an ordinary-control stealth route. The
+three route cases use mapped crouch, movement and lamp interaction from the
+authored spawn without position warps, but freeze combat to isolate traversal.
+
+Open before integration or acceptance:
+
+- The seven corrected landing cases passed on `febc3900`. The three existing
+  landing-drone tests, DroneBody, DroneCrossing, LedgerPatrols,
+  HorseShellClockAndImpact and assisted Playthrough passed on `53967094`;
+  these results apply to their respective source revisions.
+- Physically play all three routes, snuff each lamp with its one-second
+  interaction, and verify puddles, detection carryover and the real exit.
+- Review the shallow bed, boats, banks and east gangplank in actual play.
+  Confirm the selected depth and all collision transitions. Do not treat this
+  functional geometry as accepted chapter art.
+- Inspect D2's spotlight in rendered play and check visual/gameplay agreement
+  at the steps and behind the boats; source constants are not visual proof.
+- Complete the boat/character cinematic performance and final
+  warehouse/shed/canal craft with Claude.
+
+The previous integration commit `e8e392c9` independently passed all 118
+source gates in CI run `40277452775`. Its tested merge
+`17730829433ea7ff6982f3038b63ffa154bc718a` has the identical tree
+`34d4b5fc65a5f0bd39fb65ecaf5f408112856e1b`; artifacts and raw logs were
+authenticated. That result predates this landing work and does not qualify it.
+
+The earlier compile-only failure at `a1b1821c` was a fixture pointer deduction
+error, corrected in `53967094`. Both original attempts remain archived; the
+passing compile review is
+`d0b5ab7429549e3e9fa1729e3b544a2d5e5050264d6a639f7e81e605e3406e41`.

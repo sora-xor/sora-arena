@@ -197,7 +197,7 @@ The old keep is gone. On its stone 天守台 (24 × 20 m, 12 m high) stands a he
 | L2 | 9 m | Ramp landing; glass gantry across the void (marksman) |
 | L3 | 18 m | Ramp landing; alarm panel; `vol_spire_L3` |
 | L4 | 27 m | Ramp landing; gantry; freight lift parked in the void |
-| Lift gantries | 50 / 75 / 100 m | b11 wave spawns |
+| Lift gantries | 55.75 / 84.50 / 113.25 m | b11 wave spawns |
 | Gallery | 142 m | Seized-heirloom gallery, 40 × 10 m (b12); north stair, 18 m, to the summit |
 
 - **Core:** a 14 m-diameter central void; a 4 m ramp climbing the walls at about 1:12; continuous railings; ledger-line slit windows admitting low warm sun.
@@ -720,8 +720,9 @@ The fight becomes vertical. The spire's interior is a hexagonal shaft around a 1
 
 Iota has cut the freight lift's power through his key-slate (the ch06 relay access), so the lift is dead. Tetsugorō lashes a timber **轆轤** (vertical capstan with a pawl) to the 6 × 6 m platform and wraps the lift's own hawser around its drum. The platform winds itself up the void from 27 m to the heirloom gallery at 142 m: a moving arena. Turning inside the band (0.4–1.0 turns/s) raises the lift. Faster than the band burns the rope (progress stops and smokes); slower than the band lets the pawl slip back 1% per second.
 
-- **Coop:** when the player leaves the bars to fight, Tetsugorō and the two engineers keep turning at 0.15 turns/s, which roughly holds the height.
-- **Waves:** they come from the gantries the platform passes at 50, 75 and 100 m. Drones try to cut the hawser (decay ×3 while touching). Riflemen fire from a gantry. At 100 m a shield enforcer and two retainers jump onto the platform.
+- **Coop:** when the player leaves the bars to fight, Tetsugorō and the two engineers each keep turning at 0.15 turns/s. With all three working, their combined 0.45 turns/s offsets most of the ordinary decay of 1% of 48 turns each second (0.48 turns/s), so the lift slips by 0.03 turns/s and roughly holds its height. This is a per-person contribution, not a decay waiver; unavailable crew members contribute nothing.
+- **Waves:** they come from the gantries the platform passes at 55.75, 84.50 and 113.25 m. Drones try to cut the hawser (decay ×3 while touching). Riflemen fire from a gantry. At 113.25 m a shield enforcer and two retainers jump onto the platform.
+- **Height contract:** the three gantries are at 25%, 50% and 75% of the 115 m travel above L4 (27 m). Their heights follow these authored release thresholds, so boarders reach a platform passing their landing.
 - **Clouds:** past 60% the platform rises through the morning cloud sea and the light turns gold.
 
 Toranosuke and Kohagi step off at the gallery landing to hold the shaft against reinforcements: from here Nyaakoto goes alone.
@@ -735,14 +736,14 @@ Toranosuke and Kohagi step off at the gallery landing to hold the shaft against 
   - `progress_decay_per_s`: 0.01
   - `stamina_per_turn`: 5
   - `interruptible`: yes
-  - `coop_npc`: {npcs: [tetsugoro, league_engineer_1, league_engineer_2], turns_per_s: 0.15}
+  - `coop_npc`: {npcs: [tetsugoro, league_engineer_1, league_engineer_2], turns_per_s_per_npc: 0.15}
   - `moving_platform`: {actor: freight_lift_platform, size_cm: [600, 600], travel_cm: 11500, from: L4_27m, to: hall_142m}
   - `rope_hazard`: {rule: while a drone's cutter touches the hawser, decay x3, cut_drone_to_clear: yes}
 - **nonlethal_types:** [bound_conscript]
 - **waves:**
-  1. `progress_at:0.25`: `drone` ×3 @ `sp_lift_gantry_50m` (behavior: cut_rope)
-  2. `progress_at:0.5`: `enforcer_rifle` ×3 @ `sp_lift_gantry_75m`
-  3. `progress_at:0.75`: `shield_enforcer` ×1 @ `sp_lift_gantry_100m` (behavior: board_platform); `blade_retainer` ×2 @ `sp_lift_gantry_100m` (behavior: board_platform)
+  1. `progress_at:0.25`: `drone` ×3 @ `sp_lift_gantry_5575cm` (behavior: cut_rope)
+  2. `progress_at:0.5`: `enforcer_rifle` ×3 @ `sp_lift_gantry_8450cm`
+  3. `progress_at:0.75`: `shield_enforcer` ×1 @ `sp_lift_gantry_11325cm` (behavior: board_platform); `blade_retainer` ×2 @ `sp_lift_gantry_11325cm` (behavior: board_platform)
 
 **Fail conditions.** Player death → checkpoint. Lift progress only decays; it never fails.
 
@@ -1107,7 +1108,7 @@ Subtitles: `cine@40` → `ch08.b18.valamort.001`; `cine@45` → `ch08.b18.iota.0
 4. **Capstan on a moving platform.**
    - A `crank` task whose actor rides a lift. Height is progress: 48 turns carry the platform 115 m.
    - The turn-rate band is 0.4–1.0 turns/s. Above the band the rope overheats and progress stops; below it, the pawl slips at 1%/s.
-   - Coop NPCs turn at 0.15 turns/s while the player fights.
+   - Each available coop NPC turns at 0.15 turns/s while the player fights (0.45 combined for all three, against 0.48 turns/s ordinary decay).
    - A drone cutting the hawser triples decay.
    - Enemies board from gantries as the platform passes (a `board_platform` behaviour for L2).
 5. **Seizure tiles (arena hazard).**
@@ -1855,7 +1856,7 @@ extensions_proposed:
   - "horseback_ride: charge{}, objectives[], waves[], arcs_deg{}, route_length_m, horse_stamina{} as object"
   - "combat_wave: complete.objectives[] (same shape as stealth_zone), volley_command{}, scripted{}"
   - "production_task: release{} (pre-escort seal-cuts), escort.bleedout_s, escort.healing_lance_revive_s, escort.path_length_m"
-  - "production_task.crank: moving_platform{}, rope_hazard{}; coop_npc as {npcs, turns_per_s}"
+  - "production_task.crank: moving_platform{}, rope_hazard{}; coop_npc as {npcs, turns_per_s_per_npc}"
   - "production_task.carry: dropped_item_returns_after_s, post_interact{}; beat-level crowd{}, combat:false"
   - "supply_point on beats that host a League 補給所"
   - "boss: hp{}, finisher, lethal_finisher, post_defeat{}, phases[].target_s, pattern_tables (L3 owns the table content)"
@@ -2363,7 +2364,7 @@ beats:
       progress_decay_per_s: 0.01
       stamina_per_turn: 5
       interruptible: true
-      coop_npc: {npcs: [tetsugoro, league_engineer_1, league_engineer_2], turns_per_s: 0.15}
+      coop_npc: {npcs: [tetsugoro, league_engineer_1, league_engineer_2], turns_per_s_per_npc: 0.15}
       moving_platform:
         actor: freight_lift_platform
         size_cm: [600, 600]
@@ -2374,14 +2375,14 @@ beats:
     waves:
       - trigger: "progress_at:0.25"
         enemies:
-          - {type: drone, count: 3, spawn: sp_lift_gantry_50m, behavior: cut_rope}
+          - {type: drone, count: 3, spawn: sp_lift_gantry_5575cm, behavior: cut_rope}
       - trigger: "progress_at:0.5"
         enemies:
-          - {type: enforcer_rifle, count: 3, spawn: sp_lift_gantry_75m}
+          - {type: enforcer_rifle, count: 3, spawn: sp_lift_gantry_8450cm}
       - trigger: "progress_at:0.75"
         enemies:
-          - {type: shield_enforcer, count: 1, spawn: sp_lift_gantry_100m, behavior: board_platform}
-          - {type: blade_retainer, count: 2, spawn: sp_lift_gantry_100m, behavior: board_platform}
+          - {type: shield_enforcer, count: 1, spawn: sp_lift_gantry_11325cm, behavior: board_platform}
+          - {type: blade_retainer, count: 2, spawn: sp_lift_gantry_11325cm, behavior: board_platform}
     nonlethal_types: [bound_conscript]
     music: ch08_lift
     dialogue:

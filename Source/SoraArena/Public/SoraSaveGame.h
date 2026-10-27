@@ -26,6 +26,19 @@ public:
     UPROPERTY(SaveGame) int32 ChapterEntryFlags = 0;
     // Codex entries found, bit chapter * 6 + mask_bit; they never grant stats.
     UPROPERTY(SaveGame) int64 Collectibles = 0;
+    // Additive schema-6 lore flags. Older tagged saves omit this property and
+    // retain zero. These discoveries survive a checkpoint retry, like codex
+    // finds, but never grant collectibles, unlocks or completed beats.
+    UPROPERTY(SaveGame) int32 GalleryPoiMask = 0;
+    // Chapter-one stone, vista, boundary, shrine and arrow-only toshiya lore.
+    // Additive: omitted by older schema-6 saves; never grants combat stats.
+    UPROPERTY(SaveGame) int32 WoodPoiMask = 0;
+    // Completed b07, with the wood/terrace choice still ahead of the hero.
+    UPROPERTY(SaveGame) bool WoodJunction = false;
+    // Finite b12 arrows, claimed once even if its earlier lift checkpoint is
+    // retried. Older schema-6 saves default to unclaimed. Ammo itself follows
+    // the existing full-magazine checkpoint reset, not a new inventory save.
+    UPROPERTY(SaveGame) bool GalleryArrowsClaimed = false;
     // The checkpoint: the start of CheckpointBeat, or a later boss or duel
     // phase, with the beats completed before it and the sites, weapons,
     // mechanics and story flags they earned. CheckpointBeat -1 with

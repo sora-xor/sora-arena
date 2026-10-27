@@ -72,66 +72,57 @@ on the isolated test network.
 
 ## Build and configure
 
-Use the matching isolated Iroha source checkout, including the native game/NFT
-scaffold changes. ABI number 23 alone does not identify those optional feature
-changes. The builder symbol is checked separately.
+Use the matching **committed, clean ABI 30** Iroha checkout, including the
+seven-action native scaffold builder and Arena Join inspector. The ABI number
+alone does not identify this Arena port; staging requires both exact feature
+symbols and exercises them against the native fixture files. The Unreal loader
+still negotiates these research features individually. Their presence does not
+relax the six-action game allowlist or the Join/Buy signing blocks.
 
 ```sh
-scripts/connect/check-abi.py
-IROHA_SOURCE_ROOT=../iroha-arena scripts/connect/build-bridge.sh
-scripts/connect/verify-bridge.py Binaries/Mac/libconnect_norito_bridge.dylib
-scripts/connect/verify-bridge.py Binaries/Mac/libconnect_norito_bridge.dylib --game-fixtures ../iroha-arena/javascript/iroha_js/test/fixtures/game-v1-codec.json
-scripts/connect/verify-bridge.py Binaries/Mac/libconnect_norito_bridge.dylib --game-fixtures ../iroha-arena/javascript/iroha_js/test/fixtures/game-v1-codec.json --require-arena-join-inspector
+export IROHA_SOURCE_ROOT=/absolute/path/to/iroha
+export DEVELOPER_DIR=/Users/mtakemiya/Applications/SORAToolchain/Xcode_26.1.1.app/Contents/Developer
+scripts/connect/check-abi.py --header "$IROHA_SOURCE_ROOT/crates/connect_norito_bridge/include/connect_norito_bridge.h"
+scripts/connect/build-bridge.sh
+scripts/connect/verify-bridge.py Binaries/Mac/libconnect_norito_bridge.dylib --fixture-dir "$IROHA_SOURCE_ROOT/javascript/iroha_js/test/fixtures"
 ```
 
-If macOS Command Line Tools cannot find C++ standard headers, scope
-`DEVELOPER_DIR` to a working Xcode installation for `check-abi.py`. The current
-26 function-pointer declarations passed this isolated check with the installed
-Xcode 26.1.1 compiler (and separately Xcode 27); this does not compile the Unreal
-subsystem or establish engine compatibility.
+`check-abi.py` compiles all 26 Connect function-pointer declarations against the
+selected native header, plus 21 kernel declarations and 15 kernel layouts
+(170 offsets). Scope `DEVELOPER_DIR` to the pinned working Xcode on macOS; this
+host check does not compile Unreal or qualify a runtime on another platform.
+C lengths remain `unsigned long`, which is 32 bits on Windows and 64 bits on
+macOS.
 
-The build script uses the source checkout's `target/` directory by default to
-reuse dependencies; `SORA_CONNECT_TARGET_DIR` selects another build directory.
-It builds the actual native library, executes native admission/crypto smoke
-checks, and only then stages the library and a source/header/library hash record.
-It does not write a placeholder library. The generic script's hash record
-identifies tracked changes but does not attest untracked source content. The
-current local research build also records a stable pre/post-build fingerprint
-of untracked files in [`connect-bridge-local-build.json`](connect-bridge-local-build.json).
+The build script uses the native checkout's `target/` directory by default;
+`SORA_CONNECT_TARGET_DIR` selects another directory and `SORA_CONNECT_JOBS`
+sets build concurrency (default two). It rejects dirty or untracked native
+source before building. After the locked release build, it checks C declarations
+and runs the full native smoke suite, then verifies that the source commit and
+fixture/header/lockfile hashes stayed unchanged. Only then does it stage the
+library and an adjacent `.build.json` containing the source commit/tree,
+compiler versions, source/consumer/library hashes, and complete native results.
+It does not stage a placeholder or treat a binary hash as evidence of wallet
+pairing, settlement, or release signing.
 
-The default staged locations are:
+The supported staging paths are `Binaries/Mac/libconnect_norito_bridge.dylib`
+and `Binaries/Linux/libconnect_norito_bridge.so`. Linux still requires its own
+native and Unreal runtime qualification.
 
-| Platform | Library |
-| --- | --- |
-| macOS | `Binaries/Mac/libconnect_norito_bridge.dylib` |
-| Windows | `Binaries/Win64/connect_norito_bridge.dll` |
-| Linux | `Binaries/Linux/libconnect_norito_bridge.so` |
+**Windows ABI 30 is blocked.** The current native KAGEMUSHA backend contains a
+`cfg(not(unix))` compile error. Building with MSVC or MinGW does not bypass that
+missing platform implementation. A native Windows port, the Windows C ABI
+check, and real Windows library/Unreal/wallet tests are required before staging
+`Binaries/Win64/connect_norito_bridge.dll` as a current release artifact.
 
-On Windows, build the same crate with Cargo/MSVC and run `verify-bridge.py` on the
-result before copying it to `Binaries/Win64`. The function declarations use C
-`unsigned long` for lengths, which is 32 bits on Windows and 64 bits on macOS.
-The ABI checker should be run with that platform's compiler as well. Native
-packaging code signs the actual library as part of the platform release process;
-that release signing has not been performed here.
-
-On the available Apple Silicon Mac, `python3 scripts/connect/check_windows_bridge_crossbuild.py`
-attempts a pinned Rust/MinGW GNU cross-build. It stages a DLL only after checking
-that Iroha sources stayed stable during compilation, the file is an x86-64 PE,
-its Connect exports match the C header exactly, and the 26 Unreal function
-pointer declarations compile against that header with the Windows C++ compiler.
-This static check cannot load the DLL or replace the Windows MSVC, Unreal, and
-wallet runtime passes.
-
-The 2026-09-23 research cross-build passed with Rust 1.93.1 for
-`x86_64-pc-windows-gnu`: the staged PE DLL has 175 exports matching the C
-header, the 26 Unreal function-pointer declarations pass the MinGW C++ ABI
-check, and its SHA-256 is
-`858557a3127c32c061752836c806e03fbf80e296ec8de7b2ea52627420f2dc8b`.
-The adjacent ignored `Binaries/Win64/connect_norito_bridge.dll.build.json`
-records the exact tested source fingerprints. Because the Iroha checkout still
-has uncommitted source, its Git revision alone cannot reconstruct this build.
-The DLL has not been loaded on Windows or in Unreal, and no Windows wallet
-pairing or transaction has been tested.
+The 2026-09-23 ABI 23 research cross-build is historical only. Its 175-export
+x86-64 GNU PE DLL had SHA-256
+`858557a3127c32c061752836c806e03fbf80e296ec8de7b2ea52627420f2dc8b` and passed
+26 MinGW function-pointer checks; it had uncommitted source and was never loaded
+on Windows. It does not meet the current ABI 30 loader or establish Windows
+readiness. Likewise, [`connect-bridge-local-build.json`](connect-bridge-local-build.json)
+records the earlier ABI 23 Mac research snapshot, not this committed-source
+build procedure. Platform release signing remains separate and unverified.
 
 For local development, `SORA_CONNECT_BRIDGE` can select an explicit native
 library path. Keep this environment override under the developer's control.
@@ -173,7 +164,8 @@ implementation requires no C++ exceptions or additional runtime package.
 `RequestSignTransaction(scaffoldBase64, ed25519PublicKeyHex)` accepts a canonical
 native scaffold and the account signatory public key, not a secret key.
 `RequestNativeTransactionSignature(exactRequestJson, ed25519PublicKeyHex)` first
-uses the optional native builder. Its JSON requires exactly `network_id`,
+uses the feature-negotiated native builder (mandatory for staging). Its JSON
+requires exactly `network_id`,
 `authority`, `creation_time_ms`, positive `time_to_live_ms`, complete
 `fee_payment`, and `instruction: {name, value}`. The typed native parser rejects
 omitted or unknown nested fields. Neither method should be called implicitly
@@ -207,7 +199,9 @@ equipment reservation, or whether the declared asset is the configured XOR
 asset. `fee_payment` is an exact fee intent, not proof of a final network fee.
 For a purchase, the UI likewise lacks a verified live offer read tying seller,
 NFT identity, price, expiry, and ownership to the inspected `BuyNftV1` payload;
-the current builder smoke check does not exercise a Buy fixture.
+the full native smoke suite now includes the exact native Buy fixture and its
+nested seller, NFT, asset, string price, expiry, buyer, and metadata terms. This
+codec check still provides no authenticated live offer or ownership read.
 
 Before exposing join or purchase approval in the game, add a versioned native
 review result that binds those typed terms and the canonical payload hash to a
@@ -227,14 +221,15 @@ to the payload signing hash and placeholder-scaffold BLAKE3 digest. Its
 is not the final signed transaction hash; this endpoint has no authenticated
 session read, manifest economics, fee quote, or asset/NFT state and does not
 lift the Unreal signing block.
-This research FFI symbol is optional for pairing under bridge ABI 23 and must be
-negotiated by its exact name, `connect_norito_arena_join_terms_inspect_v1`.
-Its absence leaves Join/Buy signing blocked; its presence also leaves signing
-blocked until an authenticated session review exists. `check-abi.py` checks its
-C declaration and Unreal function-pointer type. With `--game-fixtures`,
-`verify-bridge.py` exercises typed Join terms and rejects malformed or non-Join
-scaffolds if the symbol is present. Use `--require-arena-join-inspector` to fail
-verification when the symbol is missing.
+The runtime negotiates the exact research FFI symbol,
+`connect_norito_arena_join_terms_inspect_v1`, under ABI 30. The staging verifier
+requires it and checks its exact eleven-field result for both the ordinary Join
+and a returnable-equipment Join, including the scaffold digest and
+`authorization_ready: false`. Missing symbols, malformed scaffolds, and non-Join
+instructions fail verification. This does not make the inspector an admission
+quote: both its absence and its presence leave Join/Buy signing blocked until
+an authenticated session review exists. `check-abi.py` checks its C declaration
+and Unreal function-pointer type.
 `UArenaWalletSubsystem::InspectJoinScaffold` exposes those canonical typed
 terms as read-only JSON for a paired, matching account and network. It checks
 the inspector's payload hash against the general native scaffold inspection
@@ -358,31 +353,48 @@ status observation never by itself unlocks a bond or weapon entitlement.
   and signed-byte erasure precede the POST. It passed on macOS with project-local
   Xcode 26.1.1. This does not validate Unreal's file I/O, a crash/restart in a
   packaged build, or live Torii reconciliation.
-- `verify-bridge.py` loads a real library and checks ABI/symbols, OS-random key
-  generation, network/key/nonce-bound session IDs, invalid-width rejection,
-  matching peer direction keys, authenticated envelope round trips, wrong-key
-  and tampered/trailing ciphertext rejection, and
-  strict JSON rejection of duplicate keys, trailing junk, and invalid UTF-8.
-  With `--game-fixtures`, it also builds and reinspects canonical Open/Join/Claim
-  transactions, compares exact authority/network/fees/instruction values, rejects
-  21 malformed requests, and rejects unsigned placeholder finalization.
-  On 2026-09-23 these native checks **passed** on the staged release-profile
-  local research library at `Binaries/Mac/libconnect_norito_bridge.dylib`,
-  SHA-256 `f44b6d37d596200c9a3897d17eb9b6f7a919ffcf84e61ef8e3bc126f854fb152`.
-  The required Arena Join inspector also matched exact typed fixture terms,
-  reported `authorization_ready: false`, and rejected malformed and non-Join
-  scaffolds. The ignored sidecar and tracked build manifest record the compiler,
-  source snapshot, and library hash. The Iroha checkout still had uncommitted
-  source, so this is not a reproducible source archive, product-release signature,
-  or live wallet test.
+- `verify-bridge.py` requires ABI 30, all 26 loader symbols, and an explicit
+  `--fixture-dir` containing `game-v1-codec.json`, `nft-market-v1-codec.json`, and
+  `game-resource-v1-codec.json`. It checks OS-random keys, network/key/nonce-bound
+  session IDs, invalid-width rejection, peer direction keys, authenticated
+  envelopes, wrong-key/tampered/trailing ciphertext rejection, and strict JSON.
+  The builder suite uses all seven canonical native actions: Open, Join, Claim,
+  Stake, Offer, Buy, and Cancel, plus a second Join with returnable resources.
+  It preserves exact typed instruction/fee JSON and atomic quantity strings,
+  checks that changing a fee cap above floating-point integer precision changes
+  the canonical payload/hash, and rejects missing/unknown/malformed terms,
+  unsupported actions, batches, and all-zero unauthorized finalization for every
+  case. Both Joins must return the exact eleven-field non-authorizing terms
+  record; every non-Join and malformed scaffold must be rejected by that endpoint.
+  Native Stake coverage validates the bridge; Stake remains excluded from the
+  six-action Unreal allowlist.
+  **On 2026-10-18 this full ABI 30 suite passed on Apple Silicon:** eight
+  canonical cases, all seven actions, 282 malformed builder requests rejected,
+  both non-authorizing Join records matched, and every unauthorized placeholder
+  finalization rejected. The release library was built from clean, signed native
+  commit `75e4ca15cc1c520f7845e9e7ae90c14e07dc7d98` with Rust 1.93.1 and pinned
+  Xcode 26.1.1; its SHA-256 is
+  `50f4b5a8dcdbef1f3751ce76874b46a05ef8f836a903b205da1c8c1d24780aed`.
+  The independently preserved commit-addressed artifact and the staged library
+  passed the same suite. The adjacent ignored
+  `Binaries/Mac/libconnect_norito_bridge.dylib.build.json` records the clean
+  pre/post source identity, all 26 C declaration checks, fixture/consumer hashes,
+  and complete native results. Native Rust unit tests at this source commit did
+  not execute because an unrelated P2P `ActorProgressClass::Bulk` reference failed
+  to compile; the production library build and these actual C ABI runtime checks
+  did pass. This is local library qualification, not live transaction approval.
+  The earlier 2026-09-23 ABI 23 Mac result
+  (`f44b6d37d596200c9a3897d17eb9b6f7a919ffcf84e61ef8e3bc126f854fb152`)
+  covered only Open/Join/Claim and 21 malformed requests from an uncommitted
+  research snapshot. It is not evidence for the current seven-action suite.
 - `SoraArena.Connect.LaunchBindings` contains Unreal automation cases for network
   checksum and origin validation, node/session/role substitution, duplicate URI
   fields, extra fields, fragments, substituted URI schemes, rejection of NFT
   wagering/unrelated transfers, and exact transaction status interpretation.
-  The test passed in the isolated **UE 5.8.3** Mac editor diagnostic on
+  The historical test passed in the isolated **UE 5.8.3** Mac editor diagnostic on
   2026-09-23 after the engine run exposed a case-insensitive checksum comparison
-  and the parser was fixed to require exact uppercase CRC text. It has not run
-  in the pinned 5.8.2 release build or against a live wallet.
+  and the parser was fixed to require exact uppercase CRC text. That record does
+  not qualify this ABI 30 consumer, a packaged release, or a live wallet.
 - `scripts/connect/verify-qr.py` checks the vendored encoder's source hashes,
   compiles it as C99 with warnings treated as errors, encodes synthetic local
   launch links, and uses the independent macOS Vision QR decoder to compare the
@@ -400,8 +412,7 @@ status observation never by itself unlocks a bond or weapon entitlement.
   Unsupported unsolicited controls fail closed. Reconnection/resumption,
   offline signing queues, multiple simultaneous wallets, non-Ed25519 signing,
   and account proof extensions are outside this initial integration.
-- As of this implementation, the UE 5.8.3 Mac editor target compiles, but the
-  pinned 5.8.2 release build, live Torii/wallet pairing,
+- ABI 30 Unreal runtime loading, packaged release behavior, live Torii/wallet pairing,
   wallet transaction approval, test-chain submission/finality, and multi-node
   independent finality are **not yet verified**. Their absence must remain
   visible in product and build claims.

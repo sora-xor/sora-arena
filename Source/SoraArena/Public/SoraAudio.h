@@ -128,8 +128,14 @@ public:
 
     // Runs Family's rules on an event's fields as the pollers do, for a
     // sound at Location (from Source when it is set). The families without a
-    // broadcast (Hero, Footstep, Horse) come through here.
+    // broadcast (Hero, Footstep, Horse, Workshop) come through here.
     void Hear(FName Family, const SoraAudioData::FFacts& Facts, AActor* Source, const FVector& Location);
+
+    // A stationary ambience loop at an authored world position. Owner scopes
+    // its lifetime; Name selects audio.json's emitter. Repeating the same
+    // request never stacks voices. Only spatial Ambience loops are accepted.
+    bool StartAmbientEmitter(AActor* Owner, FName Name, const FVector& Location);
+    void StopAmbientEmitters(const AActor* Owner);
 
     // What played, oldest first (the last 512).
     const TArray<FSoraAudioPlay>& Plays() const { return Played; }
@@ -310,6 +316,7 @@ private:
     void TickFootsteps(float DeltaTime);
     void TickHorses(float DeltaTime);
     void TickAttached(double Now);
+    void TickAmbientEmitters();
     void TickDoppler(float DeltaTime);
     FName SurfaceUnder(const AActor& Walker, const FVector& Feet) const;
 
@@ -333,6 +340,7 @@ private:
     TArray<FPending> Pending;
     int32 PendingSerial = 0;
     TMap<FString, FLoop> Loops;
+    TMap<FString, TWeakObjectPtr<AActor>> AmbientOwners;
     TMap<FString, FSustainState> Sustains;
     TMap<FName, TArray<int32>> Decks;
     TMap<FName, int32> LastPick;

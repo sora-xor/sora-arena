@@ -1,12 +1,16 @@
 #include "SoraEnemyController.h"
+#include "SoraFoundryFurnace.h"
 #include "Combat/SoraEnemyCatalog.h"
 #include "Combat/SoraStealth.h"
 #include "SoraBoss.h"
+#include "SoraCampaignDirector.h"
+#include "SoraGameMode.h"
 #include "SoraCatalog.h"
 #include "SoraCompanion.h"
 #include "SoraEnemy.h"
 #include "SoraFieldcraft.h"
 #include "SoraFieldcraftRules.h"
+#include "SoraPressRules.h"
 #include "SoraGameEvents.h"
 #include "SoraHistoricalArms.h"
 #include "SoraPlayerCharacter.h"
@@ -28,7 +32,7 @@ constexpr float BodySamples[] = {.75f, .2f, -.4f};
 // Movement input scales: a patrol walk, a careful approach, a hunter's pace,
 // combat repositioning (the first invaders' pace) and a retreat.
 constexpr float PatrolSpeed = .35f;
-constexpr float InvestigateSpeed = .42f;
+constexpr float InvestigateSpeed = Stealth::InvestigatePacePermille / 1000.f;
 constexpr float HuntSpeed = .6f;
 constexpr float CombatSpeed = .55f;
 constexpr float RetreatSpeed = .75f;
@@ -83,11 +87,13 @@ int32 ASoraEnemyController::WorldMs() const
 void ASoraEnemyController::OnPossess(APawn* InPawn)
 {
     Super::OnPossess(InPawn);
+    ThinkClock.Reset();
     Listen(true);
 }
 
 void ASoraEnemyController::OnUnPossess()
 {
+    ThinkClock.Reset();
     Listen(false);
     Super::OnUnPossess();
 }
@@ -130,12 +136,12 @@ void ASoraEnemyController::OnWeaponFired(const FSoraWeaponFiredEvent& Event)
     // A bowstring is no louder than a blade. The hero's shot gives him away;
     // an ally's shot shows where it was aimed.
     const Stealth::ENoise Kind = Event.Kind == ESoraShotKind::Arrow ? Stealth::ENoise::Melee : Stealth::ENoise::Shot;
-    Heard.Add({Kind, Event.Origin, Shooter->IsEnemy() ? Event.End : Event.Origin, Shooter});
+    HearNoise(Kind, Event.Origin, Shooter->IsEnemy() ? Event.End : Event.Origin, Shooter);
 }
 
 void ASoraEnemyController::OnDetonated(const FSoraDetonatedEvent& Event)
 {
-    Heard.Add({Stealth::ENoise::Explosion, Event.Location, Event.Location, nullptr});
+    HearNoise(Stealth::ENoise::Explosion, Event.Location, Event.Location, Event.Instigator);
 }
 
 void ASoraEnemyController::OnMeleeCommitted(const FSoraMeleeCommittedEvent& Event)
@@ -144,7 +150,7 @@ void ASoraEnemyController::OnMeleeCommitted(const FSoraMeleeCommittedEvent& Even
     const auto* Attacker = Cast<ASoraCharacterBase>(Event.Attacker);
     if (!Attacker || Attacker->IsEnemy())
         return;
-    Heard.Add({Stealth::ENoise::Melee, Attacker->GetActorLocation(), Attacker->GetActorLocation(), Attacker});
+    HearNoise(Stealth::ENoise::Melee, Attacker->GetActorLocation(), Attacker->GetActorLocation(), Attacker);
 }
 
 void ASoraEnemyController::HearCallout(const FVector& Caller, const FVector& Where, bool bAlarm)
@@ -164,6 +170,10 @@ void ASoraEnemyController::Rouse(const FVector& Where)
 void ASoraEnemyController::HearNoise(Stealth::ENoise Kind, const FVector& Origin, const FVector& Evidence, const AActor* Source,
     int32 LoudnessPermille)
 {
+    // Queue the emitted loudness, never the later listener's stamp phase.
+    if(Cast<ASoraPlayerCharacter>(Source)||(Source&&Cast<ASoraPlayerCharacter>(Source->GetInstigator())))
+        if(const auto* Craft=USoraFieldcraft::Get(this))
+            LoudnessPermille=SoraPressRules::Scale(LoudnessPermille,Craft->PressNoisePermille(Origin));
     Heard.Add({Kind, Origin, Evidence, Source, false, LoudnessPermille});
 }
 
@@ -204,6 +214,28 @@ void ASoraEnemyController::EnterZone(bool bCarriedOver)
         Enter(*Enemy, Previous, WorldMs());
 }
 
+void ASoraEnemyController::NoticeTampering(const FVector& Where)
+{
+    auto* Enemy=GetPawn<ASoraEnemy>();
+    if(!Enemy||!Enemy->IsAlive()||bHunting||
+        (Mind.State!=Stealth::EState::Unaware&&Mind.State!=Stealth::EState::Suspicious)) return;
+    const auto Previous=Mind.State;
+    Mind=Stealth::Disturbed(Mind,Vigilance()); LastKnown=Where; ClearErrand();
+    Enter(*Enemy,Previous,WorldMs());
+}
+
+void ASoraEnemyController::SensorEvidence(const FVector& Where,int32 SuspicionPermille)
+{
+    auto* Enemy=GetPawn<ASoraEnemy>();
+    if(!Enemy||!Enemy->IsAlive()||bHunting||SuspicionPermille<=0) return;
+    const auto Previous=Mind.State;
+    Stealth::FSenses Senses{};
+    Senses.NoiseImpulse=FMath::Clamp(SuspicionPermille,0,1000);
+    Mind=Stealth::Step(Mind,Senses,0,Vigilance());
+    LastKnown=Where;ClearErrand();
+    if(Mind.State!=Previous) Enter(*Enemy,Previous,WorldMs());
+}
+
 Stealth::FVigilance ASoraEnemyController::Vigilance() const
 {
     // A hunting wave never obeys a zone.
@@ -218,6 +250,8 @@ int32 ASoraEnemyController::MeterPermille() const
 
 void ASoraEnemyController::Prepare(bool bHunt)
 {
+    ThinkClock.Reset();
+    PatrolClock.Reset(); PatrolLoop={};
     const ASoraEnemy* Enemy = GetPawn<ASoraEnemy>();
     bHunting = bHunt;
     Mind = bHunt ? Stealth::Hunting() : Stealth::Calm();
@@ -233,6 +267,7 @@ void ASoraEnemyController::Prepare(bool bHunt)
     RouteIndex = 0;
     RouteStep = 1;
     bPaused = false;
+    PointPauseRemainingMs = 0;
     SearchPoints.Reset();
     Heard.Reset();
     bGoalDone = false;
@@ -281,10 +316,24 @@ void ASoraEnemyController::Tick(float Dt)
     // whose pawn is held still with its tick off does nothing, and noises made
     // meanwhile are forgotten.
     auto* Target = Cast<ASoraCharacterBase>(UGameplayStatics::GetPlayerPawn(this, 0));
-    if (!Enemy->IsActorTickEnabled() || !Enemy->CanPlay() || Enemy->IsFreed() || Enemy->IsSeized() || !Target || !Target->IsAlive())
+    if (!Enemy->IsActorTickEnabled() || !Enemy->CanPlay() || Enemy->IsSeized() || !Target || !Target->IsAlive())
     {
         Heard.Reset();
         bSeesHero = false;
+        return;
+    }
+    if(Enemy->IsFreed())
+    {
+        Heard.Reset();bSeesHero=false;
+        FVector Goal;
+        if(auto* Craft=USoraFieldcraft::Get(this);Craft&&Craft->WardKidobanDeparture(*Enemy,Goal))
+        {
+            // The gatekeeper walks clear of the narrow wicket after opening
+            // it, retaining normal body collision and ordinary movement.
+            if(auto* Nav=USoraNavigation::Get(this))Nav->Settle();
+            if(WalkTo(*Enemy,Goal,SoraEnemyBrain::PatrolSpeed,20.f,WorldMs())==EMove::Moving)
+                Face(*Enemy,Goal-Enemy->GetActorLocation(),Dt,5.f);
+        }
         return;
     }
     if (auto* Boss = Cast<ASoraBoss>(Enemy))
@@ -297,6 +346,7 @@ void ASoraEnemyController::Tick(float Dt)
         DrivePupil(*Enemy, *Target, Dt);
         return;
     }
+    if (DriveWorkshopDefense(*Enemy,*Target,Dt)||DriveTenementDefense(*Enemy,*Target,Dt)||DriveLift(*Enemy,*Target,Dt)||DriveSpireFlight(*Enemy,*Target,Dt)) return;
     if (Enemy->Archetype())
         Think(*Enemy, *Target, Dt);
 }
@@ -307,9 +357,9 @@ void ASoraEnemyController::Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, 
     if (USoraNavigation* Nav = USoraNavigation::Get(this))
         Nav->Settle();
     const int32 NowMs = WorldMs();
-    const int32 DtMs = FMath::Max(1, FMath::RoundToInt32(Dt * 1000.f));
+    const int32 DtMs = ThinkClock.Advance(Dt);
     const FVector Here = Enemy.GetActorLocation();
-    const FVector Ear = Here + FVector(0.f, 0.f, SoraEnemyBrain::EyeHeight * Enemy.GetActorScale3D().Z);
+    const FVector Ear = Enemy.SenseOrigin();
     const FVector There = Target.GetActorLocation();
     const Stealth::FPerception& Perception = Enemy.Perception();
     USoraStealth* Zone = bHunting ? nullptr : USoraStealth::Get(this);
@@ -326,16 +376,29 @@ void ASoraEnemyController::Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, 
     // The hero's footsteps are heard for as long as they last: softer when he
     // crouch-walks, louder or silent on the zone's floors.
     const UCharacterMovementComponent* Walk = Target.GetCharacterMovement();
-    if (Target.GetVelocity().Size2D() > 150.f && Walk && Walk->IsMovingOnGround())
+    const auto* WaterCraft=USoraFieldcraft::Get(&Target);
+    const FVector StepFeet=There-FVector(0.f,0.f,Target.GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+    const bool bMoatStroke=WaterCraft&&WaterCraft->MoatFootstepPermille(StepFeet)>=0;
+    const bool bFloodStroke=WaterCraft&&(WaterCraft->FloodFootstepPermille(StepFeet)>=0||bMoatStroke);
+    if (Target.GetVelocity().Size2D() > 150.f && Walk && (Walk->IsMovingOnGround()||bFloodStroke))
     {
         const auto* Hero = Cast<ASoraPlayerCharacter>(&Target);
         const Stealth::ENoise Steps = Stealth::Steps(Hero && Hero->IsSprinting(),
-            Target.IsCrouched() ? Stealth::EStance::Crouched : Stealth::EStance::Standing);
+            Target.IsCrouched()&&!bMoatStroke ? Stealth::EStance::Crouched : Stealth::EStance::Standing);
         const FVector Feet = There - FVector(0.f, 0.f, Target.GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
         const int32 Loudness = Zone && Zone->IsZoneActive() ? Stealth::StepLoudnessPermille(Steps, Zone->SurfaceAt(Feet)) : 1000;
         const int32 Distance = FMath::RoundToInt32(FVector::Dist(There, Ear));
         if (Distance <= Stealth::HeardRadiusCm(Steps, Perception, Loudness))
-            Senses.NoisePerSecond = Stealth::HeardPermille(Steps, Distance, Occluded(There, Ear, &Target), Perception, Loudness);
+        {
+            const bool Blocked=Occluded(There,Ear,&Target);
+            const int32 Open=Stealth::HeardPermille(Steps,Distance,Blocked,Perception,Loudness);
+            const int32 MaskedMs=Hero&&WaterCraft?WaterCraft->PressMaskedMs(Feet,DtMs):0;
+            const int32 Quiet=Stealth::HeardPermille(Steps,Distance,Blocked,Perception,
+                SoraPressRules::Scale(Loudness,SoraPressRules::NoisePermille));
+            // Integrate the two audible states, not an average radius: a
+            // short stamp cannot extend quiet footsteps to a farther guard.
+            Senses.NoisePerSecond=DtMs>0?int32((int64(Open)*(DtMs-MaskedMs)+int64(Quiet)*MaskedMs)/DtMs):Open;
+        }
         bEvidence |= Senses.NoisePerSecond > 0;
     }
     // The loudest single noise since the last tick.
@@ -395,9 +458,27 @@ void ASoraEnemyController::Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, 
     // A staggered opponent still notices, but neither moves nor strikes.
     if (Enemy.IsStaggered())
         return;
+    // Perception still updates, but this committed attack owns its swept
+    // descent, low recovery and return to the original flight plane.
+    if (Enemy.OwnsLandingDroneMotion())
+        return;
+    if(auto* Craft=USoraFieldcraft::Get(this);Craft&&Craft->DriveClimbSentry(Enemy,Dt)) return;
+    if(auto* Craft=USoraFieldcraft::Get(this);Craft&&Craft->DriveMoatGuard(Enemy,Dt,bGoalDone)) return;
     // A scripted errand takes it where the beat sends it instead.
     if (RunErrand(Enemy, Dt, NowMs))
         return;
+    if (DriveSpireAlarm(Enemy,Dt,NowMs))
+        return;
+    // Only this authored defense gives grenadiers a structural quarry.
+    // Normal perception/telegraph/range/cover/projectile code remains in Fight.
+    if(Enemy.ArchetypeId()==TEXT("grenadier"))
+        if(const auto* M=Cast<ASoraGameMode>(GetWorld()->GetAuthGameMode()); M&&M->Campaign())
+            if(auto* Furnace=M->Campaign()->FoundryFurnace(); Furnace&&Furnace->IsAlive())
+            {
+                Fight(Enemy,*Furnace,CanSee(*Furnace),Dt,NowMs);
+                return;
+            }
+    if(DriveHorseShell(Enemy,Dt,NowMs)) return;
     // In a fight it may turn on someone beside the hero: the nearest companion
     // it can see that stands clearly nearer than he does.
     if (Mind.State == Stealth::EState::Combat)
@@ -423,11 +504,15 @@ void ASoraEnemyController::Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, 
     Act(Enemy, Target, bSees, Dt, NowMs);
 }
 
-void ASoraEnemyController::SetErrand(const FVector& Goal, const FVector& Facing, float Pace, int32 DurationMs, bool bWhileCalm)
+void ASoraEnemyController::SetErrand(const FVector& Goal, const FVector& Facing, float Pace, int32 DurationMs, bool bWhileCalm,
+    bool bThreeDimensional,float AcceptanceCm,bool bSupportedSteps)
 {
     bErrand = true;
     bErrandWhileCalm = bWhileCalm;
     bErrandReached = false;
+    bErrand3D = bThreeDimensional;
+    bErrandSupportedSteps = bSupportedSteps;
+    ErrandAcceptanceCm = FMath::Max(1.f,AcceptanceCm);
     ErrandGoal = Goal;
     ErrandFacing = Facing.IsNearlyZero() ? FVector::ForwardVector : Facing.GetSafeNormal2D();
     ErrandPace = FMath::Clamp(Pace, .1f, 1.f);
@@ -444,8 +529,14 @@ bool ASoraEnemyController::RunErrand(ASoraEnemy& Enemy, float Dt, int32 NowMs)
         bErrand = false;
         return false;
     }
-    bErrandReached = WalkTo(Enemy, ErrandGoal, ErrandPace, ErrandReachCm, NowMs) != EMove::Moving;
-    Face(Enemy, bErrandReached ? ErrandFacing : Heading, Dt, 5.f);
+    const EMove Move=bErrandSupportedSteps
+        ?WalkSupportedSegment(Enemy,ErrandGoal,ErrandPace,ErrandAcceptanceCm,true)
+        :WalkTo(Enemy,ErrandGoal,ErrandPace,ErrandAcceptanceCm,NowMs);
+    bErrandReached=bErrand3D?Move==EMove::Arrived:Move!=EMove::Moving;
+    // Once a flying worker is over its station, keep its tool aimed there
+    // while following the station's changing Z. Vertical travel has no yaw.
+    const bool bAtStation=bErrand3D&&FVector::Dist2D(Enemy.GetActorLocation(),ErrandGoal)<=ErrandAcceptanceCm;
+    Face(Enemy, bErrandReached||bAtStation ? ErrandFacing : Heading, Dt, 5.f);
     if (bErrandReached && bErrandWhileCalm)
         LookAround(Enemy, ErrandFacing.Rotation().Yaw, 40.f, Dt, NowMs);
     return true;
@@ -514,11 +605,24 @@ void ASoraEnemyController::CallOut(const ASoraEnemy& Enemy) const
     const USoraStealth* Zone = bHunting ? nullptr : USoraStealth::Get(this);
     const bool bLecterns = Zone && Zone->IsZoneActive() && !Zone->AlarmPoints().IsEmpty();
     const int32 Alarm = Enemy.Archetype() && !bLecterns ? Enemy.Archetype()->AlarmRadiusCm : 0;
+    const auto* Mode=Cast<ASoraGameMode>(GetWorld()->GetAuthGameMode());
+    const bool bRelayDrone = Enemy.ArchetypeId() == TEXT("drone") && Mode && Mode->bCampaign &&
+        Mode->Campaign() && Mode->Campaign()->ChapterId == 5;
+    const bool bLocalDrone = bRelayDrone && Mode->Campaign()->RelayOffline();
     for (TActorIterator<ASoraEnemyController> It(GetWorld()); It; ++It)
     {
         const APawn* Ally = It->GetPawn();
         if (*It == this || !Ally)
             continue;
+        if (bRelayDrone)
+        {
+            // The chapter relay carries a radio mark, independent of hearing
+            // and walls. Once disabled, only allies within twenty metres can
+            // receive the drone's last observation directly.
+            if (!bLocalDrone || FVector::DistSquared(Ally->GetActorLocation(), Enemy.GetActorLocation()) <= FMath::Square(2000.f))
+                It->HearCallout(Enemy.GetActorLocation(), LastKnown, true);
+            continue;
+        }
         const int32 Distance = FMath::RoundToInt32(FVector::Dist(Ally->GetActorLocation(), Enemy.GetActorLocation()));
         if (Distance > FMath::Max(Alarm, Stealth::NoiseRadiusCm(Stealth::ENoise::Callout)))
             continue;
@@ -568,12 +672,14 @@ void ASoraEnemyController::Act(ASoraEnemy& Enemy, ASoraCharacterBase& Target, bo
 
 void ASoraEnemyController::Patrol(ASoraEnemy& Enemy, float Dt, int32 NowMs)
 {
+    if(SoraPatrolRules::Valid(Route.Points.Num(),Route.PeriodMs,Route.PauseMs))
+    { ScheduledPatrol(Enemy,Dt,NowMs); return; }
     if (Route.Points.Num() <= 1)
     {
         // A guard post: return to it, then watch its arc: the sweep the
         // chapter authors for it, turning about as often as it says, or the
         // brain's own look about.
-        if (WalkTo(Enemy, Post, SoraEnemyBrain::PatrolSpeed, 60.f, NowMs) == EMove::Moving)
+        if (WalkTo(Enemy, Post, SoraEnemyBrain::PatrolSpeed, 60.f, NowMs,Route.bThreeDimensional) == EMove::Moving)
             Face(Enemy, Heading, Dt, 5.f);
         else if (Enemy.PostTurnMs() > 0)
             Face(Enemy, FRotator(0.f, PostYaw + (NowMs / Enemy.PostTurnMs() % 2) * 180.f, 0.f).Vector(), Dt, 3.f);
@@ -585,8 +691,11 @@ void ASoraEnemyController::Patrol(ASoraEnemy& Enemy, float Dt, int32 NowMs)
     }
     if (bPaused)
     {
-        LookAround(Enemy, PauseYaw, 35.f, Dt, NowMs);
-        if (NowMs < PauseUntilMs)
+        const bool AuthoredDwell=Route.PointPauseMs.IsValidIndex(RouteIndex);
+        if(AuthoredDwell&&!Route.PauseFacing.IsNearlyZero()) Face(Enemy,Route.PauseFacing,Dt,5.f);
+        else LookAround(Enemy, PauseYaw, 35.f, Dt, NowMs);
+        if(AuthoredDwell) PointPauseRemainingMs=FMath::Max(0.0,PointPauseRemainingMs-double(Dt)*1000.0);
+        if (AuthoredDwell?PointPauseRemainingMs>0:NowMs<PauseUntilMs)
             return;
         bPaused = false;
         if (Route.bPingPong)
@@ -598,14 +707,116 @@ void ASoraEnemyController::Patrol(ASoraEnemy& Enemy, float Dt, int32 NowMs)
         else
             RouteIndex = (RouteIndex + 1) % Route.Points.Num();
     }
-    if (WalkTo(Enemy, Route.Points[RouteIndex], SoraEnemyBrain::PatrolSpeed, 70.f, NowMs) != EMove::Moving)
+    const EMove Move=Route.bSupportedSegments
+        ?WalkSupportedSegment(Enemy,Route.Points[RouteIndex],SoraEnemyBrain::PatrolSpeed,20.f,Route.bSupportedSteps)
+        :WalkTo(Enemy,Route.Points[RouteIndex],SoraEnemyBrain::PatrolSpeed,70.f,NowMs,Route.bThreeDimensional);
+    if(Move==EMove::Blocked&&(Route.bSupportedSegments||!Route.PointPauseMs.IsEmpty())) return;
+    if (Move != EMove::Moving)
     {
         bPaused = true;
         PauseUntilMs = NowMs + Route.PauseMs;
+        PointPauseRemainingMs=Route.PointPauseMs.IsValidIndex(RouteIndex)?FMath::Max(0,Route.PointPauseMs[RouteIndex]):0;
         PauseYaw = Enemy.GetActorRotation().Yaw;
         return;
     }
     Face(Enemy, Heading, Dt, 5.f);
+}
+
+ASoraEnemyController::EMove ASoraEnemyController::WalkSupportedSegment(ASoraEnemy& Enemy,const FVector& Goal,float Speed,float Acceptance,bool bSteps)
+{
+    auto* Move=Enemy.GetCharacterMovement();
+    const FVector Here=Enemy.GetActorLocation();
+    const auto* Capsule=Enemy.GetCapsuleComponent();
+    const float Half=Capsule->GetScaledCapsuleHalfHeight();
+    const auto Stop=[&](EMove Result) { Move->StopMovementImmediately();return Result; };
+    // A short descent can become airborne. Let gravity finish it; resetting
+    // velocity here would repeatedly cancel the fall instead of landing.
+    if(!Move->IsMovingOnGround()) return bSteps?EMove::Moving:Stop(EMove::Blocked);
+    if(!bSteps&&FMath::Abs(Here.Z-Goal.Z)>15.f) return Stop(EMove::Blocked);
+    // A 70 cm arrival radius cuts the inside of a 120 cm corner. Twenty
+    // centimetres keeps the ordinary 34 cm capsule inside either strip.
+    // A capsule straddling a riser can sit above the tread beneath its
+    // centre. Accept at most one ordinary step vertically, while keeping
+    // the tight horizontal corner tolerance and requiring grounded feet.
+    if(FVector::Dist2D(Here,Goal)<=Acceptance&&(!bSteps||FMath::Abs(Here.Z-Goal.Z)<=Move->MaxStepHeight+2.f))
+        return Stop(EMove::Arrived);
+    const FVector Direction=(Goal-Here).GetSafeNormal2D();
+    const FVector Next=Here+Direction*FMath::Min(bSteps?12.f:60.f,float(FVector::Dist2D(Here,Goal)));
+    FCollisionQueryParams Query(SCENE_QUERY_STAT(SupportedPatrol),false,&Enemy);
+    FHitResult Hit;
+    // Flat segments can preflight a level capsule sweep. On stairs the real
+    // CharacterMovement sweep and StepUp must resolve each riser; a level
+    // preflight would reject every step before the capsule could climb it.
+    if(!bSteps&&GetWorld()->SweepSingleByChannel(Hit,Here,Next,FQuat::Identity,ECC_Pawn,
+        FCollisionShape::MakeCapsule(Capsule->GetScaledCapsuleRadius(),Half),Query)) return Stop(EMove::Blocked);
+    const FVector Foot=Next-FVector(0,0,Half);
+    const float StepLimit=bSteps?Move->MaxStepHeight+2.f:30.f;
+    if(!GetWorld()->LineTraceSingleByChannel(Hit,Foot+FVector(0,0,StepLimit),Foot-FVector(0,0,StepLimit),ECC_Visibility,Query)||
+        Hit.ImpactNormal.Z<Move->GetWalkableFloorZ()||
+        (bSteps?FMath::Abs(Hit.ImpactPoint.Z-Foot.Z)>StepLimit:FMath::Abs(Hit.ImpactPoint.Z-(Goal.Z-Half-2.f))>5.f))
+    {
+        if(!bSteps) return Stop(EMove::Blocked);
+        // At the foot of a stair the rounded capsule can still rest on a
+        // tread behind its centre. A point ray ahead then sees only the
+        // lower floor beyond step height, even though the actual capsule
+        // has walkable support. Use CharacterMovement's bounded capsule
+        // floor query before rejecting that descent; never invent support.
+        FFindFloorResult Floor;
+        Move->ComputeFloorDist(Next,StepLimit,StepLimit,Floor,Capsule->GetScaledCapsuleRadius());
+        if(!Floor.IsWalkableFloor()) return Stop(EMove::Blocked);
+    }
+    Heading=Direction;
+    Enemy.AddMovementInput(Direction,Speed);
+    return EMove::Moving;
+}
+
+void ASoraEnemyController::ScheduledPatrol(ASoraEnemy& Enemy,float Dt,int32 NowMs)
+{
+    const int32 Count=Route.Points.Num();
+    const FVector Goal=Route.Points[SoraPatrolRules::Target(PatrolLoop,Count)];
+    const FVector Here=Enemy.GetActorLocation();
+    float Distance=FVector::Dist(Here,Goal);
+    // Follow the remaining navigation path, not a straight-line estimate
+    // through machinery. A newly selected goal gets its path in WalkTo.
+    if(!Enemy.IsFlying()&&!Route.bSupportedSegments&&bPathValid&&PathGoal.Equals(Goal,1.f)&&Path.IsValidIndex(PathIndex))
+    {
+        Distance=FVector::Dist(Here,Path[PathIndex]);
+        for(int I=PathIndex+1;I<Path.Num();++I) Distance+=FVector::Dist(Path[I-1],Path[I]);
+    }
+    const long long Until=SoraPatrolRules::Deadline(PatrolLoop,Count,Route.PeriodMs)-PatrolLoop.ElapsedMs-Route.PauseMs;
+    const float Seconds=FMath::Max(.1f,float(Until)/1000.f);
+    const float FullSpeed=FMath::Max(1.f,float(Enemy.Archetype()->SpeedCmPerSecond));
+    const float Pace=FMath::Clamp(Distance/(Seconds*FullSpeed),.1f,1.f);
+    EMove Move;
+    if(Route.bDirectFlightSegments&&Enemy.IsFlying())
+    {
+        // The authored corridor already avoids the room's structure. Native
+        // character movement still sweeps the body, so an added obstruction
+        // holds the patrol here instead of advancing a visit on the clock.
+        if(Distance<=20.f)
+        { Enemy.GetCharacterMovement()->StopMovementImmediately();Move=EMove::Arrived; }
+        else
+        { Heading=(Goal-Here).GetSafeNormal();Enemy.AddMovementInput(Heading,Pace);Move=EMove::Moving; }
+    }
+    else if(Route.bSupportedSegments)
+        Move=WalkSupportedSegment(Enemy,Goal,Pace,20.f,Route.bSupportedSteps);
+    else Move=WalkTo(Enemy,Goal,Pace,70.f,NowMs,Route.bThreeDimensional);
+    if(Move==EMove::Arrived&&!PatrolLoop.Arrived)
+        PauseYaw=Route.PauseFacing.IsNearlyZero()?Enemy.GetActorRotation().Yaw:Route.PauseFacing.Rotation().Yaw;
+    // Actual arrival is required at the scheduled release. Blocked does not
+    // advance; the late flag survives even if the obstruction clears later.
+    const int32 PreviousCycles=PatrolLoop.Cycles;
+    SoraPatrolRules::Step(PatrolLoop,Count,Route.PeriodMs,PatrolClock.Advance(Dt),Move==EMove::Arrived);
+    if(PatrolLoop.Cycles!=PreviousCycles&&!Route.AlternatePoints.IsEmpty()&&
+        SoraPatrolRules::Valid(Route.AlternatePoints.Num(),Route.PeriodMs,Route.PauseMs)&&
+        Route.Points[0].Equals(Route.AlternatePoints[0],1.f))
+    {
+        Swap(Route.Points,Route.AlternatePoints);
+        PatrolLoop.Visited=1u;
+        ClearPath();
+    }
+    if(Move==EMove::Arrived) LookAround(Enemy,PauseYaw,20.f,Dt,NowMs);
+    else Face(Enemy,Heading,Dt,5.f);
 }
 
 void ASoraEnemyController::Search(ASoraEnemy& Enemy, float Dt, int32 NowMs)
@@ -631,6 +842,37 @@ void ASoraEnemyController::Search(ASoraEnemy& Enemy, float Dt, int32 NowMs)
         return;
     }
     Face(Enemy, Heading, Dt, 5.f);
+}
+
+bool ASoraEnemyController::DriveHorseShell(ASoraEnemy& Enemy,float Dt,int32 NowMs)
+{
+    if(!Enemy.HasHorseShellAssignment()) return false;
+    const auto* M=Cast<ASoraGameMode>(GetWorld()->GetAuthGameMode());
+    FVector Landing;
+    auto* Target=M&&M->Campaign()?M->Campaign()->HorseShellQuarry(Enemy,Landing):nullptr;
+    if(!Target||Enemy.IsWindingUp()||Enemy.IsTurnLocked())
+    { ClearPath(); Enemy.GetCharacterMovement()->StopMovementImmediately(); return true; }
+    const FVector Here=Enemy.GetActorLocation();
+    auto* Hero=M->Hero();
+    // The existing companion-quarry thresholds also make this shell baitable.
+    if(Hero&&Hero->IsAlive()&&CanSee(*Hero)&&FVector::Dist2D(Here,Hero->GetActorLocation())<
+       FMath::Min(SoraEnemyBrain::QuarryCm,FVector::Dist2D(Here,Landing)*SoraEnemyBrain::QuarryShare))
+    {
+        Target=Hero;
+        Landing=Hero->GetActorLocation()-FVector(0,0,Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+    }
+    const FVector Delta=(Landing-Here)*FVector(1,1,0);
+    const float Distance=Delta.Size();
+    Face(Enemy,Delta,Dt,4.f);
+    const float Standoff=Enemy.Archetype()->KeepDistanceCm;
+    const bool Clear=!Occluded(Here+FVector(0,0,SoraEnemyBrain::EyeHeight-30),Target->GetActorLocation(),Target);
+    if(Distance>=Standoff&&Clear&&Enemy.TryHorseShell(*Target,Landing))
+    { ClearPath(); Enemy.GetCharacterMovement()->StopMovementImmediately(); return true; }
+    if(Distance<Standoff||Distance>SoraHorseShellRules::MaxRangeCm||!Clear)
+        WalkTo(Enemy,Landing-Delta.GetSafeNormal()*Standoff,SoraEnemyBrain::CombatSpeed,60.f,NowMs);
+    else
+    { ClearPath(); Enemy.GetCharacterMovement()->StopMovementImmediately(); }
+    return true;
 }
 
 void ASoraEnemyController::Fight(ASoraEnemy& Enemy, ASoraCharacterBase& Target, bool bSees, float Dt, int32 NowMs)
@@ -923,10 +1165,12 @@ bool ASoraEnemyController::Claimed(const FVector& Spot) const
     return false;
 }
 
-ASoraEnemyController::EMove ASoraEnemyController::WalkTo(ASoraEnemy& Enemy, const FVector& Goal, float Speed, float Acceptance, int32 NowMs)
+ASoraEnemyController::EMove ASoraEnemyController::WalkTo(ASoraEnemy& Enemy, const FVector& Goal, float Speed, float Acceptance, int32 NowMs,bool bStrict3D)
 {
     const FVector Here = Enemy.GetActorLocation();
-    if (FVector::Dist2D(Here, Goal) <= Acceptance)
+    const bool bVolume=bStrict3D||(bErrand&&bErrand3D);
+    if ((bVolume?FVector::Dist(Here,Goal):FVector::Dist2D(Here,Goal)) <= Acceptance &&
+        (Enemy.IsFlying()||FMath::Abs(Here.Z-Goal.Z)<180.f))
     {
         ClearPath();
         return EMove::Arrived;
@@ -935,8 +1179,8 @@ ASoraEnemyController::EMove ASoraEnemyController::WalkTo(ASoraEnemy& Enemy, cons
     if (Enemy.Archetype() && Enemy.Archetype()->bStatic)
         return EMove::Blocked;
     if (Enemy.IsFlying())
-        return FlyTo(Enemy, Goal, Speed, Acceptance, NowMs);
-    if (!bPathValid || FVector::Dist2D(Goal, PathGoal) > 100.f || NowMs >= RepathAtMs)
+        return FlyTo(Enemy, Goal, Speed, Acceptance, NowMs,bVolume);
+    if (!bPathValid || FVector::Dist2D(Goal, PathGoal) > 100.f || FMath::Abs(Goal.Z-PathGoal.Z)>100.f || NowMs >= RepathAtMs)
     {
         const USoraNavigation* Nav = USoraNavigation::Get(this);
         PathGoal = Goal;
@@ -947,7 +1191,7 @@ ASoraEnemyController::EMove ASoraEnemyController::WalkTo(ASoraEnemy& Enemy, cons
     FVector Next = Goal;
     if (bPathValid)
     {
-        while (PathIndex < Path.Num() - 1 && FVector::Dist2D(Here, Path[PathIndex]) <= 40.f)
+        while (PathIndex < Path.Num() - 1 && FVector::Dist2D(Here, Path[PathIndex]) <= 40.f && FMath::Abs(Here.Z-Path[PathIndex].Z)<180.f)
             ++PathIndex;
         Next = Path[PathIndex];
         // A partial path stops short of the goal: it cannot be reached from here.
@@ -969,7 +1213,7 @@ ASoraEnemyController::EMove ASoraEnemyController::WalkTo(ASoraEnemy& Enemy, cons
             Direction = FVector(-Direction.Y, Direction.X, 0.f) * (Slot % 2 ? 1.f : -1.f);
     }
     // No progress for two seconds of moving means the goal cannot be reached.
-    if (Stuck(Here, NowMs))
+    if (Stuck(Here, NowMs,bVolume))
     {
         ClearPath();
         return EMove::Blocked;
@@ -979,12 +1223,12 @@ ASoraEnemyController::EMove ASoraEnemyController::WalkTo(ASoraEnemy& Enemy, cons
     return EMove::Moving;
 }
 
-ASoraEnemyController::EMove ASoraEnemyController::FlyTo(ASoraEnemy& Enemy, const FVector& Goal, float Speed, float Acceptance, int32 NowMs)
+ASoraEnemyController::EMove ASoraEnemyController::FlyTo(ASoraEnemy& Enemy, const FVector& Goal, float Speed, float Acceptance, int32 NowMs,bool bVolume)
 {
     // Straight at the goal at its hover height over the ground below, stepping
     // aside from what is ahead; no path is needed in the air.
     const FVector Here = Enemy.GetActorLocation();
-    FVector Direction = (Goal - Here).GetSafeNormal2D();
+    FVector Direction = bVolume?(Goal-Here).GetSafeNormal():(Goal - Here).GetSafeNormal2D();
     FCollisionQueryParams Query(SCENE_QUERY_STAT(BotNavigation), false, &Enemy);
     FCollisionObjectQueryParams Solid;
     Solid.AddObjectTypesToQuery(ECC_WorldStatic);
@@ -994,22 +1238,22 @@ ASoraEnemyController::EMove ASoraEnemyController::FlyTo(ASoraEnemy& Enemy, const
         Direction = FVector(-Direction.Y, Direction.X, 0.f) * (Slot % 2 ? 1.f : -1.f);
     FHitResult Ground;
     float Climb = 0.f;
-    if (GetWorld()->LineTraceSingleByObjectType(Ground, Here, Here - FVector(0.f, 0.f, 5000.f), Solid, Query))
+    if (!bVolume&&GetWorld()->LineTraceSingleByObjectType(Ground, Here, Here - FVector(0.f, 0.f, 5000.f), Solid, Query))
     {
         const float Height = Enemy.Archetype()->HoverCm + Enemy.GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
         Climb = FMath::Clamp((Ground.ImpactPoint.Z + Height - Here.Z) / 100.f, -1.f, 1.f);
     }
     // No progress for two seconds of flying means the goal cannot be reached.
-    if (Stuck(Here, NowMs))
+    if (Stuck(Here, NowMs,bVolume))
         return EMove::Blocked;
     Heading = Direction;
     Enemy.AddMovementInput((Direction + FVector(0.f, 0.f, Climb)).GetClampedToMaxSize(1.f), Speed);
     return EMove::Moving;
 }
 
-bool ASoraEnemyController::Stuck(const FVector& Here, int32 NowMs)
+bool ASoraEnemyController::Stuck(const FVector& Here, int32 NowMs,bool bThreeDimensional)
 {
-    const int32 Moved = FMath::RoundToInt32(FVector::Dist2D(Here, StuckFrom));
+    const int32 Moved = FMath::RoundToInt32(bThreeDimensional?FVector::Dist(Here,StuckFrom):FVector::Dist2D(Here, StuckFrom));
     switch (Stealth::Progress(Walked, NowMs, Moved))
     {
     case Stealth::EProgress::Restarted:
@@ -1061,7 +1305,7 @@ bool ASoraEnemyController::CanSee(const ASoraCharacterBase& Target) const
 
 Stealth::FSight ASoraEnemyController::Look(const ASoraEnemy& Enemy, const ASoraCharacterBase& Target) const
 {
-    const FVector Eye = Enemy.GetActorLocation() + FVector(0.f, 0.f, SoraEnemyBrain::EyeHeight * Enemy.GetActorScale3D().Z);
+    const FVector Eye = Enemy.SenseOrigin();
     const FVector There = Target.GetActorLocation();
     const FVector Flat(There.X - Eye.X, There.Y - Eye.Y, 0.f);
     const Stealth::FPerception& Perception = Enemy.Perception();
@@ -1069,6 +1313,21 @@ Stealth::FSight ASoraEnemyController::Look(const ASoraEnemy& Enemy, const ASoraC
     Stealth::FSight Sight{};
     Sight.DistanceCm = FMath::RoundToInt32(Flat.Size());
     Sight.FacingMilli = FMath::RoundToInt32(FVector::DotProduct(Enemy.GetActorForwardVector().GetSafeNormal2D(), Flat.GetSafeNormal()) * 1000.f);
+    if(const auto* Craft=USoraFieldcraft::Get(this);Craft&&Craft->IsClimbSentry(Enemy))
+    {
+        const bool Combat=Mind.State==Stealth::EState::Combat||Mind.State==Stealth::EState::Alert;
+        if(!Craft->ClimbSentryWatching()&&!Combat&&There.Z<Eye.Z-250) return Sight;
+        const FVector Aim=Combat?LastKnown:Craft->ClimbSentryWatching()?Craft->ClimbSentryAim():Eye+Enemy.GetActorForwardVector()*1000;
+        const FVector Delta=There-Eye;
+        Sight.DistanceCm=FMath::RoundToInt32(Delta.Size());
+        Sight.FacingMilli=FMath::RoundToInt32(FVector::DotProduct((Aim-Eye).GetSafeNormal(),Delta.GetSafeNormal())*1000.f);
+    }
+    if(const auto* Craft=USoraFieldcraft::Get(this);Craft&&Craft->IsMoatGuard(Enemy))
+    {
+        const FVector Delta=There-Eye;
+        Sight.DistanceCm=FMath::RoundToInt32(Delta.Size());
+        Sight.FacingMilli=FMath::RoundToInt32(FVector::DotProduct((Craft->MoatGuardAim(Enemy)-Eye).GetSafeNormal(),Delta.GetSafeNormal())*1000.f);
+    }
     Sight.TargetMoving = Target.GetVelocity().Size2D() > 30.f;
     Sight.Crouched = Target.IsCrouched();
     Sight.VisibilityPermille = Zone && Cast<ASoraPlayerCharacter>(&Target) ? Zone->HeroVisibility() : 1000;
@@ -1092,7 +1351,13 @@ Stealth::FSight ASoraEnemyController::Look(const ASoraEnemy& Enemy, const ASoraC
     if (Fieldcraft && Cast<ASoraPlayerCharacter>(&Target))
         Sight.ExposurePermille = Fieldcraft->HeroExposure(Sight.ExposurePermille);
     if (Sight.ExposurePermille > 0)
+    {
         Sight.LightPermille = Zone ? Zone->LightAt(There) : 1000;
+        // These lamps are components, so the general ALight scan cannot see
+        // them. Use the real head/cover/lamp-LOS sample; guard LOS still applies.
+        if (Fieldcraft && Fieldcraft->IsMoatGuard(Enemy) && Cast<ASoraPlayerCharacter>(&Target) && Fieldcraft->MoatHeadLit())
+            Sight.LightPermille = 1000;
+    }
     return Sight;
 }
 
@@ -1102,7 +1367,7 @@ void ASoraEnemyController::LookForBodies(ASoraEnemy& Enemy, int32 DtMs)
     // whatever light falls on it. Evidence gathers while it stays in view.
     USoraStealth* Zone = USoraStealth::Get(this);
     const Stealth::FPerception& Perception = Enemy.Perception();
-    const FVector Eye = Enemy.GetActorLocation() + FVector(0.f, 0.f, SoraEnemyBrain::EyeHeight * Enemy.GetActorScale3D().Z);
+    const FVector Eye = Enemy.SenseOrigin();
     ASoraEnemy* Seen = nullptr;
     int32 SeenGain = 0;
     int32 SeenDistance = MAX_int32;
@@ -1159,6 +1424,12 @@ bool ASoraEnemyController::Occluded(const FVector& From, const FVector& To, cons
 
 void ASoraEnemyController::DrivePupil(ASoraEnemy& Enemy, ASoraCharacterBase& Target, float Dt)
 {
+    if(const auto* Mode=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this)); Mode&&Mode->Campaign()->IsMaaiLesson())
+    {
+        Enemy.SuspendDojoAction();
+        Enemy.GetCharacterMovement()->StopMovementImmediately();
+        return;
+    }
     // The chapter-one drill: face the hero, close to bokken distance around the
     // obstacle ahead, and strike on the pupil's own rhythm.
     // A pupil staggered by a meeting cut, or rolled past (転), stands where it is.

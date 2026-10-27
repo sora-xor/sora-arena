@@ -30,7 +30,7 @@
     {
      "file": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/SM_Weapon_05.fbx",
      "triangles": 36236,
-     "sha256": "98557c042574829a3b241a41df14f02982f119a9fce94f213eceb8c363a3ec4c"
+     "sha256": "b8e9e82aba31aaf8c9d21eafe0834827ac18ba70734876c73fb900355e739c52"
     },
     {
      "file": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/SM_Weapon_05_LOD1.fbx",
@@ -79,7 +79,69 @@
     1.0,
     0.35,
     0.12
-   ]
+   ],
+   "socket_axes": {
+    "Grip_L": {
+     "x": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "z": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "Grip_R": {
+     "x": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "z": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "MatchTip": {
+     "x": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "z": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "Muzzle": {
+     "x": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "z": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "Pan": {
+     "x": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "z": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    }
+   }
   }
  },
  "sources": [
@@ -192,5 +254,27 @@
   "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_05_Neutral_1m.png",
   "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_05_Profile.png",
   "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_05_Estate_1m.png"
- ]
+ ],
+ "socket_fbx": {
+  "export": {
+   "apply_unit_scale": true,
+   "apply_scale_options": "FBX_SCALE_NONE",
+   "global_scale": 1.0,
+   "axis_forward": "Y",
+   "axis_up": "Z",
+   "bake_space_transform": true
+  },
+  "axes": "Blender's own (up Z, forward Y), which are UE 5.8's FBX import axes (Z up, -Y front, right-handed). The file declares them, so no importer converts it",
+  "unit": "centimetres, baked into the vertices and the socket translations. No node carries a rotation or a scale, so each socket imports at scale 1 on its own axes",
+  "gate": "scripts/art/screen_fbx_sockets.py, through scripts/art/fbx_unreal_sockets.py (Interchange's socket rule, calibrated on root's import of the drone's fc0858a9)",
+  "unchanged": "LODs without sockets keep the library's convention (-Y forward, x100 on the node). Unreal bakes both conventions to the same vertices",
+  "rewritten_by": "scripts/art/apply_staged_weapon_sockets.py",
+  "files": [
+   {
+    "file": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/SM_Weapon_05.fbx",
+    "sha256": "b8e9e82aba31aaf8c9d21eafe0834827ac18ba70734876c73fb900355e739c52",
+    "replaces_sha256": "98557c042574829a3b241a41df14f02982f119a9fce94f213eceb8c363a3ec4c"
+   }
+  ]
+ }
 }

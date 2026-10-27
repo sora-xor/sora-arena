@@ -1,0 +1,141 @@
+{
+  "schema_version": 2,
+  "kind": "asset-ledger",
+  "ledger_id": "own-sora-raden-bunko",
+  "source": "project",
+  "purpose": "OWN record for the SORA raden bunko: Blender source, FBX, baked PBR maps and the Blender look-dev review renders (Renders/, labelled Blender source, not Unreal).",
+  "generator": "scripts/assets/write_own_ledger.py",
+  "records": [
+    {
+      "asset_id": "sora-raden-bunko",
+      "name": "SORA raden document box (螺鈿文庫)",
+      "kind": "generated-art",
+      "tier": "OWN",
+      "license": "project-owned",
+      "license_url": null,
+      "origin_url": "scripts/art/create_sora_raden_bunko.py, scripts/art/sora_prop_lib.py, scripts/art/craft_textures.py, scripts/art/sora_mark.py, scripts/art/create_runtime_weapon_lib.py",
+      "mirror_url": null,
+      "commercial_use": true,
+      "redistribution": "unrestricted",
+      "derivatives": true,
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "attribution_text": null,
+      "changes": null,
+      "access": "generated",
+      "acquired_at_utc": "2026-10-18T05:35:59Z",
+      "acquired_by": "agent",
+      "storage": "repo-lfs",
+      "used_by": [
+        "/Game/Generated/Environment/SoraCraft/SM_SoraRadenBunko"
+      ],
+      "fallback": null,
+      "generator": [
+        "scripts/art/create_sora_raden_bunko.py",
+        "scripts/art/sora_prop_lib.py",
+        "scripts/art/craft_textures.py",
+        "scripts/art/sora_mark.py",
+        "scripts/art/create_runtime_weapon_lib.py"
+      ],
+      "derived_from": [
+        {
+          "path": "Content/SourceArt/UI/sora_logo_NOtext2.svg",
+          "sha256": "d66413a71b70e25dcb8b2f118dcfe846a6446ed1db3de53ce88fc70c16ac0910"
+        }
+      ],
+      "files": [
+        {
+          "path": "Content/SourceArt/Environment/SoraCraft/SoraRadenBunko/Renders/SM_SoraRadenBunko_GoldenHour_Front_1.0m.png",
+          "bytes": 1266035,
+          "sha256": "5767bf8820c7a5b24fbede081936417522b0b7ce6d4195c546734f740e9b63bb"
+        },
+        {
+          "path": "Content/SourceArt/Environment/SoraCraft/SoraRadenBunko/Renders/SM_SoraRadenBunko_GoldenHour_Front_2.5m.png",
+          "bytes": 1040787,
+          "sha256": "7d2dd5056d41ad8e58f5c220447df2766b12ed2c5b64bc84f695f5e1f1f44c4b"
+        },
+        {
+          "path": "Content/SourceArt/Environment/SoraCraft/SoraRadenBunko/Renders/SM_SoraRadenBunko_GoldenHour_ThreeQuarter_1.0m.png",
+          "bytes": 1437856,
+          "sha256": "18eea630c758d0159dc522f9af1d2015c79f77c20c0d050dd5163126bb175715"
+        },
+        {
+          "path": "Content/SourceArt/Environment/SoraCraft/SoraRadenBunko/Renders/SM_SoraRadenBunko_GoldenHour_ThreeQuarter_2.5m.png",
+          "bytes": 1069799,
+          "sha256": "7dbe303f8b068a40bfff31c7128c2206e69b85b43540d64c4e58b26e68ecf786"
+        },
+        {
+          "path": "Content/SourceArt/Environment/SoraCraft/SoraRadenBunko/Renders/SM_SoraRadenBunko_Lantern_Front_1.0m.png",
+          "bytes": 1113511,
+          "sha256": "c75b9096ffc62ccf8e3b689c8d1ef90c1d489817aae54d14e7fc4cb7c5df24d8"
+        },
+        {
+          "path": "Content/SourceArt/Environment/SoraCraft/SoraRadenBunko/Renders/SM_SoraRadenBunko_Lantern_Front_2.5m.png",
+          "bytes": 980093,
+          "sha256": "9736939f21c29d494c4b6b05b17ca7a0b8986a3a5bd333ea322181780dbfce29"
+        },
+        {
+          "path": "Content/SourceArt/Environment/SoraCraft/SoraRadenBunko/Renders/SM_SoraRadenBunko_Lantern_ThreeQuarter_1.0m.png",
+          "bytes": 1257802,
+          "sha256": "06c39171535e49406f24e6b76202b791e963232fd3ddda8e47ffcac842cb86a0"
+        },
+        {
+          "path": "Content/SourceArt/Environment/SoraCraft/SoraRadenBunko/Renders/SM_SoraRadenBunko_Lantern_ThreeQuarter_2.5m.png",
+          "bytes": 1003621,
+          "sha256": "a3c299bfe099e7162feb85cd429f3942c40ac054b733208aa62859bf730ce54a"
+        },
+        {
+          "path": "Content/SourceArt/Environment/SoraCraft/SoraRadenBunko/Renders/SM_SoraRadenBunko_Studio_Front_1.0m.png",
+          "bytes": 1162035,
+          "sha256": "0da389a5f6f8ff88903a0530da39f79fcb6ffbd29736ffa646fe3a0702ec843e"
+        },
+        {
+          "path": "Content/SourceArt/Environment/SoraCraft/SoraRadenBunko/Renders/SM_SoraRadenBunko_Studio_Front_2.5m.png",
+          "bytes": 990345,
+          "sha256": "70455bdf43e2c24428a8a44e4969f566fb0b8d84dcc8cf4bb54628f1886444a0"
+        },
+        {
+          "path": "Content/SourceArt/Environment/SoraCraft/SoraRadenBunko/Renders/SM_SoraRadenBunko_Studio_ThreeQuarter_1.0m.png",
+          "bytes": 1408486,
+          "sha256": "e435e5d7021a7e379aafd774beb47139ad724006fb3388b97614079d128401bf"
+        },
+        {
+          "path": "Content/SourceArt/Environment/SoraCraft/SoraRadenBunko/Renders/SM_SoraRadenBunko_Studio_ThreeQuarter_2.5m.png",
+          "bytes": 1062491,
+          "sha256": "898693c27f31a413205d28e61fb84664427bccd2658e1f6b03b8d955bbdfe465"
+        },
+        {
+          "path": "Content/SourceArt/Environment/SoraCraft/SoraRadenBunko/SM_SoraRadenBunko.blend",
+          "bytes": 19499200,
+          "sha256": "73ad9869ba83f9c79fceed7675cde25fa5e7c076d4330eb2ce08983b564313ba"
+        },
+        {
+          "path": "Content/SourceArt/Environment/SoraCraft/SoraRadenBunko/SM_SoraRadenBunko.fbx",
+          "bytes": 8287804,
+          "sha256": "c7148b306997970115840ee07ffffdf7ede10338f4fcf9382639ea0c8ad102da"
+        },
+        {
+          "path": "Content/SourceArt/Environment/SoraCraft/SoraRadenBunko/T_SoraRadenBunko_BaseColor.png",
+          "bytes": 4419082,
+          "sha256": "9f8cc04a2772fa6d49524bab94b8dc5a84e5faa014458673562ed0f73f2ce143"
+        },
+        {
+          "path": "Content/SourceArt/Environment/SoraCraft/SoraRadenBunko/T_SoraRadenBunko_Mask.png",
+          "bytes": 2711948,
+          "sha256": "9c7a0c7957f41454d1496cdaa069f23ed22bbb979b3a0363aa133d461ff39392"
+        },
+        {
+          "path": "Content/SourceArt/Environment/SoraCraft/SoraRadenBunko/T_SoraRadenBunko_NormalDX.png",
+          "bytes": 7673430,
+          "sha256": "d605bb8789168f3fc4ec1de1b05d72480c47376eb624b25c3ca4e9f571d9e38b"
+        },
+        {
+          "path": "Content/SourceArt/Environment/SoraCraft/SoraRadenBunko/T_SoraRadenBunko_ORM.png",
+          "bytes": 6690962,
+          "sha256": "1e1e9109e243bc1098b4abbb20e10ac7a22708ba8de59555db5a98b6827e08e0"
+        }
+      ]
+    }
+  ]
+}

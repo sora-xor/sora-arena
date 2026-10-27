@@ -72,11 +72,22 @@ with a faked compiler.
 | Engine revision | The installed 5.8.3 `Build.version` reports promoted build changelist **58210709** (compatible changelist **55116800**) on `++UE5+Release-5.8`; as a Launcher binary it has no source commit |
 | UE 5.8 compilation / packaging / runtime | The project Mac editor and game targets compile in isolated **5.8.3**. After both original-asset and palette imports, the editor validator loads **207** expected packages, including revised terrain/foliage, the provision storehouse, separate katana/saya and PBR bindings; editor and cooked-game automation load three Nyaakoto LODs and 23 material slots. The latest Mac diagnostic cook completed with **795 packages cooked** and seven platform skips. UAT staged a signed app using pak/IoStore with bundle identifier `org.sora.soraarena`; the headless packaged LOD test exited 0. These were interim diagnostics before the re-pin; a release build under the pin, the Windows build, visual quality and gameplay qualification remain open. |
 
-The machine's global `xcode-select` remains pointed at Command Line Tools. These
+During initial provisioning, global `xcode-select` pointed at Command Line Tools. These
 scripts select Xcode and its matching `SDKROOT` only for their own process; they
 do not change global settings. This avoids mixing the Xcode 26 linker with the
 host's inherited Command Line Tools 27 SDK.
 Xcode 27 is a pin mismatch, not a claim that every use with UE 5.8 is impossible.
+
+On the M2 Ultra host, rechecked on **2026-10-23**, global `xcode-select` points to
+`/Applications/Xcode.app/Contents/Developer`, reporting **Xcode 27.1 / 27A9275**.
+The project still selects its separate **26.1.1 / 17B100** installation. Installed
+UE 5.8.3's `Engine/Config/Apple/Apple_SDK.json` names 26.1.1 as its main version
+and allows versions from 15.2 through 27.9; the project doctor's exact 26.1.1
+pin is stricter. Passing that version range does not establish compiler, Metal,
+cook or package compatibility. Builds and cooking have passed with 26.1.1;
+this project has not qualified 27.1. Epic's
+[current Mac requirements](https://dev.epicgames.com/documentation/unreal-engine/macos-development-requirements-for-unreal-engine)
+recommend 26.1.1 for UE 5.8 and specifically flag 26.4 as incompatible.
 
 ### Installation blockers actually observed
 
@@ -130,6 +141,21 @@ PyYAML 6.0.3 (the chapter scripts' YAML, for `build_campaign_data.py` and
 `validate_content.py`) and fontTools 4.38.0 (the glyph check). Install them with
 `pip3 install --user -r scripts/requirements.txt`; the doctor does not check
 them yet.
+
+For an isolated worktree import, set `SORA_CC0_STORAGE_ROOT` to the absolute
+worktree directory containing its ignored `Local/ThirdPartyRaw/cc0` cache:
+
+```sh
+export SORA_CC0_STORAGE_ROOT="$PWD"
+scripts/toolchain/import-mac.sh
+```
+
+The CC0 host packer, source validator and editor importer inherit this override.
+Ledger paths remain relative to that directory, and every source hash and
+license/period-policy check still applies. A relative or nonexistent override
+fails rather than falling back to another checkout. Without the override,
+linked worktrees continue to read the main checkout's shared `Local/` cache.
+Generated ARM maps remain under the importing worktree's `Saved/` directory.
 
 The doctor checks the engine identity in the pin table (exact
 `Build.version` version, changelist, compatible changelist, branch and

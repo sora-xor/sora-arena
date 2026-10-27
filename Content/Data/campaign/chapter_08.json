@@ -207,6 +207,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -214,6 +215,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -221,12 +223,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -252,7 +262,10 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {}
   },
@@ -585,6 +598,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -592,6 +606,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -599,12 +614,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -630,7 +653,10 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {
     "route_length_m": 1750,
@@ -886,6 +912,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -893,6 +920,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -900,12 +928,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -931,7 +967,10 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {
     "volley_command": {
@@ -1169,6 +1208,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -1176,6 +1216,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -1183,12 +1224,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [
      {
@@ -1224,7 +1273,10 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {
     "supply_point": "sp_nokaji"
@@ -1358,6 +1410,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -1365,6 +1418,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -1372,6 +1426,8 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
@@ -1383,7 +1439,13 @@
      "do_squad_mid",
      "do_squad_east"
     ],
-    "drop_on_hit": true,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": true,
+     "normal": true,
+     "hard": true
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -1411,7 +1473,10 @@
      0
     ],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {
     "scripted": {
@@ -1665,6 +1730,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -1672,6 +1738,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -1679,12 +1746,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -1714,11 +1789,14 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
+    "unload_hold_ms": 0,
     "objective_hold_ms": [
      0,
      0,
      0
-    ]
+    ],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {
     "volley_command": {
@@ -1931,6 +2009,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -1938,6 +2017,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -1945,12 +2025,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 260,
     "wait_cm": 1200,
     "path_cm": 17000,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -1977,7 +2065,10 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {
     "release": {
@@ -2048,6 +2139,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -2055,6 +2147,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -2062,12 +2155,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2093,7 +2194,10 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {}
   },
@@ -2157,6 +2261,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -2164,6 +2269,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -2171,12 +2277,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2202,7 +2316,10 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {}
   },
@@ -2408,6 +2525,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -2415,6 +2533,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -2422,12 +2541,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2453,7 +2580,10 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {
     "scripted": {
@@ -2507,7 +2637,7 @@
        "league_engineer_1",
        "league_engineer_2"
       ],
-      "turns_per_s": 0.15
+      "turns_per_s_per_npc": 0.15
      },
      "moving_platform": {
       "actor": "freight_lift_platform",
@@ -2531,7 +2661,7 @@
        {
         "type": "drone",
         "count": 3,
-        "spawn": "sp_lift_gantry_50m",
+        "spawn": "sp_lift_gantry_5575cm",
         "behavior": "cut_rope"
        }
       ]
@@ -2542,7 +2672,7 @@
        {
         "type": "enforcer_rifle",
         "count": 3,
-        "spawn": "sp_lift_gantry_75m"
+        "spawn": "sp_lift_gantry_8450cm"
        }
       ]
      },
@@ -2552,13 +2682,13 @@
        {
         "type": "shield_enforcer",
         "count": 1,
-        "spawn": "sp_lift_gantry_100m",
+        "spawn": "sp_lift_gantry_11325cm",
         "behavior": "board_platform"
        },
        {
         "type": "blade_retainer",
         "count": 2,
-        "spawn": "sp_lift_gantry_100m",
+        "spawn": "sp_lift_gantry_11325cm",
         "behavior": "board_platform"
        }
       ]
@@ -2639,6 +2769,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -2646,6 +2777,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -2653,12 +2785,37 @@
     "decay_permille": 10,
     "min_turn_ms": 1000,
     "max_turn_ms": 2500,
+    "crank_coop": {
+     "npcs": [
+      "tetsugoro",
+      "league_engineer_1",
+      "league_engineer_2"
+     ],
+     "per_npc_milliturns_s": 150,
+     "progress_permille": 1000,
+     "suspends_decay": false,
+     "retreat_cm": 0,
+     "ratchets_permille": []
+    },
+    "crank_player": {
+     "stamina_per_turn": 5,
+     "overspeed_cost_multiplier": 0,
+     "two_handed": false,
+     "hold_milliturns_s": 0,
+     "alternate_treads": false
+    },
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2684,7 +2841,10 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {}
   },
@@ -2771,6 +2931,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -2778,6 +2939,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -2785,12 +2947,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2816,7 +2986,10 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {}
   },
@@ -2873,6 +3046,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -2880,6 +3054,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -2887,12 +3062,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2918,7 +3101,10 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {}
   },
@@ -3003,6 +3189,7 @@
     ],
     "defeat": "capture",
     "capture_event": "interact:engine_spine",
+    "capture_hold_ms": 1500,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -3010,6 +3197,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -3017,12 +3205,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -3048,7 +3244,10 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {
     "lethal_finisher": false,
@@ -3124,6 +3323,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -3131,6 +3331,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -3138,12 +3339,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -3169,7 +3378,10 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {}
   },
@@ -3241,6 +3453,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -3248,6 +3461,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -3255,6 +3469,8 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
@@ -3264,7 +3480,13 @@
     "dropoffs": [
      "do_kosatsu_board"
     ],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -3290,7 +3512,10 @@
     "carry_speed_permille": 700,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {
     "combat": false,
@@ -3366,6 +3591,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -3373,6 +3599,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -3380,12 +3607,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -3411,7 +3646,10 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {
     "blocking_max_s": 20
@@ -3471,6 +3709,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -3478,6 +3717,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -3485,12 +3725,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -3516,7 +3764,10 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {}
   }
@@ -7776,7 +8027,7 @@
   "ext": {}
  },
  "space": {
-  "frame": "Unreal world cm; origin at the arena centre; every floor at z 0",
+  "frame": "Unreal world cm; origin at the arena centre; per-beat height_cm overrides floor z 0",
   "hub": 3,
   "hub_place": "pl_outer_bailey",
   "start": [
@@ -8244,140 +8495,54 @@
     "style": "citadel",
     "form": "hall",
     "rect": [
-     32200,
-     -1300,
-     35800,
-     1300
+     31668,
+     -1536,
+     35468,
+     2964
     ],
     "wall_cm": 700,
     "entry": [
-     32480,
-     0,
-     0
+     33048,
+     1264,
+     -120
     ],
     "walls": [
      [
-      32170,
-      0,
+      31638,
+      714,
       60,
-      2720,
+      4620,
       700
      ],
      [
-      35830,
-      0,
+      35498,
+      714,
       60,
-      2720,
+      4620,
       700
      ],
      [
-      34000,
-      -1330,
-      3600,
+      33568,
+      -1566,
+      3800,
       60,
       700
      ],
      [
-      34000,
-      1330,
-      3600,
+      33568,
+      2994,
+      3800,
       60,
       700
      ]
     ],
-    "cover": [
-     [
-      33280,
-      -780,
-      230,
-      180,
-      140
-     ],
-     [
-      33280,
-      780,
-      230,
-      180,
-      140
-     ],
-     [
-      33856,
-      -780,
-      230,
-      180,
-      140
-     ],
-     [
-      33856,
-      780,
-      230,
-      180,
-      140
-     ],
-     [
-      34432,
-      -780,
-      230,
-      180,
-      140
-     ],
-     [
-      34432,
-      780,
-      230,
-      180,
-      140
-     ],
-     [
-      35008,
-      -780,
-      230,
-      180,
-      140
-     ],
-     [
-      35008,
-      780,
-      230,
-      180,
-      140
-     ]
-    ],
-    "props": [
-     {
-      "mesh": "SM_Edo_LanternPost",
-      "at": [
-       32344,
-       -1144,
-       0
-      ]
-     },
-     {
-      "mesh": "SM_Edo_LanternPost",
-      "at": [
-       32344,
-       1144,
-       0
-      ]
-     },
-     {
-      "mesh": "SM_Edo_LanternPost",
-      "at": [
-       35692,
-       -1144,
-       0
-      ]
-     },
-     {
-      "mesh": "SM_Edo_LanternPost",
-      "at": [
-       35692,
-       1144,
-       0
-      ]
-     }
-    ],
-    "route": []
+    "cover": [],
+    "props": [],
+    "route": [],
+    "z_bounds_cm": [
+     -500,
+     15800
+    ]
    },
    {
     "id": "pl_ledger_engine",
@@ -8385,140 +8550,54 @@
     "style": "citadel",
     "form": "hall",
     "rect": [
-     38800,
-     -2100,
-     44400,
-     2100
+     31468,
+     -1736,
+     35668,
+     2464
     ],
     "wall_cm": 700,
     "entry": [
-     39080,
-     0,
-     0
+     33568,
+     -1286,
+     90
     ],
     "walls": [
      [
-      38770,
-      0,
+      31438,
+      364,
       60,
       4320,
       700
      ],
      [
-      44430,
-      0,
+      35698,
+      364,
       60,
       4320,
       700
      ],
      [
-      41600,
-      -2130,
-      5600,
+      33568,
+      -1766,
+      4200,
       60,
       700
      ],
      [
-      41600,
-      2130,
-      5600,
+      33568,
+      2494,
+      4200,
       60,
       700
      ]
     ],
-    "cover": [
-     [
-      40480,
-      -1260,
-      230,
-      180,
-      140
-     ],
-     [
-      40480,
-      1260,
-      230,
-      180,
-      140
-     ],
-     [
-      41376,
-      -1260,
-      230,
-      180,
-      140
-     ],
-     [
-      41376,
-      1260,
-      230,
-      180,
-      140
-     ],
-     [
-      42272,
-      -1260,
-      230,
-      180,
-      140
-     ],
-     [
-      42272,
-      1260,
-      230,
-      180,
-      140
-     ],
-     [
-      43168,
-      -1260,
-      230,
-      180,
-      140
-     ],
-     [
-      43168,
-      1260,
-      230,
-      180,
-      140
-     ]
-    ],
-    "props": [
-     {
-      "mesh": "SM_Edo_LanternPost",
-      "at": [
-       39024,
-       -1848,
-       0
-      ]
-     },
-     {
-      "mesh": "SM_Edo_LanternPost",
-      "at": [
-       39024,
-       1848,
-       0
-      ]
-     },
-     {
-      "mesh": "SM_Edo_LanternPost",
-      "at": [
-       44232,
-       -1848,
-       0
-      ]
-     },
-     {
-      "mesh": "SM_Edo_LanternPost",
-      "at": [
-       44232,
-       1848,
-       0
-      ]
-     }
-    ],
-    "route": []
+    "cover": [],
+    "props": [],
+    "route": [],
+    "z_bounds_cm": [
+     15800,
+     20000
+    ]
    },
    {
     "id": "pl_lantern_ward_festival",
@@ -8730,6 +8809,14 @@
       "at": [
        59068,
        1408,
+       0
+      ]
+     },
+     {
+      "mesh": "torii",
+      "at": [
+       58300,
+       0,
        0
       ]
      },
@@ -11379,6 +11466,8 @@
     "step_stations": [],
     "cache": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -11409,7 +11498,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch08.b02",
@@ -11771,6 +11862,8 @@
     "patrols": [],
     "cache": null,
     "camera": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -11835,8 +11928,10 @@
      },
      "dismount": false,
      "auto_steer": true,
+     "spook_dismount": false,
      "until_phase": 0,
      "pack": [],
+     "cargo": null,
      "at": [
       9898,
       -11966,
@@ -11893,7 +11988,9 @@
        }
       ]
      }
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch08.b03",
@@ -11992,6 +12089,8 @@
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -12348,7 +12447,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch08.b04",
@@ -12456,6 +12557,8 @@
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": "defend",
      "item": null,
@@ -12595,7 +12698,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch08.b05",
@@ -12712,6 +12817,8 @@
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": "carry",
      "item": "bundle",
@@ -12748,7 +12855,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch08.b06",
@@ -12872,6 +12981,8 @@
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -13108,7 +13219,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch08.b07",
@@ -13185,6 +13298,8 @@
     "patrols": [],
     "cache": null,
     "camera": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": "escort",
      "item": null,
@@ -13418,7 +13533,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch08.b08",
@@ -13527,6 +13644,8 @@
     "step_stations": [],
     "cache": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -13557,7 +13676,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch08.b09",
@@ -13671,6 +13792,8 @@
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -13701,19 +13824,21 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch08.b10",
     "zone": 3,
     "entry": [
-     32480,
-     0,
-     0
+     33048,
+     1264,
+     -120
     ],
     "anchor": [
-     32992,
-     -364
+     33048,
+     1264
     ],
     "objectives": [],
     "pickups": [],
@@ -13723,106 +13848,114 @@
      {
       "event": "volume_enter:vol_spire_L3",
       "center": [
-       33880,
-       0
+       33741,
+       -536
       ],
       "size": [
-       400,
-       2080
-      ]
+       500,
+       500
+      ],
+      "floor_cm": 1800
      },
      {
       "event": "volume_enter:vol_spire_void_edge",
       "center": [
-       34480,
-       0
+       34434,
+       664
       ],
       "size": [
-       400,
-       2080
-      ]
+       500,
+       500
+      ],
+      "floor_cm": 900
      }
     ],
     "exit": {
      "center": [
-      35400,
-      0
+      32768,
+      364
      ],
      "size": [
-      500,
-      2080
-     ]
+      300,
+      300
+     ],
+     "floor_cm": 2700
     },
     "closing": null,
     "spawns": [
      [
-      35584,
-      -1118
+      34553,
+      617
      ],
      [
-      35584,
-      1118
+      34415,
+      537
      ],
      [
-      35008,
-      -1118
+      34623,
+      496
      ],
      [
-      35008,
-      1118
+      34485,
+      416
      ],
      [
-      34000,
-      -1118
+      32702,
+      64
      ],
      [
-      34000,
-      1118
+      33641,
+      -656
+     ],
+     [
+      33641,
+      -556
+     ],
+     [
+      33501,
+      -656
+     ],
+     [
+      33501,
+      -556
+     ],
+     [
+      33268,
+      64
+     ],
+     [
+      33868,
+      64
+     ],
+     [
+      33268,
+      664
+     ],
+     [
+      33868,
+      664
+     ],
+     [
+      32768,
+      364
+     ],
+     [
+      32529,
+      264
+     ],
+     [
+      32529,
+      464
      ]
     ],
-    "patrols": [
-     [
-      [
-       33280,
-       -520
-      ],
-      [
-       34900,
-       -520
-      ],
-      [
-       34900,
-       520
-      ],
-      [
-       33280,
-       520
-      ]
-     ],
-     [
-      [
-       33820,
-       -260
-      ],
-      [
-       34432,
-       -260
-      ],
-      [
-       34432,
-       260
-      ],
-      [
-       33820,
-       260
-      ]
-     ]
-    ],
+    "patrols": [],
     "stations": [],
     "step_stations": [],
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -13855,8 +13988,8 @@
        "rank": -1,
        "joins": null,
        "at": [
-        32810,
-        0
+        32948,
+        1164
        ]
       },
       {
@@ -13870,8 +14003,8 @@
        "rank": -1,
        "joins": null,
        "at": [
-        32810,
-        240
+        33088,
+        1164
        ]
       },
       {
@@ -13885,8 +14018,8 @@
        "rank": -1,
        "joins": null,
        "at": [
-        32810,
-        -240
+        32948,
+        1314
        ]
       },
       {
@@ -13900,8 +14033,8 @@
        "rank": -1,
        "joins": null,
        "at": [
-        32810,
-        480
+        33088,
+        1314
        ]
       },
       {
@@ -13915,8 +14048,8 @@
        "rank": -1,
        "joins": null,
        "at": [
-        32810,
-        -480
+        32948,
+        1464
        ]
       }
      ],
@@ -13929,14 +14062,584 @@
      "fires": null,
      "ladders": [],
      "charge": null
+    },
+    "height_cm": 0,
+    "lift": null,
+    "spire": {
+     "center": [
+      33568,
+      364
+     ],
+     "width_cm": 400,
+     "void_diameter_cm": 1400,
+     "landing_nodes": [
+      0,
+      31,
+      62,
+      93
+     ],
+     "ramp": [
+      [
+       33048,
+       1264,
+       0
+      ],
+      [
+       32875,
+       964,
+       29
+      ],
+      [
+       32702,
+       664,
+       58
+      ],
+      [
+       32529,
+       364,
+       87
+      ],
+      [
+       32702,
+       64,
+       116
+      ],
+      [
+       32875,
+       -236,
+       145
+      ],
+      [
+       33048,
+       -536,
+       174
+      ],
+      [
+       33395,
+       -536,
+       203
+      ],
+      [
+       33741,
+       -536,
+       232
+      ],
+      [
+       34088,
+       -536,
+       261
+      ],
+      [
+       34261,
+       -236,
+       290
+      ],
+      [
+       34434,
+       64,
+       319
+      ],
+      [
+       34607,
+       364,
+       348
+      ],
+      [
+       34434,
+       664,
+       377
+      ],
+      [
+       34261,
+       964,
+       406
+      ],
+      [
+       34088,
+       1264,
+       435
+      ],
+      [
+       33741,
+       1264,
+       465
+      ],
+      [
+       33395,
+       1264,
+       494
+      ],
+      [
+       33048,
+       1264,
+       523
+      ],
+      [
+       32875,
+       964,
+       552
+      ],
+      [
+       32702,
+       664,
+       581
+      ],
+      [
+       32529,
+       364,
+       610
+      ],
+      [
+       32702,
+       64,
+       639
+      ],
+      [
+       32875,
+       -236,
+       668
+      ],
+      [
+       33048,
+       -536,
+       697
+      ],
+      [
+       33395,
+       -536,
+       726
+      ],
+      [
+       33741,
+       -536,
+       755
+      ],
+      [
+       34088,
+       -536,
+       784
+      ],
+      [
+       34261,
+       -236,
+       813
+      ],
+      [
+       34434,
+       64,
+       842
+      ],
+      [
+       34607,
+       364,
+       871
+      ],
+      [
+       34434,
+       664,
+       900
+      ],
+      [
+       34261,
+       964,
+       929
+      ],
+      [
+       34088,
+       1264,
+       958
+      ],
+      [
+       33741,
+       1264,
+       987
+      ],
+      [
+       33395,
+       1264,
+       1016
+      ],
+      [
+       33048,
+       1264,
+       1045
+      ],
+      [
+       32875,
+       964,
+       1074
+      ],
+      [
+       32702,
+       664,
+       1103
+      ],
+      [
+       32529,
+       364,
+       1132
+      ],
+      [
+       32702,
+       64,
+       1161
+      ],
+      [
+       32875,
+       -236,
+       1190
+      ],
+      [
+       33048,
+       -536,
+       1219
+      ],
+      [
+       33395,
+       -536,
+       1248
+      ],
+      [
+       33741,
+       -536,
+       1277
+      ],
+      [
+       34088,
+       -536,
+       1306
+      ],
+      [
+       34261,
+       -236,
+       1335
+      ],
+      [
+       34434,
+       64,
+       1365
+      ],
+      [
+       34607,
+       364,
+       1394
+      ],
+      [
+       34434,
+       664,
+       1423
+      ],
+      [
+       34261,
+       964,
+       1452
+      ],
+      [
+       34088,
+       1264,
+       1481
+      ],
+      [
+       33741,
+       1264,
+       1510
+      ],
+      [
+       33395,
+       1264,
+       1539
+      ],
+      [
+       33048,
+       1264,
+       1568
+      ],
+      [
+       32875,
+       964,
+       1597
+      ],
+      [
+       32702,
+       664,
+       1626
+      ],
+      [
+       32529,
+       364,
+       1655
+      ],
+      [
+       32702,
+       64,
+       1684
+      ],
+      [
+       32875,
+       -236,
+       1713
+      ],
+      [
+       33048,
+       -536,
+       1742
+      ],
+      [
+       33395,
+       -536,
+       1771
+      ],
+      [
+       33741,
+       -536,
+       1800
+      ],
+      [
+       34088,
+       -536,
+       1829
+      ],
+      [
+       34261,
+       -236,
+       1858
+      ],
+      [
+       34434,
+       64,
+       1887
+      ],
+      [
+       34607,
+       364,
+       1916
+      ],
+      [
+       34434,
+       664,
+       1945
+      ],
+      [
+       34261,
+       964,
+       1974
+      ],
+      [
+       34088,
+       1264,
+       2003
+      ],
+      [
+       33741,
+       1264,
+       2032
+      ],
+      [
+       33395,
+       1264,
+       2061
+      ],
+      [
+       33048,
+       1264,
+       2090
+      ],
+      [
+       32875,
+       964,
+       2119
+      ],
+      [
+       32702,
+       664,
+       2148
+      ],
+      [
+       32529,
+       364,
+       2177
+      ],
+      [
+       32702,
+       64,
+       2206
+      ],
+      [
+       32875,
+       -236,
+       2235
+      ],
+      [
+       33048,
+       -536,
+       2265
+      ],
+      [
+       33395,
+       -536,
+       2294
+      ],
+      [
+       33741,
+       -536,
+       2323
+      ],
+      [
+       34088,
+       -536,
+       2352
+      ],
+      [
+       34261,
+       -236,
+       2381
+      ],
+      [
+       34434,
+       64,
+       2410
+      ],
+      [
+       34607,
+       364,
+       2439
+      ],
+      [
+       34434,
+       664,
+       2468
+      ],
+      [
+       34261,
+       964,
+       2497
+      ],
+      [
+       34088,
+       1264,
+       2526
+      ],
+      [
+       33741,
+       1264,
+       2555
+      ],
+      [
+       33395,
+       1264,
+       2584
+      ],
+      [
+       33048,
+       1264,
+       2613
+      ],
+      [
+       32875,
+       964,
+       2642
+      ],
+      [
+       32702,
+       664,
+       2671
+      ],
+      [
+       32529,
+       364,
+       2700
+      ]
+     ],
+     "spawns": [
+      [
+       34553,
+       617,
+       900
+      ],
+      [
+       34415,
+       537,
+       900
+      ],
+      [
+       34623,
+       496,
+       900
+      ],
+      [
+       34485,
+       416,
+       900
+      ],
+      [
+       32702,
+       64,
+       900
+      ],
+      [
+       33641,
+       -656,
+       1800
+      ],
+      [
+       33641,
+       -556,
+       1800
+      ],
+      [
+       33501,
+       -656,
+       1800
+      ],
+      [
+       33501,
+       -556,
+       1800
+      ],
+      [
+       33268,
+       64,
+       2100
+      ],
+      [
+       33868,
+       64,
+       2100
+      ],
+      [
+       33268,
+       664,
+       2100
+      ],
+      [
+       33868,
+       664,
+       2100
+      ],
+      [
+       32768,
+       364,
+       2700
+      ],
+      [
+       32529,
+       264,
+       2700
+      ],
+      [
+       32529,
+       464,
+       2700
+      ]
+     ]
     }
    },
    {
     "beat": "ch08.b11",
     "zone": 3,
     "entry": [
-     32480,
-     0,
+     32918,
+     364,
      0
     ],
     "anchor": [
@@ -13950,84 +14653,37 @@
     "volumes": [],
     "exit": {
      "center": [
-      35400,
-      0
+      32918,
+      364
      ],
      "size": [
-      500,
-      2080
+      300,
+      300
      ]
     },
     "closing": null,
     "spawns": [
      [
-      35584,
-      -1118
+      34218,
+      214
      ],
      [
-      35584,
-      1118
+      34218,
+      364
      ],
      [
-      35008,
-      -1118
-     ],
-     [
-      35008,
-      1118
-     ],
-     [
-      34000,
-      -1118
-     ],
-     [
-      34000,
-      1118
+      34218,
+      514
      ]
     ],
-    "patrols": [
-     [
-      [
-       33280,
-       -520
-      ],
-      [
-       34900,
-       -520
-      ],
-      [
-       34900,
-       520
-      ],
-      [
-       33280,
-       520
-      ]
-     ],
-     [
-      [
-       33820,
-       -260
-      ],
-      [
-       34432,
-       -260
-      ],
-      [
-       34432,
-       260
-      ],
-      [
-       33820,
-       260
-      ]
-     ]
-    ],
+    "patrols": [],
     "stations": [],
     "step_stations": [],
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": "lift",
      "item": null,
@@ -14049,7 +14705,44 @@
      "hide_spots": [],
      "releases": [],
      "allies": [],
-     "people": [],
+     "people": [
+      {
+       "id": "tetsugoro",
+       "target": -1,
+       "at": [
+        33568,
+        584
+       ],
+       "cover": [
+        33568,
+        584
+       ]
+      },
+      {
+       "id": "league_engineer_1",
+       "target": -1,
+       "at": [
+        33378,
+        254
+       ],
+       "cover": [
+        33378,
+        254
+       ]
+      },
+      {
+       "id": "league_engineer_2",
+       "target": -1,
+       "at": [
+        33758,
+        254
+       ],
+       "cover": [
+        33758,
+        254
+       ]
+      }
+     ],
      "volley": null,
      "alarms": [],
      "nets": null,
@@ -14058,19 +14751,43 @@
      "fires": null,
      "ladders": [],
      "charge": null
+    },
+    "height_cm": 2700,
+    "lift": {
+     "size_cm": [
+      600,
+      600
+     ],
+     "bottom_cm": 2700,
+     "top_cm": 14200,
+     "gantry_cm": [
+      5575,
+      8450,
+      11325
+     ],
+     "gallery_rect": [
+      33868,
+      -1636,
+      34868,
+      2364
+     ],
+     "gallery_exit": [
+      34368,
+      2164
+     ]
     }
    },
    {
     "beat": "ch08.b12",
     "zone": 3,
     "entry": [
-     32480,
-     0,
-     0
+     34068,
+     364,
+     90
     ],
     "anchor": [
-     34720,
-     0
+     34368,
+     364
     ],
     "objectives": [],
     "pickups": [],
@@ -14080,98 +14797,39 @@
      {
       "event": "volume_enter:vol_heirloom_hall",
       "center": [
-       34180,
-       0
+       34368,
+       364
       ],
       "size": [
-       400,
-       2080
+       1000,
+       4000
       ]
      }
     ],
     "exit": {
      "center": [
-      35400,
-      0
+      33568,
+      -1286
      ],
      "size": [
-      500,
-      2080
-     ]
+      350,
+      300
+     ],
+     "floor_cm": 16000
     },
     "closing": null,
-    "spawns": [
-     [
-      35584,
-      -1118
-     ],
-     [
-      35584,
-      1118
-     ],
-     [
-      35008,
-      -1118
-     ],
-     [
-      35008,
-      1118
-     ],
-     [
-      34000,
-      -1118
-     ],
-     [
-      34000,
-      1118
-     ]
-    ],
-    "patrols": [
-     [
-      [
-       33280,
-       -520
-      ],
-      [
-       34900,
-       -520
-      ],
-      [
-       34900,
-       520
-      ],
-      [
-       33280,
-       520
-      ]
-     ],
-     [
-      [
-       33820,
-       -260
-      ],
-      [
-       34432,
-       -260
-      ],
-      [
-       34432,
-       260
-      ],
-      [
-       33820,
-       260
-      ]
-     ]
-    ],
+    "spawns": [],
+    "patrols": [],
     "cache": [
-     32560,
-     -988
+     34368,
+     -1036
     ],
     "stations": [],
     "step_stations": [],
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -14202,19 +14860,21 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 14200,
+    "lift": null
    },
    {
     "beat": "ch08.b13",
     "zone": 4,
     "entry": [
-     39080,
-     0,
-     0
+     33568,
+     -1286,
+     90
     ],
     "anchor": [
-     40032,
-     -588
+     33568,
+     -336
     ],
     "objectives": [],
     "pickups": [],
@@ -14223,94 +14883,40 @@
     "volumes": [],
     "exit": {
      "center": [
-      44000,
-      0
+      33568,
+      -1286
      ],
      "size": [
-      500,
-      3360
-     ]
+      300,
+      300
+     ],
+     "floor_cm": 16000
     },
     "closing": null,
     "spawns": [
      [
-      44064,
-      -1806
-     ],
-     [
-      44064,
-      1806
-     ],
-     [
-      43168,
-      -1806
-     ],
-     [
-      43168,
-      1806
-     ],
-     [
-      41600,
-      -1806
-     ],
-     [
-      41600,
-      1806
+      33568,
+      1164
      ]
     ],
-    "patrols": [
-     [
-      [
-       40480,
-       -840
-      ],
-      [
-       43000,
-       -840
-      ],
-      [
-       43000,
-       840
-      ],
-      [
-       40480,
-       840
-      ]
-     ],
-     [
-      [
-       41320,
-       -420
-      ],
-      [
-       42272,
-       -420
-      ],
-      [
-       42272,
-       420
-      ],
-      [
-       41320,
-       420
-      ]
-     ]
-    ],
+    "patrols": [],
     "camera": [
-     39150,
-     -1176,
-     480,
-     39700,
-     -672,
-     420,
-     42160,
-     0,
-     180
+     32368,
+     -736,
+     16480,
+     32618,
+     -436,
+     16420,
+     33568,
+     1564,
+     16180
     ],
     "stations": [],
     "step_stations": [],
     "cache": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -14341,19 +14947,62 @@
      "fires": null,
      "ladders": [],
      "charge": null
+    },
+    "height_cm": 16000,
+    "lift": null,
+    "summit": {
+     "center": [
+      33568,
+      364
+     ],
+     "height_cm": 16000,
+     "radius_cm": 1800,
+     "dais_cm": 120,
+     "stairs": [
+      [
+       34368,
+       2164,
+       14200
+      ],
+      [
+       34368,
+       2564,
+       14200
+      ],
+      [
+       31568,
+       2564,
+       14800
+      ],
+      [
+       31568,
+       -1836,
+       15400
+      ],
+      [
+       33568,
+       -1836,
+       16000
+      ],
+      [
+       33568,
+       -1286,
+       16000
+      ]
+     ]
     }
    },
    {
     "beat": "ch08.b14",
     "zone": 4,
     "entry": [
-     39080,
-     0,
-     0
+     33568,
+     -1286,
+     90
     ],
     "anchor": [
-     40928,
-     588
+     33568,
+     -336
     ],
     "objectives": [],
     "pickups": [],
@@ -14362,84 +15011,30 @@
     "volumes": [],
     "exit": {
      "center": [
-      44000,
-      0
+      33568,
+      -1286
      ],
      "size": [
-      500,
-      3360
-     ]
+      300,
+      300
+     ],
+     "floor_cm": 16000
     },
     "closing": null,
     "spawns": [
      [
-      44064,
-      -1806
-     ],
-     [
-      44064,
-      1806
-     ],
-     [
-      43168,
-      -1806
-     ],
-     [
-      43168,
-      1806
-     ],
-     [
-      41600,
-      -1806
-     ],
-     [
-      41600,
-      1806
+      33568,
+      1164
      ]
     ],
-    "patrols": [
-     [
-      [
-       40480,
-       -840
-      ],
-      [
-       43000,
-       -840
-      ],
-      [
-       43000,
-       840
-      ],
-      [
-       40480,
-       840
-      ]
-     ],
-     [
-      [
-       41320,
-       -420
-      ],
-      [
-       42272,
-       -420
-      ],
-      [
-       42272,
-       420
-      ],
-      [
-       41320,
-       420
-      ]
-     ]
-    ],
+    "patrols": [],
     "stations": [],
     "step_stations": [],
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -14470,19 +15065,62 @@
      "fires": null,
      "ladders": [],
      "charge": null
+    },
+    "height_cm": 16000,
+    "lift": null,
+    "summit": {
+     "center": [
+      33568,
+      364
+     ],
+     "height_cm": 16000,
+     "radius_cm": 1800,
+     "dais_cm": 120,
+     "stairs": [
+      [
+       34368,
+       2164,
+       14200
+      ],
+      [
+       34368,
+       2564,
+       14200
+      ],
+      [
+       31568,
+       2564,
+       14800
+      ],
+      [
+       31568,
+       -1836,
+       15400
+      ],
+      [
+       33568,
+       -1836,
+       16000
+      ],
+      [
+       33568,
+       -1286,
+       16000
+      ]
+     ]
     }
    },
    {
     "beat": "ch08.b15",
     "zone": 4,
     "entry": [
-     39080,
-     0,
-     0
+     33568,
+     -1286,
+     90
     ],
     "anchor": [
-     42720,
-     0
+     33568,
+     -336
     ],
     "objectives": [],
     "pickups": [],
@@ -14491,94 +15129,40 @@
     "volumes": [],
     "exit": {
      "center": [
-      44000,
-      0
+      33568,
+      -1286
      ],
      "size": [
-      500,
-      3360
-     ]
+      300,
+      300
+     ],
+     "floor_cm": 16000
     },
     "closing": null,
     "spawns": [
      [
-      44064,
-      -1806
-     ],
-     [
-      44064,
-      1806
-     ],
-     [
-      43168,
-      -1806
-     ],
-     [
-      43168,
-      1806
-     ],
-     [
-      41600,
-      -1806
-     ],
-     [
-      41600,
-      1806
+      33568,
+      1164
      ]
     ],
-    "patrols": [
-     [
-      [
-       40480,
-       -840
-      ],
-      [
-       43000,
-       -840
-      ],
-      [
-       43000,
-       840
-      ],
-      [
-       40480,
-       840
-      ]
-     ],
-     [
-      [
-       41320,
-       -420
-      ],
-      [
-       42272,
-       -420
-      ],
-      [
-       42272,
-       420
-      ],
-      [
-       41320,
-       420
-      ]
-     ]
-    ],
+    "patrols": [],
     "camera": [
-     39150,
-     -1176,
-     480,
-     39700,
-     -672,
-     420,
-     42160,
-     0,
-     180
+     32368,
+     -736,
+     16480,
+     32618,
+     -436,
+     16420,
+     33568,
+     1564,
+     16180
     ],
     "stations": [],
     "step_stations": [],
     "cache": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -14609,6 +15193,49 @@
      "fires": null,
      "ladders": [],
      "charge": null
+    },
+    "height_cm": 16000,
+    "lift": null,
+    "summit": {
+     "center": [
+      33568,
+      364
+     ],
+     "height_cm": 16000,
+     "radius_cm": 1800,
+     "dais_cm": 120,
+     "stairs": [
+      [
+       34368,
+       2164,
+       14200
+      ],
+      [
+       34368,
+       2564,
+       14200
+      ],
+      [
+       31568,
+       2564,
+       14800
+      ],
+      [
+       31568,
+       -1836,
+       15400
+      ],
+      [
+       33568,
+       -1836,
+       16000
+      ],
+      [
+       33568,
+       -1286,
+       16000
+      ]
+     ]
     }
    },
    {
@@ -14774,6 +15401,8 @@
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": "carry",
      "item": "box",
@@ -14808,7 +15437,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch08.b17",
@@ -14819,8 +15450,8 @@
      0
     ],
     "anchor": [
-     55768,
-     -448
+     58200,
+     500
     ],
     "objectives": [],
     "pickups": [],
@@ -14830,12 +15461,12 @@
      {
       "event": "volume_enter:vol_torii",
       "center": [
-       57220,
+       57800,
        0
       ],
       "size": [
-       400,
-       2560
+       1000,
+       2000
       ]
      }
     ],
@@ -14850,8 +15481,8 @@
      ]
     },
     "closing": [
-     58800,
-     0
+     58000,
+     -235
     ],
     "spawns": [
      [
@@ -14922,6 +15553,8 @@
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -14952,7 +15585,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch08.b18",
@@ -14963,8 +15598,8 @@
      0
     ],
     "anchor": [
-     56472,
-     448
+     58200,
+     500
     ],
     "objectives": [],
     "pickups": [],
@@ -15061,6 +15696,8 @@
     "step_stations": [],
     "cache": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -15091,7 +15728,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    }
   ],
   "pickups": [
@@ -15144,7 +15783,7 @@
    "horseback_ride: charge{}, objectives[], waves[], arcs_deg{}, route_length_m, horse_stamina{} as object",
    "combat_wave: complete.objectives[] (same shape as stealth_zone), volley_command{}, scripted{}",
    "production_task: release{} (pre-escort seal-cuts), escort.bleedout_s, escort.healing_lance_revive_s, escort.path_length_m",
-   "production_task.crank: moving_platform{}, rope_hazard{}; coop_npc as {npcs, turns_per_s}",
+   "production_task.crank: moving_platform{}, rope_hazard{}; coop_npc as {npcs, turns_per_s_per_npc}",
    "production_task.carry: dropped_item_returns_after_s, post_interact{}; beat-level crowd{}, combat:false",
    "supply_point on beats that host a League 補給所",
    "boss: hp{}, finisher, lethal_finisher, post_defeat{}, phases[].target_s, pattern_tables (L3 owns the table content)",

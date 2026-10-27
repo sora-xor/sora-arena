@@ -16,7 +16,8 @@ and [device-specific optimization guidance](https://dev.epicgames.com/documentat
 | --- | --- | --- |
 | Windows quality | DX12/SM6, Lumen GI/reflections, TSR, Virtual Shadow Maps, hardware-ray-tracing support, and MegaLights at Epic shadow tier (`sg.ShadowQuality=3`) | Supported RTX 4070-class reference hardware at 1440p |
 | Windows competitive | The same Windows cook at High scalability (`2`), with `r.MegaLights.Allow=0`, High shadow/GI/effects tiers, and no motion blur or gameplay depth of field | Lower-cost, readable combat presentation; requires profiling and tuning |
-| macOS M1 Ultra | Metal SM6, software Lumen with mesh distance fields, TSR, conventional shadowing, Nanite fallback meshes/LODs, and no MegaLights or hardware ray tracing | 1080p M1 Ultra reference path |
+| macOS M1 Ultra | `METAL_SM5` (UE 5.8.3 enables SM6 only on M2 and later), software Lumen with mesh distance fields, TSR, conventional shadowing, Nanite fallback meshes/LODs, and no MegaLights or hardware ray tracing | 1080p M1 Ultra reference path |
+| macOS M2 and later | `METAL_SM6` with Nanite (beta), otherwise the same as M1; virtual shadow maps stay off until measured | Not yet qualified; first run on an M2 Ultra |
 
 The existing common renderer settings enable Lumen, mesh distance fields and
 TSR. The Windows configuration targets DX12/SM6 only, with the DX11 fallback
@@ -34,11 +35,42 @@ measured.
 Epic's [UE 5.8 Mac requirements](https://dev.epicgames.com/documentation/unreal-engine/macos-development-requirements-for-unreal-engine)
 list software Lumen and TSR for M1+, while hardware Lumen/MegaLights require
 M2+ experimentally and Nanite/Virtual Shadow Maps require M2+ in beta. The Mac
-configuration therefore disables hardware ray tracing, MegaLights, Nanite, and
-Virtual Shadow Maps. It keeps the common Lumen and distance-field settings;
+configuration therefore disables hardware ray tracing, MegaLights and Virtual
+Shadow Maps. It leaves Nanite to the shader platform: UE 5.8.3 runs
+`METAL_SM6` only on Apple8 GPUs (M2 and later), which draw Nanite, while M1
+falls back to `METAL_SM5`, which cannot. It keeps the common Lumen and
+distance-field settings;
 [Lumen's software tracing path](https://dev.epicgames.com/documentation/unreal-engine/lumen-technical-details-in-unreal-engine)
 uses mesh distance fields. `r.Nanite.ProxyRenderMode=0` selects the ordinary
-fallback when Nanite is off, as described in Epic's [Nanite technical details](https://dev.epicgames.com/documentation/unreal-engine/nanite-technical-details).
+fallback where Nanite is unsupported, as described in Epic's [Nanite technical details](https://dev.epicgames.com/documentation/unreal-engine/nanite-technical-details).
+Estate terrain and foliage select `HI` at world construction only when the
+world's actual shader platform and UE's `UseNanite` runtime checks permit it.
+Otherwise they select the conventional `MAC` assets, including SM5, disabled
+Nanite and NullRHI runs. The suffix names existing asset tiers, not a hardware
+model. `SORA_ENVIRONMENT_TIER` logs the shader platform and selection; eligibility
+alone is not evidence that Nanite drew visible geometry. Changing rendering
+settings requires rebuilding the world to reselect these assets.
+The Mac cook explicitly targets both `SF_METAL_SM5` and `SF_METAL_SM6`;
+`SoraArena.Rendering.MacShaderTargets` checks the resolved configuration.
+For separate uncooked Metal checks, run
+`scripts/toolchain/capture-editor-game.sh SoraArena.Rendering 1280 720 sm6`
+and the same command ending in `sm5`. The wrapper builds the current module,
+exports each run's automation report under `Saved/Capture/`, and requires
+complete successful results with the requested shader model and Metal RHI.
+Use `SoraCapture.ArtReview.Dojo` for the fixed in-game art views after importing
+the dojo kit. Forced SM5 on M2 remains distinct from testing M1 hardware.
+Each art-review run also copies its acknowledged, newly written PNGs unchanged
+into that run's `frames/` directory. `capture.json` records their SHA-256 hashes,
+the source commit and working-tree state, viewport, actual renderer device,
+report/log hashes and any failures. Missing, stale, corrupt or wrongly sized
+frames fail verification. Later SM5/SM6 runs may replace the engine's ordinary
+`Saved/Screenshots/` files, but cannot overwrite these archived comparisons.
+The editor capture runner owns the log file and drains an inherited stdout/stderr
+pipe until EOF, including trace-server output after editor exit. It records the
+actual process status and completed raw-log hash in `log-completion.json`, which
+the manifest verifier checks and binds. If the pipe remains open for 60 seconds
+after editor exit, the retained log is marked incomplete and the capture fails;
+the runner does not terminate descendant or unrelated trace processes.
 Every production asset must still provide a usable conventional LOD or fallback
 mesh and card-fur route. These files cannot create missing geometry or prove
 that the current prototype assets are visually acceptable.

@@ -1,0 +1,114 @@
+{
+  "schema_version": 2,
+  "kind": "asset-ledger",
+  "ledger_id": "own-inventory-drone",
+  "source": "project",
+  "purpose": "OWN record for fc0858a9 Inventory drone source kit with independently reviewed 45a2af0a LOD0 socket export correction. Original six Blender reviews retained. Full Unreal import, gameplay and final appearance remain unqualified.",
+  "generator": "scripts/assets/write_own_ledger.py",
+  "records": [
+    {
+      "asset_id": "inventory-drone",
+      "name": "Inventory drone (目録)",
+      "kind": "generated-art",
+      "tier": "OWN",
+      "license": "project-owned",
+      "license_url": null,
+      "origin_url": "scripts/art/create_inventory_drone.py, scripts/art/create_runtime_weapon_lib.py, scripts/art/reexport_inventory_drone_lod0.py",
+      "mirror_url": null,
+      "commercial_use": true,
+      "redistribution": "unrestricted",
+      "derivatives": true,
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "attribution_text": null,
+      "changes": null,
+      "access": "generated",
+      "acquired_at_utc": "2026-10-26T02:00:45Z",
+      "acquired_by": "agent",
+      "storage": "repo-lfs",
+      "used_by": [
+        "/Game/Generated/Characters/Enemies/InventoryDrone/SM_Drone_Inventory"
+      ],
+      "fallback": null,
+      "generator": [
+        "scripts/art/create_inventory_drone.py",
+        "scripts/art/create_runtime_weapon_lib.py",
+        "scripts/art/reexport_inventory_drone_lod0.py"
+      ],
+      "derived_from": [],
+      "files": [
+        {
+          "path": "Content/SourceArt/Characters/Enemies/InventoryDrone/SM_Drone_Inventory.blend",
+          "bytes": 900285,
+          "sha256": "ea5999e82700b4a2478cad8f1bd9f49c4adf8704b18e5259eee2a5e0be6cdde3"
+        },
+        {
+          "path": "Content/SourceArt/Characters/Enemies/InventoryDrone/SM_Drone_Inventory.fbx",
+          "bytes": 1398124,
+          "sha256": "f7057061ddf3c2de8ab6d42d505793c70e6fc0fbe706630214bd7070962283be"
+        },
+        {
+          "path": "Content/SourceArt/Characters/Enemies/InventoryDrone/SM_Drone_Inventory_LOD1.fbx",
+          "bytes": 653068,
+          "sha256": "15968002a1fb1f86ebefbac59008b3171498bd80e6097af4bd8920d5c4e9646f"
+        },
+        {
+          "path": "Content/SourceArt/Characters/Enemies/InventoryDrone/SM_Drone_Inventory_LOD2.fbx",
+          "bytes": 268524,
+          "sha256": "4968624a6d32eb18d7ea6636acfded7c121a76639328f61e4f81a798f2f0ac91"
+        },
+        {
+          "path": "Content/SourceArt/Characters/Enemies/InventoryDrone/T_Drone_Inventory_BaseColor.png",
+          "bytes": 1325451,
+          "sha256": "f34af408af65780eb828bfb3524b6d3b30fd3714f40d47215d1a02943ac11469"
+        },
+        {
+          "path": "Content/SourceArt/Characters/Enemies/InventoryDrone/T_Drone_Inventory_Mask.png",
+          "bytes": 772758,
+          "sha256": "1d9d6953a8cdeff7ed28424d75259052d8fe17fe3bc7ae342e471d4232be16d6"
+        },
+        {
+          "path": "Content/SourceArt/Characters/Enemies/InventoryDrone/T_Drone_Inventory_NormalDX.png",
+          "bytes": 1669521,
+          "sha256": "2f5339df76b8bcacc137485c8f26a36b63c516c849f6db1f8cbc5f3a09c46f90"
+        },
+        {
+          "path": "Content/SourceArt/Characters/Enemies/InventoryDrone/T_Drone_Inventory_ORM.png",
+          "bytes": 1640842,
+          "sha256": "067597bcd4009b9aec9878c7b416336643c28a750d26cb61f043abd11d6900b2"
+        },
+        {
+          "path": "Content/SourceArt/Characters/Enemies/Renders/SM_Drone_Inventory_Envelope.png",
+          "bytes": 936091,
+          "sha256": "55fdc050aa459fe7613327d60a75bc6a9ac037a7d40f243dc3bcc69a07f6d6f8"
+        },
+        {
+          "path": "Content/SourceArt/Characters/Enemies/Renders/SM_Drone_Inventory_Front.png",
+          "bytes": 686080,
+          "sha256": "887733a3bb1315b4de8c7924ddf1d2463671d7107bd1c5188c777b191451af65"
+        },
+        {
+          "path": "Content/SourceArt/Characters/Enemies/Renders/SM_Drone_Inventory_Lineup.png",
+          "bytes": 809091,
+          "sha256": "872c8ec398d36752ec9472406583749eb922907deda0d457f4c6b1e368fa5c20"
+        },
+        {
+          "path": "Content/SourceArt/Characters/Enemies/Renders/SM_Drone_Inventory_Side.png",
+          "bytes": 677660,
+          "sha256": "4555c4adfcbc2ad382ee16c23da8d835602c8e20df01ed23ebe811c04a7b749a"
+        },
+        {
+          "path": "Content/SourceArt/Characters/Enemies/Renders/SM_Drone_Inventory_ThreeQuarter.png",
+          "bytes": 742260,
+          "sha256": "01d1f2015055e07e055740f9b24c23fdb60158a5e7bf3222f6a2dce56cb19340"
+        },
+        {
+          "path": "Content/SourceArt/Characters/Enemies/Renders/SM_Drone_Inventory_Top.png",
+          "bytes": 922010,
+          "sha256": "97dc9d80482eba08929c365972c5c718ff3554a65cc44e2adf09334f3f4039f9"
+        }
+      ]
+    }
+  ]
+}

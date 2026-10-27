@@ -6,6 +6,9 @@
 #include "SoraEquipmentComponent.h"
 #include "SoraGameEvents.h"
 #include "SoraPlayerCharacter.h"
+#include "SoraGameMode.h"
+#include "SoraCampaignDirector.h"
+#include "SoraFieldcraft.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/DirectionalLightComponent.h"
 #include "Components/PointLightComponent.h"
@@ -95,6 +98,13 @@ void USoraStealth::AddSurface(const FBox& Volume, StealthRules::FSurface Surface
 
 StealthRules::FSurface USoraStealth::SurfaceAt(const FVector& Feet) const
 {
+    if(const auto* Craft=USoraFieldcraft::Get(this))
+    {
+        const int32 MoatSteps=Craft->MoatFootstepPermille(Feet);
+        if(MoatSteps>=0)return {MoatSteps,MoatSteps};
+        const int32 FloodSteps=Craft->FloodFootstepPermille(Feet);
+        if(FloodSteps>=0) return {FloodSteps,FloodSteps};
+    }
     // The last floor added wins, so a nightingale floor's silent edge strip
     // is added after the corridor it runs along.
     for (int32 Index = Floors.Num() - 1; Index >= 0; --Index)
@@ -125,6 +135,8 @@ int32 USoraStealth::LightAt(const FVector& Location) const
         else if (Light->IsA<UDirectionalLightComponent>())
             KeyDeciLux = FMath::Max(KeyDeciLux, FMath::RoundToInt32(Light->Intensity * 10.f));
     }
+    for(TActorIterator<ASoraEnemy> It(GetWorld());It;++It)
+        Lamps+=It->LandingSearchlightAt(Location);
     return StealthRules::LightPermille(StealthRules::AmbientPermille(KeyDeciLux), Lamps);
 }
 
@@ -141,7 +153,23 @@ void USoraStealth::NoteState(ASoraEnemy& Guard, StealthRules::EState Previous, S
     OnDetected.Broadcast(Detection);
 }
 
-void USoraStealth::RaiseAlarm(ASoraEnemy& By, const FVector& Where)
+void USoraStealth::RaiseAlarm(ASoraEnemy& By,const FVector& Where)
+{ RaiseAlarmFrom(&By,Where); }
+
+void USoraStealth::RaiseSensorAlarm(const FVector& Where)
+{
+    if(!bZoneActive)return;
+    if(!bAlarm){RaiseAlarmFrom(nullptr,Where);return;}
+    // A later crossing raises searching guards back to alert; the zone's
+    // detection and alarm notifications still fire only once.
+    for(TActorIterator<ASoraEnemyController> It(GetWorld());It;++It)
+    {
+        const ASoraEnemy* Guard=nullptr;
+        if(SoraStealthZone::IsBrain(*It,Guard)&&Guard->IsAlive())It->HearAlarm(Where);
+    }
+}
+
+void USoraStealth::RaiseAlarmFrom(ASoraEnemy* By, const FVector& Where)
 {
     if (!bZoneActive || bAlarm)
         return;
@@ -151,7 +179,7 @@ void USoraStealth::RaiseAlarm(ASoraEnemy& By, const FVector& Where)
     {
         bDetected = true;
         FSoraStealthDetection Detection;
-        Detection.By = &By;
+        Detection.By = By;
         Detection.Response = StealthRules::Response(ZoneRules.OnDetected, ZoneRules.Difficulty);
         Detection.KnownLocation = Where;
         OnDetected.Broadcast(Detection);
@@ -159,10 +187,10 @@ void USoraStealth::RaiseAlarm(ASoraEnemy& By, const FVector& Where)
     for (TActorIterator<ASoraEnemyController> It(GetWorld()); It; ++It)
     {
         const ASoraEnemy* Guard = nullptr;
-        if (SoraStealthZone::IsBrain(*It, Guard) && Guard != &By && Guard->IsAlive())
+        if (SoraStealthZone::IsBrain(*It, Guard) && Guard != By && Guard->IsAlive())
             It->HearAlarm(Where);
     }
-    OnAlarm.Broadcast(&By);
+    OnAlarm.Broadcast(By);
 }
 
 void USoraStealth::AddBody(ASoraEnemy& Body)
@@ -377,22 +405,32 @@ ASoraEnemy* USoraStealth::DragTarget(const ASoraPlayerCharacter& Hero) const
         return nullptr;
     ASoraEnemy* Best = nullptr;
     float BestDistance = StealthRules::DragReachCm;
+    float SealDistance = MAX_flt;
+    const auto* Mode=GetWorld()?Cast<ASoraGameMode>(GetWorld()->GetAuthGameMode()):nullptr;
+    const bool SealLearned=Mode&&Mode->Campaign()&&Mode->Campaign()->IsMechanicInPlay(TEXT("seal_cut"));
     const FVector There = Hero.GetActorLocation();
     for (const FBody& Entry : Bodies)
     {
         ASoraEnemy* Body = Entry.Enemy.Get();
-        // A knocked-down conscript's collar is cut, not dragged.
-        if (!Body || !Body->IsBody() || Body->IsSubdued() || SoraDamage::FacingMilli(Hero, Body->GetActorLocation()) < 0 ||
+        if (!Body || !Body->IsBody() ||
             FMath::Abs(Body->GetActorLocation().Z - There.Z) > SoraStealthZone::ReachHeightCm)
             continue;
         const float Distance = FVector::Dist2D(There, Body->GetActorLocation());
+        // A nearer conscript's eligible collar must not lose Interact to a
+        // corpse farther away. The campaign still performs the held cut.
+        if(Body->IsSubdued())
+        {
+            if(SealLearned&&Body->CanCutSeal())SealDistance=FMath::Min(SealDistance,Distance);
+            continue;
+        }
+        if(SoraDamage::FacingMilli(Hero,Body->GetActorLocation())<0)continue;
         if (Distance <= BestDistance)
         {
             Best = Body;
             BestDistance = Distance;
         }
     }
-    return Best;
+    return BestDistance<SealDistance?Best:nullptr;
 }
 
 bool USoraStealth::BeginDrag(ASoraPlayerCharacter& Hero)

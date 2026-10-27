@@ -1848,6 +1848,7 @@ beats:
   fear: {spook_radius_cm: 900, recover_s: 2.5}
   auto_steer: setting
   dismount_allowed: true
+  on_spook: dismount_continue
   on_horse_down: dismount_continue
   waves:
   - enemies:

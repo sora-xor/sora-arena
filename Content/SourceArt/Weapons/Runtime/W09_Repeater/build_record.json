@@ -28,7 +28,7 @@
     {
      "file": "Content/SourceArt/Weapons/Runtime/W09_Repeater/SM_Weapon_09.fbx",
      "triangles": 29088,
-     "sha256": "e891f3d30d5d491872f49187ea533989ca171556271fb789c3ea30b193fdb840"
+     "sha256": "9744b4c9717489b726d8f3ddbd5d40543392537808db261a914e4160b7af340b"
     },
     {
      "file": "Content/SourceArt/Weapons/Runtime/W09_Repeater/SM_Weapon_09_LOD1.fbx",
@@ -72,7 +72,57 @@
     1.0,
     0.35,
     0.12
-   ]
+   ],
+   "socket_axes": {
+    "Grip_L": {
+     "x": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "z": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "Grip_R": {
+     "x": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "z": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "Magazine": {
+     "x": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "z": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "Muzzle": {
+     "x": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "z": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    }
+   }
   }
  },
  "sources": [
@@ -147,5 +197,27 @@
   "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_09_Neutral_1m.png",
   "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_09_Profile.png",
   "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_09_Estate_1m.png"
- ]
+ ],
+ "socket_fbx": {
+  "export": {
+   "apply_unit_scale": true,
+   "apply_scale_options": "FBX_SCALE_NONE",
+   "global_scale": 1.0,
+   "axis_forward": "Y",
+   "axis_up": "Z",
+   "bake_space_transform": true
+  },
+  "axes": "Blender's own (up Z, forward Y), which are UE 5.8's FBX import axes (Z up, -Y front, right-handed). The file declares them, so no importer converts it",
+  "unit": "centimetres, baked into the vertices and the socket translations. No node carries a rotation or a scale, so each socket imports at scale 1 on its own axes",
+  "gate": "scripts/art/screen_fbx_sockets.py, through scripts/art/fbx_unreal_sockets.py (Interchange's socket rule, calibrated on root's import of the drone's fc0858a9)",
+  "unchanged": "LODs without sockets keep the library's convention (-Y forward, x100 on the node). Unreal bakes both conventions to the same vertices",
+  "rewritten_by": "scripts/art/apply_staged_weapon_sockets.py",
+  "files": [
+   {
+    "file": "Content/SourceArt/Weapons/Runtime/W09_Repeater/SM_Weapon_09.fbx",
+    "sha256": "9744b4c9717489b726d8f3ddbd5d40543392537808db261a914e4160b7af340b",
+    "replaces_sha256": "e891f3d30d5d491872f49187ea533989ca171556271fb789c3ea30b193fdb840"
+   }
+  ]
+ }
 }

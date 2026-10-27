@@ -48,7 +48,7 @@ if (record["schema_version"]!=1 or record["name"]!=name
         or sha(source/record["fbx"])!=record["fbx_sha256"]):
     raise RuntimeError("Nyaagyu cargo geometry, collision envelope or package identity changed")
 mac_config=(root/record["mac_conventional_fallback"]["render_config"]).read_text()
-if "r.Nanite=0" not in mac_config or "r.Nanite.ProxyRenderMode=0" not in mac_config:
+if "r.Nanite.ProxyRenderMode=0" not in mac_config:
     raise RuntimeError("Nyaagyu cargo Mac conventional fallback policy changed")
 logo=(source/record["insignia_source"]).resolve()
 if sha(logo)!=record["insignia_sha256"] or len(record["exact_sora_kamon_objects"])!=2:
@@ -124,6 +124,7 @@ master_name="M_NyaagyuCargo_PBR"
 master_path=destination+"/"+master_name
 master=assets.load_asset(master_path) if assets.does_asset_exist(master_path) else tools.create_asset(
     master_name,destination,unreal.Material,unreal.MaterialFactoryNew())
+master.set_editor_property("used_with_nanite", True)
 for old_expression in list(lib.get_material_expressions(master)):
     lib.delete_material_expression(master, old_expression)
 if lib.get_num_material_expressions(master):
@@ -181,6 +182,7 @@ flat_name="M_NyaagyuCargo_FlatPBR"
 flat_path=destination+"/"+flat_name
 flat=assets.load_asset(flat_path) if assets.does_asset_exist(flat_path) else tools.create_asset(
     flat_name,destination,unreal.Material,unreal.MaterialFactoryNew())
+flat.set_editor_property("used_with_nanite", True)
 for old_expression in list(lib.get_material_expressions(flat)):
     lib.delete_material_expression(flat, old_expression)
 if lib.get_num_material_expressions(flat):

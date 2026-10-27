@@ -106,9 +106,10 @@ def sha256_file(path: Path, chunk: int = 1 << 20) -> str:
 
 
 def is_lfs_pointer(path: Path) -> bool:
+    header = b"version https://git-lfs.github.com/spec/v1"
     try:
         with open(path, "rb") as handle:
-            return handle.read(40).startswith(b"version https://git-lfs.github.com/spec/v1")
+            return handle.read(len(header)) == header
     except OSError:
         return False
 

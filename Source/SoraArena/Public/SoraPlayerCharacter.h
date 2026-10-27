@@ -51,6 +51,7 @@ public:
     virtual void SetKernelDriven(bool Enabled, const FSoraPracticeMap* Map = nullptr) override;
     virtual bool AdmitDamage(float& Damage, FSoraHit& Hit, AActor* Causer) override;
     virtual void OnDefeated(AActor* Causer) override;
+    void ProtectAfterSummitFall();
     virtual bool IsSparring() const override { return bDojoTraining; }
     // Crouching keeps the feet on the floor and lowers the eye smoothly.
     virtual void OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
@@ -59,6 +60,9 @@ public:
     void SetDojoTraining(bool Enabled);
     // Later chapters: Nyaakoto's katana, yumi, quiver and saya.
     void SetCampaignHeroLoadout(bool Enabled);
+    void SetCampaignGearVisible(bool Visible);
+    // Drop held controls and motion at either edge of a dialogue hold.
+    void ResetDialogueInput();
     void SuspendDojoAction();
     FSoraPracticeInput ConsumeKernelInput();
     bool IsDojoTraining() const { return bDojoTraining; }
@@ -133,9 +137,10 @@ protected:
     virtual void ResetLoadout() override;
     virtual void OnKernelSnapshot(const FSoraPracticePlayer& State) override;
     virtual bool IsFirstPersonHero() const override { return true; }
-    virtual bool WieldsDojoBokken() const override { return bDojoTraining; }
+    virtual bool WieldsDojoBokken() const override { return bDojoTraining&&WeaponId==0; }
     virtual void OnBodyRebuilt() override;
 private:
+    float SummitFallProtectedUntil=0.f;
     UPROPERTY() TObjectPtr<UCameraComponent> Camera;
     UPROPERTY() TObjectPtr<USoraEquipmentComponent> Equipment;
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> QuiverParts;

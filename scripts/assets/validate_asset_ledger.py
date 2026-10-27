@@ -8,8 +8,9 @@ Fails (exit 1) when:
     or a tracked path or tracked content hash matches an RST/REF/EXCL record;
  3. a PUB/OWN record carries a license outside the allowlist (NC/ND/SA/GPL rejected);
  4. a PUB-BY record lacks attribution_text or changes;
- 5. a recorded file is present but its size or SHA-256 differs (missing repo files
-    also fail; missing Local/ raw files fail only with --require-local);
+ 5. a recorded file is an unmaterialized Git LFS pointer, or its size or SHA-256
+    differs (missing repo files also fail; missing Local/ raw files fail only
+    with --require-local);
  6. an RST record declares no fallback;
  7. an agent-run script names a file or runtime path of an agent_handling:forbidden record.
 It also fails on any file under Content/Fab/ (Fab imports belong in
@@ -83,7 +84,8 @@ def check_files(root: Path, ledger_path: Path, record: dict, require_local: bool
                 report.error(f"{ledger_path.name}:{record.get('asset_id')}: recorded repo file {path} is missing")
             continue
         if L.is_lfs_pointer(full):
-            report.warn(f"{path} is an un-smudged LFS pointer; hash not checked (run git lfs pull)")
+            report.error(f"{ledger_path.name}:{record.get('asset_id')}: {path} is an unmaterialized Git LFS pointer; "
+                         "cannot verify asset bytes (run git lfs checkout, or git lfs pull if the object is not cached)")
             continue
         size = full.stat().st_size
         if entry.get("bytes") is not None and size != entry["bytes"]:

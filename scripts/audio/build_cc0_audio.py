@@ -27,6 +27,7 @@ The written files stay inside the plan's 0.5 GB for audio sources in the reposit
 from __future__ import annotations
 
 import argparse
+import copy
 import hashlib
 import json
 import math
@@ -80,8 +81,11 @@ class Raw:
     def __init__(self, local_root: Path):
         self.local_root = local_root
         self.rows: dict[str, tuple[dict, dict, str]] = {}
+        self.documents: dict[str, dict] = {}
         for ledger in sorted(RAW_LEDGERS.glob('audio_*.json')):
-            for record in json.loads(ledger.read_text(encoding='utf-8'))['assets']:
+            document = json.loads(ledger.read_text(encoding='utf-8'))
+            self.documents[str(ledger.relative_to(ROOT))] = document
+            for record in document['assets']:
                 for row in list(record.get('files', [])) + list(record.get('downloads', [])):
                     self.rows[row['file']] = (record, row, str(ledger.relative_to(ROOT)))
         self.cache: dict[str, tuple[np.ndarray, int]] = {}
@@ -143,9 +147,10 @@ class Build:
         self.raw = raw
         self.items: list[dict] = []
 
-    def add(self, name: str, category: str, cue: str, audio: np.ndarray, spans: list, target: dict, loop=False):
+    def add(self, name: str, category: str, cue: str, audio: np.ndarray, spans: list, target: dict, loop=False,
+            processing: str = ''):
         self.items.append({'name': name, 'category': category, 'cue': cue, 'audio': audio, 'target': target,
-                           'spans': spans, 'loop': loop})
+                           'spans': spans, 'loop': loop, 'processing': processing})
 
     # --- sources ---------------------------------------------------------------------------------------
     def span(self, rel: str, start: int, end: int, rate: int) -> dict:
@@ -408,9 +413,38 @@ def beds(b: Build) -> None:
     b.add('cc0_amb_festival_loop', 'Ambience', 'amb.festival', bed(loop, BED), spans, BED, loop=True)
 
 
-def render(raw: Raw) -> Build:
+def workshop(b: Build) -> None:
+    """Ch05 aizuchi's distinct cue and response; never a substitute for Okinu's voice."""
+    prefix = RAW + 'vcsl-c1ea7bc/Idiophones/Struck Idiophones/Anvil/'
+    for name, source, cue, peak in (
+        ('cc0_workshop_small_hammer', 'Anvil_Hit1_v1_rr1_Mid.wav', 'workshop.hammer.cue', -9.0),
+        ('cc0_workshop_sledge', 'Anvil_Hit2_v3_rr1_Mid.wav', 'workshop.hammer.hit', -5.0),
+    ):
+        y, span = b.whole(prefix + source)
+        # Keep the recorded attack, with a bounded tail inside the 600 ms
+        # cadence; no pitch randomisation that could move the attack.
+        y = trim(dsp.remove_dc(y))[:, :dsp.n_of(.42)]
+        target = {'P': peak, 'limit': 0.0}
+        b.add(name, 'Workshop', cue, one_shot(y, target, fade_out=.06), [span], target)
+
+
+def stream(b: Build) -> None:
+    """A positioned water source; the Adelaide recording still needs ecological/listening review."""
+    y, span, margin = b.bed_window(OGA + 'park-ambiences/download/park_ambience_river.wav', 48.0, 'even')
+    # One world position, so downmix the field recording rather than carrying
+    # its stereo panorama through the culvert's spatial attenuation.
+    y = dsp.highpass(np.mean(y, axis=0, keepdims=True), 80.0, 2)[:, margin:]
+    b.add('cc0_amb_stream_loop', 'Ambience', 'amb.stream', bed(crossfade_loop(y, 45.0, 3.0), BED),
+          [span], BED, loop=True, processing='49 s level-selected source span including 1 s filter pre-roll; '
+          'stereo averaged to mono; second-order 80 Hz high-pass; 45 s loop with 3 s equal-power crossfade; '
+          'circular DC removal and gain-only -26 LUFS / <= -3 dBTP. No listening or ecology approval.')
+
+
+def render(raw: Raw, workshop_only: bool = False, stream_only: bool = False) -> Build:
     b = Build(raw)
-    for part in (weapons, blades, explosions, footsteps, beds):
+    parts = (workshop,) if workshop_only else (stream,) if stream_only else (
+        weapons, blades, explosions, footsteps, beds, workshop, stream)
+    for part in parts:
         part(b)
     names = [item['name'] for item in b.items]
     if len(names) != len(set(names)):
@@ -456,10 +490,20 @@ def manifest(raw: Raw, rows: list[dict]) -> dict:
                 'layered_into': [],
                 'files': [],
             })
+            # A derivative is a separate ledger document: a source record's
+            # 'see top-level' reference alone loses the acquisition evidence.
+            source_evidence = raw.documents[record['raw_ledger']].get('license_evidence')
+            if source_evidence:
+                record['license_evidence'] = {
+                    **raw_record.get('license_evidence', {}),
+                    'source_ledger': record['raw_ledger'],
+                    'source_document': source_evidence,
+                }
             if position == 0:
                 record['files'].append({
                     'file': rel, 'bytes': row['bytes'], 'sha256': row['sha256'], 'cue': item['cue'],
                     'loop': item['loop'], 'target': item['target'], 'derived_from': item['spans'], 'qa': row['qa'],
+                    **({'processing': item['processing']} if item['processing'] else {}),
                 })
             else:
                 record['layered_into'].append(rel)
@@ -479,7 +523,8 @@ def manifest(raw: Raw, rows: list[dict]) -> dict:
                    '(scripts/assets/manifests/audio_*.json); docs/audio.md sections 1 and 2.1.',
         'generator': 'scripts/audio/build_cc0_audio.py',
         'regenerate': 'python3 scripts/audio/build_cc0_audio.py --local-root <tree holding Local/ThirdPartyRaw/audio>',
-        'format': '48 kHz / 24-bit PCM WAV, mono or stereo as recorded; beds carry a RIFF smpl loop over the whole file',
+        'format': '48 kHz / 24-bit PCM WAV, mono or stereo; positioned stream downmixed to mono; '
+                  'beds carry a RIFF smpl loop over the whole file',
         'loudness_policy': 'docs/audio.md section 4: transients peak-referenced ("P" after "limit" dB of soft-clip '
                            'density), sustained one-shots by maximum momentary loudness ("M"), beds by integrated '
                            'loudness ("I", gain only, <= -3 dBTP)',
@@ -489,17 +534,57 @@ def manifest(raw: Raw, rows: list[dict]) -> dict:
     }
 
 
+def merge_partial(existing: dict, fresh: dict) -> dict:
+    """Replace only built files, preserving other derivatives of the same upstream recording."""
+    merged = copy.deepcopy(existing)
+    records = {record['asset_id']: record for record in merged['records']}
+    owners = {row['file']: record['asset_id'] for record in merged['records'] for row in record['files']}
+    for addition in fresh['records']:
+        asset = addition['asset_id']
+        for row in addition['files']:
+            if row['file'] in owners and owners[row['file']] != asset:
+                fail(f"partial build cannot change the upstream owner of {row['file']}")
+        if asset not in records:
+            records[asset] = copy.deepcopy(addition)
+            continue
+        record = records[asset]
+        for key in ('tier', 'license', 'origin_url', 'authors', 'raw_ledger', 'storage', 'committed', 'license_evidence'):
+            if record.get(key) != addition.get(key):
+                fail(f'partial build cannot change {asset} metadata: {key}')
+        files = {row['file']: row for row in record['files']}
+        files.update({row['file']: copy.deepcopy(row) for row in addition['files']})
+        record['files'] = sorted(files.values(), key=lambda row: row['file'])
+        for key in ('used_by', 'layered_into'):
+            record[key] = sorted(set(record[key]) | set(addition[key]))
+    merged['records'] = sorted(records.values(), key=lambda record: record['asset_id'])
+    merged['total_bytes'] = sum(row['bytes'] for record in merged['records'] for row in record['files'])
+    if merged['total_bytes'] > BUDGET_BYTES:
+        fail('partial derivatives would exceed the audio budget')
+    merged['format'] = fresh['format']
+    return merged
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.split('\n', 1)[0])
     parser.add_argument('--local-root', type=Path, default=ROOT,
                         help='the tree whose Local/ThirdPartyRaw/audio holds the raw CC0 files (default: this tree)')
     parser.add_argument('--check', action='store_true', help='rebuild in a temporary folder and compare with the manifest')
+    selection = parser.add_mutually_exclusive_group()
+    selection.add_argument('--workshop-only', action='store_true',
+                        help='build/check only the two pinned workshop takes; preserve all other ledger rows')
+    selection.add_argument('--stream-only', action='store_true',
+                           help='build/check only the pinned river loop; preserve all other ledger rows')
     args = parser.parse_args()
     raw = Raw(args.local_root.resolve())
-    built = render(raw)
+    built = render(raw, args.workshop_only, args.stream_only)
+    selected = {f"{OUT.relative_to(ROOT)}/{item['category']}/{item['name']}.wav" for item in built.items}
+    partial = args.workshop_only or args.stream_only
     if args.check:
         recorded = {row['file']: row['sha256'] for record in json.loads(MANIFEST.read_text(encoding='utf-8'))['records']
-                    for row in record['files']}
+                    for row in record['files'] if not partial or row['file'] in selected}
+        for name, expected in recorded.items():
+            if not (ROOT / name).is_file() or hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != expected:
+                fail(f'{name} differs from its committed derivative SHA-256')
         with tempfile.TemporaryDirectory(prefix='sora-cc0-audio-') as temp:
             rows = write(built, Path(temp))
             fresh = {f"{OUT.relative_to(ROOT)}/{row['item']['category']}/{row['item']['name']}.wav": row['sha256']
@@ -510,7 +595,10 @@ def main() -> int:
         print(f'CC0_AUDIO_CURRENT: {len(fresh)} files')
         return 0
     rows = write(built, OUT)
-    dsp.save_json(MANIFEST, manifest(raw, rows))
+    fresh = manifest(raw, rows)
+    if partial:
+        fresh = merge_partial(json.loads(MANIFEST.read_text(encoding='utf-8')), fresh)
+    dsp.save_json(MANIFEST, fresh)
     loops = sum(1 for row in rows if row['item']['loop'])
     total = sum(row['bytes'] for row in rows)
     for row in rows:

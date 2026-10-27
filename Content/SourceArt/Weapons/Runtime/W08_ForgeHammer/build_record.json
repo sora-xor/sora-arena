@@ -32,7 +32,7 @@
     {
      "file": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/SM_Weapon_08.fbx",
      "triangles": 4408,
-     "sha256": "bd513b0cced41d792bd6a057df0e077197bebc2725acd9fc39bd31c70d0f1a80"
+     "sha256": "c7f50f8bf9ac822a1b6fdc8d083acac1664ffdee2e77b41458debe4cc1bd5baa"
     },
     {
      "file": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/SM_Weapon_08_LOD1.fbx",
@@ -71,7 +71,45 @@
     1.0,
     0.35,
     0.12
-   ]
+   ],
+   "socket_axes": {
+    "Grip_L": {
+     "x": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "z": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "Grip_R": {
+     "x": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "z": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "Muzzle": {
+     "x": [
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "z": [
+      1.0,
+      0.0,
+      0.0
+     ]
+    }
+   }
   }
  },
  "sources": [
@@ -134,5 +172,27 @@
   "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_08_Neutral_1m.png",
   "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_08_Profile.png",
   "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_08_Estate_1m.png"
- ]
+ ],
+ "socket_fbx": {
+  "export": {
+   "apply_unit_scale": true,
+   "apply_scale_options": "FBX_SCALE_NONE",
+   "global_scale": 1.0,
+   "axis_forward": "Y",
+   "axis_up": "Z",
+   "bake_space_transform": true
+  },
+  "axes": "Blender's own (up Z, forward Y), which are UE 5.8's FBX import axes (Z up, -Y front, right-handed). The file declares them, so no importer converts it",
+  "unit": "centimetres, baked into the vertices and the socket translations. No node carries a rotation or a scale, so each socket imports at scale 1 on its own axes",
+  "gate": "scripts/art/screen_fbx_sockets.py, through scripts/art/fbx_unreal_sockets.py (Interchange's socket rule, calibrated on root's import of the drone's fc0858a9)",
+  "unchanged": "LODs without sockets keep the library's convention (-Y forward, x100 on the node). Unreal bakes both conventions to the same vertices",
+  "rewritten_by": "scripts/art/apply_staged_weapon_sockets.py",
+  "files": [
+   {
+    "file": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/SM_Weapon_08.fbx",
+    "sha256": "c7f50f8bf9ac822a1b6fdc8d083acac1664ffdee2e77b41458debe4cc1bd5baa",
+    "replaces_sha256": "bd513b0cced41d792bd6a057df0e077197bebc2725acd9fc39bd31c70d0f1a80"
+   }
+  ]
+ }
 }

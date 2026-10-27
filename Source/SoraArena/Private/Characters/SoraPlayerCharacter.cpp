@@ -57,6 +57,7 @@ ASoraPlayerCharacter::ASoraPlayerCharacter(const FObjectInitializer& ObjectIniti
 {
     Camera=CastChecked<UCameraComponent>(GetEye());
     Camera->bUsePawnControlRotation=true; Camera->FieldOfView=94.f;
+    Camera->ProjectionMode=ECameraProjectionMode::Perspective;
     // UE 5.8's native viewmodel projection keeps a readable weapon silhouette
     // while shrinking the actual primitive away from nearby world geometry.
     Camera->bEnableFirstPersonFieldOfView=true;
@@ -87,6 +88,26 @@ void ASoraPlayerCharacter::HaltActions()
     // A held round (menu, card, result or a fall) closes the wheel untaken.
     if(Wheel.bOpen) CloseArmsWheel(false);
     bArmsKeyHeld=false;
+}
+void ASoraPlayerCharacter::ResetDialogueInput()
+{
+    HaltActions();
+    FireUp(); MeleeUp(); BlockUp(); SprintUp(); JumpUp(); InteractUp();
+    if(USoraFieldcraft* Craft=HeroFieldcraft(*this)) Craft->CancelHeldInteraction();
+    KernelHeldButtons=0; KernelQueuedButtons=0; InputForward=0.f; InputRight=0.f;
+    bScoreboardHeld=false;
+    bDojoRecoveryPending=false;
+    if(bVaulting)
+    {
+        bVaulting=false;
+        GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+    }
+    ConsumeMovementInputVector();
+    GetCharacterMovement()->StopMovementImmediately();
+    if(APlayerController* Player=Cast<APlayerController>(GetController())) Player->FlushPressedKeys();
+    // A transition cannot reuse an earlier Play snapshot in this input frame.
+    InputFrame=GFrameCounter;
+    InputFrameState=SoraInput::Dialogue;
 }
 void ASoraPlayerCharacter::SetDojoTraining(bool Enabled)
 {
@@ -153,6 +174,10 @@ FSoraPracticeInput ASoraPlayerCharacter::ConsumeKernelInput()
     KernelQueuedButtons=0;
     return Input;
 }
+void ASoraPlayerCharacter::SetCampaignGearVisible(bool Visible)
+{
+    for(const auto& Piece:QuiverParts) if(Piece) Piece->SetVisibility(Visible);
+}
 void ASoraPlayerCharacter::BuildHeroQuiver()
 {
     // Nyaakoto's red-fletched quiver is visible on the world model, while
@@ -204,27 +229,40 @@ void ASoraPlayerCharacter::BuildHeroSaya()
 }
 void ASoraPlayerCharacter::TickPlay(float Dt)
 {
-    if(!bDojoTraining) Equipment->TickGuard(Dt);
+    // The first forms keep their existing training guard. Completing the
+    // recovery form enables the normal stamina cycle and passive 残心.
+    const auto* G=PlayerGameMode(this);
+    if(!bDojoTraining||(G&&G->Campaign()->CanScoreDojoBout())) Equipment->TickGuard(Dt);
     if(bDojoTraining) TickDojoLessons();
     Equipment->TickWeapon();
     TickArmsWheel();
     TickVault();
     const USoraStealth* Stealth=USoraStealth::Get(this);
     GetCharacterMovement()->MaxWalkSpeed=FSoraCatalog::Get().Class(ClassId).Speed*Equipment->MoveScale(bSprint)*(Stealth?Stealth->HeroMoveScale():1.f);
+    // CharacterMovement ticks before its owner and has consumed this frame's
+    // input; the last consumed vector is the actual current movement intent.
+    if(G&&G->Arena()) GetCharacterMovement()->MaxWalkSpeed*=G->Arena()->BridgeMoveScale(*this,GetLastMovementInputVector());
     // The water caps his pace: a swimmer's stroke, slower still in a dive.
     if(const USoraFieldcraft* Craft=HeroFieldcraft(*this); Craft&&Craft->HeroPace()>0.f)
     {
         GetCharacterMovement()->MaxWalkSpeed=FMath::Min(GetCharacterMovement()->MaxWalkSpeed,Craft->HeroPace());
         bSprint=false;
     }
-    GetCharacterMovement()->MaxWalkSpeedCrouched=GetCharacterMovement()->MaxWalkSpeed*SoraStealthRules::CrouchSpeedPermille/1000.f;
+    // Diving already has its authored stroke pace; the land crouch multiplier
+    // must not turn 140 cm/s into 63 cm/s. Land crouching remains unchanged.
+    const USoraFieldcraft* WaterCraft=HeroFieldcraft(*this);
+    GetCharacterMovement()->MaxWalkSpeedCrouched=WaterCraft&&WaterCraft->HeroPace()>0.f
+        ?GetCharacterMovement()->MaxWalkSpeed
+        :GetCharacterMovement()->MaxWalkSpeed*SoraStealthRules::CrouchSpeedPermille/1000.f;
     // A sprint stands the hero up; the eye settles to his stance.
     if(bSprint&&GetCharacterMovement()->bWantsToCrouch) UnCrouch();
-    Eye->SetRelativeLocation(FVector(4.f,0.f,FMath::FInterpTo(Eye->GetRelativeLocation().Z,IsCrouched()?CrouchedEyeZ:StandingEyeZ,Dt,12.f)));
+    const auto* CrawlCraft=HeroFieldcraft(*this);
+    const float EyeZ=CrawlCraft&&(CrawlCraft->IsClimbCrawling()||CrawlCraft->IsMoatSwimming())?18.f:IsCrouched()?CrouchedEyeZ:StandingEyeZ;
+    Eye->SetRelativeLocation(FVector(4.f,0.f,FMath::FInterpTo(Eye->GetRelativeLocation().Z,EyeZ,Dt,12.f)));
     const float Moving=FMath::Clamp(GetVelocity().Size2D()/500.f,0.f,1.f);
-    Viewmodel->Sway(LifeTime,Moving,
-        Equipment->bReloading?-30.f:Equipment->IsCommittedStrike()?25.f:Equipment->IsBowDrawing()?-15.f:0.f,
-        bSprint?-15.f:0.f);
+    const FMinimalViewInfo PresentationView=SoraViewmodelPresentation::CameraView(*Camera);
+    Viewmodel->Sway(Dt,LifeTime,Moving,Equipment->bReloading,Equipment->IsCommittedStrike(),
+        bSprint,Equipment->IsBowDrawing(),PresentationView,Equipment->BowAimDirection());
 }
 void ASoraPlayerCharacter::TickDojoLessons()
 {
@@ -257,7 +295,12 @@ void ASoraPlayerCharacter::NoteDojoSwing(float StartedAt,float RecoveredAt,float
 }
 bool ASoraPlayerCharacter::AdmitDamage(float& Damage,FSoraHit& Hit,AActor* Causer)
 {
+    if(GetWorld()&&GetWorld()->GetTimeSeconds()<SummitFallProtectedUntil) return false;
     return SoraDefense::AdmitHero(*this,Damage,Hit,Causer);
+}
+void ASoraPlayerCharacter::ProtectAfterSummitFall()
+{
+    SummitFallProtectedUntil=GetWorld()->GetTimeSeconds()+1.f;
 }
 void ASoraPlayerCharacter::OnStartCrouch(float HalfHeightAdjust,float ScaledHalfHeightAdjust)
 {
@@ -266,6 +309,7 @@ void ASoraPlayerCharacter::OnStartCrouch(float HalfHeightAdjust,float ScaledHalf
     // eye starts where it was before TickPlay settles it lower.
     GetMesh()->SetRelativeLocation(FVector(0.f,0.f,-88.f+HalfHeightAdjust));
     Eye->AddRelativeLocation(FVector(0.f,0.f,HalfHeightAdjust));
+    if(const auto* Craft=HeroFieldcraft(*this);Craft&&(Craft->IsClimbCrawling()||Craft->IsMoatSwimming())) Eye->SetRelativeLocation(FVector(4,0,18));
 }
 void ASoraPlayerCharacter::OnEndCrouch(float HalfHeightAdjust,float ScaledHalfHeightAdjust)
 {
@@ -285,13 +329,16 @@ void ASoraPlayerCharacter::Forward(float V)
     // On the wall the fieldcraft reads the axis to climb; a vault carries him.
     if(bVaulting) return;
     if(const USoraFieldcraft* Craft=HeroFieldcraft(*this); Craft&&Craft->HoldsHero()) return;
+    if(const auto* G=PlayerGameMode(this); G&&G->Campaign()->IsWindBraced()) return;
     if(CanPlay()) AddMovementInput(GetActorForwardVector(),V);
 }
 void ASoraPlayerCharacter::Strafe(float V)
 {
     if(bKernelDriven) { InputRight=V; return; }
+    if(auto* G=PlayerGameMode(this); G&&G->Campaign()&&G->Campaign()->PlayerBellowsAxis(V)) return;
     if(bVaulting) return;
     if(const USoraFieldcraft* Craft=HeroFieldcraft(*this); Craft&&Craft->HoldsHero()) return;
+    if(const auto* G=PlayerGameMode(this); G&&G->Campaign()->IsWindBraced()) return;
     if(CanPlay()) AddMovementInput(GetActorRightVector(),V);
 }
 // While the arms wheel is open, look input moves its cursor instead of the view.
@@ -327,6 +374,7 @@ void ASoraPlayerCharacter::FireDown()
     if(const USoraFieldcraft* Craft=HeroFieldcraft(*this); Craft&&Craft->ArmsStowed()) return;
     // A held sprint blocks the trigger until released; a toggled one ends here.
     if(TogglesSprint()) bSprint=false;
+    if(auto* G=PlayerGameMode(this)) G->Campaign()->ReleaseWindBrace();
     Equipment->TriggerDown();
 }
 void ASoraPlayerCharacter::FireUp() { KernelHeldButtons&=~1u; Equipment->TriggerUp(); }
@@ -342,6 +390,7 @@ void ASoraPlayerCharacter::JumpDown()
 {
     if(bKernelDriven) { if(CanPlay()) KernelQueuedButtons|=8; return; }
     if(!CanPlay()||bVaulting) return;
+    if(auto* G=PlayerGameMode(this)) G->Campaign()->ReleaseWindBrace();
     // Left or Right with Jump inside a 転 window rolls to the opponent's flank instead.
     if(SoraDefense::Marobashi(*this,GetInputAxisValue(TEXT("MoveRight")))) return;
     // At the climbing face's foot Jump reaches for the holds; on the wall it lets go.
@@ -369,6 +418,7 @@ void ASoraPlayerCharacter::Reload()
 void ASoraPlayerCharacter::Interact()
 {
     if(!CanPlay()) return;
+    if(auto* G=PlayerGameMode(this); G&&G->Campaign()&&(G->Campaign()->InteractHorseTreatment(*this)||G->Campaign()->InteractFoundry(*this))) return;
     // Held at a body in a stealth zone, Interact drags it.
     if(USoraStealth* Stealth=USoraStealth::Get(this); Stealth&&Stealth->BeginDrag(*this)) return;
     // Held at the beat's fieldcraft: a lamp snuffed, the downed raised, a
@@ -376,12 +426,34 @@ void ASoraPlayerCharacter::Interact()
     if(USoraFieldcraft* Craft=HeroFieldcraft(*this); Craft&&Craft->Interact(*this)) return;
     if(auto* G=PlayerGameMode(this)) G->Interact(this);
 }
-void ASoraPlayerCharacter::InteractUp() { if(USoraStealth* Stealth=USoraStealth::Get(this)) Stealth->EndDrag(); }
+void ASoraPlayerCharacter::InteractUp()
+{
+    if(USoraStealth* Stealth=USoraStealth::Get(this)) Stealth->EndDrag();
+    if(auto* G=PlayerGameMode(this); G&&G->Campaign())
+    {
+        G->Campaign()->StopPlayerCrank(false);
+        G->Campaign()->CancelFoundryWork();
+        G->Campaign()->CancelHorseTreatment();
+        G->Campaign()->CancelCargoUnload();
+        G->Campaign()->ReleaseWorkshopCraft();
+        G->Campaign()->CancelTerminalWork(true);
+        G->Campaign()->CancelHelm();
+        G->Campaign()->CancelCopying();
+        G->Campaign()->CancelSpineCut();
+        G->Campaign()->CancelBulkheadHold();
+        G->Campaign()->CancelConstructCut();
+        G->Campaign()->ReleaseWindBrace();
+    }
+}
 void ASoraPlayerCharacter::CrouchPressed()
 {
     if(bKernelDriven||!CanPlay()) return;
+    if(USoraFieldcraft* Craft=HeroFieldcraft(*this);Craft&&(Craft->IsOnLadder()||Craft->MoatCrouch(*this)||Craft->ClimbCrouch(*this))) return;
     // The wish, not the stance: under a low ceiling the stand waits for headroom.
     if(GetCharacterMovement()->bWantsToCrouch) { UnCrouch(); return; }
+    // Cancel before CharacterMovement lowers the capsule, including a release
+    // arriving in this same input frame inside a successful bend's timing band.
+    if(auto* G=PlayerGameMode(this);G&&G->Campaign())G->Campaign()->CancelWorkshopCraft();
     bSprint=false; Crouch();
 }
 void ASoraPlayerCharacter::SheathePressed()
@@ -408,6 +480,7 @@ void ASoraPlayerCharacter::BlockDown()
     // With the toggle setting, a second press lowers the guard.
     if(TogglesGuard()&&IsGuarding()) { BlockUp(); return; }
     if(bKernelDriven) { KernelHeldButtons|=4; return; }
+    if(const USoraFieldcraft* Craft=HeroFieldcraft(*this); Craft&&Craft->ArmsStowed()) return;
     Equipment->GuardDown(bDojoTraining,bCampaignHero);
 }
 void ASoraPlayerCharacter::BlockUp() { KernelHeldButtons&=~4u; Equipment->GuardUp(); }
@@ -446,6 +519,16 @@ void ASoraPlayerCharacter::WeaponKey(int32 Group,int32 Slot)
 {
     if(bKernelDriven||!CanPlay()||Wheel.bOpen) return;
     if(const USoraFieldcraft* Craft=HeroFieldcraft(*this); Craft&&Craft->ArmsStowed()) return;
+    if(bDojoTraining)
+    {
+        if(Group==2)
+        {
+            if(auto* G=PlayerGameMode(this); G&&G->bCampaign&&G->Campaign()->IsWeaponUnlocked(18))
+                Equipment->EquipCampaignWeapon(18);
+        }
+        else if(Group==0||Group==1) Equipment->EquipClassSlot(0);
+        return;
+    }
     if(bCampaignHero&&!bDojoTraining) { SelectArmsGroup(Group); return; }
     if(Slot!=INDEX_NONE) Equipment->EquipClassSlot(Slot);
 }
@@ -467,6 +550,7 @@ unsigned ASoraPlayerCharacter::ArmsMask(bool bNow) const
 unsigned ASoraPlayerCharacter::HoldableArms() const { return ArmsMask(true); }
 bool ASoraPlayerCharacter::TakeUpArm(int32 NewWeaponId)
 {
+    if(const USoraFieldcraft* Craft=HeroFieldcraft(*this); Craft&&Craft->ArmsStowed()) return false;
     if(NewWeaponId==INDEX_NONE) return false;
     if(NewWeaponId==WeaponId) { ArmsTakenTime=GetWorld()->GetTimeSeconds(); return true; }
     if(!Equipment->EquipCampaignWeapon(NewWeaponId)) return false;
@@ -843,7 +927,8 @@ void ASoraPlayerCharacter::LoadControlProfile()
     // The game mode names the slot. Without one the defaults apply and nothing is saved.
     const auto* G=PlayerGameMode(this);
     ControlSlot=G?G->ControlSlotName:FString();
-    ControlProfile=ControlSlot.IsEmpty()?nullptr:Cast<USoraControlSaveGame>(UGameplayStatics::LoadGameFromSlot(ControlSlot,0));
+    ControlProfile=!ControlSlot.IsEmpty()&&UGameplayStatics::DoesSaveGameExist(ControlSlot,0)
+        ?Cast<USoraControlSaveGame>(UGameplayStatics::LoadGameFromSlot(ControlSlot,0)):nullptr;
     if(!ControlProfile||ControlProfile->SaveSchema!=USoraControlSaveGame::Schema)
         ControlProfile=USoraControlSaveGame::New();
     if(!ControlProfile) return;
@@ -903,7 +988,7 @@ bool ASoraPlayerCharacter::AcceptsInput(uint8 States)
     // Every press in one input frame is judged by the state that frame began
     // in, so the key that closes the menu or title card never also acts in play.
     if(InputFrame!=GFrameCounter) { InputFrame=GFrameCounter; InputFrameState=G->InputState(); }
-    return (States&InputFrameState)!=0;
+    return (States&InputFrameState&G->InputState())!=0;
 }
 void ASoraPlayerCharacter::BindPress(UInputComponent* Input,const TCHAR* Action,void (ASoraPlayerCharacter::*Handler)())
 {

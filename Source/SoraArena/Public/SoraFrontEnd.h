@@ -14,7 +14,7 @@ namespace SoraUI
 enum class EScreen : uint8
 {
     Title, Main, Pause, ChapterSelect, Practice, Wallet, Settings, Credits, Confirm,
-    Graphics, Audio, Subtitles, Controls, Accessibility, Capture,
+    Graphics, Audio, Subtitles, Controls, Accessibility, Capture, Codex, CodexEntry,
 };
 // What a key, click or wheel step asks of the open screen.
 enum class ECommand : uint8 { None, Up, Down, Left, Right, Accept, Back, Start, Subtitles };
@@ -26,14 +26,14 @@ enum class EAction : uint8
     Resume, Restart, ReturnToTitle, Chapter,
     LobbyMode, LobbyMap, LobbyClass, LobbySpecial, LobbyDifficulty, LobbyPlayers, LobbyStart,
     WalletPair, WalletOpen, WalletDisconnect,
-    ConfirmYes, ConfirmNo, Back,
+    ConfirmYes, ConfirmNo, Back, Codex, CodexEntry,
     // The settings hub's entries.
     OpenGraphics, OpenAudio, OpenSubtitles, OpenControls, OpenAccessibility,
     GraphicsPreset, ResolutionScale, FrameRateLimit, VSync, WindowMode,
     // Param is the ESoraAudioBus.
     Volume,
     Subtitles, SubtitleSize, SpeakerNames, SoundCaptions,
-    TelegraphPalette, ToggleGuard, ToggleSprint, CampaignDifficulty, AutoSteer, VolleyAutoOrder, ReduceFlashing, CameraShake,
+    TelegraphPalette, ToggleGuard, ToggleSprint, CampaignDifficulty, AutoSteer, HoldToCrank, RhythmAssist, VolleyAutoOrder, ReduceFlashing, CameraShake,
     LookSensitivity, MouseSensitivity, InvertLook, MoveDeadZone, LookDeadZone,
     // Param is the SoraInput::Remappable entry.
     Binding, ResetControls, CaptureCancel,
@@ -64,7 +64,16 @@ struct FRow
     void SetHint(const SoraText::FLine& Line) { HintJapanese = Line.Japanese; HintEnglish = Line.English; }
 };
 
-// One line of the credits: our own, then each file in ThirdPartyNotices.
+// A read-only saved discovery. Keys 0–47 are the existing collectible bits;
+// 48 is the separate Toshiya challenge, never part of the 48-item total.
+struct FCodexEntry
+{
+    int32 Key = INDEX_NONE;
+    FString Id;
+    SoraText::FLine Title, Context, Body;
+};
+
+// One line of the credits: our own, then source acknowledgements and licenses.
 // Our own lines carry an English subtitle; the notices are shown as written.
 struct FCreditLine
 {
@@ -102,7 +111,8 @@ SORAARENA_API FText SpecialTradeoff(int32 WeaponId);
 // The name of one of Nyaakoto's six groups of arms (SoraArmsRules::EGroup),
 // or empty for another number.
 SORAARENA_API FText ArmsGroupName(int32 Group);
-// Reads ThirdPartyNotices/*.md and *.txt under the project directory.
+// Reads ThirdPartyNotices/CREDITS.md and separate license notices. ASSETS.md
+// remains staged for the complete asset audit but is not a menu document.
 SORAARENA_API bool LoadCredits(TArray<FCreditLine>& Out, SoraText::FLine& Error);
 // Smallest Slate font sizes (points at the 1080p reference); the game
 // viewport scales them to 0.666 at 720p.
@@ -168,6 +178,14 @@ public:
     const SoraText::FLine& CreditsError() const { return CreditsLoadError; }
     // Lines the credits list has scrolled past.
     int32 CreditsScroll = 0;
+    const TArray<SoraUI::FCodexEntry>& CodexEntries() const { return DiscoveredEntries; }
+    const SoraUI::FCodexEntry* SelectedCodexEntry() const;
+    SoraText::FLine CodexSummary() const;
+    // A viewport-independent fraction of the actual laid-out scroll extent.
+    float CodexScrollFraction() const { return CodexScroll; }
+    // A scrollbar drag has already moved the view; retain its position without
+    // rebuilding that view during the mouse capture.
+    void SetCodexScrollFraction(float Fraction) { CodexScroll = FMath::Clamp(Fraction, 0.f, 1.f); }
     // Broadcast after every change the view must redraw.
     FSimpleMulticastDelegate OnChanged;
 private:
@@ -186,6 +204,11 @@ private:
     TArray<SoraUI::FCreditLine> CreditLines;
     SoraText::FLine CreditsLoadError;
     bool bCreditsLoaded = false;
+    TArray<SoraUI::FCodexEntry> DiscoveredEntries;
+    int32 CodexKey = INDEX_NONE;
+    float CodexScroll = 0.f;
+    void BuildCodexRows();
+    void RefreshCodexEntries();
     bool bWatchingWallet = false;
     int32 CaptureIndex = INDEX_NONE;
     SoraUI::EDevice CaptureWith = SoraUI::EDevice::KeyboardMouse;

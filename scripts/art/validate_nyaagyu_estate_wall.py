@@ -55,7 +55,7 @@ assert record["mac_conventional_fallback"] == {
     "render_config": "Config/Mac/MacEngine.ini",
 }
 mac_config = (ROOT / record["mac_conventional_fallback"]["render_config"]).read_text()
-assert "r.Nanite=0" in mac_config and "r.Nanite.ProxyRenderMode=0" in mac_config
+assert "r.Nanite.ProxyRenderMode=0" in mac_config
 world = "".join(path.read_text() for path in sorted((ROOT / "Source/SoraArena/Private/World").glob("*.cpp")))
 assert "FVector(100,5200,540)" in world and "FVector(6400,100,540)" in world
 assert Path(bpy.data.filepath).resolve() == (OUT / record["source_blend"]).resolve()

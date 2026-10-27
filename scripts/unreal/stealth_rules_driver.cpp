@@ -1,5 +1,8 @@
 #include "SoraStealthRules.h"
+#include "SoraMillisecondClock.h"
 #include <cassert>
+#include <initializer_list>
+#include <limits>
 
 using namespace SoraStealthRules;
 
@@ -28,6 +31,65 @@ int RunUntilChange(FMind& Mind, FSenses Senses, int Limit, FVigilance Vigilance 
 
 int main()
 {
+    // The real adapter receives float frame deltas. Search and gallery hint
+    // thresholds must track active seconds at common and variable frame rates.
+    for (const int Fps : {30, 60, 120, 144})
+    {
+        FSoraMillisecondClock Clock;
+        const float Dt = 1.f / Fps;
+        int Elapsed = 0;
+        FMind Searcher = Enter(Hunting(), EState::Search, 0);
+        const FVigilance Vigil = [] { auto V=Watchful(); V.SearchDurationMs=20000; return V; }();
+        for (int FrameIndex = 1; FrameIndex <= Fps * 60; ++FrameIndex)
+        {
+            const int Delta = Clock.Advance(Dt);
+            Elapsed += Delta;
+            const double ActiveMs = static_cast<double>(Dt) * FrameIndex * 1000.;
+            assert(Elapsed <= ActiveMs + 1.e-7 && ActiveMs - Elapsed < 1.);
+            if (FrameIndex < Fps * 20)
+            {
+                Searcher = Step(Searcher, Quiet(), Delta, Vigil);
+                assert(Searcher.State == EState::Search);
+            }
+            else if (FrameIndex == Fps * 20)
+            {
+                Searcher = Step(Searcher, Quiet(), Delta, Vigil);
+                assert(Searcher.State == EState::Unaware && Elapsed == 20000);
+            }
+            if (FrameIndex < Fps * 60) assert(Elapsed < 60000);
+        }
+        assert(Elapsed == 60000);
+    }
+    FSoraMillisecondClock MixedClock;
+    double ActiveSeconds = 0.;
+    int ActiveMs = 0;
+    const float MixedFrames[] = {1.f/30, 1.f/60, 1.f/120, 1.f/144, .0004f, .125f};
+    for (int Index = 0; Index < 6000; ++Index)
+    {
+        const float Dt = MixedFrames[Index % 6];
+        ActiveSeconds += Dt;
+        ActiveMs += MixedClock.Advance(Dt);
+        assert(ActiveMs <= ActiveSeconds * 1000. + 1.e-7 && ActiveSeconds * 1000. - ActiveMs < 1.);
+    }
+    FSoraMillisecondClock PauseClock;
+    assert(PauseClock.Advance(.00075) == 0);
+    // Paused owners do not feed wall time; zero/invalid deltas also preserve
+    // the fraction so resuming cannot lose or invent active milliseconds.
+    for (int FrameIndex = 0; FrameIndex < 1000; ++FrameIndex) assert(PauseClock.Advance(0) == 0);
+    assert(PauseClock.Advance(-1) == 0);
+    assert(PauseClock.Advance(std::numeric_limits<double>::quiet_NaN()) == 0);
+    assert(PauseClock.Advance(std::numeric_limits<double>::infinity()) == 0);
+    assert(PauseClock.Advance(.0005) == 1);
+    PauseClock.Reset();
+    assert(PauseClock.Advance(.00075) == 0);
+    // A sub-millisecond frame still delivers its one-off noise impulse.
+    FSenses InstantNoise = Quiet();
+    InstantNoise.NoiseImpulse = 1000;
+    FMind InstantGuard = Step(Calm(), InstantNoise, 0);
+    assert(InstantGuard.State == EState::Alert && InstantGuard.StateMs == 0);
+    InstantGuard = Step(InstantGuard, Quiet(), PauseClock.Advance(.0005));
+    assert(InstantGuard.State == EState::Alert && InstantGuard.StateMs == 1);
+
     // Sight: only in the view cone, within range and unobstructed.
     const FSight Front{800, 1000, 1000, 1000, false};
     assert(InView(Front));
@@ -69,6 +131,10 @@ int main()
     // A drop off a roof thuds 9 m around, as loud as a blade.
     assert(NoiseRadiusCm(ENoise::Landing) == 900 && !IsContinuous(ENoise::Landing) &&
         NoisePeakPermille(ENoise::Landing) == NoisePeakPermille(ENoise::Melee));
+    // The palace sliding panel is an impulse with a four-metre base reach.
+    assert(!IsContinuous(ENoise::Fusuma));
+    assert(HeardPermille(ENoise::Fusuma,400,false)>0 && HeardPermille(ENoise::Fusuma,401,false)==0);
+    assert(HeardPermille(ENoise::Fusuma,200,true)>0 && HeardPermille(ENoise::Fusuma,201,true)==0);
     assert(HeardPermille(ENoise::Lure, 600, false) == 600 && HeardPermille(ENoise::Lure, 1401, false) == 0);
     assert(HeardPermille(ENoise::Lure, 600, false) * AwarenessScale >= SuspiciousAt &&
         HeardPermille(ENoise::Lure, 600, false) * AwarenessScale < AwarenessMax);

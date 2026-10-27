@@ -1,0 +1,1775 @@
+{
+  "schema": "sora.weapon-review.v1",
+  "source_manifest": {
+    "file": "Content/SourceArt/Weapons/Runtime/manifest.json",
+    "sha256": "cdb2bb8e1d9173093d0e6900cb92147ccd93a77ce9aaddfcb1525df2a2ef33ab"
+  },
+  "kits": {
+    "W00_Katana": {
+      "file": "Content/SourceArt/Weapons/Runtime/W00_Katana/build_record.json",
+      "sha256": "738655d5934b50ebf9c834e4c27aafb02a4231f69bb14f91006c962dbc94015d"
+    },
+    "W01_ArcCarbine": {
+      "file": "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/build_record.json",
+      "sha256": "3a078c093f40c162451cde8d2ee04ad3ae87b78bb1e415429108caf191b4c2f3"
+    },
+    "W02_Kusarigama": {
+      "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/build_record.json",
+      "sha256": "d45fb87167d1102db43750887b604abf59083cceb8956ea876e92d1611b821f0"
+    },
+    "W04_Wakizashi": {
+      "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/build_record.json",
+      "sha256": "e202c803da882c3b995d06dd016c6cb3234db43740e29073ddf1d49deb05fd1e"
+    },
+    "W05_CoilMatchlock": {
+      "file": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/build_record.json",
+      "sha256": "2bf9eddeed86585ceb7bf05c882e41a8b63cb8785f7f9228cda8ada40ca89f45"
+    },
+    "W06_Kanabo": {
+      "file": "Content/SourceArt/Weapons/Runtime/W06_Kanabo/build_record.json",
+      "sha256": "a2407d41dfe1e30b55b8c065724a23f204762319994e8f2382adf2531c81019a"
+    },
+    "W07_GrenadeLauncher": {
+      "file": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/build_record.json",
+      "sha256": "9f2e3cacba44e38970beacc6d46e9054eac965c5cbe97022d235869d4095d323"
+    },
+    "W08_ForgeHammer": {
+      "file": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/build_record.json",
+      "sha256": "002a35cdebb68dd49a838201bea5a9b3caa18f69499868329bf7356706077889"
+    },
+    "W09_Repeater": {
+      "file": "Content/SourceArt/Weapons/Runtime/W09_Repeater/build_record.json",
+      "sha256": "3876dee589a25dd75d00a5d602baf44f1c6345381fc46fc3b15773f6a428e08e"
+    },
+    "W10_Tanto": {
+      "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/build_record.json",
+      "sha256": "31bbc01ac8a41134ecf86427e1964021a3ec537c00710d0deeef456be2ca30d0"
+    },
+    "W12_MonofilamentNaginata": {
+      "file": "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/build_record.json",
+      "sha256": "2d8994e79f1ad709c6985724eec33863ba2bf423c5560aebd2d0633ad3d6ee30"
+    },
+    "W14_PlasmaMatchlock": {
+      "file": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/build_record.json",
+      "sha256": "b47fa583afc2f257e3775146d9a8af92d6397145ec67b566f044b3d710a2d133"
+    },
+    "W15_MicroMortar": {
+      "file": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/build_record.json",
+      "sha256": "111e776eba4ab24a120022b20db4087b9de1d6faf10c68b3f4fa47ca820d6b78"
+    },
+    "W17_HealingLance": {
+      "file": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/build_record.json",
+      "sha256": "d492a20d7a287c4eb339a2c8b0b39c8e17b85fe25fe6f0fdd694c538ebcb77fc"
+    },
+    "W19_Yari": {
+      "file": "Content/SourceArt/Weapons/Runtime/W19_Yari/build_record.json",
+      "sha256": "fa1be883ddfdbeb48bca7aaa8c19900daa1a54591a23a607245a09a473db2ec5"
+    },
+    "W20_Naginata": {
+      "file": "Content/SourceArt/Weapons/Runtime/W20_Naginata/build_record.json",
+      "sha256": "bd7c74f63421d9db85433ef3508e03b458510f7f90d7d68e5efaaf4300b48d74"
+    }
+  },
+  "assets": {
+    "SM_Weapon_00": {
+      "kit": "W00_Katana",
+      "lods": [
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00.fbx",
+          "triangles": 65272,
+          "sha256": "87ed13c67772c4bd7359107787c180e5775c839a6cfcc8507c9ad36f3acf5005",
+          "min_cm": [
+            -18.99240016937256,
+            -3.6500003188848495,
+            -3.800000250339508
+          ],
+          "max_cm": [
+            81.97282552719116,
+            3.6500003188848495,
+            7.589800655841827
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.002234129933640361,
+            0.017186224460601807
+          ],
+          "uv_max": [
+            0.997765839099884,
+            0.997765863314271
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00_LOD1.fbx",
+          "triangles": 27414,
+          "sha256": "4845a80d9a4291839b2a94574249c246d733ab7ce445af92d19193793b8f7116",
+          "min_cm": [
+            -18.992400169372342,
+            -3.6518200032910557,
+            -3.7996307015419006
+          ],
+          "max_cm": [
+            81.97522163391585,
+            3.651821733216277,
+            7.589761912822723
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.0022341501899063587,
+            0.017227530479431152
+          ],
+          "uv_max": [
+            0.997765839099884,
+            0.997765863314271
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00_LOD2.fbx",
+          "triangles": 10442,
+          "sha256": "1e94856bc9430f5dfd630bb90d6a069fed8eed4e3500d68dcdfb3df1e04f7f87",
+          "min_cm": [
+            -18.984706659657395,
+            -3.652014032992065,
+            -3.7908360362052917
+          ],
+          "max_cm": [
+            81.98409676518651,
+            3.6520158787643675,
+            7.590903341770172
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.0022341501899063587,
+            0.017234981060028076
+          ],
+          "uv_max": [
+            0.9976289868354797,
+            0.997765863314271
+          ],
+          "atlas_uv_outside_corners": 0
+        }
+      ],
+      "screen_sizes": [
+        1.0,
+        0.35,
+        0.12
+      ]
+    },
+    "SM_Weapon_00_Saya": {
+      "kit": "W00_Katana",
+      "lods": [
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00_Saya.fbx",
+          "triangles": 25020,
+          "sha256": "c57e623ac6961ec567eaa5295f48b1f4b6fe001edbc24ed3bb5b000965f75a48",
+          "min_cm": [
+            0.0,
+            -1.4145135879516602,
+            -2.310974895954132
+          ],
+          "max_cm": [
+            78.39928865432739,
+            2.076202630996704,
+            8.394093811511993
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.0022341434378176928,
+            0.029382169246673584
+          ],
+          "uv_max": [
+            0.9645200371742249,
+            0.9977658565621823
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00_Saya_LOD1.fbx",
+          "triangles": 10508,
+          "sha256": "7e600103e5a5a7e34cee3bf1f8824aa23d747e343685623ab92815151e267e2e",
+          "min_cm": [
+            -3.108428313064497e-05,
+            -1.4157803699203502,
+            -2.308882214128971
+          ],
+          "max_cm": [
+            78.39938999541295,
+            2.076395545604086,
+            8.394093811511993
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.002207937417551875,
+            0.029382169246673584
+          ],
+          "uv_max": [
+            0.9645200967788696,
+            0.997765856795013
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00_Saya_LOD2.fbx",
+          "triangles": 4002,
+          "sha256": "1634cc8c1bd1c4377ee9c01fdee5edcdc773a5038097dad07cf5234226144b2e",
+          "min_cm": [
+            -0.000264715601064127,
+            -1.4142437629501459,
+            -2.308492548763752
+          ],
+          "max_cm": [
+            78.40242980677638,
+            2.082179415564751,
+            8.391174674034119
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.0022024279460310936,
+            0.02938675880432129
+          ],
+          "uv_max": [
+            0.96429443359375,
+            0.997765856795013
+          ],
+          "atlas_uv_outside_corners": 0
+        }
+      ],
+      "screen_sizes": [
+        1.0,
+        0.35,
+        0.12
+      ]
+    },
+    "SM_Weapon_01": {
+      "kit": "W01_ArcCarbine",
+      "lods": [
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/SM_Weapon_01.fbx",
+          "triangles": 37860,
+          "sha256": "ce1635bd9ce6fc7c87f42ec24655c494baaed4e9f02f5bc04f5b7dabff6449f5",
+          "min_cm": [
+            -30.34999966621399,
+            -2.041272632777691,
+            -4.646499827504158
+          ],
+          "max_cm": [
+            56.15000128746033,
+            2.572227083146572,
+            5.946468189358711
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.0011688469676300883,
+            0.026308834552764893
+          ],
+          "uv_max": [
+            0.9988312125205994,
+            0.9988311390625313
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/SM_Weapon_01_LOD1.fbx",
+          "triangles": 15900,
+          "sha256": "a026f4d5051be5b8d60b8d03443780a77a7ea39ab7c1808b687dc646adc87e17",
+          "min_cm": [
+            -30.350184630884,
+            -2.041519211581779,
+            -4.646499827504158
+          ],
+          "max_cm": [
+            56.150096563834055,
+            2.5719586427077323,
+            5.9435538947582245
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.0006973006529733539,
+            0.026508212089538574
+          ],
+          "uv_max": [
+            0.9988312721252441,
+            0.9998871805146337
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/SM_Weapon_01_LOD2.fbx",
+          "triangles": 6056,
+          "sha256": "9f4e023d87bf8b26f052815018e380b9a51656389a1ac093cb2cd155b1270e0d",
+          "min_cm": [
+            -30.350032615482586,
+            -2.007534120620371,
+            -4.646499827504158
+          ],
+          "max_cm": [
+            56.15001932851182,
+            2.5719586427077323,
+            5.942373350262642
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.0006973006529733539,
+            0.026331007480621338
+          ],
+          "uv_max": [
+            0.9988312721252441,
+            0.9988299881806597
+          ],
+          "atlas_uv_outside_corners": 0
+        }
+      ],
+      "screen_sizes": [
+        1.0,
+        0.35,
+        0.12
+      ]
+    },
+    "SM_Weapon_02": {
+      "kit": "W02_Kusarigama",
+      "lods": [
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02.fbx",
+          "triangles": 3794,
+          "sha256": "2db173c731c4d3e5f77ce2b8df77622849311273a83804610fdb6a7f7b7ca9a8",
+          "min_cm": [
+            -12.190000712871552,
+            -1.4700000174343586,
+            -18.700000643730164
+          ],
+          "max_cm": [
+            34.99999940395355,
+            1.4700000174343586,
+            1.5399999916553497
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.008024010807275772,
+            0.23747575283050537
+          ],
+          "uv_max": [
+            0.9919753074645996,
+            0.9919759901240468
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02_LOD1.fbx",
+          "triangles": 1592,
+          "sha256": "c192953e151d357c28008908a3d1ebd5182b0a77ed21972d1e1c59f584b3959d",
+          "min_cm": [
+            -12.190000712871413,
+            -1.4701462568135022,
+            -18.700000643730164
+          ],
+          "max_cm": [
+            34.999999592697904,
+            1.4701562829346306,
+            1.539988350123167
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.00801285170018673,
+            0.23747575283050537
+          ],
+          "uv_max": [
+            0.9919753074645996,
+            0.9919759901240468
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02_LOD2.fbx",
+          "triangles": 606,
+          "sha256": "bb664904e3d34fce7f3116c7627938938d8c5638df7a680c8d7454330bb3dad4",
+          "min_cm": [
+            -12.185181677341369,
+            -1.3300095329998756,
+            -18.700000643730164
+          ],
+          "max_cm": [
+            35.00020225124267,
+            1.33000699626216,
+            1.538772787898779
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.00801285170018673,
+            0.23747575283050537
+          ],
+          "uv_max": [
+            0.9914008378982544,
+            0.9919759891927242
+          ],
+          "atlas_uv_outside_corners": 0
+        }
+      ],
+      "screen_sizes": [
+        1.0,
+        0.35,
+        0.12
+      ]
+    },
+    "SM_Weapon_02_Chain": {
+      "kit": "W02_Kusarigama",
+      "lods": [
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02_Chain.fbx",
+          "triangles": 35100,
+          "sha256": "7986789b9a47c17679252619d16a233def7c3e12695ab0c013f14bb93cee1644",
+          "min_cm": [
+            -0.636071152985096,
+            -33.63317251205444,
+            -0.26749372482299805
+          ],
+          "max_cm": [
+            35.42207181453705,
+            -0.020235776901245117,
+            2.3900002241134644
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.008024013601243496,
+            0.026362836360931396
+          ],
+          "uv_max": [
+            0.9839575290679932,
+            0.9919759845361114
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02_Chain_LOD1.fbx",
+          "triangles": 14742,
+          "sha256": "b1aac1901958451c2d9e540266a876a38d3b2356cb48001dca2bc33ab30c124b",
+          "min_cm": [
+            -0.6466640403753634,
+            -33.64746941665594,
+            -0.28836107812821865
+          ],
+          "max_cm": [
+            35.38852299563725,
+            -0.008955187791288623,
+            2.383683994412422
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.009406867437064648,
+            0.027471065521240234
+          ],
+          "uv_max": [
+            0.9838944673538208,
+            0.9919759845361114
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02_Chain_LOD2.fbx",
+          "triangles": 5616,
+          "sha256": "e96695d7c197442520d42e27af230c1bda405c03138c08b32fe3d21d9e6c3bc6",
+          "min_cm": [
+            -0.6271567418001411,
+            -33.62734984358846,
+            -0.25599703658372164
+          ],
+          "max_cm": [
+            35.3093468754503,
+            -0.10220195023642965,
+            2.3205360397696495
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.009831283241510391,
+            0.02829110622406006
+          ],
+          "uv_max": [
+            0.9822577238082886,
+            0.9919759845361114
+          ],
+          "atlas_uv_outside_corners": 0
+        }
+      ],
+      "screen_sizes": [
+        1.0,
+        0.35,
+        0.12
+      ]
+    },
+    "SM_Weapon_04": {
+      "kit": "W04_Wakizashi",
+      "lods": [
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04.fbx",
+          "triangles": 49300,
+          "sha256": "f84769b607c43b2b23ec7e7b31ef3143f7915b0bf1a83d270ad69a7fbd832dc8",
+          "min_cm": [
+            -12.416650354862213,
+            -3.2500002533197403,
+            -3.4000005573034286
+          ],
+          "max_cm": [
+            52.55444645881653,
+            3.2500002533197403,
+            5.889414995908737
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.003389510326087475,
+            0.01838827133178711
+          ],
+          "uv_max": [
+            0.9966671466827393,
+            0.9964264836162329
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04_LOD1.fbx",
+          "triangles": 20706,
+          "sha256": "ef3061b9f8d87b4266fa2007b8fb3348f88a0fe6f1e8dfbd90fed2acc427b608",
+          "min_cm": [
+            -12.416650354862073,
+            -3.251620785664032,
+            -3.400005027651787
+          ],
+          "max_cm": [
+            52.556890249287775,
+            3.251622213651156,
+            5.89008666574955
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.0033871466293931007,
+            0.01838827133178711
+          ],
+          "uv_max": [
+            0.9966227412223816,
+            0.9964264836162329
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04_LOD2.fbx",
+          "triangles": 7888,
+          "sha256": "0358731c552a9f7d89126a47349cb574cc2149049e725ccb04ffcba039f0ba5e",
+          "min_cm": [
+            -12.412644907718962,
+            -3.2457642052640154,
+            -3.397643193602562
+          ],
+          "max_cm": [
+            52.556908130669434,
+            3.2457657362947483,
+            5.888190865516663
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.003388485871255398,
+            0.01838827133178711
+          ],
+          "uv_max": [
+            0.9965405464172363,
+            0.9964264836162329
+          ],
+          "atlas_uv_outside_corners": 0
+        }
+      ],
+      "screen_sizes": [
+        1.0,
+        0.35,
+        0.12
+      ]
+    },
+    "SM_Weapon_04_Saya": {
+      "kit": "W04_Wakizashi",
+      "lods": [
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04_Saya.fbx",
+          "triangles": 19900,
+          "sha256": "5119770fe95dc997ba9f202c52e9b6da31021d0695dd9e40811934f28227b506",
+          "min_cm": [
+            0.0,
+            -1.378387212753296,
+            -2.2546982392668724
+          ],
+          "max_cm": [
+            49.679362773895264,
+            2.05116868019104,
+            6.627495586872101
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.0044567217119038105,
+            0.030432581901550293
+          ],
+          "uv_max": [
+            0.9635453224182129,
+            0.9965632956009358
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04_Saya_LOD1.fbx",
+          "triangles": 8358,
+          "sha256": "ea0c428e7a512045258b0acedf5a5198dd9a6b3f3ccf94b6ee2f113d5d4a732d",
+          "min_cm": [
+            -4.649430188707581e-05,
+            -1.3794577720706043,
+            -2.25125215947628
+          ],
+          "max_cm": [
+            49.67947004938053,
+            2.0512372777497685,
+            6.627495586872101
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.0044567217119038105,
+            0.030432581901550293
+          ],
+          "uv_max": [
+            0.9635453224182129,
+            0.9965639323927462
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04_Saya_LOD2.fbx",
+          "triangles": 3182,
+          "sha256": "b89f25871d3f95805133414a0a5db84de58620c6ca4c2a6e923153af882d0708",
+          "min_cm": [
+            -0.00025046357248408176,
+            -1.3784661782299705,
+            -2.2414645180106163
+          ],
+          "max_cm": [
+            49.671411464275096,
+            2.05734357150184,
+            6.62461444735527
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.0044567217119038105,
+            0.03080594539642334
+          ],
+          "uv_max": [
+            0.9631626009941101,
+            0.9965639323927462
+          ],
+          "atlas_uv_outside_corners": 0
+        }
+      ],
+      "screen_sizes": [
+        1.0,
+        0.35,
+        0.12
+      ]
+    },
+    "SM_Weapon_05": {
+      "kit": "W05_CoilMatchlock",
+      "lods": [
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/SM_Weapon_05.fbx",
+          "triangles": 36236,
+          "sha256": "b8e9e82aba31aaf8c9d21eafe0834827ac18ba70734876c73fb900355e739c52",
+          "min_cm": [
+            -26.30000114440918,
+            -2.845519781112671,
+            -7.5139835476875305
+          ],
+          "max_cm": [
+            77.49999761581421,
+            3.4056629985570908,
+            5.214815586805344
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.0018311163876205683,
+            0.05404019355773926
+          ],
+          "uv_max": [
+            0.9987386465072632,
+            0.9986962345428765
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/SM_Weapon_05_LOD1.fbx",
+          "triangles": 15218,
+          "sha256": "c985ff85774e6a2b325de2036232d27398a33d9dcee97d4549a4c9827523524d",
+          "min_cm": [
+            -26.300037067883473,
+            -2.8455209150712477,
+            -7.5139835476875305
+          ],
+          "max_cm": [
+            77.49999780099117,
+            3.4056616416849557,
+            5.214815586805344
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.0018709140131250024,
+            0.05408287048339844
+          ],
+          "uv_max": [
+            0.9987386465072632,
+            0.9986463801469654
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/SM_Weapon_05_LOD2.fbx",
+          "triangles": 5797,
+          "sha256": "76b98b6680a736dc879f756c1c0cfae3f5de5cf8f0a48229899b59197a0c126a",
+          "min_cm": [
+            -26.299306980898944,
+            -2.8577428731756744,
+            -7.5087763369083405
+          ],
+          "max_cm": [
+            77.49999772783464,
+            3.4013749746958295,
+            5.226830393075943
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.0006364434957504272,
+            0.05409514904022217
+          ],
+          "uv_max": [
+            0.998738706111908,
+            1.0097212456166744
+          ],
+          "atlas_uv_outside_corners": 1
+        }
+      ],
+      "screen_sizes": [
+        1.0,
+        0.35,
+        0.12
+      ]
+    },
+    "SM_Weapon_06": {
+      "kit": "W06_Kanabo",
+      "lods": [
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W06_Kanabo/SM_Weapon_06.fbx",
+          "triangles": 49484,
+          "sha256": "5bfedd72a428fed2f2433cd53721132d91d76e03f70141f7807b213041239e8a",
+          "min_cm": [
+            -27.070000767707825,
+            -5.687520280480385,
+            -12.429691106081009
+          ],
+          "max_cm": [
+            125.10000467300415,
+            5.69906160235405,
+            5.5990152060985565
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.004716535098850727,
+            0.005172848701477051
+          ],
+          "uv_max": [
+            0.9952841401100159,
+            0.995283477474004
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W06_Kanabo/SM_Weapon_06_LOD1.fbx",
+          "triangles": 20782,
+          "sha256": "35862e01172f54f7e15888b04d10a5391908217e3eab0ac04961ee6dd2034e52",
+          "min_cm": [
+            -27.070000767707516,
+            -5.691258411364274,
+            -12.428510189056396
+          ],
+          "max_cm": [
+            125.10091082799902,
+            5.702868642796356,
+            5.602508410811424
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.004716535098850727,
+            0.005172848701477051
+          ],
+          "uv_max": [
+            0.9952841401100159,
+            0.995283477474004
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W06_Kanabo/SM_Weapon_06_LOD2.fbx",
+          "triangles": 7916,
+          "sha256": "3abff5b627c57fbcdd647d327dcf4eb9b5ea6b623e2ed7af1bc766aa5cfd8f48",
+          "min_cm": [
+            -27.066099643706966,
+            -5.691258411364274,
+            -12.428510189056396
+          ],
+          "max_cm": [
+            125.11284361714435,
+            5.702868642796356,
+            5.589020997285843
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.004716535098850727,
+            0.005427062511444092
+          ],
+          "uv_max": [
+            0.9950141906738281,
+            0.9952834649011493
+          ],
+          "atlas_uv_outside_corners": 0
+        }
+      ],
+      "screen_sizes": [
+        1.0,
+        0.35,
+        0.12
+      ]
+    },
+    "SM_Weapon_07": {
+      "kit": "W07_GrenadeLauncher",
+      "lods": [
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/SM_Weapon_07.fbx",
+          "triangles": 53360,
+          "sha256": "491e0c888d874362846113c0594c2ed1c5ad154a440d53f88bf0b62d24c94a95",
+          "min_cm": [
+            -20.000000298023224,
+            -6.100111082196236,
+            -11.531559377908707
+          ],
+          "max_cm": [
+            63.999998569488525,
+            6.070879474282265,
+            6.80416002869606
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.0018790514441207051,
+            0.00499880313873291
+          ],
+          "uv_max": [
+            0.9981208443641663,
+            0.9981209313264117
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/SM_Weapon_07_LOD1.fbx",
+          "triangles": 22410,
+          "sha256": "a837f6912002df8b5c55c58ff394b13e477d086444bf7d9972c94a721dc14e5d",
+          "min_cm": [
+            -20.000968873500614,
+            -6.100108565443289,
+            -11.531559377908707
+          ],
+          "max_cm": [
+            64.0003507128959,
+            6.070881240652449,
+            6.779295206069946
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.0018790513277053833,
+            0.00499880313873291
+          ],
+          "uv_max": [
+            0.998120903968811,
+            0.9981209313264117
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/SM_Weapon_07_LOD2.fbx",
+          "triangles": 8536,
+          "sha256": "e0fe08be5b620ce2e940d3651d2850b40dda0f2ef203bd63acbd0427f428e19f",
+          "min_cm": [
+            -20.013749488059457,
+            -4.873232481823834,
+            -9.223832190036774
+          ],
+          "max_cm": [
+            63.99999897385902,
+            4.8935240180731405,
+            4.83107790350914
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.0018790513277053833,
+            0.005379319190979004
+          ],
+          "uv_max": [
+            0.9967811703681946,
+            0.9982346631586552
+          ],
+          "atlas_uv_outside_corners": 0
+        }
+      ],
+      "screen_sizes": [
+        1.0,
+        0.35,
+        0.12
+      ]
+    },
+    "SM_Weapon_08": {
+      "kit": "W08_ForgeHammer",
+      "lods": [
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/SM_Weapon_08.fbx",
+          "triangles": 4408,
+          "sha256": "c7f50f8bf9ac822a1b6fdc8d083acac1664ffdee2e77b41458debe4cc1bd5baa",
+          "min_cm": [
+            -20.000000298023224,
+            -3.0611688271164894,
+            -8.330000191926956
+          ],
+          "max_cm": [
+            60.189998149871826,
+            3.05510051548481,
+            8.330000191926956
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.005550201050937176,
+            0.004653811454772949
+          ],
+          "uv_max": [
+            0.9229267239570618,
+            0.9951940509490669
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/SM_Weapon_08_LOD1.fbx",
+          "triangles": 1850,
+          "sha256": "9de5ffacd48d06c89e62cdd6c875f43160a157b6bc8b982ad90e14ff5151e548",
+          "min_cm": [
+            -20.000000479217956,
+            -3.0611598866755245,
+            -8.330000191926956
+          ],
+          "max_cm": [
+            60.18999816044085,
+            3.0551087138031026,
+            8.330000191926956
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.005527251400053501,
+            0.004653811454772949
+          ],
+          "uv_max": [
+            0.9229267239570618,
+            0.9951940509490669
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/SM_Weapon_08_LOD2.fbx",
+          "triangles": 704,
+          "sha256": "31c5fa1456c98b87ecba7e06cd7ac27fc04e0770e0dd409f605a7dfdc65fa68f",
+          "min_cm": [
+            -20.000092700949683,
+            -3.0496300961673883,
+            -8.330000191926956
+          ],
+          "max_cm": [
+            60.05014164638829,
+            3.0406864518319567,
+            8.330000191926956
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.005532306153327227,
+            0.0047425031661987305
+          ],
+          "uv_max": [
+            0.9197868704795837,
+            0.9951940509490669
+          ],
+          "atlas_uv_outside_corners": 0
+        }
+      ],
+      "screen_sizes": [
+        1.0,
+        0.35,
+        0.12
+      ]
+    },
+    "SM_Weapon_09": {
+      "kit": "W09_Repeater",
+      "lods": [
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W09_Repeater/SM_Weapon_09.fbx",
+          "triangles": 29088,
+          "sha256": "9744b4c9717489b726d8f3ddbd5d40543392537808db261a914e4160b7af340b",
+          "min_cm": [
+            -34.34999883174896,
+            -5.168000236153603,
+            -5.051000043749809
+          ],
+          "max_cm": [
+            78.1499981880188,
+            4.749999940395355,
+            8.550000190734863
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.0009248029673472047,
+            0.0008736252784729004
+          ],
+          "uv_max": [
+            0.9821344614028931,
+            0.9991216184571385
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W09_Repeater/SM_Weapon_09_LOD1.fbx",
+          "triangles": 12216,
+          "sha256": "846fa944ac141c7ea587b2f9aa718678401ced939901096c1c93040aaf6e896d",
+          "min_cm": [
+            -34.35003178876748,
+            -5.168010210466301,
+            -5.051000043749809
+          ],
+          "max_cm": [
+            78.15000425100537,
+            4.749999984648847,
+            8.550000190734863
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.0009248029673472047,
+            0.0010218620300292969
+          ],
+          "uv_max": [
+            0.9819834232330322,
+            0.9991216184571385
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W09_Repeater/SM_Weapon_09_LOD2.fbx",
+          "triangles": 4654,
+          "sha256": "c6de564240fe12f4ee78f470a91b05628073c1218884499ed654004c096258d1",
+          "min_cm": [
+            -34.35007359309096,
+            -5.167202607498202,
+            -5.051000043749809
+          ],
+          "max_cm": [
+            78.15002219790357,
+            4.750170957450561,
+            8.550000190734863
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.0010144358966499567,
+            0.0018615126609802246
+          ],
+          "uv_max": [
+            0.9819443225860596,
+            1.0032147578895092
+          ],
+          "atlas_uv_outside_corners": 2
+        }
+      ],
+      "screen_sizes": [
+        1.0,
+        0.35,
+        0.12
+      ]
+    },
+    "SM_Weapon_10": {
+      "kit": "W10_Tanto",
+      "lods": [
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10.fbx",
+          "triangles": 10908,
+          "sha256": "95066f9b61a711e34a5879133fafe966d61c0b072c6b90235f697414f227f77f",
+          "min_cm": [
+            -6.606049835681915,
+            -1.2523685581982136,
+            -1.5699999406933784
+          ],
+          "max_cm": [
+            29.123729467391968,
+            1.2612180784344673,
+            1.5699999406933784
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.0059494017623364925,
+            0.06628412008285522
+          ],
+          "uv_max": [
+            0.9952955842018127,
+            0.9940341166220605
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10_LOD1.fbx",
+          "triangles": 4580,
+          "sha256": "91d346fdee5f365fcdb094c4e038f64df107dca629c482403fc47d03800d4373",
+          "min_cm": [
+            -6.60604983568184,
+            -1.252173794552455,
+            -1.5699999406933784
+          ],
+          "max_cm": [
+            29.12501096725431,
+            1.2610109198287938,
+            1.5699999406933784
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.0059494017623364925,
+            0.06628412008285522
+          ],
+          "uv_max": [
+            0.9952958822250366,
+            0.9940341170877218
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10_LOD2.fbx",
+          "triangles": 1744,
+          "sha256": "32b3252fe1414c8dd911902568b932818b377cf7715185d4d65c7bc53c5d7d35",
+          "min_cm": [
+            -6.605962657425442,
+            -1.1949995746948268,
+            -1.5699999406933784
+          ],
+          "max_cm": [
+            29.128059744834566,
+            1.1950006165658145,
+            1.5699999406933784
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.005949413403868675,
+            0.06628412008285522
+          ],
+          "uv_max": [
+            0.9952961206436157,
+            0.9940341166220605
+          ],
+          "atlas_uv_outside_corners": 0
+        }
+      ],
+      "screen_sizes": [
+        1.0,
+        0.35,
+        0.12
+      ]
+    },
+    "SM_Weapon_10_Saya": {
+      "kit": "W10_Tanto",
+      "lods": [
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10_Saya.fbx",
+          "triangles": 13820,
+          "sha256": "4953d0df312cb48e6936a2bada327d022a0a48918e8827451d53d6f99740f69b",
+          "min_cm": [
+            0.0,
+            -1.9832611083984375,
+            -1.972358301281929
+          ],
+          "max_cm": [
+            27.116546034812927,
+            1.9073963165283203,
+            1.6732055693864822
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.0055563319474458694,
+            0.03764218091964722
+          ],
+          "uv_max": [
+            0.973814845085144,
+            0.9950097762048244
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10_Saya_LOD1.fbx",
+          "triangles": 5804,
+          "sha256": "80524f688ecfbbb7e52aa839d8020496e7ea7f476f099c0df1cd2250c66fe0c5",
+          "min_cm": [
+            -2.345187511303498e-05,
+            -1.9832597248357908,
+            -1.9744494929909706
+          ],
+          "max_cm": [
+            27.116075190130903,
+            1.9071989219224539,
+            1.6737163066864014
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.005727660842239857,
+            0.03764218091964722
+          ],
+          "uv_max": [
+            0.9735115766525269,
+            0.9950097762048244
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10_Saya_LOD2.fbx",
+          "triangles": 2210,
+          "sha256": "127f1306be985390064bf1178e5d34b911ae4e8283ffb2c001a2299bd10142e0",
+          "min_cm": [
+            -0.0001263986742649288,
+            -1.9832597248357908,
+            -1.9664311781525612
+          ],
+          "max_cm": [
+            27.11542849565832,
+            1.9148692797066773,
+            1.6599681228399277
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.005727660842239857,
+            0.03764218091964722
+          ],
+          "uv_max": [
+            0.9733350276947021,
+            0.9950097762048244
+          ],
+          "atlas_uv_outside_corners": 0
+        }
+      ],
+      "screen_sizes": [
+        1.0,
+        0.35,
+        0.12
+      ]
+    },
+    "SM_Weapon_12": {
+      "kit": "W12_MonofilamentNaginata",
+      "lods": [
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/SM_Weapon_12.fbx",
+          "triangles": 46010,
+          "sha256": "174f5ed2195074cb6440dfc95067a61d8ac4c483d140cdca03d4ee172fb5d54a",
+          "min_cm": [
+            -46.00000083446503,
+            -2.99999862909317,
+            -3.199998661875725
+          ],
+          "max_cm": [
+            185.0000023841858,
+            2.99999862909317,
+            13.453657925128937
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.004649048671126366,
+            0.02457594871520996
+          ],
+          "uv_max": [
+            0.9954671263694763,
+            0.9946246794424951
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/SM_Weapon_12_LOD1.fbx",
+          "triangles": 19324,
+          "sha256": "04b4230b25ba5802491c0973c409929a1198977b8c025fbf1125dfba81ad9f2a",
+          "min_cm": [
+            -46.000012758258,
+            -2.999979277914349,
+            -3.199998661875725
+          ],
+          "max_cm": [
+            185.00057458877308,
+            3.0000180285913967,
+            13.453707098960876
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.004649046808481216,
+            0.02457594871520996
+          ],
+          "uv_max": [
+            0.9954671263694763,
+            0.9946246799081564
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/SM_Weapon_12_LOD2.fbx",
+          "triangles": 7360,
+          "sha256": "09ac88b3db542906a386f52771d2cb3fc092a411f770721e4a0485b5ce57d8bd",
+          "min_cm": [
+            -46.000012758258,
+            -2.999979277914349,
+            -3.199998661875725
+          ],
+          "max_cm": [
+            185.0005149841284,
+            3.0000180285913967,
+            13.45355212688446
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.004649046808481216,
+            0.02457594871520996
+          ],
+          "uv_max": [
+            0.9954671263694763,
+            0.9767573736608028
+          ],
+          "atlas_uv_outside_corners": 0
+        }
+      ],
+      "screen_sizes": [
+        1.0,
+        0.35,
+        0.12
+      ]
+    },
+    "SM_Weapon_14": {
+      "kit": "W14_PlasmaMatchlock",
+      "lods": [
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/SM_Weapon_14.fbx",
+          "triangles": 23048,
+          "sha256": "acad09a530acfcce463e0d10228bd9cdf89fca856b9746ea76151bc7c52067f2",
+          "min_cm": [
+            -36.190974712371826,
+            -1.9700000062584877,
+            -7.995884120464325
+          ],
+          "max_cm": [
+            96.46000266075134,
+            1.9700000062584877,
+            9.399998188018799
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.0007535526528954506,
+            0.0007535815238952637
+          ],
+          "uv_max": [
+            0.9976365566253662,
+            0.9992464645765722
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/SM_Weapon_14_LOD1.fbx",
+          "triangles": 9680,
+          "sha256": "d414b384680d398a239ffe34100b470e7b5c660bcae50d2006e8251132c68f85",
+          "min_cm": [
+            -36.1909748890365,
+            -1.962142128437177,
+            -7.995769381523132
+          ],
+          "max_cm": [
+            96.46000277047723,
+            1.9621379045184066,
+            9.380419552326202
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.0007535538170486689,
+            0.0007535815238952637
+          ],
+          "uv_max": [
+            0.9975266456604004,
+            0.9992464645765722
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/SM_Weapon_14_LOD2.fbx",
+          "triangles": 3686,
+          "sha256": "443f7323b217e69126b54ffb17f0adc7d1830800d434f67039e6bbdf5509958b",
+          "min_cm": [
+            -36.148488346095,
+            -1.962142128437177,
+            -7.995769381523132
+          ],
+          "max_cm": [
+            96.4600027689852,
+            1.9621379045184066,
+            9.380419552326202
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.0010182504775002599,
+            0.0014122724533081055
+          ],
+          "uv_max": [
+            0.9968445897102356,
+            0.9992464645765722
+          ],
+          "atlas_uv_outside_corners": 0
+        }
+      ],
+      "screen_sizes": [
+        1.0,
+        0.35,
+        0.12
+      ]
+    },
+    "SM_Weapon_15": {
+      "kit": "W15_MicroMortar",
+      "lods": [
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/SM_Weapon_15.fbx",
+          "triangles": 12194,
+          "sha256": "7d41679179397d14ffb43d30da1e9d7e812dc4dee3c51de8bb9f6a479a79626e",
+          "min_cm": [
+            -0.8000018075108528,
+            -7.242302596569061,
+            -3.9919547736644745
+          ],
+          "max_cm": [
+            63.200002908706665,
+            7.242302596569061,
+            16.577991843223572
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.0015090779634192586,
+            0.0015090703964233398
+          ],
+          "uv_max": [
+            0.943505048751831,
+            0.9984909312333912
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/SM_Weapon_15_LOD1.fbx",
+          "triangles": 5120,
+          "sha256": "c82ff813ede6d25ba10acfd29d0689a8e1d756532e923fb37b6d6e6c9433d7c3",
+          "min_cm": [
+            -0.8000025624898505,
+            -7.2422995313543455,
+            -3.9948131889104843
+          ],
+          "max_cm": [
+            63.20003362231359,
+            7.2423059335761515,
+            16.574841737747192
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.0015090778470039368,
+            0.0015090703964233398
+          ],
+          "uv_max": [
+            0.9428317546844482,
+            0.9984909312333912
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/SM_Weapon_15_LOD2.fbx",
+          "triangles": 1950,
+          "sha256": "43003bb60c85b8788140a57644282b8fbf1005f28b2cf0dc8a960816a6a0fd49",
+          "min_cm": [
+            -0.735209977301103,
+            -7.294249922889977,
+            -3.9948131889104843
+          ],
+          "max_cm": [
+            63.200473324969444,
+            7.294256325111783,
+            14.290766417980194
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.0015090778470039368,
+            0.004569649696350098
+          ],
+          "uv_max": [
+            0.9402081966400146,
+            0.9984909312333912
+          ],
+          "atlas_uv_outside_corners": 0
+        }
+      ],
+      "screen_sizes": [
+        1.0,
+        0.35,
+        0.12
+      ]
+    },
+    "SM_Weapon_17": {
+      "kit": "W17_HealingLance",
+      "lods": [
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/SM_Weapon_17.fbx",
+          "triangles": 38282,
+          "sha256": "d08177941afdb1441a3b470b82a141aad2c21c7c914065b14c93f9da80537476",
+          "min_cm": [
+            -40.00000059604645,
+            -1.7365960404276848,
+            -1.739131286740303
+          ],
+          "max_cm": [
+            145.09999752044678,
+            1.7416611313819885,
+            1.7369328066706657
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.007197669241577387,
+            0.04151993989944458
+          ],
+          "uv_max": [
+            0.9928478598594666,
+            0.9925979408435524
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/SM_Weapon_17_LOD1.fbx",
+          "triangles": 16078,
+          "sha256": "c8e2baaaffb5267b0ddb68e8e4b58244b71761c80f5188059ce165abca478f70",
+          "min_cm": [
+            -40.000113884524005,
+            -1.7396977468218786,
+            -1.744510605931282
+          ],
+          "max_cm": [
+            145.09999752044513,
+            1.7447306863340977,
+            1.7416397109627724
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.007197669241577387,
+            0.041519880294799805
+          ],
+          "uv_max": [
+            0.9928479194641113,
+            0.9925979408435524
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/SM_Weapon_17_LOD2.fbx",
+          "triangles": 6124,
+          "sha256": "06c44240d3b8cc605551ef5306336f7fed02e842837d5665df3d1ffded877c59",
+          "min_cm": [
+            -40.00227744750768,
+            -1.748887326066152,
+            -1.7537198960781097
+          ],
+          "max_cm": [
+            145.09999752044513,
+            1.7480992540370945,
+            1.750381663441658
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.007197669241577387,
+            0.04151993989944458
+          ],
+          "uv_max": [
+            0.9928479194641113,
+            0.9925979408435524
+          ],
+          "atlas_uv_outside_corners": 0
+        }
+      ],
+      "screen_sizes": [
+        1.0,
+        0.35,
+        0.12
+      ]
+    },
+    "SM_Weapon_19": {
+      "kit": "W19_Yari",
+      "lods": [
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W19_Yari/SM_Weapon_19.fbx",
+          "triangles": 12626,
+          "sha256": "e6f5e20b5ac36f3be382c5932017ad9846f9adc14d61f120c928fb728597b60b",
+          "min_cm": [
+            -41.999998688697815,
+            -1.8333999440073967,
+            -1.8333999440073967
+          ],
+          "max_cm": [
+            171.00000381469727,
+            1.8333999440073967,
+            1.8333999440073967
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.009292548522353172,
+            0.05089288949966431
+          ],
+          "uv_max": [
+            0.9907206296920776,
+            0.9899840019643307
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W19_Yari/SM_Weapon_19_LOD1.fbx",
+          "triangles": 5302,
+          "sha256": "fdc00879e05e4362d835ba4d89ab45bc8ae86a561785967c448f817c306abaf9",
+          "min_cm": [
+            -41.99999872783545,
+            -1.8333783566753856,
+            -1.8334001302719116
+          ],
+          "max_cm": [
+            171.00000381469533,
+            1.8334219038683959,
+            1.8334001302719116
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.009292548522353172,
+            0.05089282989501953
+          ],
+          "uv_max": [
+            0.9907206296920776,
+            0.9899840019643307
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W19_Yari/SM_Weapon_19_LOD2.fbx",
+          "triangles": 2020,
+          "sha256": "9c1e521c2ad3fdb1f9afded84079becf23684cbcdb25f3bcf3d9a384c5314840",
+          "min_cm": [
+            -42.00013283933309,
+            -1.8333783566753856,
+            -1.8334001302719116
+          ],
+          "max_cm": [
+            171.0044622420813,
+            1.8334219038683959,
+            1.8334001302719116
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.009292548522353172,
+            0.05089282989501953
+          ],
+          "uv_max": [
+            0.9907206296920776,
+            0.9899840019643307
+          ],
+          "atlas_uv_outside_corners": 0
+        }
+      ],
+      "screen_sizes": [
+        1.0,
+        0.35,
+        0.12
+      ]
+    },
+    "SM_Weapon_20": {
+      "kit": "W20_Naginata",
+      "lods": [
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W20_Naginata/SM_Weapon_20.fbx",
+          "triangles": 20446,
+          "sha256": "ef0e5bc3a89da56313d964d91e67ca2e865a2dc9f1bb241fc7b02f252d983808",
+          "min_cm": [
+            -46.00000083446503,
+            -2.7999987825751305,
+            -2.99999862909317
+          ],
+          "max_cm": [
+            169.0000057220459,
+            2.7999987825751305,
+            9.832601994276047
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.005077593494206667,
+            0.00772470235824585
+          ],
+          "uv_max": [
+            0.9951855540275574,
+            0.9951596148312092
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W20_Naginata/SM_Weapon_20_LOD1.fbx",
+          "triangles": 8586,
+          "sha256": "0c30a04348c0169527b61bcc81c5956a4c51ab6580af3c1e9ae1e27162a32fd2",
+          "min_cm": [
+            -46.00000087088469,
+            -2.799980826244011,
+            -2.99999862909317
+          ],
+          "max_cm": [
+            168.99998188018606,
+            2.8000167826932345,
+            9.832517802715302
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.005077828653156757,
+            0.00772470235824585
+          ],
+          "uv_max": [
+            0.9951855540275574,
+            0.9951596148312092
+          ],
+          "atlas_uv_outside_corners": 0
+        },
+        {
+          "file": "Content/SourceArt/Weapons/Runtime/W20_Naginata/SM_Weapon_20_LOD2.fbx",
+          "triangles": 3270,
+          "sha256": "ffb8409a40d1037411cf81ac334dc77e3384e17c91ee0dc84493c13163142dfe",
+          "min_cm": [
+            -46.000075348880976,
+            -2.7995820339193607,
+            -2.998749352991581
+          ],
+          "max_cm": [
+            169.00178194027228,
+            2.799617946577936,
+            9.833014756441116
+          ],
+          "uv_channels": 2,
+          "uv_min": [
+            0.005077593494206667,
+            0.007724881172180176
+          ],
+          "uv_max": [
+            0.9951816201210022,
+            0.9949721405282617
+          ],
+          "atlas_uv_outside_corners": 0
+        }
+      ],
+      "screen_sizes": [
+        1.0,
+        0.35,
+        0.12
+      ]
+    }
+  }
+}

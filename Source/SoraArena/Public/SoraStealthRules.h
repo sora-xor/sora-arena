@@ -19,7 +19,7 @@ enum class EState { Unaware, Suspicious, Alert, Search, Combat, Retreat };
 // lure is a thrown stone landing or a float line ringing, which sends a guard
 // to look but never tells it the hero is there (SoraFieldcraftRules::LureImpulsePermille);
 // a landing is the thud of a drop off a roof.
-enum class ENoise { Footstep, Sprint, Melee, Shot, Explosion, Callout, CrouchStep, Takedown, Lure, Landing };
+enum class ENoise { Footstep, Sprint, Melee, Shot, Explosion, Callout, CrouchStep, Takedown, Lure, Landing, Fusuma };
 // Blades close in with footwork; cover shooters hold a box and peek to fire;
 // flankers circle to the hero's side before taking cover.
 enum class ERole { Blade, CoverShooter, Flanker };
@@ -47,6 +47,7 @@ constexpr int DarkFloorPermille = 200;
 constexpr int CrouchedOutlinePermille = 550;
 
 constexpr int LookMs = 900;
+constexpr int InvestigatePacePermille = 420;
 constexpr int CombatMemoryMs = 1500;
 constexpr int SearchMs = 12000;
 constexpr int RetreatHealthPermille = 350;
@@ -183,6 +184,7 @@ constexpr int NoiseRadiusCm(ENoise Noise)
     case ENoise::Lure: return 1400;
     // ch03.b03: the drop off the board roof, 900.
     case ENoise::Landing: return 900;
+    case ENoise::Fusuma: return 400;
     }
     return 0;
 }
@@ -201,6 +203,7 @@ constexpr int NoisePeakPermille(ENoise Noise)
     case ENoise::CrouchStep: return 200;
     case ENoise::Lure: return 600;
     case ENoise::Landing: return 650;
+    case ENoise::Fusuma: return 320;
     }
     return 0;
 }
@@ -359,6 +362,15 @@ constexpr FMind Posted(bool CarriedOver)
     FMind Mind = Enter(Calm(), EState::Suspicious, SuspiciousAt);
     Mind.Wary = true;
     return Mind;
+}
+
+// A tampered light is evidence to investigate, even for an alarmist. It
+// reveals no hero and never lowers an existing search, alert or combat.
+constexpr FMind Disturbed(FMind Mind,FVigilance Vigilance)
+{
+    if(Mind.State!=EState::Unaware&&Mind.State!=EState::Suspicious) return Mind;
+    return Enter(Mind,EState::Suspicious,
+        Mind.Awareness>Vigilance.SuspicionThreshold?Mind.Awareness:Vigilance.SuspicionThreshold);
 }
 
 constexpr int RatePermille(const FMind& Mind, FVigilance Vigilance)

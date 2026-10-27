@@ -39,10 +39,10 @@ class AudioSpecTests(unittest.TestCase):
 
     def test_project_sources_pass(self):
         audio = spec.load(ROOT)
-        self.assertEqual(audio["cc0_waves"], 86)
-        self.assertEqual(len(audio["waves"]), 149 + 86)
-        self.assertEqual(sum(wave["loop"] for wave in audio["waves"]), 19 + 6)
-        self.assertEqual(len(audio["expected"]), 149 + 86 + 14 + 14 + 3 + 1)
+        self.assertEqual(audio["cc0_waves"], 89)
+        self.assertEqual(len(audio["waves"]), 149 + 89)
+        self.assertEqual(sum(wave["loop"] for wave in audio["waves"]), 19 + 7)
+        self.assertEqual(len(audio["expected"]), 149 + 89 + 14 + 14 + 3 + 1)
         buses = {wave["source"].rsplit("/", 1)[1]: wave["bus"] for wave in audio["waves"]}
         self.assertEqual(buses["mus_sting_site_restored.wav"], "Music")
         self.assertEqual(buses["mus_sting_duel_point.wav"], "UI")
@@ -51,6 +51,8 @@ class AudioSpecTests(unittest.TestCase):
         self.assertEqual(buses["cc0_wpn_repeater_fire_01.wav"], "SFX_Weapons")
         self.assertEqual(buses["cc0_fol_step_earth_01.wav"], "SFX_Foley")
         self.assertEqual(buses["cc0_amb_estate_day_loop.wav"], "Ambience")
+        self.assertEqual(buses["cc0_workshop_small_hammer.wav"], "SFX_Telegraph")
+        self.assertEqual(buses["cc0_workshop_sledge.wav"], "SFX_Foley")
         estate = next(wave for wave in audio["waves"] if wave["source"].endswith("cc0_amb_estate_day_loop.wav"))
         self.assertEqual((estate["package"], estate["loop"]), ("/Game/Generated/Audio/CC0/Ambience/cc0_amb_estate_day_loop", True))
         routing = {bus["id"]: bus["submix_parent"] for bus in audio["buses"]}

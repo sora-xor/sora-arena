@@ -41,6 +41,7 @@ mkdir -p "$OUTPUT"
 # the shell reads them from its own working directory. Give both the same path.
 OUTPUT="$(cd -- "$OUTPUT" && pwd)"
 LOG="$OUTPUT/editor.log"
+LOG_COMPLETION="$OUTPUT/editor-log-completion.json"
 REPORT="$OUTPUT/report"
 rm -rf "$REPORT"
 # Unreal does not rebuild the project module with -unattended, so a stale one
@@ -58,60 +59,19 @@ guard_config
 
 echo "Running Unreal automation '$FILTER'; log: $LOG" >&2
 set +e
-"$EDITOR_CMD" "$PROJECT" "-ExecCmds=Automation RunTests $FILTER;Quit" \
+# Trace descendants can retain stdout after the editor exits. Only the
+# collector owns the log file; finish its inherited stream before validation.
+python3 "$SCRIPT_DIR/run_logged_process.py" --log "$LOG" --receipt "$LOG_COMPLETION" -- \
+  "$EDITOR_CMD" "$PROJECT" "-ExecCmds=Automation RunTests $FILTER;Quit" \
   -unattended -nopause -nullrhi -nosplash -nosound -stdout -FullStdOutLogOutput \
-  "${EDITOR_CONFIG_ARGS[@]}" "-ReportExportPath=$REPORT" >"$LOG" 2>&1
+  "${EDITOR_CONFIG_ARGS[@]}" "-ReportExportPath=$REPORT"
 EDITOR_STATUS=$?
 set -e
 
-python3 - "$REPORT/index.json" "$LOG" "$FILTER" "$EDITOR_STATUS" "$PROJECT_ROOT" <<'PY'
-import json
-import re
-import sys
-from pathlib import Path
-
-report_path, log_path, test_filter = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3]
-editor_status, project_root = int(sys.argv[4]), Path(sys.argv[5])
-log = log_path.read_text(errors='replace')
-found = re.findall(r"Found (\d+) automation tests based on '([^']*)'", log)
-if not report_path.is_file():
-    sys.exit(f'FAIL: Unreal wrote no automation report (editor exit {editor_status}); see {log_path}')
-report = json.loads(report_path.read_text(encoding='utf-8-sig'))
-tests = report.get('tests', [])
-failures = []
-print(f'{"RESULT":8} {"ERR":>4} {"WARN":>4} {"SEC":>7}  TEST')
-for test in sorted(tests, key=lambda item: item['fullTestPath']):
-    entries = [entry['event'] for entry in test.get('entries', [])]
-    errors = [event['message'] for event in entries if event.get('type') == 'Error']
-    warnings = [event['message'] for event in entries if event.get('type') == 'Warning']
-    state = test.get('state', 'Unknown')
-    print(f'{state:8} {len(errors):4} {len(warnings):4} {test.get("duration", 0.0):7.2f}  {test["fullTestPath"]}')
-    if state != 'Success':
-        failures.append(test['fullTestPath'])
-        for message in errors[:5]:
-            print(f'           {message[:220]}')
-        if len(errors) > 5:
-            print(f'           ... {len(errors) - 5} more errors')
-expected = sum(int(count) for count, _ in found)
-problems = []
-if not tests:
-    problems.append(f"no tests matched '{test_filter}'")
-if found and expected != len(tests):
-    problems.append(f'{expected} tests were found but {len(tests)} were reported')
-for key in ('notRun', 'inProcess'):
-    if report.get(key):
-        problems.append(f'{report[key]} tests {key}')
-if failures:
-    problems.append(f'{len(failures)} of {len(tests)} tests failed')
-# Unreal exits nonzero when tests fail; any other nonzero exit is a crash or error.
-if editor_status != 0 and not failures:
-    problems.append(f'editor exited {editor_status} although every reported test passed')
-if failures and not (project_root / 'Content/Generated').is_dir():
-    # Reported, never excused: the run still fails.
-    print('Note: Content/Generated is absent in this checkout, so tests that load imported '
-          '/Game/Generated assets cannot pass until scripts/toolchain/import-mac.sh runs.')
-print(f'Report: {report_path.parent}')
-if problems:
-    sys.exit('FAIL: ' + '; '.join(problems))
-print(f'PASS: {len(tests)} automation tests')
-PY
+if ! python3 "$SCRIPT_DIR/verify_automation_report.py" "$REPORT/index.json" "$LOG" "$FILTER" "$EDITOR_STATUS" \
+  "$OUTPUT/results.tsv" "$PROJECT_ROOT/Binaries/Mac/libconnect_norito_bridge.dylib" --context editor; then
+  if [[ ! -d "$PROJECT_ROOT/Content/Generated" ]]; then
+    echo 'Note: Content/Generated is absent; tests loading imported assets require import-mac.sh. This does not excuse the failed run.' >&2
+  fi
+  exit 1
+fi

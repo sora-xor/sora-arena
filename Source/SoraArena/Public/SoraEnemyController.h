@@ -2,10 +2,13 @@
 #include "CoreMinimal.h"
 #include "AIController.h"
 #include "SoraStealthRules.h"
+#include "SoraMillisecondClock.h"
+#include "SoraPatrolRules.h"
 #include "SoraEnemyController.generated.h"
 class ASoraBoss;
 class ASoraCharacterBase;
 class ASoraEnemy;
+class ASoraCampaignLift;
 class USoraGameEvents;
 struct FSoraDetonatedEvent;
 struct FSoraMeleeCommittedEvent;
@@ -19,8 +22,27 @@ struct FSoraPatrolRoute
 {
     GENERATED_BODY()
     UPROPERTY() TArray<FVector> Points;
+    // A second circuit with the same start, used on alternate completed laps.
+    // Switching never skips an obstructed station or teleports the guard.
+    UPROPERTY() TArray<FVector> AlternatePoints;
     UPROPERTY() bool bPingPong = false;
     UPROPERTY() int32 PauseMs = 1500;
+    // Optional ordinary-patrol dwell per waypoint, in active patrol time.
+    // A zero entry walks through that corner without a timed desk stop.
+    UPROPERTY() TArray<int32> PointPauseMs;
+    // Optional scheduled circuit, in active patrol time. Distractions and
+    // combat take priority; a blocked station never counts as visited.
+    UPROPERTY() int32 PeriodMs = 0;
+    UPROPERTY() bool bThreeDimensional = false;
+    // Authored flat catwalk segments: validate capsule clearance and floor
+    // support locally when the rasterized navmesh disconnects a narrow strip.
+    UPROPERTY() bool bSupportedSegments = false;
+    // Authored stair legs use the walking capsule's step-up and floor support.
+    UPROPERTY() bool bSupportedSteps = false;
+    // A verified flight corridor follows each segment with ordinary swept
+    // movement, without the free-roaming drone's long sidestep look-ahead.
+    UPROPERTY() bool bDirectFlightSegments = false;
+    UPROPERTY() FVector PauseFacing=FVector::ZeroVector;
 };
 
 // The campaign opponents' brain, run from its own tick before its pawn moves.
@@ -68,6 +90,12 @@ public:
     void HearAlarm(const FVector& Where);
     // A body found in the zone: the finder searches around it, the others where they stand.
     void LearnOfBody(const FVector& Where, bool bFinder);
+    // A changed object makes a calm guard investigate its position, without
+    // exposing the player's position or turning an auditor's alarm on.
+    void NoticeTampering(const FVector& Where);
+    // A relay sensor's exact evidence impulse. Its first suspicious report
+    // does not turn an auditor's ordinary object inspection into an alarm.
+    void SensorEvidence(const FVector& Where,int32 SuspicionPermille);
     // A guard's start in a zone that has just opened (SoraStealthRules::Posted).
     void EnterZone(bool bCarriedOver);
     // On a patrol or post rather than in a hunting wave: the stealth zone's guard.
@@ -81,6 +109,7 @@ public:
     // The hero is in the view cone, within sight range and unobstructed.
     bool CanSee(const ASoraCharacterBase& Target) const;
     SoraStealthRules::EState State() const { return Mind.State; }
+    int32 StateElapsedMs() const { return Mind.StateMs; }
     int32 AwarenessPermille() const { return Mind.Awareness / SoraStealthRules::AwarenessScale; }
     bool IsHunting() const { return bHunting; }
     SoraStealthRules::ERole CombatRole() const { return Role; }
@@ -95,13 +124,25 @@ public:
     // Facing, and neither patrols nor fights while the errand lasts. It still
     // notices the hero; one that only runs while calm (bWhileCalm) ends the
     // moment it is alerted. DurationMs 0 lasts until cleared.
-    void SetErrand(const FVector& Goal, const FVector& Facing, float Pace, int32 DurationMs, bool bWhileCalm);
+    void SetErrand(const FVector& Goal, const FVector& Facing, float Pace, int32 DurationMs, bool bWhileCalm,
+        bool bThreeDimensional = false, float AcceptanceCm = ErrandReachCm, bool bSupportedSteps = false);
+    void AssignLift(ASoraCampaignLift& Lift,int32 Wave);
+    void AssignSpireFlight() { bSpireFlight=true; }
+    void AssignTenementDefense(int32 Member);
+    bool HasTenementDefenseFlight() const { return TenementDrone!=INDEX_NONE; }
+    void AssignWorkshopDefense(int32 Index);
+    int32 WorkshopEntryIndex() const { return WorkshopEntry; }
+    bool WorkshopVaultLaunched() const { return bWorkshopVaultLaunched; }
     // An errand's goal is reached within this (2D).
     static constexpr float ErrandReachCm = 120.f;
     void ClearErrand() { bErrand = false; }
     bool HasErrand() const { return bErrand; }
     // Within its acceptance of the errand's goal (2D).
     bool ErrandReached() const { return bErrand && bErrandReached; }
+    const SoraPatrolRules::FLoop& PatrolTiming() const { return PatrolLoop; }
+    // An ordinary patrol's physical waypoint stop, excluding search/errands.
+    bool IsPatrolPausedAt(int32 Point) const
+    { return !bHunting&&!bErrand&&Mind.State==SoraStealthRules::EState::Unaware&&bPaused&&RouteIndex==Point; }
 protected:
     virtual void OnPossess(APawn* InPawn) override;
     virtual void OnUnPossess() override;
@@ -119,6 +160,7 @@ private:
         int32 LoudnessPermille = 1000;
     };
     void Prepare(bool bHunt);
+    FSoraMillisecondClock ThinkClock;
     void Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, float DeltaSeconds);
     void DrivePupil(ASoraEnemy& Enemy, ASoraCharacterBase& Target, float DeltaSeconds);
     void DriveBoss(ASoraBoss& Boss, ASoraCharacterBase& Target, float DeltaSeconds);
@@ -129,18 +171,24 @@ private:
     void LookForBodies(ASoraEnemy& Enemy, int32 DtMs);
     void CallOut(const ASoraEnemy& Enemy) const;
     void AlarmRun(ASoraEnemy& Enemy, const ASoraCharacterBase& Target, float DeltaSeconds, int32 NowMs);
+    bool DriveSpireAlarm(ASoraEnemy& Enemy,float DeltaSeconds,int32 NowMs);
     void AnnounceState(const ASoraEnemy& Enemy) const;
     void Act(ASoraEnemy& Enemy, ASoraCharacterBase& Target, bool bSees, float DeltaSeconds, int32 NowMs);
     void Fight(ASoraEnemy& Enemy, ASoraCharacterBase& Target, bool bSees, float DeltaSeconds, int32 NowMs);
+    bool DriveHorseShell(ASoraEnemy& Enemy,float DeltaSeconds,int32 NowMs);
     void Patrol(ASoraEnemy& Enemy, float DeltaSeconds, int32 NowMs);
+    void ScheduledPatrol(ASoraEnemy& Enemy,float DeltaSeconds,int32 NowMs);
+    FSoraMillisecondClock PatrolClock;
+    SoraPatrolRules::FLoop PatrolLoop;
     void Search(ASoraEnemy& Enemy, float DeltaSeconds, int32 NowMs);
     bool ChoosePosition(const ASoraEnemy& Enemy, const FVector& Threat, bool bRetreat);
     bool Claimed(const FVector& Spot) const;
-    EMove WalkTo(ASoraEnemy& Enemy, const FVector& Goal, float Speed, float Acceptance, int32 NowMs);
-    EMove FlyTo(ASoraEnemy& Enemy, const FVector& Goal, float Speed, float Acceptance, int32 NowMs);
+    EMove WalkTo(ASoraEnemy& Enemy, const FVector& Goal, float Speed, float Acceptance, int32 NowMs,bool bStrict3D=false);
+    EMove WalkSupportedSegment(ASoraEnemy& Enemy,const FVector& Goal,float Speed,float Acceptance=20.f,bool bSteps=false);
+    EMove FlyTo(ASoraEnemy& Enemy, const FVector& Goal, float Speed, float Acceptance, int32 NowMs,bool bVolume=false);
     // One move request at Here: true once the walk has made no progress for
     // SoraStealthRules::StuckMs; the next request starts a fresh clock.
-    bool Stuck(const FVector& Here, int32 NowMs);
+    bool Stuck(const FVector& Here, int32 NowMs,bool bThreeDimensional=false);
     void ClearPath();
     void Face(ASoraEnemy& Enemy, const FVector& Direction, float DeltaSeconds, float Rate) const;
     void LookAround(ASoraEnemy& Enemy, float BaseYaw, float Amplitude, float DeltaSeconds, int32 NowMs, int32 PeriodMs = 6000) const;
@@ -168,6 +216,7 @@ private:
     int32 PauseUntilMs = 0;
     float PauseYaw = 0.f;
     bool bPaused = false;
+    double PointPauseRemainingMs = 0;
     // Search around the last known place.
     TArray<FVector> SearchPoints;
     int32 SearchIndex = 0;
@@ -206,11 +255,27 @@ private:
     bool bErrand = false;
     bool bErrandWhileCalm = false;
     bool bErrandReached = false;
+    bool bErrand3D = false;
+    // Authored stair/gallery waypoints use ordinary swept character movement
+    // with support checked ahead, where coarse navmesh cells lose the treads.
+    bool bErrandSupportedSteps = false;
+    float ErrandAcceptanceCm = ErrandReachCm;
     FVector ErrandGoal = FVector::ZeroVector;
     FVector ErrandFacing = FVector::ForwardVector;
     float ErrandPace = 1.f;
     int32 ErrandUntilMs = 0;
     bool RunErrand(ASoraEnemy& Enemy, float DeltaSeconds, int32 NowMs);
+    TWeakObjectPtr<ASoraCampaignLift> AssignedLift;
+    int32 LiftWave = INDEX_NONE;
+    bool bLiftJumped = false;
+    bool bSpireFlight=false;
+    int32 TenementDrone=INDEX_NONE,TenementLeg=0;
+    bool DriveTenementDefense(ASoraEnemy& Enemy,ASoraCharacterBase& Target,float Dt);
+    int32 WorkshopEntry=INDEX_NONE,WorkshopLeg=0;
+    bool bWorkshopVaultLaunched=false;
+    bool DriveWorkshopDefense(ASoraEnemy& Enemy,ASoraCharacterBase& Target,float Dt);
+    bool DriveSpireFlight(ASoraEnemy& Enemy,ASoraCharacterBase& Target,float Dt);
+    bool DriveLift(ASoraEnemy& Enemy,ASoraCharacterBase& Target,float Dt);
     // Stealth: the hero in view at the last tick, and evidence of a body.
     bool bSeesHero = false;
     int32 BodyEvidence = 0;

@@ -34,6 +34,8 @@ struct FSoraHUDFrame
     // Flashes fade gently instead of blinking.
     bool bReduceFlashing = false;
     FLinearColor Ivory, Gold, Teal, Muted;
+    // Draw-local occupancy: later projected labels also clear earlier labels.
+    mutable TArray<FBox2D> WorldMarkerBounds;
     FSoraHUDFrame(ASoraHUD& InHUD, const ASoraGameMode& InMode, float Width, float Height);
     // The dialogue panel for up to two lines of each language.
     FSoraDialogueLayout DialogueLayout(bool bEnglish) const;
@@ -42,6 +44,12 @@ struct FSoraHUDFrame
     // from SoraUI::ActionKey, so they follow the device and rebinding.
     void LabelWithEnglish(const SoraText::FLine& Line, float X, float Y, float Scale, FLinearColor Color) const;
 };
+
+// Every visible sound caption keeps its measured text; the story layout
+// chooses a clear column and the late caption draw uses those same bounds.
+struct FSoraCaptionText { FString Text; FVector2D At; float Scale=0.f; bool bEnglish=false; };
+struct FSoraCaptionPanel { FBox2D Bounds=FBox2D(ForceInit); TArray<FSoraCaptionText> Text; };
+struct FSoraCaptionLayout { TArray<FSoraCaptionPanel> Panels; bool bFits=true; };
 
 // Panels in draw order during play; menus are the Slate front end in
 // Private/UI. Title card, dialogue, notices and results:
@@ -53,11 +61,39 @@ namespace SoraHUDPanels
 {
 void DrawTopBar(const FSoraHUDFrame& Frame);
 void DrawTitleCard(const FSoraHUDFrame& Frame, const FSoraChapter& Card);
+void DrawCinematicDialogue(const FSoraHUDFrame& Frame);
 void DrawObjective(const FSoraHUDFrame& Frame);
+// Exact wrapped objective rows must remain inside their allocated header panel.
+bool ObjectiveLayoutFits(const FSoraHUDFrame& Frame, FString& Why);
 void DrawDojoLesson(const FSoraHUDFrame& Frame);
 void DrawBoss(const FSoraHUDFrame& Frame);
+// The exact complete boss rows and meters, placed after story panels.
+bool BossLayoutFits(const FSoraHUDFrame& Frame, FString& Why);
+TArray<FBox2D> BossLayoutObstacles(const FSoraHUDFrame& Frame);
 void DrawStealth(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
+TArray<FBox2D> StealthPanelBounds(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
 void DrawHero(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
+// The same projected crosshair, maai ring and nearby combat hints DrawHero uses.
+TArray<FBox2D> ReticlePanelBounds(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
+void DrawWeapon(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
+// Capture checks the same measured weapon layout that the live HUD draws.
+bool WeaponLayoutFits(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero, FString& Why);
+void DrawArmsNotice(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
+// Actual bottom-right rectangles, including active windup and arm-change notice.
+TArray<FBox2D> WeaponPanelBounds(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
+// Top of the lower full-width story stack; fieldcraft prompts stay above it.
+float GameplayStoryTop(const FSoraHUDFrame& Frame);
+// The measured tracker/notices must fit above the lower story stack, retaining all targets.
+// Full rhythm sweep and measured localized Interact label share no pixels.
+bool RhythmCueLayoutFits(const FSoraHUDFrame& Frame, FString& Why);
+// Ordinary work/search/pickup cues also clear coaching, dialogue and captions.
+bool InteractionPromptLayoutFits(const FSoraHUDFrame& Frame, FString& Why);
+bool StoryTrackerLayoutFits(const FSoraHUDFrame& Frame, FString& Why);
+// The exact tracker/notice/caption rectangles, for rendered subject framing checks.
+TArray<FBox2D> UpperStoryPanelBounds(const FSoraHUDFrame& Frame);
+// True only when this notice title is retained by the layout actually drawn.
+bool StoryNoticeTitleVisible(const FSoraHUDFrame& Frame, int32 NoticeIndex);
+bool BottomHUDLayoutFits(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero, FString& Why);
 // The campaign's arms wheel and the arm a key took up; the beat's fieldcraft:
 // the hand's work, breath, grip, stones, the candle, the signal and the
 // downed (SoraHUDFieldcraftPanel.cpp).
@@ -65,6 +101,23 @@ void DrawArmsWheel(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero)
 void DrawFieldcraft(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
 void DrawDialogue(const FSoraHUDFrame& Frame);
 void DrawResult(const FSoraHUDFrame& Frame);
+bool ShowsRegistry(const ASoraGameMode& Mode);
+void DrawRegistry(const FSoraHUDFrame& Frame);
+// Capture qualification uses the same measured, fully wrapped layout as draw.
+bool RegistryLayoutFits(const FSoraHUDFrame& Frame, FString& Why);
+// Relative caption rows at a candidate column width; no truncation.
+FBox2D CaptionGlyphBounds(const FSoraHUDFrame& Frame, const FString& Text, float Scale);
+TArray<FSoraCaptionPanel> MeasureCaptions(const FSoraHUDFrame& Frame, float Width);
+FSoraCaptionLayout CaptionLayout(const FSoraHUDFrame& Frame);
+// Story is allocated first around fixed gameplay panels; the boss is placed
+// around that finished story layout. This explicit order avoids recursion.
+TArray<FBox2D> FixedGameplayPanelBounds(const FSoraHUDFrame& Frame);
+// All gameplay panels, including the boss, for validation and later world labels.
+TArray<FBox2D> UpperGameplayPanelBounds(const FSoraHUDFrame& Frame);
+bool CaptionStoryLayoutFits(const FSoraHUDFrame& Frame, FString& Why);
+// Place and draw a dark backing, reserving its padded bounds against every
+// measured HUD panel and earlier world label. Returns the inset text origin.
+FVector2D DrawWorldLabelBacking(const FSoraHUDFrame& Frame, FVector2D Desired, FVector2D Size);
 void DrawCaptions(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter* Hero);
 // Deterministic practice, drawn last (SoraHUDPracticePanels.cpp).
 void DrawPractice(const FSoraHUDFrame& Frame);

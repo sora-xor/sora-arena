@@ -166,6 +166,38 @@ def _people(beat, record):
     return people
 
 
+
+def _crank_people(beat, record, rect, cover, fail):
+    coop = beat["task"]["crank_coop"]
+    if not coop:
+        return []
+    anchor = record["anchor"]
+    at = [anchor[0], anchor[1] + 220]
+    if not _inside(rect, at, 100) or not _clear(at, cover, 100):
+        fail(beat["id"], "crank helper has no clear work position")
+    refuge = at
+    if coop["retreat_cm"]:
+        # An existing cover's clear side reached by a swept straight walk.
+        # Reserve no new collision and never place the helper inside cover.
+        candidates = []
+        for cx, cy, sx, sy, _ in cover:
+            for point in ((cx-sx/2-100, cy), (cx+sx/2+100, cy), (cx, cy-sy/2-100), (cx, cy+sy/2+100)):
+                if not _inside(rect, point, 100):
+                    continue
+                if all(_clear((at[0]+(point[0]-at[0])*i/40, at[1]+(point[1]-at[1])*i/40), cover, 80) for i in range(41)):
+                    candidates.append(point)
+        if not candidates:
+            fail(beat["id"], "crank helper has no reachable existing cover")
+        refuge = min(candidates, key=lambda p: (p[0]-at[0])**2+(p[1]-at[1])**2)
+    offsets = [(0, 220)] if len(coop["npcs"]) == 1 else [(0, 220), (-190, -110), (190, -110)]
+    people = []
+    for npc, offset in zip(coop["npcs"], offsets):
+        point = [anchor[0]+offset[0], anchor[1]+offset[1]]
+        if not _inside(rect, point, 80) or not _clear(point, cover, 80):
+            fail(beat["id"], "crank crew has no clear work position")
+        people.append({"id": npc, "target": -1, "at": point, "cover": [_i(v) for v in refuge] if coop["retreat_cm"] else point})
+    return people
+
 def owned_volumes(beat):
     """Volumes on a climbing face the fieldcraft raises itself as the climber
     reaches them (its ledges and its top): no floor band stands for them."""
@@ -201,7 +233,11 @@ def _lamp(entry, fail, where):
     if "extinguishable" in entry:
         value = entry["extinguishable"]
         snuff = "none" if value is False else "shot" if value == "arrow" else snuff
-    return {"id": lamp_id, "kind": kind, "radius_cm": LAMP_RADIUS[kind], "snuff": snuff,
+    radius = entry.get("radius_cm", LAMP_RADIUS[kind])
+    if type(radius) not in (int, float) or not 0 < radius <= 2147483647:
+        fail(where, f"light {lamp_id} needs a positive finite int32 radius in centimetres")
+    radius = _whole(radius, f"{where}.{lamp_id}.radius_cm", fail)
+    return {"id": lamp_id, "kind": kind, "radius_cm": radius, "snuff": snuff,
             "hold_ms": hold if snuff == "hold" else 0,
             "relight_ms": _ms(entry.get("relight_s", 0), f"{where}.{lamp_id}", fail)}
 
@@ -279,7 +315,11 @@ def _surfaces(beat, layout, roofs, fail):
             step = crouch = _i(mult * 1000)
             edge = 0 if entry.get("silent_edge") else None
         for name in names:
-            area = layout.area(name, PATCH_CM.get(kind, (420, 420)))
+            if beat['id']=='ch06.b04' and name in ('vol_bell_clappers_1','vol_bell_clappers_2'):
+                x,y,_,_=layout.rect
+                area={'center':[x+1600,y+(830 if name.endswith('_1') else 280)],'size':[300,200]}
+            else:
+                area = layout.area(name, PATCH_CM.get(kind, (420, 420)))
             if area is None:
                 fail(where, f"no room on the floor for {name}")
             height = roofs.get(name, 0)
@@ -569,6 +609,14 @@ def _nets(beat, record, fail):
     waves = params.get("waves") or []
     drones = [number for number, wave in enumerate(waves) if _drones(wave)]
     no_cross = {"cross_wave": -1, "cross_at_cm": 0}
+    if beat["id"] == "ch05.b06":
+        # The vent drone nets the boy until freed. No haul/death timer is
+        # authored; use the existing one-second net-cut interaction.
+        return {"quarry": [{"id": "bellows_boy", "kind": "person", "index": 0, "hp": 0}],
+                "windup_ms": NET_WINDUP_MS, "haul_ms": 0, "cut_ms": 1000,
+                "saddle_weapon": -1, "saddle_side": 0, "tether": True, "halts": False,
+                "net_waves": drones, "nets_per_wave": [_drones(waves[number]) for number in drones],
+                "scout_waves": [], **no_cross, "lost_event": None}
     if params.get("task") == "defend":
         targets = params["defend"]["targets"]
         hauls = {target.get("haul_after_s") for target in targets}
@@ -791,7 +839,7 @@ def derive_fieldcraft(beat, record, zone, rect, cover, allocator, fail):
     elif params.get("task") == "escort":
         fail(beat["id"], "an escort walks a road")
     craft["allies"] = _allies(beat, record, layout, fail)
-    craft["people"] = _people(beat, record)
+    craft["people"] = _people(beat, record) + _crank_people(beat, record, rect, cover, fail)
     craft["volley"] = _volley(beat, craft["allies"], fail)
     craft["alarms"] = _alarms(beat, layout, fail)
     craft["nets"] = _nets(beat, record, fail)

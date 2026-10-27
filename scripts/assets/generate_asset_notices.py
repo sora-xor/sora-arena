@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate ThirdPartyNotices/ASSETS.md from the asset ledger (plan section 2.3).
+"""Generate the asset audit and player-facing credits from the same ledger.
 
 The notices file and the in-game credits both read the ledger, so they cannot drift.
 Output is deterministic (sorted, no generation timestamp) so --check can detect a
@@ -18,6 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import asset_ledger as L  # noqa: E402
 
 OUT = "ThirdPartyNotices/ASSETS.md"
+CREDITS_OUT = "ThirdPartyNotices/CREDITS.md"
 SOURCE_TITLES = {"polyhaven": "Poly Haven", "ambientcg": "ambientCG", "catbasev6": "CatBaseV6 anatomy inputs"}
 LEGACY_LICENSE_WORDS = ("CC0", "CC BY", "CC-BY", "OFL", "Public Domain", "public domain", "OGA-BY")
 LEGACY_URL_KEYS = ("asset_url", "upstream_page", "source_url", "source_page", "source_archive_url", "archive_url", "license_page")
@@ -40,6 +41,13 @@ def authors_text(authors) -> str:
 
 def md_cell(text) -> str:
     return str(text if text is not None else "-").replace("|", "\\|").replace("\n", " ")
+
+
+def code_references(value) -> str:
+    """Render legacy strings and schema-2 path objects as readable references."""
+    items = value if isinstance(value, list) else [value]
+    paths = [item.get("path") if isinstance(item, dict) else item for item in items]
+    return ", ".join(f"`{md_cell(path)}`" for path in paths if isinstance(path, str) and path) or "-"
 
 
 def content_files(record: dict) -> List[dict]:
@@ -72,7 +80,7 @@ def source_links(record: dict) -> str:
     return origin
 
 
-def by_credit_lines(record: dict) -> List[str]:
+def by_credit_lines(record: dict, include_paths: bool = True) -> List[str]:
     """Plan section 2.3 CC BY credit: "Title" by Author, source link, license link, changes."""
     lines = [f"- \"{md_cell(record.get('name'))}\" by {md_cell(authors_text(record.get('authors')))}, "
              f"<{record.get('origin_url')}>, {license_text(record)} <{record.get('license_url')}>"]
@@ -84,7 +92,7 @@ def by_credit_lines(record: dict) -> List[str]:
                  if mirror.get("license") else "")
         lines.append(f"  - Downloaded from: <{record['mirror_url']}>{terms}")
     derived = record.get("derived_art") or []
-    if derived:
+    if derived and include_paths:
         lines.append("  - Used in: " + ", ".join(f"`{d}`" for d in derived))
     return lines
 
@@ -94,7 +102,7 @@ def storage_text(record: dict) -> str:
             "local-private": "local private", "ue-restricted": "restricted UE import"}.get(record.get("storage"), str(record.get("storage")))
 
 
-def legacy_third_party(root: Path, ledgers) -> List[dict]:
+def legacy_third_party(root: Path, ledgers, compact: bool = True) -> List[dict]:
     extended = {base["manifest"] for _, doc in ledgers for base in doc.get("extends", []) or []}
     extended |= {L.posix(str(path.relative_to(root))) for path, _ in ledgers}  # schema-2 documents themselves
     found = []
@@ -119,7 +127,7 @@ def legacy_third_party(root: Path, ledgers) -> List[dict]:
                     walk(v, key)
             elif isinstance(node, str):
                 if "license" in key.lower() and any(word in node for word in LEGACY_LICENSE_WORDS):
-                    licenses.add(node if len(node) <= 160 else node[:157] + "...")
+                    licenses.add(node if not compact or len(node) <= 160 else node[:157] + "...")
                 if key in LEGACY_URL_KEYS and node.startswith("http"):
                     urls.add(node)
         walk(doc)
@@ -216,9 +224,10 @@ def render(root: Path) -> str:
     lines += ["## Project-owned work recorded in the ledger (OWN)", ""]
     if own:
         for _, _, record in sorted(own, key=lambda e: e[2].get("asset_id", "")):
-            derived = ", ".join(f"`{d}`" for d in record.get("derived_from", []) or []) or "-"
+            derived = code_references(record.get("derived_from"))
+            generators = code_references(record.get("generator") or record.get("origin_url"))
             lines.append(f"- `{record.get('asset_id')}`: {len(record.get('files', []))} files, generator "
-                         f"`{record.get('generator') or record.get('origin_url')}`, derived from {derived}")
+                         f"{generators}, derived from {derived}")
     else:
         lines.append("None.")
     lines.append("")
@@ -256,21 +265,72 @@ def render(root: Path) -> str:
     return "\n".join(lines)
 
 
+def render_credits(root: Path) -> str:
+    """Keep source acknowledgements intact without displaying the production audit."""
+    ledgers = L.load_ledgers(root)
+    records = [(doc, record) for _, doc in ledgers for record in L.doc_records(doc)]
+    lines = ["# Art, sound and reference sources", "",
+             "Acknowledgements include sources consulted during development.", ""]
+    sections = (("Public domain and CC0", ("PUB-CC0", "PUB-PD")),
+                ("Licensed sources", ("PUB-BY",)),
+                ("Reference acknowledgements", tuple(L.NEVER_TRACKED_TIERS)))
+    for heading, tiers in sections:
+        by_source: Dict[str, List[tuple]] = {}
+        for doc, record in records:
+            if record.get("tier") in tiers:
+                by_source.setdefault(source_title(doc), []).append((doc, record))
+        if not by_source:
+            continue
+        lines += [f"## {heading}", ""]
+        for source, entries in sorted(by_source.items()):
+            lines += [f"### {source}", ""]
+            lines += [c for c in sorted({c for doc, _ in entries for c in doc_credits(doc)})]
+            lines.append("")
+            for _, record in sorted(entries, key=lambda e: e[1].get("asset_id", "")):
+                if record.get("tier") == "PUB-BY":
+                    lines += by_credit_lines(record, include_paths=False)
+                else:
+                    lines.append(f"- \"{md_cell(record.get('name'))}\" by {md_cell(authors_text(record.get('authors')))}")
+                    lines.append(f"  - {license_text(record)}" +
+                                 (f" <{record['license_url']}>" if record.get("license_url") else ""))
+                    lines.append(f"  - Source: {source_links(record)}")
+                    if record.get("attribution_text"):
+                        lines.append(f"  - Credit: {md_cell(record['attribution_text'])}")
+                    if record.get("changes"):
+                        lines.append(f"  - Changes: {md_cell(record['changes'])}")
+                lines.append("")
+
+    # Older manifests still carry source notices. Retain those acknowledgements
+    # until migration, but do not show manifest paths or schema instructions.
+    legacy = legacy_third_party(root, ledgers, compact=False)
+    if legacy:
+        lines += ["## Additional source acknowledgements", ""]
+        for entry in legacy:
+            folder = Path(entry["manifest"]).parent.name
+            name = re.sub(r"(?<=[a-z0-9])(?=[A-Z])", " ", folder).replace("_", " ")
+            lines += [f"### {name}", "", "; ".join(entry["licenses"])]
+            lines += [f"Source: <{url}>" for url in entry["urls"]]
+            lines.append("")
+    return "\n".join(lines)
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--root", type=Path, default=L.REPO_ROOT)
-    parser.add_argument("--check", action="store_true", help="fail if the committed file is stale")
+    parser.add_argument("--check", action="store_true", help="fail if either generated file is missing or stale")
     args = parser.parse_args(argv)
     root = args.root.resolve()
-    text = render(root)
-    out = root / OUT
+    outputs = {OUT: render(root), CREDITS_OUT: render_credits(root)}
     if args.check:
-        current = out.read_text(encoding="utf-8") if out.is_file() else ""
-        print("NOTICES_CURRENT" if current == text else "NOTICES_STALE")
-        return 0 if current == text else 1
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(text, encoding="utf-8")
-    print(f"wrote {OUT} ({len(text.splitlines())} lines)")
+        stale = [name for name, text in outputs.items()
+                 if not (root / name).is_file() or (root / name).read_text(encoding="utf-8") != text]
+        print("NOTICES_STALE: " + ", ".join(stale) if stale else "NOTICES_CURRENT")
+        return int(bool(stale))
+    for name, text in outputs.items():
+        out = root / name
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(text, encoding="utf-8")
+        print(f"wrote {name} ({len(text.splitlines())} lines)")
     return 0
 
 

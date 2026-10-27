@@ -2,11 +2,18 @@
 #include "CoreMinimal.h"
 #include "SoraCharacterBase.h"
 #include "SoraCombatRules.h"
+#include "SoraDojoRules.h"
 #include "SoraFieldcraftRules.h"
 #include "SoraStealthRules.h"
+#include "SoraHorseShellRules.h"
+#include "SoraLandingDroneRules.h"
+#include "SoraMillisecondClock.h"
 #include "SoraEnemy.generated.h"
 enum class ESoraEnemyCue : uint8;
 class ASoraBoss;
+class ASoraProjectile;
+class USpotLightComponent;
+class USoraCampaignDirector;
 struct FSoraEnemyArchetype;
 struct FSoraEnemyAttack;
 struct FSoraEnemyVariant;
@@ -19,6 +26,11 @@ struct FSoraEnemyTuning
     FName Variant;
     // Zero keeps the archetype's (or variant's) value.
     int32 Health = 0;
+    // Zero keeps the archetype's hold; chapter 07's ridge specifies 1.2 s.
+    int32 NetRootMs = 0;
+    // Chapter 03's landing: mark, descend, net and a low wakizashi opening.
+    bool bLandingDrone = false;
+    bool bLandingCanalSearchlight = false;
     int32 SightCm = 0;
     int32 ViewDegrees = 0;
     // Negative keeps the archetype's value; a zero hearing is deaf.
@@ -51,11 +63,16 @@ class SORAARENA_API ASoraEnemy : public ASoraCharacterBase
 public:
     ASoraEnemy(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
     virtual void Tick(float DeltaSeconds) override;
+    virtual void EndPlay(const EEndPlayReason::Type Reason) override;
+    // The inventory drone's integrated net outlet, in actual world space.
+    FVector NetMuzzle() const;
+    FVector SenseOrigin() const { return Eye(); }
     // Makes this pawn an opponent of Archetype. Slot is its place in the spawn
     // order; fixed patterns (misses, peeks, flank sides) are offset by it so a
     // group never acts in unison. Without a patrol it belongs to a combat wave
-    // and hunts the hero; with one it starts unaware on that route. False, with
-    // nothing changed, when the catalog, the archetype or its variant is unknown.
+    // and hunts the hero; with one it starts unaware on that route. Returns false
+    // when catalog data or required body assets cannot be admitted; callers must
+    // discard the failed pawn (SpawnArchetype handles that cleanup).
     bool InitArchetype(FName Archetype, int32 Slot, const FSoraPatrolRoute* Patrol = nullptr, const FSoraEnemyTuning* Tuning = nullptr);
     // Spawns and initializes an opponent, or returns null when it cannot.
     static ASoraEnemy* SpawnArchetype(UWorld& World, FName Archetype, int32 Slot, const FVector& Location, const FRotator& Rotation,
@@ -68,7 +85,7 @@ public:
     static ASoraEnemy* SpawnInvader(UWorld& World, int32 Slot, const FVector& Location, const FRotator& Rotation,
         const FSoraPatrolRoute* Patrol = nullptr);
     // Nonlethal sparring with the bokken; a defeated pupil yields.
-    void InitDojoPupil(int32 Slot);
+    void InitDojoPupil(int32 Slot, const SoraDojoRules::FPupilTiming& Timing = {});
     void SuspendDojoAction();
     virtual bool IsEnemy() const override { return !IsFreed(); }
     virtual bool IsSparring() const override { return bDojoPupil; }
@@ -99,11 +116,32 @@ public:
     // Attacks. TryAttack commits the first of the archetype's attacks whose
     // range holds Distance and whose cooldown has passed, when none is under
     // way; the pawn's own tick then winds it up, strikes and recovers.
+    void DisruptWindAim(int32 Milliseconds);
     bool TryAttack(ASoraCharacterBase& Target, float Distance);
+    void SetWorkshopArrival(bool Active);
+    bool IsWorkshopArriving() const { return bWorkshopArriving; }
+    void SetCampaignWithdrawal(bool Active);
+    bool IsCampaignWithdrawing() const { return bCampaignWithdrawing; }
+    // Only the registered pod-B grenadier receives this encounter binding.
+    void BindHorseShell(USoraCampaignDirector& Director,uint64 Generation);
+    bool HasHorseShellAssignment() const { return bHorseShellBound; }
+    bool TryHorseShell(AActor& Target,const FVector& Landing);
+    void CancelHorseShell() { CancelAttack(); }
+    const SoraHorseShellRules::FState& HorseShellState() const { return HorseShellClock; }
+    AActor* HorseShellWarning() const { return ShellWarning.Get(); }
+    bool HasLandingDroneAssignment() const { return bLandingDrone; }
+    UStaticMeshComponent* InventoryDroneBody() const { return DroneBody; }
+    int32 LandingSearchlightAt(const FVector& Location) const;
+    bool OwnsLandingDroneMotion() const { return bLandingDrone&&LandingDroneClock.Stage!=SoraLandingDroneRules::EStage::Idle; }
+    bool IsLandingDroneLow() const;
+    const SoraLandingDroneRules::FState& LandingDroneState() const { return LandingDroneClock; }
+    AActor* LandingDroneWarning() const { return LandingWarning.Get(); }
     bool IsAttacking() const { return Phase != EPhase::Idle; }
     bool IsWindingUp() const { return Phase == EPhase::Windup; }
-    // Winding up or firing: the opponent holds its line until the attack is out.
-    bool IsCommitted() const { return Phase == EPhase::Windup || Phase == EPhase::Firing; }
+    // Winding up or firing; collateral also holds still during its exposed
+    // recovery, so the hero can maintain contact with the core.
+    bool IsCommitted() const { return Phase == EPhase::Windup || Phase == EPhase::Firing ||
+        ((bCollateralConstruct || bLandingDrone) && Phase == EPhase::Recovery); }
     const FSoraEnemyAttack* CurrentAttack() const;
     float WindupProgress() const;
     // The farthest reach of its melee attacks, for footwork.
@@ -128,6 +166,14 @@ public:
     // beat's defeat count.
     void SetSummoner(ASoraBoss* Boss);
     ASoraBoss* Summoner() const;
+    // Chapter 08 summit adds only. No mutation of the shared loom archetype.
+    void EnableCollateralConstruct();
+    void EnableClimbSentry() { bClimbSentry=true; }
+    bool IsCollateralConstruct() const { return bCollateralConstruct; }
+    bool IsConstructCoreOpen() const;
+    FVector ConstructCorePoint() const;
+    bool CanReachConstructCore(const ASoraCharacterBase& By) const;
+    bool HasReleasedGoods() const { return bGoodsReleased; }
     bool IsShieldOpen() const;
     // A tower shield on its arm (enemies.json shield).
     bool HasShield() const;
@@ -165,6 +211,8 @@ protected:
     virtual void TickPlay(float DeltaSeconds) override;
     virtual void HaltActions() override;
     virtual bool UsesAlienBody() const override;
+    virtual bool UsesHeldWeapon() const override { return !IsFlying(); }
+    virtual bool BuildSpecialBody() override;
     virtual bool WieldsDojoBokken() const override { return bDojoPupil; }
     // An opponent outside the archetype catalog (the collector) with its own drill.
     void InitScripted(int32 Slot);
@@ -172,6 +220,28 @@ protected:
     bool bDojoPupil = false;
     int32 EnemyIndex = 0;
 private:
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> DroneBody;
+    UPROPERTY() TObjectPtr<USpotLightComponent> LandingSearchlight;
+    bool bLandingCanalSearchlight=false;
+    void DisableLandingSearchlight();
+    void ConfigureBodyCollision();
+    const TArray<FSoraEnemyAttack>& AttackSet() const;
+    void ResetConstruct();
+    bool AdmitConstructDamage(float& Damage, FSoraHit& Hit);
+    void ReleaseConstructGoods();
+    void TickConstruct(float DeltaSeconds);
+    void ConstructSlam(const FSoraEnemyAttack& Attack);
+    bool bCollateralConstruct = false;
+    bool bClimbSentry=false;
+    bool bConstructSlamReleased = false;
+    bool bGoodsReleased = false;
+    bool bCoreWasOpen = false;
+    float GoodsReleaseSeconds = 0.f;
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> ConstructCore;
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> ConstructGoods;
+    TArray<FVector> GoodsAssembled;
+    TArray<FVector> GoodsReleaseFrom;
+    TArray<FVector> GoodsReleaseTo;
     enum class EPhase : uint8 { Idle, Windup, Firing, Recovery };
     void Commit(int32 Index, ASoraCharacterBase& Target);
     void AdvanceAttack();
@@ -181,6 +251,28 @@ private:
     void StrikeMelee(const FSoraEnemyAttack& Attack, ASoraCharacterBase& Target);
     void FireRound(const FSoraEnemyAttack& Attack, ASoraCharacterBase& Target, bool bPattern);
     void Lob(const FSoraEnemyAttack& Attack, ASoraCharacterBase& Target);
+    ASoraProjectile* LaunchShell(const FSoraEnemyAttack& Attack,const FVector& Landing,
+        USoraCampaignDirector* Director=nullptr,uint64 Generation=0,AActor* Warning=nullptr);
+    void TickHorseShell();
+    bool BeginLandingDrone(int32 WindupMs);
+    void TickLandingDrone();
+    void ClearLandingWarning();
+    bool bLandingDrone=false, bLandingFloorKnown=false;
+    SoraLandingDroneRules::FState LandingDroneClock;
+    FSoraMillisecondClock LandingDroneMilliseconds;
+    double LandingDroneLastWorldSeconds=0;
+    FVector LandingHome=FVector::ZeroVector, LandingLow=FVector::ZeroVector;
+    TWeakObjectPtr<AActor> LandingWarning;
+    void AdvanceHorseShellClock();
+    bool bHorseShellBound=false;
+    bool bCampaignWithdrawing=false;
+    TWeakObjectPtr<USoraCampaignDirector> HorseShellDirector;
+    uint64 HorseShellGeneration=0;
+    SoraHorseShellRules::FState HorseShellClock;
+    FSoraMillisecondClock HorseShellMilliseconds;
+    double HorseShellLastWorldSeconds=0;
+    TWeakObjectPtr<AActor> HorseShellTarget;
+    TWeakObjectPtr<AActor> ShellWarning;
     void FireBeam(const FSoraEnemyAttack& Attack, ASoraCharacterBase& Target);
     void CastNet(const FSoraEnemyAttack& Attack, ASoraCharacterBase& Target);
     void Telegraph(const FSoraEnemyAttack& Attack, float Life);
@@ -203,6 +295,7 @@ private:
     // The attack under way.
     EPhase Phase = EPhase::Idle;
     int32 AttackIndex = INDEX_NONE;
+    bool bWorkshopArriving=false;
     TWeakObjectPtr<ASoraCharacterBase> AttackTarget;
     float PhaseStartedAt = 0.f;
     float PhaseEndsAt = 0.f;
@@ -212,6 +305,7 @@ private:
     FVector LockedDirection = FVector::ForwardVector;
     FVector LockedPoint = FVector::ZeroVector;
     float NextAttackAt = 0.f;
+    int32 NetRootOverrideMs = 0;
     TArray<float> AttackReadyAt;
     int32 RangedShots = 0;
     int32 ShotsSinceRelocation = 0;
@@ -231,6 +325,7 @@ private:
     bool bUnconscious = false;
     bool bSeized = false;
     // The sparring pupil's drill.
+    SoraDojoRules::FPupilTiming PupilTiming;
     bool bPupilWindup = false;
     float PupilWindupEndsAt = 0.f;
     FVector PupilLockedDirection = FVector::ForwardVector;

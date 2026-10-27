@@ -172,7 +172,7 @@
       "health": 40,
       "speed_cm_s": 500,
       "turn_deg_s": 360,
-      "scale_permille": 600,
+      "scale_permille": 1000,
       "lethal": true,
       "perception": { "sight_cm": 2200, "dark_sight_cm": 2200, "view_deg": 60, "hearing_cm": 500, "suspicion_permille": 1000, "alarmist": false },
       "defense": { "front_block_deg": 0, "rim_opening_ms": 0, "rear_weak_permille": 1000, "poise_ms": 0, "rear_takedown": false },

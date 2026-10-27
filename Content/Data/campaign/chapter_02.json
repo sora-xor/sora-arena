@@ -192,6 +192,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -199,6 +200,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -206,12 +208,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -237,7 +247,10 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {}
   },
@@ -395,6 +408,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -402,6 +416,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -409,12 +424,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -440,7 +463,10 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {}
   },
@@ -568,6 +594,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -575,6 +602,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -582,12 +610,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -613,7 +649,10 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {
     "unlock_at": "beat_start",
@@ -682,6 +721,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -689,6 +729,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -696,12 +737,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -727,7 +776,10 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {}
   },
@@ -878,6 +930,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -885,6 +938,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -892,6 +946,8 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
@@ -902,7 +958,21 @@
      "pack_horse_a",
      "pack_horse_b"
     ],
-    "drop_on_hit": false,
+    "dropoff_capacity": {
+     "pack_horse_a": 2,
+     "pack_horse_b": 2
+    },
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": true
+    },
+    "carry_gate": {
+     "point": "seal_kura_sw",
+     "hold_ms": 3000,
+     "contest": "pause",
+     "tool": "yari_ishizuki"
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -930,7 +1000,10 @@
      0
     ],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {
     "gate_interact": {
@@ -1121,6 +1194,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -1128,6 +1202,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -1135,12 +1210,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [
      {
@@ -1177,7 +1260,10 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {
     "hazards": [
@@ -1189,7 +1275,14 @@
       "damage": 60,
       "hits_allies": true
      }
-    ]
+    ],
+    "withdrawal": {
+     "muster": "ps_gate_yard_start",
+     "arrival_cm": 220,
+     "pace_permille": 750,
+     "event": "event:horse_defense_withdrawal",
+     "bark": "ch02.b02.enforcer.009"
+    }
    }
   },
   {
@@ -1248,6 +1341,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -1255,6 +1349,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -1262,12 +1357,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -1293,7 +1396,10 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {}
   },
@@ -1530,6 +1636,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -1537,6 +1644,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -1544,12 +1652,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -1578,7 +1694,10 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {
     "route_length_m": 1200,
@@ -1753,6 +1872,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -1760,6 +1880,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -1767,12 +1888,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -1798,7 +1927,10 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {
     "wave2_fallback_trigger": "after_s:120",
@@ -1880,6 +2012,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -1887,6 +2020,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -1894,12 +2028,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -1925,7 +2067,10 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {
     "route_length_m": 465,
@@ -2007,6 +2152,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -2014,6 +2160,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -2021,6 +2168,8 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
@@ -2032,7 +2181,13 @@
      "shelter_2",
      "shelter_3"
     ],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2060,7 +2215,10 @@
      0
     ],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {}
   },
@@ -2121,6 +2279,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -2128,6 +2287,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -2135,12 +2295,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2166,7 +2334,10 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {}
   },
@@ -2237,6 +2408,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -2244,6 +2416,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -2251,12 +2424,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2282,7 +2463,10 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {
     "route_length_m": 750,
@@ -2376,6 +2560,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -2383,6 +2568,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -2390,12 +2576,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2421,7 +2615,10 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {
     "hazards": [
@@ -2513,6 +2710,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -2520,6 +2718,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -2527,12 +2726,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2558,7 +2765,10 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {}
   },
@@ -2620,6 +2830,7 @@
     ],
     "defeat": "kill",
     "capture_event": null,
+    "capture_hold_ms": 0,
     "lesson_mask": 0,
     "form_reps": [
      1,
@@ -2627,6 +2838,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -2634,12 +2846,20 @@
     "decay_permille": 0,
     "min_turn_ms": 0,
     "max_turn_ms": 0,
+    "crank_coop": null,
+    "crank_player": null,
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "dropoff_capacity": null,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2665,7 +2885,10 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "unload_hold_ms": 0,
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {
     "site_note": "site 2 (屋敷の工房) is restored at the dawn cut, relocated to pl_kakuredani in fiction"
@@ -5110,6 +5333,20 @@
    "mode": "radio",
    "lines": [
     "ch02.b06.sekireisai.005"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b06",
+   "on": "event:horse_defense_withdrawal",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b02.enforcer.009"
    ],
    "source": "dialogue",
    "repeatable": false,
@@ -7577,7 +7814,7 @@
   }
  },
  "space": {
-  "frame": "Unreal world cm; origin at the arena centre; every floor at z 0",
+  "frame": "Unreal world cm; origin at the arena centre; per-beat height_cm overrides floor z 0",
   "hub": 0,
   "hub_place": "pl_estate_night",
   "start": [
@@ -10669,6 +10906,8 @@
     "step_stations": [],
     "cache": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -10699,7 +10938,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch02.b02",
@@ -10798,6 +11039,8 @@
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -10874,7 +11117,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch02.b03",
@@ -10985,6 +11230,8 @@
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -11015,7 +11262,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch02.b04",
@@ -11126,6 +11375,8 @@
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -11156,7 +11407,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch02.b05",
@@ -11192,12 +11445,12 @@
      {
       "event": "volume_enter:vol_kura_sw_door",
       "center": [
-       0,
-       0
+       -1650,
+       220
       ],
       "size": [
        400,
-       1100
+       400
       ]
      }
     ],
@@ -11281,6 +11534,11 @@
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": [
+     -1650,
+     220
+    ],
     "kit": {
      "work": "carry",
      "item": "bale",
@@ -11316,7 +11574,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch02.b06",
@@ -11335,12 +11595,12 @@
     "dropoffs": [],
     "targets": [
      [
-      0,
-      220
+      800,
+      -1050
      ],
      [
-      850,
-      220
+      1200,
+      -1050
      ]
     ],
     "volumes": [],
@@ -11424,6 +11684,8 @@
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": "defend",
      "item": null,
@@ -11457,6 +11719,136 @@
      "fires": null,
      "ladders": [],
      "charge": null
+    },
+    "height_cm": 0,
+    "lift": null,
+    "horse_treatment": {
+     "targets": [
+      "pack_horse_a",
+      "pack_horse_b"
+     ],
+     "hold_ms": 2000,
+     "heal_hp": 60,
+     "cooldown_ms": 20000,
+     "cooldown_scope": "per_horse"
+    },
+    "pod_arrivals": {
+     "windup_ms": 2500,
+     "radius_cm": 350,
+     "damage": 60,
+     "hits_allies": true,
+     "contact": "foot_center_cylinder",
+     "floor_band_cm": [
+      -20,
+      80
+     ],
+     "spawn_offsets_cm": [
+      [
+       -110,
+       -60
+      ],
+      [
+       110,
+       -60
+      ],
+      [
+       0,
+       120
+      ]
+     ],
+     "arrivals": [
+      {
+       "id": "sp_pod_a_road",
+       "wave": 0,
+       "floor_cm": [
+        -200,
+        200,
+        0
+       ],
+       "release_ms": 0
+      },
+      {
+       "id": "sp_pod_b_north",
+       "wave": 1,
+       "floor_cm": [
+        -600,
+        1100,
+        0
+       ],
+       "release_ms": 45000
+      },
+      {
+       "id": "sp_pod_c_west",
+       "wave": 2,
+       "floor_cm": [
+        -1900,
+        -300,
+        0
+       ],
+       "release_ms": 95000
+      }
+     ]
+    },
+    "horse_shell": {
+     "wave": 1,
+     "archetype": "grenadier",
+     "attack": "arcing_shell",
+     "targets": [
+      "pack_horse_a",
+      "pack_horse_b"
+     ],
+     "warning_ms": 1400,
+     "release_interval_ms": 6000,
+     "flight_ms": 1400,
+     "arming_cm": 200,
+     "damage": 35,
+     "radius_cm": 300,
+     "range_cm": [
+      600,
+      2500
+     ],
+     "contact": "armed_sphere_with_cover"
+    },
+    "horse_withdrawal": {
+     "muster": "ps_gate_yard_start",
+     "arrival_cm": 220,
+     "pace_permille": 750,
+     "event": "event:horse_defense_withdrawal",
+     "bark": "ch02.b02.enforcer.009",
+     "floor_cm": [
+      -2300,
+      0,
+      0
+     ],
+     "floor_tolerance_cm": 30,
+     "slots_cm": [
+      [
+       -130,
+       -100
+      ],
+      [
+       -130,
+       100
+      ],
+      [
+       0,
+       -100
+      ],
+      [
+       0,
+       100
+      ],
+      [
+       130,
+       -100
+      ],
+      [
+       130,
+       100
+      ]
+     ],
+     "slot_acceptance_cm": 30,
+     "completion": "arrived_survivors_then_finished_gate_clear"
     }
    },
    {
@@ -11566,6 +11958,8 @@
     "step_stations": [],
     "cache": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -11596,7 +11990,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch02.b08",
@@ -11837,6 +12233,8 @@
     "patrols": [],
     "cache": null,
     "camera": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -11901,6 +12299,7 @@
      },
      "dismount": true,
      "auto_steer": true,
+     "spook_dismount": false,
      "until_phase": 0,
      "pack": [
       {
@@ -11925,6 +12324,7 @@
        "hp": 400
       }
      ],
+     "cargo": null,
      "at": [
       9898,
       -11966,
@@ -12017,7 +12417,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch02.b09",
@@ -12116,6 +12518,8 @@
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -12146,7 +12550,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch02.b10",
@@ -12271,6 +12677,8 @@
     "patrols": [],
     "cache": null,
     "camera": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -12313,6 +12721,7 @@
      "arcs": {},
      "dismount": true,
      "auto_steer": true,
+     "spook_dismount": false,
      "until_phase": 0,
      "pack": [
       {
@@ -12337,6 +12746,7 @@
        "hp": 400
       }
      ],
+     "cargo": null,
      "at": [
       9898,
       -16966,
@@ -12364,7 +12774,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch02.b11",
@@ -12481,6 +12893,8 @@
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": "carry",
      "item": "bale",
@@ -12517,7 +12931,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch02.b12",
@@ -12628,6 +13044,8 @@
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -12658,7 +13076,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch02.b13",
@@ -12838,6 +13258,8 @@
     "patrols": [],
     "cache": null,
     "camera": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -12886,8 +13308,10 @@
      "arcs": {},
      "dismount": false,
      "auto_steer": true,
+     "spook_dismount": false,
      "until_phase": 0,
      "pack": [],
+     "cargo": null,
      "at": [
       9898,
       -21966,
@@ -12915,7 +13339,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch02.b14",
@@ -13029,6 +13455,8 @@
     "step_stations": [],
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -13059,7 +13487,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch02.b15",
@@ -13158,6 +13588,8 @@
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -13188,7 +13620,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch02.b16",
@@ -13297,6 +13731,8 @@
     "step_stations": [],
     "cache": null,
     "route": null,
+    "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -13327,7 +13763,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    }
   ],
   "pickups": [

@@ -124,6 +124,8 @@ public:
     // Reports from the guards' brains.
     void NoteState(ASoraEnemy& Guard, SoraStealthRules::EState Previous, SoraStealthRules::EState Next);
     void RaiseAlarm(ASoraEnemy& By, const FVector& Where);
+    // Fixed sensors can detect the hero even when every guard is down.
+    void RaiseSensorAlarm(const FVector& Where);
     void AddBody(ASoraEnemy& Body);
     // Undiscovered bodies a guard may still find.
     TArray<ASoraEnemy*> UnfoundBodies() const;
@@ -163,6 +165,7 @@ public:
 protected:
     virtual bool DoesSupportWorldType(const EWorldType::Type WorldType) const override;
 private:
+    void RaiseAlarmFrom(ASoraEnemy* By,const FVector& Where);
     struct FBody
     {
         TWeakObjectPtr<ASoraEnemy> Enemy;

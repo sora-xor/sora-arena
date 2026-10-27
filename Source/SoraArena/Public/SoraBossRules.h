@@ -226,6 +226,16 @@ constexpr EZone ZoneAt(int ElapsedMs, int WindupMs, int ArmMs, int LifeMs)
     return ElapsedMs < Armed ? EZone::Marked : ElapsedMs < Armed + (LifeMs > 0 ? LifeMs : 1) ? EZone::Armed : EZone::Spent;
 }
 
+// A one-shot zone must release on the first observed frame at or after its
+// deadline, even if no frame sampled its nominal one-millisecond armed window.
+// PreviousArmedMs is the actor's release receipt, not a second clock.
+constexpr EZone ObservedZoneAt(int ElapsedMs, int WindupMs, int ArmMs, int LifeMs, int PreviousArmedMs)
+{
+    if(LifeMs==0&&ElapsedMs>=WindupMs+ArmMs)
+        return PreviousArmedMs<0?EZone::Armed:EZone::Spent;
+    return ZoneAt(ElapsedMs,WindupMs,ArmMs,LifeMs);
+}
+
 // An armed zone's periodic strike: the first when it arms, then every TickMs.
 constexpr bool ZoneTick(int ArmedMs, int PreviousArmedMs, int TickMs)
 {

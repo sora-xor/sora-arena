@@ -55,7 +55,29 @@ import re
 import textwrap
 from pathlib import Path
 
-from campaign_space import arena_blockers
+from campaign_flood import flood_valid
+from campaign_climb import climb_valid
+from campaign_foundry_defense import foundry_valid, CREW
+from campaign_horse_treatment import horse_treatment_valid
+from campaign_pods import pods_valid
+from campaign_horse_shell import horse_shell_valid
+from campaign_horse_withdrawal import horse_withdrawal_valid
+from campaign_molten import molten_valid
+from campaign_canisters import canisters_valid
+from campaign_press import press_hall_valid
+from campaign_relay import relay_valid
+from campaign_archive import archive_valid
+from campaign_palace import palace_valid
+from campaign_moat import moat_valid
+from campaign_landing import landing_valid
+from campaign_ward_gate import ward_gate_valid, shared_approach, ward_hub_neighbour
+from campaign_tenements import tenements_valid, tenement_hub_overlap, tenement_neighbour
+from campaign_lantern_workshop import workshop_valid, workshop_hub_overlap, workshop_neighbour
+from campaign_notice_square import notice_valid, notice_overlap
+from campaign_space import arena_blockers, spook_dismount
+from campaign_cargo import cargo_manifest
+from campaign_registry import validate_registry
+from campaign_crank import player_work
 
 ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "Content/Data"
@@ -106,12 +128,10 @@ DIRECTOR_FAMILIES = ("rate_band", "boss_phase", "duel_phase", "duel_event", "int
                      "awase_success", "awase_fail", "marobashi_miss", "gate_complete", "gate_start", "step_start",
                      "step_failed", "step_complete", "item_picked", "item_delivered", "crank_released",
                      "output_complete", "exit_reached", "site_restored", "point", "match_lost", "loss_continue",
-                     "collectible", "collectible_found")
+                     "collectible", "collectible_found", "maai_step_ok", "gate_retry")
 # Scripted proposals in those families that nothing raises yet, each listed
 # under "What the offline runtime does not do yet" in offline-acceptance.md.
-UNRAISED_PROPOSALS = {
-    "x_item_picked:sword_bundle": "ch03.b05's sword-bundle pickup and the loadout locked until it",
-}
+UNRAISED_PROPOSALS = {}
 JAPANESE = re.compile(r"[぀-ヿ㐀-鿿]")
 # A HUD prompt's key token, and a control named in brackets instead.
 KEY_TOKEN = re.compile(r"\{([^{}]*)\}")
@@ -220,6 +240,7 @@ def director_event_error(row, beat, offset, chapter):
     free-form interact: and volume_enter: names are theirs. Any event may end
     in ":first", which plays on its first raise in the beat."""
     event = row["on"][:-6] if row["on"].endswith(":first") else row["on"]
+    event = re.sub(r"\+[0-9]+(?:\.[0-9]+)?s$", "", event)
     family, _, rest = event.partition(":")
     task, params = beat["task"], beat["params"]
     number = int(rest) if rest.isdigit() else None
@@ -252,6 +273,8 @@ def director_event_error(row, beat, offset, chapter):
         return None if ok else "no such awase"
     if family == "marobashi_miss":
         return None if task["flank_bouts"] else "raised only in a 転 lesson"
+    if family == "maai_step_ok" or family == "gate_retry" and rest == "maai_step":
+        return None if task["maai"] else "raised only in a measured maai lesson"
     if family in ("gate_complete", "gate_start"):
         gates = {gate["gate"] for gate in params.get("lesson_gates", [])}
         return None if rest in gates else "no such lesson gate"
@@ -264,7 +287,8 @@ def director_event_error(row, beat, offset, chapter):
     if family in ("item_picked", "item_delivered"):
         points = task["pickups"] if family == "item_picked" else task["dropoffs"]
         load = re.fullmatch(r"load_(\d\d)", rest) if family == "item_delivered" else None
-        ok = rest in points or rest == task["carry_item"] or (load and 1 <= int(load[1]) <= task["count"])
+        recovery = task.get("recovery")
+        ok = rest in points or rest == task["carry_item"] or (family == "item_picked" and recovery and rest == recovery["item"]) or (load and 1 <= int(load[1]) <= task["count"])
         return None if ok else "no such pickup, drop-off, carried item or load"
     if family in ("crank_released", "output_complete", "exit_reached"):
         goal = {"crank_released": "turns", "output_complete": "steps", "exit_reached": "exit"}[family]
@@ -341,20 +365,49 @@ def _volume_events(beat, chapter):
 
 def check_space(chapter, beats, rewards, labels, where):
     """The chapter's space is one the world builder can build and the hero can play."""
+    from campaign_ledger import ledger_valid, supported as ledger_supported
+    require(ledger_valid(chapter), f"{where}: authored ledger/palace spatial contract")
+    from campaign_ridge import wind_valid
+    require(wind_valid(chapter), f"{where}: exposed ridge/wind contract")
+    from campaign_wood import wood_valid
+    require(wood_valid(chapter), f"{where}: optional wood physical/reward contract")
     space = chapter["space"]
     zones = space["zones"]
     rects = [tuple(zone["rect"]) for zone in zones] + ([ARENA_RECT] if space["hub"] is not None else [])
     require(space["hub"] in (None, chapter["map"]), f"{where}: the hub is not the chapter's arena")
     for number, a in enumerate(rects):
         require(a[0] < a[2] and a[1] < a[3], f"{where}: zone {number} has an empty floor")
-        for b in rects[number + 1:]:
+        for other,b in enumerate(rects[number + 1:],number+1):
             apart = a[2] + ZONE_GAP <= b[0] or b[2] + ZONE_GAP <= a[0] or a[3] + ZONE_GAP <= b[1] or b[3] + ZONE_GAP <= a[1]
+            if not apart and number<len(zones) and other<len(zones):
+                za,zb=zones[number].get('z_bounds_cm'),zones[other].get('z_bounds_cm')
+                apart=bool(za and zb and (za[1]<=zb[0] or zb[1]<=za[0]))
+                # ledger_valid fixes the exact touching west palace doorway;
+                # no other zones may opt out of the separation requirement.
+                if chapter['id'].startswith('ch06_') and {zones[number]['place'],zones[other]['place']}=={'pl_ledger_corridors','pl_uguisu_hall'}:
+                    ledger=zones[number] if zones[number]['place']=='pl_ledger_corridors' else zones[other]
+                    palace=zones[other] if zones[number]['place']=='pl_ledger_corridors' else zones[number]
+                    apart=ledger['rect'][2]==palace['rect'][0]
+                if shared_approach(chapter,zones[number],zones[other]):apart=True
+                if tenement_neighbour(chapter,zones[number],zones[other]):apart=True
+                if workshop_neighbour(chapter,zones[number],zones[other]):apart=True
+                if notice_overlap(chapter,zones[number],zones[other]):apart=True
+            if not apart and number<len(zones) and other==len(zones):
+                apart=(tenement_hub_overlap(chapter,zones[number],b) or ward_hub_neighbour(chapter,zones[number],b) or
+                       workshop_hub_overlap(chapter,zones[number],b) or notice_overlap(chapter,zones[number]))
             require(apart, f"{where}: zones {a} and {b} overlap or touch")
     for zone in zones:
+        expected_z = [-500,15800] if chapter["id"].startswith("ch08_") and zone["place"]=="pl_ledger_spire" else [15800,20000] if chapter["id"].startswith("ch08_") and zone["place"]=="pl_ledger_engine" else [-2000,2500] if chapter["id"].startswith("ch07_") and zone["place"]=="pl_hull_ridge" else None
+        require(zone.get("z_bounds_cm")==expected_z,f"{where}: authored vertical place {zone['id']}")
         rect, cover = zone["rect"], zone["cover"]
         require(zone["style"] in ("estate", "ward", "foundry", "citadel") and
                 zone["form"] in ("hall", "yard", "field", "route"), f"{where}: zone {zone['id']} style or form")
-        require(len(zone["walls"]) == 4 and zone["wall_cm"] >= 200, f"{where}: zone {zone['id']} must be walled in")
+        wood_counts = {"pl_matoba": 5, "pl_issoseki_wood": 0, "pl_dojo_smithy": 5} if chapter["id"].startswith("ch01_") else {}
+        if chapter['id']=='ch03_lantern_ward':wood_counts.update(pl_ura_nagaya=0,pl_kido=7,pl_chochin_kobo=0,pl_kosatsuba=0)
+        if chapter["id"].startswith("ch07_"): wood_counts.update(pl_hull_ridge=0,pl_hangar=0)
+        if chapter["id"].startswith("ch06_"): wood_counts.update(pl_archive=5,pl_press_hall=5,pl_ledger_corridors=0,pl_uguisu_hall=5)
+        require(len(zone["walls"]) == wood_counts.get(zone["place"], 4) and zone["wall_cm"] >= 200,
+                f"{where}: zone {zone['id']} wall/door contract")
         for piece in cover:
             require(_inside(rect, piece, max(piece[2], piece[3]) / 2 + WALL_CLEAR),
                     f"{where}: cover {piece[:2]} of {zone['id']} leaves no way past the wall")
@@ -371,11 +424,59 @@ def check_space(chapter, beats, rewards, labels, where):
     def zone_of(index):
         return (tuple(zones[index]["rect"]), zones[index]["cover"]) if index >= 0 else (ARENA_RECT, hub_blockers)
 
+    elevated_rect = None
     def on_floor(index, point, what, cover_margin=COVER_CLEAR):
-        rect, cover = zone_of(index)
+        if what=='ch03.b10 patrol' and chapter['id']=='ch03_lantern_ward':
+            # notice_valid pins every point before this loop. The two long
+            # street patrols cross the zone boundary onto real connected floors;
+            # a bounded union check keeps this exception local to those routes.
+            x,y=point
+            supported=(-3150<=x<=3150 and -2550<=y<=2550 or
+                       -4640<=x<=-3150 and -340<=y<=4240 or
+                       3150<=x<=4040 and -340<=y<=340 or
+                       -340<=x<=340 and 2550<=y<=3840)
+            require(supported,f"{what}: point leaves the connected street floors")
+            return
+        if index>=0 and zones[index]['place']=='pl_chochin_kobo' and chapter['id']=='ch03_lantern_ward':
+            require(_inside(zones[index]['rect'],point,60),f"{what}: workshop point leaves its floor")
+            return
+        if index>=0 and zones[index]['place']=='pl_ura_nagaya' and chapter['id']=='ch03_lantern_ward':
+            require(_inside(zones[index]['rect'],point,60),f"{what}: tenement point leaves its floor")
+            return
+        if index>=0 and zones[index]['place']=='pl_kido' and chapter['id']=='ch03_lantern_ward':
+            # The fixed ward contract puts its west patrol 1 m inside the
+            # boundary. Keep a 60 cm body clearance; wall and solid sweeps
+            # are checked separately against the compiled construction.
+            require(_inside(zones[index]['rect'],point,60),f"{what}: ward point leaves its floor")
+            return
+        if index>=0 and zones[index]['place']=='pl_horiwari' and chapter['id'].startswith('ch03_') and what.endswith(' patrol'):
+            # Exact authored flight paths/heights are fixed by landing_valid;
+            # the 4/5 m discs may pass above the 1.4 m cargo stacks.
+            require(_inside(zones[index]['rect'],point,40),f"{what}: flight path leaves its landing")
+            return
+        if index>=0 and zones[index]['place']=='pl_ledger_corridors':
+            require(ledger_supported(chapter,index,point,what.startswith('ch06.b06')),
+                    f"{what} at {point[:2]} is outside the actual ledger/palace floor union")
+            return
+        rect, cover = (elevated_rect, []) if elevated_rect is not None else zone_of(index)
         require(_inside(rect, point, WALL_CLEAR) and _clear_of_cover(cover, point, cover_margin),
                 f"{what} at {point[:2]} is off its floor or inside a wall or cover")
 
+    require(flood_valid(chapter), f"{where}: physical flood contract")
+    require(climb_valid(chapter), f"{where}: authored corner/extrusion climb contract")
+    require(foundry_valid(chapter), "foundry defense contract")
+    require(horse_treatment_valid(chapter), "horse treatment contract")
+    require(pods_valid(chapter), "pod arrival contract")
+    require(horse_shell_valid(chapter), "horse shell contract")
+    require(horse_withdrawal_valid(chapter), "horse withdrawal contract")
+    require(molten_valid(chapter), "casting channel contract")
+    require(canisters_valid(chapter), "hangar fuel canister contract")
+    require(moat_valid(chapter), f"{where}: authored physical moat/depth contract")
+    require(ward_gate_valid(chapter), f"{where}: authored ward-gate geometry and sensor contract")
+    require(tenements_valid(chapter), f"{where}: authored tenement placement contract")
+    require(notice_valid(chapter), f"{where}: notice square charge placement contract")
+    require(workshop_valid(chapter), f"{where}: authored lantern workshop placement contract")
+    require(landing_valid(chapter), f"{where}: authored west-landing geometry and flight contract")
     records = space["beats"]
     require([record["beat"] for record in records] == [beat["id"] for beat in beats], f"{where}: one space per beat")
     require(space["start"] == records[0]["entry"], f"{where}: the chapter starts at its first beat")
@@ -390,15 +491,38 @@ def check_space(chapter, beats, rewards, labels, where):
             on_floor(index, point, f"{where} site {site}", 150)
     for beat, record in zip(beats, records):
         task, index, what = beat["task"], record["zone"], beat["id"]
+        check_capture_hold(beat, record)
+        if what == "ch06.b13":
+            require(index >= 0 and zones[index]["place"] == "pl_vault_core", f"{what}: bulkhead belongs to the vault")
+            on_floor(index, record["bulkhead"], f"{what} bulkhead", 50)
+            on_floor(index, [record["bulkhead"][0] + 140, record["bulkhead"][1]], f"{what} lever approach", 60)
+        elevated_rect = None
+        if what == "ch08.b12":
+            elevated_rect = next(row["lift"]["gallery_rect"] for row in records if row["beat"] == "ch08.b11")
+        require(record["height_cm"] == (45 if what=='ch03.b13' else 600 if what in ("ch06.b09","ch06.b10") else 2700 if what == "ch08.b11" else 14200 if what == "ch08.b12" else 16000 if record.get("summit") else 0),
+                f"{what}: authored floor height")
         routed = beat["type"] == "horseback_ride" or task["goal"] == "escort"
         require(routed == (record["route"] is not None) and
                 (not routed or zones[index]["form"] == "route"), f"{what}: rides and escorts run on a route")
-        on_floor(index, record["entry"], f"{what} entry")
+        if what == "ch06.b11":
+            # press_hall_valid has already fixed this exact elevated landing.
+            # The 120 cm deck cannot use the floor's 150 cm wall clearance;
+            # require the 34 cm capsule plus 8 cm, without relaxing floor points.
+            require(record["entry"] == record["press_hall"]["catwalk"]["ladder_top_cm"] + [-90]
+                    and _inside(zones[index]["rect"], record["entry"], 42),
+                    f"{what}: supported catwalk entry with capsule clearance")
+        else:
+            on_floor(index, record["entry"], f"{what} entry")
         on_floor(index, record["anchor"], f"{what} anchor", 0)
         for key, count in (("objectives", len(task["objectives"])), ("pickups", len(task["pickups"])),
                            ("dropoffs", len(task["dropoffs"])), ("targets", len(task["targets"]))):
             require(len(record[key]) == count, f"{what}: {count} {key} in the task, {len(record[key])} placed")
         distinct = [record["anchor"]] + record["objectives"] + record["pickups"] + record["dropoffs"] + record["targets"]
+        if beat["id"]=="ch03.b10":distinct=[record["anchor"],record["objectives"][2]] # two sequential holds share the same rear panel; notice_valid pins them
+        require((record.get("recovery") is not None) == (task.get("recovery") is not None), f"{what}: recovery requires a well")
+        if task.get("recovery"):
+            on_floor(index, record["recovery"], f"{what} recovery well", 350)
+            distinct.append(record["recovery"])
         for key in ("objectives", "pickups", "dropoffs", "targets", "stations", "spawns"):
             for point in record[key]:
                 on_floor(index, point, f"{what} {key}")
@@ -419,7 +543,7 @@ def check_space(chapter, beats, rewards, labels, where):
                 require(step["kind"] in labels["step_kinds"], f"{what}: step {step['kind']} has no label")
         for target in task["targets"]:
             require(target["id"] in labels["targets"], f"{what}: target {target['id']} has no label")
-        rect = zone_of(index)[0]
+        rect = elevated_rect if elevated_rect is not None else zone_of(index)[0]
         placed = {volume["event"] for volume in record["volumes"]}
         named = _volume_events(beat, chapter)
         if record["mount"]:
@@ -427,12 +551,34 @@ def check_space(chapter, beats, rewards, labels, where):
             named |= {f"volume_enter:{entry['volume']}" for entry in record["mount"]["forced"]}
         require(placed == named, f"{what}: volumes {sorted(placed)} differ from its events {sorted(named)}")
         for volume in record["volumes"] + [record["exit"]]:
-            require(_inside(rect, volume["center"], 0) and min(volume["size"]) >= 300, f"{what}: volume {volume}")
+            if record.get('tenements'):
+                require(_inside(rect,volume['center'],0) and min(volume['size'])>=180,
+                        f"{what}: tenement volume leaves its floor or exceeds its narrow alley")
+                continue
+            if record.get('ledger_hall'):
+                require(ledger_supported(chapter,index,volume['center'],what=='ch06.b06',0) and
+                        min(volume['size'])>=(270 if volume.get('event')=='volume_enter:vol_uguisu_entry' else 300),
+                        f"{what}: ledger/palace volume {volume} is outside its supported floor")
+                continue
+            volume_rect = zones[next(r["zone"] for r in records if r["beat"]=="ch08.b13")]["rect"] if what=="ch08.b12" and volume.get("floor_cm")==16000 else rect
+            if what=="ch03.b03" and volume is record["exit"]:
+                volume_rect=zones[next(r["zone"] for r in records if r["beat"]=="ch03.b05")]["rect"]
+            if what=="ch06.b10" and volume.get("event")=="volume_enter:vol_archive_press_landing":
+                volume_rect=zones[next(r["zone"] for r in records if r["beat"]=="ch06.b11")]["rect"]
+            require(_inside(volume_rect, volume["center"], 0) and min(volume["size"]) >= (120 if what=="ch06.b10" and volume.get("event")=="volume_enter:vol_archive_press_landing" else 150 if what=="ch06.b14" else 300), f"{what}: volume {volume}")
+        # Match SoraCatalogSpace's presence checks in both directions: a
+        # cinematic cannot acquire an interaction anchor just for set dressing.
+        require((record["closing"] is not None) == task["anchor_after_lines"], f"{what}: closing anchor must match its task")
         if task["anchor_after_lines"]:
-            require(record["closing"] is not None, f"{what}: a dialogue that ends at an anchor needs one")
-            on_floor(index, record["closing"], f"{what} closing anchor", 0)
-        if beat["type"] == "explore_optional":
-            require(record["cache"] is not None, f"{what}: an explore beat needs its cache")
+            if what=="ch06.b10":
+                press=next(r for r in records if r['beat']=='ch06.b11')
+                require(record['closing']==press['press_hall']['catwalk']['ladder_top_cm']
+                        and _inside(zones[press['zone']]['rect'],record['closing'],42),
+                        f'{what}: closing anchor must be on the supported press catwalk')
+            else:
+                on_floor(index, record["closing"], f"{what} closing anchor", 0)
+        require((record["cache"] is not None) == (task["goal"] == "cache"), f"{what}: optional cache must match its task")
+        if task["goal"] == "cache":
             on_floor(index, record["cache"], f"{what} cache")
         require((record["camera"] is not None) == (beat["type"] == "cinematic"), f"{what}: cinematic camera")
         kit = record["kit"]
@@ -456,6 +602,8 @@ def check_space(chapter, beats, rewards, labels, where):
         require((mount is not None) == (beat["type"] == "horseback_ride" or any(
             "mount" in phase for phase in beat["params"].get("phases", []))), f"{what}: horse")
         if mount:
+            check_spook_dismount(beat, mount)
+            check_cargo_manifest(beat, mount, kit)
             require(set(mount["weapons"]) <= MOUNTED_WEAPONS, f"{what}: mounted weapons {mount['weapons']}")
             require(set(mount["gaits"]) <= set(GAITS) and mount["gaits"], f"{what}: gaits {mount['gaits']}")
             speeds = mount["speeds_cm_s"]
@@ -468,11 +616,15 @@ def check_space(chapter, beats, rewards, labels, where):
             on_floor(index, mount["at"], f"{what} horse")
             for spook in mount["spooks"]:
                 require(f"volume_enter:{spook}" in placed, f"{what}: spook volume {spook} is not placed")
+    elevated_rect = None
     found = [pickup["collectible"] for pickup in space["pickups"]]
     loose = [item["id"] for item in chapter["collectibles"] if item["id"] not in rewards]
     require(sorted(found) == sorted(loose), f"{where}: pickups {sorted(found)} for loose collectibles {sorted(loose)}")
     for pickup in space["pickups"]:
         on_floor(pickup["zone"], pickup["at"], f"{where} pickup {pickup['collectible']}")
+        height=pickup.get('height_cm',0)
+        expected={'ch03.c03':-650,'ch03.c05':125}.get(pickup['collectible'],0)
+        require(height==expected,f"{where}: collectible height must match its authored location")
 
 
 GUARD_KEYS = {"type", "sight_cm", "dark_sight_cm", "view_deg", "hearing_cm", "suspicion_permille", "post", "scan_deg",
@@ -501,17 +653,35 @@ def check_fieldcraft(beat, record, index, zones, zone_of, on_floor):
     require(set(craft) == FIELDCRAFT_KEYS, f"{what}: fieldcraft keys {sorted(craft)}")
 
     def area(row, label):
+        if record.get('ledger_hall'):
+            from campaign_ledger import supported
+            require(supported({'space':{'zones':zones}},index,row['center'],what=='ch06.b06',0) and min(row['size'])>0,
+                    f"{what}: {label} is outside the ledger/palace floor union")
+            return
         require(_inside(rect, row["center"], 0) and min(row["size"]) > 0, f"{what}: {label} {row} is off its floor")
 
     for lamp in craft["lamps"]:
         require(lamp["snuff"] in ("hold", "shot", "none") and lamp["radius_cm"] > 0 and lamp["relight_ms"] >= 0 and
                 (lamp["snuff"] == "hold") == (lamp["hold_ms"] > 0), f"{what}: lamp {lamp['id']} rules")
-        on_floor(index, lamp["at"], f"{what} lamp {lamp['id']}")
+        if record.get('relay_room'):
+            # Authored wall lamps are 1 m from the wall; their 50 cm lens
+            # needs its own footprint, not the standing-player clearance.
+            require(_inside(rect, lamp['at'], 25), f"{what}: relay lamp leaves the room")
+        else:
+            on_floor(index, lamp["at"], f"{what} lamp {lamp['id']}")
+    if what == 'ch03.b10':
+        terminal = [lamp for lamp in craft['lamps'] if lamp['id'] == 'terminal_glow_b10']
+        require(len(terminal) == 1 and terminal[0]['kind'] == 'strip' and
+                terminal[0]['radius_cm'] == 600 and terminal[0]['snuff'] == 'none' and
+                terminal[0]['hold_ms'] == 0 and terminal[0]['relight_ms'] == 0,
+                f'{what}: the terminal keeps its unsnuffable six-metre cyan glow')
     roofs = {ladder["height_cm"] for ladder in craft["ladders"]}
     for surface in craft["surfaces"]:
         area(surface, f"{surface['kind']} floor")
         require(0 <= surface["crouch_permille"] <= 10000 and 0 < surface["step_permille"] <= 10000 and
-                (surface["height_cm"] == 0 or surface["height_cm"] in roofs), f"{what}: {surface['kind']} floor loudness")
+                (surface["height_cm"] == 0 or surface["height_cm"] in roofs or
+                 (what=='ch03.b03' and surface['kind']=='running_water' and surface['height_cm']==-90)),
+                f"{what}: {surface['kind']} floor loudness")
     water = craft["water"]
     if water:
         area(water, "water")
@@ -563,7 +733,10 @@ def check_fieldcraft(beat, record, index, zones, zone_of, on_floor):
                 (ally["rank"] >= 0) == (ally["role"] == "rank") and ally["rank"] < 4 and
                 (ally["joins"] is None or re.fullmatch(r"wave_start:\d+", ally["joins"]) and
                  int(ally["joins"].split(":")[1]) <= len(beat["task"]["waves"])), f"{what}: ally {ally['id']}")
-        on_floor(index, ally["at"], f"{what} ally {ally['id']}")
+        # The relay's sole lookout has a separately validated upper outside
+        # perch. Its exact location/role is pinned by relay_valid above.
+        if not (record.get("relay_room") and ally["id"] == "npc_kohagi"):
+            on_floor(index, ally["at"], f"{what} ally {ally['id']}")
     # SoraFieldcraftRules::FVolleyRules: up to four ranks, each a full row of gunners with the volley's arm.
     volley = craft["volley"]
     gunners = [ally for ally in craft["allies"] if ally["role"] == "rank"]
@@ -576,11 +749,21 @@ def check_fieldcraft(beat, record, index, zones, zone_of, on_floor):
                 all(ally["weapon"] == volley["weapon"] and ally["joins"] is None for ally in gunners),
                 f"{what}: volley ranks")
     check_fieldcraft_sets(beat, record, index, zones, craft, area, on_floor)
-    people = [person["target"] for person in craft["people"]]
+    defended = [person for person in craft["people"] if person["target"] != -1]
+    people = [person["target"] for person in defended]
     kinds = record["kit"]["targets"]
     require(len(people) == len(set(people)) and people == [index for index, kind in enumerate(kinds) if kind == "person"] and
-            all(person["at"] == record["targets"][person["target"]] for person in craft["people"]),
+            all(person["at"] == record["targets"][person["target"]] for person in defended),
             f"{what}: every defended person stands at its target")
+    helpers = [person for person in craft["people"] if person["target"] == -1]
+    coop = beat["task"]["crank_coop"]
+    helper_ids = CREW if what == "ch05.b07" else (coop["npcs"] if coop else [])
+    require(len(helpers) == len(helper_ids), f"{what}: exactly the authored crank helper is staged")
+    require([helper["id"] for helper in helpers] == helper_ids, f"{what}: helper identities and order")
+    for helper in helpers:
+        require(set(helper) == {"id", "target", "at", "cover"} and helper["id"] in helper_ids, f"{what}: crank helper identity")
+        on_floor(index, helper["at"], f"{what}: crank helper work")
+        on_floor(index, helper["cover"], f"{what}: crank helper cover")
 
 
 def check_fieldcraft_sets(beat, record, index, zones, craft, area, on_floor):
@@ -605,6 +788,13 @@ def check_fieldcraft_sets(beat, record, index, zones, craft, area, on_floor):
         elif kind == "cart":
             require(task["goal"] == "escort" and nets["halts"] and ids[0] in params["escort"]["npcs"] and
                     nets["quarry"][0]["hp"] > 0, f"{what}: an escort's nets fall on its cart")
+        elif what == "ch05.b07":
+            require(kind == "person" and ids == CREW and nets["haul_ms"] == 0 and
+                    [row["index"] for row in nets["quarry"]] == [1, 2], f"{what}: bellows crew nets")
+        elif task["goal"] == "turns":
+            require(what == "ch05.b06" and kind == "person" and ids == task["crank_coop"]["npcs"] == [person["id"] for person in craft["people"]] and
+                    nets["haul_ms"] == 0 and nets["cut_ms"] == 1000 and nets["windup_ms"] == 800 and
+                    [row["index"] for row in nets["quarry"]] == [0], f"{what}: bellows boy's net/free contract")
         else:
             require(kind == "person" and ids == [target["id"] for target in task["targets"]] and nets["haul_ms"] > 0 and
                     [row["index"] for row in nets["quarry"]] == list(range(len(ids))), f"{what}: a defence's nets")
@@ -669,6 +859,111 @@ def check_fieldcraft_sets(beat, record, index, zones, craft, area, on_floor):
         require(chainages == sorted(chainages), f"{what}: the stakes stand along the road in order")
 
 
+def check_crank_player(beat):
+    def crank_fail(where, message):
+        require(False, f"{where}: {message}")
+    require("crank_player" in beat["task"] and beat["task"]["crank_player"] == player_work(beat, crank_fail),
+            f"{beat['id']}: exact authored player crank contract")
+
+
+def check_rhythm_steps(beat):
+    # Compare normalized phrase sizes, passing thresholds and cue timing with
+    # the authored source; a hand-edited catalog cannot erase the contract.
+    from build_campaign_data import normalize_task, BuildError
+    try:
+        expected = normalize_task(beat)["steps"]
+    except BuildError as error:
+        raise CampaignError(str(error)) from error
+    require(beat["task"]["steps"] == expected, f"{beat['id']}: exact authored manufacturing rhythm contract")
+
+
+def check_spook_dismount(beat, mount):
+    def reject(where, message):
+        raise CampaignError(f"{where}: {message}")
+    expected = spook_dismount(beat, reject)
+    require(type(mount.get("spook_dismount")) is bool and mount["spook_dismount"] == expected,
+            f"{beat['id']}: normalized spook dismount must match the authored policy")
+
+
+def check_cargo_manifest(beat, mount, kit):
+    def reject(where, message):
+        raise CampaignError(f"{where}: {message}")
+    expected = cargo_manifest(beat, reject)
+    require("cargo" in mount and mount["cargo"] == expected, f"{beat['id']}: exact normalized cargo manifest required")
+    require((kit.get("work") == "cargo") == (expected is not None), f"{beat['id']}: cargo kit requires authored cargo")
+    if expected is not None:
+        row = mount["cargo"]
+        require(type(row.get("total")) is int and type(row.get("per_dropoff")) is int,
+                f"{beat['id']}: normalized cargo quantities must be integers")
+        require(mount["pack"] == [{"id": "pack_horse_cargo", "follow": "lead", "speed_cm_s": 0,
+                                   "spacing_cm": 300, "hp": 0}], f"{beat['id']}: cargo has one led carrier")
+        require(kit == {"work": "cargo", "item": "bale", "pickups": [],
+                        "dropoffs": ["drying_stand"] * len(beat["task"]["dropoffs"]), "targets": [], "party": []},
+                f"{beat['id']}: cargo requires one drying stand per destination")
+
+
+def check_cargo_unload(beat):
+    task, where = beat["task"], beat["id"]
+    def reject(where, message):
+        raise CampaignError(f"{where}: {message}")
+    manifest = cargo_manifest(beat, reject)
+    value = task.get("unload_hold_ms")
+    require(type(value) is int, f"{where}: missing or noninteger cargo unload duration")
+    cargo = beat["type"] == "horseback_ride" and task["goal"] == "deliveries"
+    require(cargo == (manifest is not None), f"{where}: cargo task must match its authored mode")
+    if cargo:
+        require(task["dropoffs"] == beat["params"]["cargo"]["dropoffs"] and task["count"] == len(task["dropoffs"]),
+                f"{where}: cargo destinations must retain authored order and quantity")
+    if not cargo:
+        require(value == 0, f"{where}: only cargo rides have an unload hold")
+        return
+    seconds = beat["params"].get("cargo", {}).get("unload_hold_s")
+    require(type(seconds) in (int, float) and 0 < seconds <= (1 << 30) / 1000 and
+            0 < value <= 1 << 30 and abs(seconds * 1000 - value) < 1e-6,
+            f"{where}: cargo unload duration must preserve the authored positive whole milliseconds")
+
+
+def check_capture_hold(beat, record):
+    task, where = beat["task"], beat["id"]
+    expected = {"ch06.b13": ("boss_eskro", "interact:bulkhead_lever", 2000),
+                "ch08.b14": ("boss_val_amort", "interact:engine_spine", 1500)}.get(where)
+    duration = task.get("capture_hold_ms")
+    require(type(duration) is int, f"{where}: capture duration must be an integer")
+    if expected:
+        require(beat["type"] == "boss" and task["defeat"] == "capture" and
+                (task["opponent"], task["capture_event"], duration) == expected,
+                f"{where}: capture must preserve its own boss, interaction and authored hold")
+    else:
+        require(task["defeat"] != "capture" and task["capture_event"] is None and duration == 0,
+                f"{where}: no authored capture")
+    require(("bulkhead" in record) == (where == "ch06.b13"), f"{where}: bulkhead presence")
+    if where == "ch06.b13":
+        point = record["bulkhead"]
+        require(type(point) is list and len(point) == 2 and all(type(x) is int for x in point) and
+                point == [record["entry"][0], record["entry"][1] + 180] and record["entry"][2] == 0 and record["height_cm"] == 0,
+                f"{where}: lever belongs beside the vault entry on its floor")
+
+
+def check_dropoff_capacity(beat):
+    task, where = beat["task"], beat["id"]
+    require("dropoff_capacity" in task, f"{where}: missing drop-off capacity field")
+    capacities = task["dropoff_capacity"]
+    carry = beat["type"] == "production_task" and task["task"] == "carry"
+    source = beat["params"].get("carry", {})
+    if not carry or "x_dropoff_capacity" not in source:
+        require(capacities is None, f"{where}: only an authored carry may name capacities")
+        return
+    names, count = task["dropoffs"], task["count"]
+    require(isinstance(capacities, dict) and capacities == source["x_dropoff_capacity"],
+            f"{where}: normalized capacities must preserve the authored map")
+    require(1 <= len(names) <= 8 and all(isinstance(name, str) and name for name in names) and
+            len(set(names)) == len(names) and set(capacities) == set(names),
+            f"{where}: capacity keys must exactly match the named drop-offs")
+    require(type(count) is int and 1 <= count <= 99 and
+            all(type(value) is int and 1 <= value <= 99 for value in capacities.values()) and
+            sum(capacities.values()) >= count, f"{where}: invalid or insufficient drop-off capacities")
+
+
 def validate(catalog, campaign, chapters, legacy, roster):
     speakers = {speaker["id"] for speaker in catalog["dialogue_speakers"]}
     require(catalog["schema_version"] == 4 and "chapters" not in catalog,
@@ -693,6 +988,10 @@ def validate(catalog, campaign, chapters, legacy, roster):
     drone_net = next(attack["windup_ms"] for row in roster["enemies"]["archetypes"] if row["id"] == "drone"
                      for attack in row["attacks"] if attack["id"] == "seizure_net")
     for chapter in chapters:
+        require(press_hall_valid(chapter), "press hall must retain its authored machines and noise rules")
+        require(relay_valid(chapter), "relay room must retain its authored nodes, scan and lock rules")
+        require(palace_valid(chapter), "palace must retain its registry tiers and separate desks")
+        require(archive_valid(chapter), "archive must retain its authored footprint and solid duel posts")
         for record in chapter["space"]["beats"]:
             nets = record["fieldcraft"]["nets"]
             require(not nets or nets["quarry"][0]["kind"] != "person" or nets["windup_ms"] == drone_net,
@@ -765,6 +1064,16 @@ def validate(catalog, campaign, chapters, legacy, roster):
 
         # Rules 3 and 5, mechanics, bosses, enemies and rule 7.
         for beat in beats:
+            check_cargo_unload(beat)
+            check_dropoff_capacity(beat)
+            check_crank_player(beat)
+            check_rhythm_steps(beat)
+            if beat["id"] == "ch06.b08":
+                task = beat["task"]
+                require(task["objectives"] == ["desk_tagata", "desk_machikata", "desk_shokukata"] and
+                        task["objective_hold_ms"] == [30000, 30000, 30000] and task["duration_ms"] == 90000 and
+                        task["goal"] == "hold" and task["contest"] == "pause" and task["pause_when_seen"],
+                        "ch06.b08: three separate thirty-second desk copies with guarded work required")
             unlocks += [(weapon, beat["id"]) for weapon in beat["unlocks"]["weapons"]]
             mechanics += beat["unlocks"]["mechanics"]
             if beat["optional"] and (beat["unlocks"]["weapons"] or beat["unlocks"]["mechanics"]):
@@ -776,10 +1085,10 @@ def validate(catalog, campaign, chapters, legacy, roster):
                 require(flag in flags and flag not in flags_set, f"{beat['id']}: story flag {flag!r} unknown or set twice")
                 flags_set[flag] = beat["id"]
             params = beat["params"]
-            if beat["registry"] is not None:
-                require(beat["type"] == "production_task" or
-                        (beat["type"] == "horseback_ride" and params["mode"] == "cargo"),
-                        f"{beat['id']}: only production tasks and cargo rides write the registry")
+            try:
+                validate_registry(beat["registry"], beat["type"], params, beat["ext"])
+            except ValueError as error:
+                raise CampaignError(f"{beat['id']}: {error}") from error
             if beat["type"] == "horseback_ride":
                 require(set(params["weapons"]) <= MOUNTED_WEAPONS, f"{beat['id']}: mounted weapons {params['weapons']}")
             if beat["type"] == "boss":
@@ -1128,6 +1437,25 @@ def self_test(catalog, campaign, chapters, legacy, roster):
     def missing_volume(data):
         space(data, 0, "ch01.b05")["volumes"].pop()
 
+    def cinematic_with_closing_anchor(data):
+        space(data, 7, "ch08.b18")["closing"] = list(space(data, 7, "ch08.b17")["closing"])
+
+    def dialogue_without_closing_anchor(data):
+        space(data, 7, "ch08.b17")["closing"] = None
+
+    def cinematic_with_cache(data):
+        record = space(data, 7, "ch08.b18")
+        record["cache"] = list(record["anchor"])
+
+    def explore_without_cache(data):
+        space(data, 0, "ch01.b08")["cache"] = [0, 0]
+
+    def cinematic_without_camera(data):
+        space(data, 7, "ch08.b18")["camera"] = None
+
+    def dialogue_with_camera(data):
+        space(data, 7, "ch08.b17")["camera"] = list(space(data, 7, "ch08.b18")["camera"])
+
     def zones_collide(data):
         data[2][4]["space"]["zones"][1]["rect"] = list(data[2][4]["space"]["zones"][0]["rect"])
 
@@ -1163,6 +1491,17 @@ def self_test(catalog, campaign, chapters, legacy, roster):
         record = space(data, 2, "ch03.b02")
         record["fieldcraft"]["lamps"][0]["at"] = [data[2][2]["space"]["zones"][record["zone"]]["rect"][0] - 50, 0]
 
+    def terminal_glow_snuffable(data):
+        lamp = next(l for l in space(data, 2, 'ch03.b10')['fieldcraft']['lamps'] if l['id'] == 'terminal_glow_b10')
+        lamp.update(snuff='hold', hold_ms=1000)
+
+    def terminal_glow_short_radius(data):
+        next(l for l in space(data, 2, 'ch03.b10')['fieldcraft']['lamps'] if l['id'] == 'terminal_glow_b10')['radius_cm'] = 450
+
+    def terminal_glow_missing(data):
+        lamps = space(data, 2, 'ch03.b10')['fieldcraft']['lamps']
+        lamps[:] = [lamp for lamp in lamps if lamp['id'] != 'terminal_glow_b10']
+
     def climb_around_the_face(data):
         space(data, 5, "ch06.b03")["fieldcraft"]["climb"]["width_cm"] -= 400
 
@@ -1197,8 +1536,24 @@ def self_test(catalog, campaign, chapters, legacy, roster):
     def party_without_escort(data):
         space(data, 1, "ch02.b02")["fieldcraft"]["party"] = [dict(space(data, 2, "ch03.b07")["fieldcraft"]["party"][0])]
 
+    def copies_without_desks(data):
+        task = beat(data, "ch06.b08")["task"]
+        task["objectives"], task["objective_hold_ms"] = [], []
+        space(data, 5, "ch06.b08")["objectives"] = []
+
+    def copies_one_desk_repeated(data):
+        beat(data, "ch06.b08")["task"]["objectives"][2] = "desk_tagata"
+
+    def copies_shortened(data):
+        beat(data, "ch06.b08")["task"]["objective_hold_ms"][1] = 29999
+
+    def copies_ignore_guards(data):
+        beat(data, "ch06.b08")["task"]["pause_when_seen"] = False
+
     validate(*copy.deepcopy((catalog, campaign, chapters, legacy, roster)))
     mutations = (anchor_in_wall, short_route, missing_volume, zones_collide, lost_collectible, unlabelled_step,
+                 cinematic_with_closing_anchor, dialogue_without_closing_anchor, cinematic_with_cache,
+                 explore_without_cache, cinematic_without_camera, dialogue_with_camera,
                  yumi_to_the_right, short_escort, spawn_in_building, swap_unlock, fast_line, long_gap, cache_without_save,
                  boss_cue_time, unraised_rate_band, bout_numbered_per_beat,
                  gun_on_horse, site_table_mismatch, site_chain_broken, orphan_line, dangling_line,
@@ -1207,9 +1562,11 @@ def self_test(catalog, campaign, chapters, legacy, roster):
                  boss_at_the_wrong_beat, duel_against_another, unknown_archetype, guard_without_archetype,
                  unguarded_work, guard_outside_stealth, guard_sees_in_the_dark, zone_without_rules, carryover_backwards,
                  unbound_key_token, bracketed_control,
-                 lamp_in_wall, climb_around_the_face, ally_joins_no_wave, party_without_escort, volley_rank_short,
+                 lamp_in_wall, terminal_glow_snuffable, terminal_glow_short_radius, terminal_glow_missing,
+                 climb_around_the_face, ally_joins_no_wave, party_without_escort, volley_rank_short,
                  net_wave_without_drones, netters_beyond_the_wave, crossing_off_the_road, drop_heard_past_the_rules,
-                 fire_outside_the_hold, stakes_out_of_order)
+                 fire_outside_the_hold, stakes_out_of_order,
+                 copies_without_desks, copies_one_desk_repeated, copies_shortened, copies_ignore_guards)
     for mutate in mutations:
         data = copy.deepcopy((catalog, campaign, chapters, legacy, roster))
         mutate(data)

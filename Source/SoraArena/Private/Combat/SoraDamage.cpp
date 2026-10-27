@@ -87,7 +87,9 @@ float SoraDamage::Resolve(ASoraCharacterBase& Victim,float Damage,const FDamageE
     // Opponents never damage one another, nor the hero and his companions one
     // another (no friendly fire); a shell's owner is hit by its own blast.
     const ASoraCharacterBase* Attacker=AttackerOf(Causer);
-    if(Attacker&&Attacker!=&Victim&&Attacker->IsEnemy()==Victim.IsEnemy()) return 0;
+    const TOptional<bool> Faction=Hit.SourceEnemy.IsSet()?Hit.SourceEnemy:
+        Attacker?TOptional<bool>(Attacker->IsEnemy()):TOptional<bool>();
+    if(Attacker!=&Victim&&Faction.IsSet()&&Faction.GetValue()==Victim.IsEnemy()) return 0;
     USoraCombatEffects* Effects=USoraCombatEffects::Get(&Victim);
     // Guards, shields, barriers and sparring gates may absorb or reduce the blow.
     const bool bAdmitted=Victim.AdmitDamage(Damage,Hit,Causer);
@@ -107,7 +109,9 @@ float SoraDamage::Resolve(ASoraCharacterBase& Victim,float Damage,const FDamageE
         // 残心: an opponent the hero fells, or knocks down, starts his lingering guard.
         ASoraPlayerCharacter* Hero=Cast<ASoraPlayerCharacter>(Causer);
         if(!Hero&&Causer) Hero=Cast<ASoraPlayerCharacter>(Causer->GetInstigator());
-        if(Hero&&Hero!=&Victim&&Victim.IsEnemy()) Hero->GetEquipment()->NoteDefeat();
+        // Chapter-one bouts arm this only after the director accepts the
+        // point; a knockdown refused for missing 転 earns no passive recovery.
+        if(Hero&&Hero!=&Victim&&Victim.IsEnemy()&&!Hero->IsDojoTraining()) Hero->GetEquipment()->NoteDefeat();
         // 活人剣: a debt-bound conscript is knocked down, never killed.
         if(auto* Conscript=Cast<ASoraEnemy>(&Victim); Conscript&&Conscript->IsNonlethal())
         {
@@ -124,34 +128,42 @@ float SoraDamage::Resolve(ASoraCharacterBase& Victim,float Damage,const FDamageE
     }
     return Applied;
 }
-int32 SoraDamage::Blast(UWorld& World,float Damage,float Radius,const FSoraHit& Hit,AController* Instigator,AActor* Causer)
+int32 SoraDamage::Blast(UWorld& World,float Damage,float Radius,const FSoraHit& Hit,AController* Instigator,AActor* Causer,
+    const TFunction<bool()>& Continue)
 {
     const ASoraCharacterBase* Owner=AttackerOf(Causer);
+    const TOptional<bool> Faction=Hit.SourceEnemy.IsSet()?Hit.SourceEnemy:
+        Owner?TOptional<bool>(Owner->IsEnemy()):TOptional<bool>();
     // Walls, buildings and cover stop a blast front; bodies do not.
     FCollisionObjectQueryParams Solid;
     Solid.AddObjectTypesToQuery(ECC_WorldStatic);
     Solid.AddObjectTypesToQuery(ECC_WorldDynamic);
     FCollisionQueryParams Query(SCENE_QUERY_STAT(SoraBlast),false,Causer);
-    TArray<ASoraCharacterBase*> Reached;
+    TArray<TWeakObjectPtr<ASoraCharacterBase>> Reached;
     for(TActorIterator<ASoraCharacterBase> It(&World);It;++It)
     {
         ASoraCharacterBase* Body=*It;
         if(!Body->IsAlive()||Body->IsActorBeingDestroyed()) continue;
         const bool bSelf=Body==Owner;
-        const bool bOpponent=!Owner||Owner->IsEnemy()!=Body->IsEnemy();
+        const bool bOpponent=!Faction.IsSet()||Faction.GetValue()!=Body->IsEnemy();
         const int32 Distance=FMath::RoundToInt32(FVector::Dist(Hit.Origin,Body->GetActorLocation()));
         if(Distance>Radius) continue;
         FCollisionQueryParams Line=Query; Line.AddIgnoredActor(Body);
         const bool bClear=!World.LineTraceTestByObjectType(Hit.Origin,Body->GetActorLocation(),Solid,Line);
         if(Rules::BlastReaches(bSelf,bOpponent,Distance,FMath::RoundToInt32(Radius),bClear)) Reached.Add(Body);
     }
-    for(ASoraCharacterBase* Body:Reached)
+    int32 Contacts=0;
+    for(const auto& Weak:Reached)
     {
+        if(Continue&&!Continue()) break;
+        auto* Body=Weak.Get();
+        if(!IsValid(Body)||Body->IsActorBeingDestroyed()||!Body->IsAlive()) continue;
         const FVector Direction=(Body->GetActorLocation()-Hit.Origin).GetSafeNormal();
         FHitResult Trace; Trace.ImpactPoint=Body->GetActorLocation(); Trace.Location=Trace.ImpactPoint;
         Strike(Body,Damage,Hit,Direction,Trace,Instigator,Causer);
+        ++Contacts;
     }
-    return Reached.Num();
+    return Contacts;
 }
 void SoraDamage::Beam(UWorld* World,FVector A,FVector B,FLinearColor Color,float Radius,float Life)
 {

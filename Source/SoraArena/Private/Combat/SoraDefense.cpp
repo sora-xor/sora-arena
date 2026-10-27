@@ -1,4 +1,5 @@
 #include "Combat/SoraDefense.h"
+#include "SoraFieldcraft.h"
 #include "Combat/SoraDamage.h"
 #include "SoraBoss.h"
 #include "SoraCampaignDirector.h"
@@ -32,6 +33,8 @@ void Announce(USoraGameEvents* Events, bool bParried, ASoraPlayerCharacter& Hero
 
 bool SoraDefense::AdmitHero(ASoraPlayerCharacter& Hero, float& Damage, FSoraHit& Hit, AActor* Causer)
 {
+    if(Hit.bHitscan)
+        if(const auto* Craft=USoraFieldcraft::Get(&Hero);Craft&&Craft->MoatBlocksHitscan()) { Damage=0;return false; }
     USoraEquipmentComponent* Kit = Hero.GetEquipment();
     USoraGameEvents* Events = USoraGameEvents::Get(&Hero);
     const int32 HeldMs = FMath::RoundToInt32((Hero.GetWorld()->GetTimeSeconds() - Kit->GuardPressedAt()) * 1000.f);
@@ -72,9 +75,11 @@ bool SoraDefense::AdmitHero(ASoraPlayerCharacter& Hero, float& Damage, FSoraHit&
         Damage = 0.f;
         return false;
     }
+    // Starting to sheathe already occupies the blade: an unfinished motion
+    // cannot fall back to drawn-blade awase when mutō-dori is not ready.
     // Nobody guards against his own blast.
     const bool bSelf = SoraDamage::AttackerOf(Causer) == &Hero;
-    const Rules::FGuard Guard{Kit->IsGuardHeld() && !bSheathed && Rules::BlastDefensible(bSelf), HeldMs,
+    const Rules::FGuard Guard{Kit->IsGuardHeld() && !Kit->IsSheathing() && Rules::BlastDefensible(bSelf), HeldMs,
         FMath::FloorToInt32(Kit->GuardReserve()), Facing};
     const Rules::FOutcome Outcome = Rules::Defend(Guard, Hit.Attack(FMath::RoundToInt32(Damage)));
     Hit.Defense = Outcome.Defense;

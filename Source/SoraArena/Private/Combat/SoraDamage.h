@@ -19,10 +19,16 @@ struct FSoraHit
     // The eye a blade or ray left, or where a shell went off.
     FVector Origin = FVector::ZeroVector;
     bool bHasOrigin = false;
+    // True only for traced rounds; arrows, blasts and drowning remain distinct.
+    bool bHitscan = false;
+    SoraCombatRules::EEnvironmentalRate EnvironmentalRate = SoraCombatRules::EEnvironmentalRate::None;
     // A catalog weapon, or INDEX_NONE for an opponent's attack.
     int32 WeaponId = INDEX_NONE;
     // The opponent's attack (Content/Data/enemies.json), if any.
     FName AttackId;
+    // A released encounter shell keeps its launch faction if its shooter dies.
+    // Ordinary melee/rays still derive their faction from the live causer.
+    TOptional<bool> SourceEnemy;
     bool bParryable = false;
     // Negative uses the kind's share (SoraCombatRules::FAttack).
     int32 GuardChip = -1;
@@ -82,7 +88,8 @@ float Resolve(ASoraCharacterBase& Victim, float Damage, const FDamageEvent& Even
 // An armed detonation at Hit.Origin: every character inside Radius with a
 // clear line from the detonation point takes Damage, the owner included,
 // the owner's allies excepted. Returns how many bodies it reached.
-int32 Blast(UWorld& World, float Damage, float Radius, const FSoraHit& Hit, AController* Instigator, AActor* Causer);
+int32 Blast(UWorld& World, float Damage, float Radius, const FSoraHit& Hit, AController* Instigator, AActor* Causer,
+    const TFunction<bool()>& Continue = {});
 // The character an attack comes from: Causer itself, or whoever fired it.
 const ASoraCharacterBase* AttackerOf(const AActor* Causer);
 // The cosine, x1000, between Body's facing and the direction to From, seen from above.

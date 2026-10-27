@@ -8,7 +8,8 @@ the unit test read exactly what the editor builds.
 Every CC0 input comes from the schema-2 ledgers
 ``scripts/assets/manifests/{polyhaven,ambientcg}-first-slice.json``; the raw
 files stay read-only in the clone's gitignored ``Local/`` tree, which git
-worktrees share with the main checkout. ``build_plan`` checks each ledger
+worktrees share with the main checkout unless ``SORA_CC0_STORAGE_ROOT`` selects
+an isolated cache root. ``build_plan`` checks each ledger
 record, its file hashes and the period-accuracy policy below before anything
 is imported. The library lives under ``/Game/Generated/Environment/CC0``,
 which ``Config/DefaultGame.ini`` lists under ``DirectoriesToNeverCook``: the
@@ -42,6 +43,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 
@@ -161,8 +163,15 @@ def storage_root(project_root: Path) -> Path:
 
     Git worktrees keep ``.git`` as a file naming their private git directory,
     whose ``commondir`` points at the shared repository; ``Local/`` lives once,
-    beside that repository.
+    beside that repository. ``SORA_CC0_STORAGE_ROOT`` may instead name an
+    existing absolute directory containing ``Local/`` for an isolated import.
     """
+    override = os.environ.get("SORA_CC0_STORAGE_ROOT")
+    if override:
+        root = Path(override).expanduser()
+        require(root.is_absolute() and root.is_dir(),
+                "SORA_CC0_STORAGE_ROOT must name an existing absolute directory containing Local/")
+        return root.resolve()
     dot_git = project_root / ".git"
     if dot_git.is_dir():
         return project_root

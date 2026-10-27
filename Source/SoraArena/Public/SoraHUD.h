@@ -7,6 +7,9 @@ class SSoraFrontEnd;
 class UFont;
 class USoraFrontEnd;
 class UTexture2D;
+#if WITH_DEV_AUTOMATION_TESTS
+DECLARE_MULTICAST_DELEGATE_OneParam(FSoraReticleDrawn,const FVector2D&);
+#endif
 
 // The game's HUD. Play is drawn on the canvas: DrawHUD picks the panels, each
 // drawn by a function in Private/HUD (story and combat panels) with these
@@ -25,12 +28,17 @@ public:
     void Label(const FString& Text,float X,float Y,float Scale,FLinearColor Color);
     int32 WrappedLabel(const FString& Text,float X,float Y,float Scale,FLinearColor Color,float MaxWidth,float LineHeight,int32 MaxLines = 3);
     void Panel(float X,float Y,float W,float H,FLinearColor Color);
-    float LabelWidth(const FString& Text,float Scale) const;
+    float LabelWidth(const FString& Text,float Scale);
     // The runtime Noto Sans CJK JP font, shared by the canvas and the front end.
     UFont* JapaneseFontObject();
     // Imported UI art, resolved once; null before the art is imported.
     UTexture2D* ResistanceLogo();
     UTexture2D* TitleArt();
+#if WITH_DEV_AUTOMATION_TESTS
+    // Observation only: the actual Canvas line center, after submission.
+    // Render fixtures can bind a frame's pixels to its aim without changing it.
+    FSoraReticleDrawn OnReticleDrawn;
+#endif
 private:
     UPROPERTY() TObjectPtr<UFont> JapaneseFont;
     UPROPERTY() TObjectPtr<UTexture2D> TitleArtTexture;

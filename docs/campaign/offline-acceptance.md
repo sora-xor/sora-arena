@@ -1,5 +1,108 @@
 # Offline campaign progression acceptance
 
+At exact `4fa637f`, CopyDesks, Candle and the full assisted campaign pass
+together, with zero selected errors/warnings and natural editor/wrapper EOF
+zero. Chapter six requires separate held 30-second copies at all three desks;
+release, guard interruption, occupied hands, candle rate and retry have directed
+coverage. The three earlier fixture failures remain preserved. The hall's
+authored layout, ordinary stealth difficulty and final art remain open. See
+the [desk qualification record](../qualification/copy-desks.md).
+
+At exact `97c08a0`, all15 combined campaign/presentation tests and six defense
+regressions pass with zero selected errors/warnings and actual editor EOF.
+This includes the corrected chapter-six fixtures, twenty cache cases, nine
+Collector sheathing/input cases and directed133-beat traversal. Both BowAim
+viewports pass targeted proxy framing; overall artwork and ordinary play remain
+open. At `0994b44`, all eight encounter tests pass with zero selected errors or
+warnings: moving-deck/prop behavior, nine cane-thrust cases, sheathing, Collatera,
+both helm tests and directed Playthrough. BridgeProps' pre-warning assertion
+needs an actual-clock correction; its later contact assertions passed. Newly
+integrated casting channels and zero-life boss-hazard fixes await engine
+qualification. See the [current checkpoint](../complete-release-plan.md#october-25-verified-campaign-and-pending-encounter-changes).
+
+The `f6b7a5f` chapter-six integration builds and passes six of eight directed
+tests. InfiltrationLoadout and Playthrough fail because their fixtures disregard
+the equip cooldown and mission carrying restrictions. `d338b0e` corrects both
+while preserving busy/forbidden-input checks; its engine rerun is pending.
+`160897c` fixes unfinished sheathing wrongly receiving an offline blade guard
+or parry, with Collector keyboard/remap/gamepad regression still unrun. Earlier
+runtime results do not qualify these new changes. See the
+[current checkpoint](../complete-release-plan.md#october-25-campaign-first-person-and-metal-corrections).
+
+The later `57ce095` art diagnostic establishes saved timber readback and
+frame-matched exposure observations in SM5 and SM6; it does not add campaign
+playthrough acceptance. Visual defects and the remaining full-release work are
+tracked in the [current art checkpoint](../complete-release-plan.md#october-25-saved-timber-probe-and-measured-exposure).
+
+At exact `e37e5ae`, both SM6 720p and 1080p combined captures pass all twelve
+selected tests with zero selected errors/warnings. All 34 originals per run
+were independently inspected. The complete Tarifa panel, BowDraw, three stealth
+layouts and final cargo zero/idle-boss frame pass their prepared checks. The
+full cargo holds/cinematic and cleanup remain intact. Prior failures and startup
+diagnostics are retained. Overall visual acceptance, normal-control campaign
+play and a current package remain open: broad panels obscure the world,
+subjects are dark and world/weapon art remains provisional. See the
+[current checkpoint](../complete-release-plan.md#october-25-hud-corrections-and-resumed-art-work).
+
+The earlier prepared cargo checkpoint is `eeaf2ed`: five selected SM6 720p
+captures pass, including all three unchanged-duration holds, the complete
+cinematic and the final zero notice with an unobscured idle boss readout.
+All twelve originals were inspected. Separate `812d70c` campaign captures pass
+seven tests but remain visually rejected for Tarifa's reticle/hint collision
+and three stealth/tracker collisions. The
+[current checkpoint](../complete-release-plan.md#october-24-cargo-timing-and-campaign-hud-checkpoint)
+preserves failures, exact scope and remaining work. Ordinary campaign play,
+combat presentation, final art, 1080p and a current package remain open.
+
+The preceding rendered cargo checkpoint is `235e810`. Five selected SM6 720p
+capture tests pass and all twelve originals were inspected, but final visual
+acceptance fails because the tracker obscures the boss readout. The counter,
+horse framing, stand visibility and final zero notice improved; the measured
+boss layout correction is pending. See the
+[rendered checkpoint](../complete-release-plan.md#october-24-rendered-cargo-and-final-death-source-checkpoint).
+These prepared captures do not qualify ordinary campaign play or a new package.
+
+The latest counter/rope checkpoint is `67cc9a0`: CargoUnload, BuntaLeadFear,
+KurimaruSpookDismount, Mount and Playthrough pass with zero selected
+errors/warnings, plus all 43 gameplay source gates. The bilingual counter and
+visual lead have independent source/build/log authentication in the
+[counter and rope checkpoint](../complete-release-plan.md#october-24-cargo-counter-and-lead-rope-checkpoint).
+Actual rendered readability, final art, ordinary pacing and a current package
+remain unqualified.
+
+The preceding directed cargo checkpoint is `ec91382`: seven cargo, horse, carry
+and Playthrough tests pass with zero selected errors/warnings, along with all
+43 gameplay source gates. Actual pack/stand components show accepted transfers
+30 → 20 → 10 → 0, including a foot unload, checkpoint reconstruction, and final
+state before teardown. Source/build/EOF/log authentication is recorded in the
+[cargo transfer checkpoint](../complete-release-plan.md#october-24-cargo-transfer-checkpoint).
+The fixtures still use assisted placement and frozen threats. Rendered
+readability, ordinary pacing and final art remain unqualified; the later
+checkpoint separately verifies the numeric HUD and connecting lead components.
+
+The preceding directed horse checkpoint is `3a3a3d3`: CargoUnload, BuntaLeadFear
+and KurimaruSpookDismount pass together with zero selected errors/warnings.
+The cargo fixture remounts normally after the authored Shimo-route spook;
+three unique deliveries still require their full holds. At `2ab5d01`, Mount,
+Playthrough, Searchlights, HorseDown and ConvoyNets also pass, and all 43
+gameplay source gates pass. Both actor orders preserve Kurimaru's once-only
+spook dismount, net priority and three-second pause-aware recall. Earlier
+failed assertions and the diagnosed cargo traversal failure are preserved in
+the [horse checkpoint](../complete-release-plan.md#october-23-horse-behavior-and-bounded-proof-checkpoint).
+That earlier checkpoint did not implement visible cargo transfer or the connecting lead.
+
+The earlier `d21013d` checkpoint passes CargoUnload, Mount,
+CarrySealAndSetDown, CarryDifficulty and the full campaign Playthrough pass.
+Mount retains one HTTP connectivity timeout warning; all five have zero errors.
+All 43 gameplay source gates pass at that clean source. Cargo now requires its
+authored uninterrupted three-second hold before delivery credit and ambush
+release. At `4db3ce3`, guard searches last 20 active seconds; at `fea8842`,
+gallery hints follow 60 active seconds at both 60 and 120 Hz through pause and
+retry. Earlier failures and exact source/build receipts are retained in the
+[release plan](../complete-release-plan.md#october-23-cargo-unloading-and-timer-qualification).
+These assisted NullRHI fixtures do not establish ordinary play pacing, final
+art, a new package or platform/performance acceptance.
+
 ## Campaign data (catalog schema 4)
 
 The chapter scripts in `docs/campaign/chapter-0N.md` are the authored source. Each carries one YAML block written to the story bible's beat taxonomy (§12.1, §12.2) and chapter-YAML conventions (§12.5). `python3 scripts/unreal/build_campaign_data.py` turns block N into `Content/Data/campaign/chapter_0N.json`; `--check` fails when a committed file differs from a fresh build. The importer needs PyYAML (`pip3 install --user -r scripts/requirements.txt`). It rejects duplicate YAML keys, non-JSON values, keys outside the §12 contract without an `x_` prefix, unknown beat, task, ride, defeat, scoring and dialogue-mode values, registers with no §18 family, times finer than a millisecond, fractions finer than a permille, `fail` rows the runtime cannot act on, and dialogue conditions that are neither `collectible:<id>` nor `story:<flag>`. Its self-test must reject 17 bad inputs, among them a horse mounted from the left, a matchlock in the saddle, a capture that names no interaction to bind its boss and 転 flanks that do not match their lesson's bouts. Each chapter file holds:
@@ -10,11 +113,11 @@ The chapter scripts in `docs/campaign/chapter-0N.md` are the authored source. Ea
 - `triggers`: the one table that schedules lines, as `{beat, on, mode, lines, requires_flag}` rows. It covers beat dialogue entries, dialogue beats, boss and duel barks, cinematic subtitles (with `at_ms` on the cinematic's own clock) and the ch05/ch06 bark pools. No line has an absolute start time. Where a script lists a cinematic's subtitles without times (ch05–ch07), the importer spreads them over the cinematic in script order without overlap and marks each row `ext.at_ms_spread`. `requires_flag` holds a conditional line back until its collectible is found or its story flag is set (ch08.b17's returned Washio sword waits for `collectible:ch08.c03`). Events are spelled as the runtime raises them: ch02.b15's boss cues `intro@6.0` … `outro@3.0` become `intro_cinematic` and `outro_cinematic` rows (like ch05.b16's, keeping `ext.at_s` for Sequencer), and ch03's proposals the director now raises lose their prefix (`x_wave_start:N`, `x_boss_defeated`, `x_objective:<id>` → `interact:<id>`, keeping `ext.proposed`).
 - `sites`, `checkpoints` (in target centiseconds, with per-phase saves), `unlocks`, `collectibles`, `ui_prompts`, `places` (from the bible's §14 table, each marked `hub` when its row is a bold "**Arena N**") and `layout` (ch01–ch03's volumes, points, splines and patrols in integer centimetres, in each chapter's authored frame; ch04–ch08 have none). The authored layout is kept for the level artists; the runtime plays `space`.
 - `space`: the playable layout `scripts/unreal/campaign_space.py` derives by rule from the places, beats and tasks, in integer centimetres in the Unreal world frame (origin at the arena centre, every floor at z 0). See **Chapter spaces** below.
-- Carry tasks also carry `carry_speed_permille` (the script's `move_speed_mult`) and `carry_weapons` (`katana_one_hand` → the katana, else nothing), and an escort's `path_cm` is the length of its road.
+- Carry tasks also carry `carry_speed_permille` (the script's `move_speed_mult`), `carry_weapons` (`katana_one_hand` → the katana, else nothing), and all three `drop_on_hit` values (`easy`, `normal`, `hard`). A uniform authored boolean expands to the same value at each difficulty. The director selects the current setting at beat start, including checkpoint retry and reload; ch02.b05's seed rice drops on a hit only on Hard. An escort's `path_cm` is the length of its road.
 
 `Content/Data/campaign/campaign.json` is hand-authored: the chapter files, the chapter title-card narrative and objective, the three production-site labels, the mechanic flags (with their Japanese and English names) and the story flags in save-bit order, the collectible categories, and bilingual labels for the manufacturing steps and the defended targets the HUD names. `Content/Data/catalog.json` keeps the shared core (classes, weapons, maps, hero) and the 40 dialogue speakers. `SoraArena.Build.cs` stages `Content/Data/...`, which UnrealBuildTool's file filter resolves recursively.
 
-`python3 scripts/unreal/validate_content.py` requires the committed chapter files to equal a fresh build and runs `scripts/unreal/validate_campaign.py`, which checks the bible's §12.3 rules: pacing against §10 (the beats sum to exactly 25,200 s), sites 0–2 once per chapter in `requires` order, weapons 0–20 once each at their §11 beats in §11 order, bosses from §8 each staged by its `bosses.json` fight at its beat, the rival duels `bosses.json` stages fought against their beat's opponent, wave and guard enemy types that are `enemies.json` archetypes (whose roster must be the bible's §7), mutō-dori attacks only where the fight's defeat or finisher allows them, mounted weapons within {0, 18, 19}, registry entries only on production tasks and cargo rides, every line bilingual with a catalog speaker within the subtitle limits, nonlethal enemies never counted toward a defeat count, and at most 360 target seconds between the checkpoints the runtime writes. Rule 8 models the director (`checkpoint_saves`): required beats in order, each checkpoint beat saving as it begins and a boss or duel at each later phase it saves at, on a route that skips the explore beats and on one that opens each cache at the first beat in play once it is available, where opening a checkpointed cache saves again when the active beat can be restored from its start. It also checks that every trigger naming an event the director raises can fire in its beat (`director_event_error`: a crank's `rate_band:in|above|below`, phases within the fight's count, duel events, bouts numbered across the chapter's lesson duels, waves, lesson gates and awase counts, manufacturing steps, pickups, drop-offs, the carried item and `load_NN`, sites, points and collectibles, `intro_cinematic`/`outro_cinematic` only in a boss fight, and no `intro@`/`outro@` or `x_` spelling of them; `x_item_picked:sword_bundle` is the one disclosed exception, below). It also checks line references both ways, blocking dialogue of at most 20 s, collectibles and prompts, the 25 schema-3 cues verbatim, every story flag set by exactly one beat, every conditional line's collectible or flag provided by an earlier find or beat, and that each task has a goal and counts the same lethal opponents as its waves. It checks every chapter's space: zones and road corridors never overlap each other or the arena; every beat's entry, anchor, objectives, pickups, drop-offs, targets, stations, spawns, patrol posts, cache, horse and every loose collectible stand on their zone's floor clear of its walls and cover (in the hub, of the arena's buildings, cover, lantern poles and torii posts, mirrored per map by `campaign_space.arena_blockers`); every volume a beat's events name is placed in its zone; rides and escorts run on roads as long as their scripts say, and an escort walks its whole road; every manufacturing step has its station; horses have rising gait speeds, the katana, yumi and yari only, and a yumi arc to the left; and every mechanic, step and target has a bilingual label. It checks each beat's fieldcraft too: lamps, rubble, hide spots, cell doors and allies on the floor, a climbing face that bars the way wall to wall, allies that join a wave the beat has, a party only on an escort, and volley ranks that are full rows with the volley's arm. Its self-test passes the real data, then must reject 46 mutated variants, among them a lamp in a wall, a face that can be walked around, a volley rank short of a gunner, a boss staged at the wrong beat, a wave of an unknown archetype, a checkpoint beat that no longer saves, a cache whose opening no longer saves (a completist's 510 s gap in chapter one), a boss cue left as `intro@6.0`, an unraised rate band and a bout numbered within its own beat. The glyph check covers every campaign string against the bundled Noto Sans CJK JP font.
+`python3 scripts/unreal/validate_content.py` requires the committed chapter files to equal a fresh build and runs `scripts/unreal/validate_campaign.py`, which checks the bible's §12.3 rules: pacing against §10 (the beats sum to exactly 25,200 s), sites 0–2 once per chapter in `requires` order, weapons 0–20 once each at their §11 beats in §11 order, bosses from §8 each staged by its `bosses.json` fight at its beat, the rival duels `bosses.json` stages fought against their beat's opponent, wave and guard enemy types that are `enemies.json` archetypes (whose roster must be the bible's §7), mutō-dori attacks only where the fight's defeat or finisher allows them, mounted weapons within {0, 18, 19}, registry entries only on production tasks and cargo rides, every line bilingual with a catalog speaker within the subtitle limits, nonlethal enemies never counted toward a defeat count, and at most 360 target seconds between the checkpoints the runtime writes. Rule 8 models the director (`checkpoint_saves`): required beats in order, each checkpoint beat saving as it begins and a boss or duel at each later phase it saves at, on a route that skips the explore beats and on one that opens each cache at the first beat in play once it is available, where opening a checkpointed cache saves again when the active beat can be restored from its start. It also checks that every trigger naming an event the director raises can fire in its beat (`director_event_error`: a crank's `rate_band:in|above|below`, phases within the fight's count, duel events, bouts numbered across the chapter's lesson duels, waves, lesson gates and awase counts, manufacturing steps, pickups, drop-offs, the carried item and `load_NN`, sites, points and collectibles, `intro_cinematic`/`outro_cinematic` only in a boss fight, and no `intro@`/`outro@` or `x_` spelling of them; the sword-bundle pickup also requires the authored recovery pre-step). It also checks line references both ways, blocking dialogue of at most 20 s, collectibles and prompts, the 25 schema-3 cues verbatim, every story flag set by exactly one beat, every conditional line's collectible or flag provided by an earlier find or beat, and that each task has a goal and counts the same lethal opponents as its waves. It checks every chapter's space: zones and road corridors never overlap each other or the arena; every beat's entry, anchor, objectives, pickups, drop-offs, targets, stations, spawns, patrol posts, cache, horse and every loose collectible stand on their zone's floor clear of its walls and cover (in the hub, of the arena's buildings, cover, lantern poles and torii posts, mirrored per map by `campaign_space.arena_blockers`); every volume a beat's events name is placed in its zone; rides and escorts run on roads as long as their scripts say, and an escort walks its whole road; every manufacturing step has its station; horses have rising gait speeds, the katana, yumi and yari only, and a yumi arc to the left; and every mechanic, step and target has a bilingual label. It checks each beat's fieldcraft too: lamps, rubble, hide spots, cell doors and allies on the floor, a climbing face that bars the way wall to wall, allies that join a wave the beat has, a party only on an escort, and volley ranks that are full rows with the volley's arm. Its self-test passes the real data, then must reject 46 mutated variants, among them a lamp in a wall, a face that can be walked around, a volley rank short of a gunner, a boss staged at the wrong beat, a wave of an unknown archetype, a checkpoint beat that no longer saves, a cache whose opening no longer saves (a completist's 510 s gap in chapter one), a boss cue left as `intro@6.0`, an unraised rate band and a bout numbered within its own beat. The glyph check covers every campaign string against the bundled Noto Sans CJK JP font.
 
 ## Chapter spaces
 
@@ -43,10 +146,10 @@ The chapter scripts in `docs/campaign/chapter-0N.md` are the authored source. Ea
 | `production_task` hold | the hold's time spent in its volume | `Tick` (contest pauses or decays; work under guard pauses while seen) | its `fail` rows |
 | · crank | N turns | `Turn`: faster than the band slips and restarts the rhythm; a slack crank decays for the time past its slowest turn | as above |
 | · escort | the party covers its route | `Tick` while the hero stays within reach | a fallen escort (`fail_on_npc_death`) |
-| · carry | N deliveries | `Pickup`, `Deliver` (each drop-off takes an equal share), `DropCarried` on a hit where the carry drops | as above |
+| · carry | N deliveries | `Pickup`, `Deliver` (named capacities, or a derived equal ceiling share), `DropCarried` on a hit where the carry drops | as above |
 | · manufacture | every step in order | `Stroke`: an off-beat stroke restarts its rhythm step | as above |
 | · defend | `duration_s` survived, or the waves cleared | `DamageTarget`, `RepairTarget` | a destroyed target (`fail_on_target_destroyed`) |
-| `horseback_ride` | the destination, or every cargo drop-off | `Travel` (ambushes come as the rider passes their mark), `Reach`, `Deliver` | `on_horse_down`: checkpoint or on foot |
+| `horseback_ride` | the destination, or every cargo drop-off | `Travel` (ambushes come as the rider passes their mark), `Reach`, `Deliver` after the cargo's authored `unload_hold_ms` | `on_horse_down`: checkpoint or on foot |
 | `explore_optional` | its cache opened | `OpenCache` | — |
 | `collectible` | picked up | `Find` | — |
 
@@ -117,9 +220,80 @@ Eight director mutations each fail the playthrough: no wave release after progre
 
 ## Arms and fieldcraft
 
+The opening distance lesson (`ch01.b02`) now retains its authored `x_maai`
+contract in the task data. Holding stance alone does not restore site 0.
+Nyaakoto first faces Sekireisai within 166–224 cm for a continuous 500 ms;
+Sekireisai then steps back 120 cm, left 150 cm and forward 80 cm, each followed
+by another measured 500 ms acquisition. He does not attack or close the gap
+for the player. Turning away (facing dot below 0.70) or leaving the band resets
+the hold. The moon ring is available at every difficulty; Easy adds distance,
+and six seconds without a confirmed acquisition shows the floor band. The
+authored step, completion and too-close lines are raised. A reload during the
+lesson restores its existing beat-start checkpoint, requiring stance and all
+three steps again; the following beat's checkpoint retains the completed
+lesson. `SoraArena.Campaign.Maai` exercises movement keys, boundary/facing
+refusals, the three mentor movements, help, lines and fresh-world reloads;
+`Playthrough` and `CombatTrace` also walk the gate. The directed maai test and
+the complete 133-beat playthrough passed in the October 18 integration runs;
+this is engine behavior evidence, not rendered or packaged qualification.
+
 Every arm the campaign hands over is in reach (`SoraArmsRules.h`): keys 1–6 take up the six groups (swords, polearms, the bow, firearms, chain and striking arms, explosives and support), a second press steps within a group, the mouse wheel steps the ring, and the arms wheel (X / RB) steps on a tap and, held, opens a radial wheel of every held arm while the world slows. Each beat's space carries a `fieldcraft` block (`campaign_fieldcraft.py`, read fail-closed by `SoraCatalogSpace.cpp`, checked by `validate_campaign.py`): its lamps and fires, footstep floors, water, climbing face, tsubute stones, carried candle, escorted party with its hide spots and cell doors, allies, defended people and volley ranks. `USoraFieldcraft` plays it with `SoraFieldcraftRules.h` and reports to the beat through `RaiseBeatEvent`: a held Interact snuffs a lamp, raises the downed, cuts a collar or opens a cell; Ability signals an escorted party, marks and orders a volley, or throws a stone; Jump climbs, lets go or vaults; the escorted and allies are `ASoraCompanion` characters who walk, fight, go down, are raised by hand or by the healing lance, and die past their window, failing an escort. The events the scripts key on (`look_at:*`, `npc_downed:*`, `npc_revived:*`, `npc_freed:*`, `blocking_end`, `alert_state:*`, the climb's volumes, `lure_triggered`, `signal:*`, `event:volley_*` and the rest) are raised, so their prompts and rows play. `SoraArena.Fieldcraft.*` covers each in a real beat world.
 
 The chapters' scripted sets are staged from the same block (`SoraFieldcraftNets.cpp`, `SoraFieldcraftWatch.cpp`, `SoraFieldcraftCharge.cpp`). Each stealth zone and all guarded work read their authored detection, takedown and body rules, and each guard its authored senses and watch (`guard_row`, `stealth_block`); a detection in ch03.b02 warns ch03.b03's guards. Drones net ch02.b08's pack horses, ch04.b10's ox cart and ch04.b12's planters: a net halts the string or the cart, is cut by a held Interact (or from the saddle with the ride's blade), falls slack with its tether drone, and left too long loses the load (`convoy_member_seized`) or the planter, the defence failing at its third loss. A load freed is let be for 9 s while a cut net's drone reloads; two of ch02.b08's three ravine drones net, and past 1 020 m one of G4's crosses to the string's right (`ai:drone_crossed_right`). A net that catches the rider throws him (`horse_down`), and his whistle brings the horse back. ch06.b02's searchlights sweep the moat and raise the alarm on a head in the spot (not a diver, nor a head under the lotus), and ch02.b08's ship light frightens the horses. ch07.b04's bell draws the calm guards once, ch03.b14's cook-fires gutter and hold the kitchen until relit, ch03's ladders reach the board roofs (a drop is heard as far as its roof's script says, unless it lands on straw), ch03.b05's crates are hoisted with a held Interact that waits while a guard watches, and held objectives (ch03.b10, ch06.b04, ch06.b11) are worked with Interact held. Each volley leaves a 4 s smoke bank that hides the lane from both sides but stops no round, arrow or blade, Easy's ranks may order themselves (a setting), and in ch08.b02 twenty League riders and Toranosuke charge beside the hero while he breaks the seal stakes. The thirteen tests in `SoraFieldcraftSetsAutomation.cpp` and the playthrough cover them.
+
+### Chapter two: the seed-rice seal and set-down
+
+The authored `x_gate_interact` now gates ch02.b05's carry with a three-second hold at `seal_kura_sw`, using the yari's iron butt. Pickup and delivery are refused before it opens. Work pauses on a damage event or combat stagger and retains partial work when Interact is released or the player leaves; checkpoint retry resets it. First contact raises the authored notice bark. The existing pickup spot also holds the seal, and the seal tutorial volume now covers that spot. The clamp is a non-colliding gameplay proxy; a granary door, flickering ledger numerals, SORA-plaque reveal and pry animation remain art work.
+
+Interact while carrying delivers at a drop-off with space; elsewhere on a walkable floor it sets down the load at the player's feet. The loose load remains visible and can be picked up again. Loose loads count against the store's remaining stock, so putting down all four bales does not create more. Damage-induced drops retain the existing return-to-source behavior, including after picking up a loose load. Beat-start retry/reload clears partial seal work, loose loads and deliveries; no mid-beat save format was added. Carry and loose-load shapes still need final art and animation.
+
+`test_carry_work_data.py`, the carry-difficulty data test and the host progression driver pass: they cover seal timing, hit/release/leave pauses, checkpoint reset, distinct/store pickups and loose-load conservation through pickup, hit and delivery. `SoraArena.Campaign.CarrySealAndSetDown`, `CarryDifficulty` and the complete playthrough perform the seal with real movement and held input. All three passed at `16b7762` and again in the 62-test campaign/fieldcraft/Connect suite at `56b95f3`, with zero reported errors or warnings. No rendered or packaged acceptance is claimed.
+
+The carry's optional `x_dropoff_capacity` is now preserved by name as normalized `task.dropoff_capacity`, retained in the catalog, and aligned with the drop-off indices used by the rules. The authored ch02.b05 capacities remain two bales per pack horse. Missing, extra or wrong names, non-integer or out-of-range capacities, and totals unable to hold all goods are refused; an absent map keeps the existing ceiling-share behavior. Delivery, Interact targeting and the objective marker use the same per-destination room check. Beat-start checkpoint retry clears occupancy and loose goods while retaining the task's capacities; horseback cargo still delivers one load to each destination.
+
+The host data tests and progression driver cover an asymmetric one/three map, reversed dictionary order, malformed keys and counts, refusal at a full destination without consuming the carried load, source/loose-load conservation through set-down and hit return, spare destination capacity without extra goods, and checkpoint reset. All 133 authored tasks still pass host progression. Unreal catalog loading, physical interaction/objective routing, and packaged acceptance of this capacity change remain pending.
+
+### Chapter three: the dry-well equipment recovery
+
+`x_loadout` now restricts chapter three's opening through ch03.b05 to the wakizashi even when chapter select or earlier chapters unlocked other arms. Selecting or firing the katana, yumi, polearms or firearms is denied. The carry pre-step is mandatory: neither hoisting nor delivery progress can bypass it. A real 340 cm square opening, collision lining and floor form a 700 cm shaft; normal movement reaches its rope, held Interact sweeps the capsule down or up at 140 cm/s, and releasing holds safely at the current position. Interact at the bottom requires three uninterrupted seconds to string the bow; releasing or leaving the bundle resets that work. Completion restores the katana in hand, the bow and twelve arrows, removes the bundle, and raises `item_picked:sword_bundle` once. Nyaakoto's omitted line plays on that event and Kohagi's follows after the authored four seconds. `x_delay_s` is now normalized to the director's delayed-event form (also preserving ch03.b07's six-second line delay).
+
+The existing checkpoint contract remains beat-start: reloading ch03.b05 repeats the retrieval and restores the wakizashi restriction; the next beat's checkpoint retains the recovered loadout. The well has a cover outside its active beat so later visits cannot strand a player below an inactive interaction. The separate saya and fallback quiver hide while equipment is unavailable; the authored skeletal hero's embedded ebira still needs separable art to hide with them. The shaft, rope, bundle and bow bag are gameplay support shapes. The braced stringing and rope-climb animation, wet well art, and placing c03's scroll fragment in the well lining remain art/layout work.
+
+Host `test_campaign_progression.py` covers equipment permissions, refusal to hoist early, continuous stringing, one-time completion, malformed contracts and checkpoint reset. `test_recovery_data.py` covers exact authored parameters, restriction boundaries, placement and the two raised lines with their delay. These host checks and content/localization validation pass. `SoraArena.Campaign.EquipmentRecovery` performs actual W/Interact movement, interrupted/resumed descent, exact depth, timed stringing, delayed dialogue, ascent and fresh-world checkpoint reload assertions. The full campaign playthrough uses the same real-input retrieval before hoisting. The October 18 integration run passed these tests and all 133 campaign beats; the end-play cleanup removed the earlier teardown warnings without suppressing them. This does not establish rendered or packaged acceptance.
+
+### Finite arrow rewards in the earlier exploration caches
+
+The five earlier caches now retain their authored ammunition contract:
+ch02.b14 refills the quiver to twelve; ch04.b09 and ch06.b07 add six arrows;
+ch05.b13 and ch07.b05 add twelve, capped by the existing twelve-arrow quiver.
+All five occur after the required chapter-one yumi unlock. A supply reward
+cannot grant weapon entitlement. Malformed, missing or repeated arrow tokens
+and nonexclusive cache finds fail catalog admission.
+
+Acceptance happens through the existing cache Interact path. A busy weapon
+refuses both the reward and cache completion. Success updates the authoritative
+held or stowed bow count, then collects and saves the cache's exclusive codex
+finds with its existing completion. Other inventory and action state remain
+unchanged. A full quiver still consumes the finite bundle.
+
+The saved collectible bits exhaust these bundles across retry, fresh load and
+chapter replay; no second claim ledger or ammunition save is introduced. A
+restored cache whose finds are already present remains exhausted, including a
+previous discovery made before this implementation. There is no retroactive
+inventory award or legacy-save migration. Checkpoint load still resets the
+ordinary full-magazine loadout, and New Campaign clears the existing finds.
+Chapter eight keeps its separate gallery claim behavior. Hayago, firearm
+reserves, other resupply points and the ordinary reload rules are outside this
+slice and remain open where previously unimplemented.
+
+`test_cache_rewards.py` executes the production token, inventory and claim
+rules with host C++ harnesses and validates the original chapter data. The
+prepared `SoraArena.Campaign.CacheArrows` fixture covers mapped and rebound
+Interact, distance/menu/busy refusal, actual arrow spending, held/stowed/full
+quivers, saved discoveries, repeat use, retry, fresh-world load and reset.
+It uses checkpoint setup, assisted placement and frozen threats. **This source
+slice has not been built or run in Unreal** and does not establish ordinary
+campaign play or a packaged result.
 
 ## What the offline runtime does not do yet
 
@@ -127,11 +301,959 @@ These wait for other lanes or later steps and are not claimed:
 
 - The stealth beats' authored patrol routes: guards walk the space's derived patrol loops (a posted guard keeps the first point of its loop), not the chapters' named routes, until the level art places them.
 - The playthrough strikes bosses and duellists to their phase thresholds with lethal damage and binds captives with E; it does not fight their counterplay (shields, weak points, floors, mutō-dori), which `SoraArena.Boss.*` and the combat trace's Val Amort check. A siege needs no targeting AI (opponents who come within 7 m of a target wear it down). A capture's interaction is worked at the yielded boss, not at a bulkhead lever or the engine's spine, until the level art places them.
-- ch03.b05's sword-bundle pickup and the loadout locked until it (`x_item_picked:sword_bundle`, whose two lines nothing raises; the validator names it as the one exception).
 - A horse mesh and animation: no horse is imported into `Content/Generated`, so every horse is the primitive proxy with period tack described above; the lateral amble and every gait cycle need an equine animator. The ch08 charge's League riders and Toranosuke are the same proxies, each with a rider built from primitives. A ride steers itself only while the player's auto-steer setting is on.
 - ch04's ox cart is still a prop at the head of the party (its net and health are the fieldcraft's), and defended pack horses, furnaces and aid tents stay targets rather than characters; repairs mend a quarter of the worst-hit target. Nets, searchlights, the bell, cook-fires, ladders, roofs, stakes and smoke banks are engine shapes; the static ones wear the environment palette's CC0 PBR surfaces (timber, stone, metal, plaster), the net and the smoke bank a flat colour until the VFX lane's systems are wired in.
-- The `maai_step` lesson gate (not measured), a crank's co-op NPC, blocking dialogue's input lock, difficulty (carry drops follow Normal), and registry entries.
+- Cooperative cranks in ch04.b06, ch05.b06 and ch07.b07 are implemented with visible helpers, authored contribution rates, the bellows boy's net/free interaction, Kohagi's five-metre retreat to existing cover, and 25/50/75% ratchets. The host tests cover exact rates at multiple frame sizes, decay, waves and reset. `SoraArena.Campaign.CrankCooperation`, `CrankRatchets` and `CrankNets` pass in Unreal at `56b95f3`, with zero errors/warnings. The boy contributes 0.5 × 0.4 = 0.2 turns/s without a decay waiver: the 1% loss of 90 turns is 0.9 turns/s, so idle progress still loses 0.7 turns/s while he helps. ch08.b11 now explicitly gives each named crew member 0.15 turns/s: three available helpers contribute 0.45 against 0.48 turns/s idle loss, for a net slip of 0.03 turns/s. The 0–3 helper rates and checkpoint reset also pass `CrankLiftCrew` in that Unreal run. The physical lift, gallery and cutter contact implementation is described below; its new Unreal fixtures have not run yet. Player effort and ch07's input/temporary hand occupation are implemented as described below; their Unreal qualification and final helper work animations remain outstanding.
+- Blocking dialogue input holds and the production registry are implemented; their focused qualification is recorded separately. Diegetic registry presentation and final art, rendered and packaged acceptance remain outstanding.
 - Sequencer cinematics (C9): cinematics are a dollying camera over the place behind the letterboxed card with subtitles.
 - Authored layouts: the spaces are derived by rule. ch01–ch03's authored layout frames are not placed, so ch01's dojo, stable and range stand in separate zones rather than where the script's metres put them, and places are joined by travel cuts rather than walked between; the zones are blockout floors, walls and cover dressed with the imported props (C3 kits and C4 layouts replace them).
 - Pacing: two ch02 rides are authored longer than their pacing allows at any gait (above).
 - The 6–8 hour pacing, combat readability and visual quality, which need playtests and captures.
+
+
+### Chapter eight: physical freight lift (runtime qualification pending)
+
+The 6 × 6 m collision deck now moves continuously from L4 at 27 m to the
+heirloom gallery at 142 m, bounded by the fastest authored capstan cadence.
+The player walks from a fixed boarding landing onto an ordinary movement
+base; the three crew members stand and work on that same floor. No rider is
+repositioned during travel. The bars require the player to be aboard, idle
+loss lowers the floor, the side gates only open at their landings, and a fall
+below the shaft returns through the existing player-death checkpoint.
+
+The gantry heights are now 55.75, 84.50 and 113.25 m, derived from 25%, 50%
+and 75% of the 115 m travel above L4. The source prose and YAML use those
+same heights. Waves spawn on those real landings: the first wave's drones
+fly to the hawser in three dimensions, riflemen hold the second gantry, and
+the shield enforcer and two retainers launch normal gravity-driven jumps
+when the deck physically reaches the third landing. Only a living, flying,
+unstaggered drone whose visible cutter tip touches the hawser segment
+multiplies ordinary idle decay by three. Other drone errands retain their
+existing ground-relative hover behavior. The rope, cutter and structure
+are gameplay shapes awaiting final art.
+
+Full work cannot complete ch08.b11 until the moving floor reaches 142 m.
+Completion unlocks ch08.b12's cache at that height and leaves the player in
+the gallery; the physical north stair climbs another 18 m before its summit exit starts ch08.b13. Searching remains
+optional. The saved checkpoint stays at b11 until the exit, while found
+collectibles save immediately. A fresh-world reload repeats the lift and
+keeps those finds. No mid-lift save representation was added. The b10
+spiral now has a separate source implementation, described below; b13 summit now has a separate source implementation, described below.
+
+Four host `test_lift_data.py` checks pass: exact generated heights, landing
+and crew clearances, rejection of changed wave/platform contracts, and a
+compiled C++ driver covering bounded continuous motion and exact ordinary
+versus triple decay with zero to three helpers at six frame sizes. The
+133-task host progression driver also passes. New Unreal fixtures
+`SoraArena.Campaign.LiftMotion`, `LiftEncounters`, `LiftGallery` and
+`LiftReload`, plus the updated `Spaces`, `CrankLiftCrew` and `Playthrough`,
+await the integration engine run. Motion/gallery fixtures hold threats
+still to isolate traversal; `LiftEncounters` leaves their AI live. These
+source checks do not establish movement-base, jump, rendered, packaged or
+platform acceptance.
+
+
+### Player crank effort and held input (runtime qualification pending)
+
+`task.crank_player` preserves the exact authored player contract, independently
+of helper rates. The four costs are 6 (ch04.b06), 2 (ch05.b06), 8 (ch07.b07)
+and 5 (ch08.b11); chapter two authors no crank. Sources are the
+`stamina_per_turn` entries in [chapter 04](chapter-04.md),
+[chapter 05](chapter-05.md), [chapter 07](chapter-07.md) and
+[chapter 08](chapter-08.md). Chapter 05 §2.2's b06 bellows flame-gauge table and
+b06 `x_flame_gauge.above` explicitly charge ×2 for overspeed without progress:
+that attempt costs 4. Other slips, completed goals and rejected turns cost
+nothing. Insufficient reserve changes neither progress nor the rhythm's
+last-action time, and never spends a partial cost. All player costs use the
+existing equipment guard-stamina owner; its existing regeneration is unchanged.
+Helper contributions never consume or depend on the player's reserve.
+
+Chapter 07 §2.3's “Override wheel” and b07 `x_override` specify two hands,
+`loadout_while_cranking: none`, and the optional 0.6 turns/s cadence. The saved
+**Hold to crank** accessibility setting defaults off and applies only to this
+authored wheel. An initial Interact press still attempts one ordinary turn;
+while held, integer phase schedules 0.6 additional attempts/s through the same
+rate-band and stamina admission. Ordinary held input does not repeat. A long
+frame issues at most one attempt and discards extra backlog, so it cannot
+burst through the rate band. Real Interact mappings cover keyboard and pad.
+
+Active two-handed work temporarily denies weapon use/equipping/guard and
+hides the viewmodel, without changing the inventory or selected weapon.
+Release, leaving the work anchor, a hit, stagger, reload input, menu/dialogue,
+goal completion, beat transition, retry and fresh-world load end that
+permission restriction. Hits, leaving, stagger, reload and menus require a
+release and fresh press before work can resume; standing near the wheel with
+Interact already held never starts it. The lift uses its actual deck/base
+eligibility. No hand animation or new stamina regeneration rule is claimed.
+
+Host data and compiled rules tests cover all four exact costs, affordable and
+unaffordable bellows overspeed, completed/refused/slow turns, exhausted
+resource, 0.6/s at 1–500 ms frame sizes, release/interruption/reset, no implicit
+assist on other cranks, and independent helper work. Gameplay/tooling source
+checks passed 32/32; all 23 gameplay gates passed again after the final narrow
+interruption/validation review (seven crank data tests and all 133 authored
+tasks). Reports are under `Saved/SourceChecks/crank-player-work` and
+`Saved/SourceChecks/crank-player-work-final` in the producing worktree. `SoraArena.Campaign.CrankPlayerCosts`,
+`CrankHeldInput`, and the expanded `SoraArena.UI.SettingsPersist` fixture are
+prepared for the root Unreal lane and have not been run here. The existing
+cooperation, ratchet, bellows-net, lift and full campaign suites should accompany
+them. No UE build, render, packaged or performance result is claimed. The
+bellows' distinct alternating left/right tread controls and flame-gauge
+presentation are outside this stamina/input slice.
+
+### Chapter eight: spiral traversal (runtime qualification pending)
+
+Chapter 08 spiral source slice: the b10 collision proxy derives its hexagon
+from a 1400 cm clear inner aperture and 400 cm ramp width. The approximately
+1:12 grade derives 31 hexagon sides (5 1/6 turns), with four exact landings
+at 0/900/1800/2700 cm. Host/native route parity and loader checks measure
+the actual aperture and grade, rather than only validating metadata. L2 has a
+200 cm gantry and a reachable far marksman post; L4 connects to the parked
+lift. Spawn posts use real floor heights, and the L3 wave volume checks Z.
+All sixteen authored enemies must still be cleared, then the player must
+walk to L4 before b11 begins; the checkpoint stays at b10 until that boundary.
+`SoraArena.Campaign.SpireTraversal` covers ordinary key-input climbing,
+wrong-floor trigger rejection, the L2 bridge, navigation reachability and
+the lower-floor combat-clear gate. It is authored but has not been run in
+Unreal by this source lane. The same route is used by the full playthrough
+fixture. These are functional collision proxies awaiting Claude's art;
+the auditor's L3 shortcut shutter and L1 supply cache are described below.
+Visual windows, lighting and spire dressing remain open. The spire's two fighters and three guides now follow navigation paths
+with height-aware arrival; the fighters keep their combat leash around the
+climbing hero. Failed paths stop them instead of steering across the void.
+Their committed melee hits require 3D reach, same-floor height and an actual
+clear trace to the target. Other chapters retain their existing companion
+posts, movement and escort behavior. `SoraArena.Fieldcraft.SpireCompanions`
+walks the hero and all five allies to L2/L3/L4, then verifies cross-floor and
+wall-blocked attacks fail while clear same-floor contact still damages. This
+fixture is authored but unrun by this source lane.
+
+
+Chapter 08 summit traversal source slice: the gallery north opening feeds a
+railed stair with 18 cm maximum risers, climbing from 14200 to 16000 cm. Its
+turn landings keep both walking routes open. The b11 checkpoint remains active
+through the gallery and stair; only the real summit stair-head volume begins
+b13. Height-bounded place zones keep the summit directly above the spire.
+The 36 m disc, 1.2 m dais, 4 m by 22 m spine, desk/plinth and 60 m overhead
+ring are functional proxies; cinematic camera coordinates and the boss spawn
+now use the elevated floor. An actual open-edge fall deals 25 damage once
+and returns a surviving hero to a firm edge position in the same boss phase.
+`SoraArena.Campaign.SummitTraversal` covers the elevated checkpoint, cinematic
+skip, boss staging, dais access and fall recovery. The lift gallery fixtures
+now physically walk all stair flights before checking the b13 checkpoint.
+These Unreal fixtures remain unrun by the source lane.
+
+Chapter 08 seizure source slice replaces that disc with 132 convex collision
+tiles on a 300 cm grid, clipped to its 36 m diameter. The boundary follows a
+72-sided polygon (under 2 cm chord deviation). The existing P2 concurrent
+attack schedules checker thirds, an 800–1200 cm ring band, then three tally
+lines through the player cell at the mark. The tally interpretation is a row,
+column and rising diagonal; the lines lock at the mark and do not track.
+Marked tiles remain solid for the existing difficulty-scaled 1500 ms warning,
+then lose collision for 5000 ms and rise for 1000 ms before becoming solid.
+Amber edges pulse during warning/restoration. The dais and desk remain fixed.
+
+An actual fall costs 25 health, selects the nearest clear intact edge tile,
+and grants 1 s damage immunity. Ground constructs and the boss also recover,
+preserving health, so a construct below the arena cannot strand the shield.
+P3 restores every tile immediately. No partial tile state is added to saves;
+the existing boss phase checkpoint and native encounter gate remain in charge.
+`SoraArena.Campaign.SeizureTiles` checks real collision traces, a gravity-driven
+fall, recovery/immunity, the real nine-second attack cadence, all three
+patterns, construct recovery and phase shutoff. It is authored but unrun.
+Host `test_summit_rules.py` checks coverage, clipping, width, stage boundaries
+and masks. Engine compilation, procedural collision cooking, rendering,
+navigation updates and runtime fixtures still require root qualification.
+
+The chapter-six bulkhead source candidate places a functional lever beside
+the current vault entry. Eskro at zero health waits for a mapped Interact
+hold of 2000 ms at that lever, with ground, facing, distance and collision
+checks; interacting beside his body no longer captures him. Release,
+damage, loss of reach/sight, pause or dialogue discards partial work and
+requires a new press. Partial holds are transient: retry/load restores the
+existing living boss phase checkpoint. `SoraArena.Campaign.BulkheadCapture`
+is prepared for mapped/rebound input, normal traversal, wrong-floor and wall
+rejection, interruptions, retry/load and once-only completion; the Playthrough
+helper now walks to and holds the lever. These Unreal checks remain unrun by
+the source lane. Host `test_bulkhead_capture.py` checks strict data admission,
+the authored 1999/2000 ms boundary and cancellation using production rules.
+The vault remains a rectangular blockout; its authored circular chamber,
+freight lift, flooding sump and bespoke lever animation remain art work.
+
+The held spine draw-cut source candidate preserves the take-alive outcome.
+After the 1.5 s disarm interval, the hero must walk onto the dais, face the
+south seam within 260 cm with a clear collision trace, and hold Interact for
+the authored 1500 ms. Release, damage, loss of sight/reach, a changed
+weapon, or a menu/dialogue input boundary discards partial work and requires
+a fresh press. Releases clear work immediately even while paused. The hold is never
+saved; the existing P3 checkpoint remains until the full cut starts b15.
+The seam and first-person draw-cut remain visual proxies; no finished
+animation is claimed. `SoraArena.Campaign.SpineDrawCut` covers ordinary
+dais traversal, wrong-height/occlusion rejection, interruptions, paused input,
+and reloading the saved P3 checkpoint after a partial cut before completing
+a new full cut. Its Unreal execution remains pending root qualification.
+Host checks cover the authored duration and transient hold at 1–500 ms steps.
+
+The P2 retreat source candidate uses the normal enemy navigation/controller
+and swept character movement to reach the north dais stand, clear of the
+solid spine. While protected it cannot attack or summon, and its phase save
+waits for both the two-second minimum transition and actual grounded arrival.
+A blocked route keeps the previous save; no timeout teleports the boss. Once
+there, P2 holds its stand even while exposed. The P3 draw interval lasts at
+least 2.5 seconds and saves when complete. A resumed P2 checkpoint spawns on
+the completed dais stand. The existing phase health gates, take-alive outcome
+and generic boss arenas retain their contracts. `SummitPhases` exercises a
+real blocking wall, continuous retreat, phase saves and holding the dais;
+`SummitPhaseReload` covers its resumed position. These new Unreal fixtures
+remain unrun by the source lane. The camera blends, moving engine ring,
+coat/cane choreography and cinematic cast animation remain open. Functional
+tile meshes and edge bars remain proxies for the art lane.
+
+### Alternating bellows treads and live flame gauge
+
+Chapter 05 b06's input and all three `x_flame_gauge` states are normalized and
+validated exactly (`chapter-05.md:480–493`, `1793–1825`). Hold Interact at the
+station, then press left and right using the existing movement mappings. One
+left/right pair is one turn; each tread must return to neutral. A held key,
+right-first press, stick crossing without neutral, or Interact alone adds no
+production. Release, hit, departure and retry discard an unfinished pair.
+Completed pairs use the same stamina and rate admission as other crank work.
+
+The furnace shows the current rate: dull red with one notch when slow/idle,
+山吹 gold with two in band, white with three and a capped eight-spark pool when
+too fast. Idle cools the gauge independently of accumulated production. HUD
+text repeats the rate and next foot, including mapped keyboard or pad labels.
+The two separate tread boards and furnace are functional primitive proxies;
+bespoke foot/cloth animation, final art, tone-mapped readability and hardware
+haptics are not proven by this source slice.
+
+Host coverage checks analog hysteresis, held/repeated/wrong-foot input,
+interrupted half-cycles, frame sizes 1–250 ms, stamina rejection, paid overspeed,
+idle gauge cooling and checkpoint reset. The directed UE fixture
+`SoraArena.Campaign.BellowsTreads` exercises keyboard and pad, physical notch
+visibility and capped sparks; crank cost/net fixtures and campaign playthrough
+now use actual pairs. UE compilation, execution and HUD capture remain with
+the root lane. Source reports: `Saved/SourceChecks/bellows-treads` and
+`Saved/SourceChecks/bellows-treads-final` in the producing worktree.
+
+### Shared rhythm assist and chapter-five phrase/pick rules
+
+The off-by-default, persisted **Rhythm assist** option applies to ch05 b06,
+b08 and b11 (`chapter-05.md:694–706`). It holds the ordinary on-beat cadence
+and credits successful production at 700/1000: ten bellows cycles or successful
+phrases/picks earn seven units. Bellows remain at one cycle/s, within the
+normal band, and every assisted cycle still pays two stamina. Insufficient
+reserve stops input without granting progress. Chapter seven's separate
+0.6-turn/s hold option and other ordinary manufacturing retain their controls.
+
+The hammer extension (`chapter-05.md:523`, `1897–1923`) now actually requires
+four phrases of eight response windows, with six hits needed per phrase.
+All eight windows close before judging; the sixth early hit never ends a
+phrase. Failure repeats only the current phrase. Weaving (`560`, `2031–2035`)
+requires twenty-four successful individual picks; a miss repeats that pick.
+The first Interact asks for a cue, then the same button strikes/pulls on the
+600/750 ms clock. Easy widens ±90/±120 ms to ±135/±180 without slowing cues;
+bellows' .8–1.3 band expands by 1.5 about its midpoint to .675–1.425 turns/s.
+Other difficulties retain the original windows. Difficulty is applied to a
+fresh task copy at beat entry; it cannot compound across retries.
+
+A continuously closing HUD ring supplies a shape cue. Hammer/loom cue
+captions use localized text; native force-feedback requests are emitted once
+per cue. The subsequent workshop slice below connects the cleared anvil audio
+and station motions; Okinu's voice and character clips remain outstanding.
+Hardware vibration, final ring placement,
+small-screen legibility and audio timing require Unreal review; no rendered
+or controller-device result is claimed here.
+
+Holding Interact with assist on answers cues at their nominal times; source
+coverage includes 1/16/17/33/100/250/500 ms frames, exactly 70% credit, the
+inclusive/outside timing edges, all-eight-window gating, six-hit success,
+five-hit failure, repeat-pick preservation, release/interruption and checkpoint
+reset. Completed units and earned fractional credit remain after a release;
+an unfinished phrase and held input do not. A fresh checkpoint starts clean.
+No long stalled frame synthesizes a backlog of assisted actions.
+
+Prepared UE checks: `SoraArena.Campaign.RhythmPhrases`, `RhythmAssist`, expanded
+`SoraArena.UI.SettingsPersist`, and the full campaign playthrough's actual cue
+responses. `SoraCapture.WeaponHUDFixture.BellowsKeyboard` and `.BellowsGamepad`
+load the real bellows checkpoint, collect actual notice-producing pickups,
+perform a mapped L/R pair and leave a right tread pending. Both JA and JA+EN
+frames retain the actual tracker, notices and bottom HUD; the pad case checks
+its displayed left-stick directions against the live axis binding. Root owns
+720p/1080p captures and all UE builds/execution. Source checks are recorded at
+`Saved/SourceChecks/rhythm-assist` in the producing worktree.
+
+### Workshop cue audio and functional station motions
+
+Chapter 05 §2.5 (`chapter-05.md:694–706`) names a small-hammer tap and glint,
+an anvil ring, and Okinu's call with a shuttle flick and cord marker. The new
+`Workshop` audio family connects forge cues and accepted response strikes to
+two existing CC0 VCSL anvil recordings, pinned at
+`c1ea7bcc3c7309650ab0da9d15c9cd1fbc4a4c7e` in `audio_vcsl.json`.
+The selected Hit1/v1 and Hit2/v3 raw files were recovered byte-for-byte and
+checked against both recorded SHA-256 and Git blob hashes. Two 48 kHz/24-bit,
+420 ms derivatives total 242,008 bytes. Their new ledger record preserves
+raw identity, spans, credit, upstream link and QA; unrelated ledger records
+and their hashes are unchanged. `build_cc0_audio.py --workshop-only --check`
+reproduces only these takes without requiring the unrelated raw library.
+
+The small-hammer cue uses retained `SFX_Telegraph` loading, fixed pitch and
+the actual station location; it does not depend on Music volume. The
+stronger `SFX_Foley` response sounds only once per admitted manual/assisted
+strike, including strikes that do not yet finish a phrase. Misses, duplicate
+presses, interrupted input and fractional production credit cannot invent
+extra impacts. The first cue is explicitly a count-in; response is due one
+600/750 ms interval later. This game-thread presentation has not been proved
+sample-accurate or reviewed for latency in Unreal.
+
+The forge now has separate cue hammer and sledge motions, a small glint,
+and a 32-segment ring closing on the anvil. The drawloom has a shuttle flick,
+an anchored figure cord/marker and a beater response. These fixed component
+pools move from the same task clock and accepted-response timestamps used by
+scoring, without adding collision, changing controls or granting progress.
+Interruptions restore idle poses. They are functional primitive station
+props, not completed first-person paws or named NPC animation clips.
+
+**Still missing:** no cleared Okinu voice recording exists in the repository.
+`workshop.loom.call` is explicitly `needed`, with no waveform or voice caption;
+the caption truthfully describes the visible shuttle cue. It is not silently
+replaced with an anvil, UI beep or imitation voice. The first-person grips,
+bellows/sledge/cord character clips, Kōzō's yokoza and Okinu's full weave cycle
+remain the §5.4 deliverables. Bellows creak/furnace breathing, loom/cord foley
+and the authored tempo-locked music stems (§5.6–5.7) remain open too.
+
+CPU coverage checks both new waveform hashes/PCM layouts/raw provenance,
+audio routing and the missing-voice contract; 1–500 ms rhythm frame sizes
+emit exactly one response per admitted strike; station poses stay bounded,
+close at their authored periods and reset on inactive clocks. The prepared
+`SoraArena.Campaign.RhythmWorkshop` fixture checks the real cue family with
+Music at 0, count-in versus hit, repeated-press refusal, moving tool and combat
+interruption. `RhythmAssist` additionally asserts the explicit unvoiced loom
+contract and separate shuttle/cord pieces. Root must run the existing audio
+importer for the two new SoundWaves, then compile/run these fixtures and
+inspect/listen to the station in-game; no UE, listening, render or controller
+verification is claimed by this source slice. Reports live under
+`Saved/SourceChecks/workshop-cues` in the producing worktree.
+
+### Summit collateral constructs
+
+The chapter 08 collateral source candidate gives only the summit's summoned
+`collateral_construct` its authored 900 ms amber slam, 250 cm radius, 25 damage,
+and 1400 ms recovery (windup retains the shared difficulty scale). Its exposed
+core stays still during recovery. A visible physical core accepts a one-second
+held Interact cut, or exactly two heavy contacts from the kanabō/forge hammer.
+Body shots, closed-core hits and lighter arms cannot bypass it. The cut checks
+grounded height, facing and visibility, and discards partial time on release,
+damage, pause, dialogue or recovery expiry. No partial construct state is saved.
+
+Released collateral remains as five intact named functional goods proxies
+which settle smoothly onto queried solid floor. These are engine primitive
+placeholders, not finished rice bales, lacquer chests, plough, loom or cart art;
+cyan assembly fields, the core seal, proper slam/cut animation and the finished
+release presentation remain Claude's art work. Released actors do not count as
+live adds and leave when the encounter is removed. Ordinary loom automatons,
+other summons and campaign kill contracts remain unchanged.
+
+`SoraArena.Campaign.CollateralConstruct` covers the real summoned pair, slam
+windup/damage and radius escape, visible/height-gated core contact, mapped held
+input and release interruption, two actual forge-hammer sweeps, add/shield
+accounting, floor settling and encounter cleanup. `test_construct_rules.py`
+checks authored constants, exact core hit admission, ordinary loom catalog
+values and smooth release bounds. Source checks do not qualify Unreal
+collision, compilation, rendering or runtime; root owns those checks.
+
+The summit collector's construct respawn now belongs to P2's seizure group.
+Clearing it retains the ten-second exposed interval; entering P3 cancels its
+pending deadline, and add deaths cannot schedule a group absent from the
+current phase. While constructs shield P2, its normal ledger/cleave pattern
+cannot begin or finish a pending windup. Concurrent seizure fields and summon
+thresholds continue on their existing clocks. These guards apply only to the
+chapter 08 summit collector; generic boss arenas retain their prior behavior.
+`SoraArena.Campaign.SeizurePhaseOwnership` covers a live shield with ongoing
+hazards, ordinary AI attacks during exposure, a late beam cancelled by the
+returning shield, the real ten-second respawn, and a same-encounter P2-to-P3
+transition followed past the old deadline and reloaded from the actual save.
+`test_summit_data.py` checks that only P2 owns this group and preserves the
+55% summon and nine-second hazard cadence. Engine execution remains for root
+qualification; camera/ring/cast presentation is still separate art work.
+
+The summit Collector's mutō-dori now requires the katana already sheathed.
+Correctly timed guards with a sheathed hammer, kanabō or other blade cannot
+capture him and retain the foreclosure's full damage. Other opponents and
+the shared 700 ms sheathing rule are unchanged; the chapter's older 600 ms
+animation wording remains a design/presentation discrepancy.
+
+The actual first foreclosure windup raises its authored tutorial prompt and
+replays the nonblocking mentor memory from b09 once, even when that line has
+already been heard earlier in the chapter. Later windups at the 1% floor
+refresh only the prompt. Generic dialogue deduplication and unrelated boss
+events remain unchanged. `SoraArena.Campaign.CollectorCapture` primes the real
+dialogue queue with the earlier memory, tests foreign-event rejection, uses
+mapped weapon/sheath/guard inputs against real foreclosure attacks for three
+wrong arms and the katana, and checks first-only memory, floor reminders and
+the unchanged pending spine-cut checkpoint. Root owns Unreal qualification.
+### Chapter-eight auditor shortcut shutter (source candidate)
+
+The authored b10 alarm now has a functional proxy: a railed two-metre chord
+connects the L3 landing to the ramp two hexagon sides above it. An auditor's
+alarm closes only this shortcut; all original ramp segments remain available.
+The upper connection has its own capsule-tested inner-rail clearance, and both
+pads have perimeter rails outside the three connected walking corridors. The
+existing L2/L4 crossings, wave triggers and L4 completion boundary are retained.
+
+Only hunting auditors in the active spire descend from the L4 office to the
+L3 panel approaches (the authored level table places the alarm at 18 m).
+Arrival requires a living auditor on the actual panel floor; a generic shout,
+death en route or matching XY on a lower winding cannot operate the shutter.
+The future door volume must be clear of every pawn before collision is enabled.
+Retry/staging clears both pending alarms and the solid shutter. The ch06 stealth
+lectern path is unchanged.
+
+`SoraArena.Campaign.SpireAuditorShutter` covers real auditor travel, interception,
+lower-floor and shout rejection, normal-input shortcut crossings, occupied-door
+deferral, capsule collision, dynamic navigation's longer route, ordinary ramp
+traversal and death/retry reset. Host geometry checks cover the chord's width,
+grade, shorter length and both endpoint rail clearances. Actual UE execution
+is pending root qualification. Panels and the shutter are explicit functional
+proxies; finished architecture, shutter drop animation and alarm presentation
+remain art work.
+
+The first actual root run at `a8d541d` failed the new shutter fixture and
+existing spire navigation/companion fixtures; the playthrough and ch06 alarm
+fixture passed. Normal player ramp movement still passed, but a new pad rail
+cap left only 47 cm centerline clearance beyond the nearest ramp node. The
+guard calculation now clips the entire local ramp footprint, with host
+regressions checking two neighboring segments in each direction and a capsule
+plus two navigation cells of clearance. That check fails against the original
+`32e8697` geometry. The physical blocker queries now include WorldDynamic:
+builder boxes inherit that engine collision object type, so the old
+WorldStatic-only query could not see the corner guard or shutter. Runtime
+failures now report the exact first blocker and incomplete navigation sections.
+These corrections await a fresh root Unreal run; they do not erase the failed
+qualification evidence.
+
+Root subsequently qualified the repair at `62d6fe6`: SpireAuditorShutter,
+SpireTraversal, SpireCompanions, the full Playthrough and AlarmLectern all
+passed. The run retained one HTTP connectivity-probe timeout warning and no
+selected-test errors. Its receipt is under
+`Saved/Qualification/2026-10-20/spire-shutter-62d6fe6-directed` in the root
+qualification checkout.
+
+### Chapter-eight L1 supply cache (source candidate)
+
+The authored `sp_spire_base` engineers' cache is a physical crate beside the
+first ramp landing. Its nearby bilingual notice names the current Interact
+binding. Walking past never refills equipment: explicit Interact requires
+grounded same-floor reach and a visibility trace to that crate. Another
+floor, an intervening wall, reload, bow draw, guard, strike/recovery, stagger,
+step, sheathing transition or weapon cooldown refuses the refill.
+
+The cache refills only unlocked ranged weapons to their existing catalog
+magazine caps, including the twelve-arrow yumi. The held weapon's live
+ammunition is authoritative even while its stored copy is stale. Equipped
+weapon, completed sheath state, health, guard reserve, unlocks and checkpoint
+progress are preserved. Full magazines make repeated use a no-op. Stock is
+unlimited as an explicit implementation choice: the authored cache has no
+finite quantity. There are no new healing or unlock rewards. Existing reload
+and campaign loadout permissions are unchanged; the proposed five-slot
+loadout redesign is outside this slice.
+
+The catalog retains chapter three's object-form supply identity and later
+string identities. Only this spire cache is staged in this slice; the other
+named stations still need their place-specific implementation. Clearing or
+retrying a beat removes/rebuilds the cache without adding save state.
+
+Host `test_supply_rules.py` exercises catalog-derived caps, each held weapon,
+locked and melee inventory preservation, stale held copies, repeated use and
+spending between visits. `SoraArena.Campaign.SpireSupply` uses normal approach,
+mapped interaction and actual reload/draw/guard/shot controls; checks floor,
+airborne and real-wall rejection; preserves a sheathed katana; rebinds
+Interact; and restocks again after ordinary death/retry. Supply Unreal and
+rendered acceptance remain pending root qualification. The crate, cloth,
+arrows and cartridges are functional proxies awaiting the art lane.
+
+The first root supply run at `5f7958f` passed EquipmentRecovery, Playthrough,
+SpireTraversal and SpireCompanions, but SpireSupply failed at the assumed
+jump and then reported three dependent ammo/reload failures. The fixture had
+teleported back from its wrong-floor check and tapped Jump after a fixed
+three-frame wait without verifying a landing or an actual jump. Its follow-up
+waits for a real grounded, jump-eligible capsule, faces away from low-cover
+vaulting, and holds the mapped key until falling mode, upward velocity and
+positive displacement establish flight. It logs those states and stops on a
+failed precondition instead of cascading. Production reach rules are unchanged.
+Teardown also asserts that global action/axis mappings are unchanged and the
+isolated rebound profile has been deleted. Unreal requalification is pending.
+
+## Seized-goods gallery lore
+
+Chapter eight b12's `poi_child_toy` and `poi_covered_mon` are separate physical
+interactions on the 142 m gallery. The catalog retains all six authored POI
+identities, interaction text and collectible references. These two objects sit
+on graphite plinths beside the east rail, clear of the existing cache and north
+stair path, with warm 3,800 K light and no objective markers. Mapped Interact
+requires a grounded capsule on the same floor, within 260 cm and an unobstructed
+visibility trace to the actual object. The toy raises `event:poi_child_toy` and
+the exact `ch08.b12.nyaakoto.002` line. Interacting with the jinbaori hides its
+seizure label and reveals the existing pinned SVG mon mesh; the mon remains
+hidden before the label is torn.
+
+The additive schema-6 `GalleryPoiMask` defaults to zero for an older tagged
+save. Only its two known bits are valid, and a nonzero mask requires chapter
+eight to have been reached. These are durable lore discoveries, like codex
+finds, rather than beat-derived story flags: immediate `SaveProgress` keeps the
+existing b11 start checkpoint. Retry, fresh-world reload and chapter replay
+retain them; New Campaign clears them. Repeated input does not replay the toy
+line, tear the label again, award collectibles, alter weapons or complete the
+optional beat. The existing cache still awards ch08.c03/c04/c05; its completion
+does not disable the two lore objects. The north stair remains optional-gallery
+exit and starts the b13 checkpoint.
+
+`SoraArena.Campaign.GalleryPois` covers actual capstan travel and walking,
+wrong-floor/airborne/wall rejection, a real Interact rebind, exact toy dialogue,
+repeat use, unchanged inventory, cache independence, ordinary death/retry,
+fresh-world reload, a second mapped-key ride and the normal summit exit.
+SaveRoundTrip and ForgedSaves cover the new field, including malformed bits and
+replay of an earlier chapter after discovering the gallery. Host `gallery-rules`
+checks the authored identities/dialogue/rewards, mask transitions and physical
+clearance from the existing route/cache. Unreal qualification remains pending.
+
+The paper toy, jinbaori, plinths and seizure label are explicitly functional
+proxies. Detailed paper craft, textile/label art, valuation lettering, the
+tearing animation, the other display cases and the cloud-window vista remain
+presentation work; this slice does not claim those assets are finished.
+
+The first root gallery runtime at `a26bae5` passed ForgedSaves, LiftGallery,
+LiftReload, Playthrough, SaveRoundTrip and SummitTraversal. GalleryPois stopped
+at its actual-jump precondition, before the positive lore-interaction cases.
+That run contained no jump state diagnostics, so it establishes neither an
+airborne interaction leak nor the cause of the failed jump. A fixture-only
+follow-up records setup, key press, every held frame and result with actual
+movement/input/equipment state. Its timing and flight assertion are unchanged;
+the cause and remaining gallery checks await root's diagnostic rerun.
+
+The diagnostic rerun at `3c6da0f` fails the same assertion and identifies a
+fixture setup error: every jump sample has `CanPlay=0`, input state 16
+(`Result`), grounded/CanJump true and no vault or equipment commitment. The
+mapped Space key is held, but jumping is correctly blocked. The preceding
+900 cm downward teleport crosses the unchanged lift's lethal boundary, 600 cm
+below its deck. The follow-up uses a real temporary floor 300 cm below the
+gallery and requires ordinary play and grounded movement around the wrong-floor
+input. It preserves the flight assertion and production fall protection.
+Input conflict checks, two gallery rule tests and fourteen source-runner tests
+pass; the repaired fixture still requires an actual Unreal run.
+
+Root's repaired `298ed9e` run passed GalleryPois: **1/1, zero errors and
+warnings, 9.354923 s**. Mapped Jump raised the capsule **8.363 cm** in
+`MOVE_Falling` with vertical velocity **493.667 cm/s**, while ordinary play
+remained active. The positive interactions, persistence and exit checks
+completed. The earlier build failure and both failed runtime receipts remain
+retained evidence; this result does not finish the visual proxies.
+
+## Seized-gallery cache contract (source candidate)
+
+The existing optional b12 cache now retains its declared `arrows_12` reward.
+Opening it grants up to twelve arrows to the unlocked bow, capped by the
+catalog's twelve-arrow magazine. The live held count is authoritative when
+holding the bow; otherwise only its stored magazine changes. Other ammo,
+held weapon, sheathing, health and unlocks are preserved. A draw, reload,
+strike or other equipment busy state refuses the unclaimed bundle before
+cache completion or collectibles change, leaving it available for a later
+explicit interaction.
+
+The additive schema-6 `GalleryArrowsClaimed` property defaults to false,
+including for older saves that already contain the three gallery finds.
+A true claim requires chapter eight to have been reached and all three
+gallery collectible bits. The claim and finds save together through the
+existing optional completion path, retaining the b11 lower-landing checkpoint.
+The bundle is consumed even when the quiver is full, and cannot refill again
+after spending, retry, reload or chapter replay. New Campaign clears it.
+This tracks one cache pickup: ammo itself keeps the existing checkpoint
+full-magazine reset and ordinary reload behavior; this slice adds no reserve
+inventory system.
+
+Newly collected items retain both existing `collectible:<id>` and
+`collectible_found:<id>` events and also raise the authored
+`event:collectible_<id with underscores>` name. The gallery therefore queues
+the exact `ch08.b12.nyaakoto.003` Washio line and
+`ch08.b12.sekireisai.004` life-giving-sword memory through their existing
+script rows. Their collectible-bit guard prevents repeats after input,
+retry or fresh-world load. Existing saves with those finds do not replay
+the discoveries when collecting the newly available arrows.
+
+`SoraArena.Campaign.GalleryCache` covers normal lift travel and cache walking,
+actual remapped input, live-draw rejection, empty/partial/full held or stowed
+quivers, exact dialogue lines, other inventory and sheath preservation,
+immediate disk state, repeat input, death/retry, fresh-world reload, chapter
+replay and New Campaign. SaveRoundTrip and ForgedSaves cover the additive
+claim and invalid combinations. Host gallery rules exercise all ownership
+combinations and finite pickups across held slots/counts, including overflow
+amounts and locked weapons. This candidate still needs root's Unreal run.
+The three collectible POIs still share the existing functional cache; separate
+display interactions, final props, memory voice presentation and the gallery's
+remaining art are not completed by this change.
+
+## Chapter-one b07 archery candidate (source only, 2026-10-20)
+
+The range now uses physical paper/straw target proxies instead of generic
+sparring pupils. The existing chapter contract is validated at catalog load:
+one 28 m, 36 cm near face (25/21/18 cm scoring radius by difficulty), six
+resolved arrows with at least four hits, then three 45 cm hanging faces at
+40/50/60 m, each moving ±150 cm on a 3.2 s period. A target scores only an
+actual yumi projectile registered when released from the grounded shooting
+line. Other damage, off-line releases, repeated completed targets, stale
+identities and duplicate resolutions grant no progress. Collisions and
+two-second flight expiry both resolve shots. All six near arrows must resolve
+before either passing or failing the set.
+
+The mapped Bow action (default key 3) now equips the unlocked yumi in chapter
+one; key 1 or the existing key 2 returns to the training sword. Equip loads
+the yumi proxy instead of the authored bokken mesh. The later b11 sparring
+match retains its melee-only training slot. That slot still renders a bokken
+proxy: it is **not** an art-qualified fukuro-shinai. The integrated HUD limits
+its chapter-one bokken label to weapon 0, so the yumi retains its own label.
+
+Chapter-one R no longer creates arrows. B07 starts with the own twelve-arrow
+quiver. A failed six-arrow set pauses shooting for the authored eight-second
+keeper retrieval, then restores those twelve arrows. The script does not
+define a recovery after misses exhaust the hanging stage; the explicit
+implementation choice is the same eight-second retrieval after the last
+in-flight arrow resolves, retaining earned hanging hits and awarding no
+progress. Menu/dialogue time does not advance retrieval. Completion
+reconstructs the authored six usable and six bent arrows; b09 checkpoint
+retry/reload restores that same batch. Only completion of b09's existing
+manufacturing task restores twelve usable and zero bent arrows. There is no
+new partial-target or per-arrow save state. Other chapters' reload/reserve
+contracts and deterministic practice/kernel are unchanged by this slice.
+
+`SoraArena.Campaign.ArcheryLesson` uses normal 60 Hz walking, mapped equip,
+650 ms draw and release, actual projectile flight, failed-set retrieval,
+paused/rebound input, hanging exhaustion/recovery, fresh b09 reload and
+normal station interactions to repair the batch. `ArcheryReload` covers
+pre-unlock/b11 loadout boundaries, ordinary menu checkpoint retry and a
+fresh-world load without reseeding. `SoraArcheryAutomation::Complete` is
+integrated into the aggregate playthrough in place of its former generic enemy
+damage shortcut. Spaces and CombatTrace fixtures were not edited.
+The host `archery-rules` gate checks all 64 six-shot hit patterns in all
+720 resolution orders, retrieval boundaries at 1–500 ms, duplicate/stale
+identities, exhausted-stage recovery, inventory reconstruction, and range
+clearance against the current authored zone. **Unreal execution is pending
+root qualification; source tests are not runtime evidence.**
+
+The shooting line sits 420 cm beyond the existing range entry, beyond the two
+instructors. Three hanging lanes have offsets −600/0/+600 cm; all centers are
+40 cm above the flat range floor. Those lane placements and hanging height
+are functional proxy choices inside the existing space. Final shajō/azuchi,
+support frames, paper/straw surfaces, keeper retrieval animation, yumi and
+arrow-rest rigging, first-equip shooting forms and yugaeri/follow-through
+remain presentation work. Authored visible aim sway after four full-draw
+seconds remained unimplemented in this archery checkpoint; the later sway
+candidate is described below. The b08 clapper challenge and the remaining
+chapter-specific reserve/pickup contracts remain separate gameplay gaps.
+
+The integrated candidate `44ffc35` subsequently builds and passes
+`ArcheryLesson`, `ArcheryReload` and the complete accelerated `Playthrough`
+in the actual M2 Ultra UE 5.8.3 editor, with zero selected errors/warnings.
+The range fixtures walk around instructor collision, equip/draw/release through
+mapped input at 60 Hz, score real arrow impacts and expiry, reject an actual
+off-line target hit, wait retrieval, exhaust and recover the hanging-stage
+quiver, and repair the batch after a fresh-world smithy load. The aggregate
+fixture also uses these real arrows for b07. This is automated editor evidence,
+not human pacing, rendered range art or packaged qualification. The fresh Mac
+package remains running. Source-only checks pass 46/46 at preceding `8fb35cf`;
+its original compile failure is retained, and the narrow explicit-scopes/header
+repair has its separate successful editor build receipt at `44ffc35`.
+
+## Visible yumi aim sway candidate (source only, 2026-10-23)
+
+Chapter 01 §b07 / `x_shaho` specifies the 650 ms draw and sway after four
+seconds at full draw: onset is 4.65 seconds after Attack is pressed. It does
+not specify strength, periods or a ramp. The named `SoraBowRules` defaults
+are explicit **provisional implementation choices**, awaiting actual play and
+visual review: pitch ±0.18°, yaw ±0.28°, periods 2.6/3.4 seconds, and a
+one-second smoothstep ramp. All difficulties initially use the same profile.
+Both waves start at zero and use the current draw's absolute elapsed time;
+there is no random release roll or frame-accumulated drift.
+
+The camera and control rotation stay stable. The HUD projects the bow's
+current aim ray and the held proxy receives its camera-local angular offset.
+The released projectile and ordinary shot event use that same ray, sampled
+before clearing draw state. The reticle describes initial aim, not a gravity
+or moving-target impact prediction. Pausing, dialogue input reset, switching
+weapons, stagger, checkpoint retry and fresh-world load discard the draw and
+its phase. There is no new serialized state or change to arrow inventory,
+target scoring, keeper retrieval, lesson progression or practice/kernel.
+
+`SoraArena.Campaign.BowAimSway` uses mapped equip/draw/release and normal
+60 Hz ticks on all three difficulties. It records full-draw/onset times,
+checks visible proxy rotation and unchanged camera input, compares actual
+projectile initial velocity/origin with the visible ray and shot event, and
+waits for a real miss resolution. `BowAimCancellation` covers paused and
+remapped Attack, weapon change, dialogue and stagger cancellation, ordinary
+menu retry and fresh-world reload with a held draw. Cancelled draws must
+spend no arrow or issue a shot identity, and each new draw starts steady.
+The host `bow-aim-rules` gate covers exact onset, independent numerical
+samples, bounded long holds, smooth ramp joins and frame partition invariance.
+**These are source changes and unexecuted Unreal fixtures until root records
+the actual engine run.** Reticle legibility and tuning, final bow/hand rigging,
+right-side arrow rest and yugaeri still need their respective visual/art review.
+
+The separate source-only `SoraCapture.BowAim.Live` fixture prepares the actual
+b07 checkpoint and grounded range view, then uses the current mapped Bow and
+Attack keys in the running game. It waits for assets before starting the draw;
+world time then advances normally, with no freeze, manual tick, timestamp
+assignment or aim override. It requests original framebuffer screenshots on
+actual HUD draw frames: steady full draw before the threshold, positive sway,
+negative sway, and the centered reticle after a real release. The target must
+be unobstructed, the held yumi proxy visible, camera/control rotation fixed,
+and the viewmodel pose consistent with the aim offset. Fixed-step simulation
+and time dilation are rejected. This is a prepared capture, not a normal
+chapter playthrough or final art acceptance.
+
+The HUD observation records the submitted reticle position. The fixture
+independently projects the shared ray with the player controller and compares
+those coordinates. PNG-adjacent JSON retains frame number, world/draw/wall
+times, camera, ray, offset, bow rotation, target projection, actual held input
+and ammunition. It records release and emitted-shot frames/times/rays
+separately, including any screenshot-callback delay and whether the shot also
+matched the rendered sample; callback timing alone is not an equality claim.
+The mapped release must emit exactly one shot and leave eleven arrows.
+Cleanup drops held inputs, removes delegates, restores HUD/title/save-slot
+state, removes the throwaway save and checks control mappings and saved
+control/settings bytes, restoring bytes if a failed check detects a change.
+It also restores the original campaign slot's exact bytes or original absence
+after the title/reset path, which can otherwise persist a default save.
+
+Run each viewport separately on the exclusive engine lane:
+
+```sh
+scripts/toolchain/capture-editor-game.sh SoraCapture.BowAim.Live 1280 720 sm6
+scripts/toolchain/capture-editor-game.sh SoraCapture.BowAim.Live 1920 1080 sm6
+```
+
+`verify-capture-report.py` requires this fixture's own `SORA_BOW_AIM_FRAME`
+markers and all four phases. It preserves original PNG and observation bytes
+with hashes, checks timing/projection/shot consistency, and locates the four
+crosshair arms in the actual PNG using local line contrast. Pixel centers
+must match the submitted reticle within 1.5 pixels, show both sway directions
+and return after release. Invisible/ambiguous arms fail rather than being
+painted over or inferred from metadata. The verifier's synthetic unit images
+test decoding and failure paths; they are not rendered evidence. **Neither
+viewport has been executed for this source candidate.** Human review still
+decides whether the small motion is perceptible and comfortable, and whether
+the final bow/hand/target art is acceptable.
+
+## Dojo awase feedback and passive zanshin candidate (source only, 2026-10-20)
+
+Chapter 01 §b04 requires Sekireisai's `ch01.b04.sekireisai.003` when a
+successful awase is not followed by Step inside 400 ms. Real dojo parries
+publish `OnParried`; the director incorrectly subscribed to `OnGuarded`,
+and the former aggregate fixture fabricated that wrong event. The director
+now listens to the actual parry event. Its existing gameplay clock pauses
+in menus, an actual after-awase Step cancels the pending hint, and beat
+restart clears it. The authored line and 15-second repeat cooldown remain
+unchanged. Playthrough's missed-step case now uses a live pupil, its observed
+telegraph, mapped Guard, and normal 60 Hz ticks.
+
+Chapter 01 §b03 enables passive 残心 after the recovery lesson: a continuous
+500 ms guard after a scored point restores 15 stamina. The hero previously
+skipped the guard/stamina tick during every dojo frame. Completing all four
+forms now enables that existing stamina cycle. The early forms retain their
+prior training behavior. A dojo reward is armed only after the director
+accepts a `Scored` or `Won` point; a pupil knocked down without b04's required
+flank earns none. Ordinary non-dojo defeats retain their existing path.
+Reward state is transient and reset with the class/checkpoint loadout.
+
+`SoraArena.Campaign.DojoGuardLessons` receives actual pupil contacts and
+learns Guard, two Parry repetitions, and Recovery through mapped input at
+each difficulty. `DojoAwaseHint` covers ordinary guard rejection, the
+400 ms opportunity, menu pause, an actual swept Step, and retry at the b04
+checkpoint reached through normal b03 lessons and cuts.
+`DojoZanshin` spends stamina through held guard, scores with real return
+cuts during actual awase stagger, and checks a broken/restarted hold,
+exactly +15 once, resumed drain, reload while the winning point's next
+reward is still pending, and a refused bout.
+No combat event, damage, score or stamina write substitutes for input in
+those paths. **Unreal qualification is pending; CPU checks are not runtime
+evidence.**
+
+The existing pupil attack variation is still incomplete: `PupilAttack`
+uses a fixed 550 ms windup and 1450 ms post-windup delay for all lessons.
+The authored b04 `pupil_kesa` 600 ms/1000 ms timing and Easy ×1.30 / Hard
+×0.85 windup scaling are not implemented by this repair. Tests respond to
+the observed telegraph and validate the guard/parry gates; they do not
+qualify those missing attack variations or the final animation.
+
+### Authored pupil timing candidate (2026-10-23; runtime pending)
+
+The subsequent timing slice reads the two `ext.opponent_pattern` rows
+instead of sharing one drill. In b03, `pupil_men` starts every 1450 ms:
+`repeat_s` is an onset-to-onset interval, not another 1450 ms after impact.
+Its Normal windup is 550 ms. In b04, `pupil_kesa` has a 600 ms Normal
+windup followed by a full 1000 ms recovery measured from actual contact.
+Windups alone scale by Easy ×1.30 or Hard ×0.85, rounded half up to integer
+milliseconds. The real telegraph and committed event carry that same
+duration. Stagger and turn lock continue to defer an otherwise due attack.
+The maai teacher remains non-attacking; Toranosuke retains his separate
+boss-catalog attack patterns. No save, input binding or kernel rule changes.
+
+`SoraArena.Campaign.PupilTiming` reads the real catalog and rejects malformed
+or conflicting pattern fields through its loader. For both lessons on all
+three difficulties, it approaches using mapped movement, holds two real
+early guards, then answers the third observed telegraph with a mapped
+awase. At normal 60 Hz it records attack onset, telegraph lifetime, contact,
+guard age, and the next attack after recovery/stagger. It asserts the
+350 ms early-guard opportunity even on Hard, the separate repeat/recovery
+cadences, and the real 1200 ms stagger delay. It does not move actors,
+synthesize combat events, shorten clocks, grant points, or change health.
+The `dojo-timing` CPU gate checks authored data, shared timing math and
+invalid cadence boundaries. **This is source evidence only until the root
+lane executes the directed Unreal test.** The existing straight telegraph
+and weapon animation remain presentation proxies; this timing slice does
+not qualify the authored diagonal kesa edge or final animation.
+
+## October 23 actual dojo qualification
+
+Integrated `c841a8d` passes eight source-bound editor tests covering real awase
+feedback, learned guard/recovery, zanshin, both maai paths, physical archery and
+the full accelerated campaign traversal, with zero selected errors/warnings.
+The same source passes 57 gameplay/tooling/asset CPU checks and the uncooked
+Metal SM6 front-end tour. Its 19 menu frames are archived; only two Credits
+views were reviewed in this run. These results supersede the source-only
+qualification status above without establishing human pacing or final art.
+
+Pupil timing `876f539` passes all 58 gameplay/tooling/asset CPU checks and nine
+source-bound editor tests, including `PupilTiming`, the three dojo regressions,
+both maai paths, physical archery, Playthrough and ScriptedFight. All nine
+have zero selected errors/warnings. Real contact and telegraph timestamps
+verify both authored cadences at every difficulty. Follow-up `24f27f9`
+requires actual JSON numbers before conversion and rejects malformed pattern
+presence outside attacking lessons. Its fresh actual `PupilTiming` run passes
+the malformed-loader cases and all six lesson/difficulty combinations with
+zero selected errors/warnings.
+
+The earlier `44ffc35` Mac package passes build, cook, stage, untouched Title
+startup and all 152 client tests with zero selected errors/warnings. That
+package includes physical archery, but predates these latest dojo timing,
+recovery and bundled-font changes. A new package is still required for them.
+All evidence here is from this M2 Ultra; M1, Windows, normal-control pacing,
+straight/diagonal animation and final visual acceptance remain separate.
+
+## Chapter-one optional wood: source implementation, runtime pending
+
+The post-range choice now has continuous collision floors and door openings.
+Completing b07 leaves the hero on the range; walking into the wood starts b08,
+while the south terrace reaches b09 with b08 incomplete. The wood's authored
+exit alone completes b08, and the final bridge is walked to the smithy.
+B09 still requires b07 alone. There is no live route teleport. Checkpoint
+restoration explicitly spawns at the junction, wood entrance or smithy.
+
+The stone grants c01 and the boundary stone grants c02 independently. Vista
+and shrine interactions are separate lore discoveries. The clapper is a real
+collision target: only a registered, player-owned yumi arrow released on the
+vista floor can earn `codex_toshiya` on impact. Neither ordinary Interact,
+melee, entering the wood, its exit, a missed arrow, nor a release outside the
+vista grants that codex. It has a separate saved ledger bit and provisional
+bilingual early-1600s copy, with no combat or registry-goods reward. Existing
+schema-6 saves default the additive `WoodPoiMask` and `WoodJunction` fields to
+zero/false. Retry retains discoveries, clears pending projectile identities,
+and cannot regrant a discovery. New Campaign clears the ledger.
+
+`test_wood_rules.py` checks the translated authored positions, separate
+terrace, capsule clearance at the real door openings, malformed data, exact
+45 m origin-to-target centers and exhaustive native ledger/junction cases.
+`WoodExplore`, `WoodExitOnly` and `WoodLoader` are actual editor fixtures;
+`ArcheryLesson` now reloads the saved physical junction and walks the terrace,
+and `Playthrough` walks into the wood and visits its two separate finds.
+These new fixtures are prepared but have **not been run in Unreal** in this
+source-only slice. No build, render, Blender, packaged or performance proof
+is claimed here.
+
+Collision terrain remains flat and the POIs/clapper use primitive proxies.
+The final 10-to-6 m slope, stone hollow, shrine, forest, vista composition,
+clapper craft/sound and trail dressing are still art/layout work. The clapper
+azimuth (south) and 30-by-40 cm face are configurable provisional values;
+the standing-origin radius is 150 cm. The six authored trail points measure
+142.92 m, whereas the prose says approximately 170 m; the points are retained.
+These limitations do not qualify the authored final environment or pacing.
+
+### Chapter-one archery HUD target clearance (source checkpoint)
+
+The live b07 lesson now reserves a centered 20%-wide, 24%-high target window
+(256 × 173 pixels at 1280 × 720), including while an arrow is released or
+retrieved. Dialogue, tutorial prompts and ordinary notices use measured side
+and bottom regions instead of a full-width stack lifted above the weapon.
+Every Japanese and enabled English line remains present. Dialogue keeps the
+selected subtitle size and speaker-name setting; glyph bounds remove only
+empty font ascent/descent. Captions and projected labels avoid that same
+window. The tracker reports the real near-target resolved arrows and hits,
+unique hanging-target hits, and fetch countdown, rather than the task's
+placeholder invader-defeat goal. Other lesson and chapter layouts retain
+their previous path.
+
+An additional synthetic load—four combat captions, the longest b07 line,
+tutorial, worst-catalog locked-weapon refusal, fetch tracker, 720p and extra-
+large subtitles—exceeds the measured allocator's capacity. It is not a
+qualified configuration. The ordinary range does not generate those four
+combat captions, and hero arrow sounds are excluded from `USoraCaptions`.
+No text is dropped if such an overload is created; production layout
+qualification returns failure. This limit is retained, not reported as a pass.
+
+`test_aim_hud_layout.py` gives the shared C++ allocator independent 37/38-pixel
+FreeType metrics from the shipped Noto font. It checks all ten authored b07
+lines, both prompts, Japanese/English, all subtitle sizes, speaker settings,
+mouse/gamepad labels, and 720p/1080p. It also checks simultaneous locked-weapon
+refusals using every catalog weapon name as a conservative height envelope,
+four live sound captions alongside dialogue/prompt (two when the refusal
+notice is also active), actual arrow-resolution/fetch state transitions,
+and rejection of the old captured center-overlap rectangles and insufficient
+capacity. Existing chapter-four caption and rhythm-layout tests remain
+separate regression gates. These CPU results do not establish Unreal font
+rasterization or rendered contrast.
+
+`SoraCapture.BowAim.Live` now checks the production bottom, tracker, caption
+and interaction layouts on each real frame requested for a screenshot.
+The existing pixel archive verifier and its contrast thresholds are unchanged.
+Fresh 720p/1080p capture/archive passes and visual review remain required;
+this source checkpoint does not supersede the earlier failed images.
+The reservation is scoped to `IsArcheryLesson()`. General bow use, especially
+the b08 wood clapper, is still **unqualified/open** for HUD clearance. Wood
+NullRHI gameplay tests provide no evidence about that view.
+
+## Horse-defense withdrawal source candidate
+
+The 150-second ch02.b06 task now has a visible outro for living registered
+wave members. It cancels pending pods and horse shells, sends survivors by
+ordinary enemy navigation to the named west-gate courtyard approach
+`ps_gate_yard_start` (-2300, 0, 0), and waits for actual grounded arrival
+within 220 cm and the authored retreat bark before Kohagi's back-gate-clear
+line and the next cinematic. The approach is inside the existing collision
+wall; this does not claim passage through the exterior gate. Six separate
+arrival stations inside the approach keep the front rank from blocking
+later survivors. Each errand has a 30 cm acceptance radius. No timer,
+blocked-path flag, teleport or artificial kill credit completes withdrawal.
+Kohagi's complete 2.6-second call finishes before the next cinematic takes
+over subtitles. With no survivors, only that call plays; no retreat bark is
+invented. Menus pause
+the outro; ordinary damage can still defeat a survivor or the hero, and
+checkpoint retry cancels and resets it.
+
+The strict source contract and generated chapter validation pass locally.
+`SoraArena.Campaign.HorseWithdrawalMovement` stages the real arrivals with
+combat frozen, then releases actual controllers against a physical blocking
+wall and along the real route; it checks pause, completion, bark ordering and
+no manufactured kill credit. `HorseWithdrawalRetry` checks ordinary defeat,
+no replacement spawn and real checkpoint restart. At `ac54ab8`, the build
+passes and ten of twelve directed tests pass, with two errors and no selected
+warnings. Movement, obstruction, pause and arrival pass, but the following
+cinematic masks Kohagi's call. The retry fixture also expects a defeated body
+to disappear before its ordinary two-second lifetime. The source correction
+holds the cinematic until the actual call finishes, and the fixture verifies
+that any remaining body is dead, noncolliding and then expires. A third case
+checks the call when all enemies are already defeated. Exact `0adc081` builds
+and passes all thirteen selected Unreal tests, including those three cases
+and the assisted full campaign, with zero selected errors and one external
+HTTP connectivity timeout warning. Actual editor/wrapper exits are zero and
+source/native/Config/Generated remain unchanged. These are NullRHI state and
+movement results; actual subtitle pixels and ordinary defense play remain
+unqualified. Final retreat animation,
+ordinary defense pacing and rendered acceptance remain open.

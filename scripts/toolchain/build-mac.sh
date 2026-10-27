@@ -25,6 +25,23 @@ for name, value in [('UE_ROOT', report['engine_root']), ('DEVELOPER_DIR', report
 PY
 )" || exit 1
 eval "$TOOLCHAIN_EXPORTS"
+# Ordinary edit/build work stays available without candidate declarations.
+# Any build invalidates its old receipt before it can replace output files.
+CANDIDATE_PHASE="$(printf '%s' "$TARGET_KIND" | tr '[:upper:]' '[:lower:]')"
+python3 "$SCRIPT_DIR/mac_candidate.py" invalidate "$CANDIDATE_PHASE"
+CANDIDATE_START=""
+if [[ -n "${SORA_CANDIDATE_SOURCE:-}" ]]; then
+  : "${SORA_CANDIDATE_NATIVE:?Set the full native bridge source commit ID}"
+  [[ "$CONFIGURATION" == Development ]] || { echo 'Candidate packaging requires Development.' >&2; exit 2; }
+  CANDIDATE_START="$PROJECT_ROOT/Saved/Qualification/MacArtifacts/$CANDIDATE_PHASE-start.json"
+  python3 "$SCRIPT_DIR/mac_candidate.py" begin "$CANDIDATE_PHASE" "$CANDIDATE_START" \
+    --source "$SORA_CANDIDATE_SOURCE" --native "$SORA_CANDIDATE_NATIVE"
+fi
+record_candidate() {
+  if [[ -n "$CANDIDATE_START" ]]; then
+    python3 "$SCRIPT_DIR/mac_candidate.py" finish "$CANDIDATE_START"
+  fi
+}
 if [[ "$TARGET_KIND" == Game ]]; then
   # UBT has compiled and linked the Mac game target but its nested Xcode
   # finalization can fail at this generated-scheme pre-action. Reuse that exact
@@ -42,6 +59,7 @@ if [[ "$TARGET_KIND" == Game ]]; then
     exit "${PIPE_RESULTS[1]}"
   fi
   if [[ "$BUILD_STATUS" -eq 0 ]]; then
+    record_candidate
     exit 0
   fi
   if ! grep -Fq 'ApplePostBuildSync Executing PostBuildSync' "$BUILD_LOG" ||
@@ -91,7 +109,9 @@ PY
   [[ -f "$PROJECT_ROOT/Binaries/Mac/$GAME_TARGET.target" ]] || {
     echo 'UBT did not write the Mac game receipt.' >&2; exit 1;
   }
+  record_candidate
   exit 0
 fi
-exec "$UE_ROOT/Engine/Build/BatchFiles/Mac/Build.sh" "$EDITOR_TARGET" Mac "$CONFIGURATION" \
+"$UE_ROOT/Engine/Build/BatchFiles/Mac/Build.sh" "$EDITOR_TARGET" Mac "$CONFIGURATION" \
   "-Project=$PROJECT" -WaitMutex -architecture=arm64
+record_candidate

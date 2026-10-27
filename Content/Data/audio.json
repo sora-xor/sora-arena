@@ -571,8 +571,10 @@
   {
    "id": "amb.stream",
    "bus": "Ambience",
-   "status": "layers-cc0",
-   "waves": [],
+   "status": "ready-cc0",
+   "waves": [
+    "CC0/Ambience/cc0_amb_stream_loop"
+   ],
    "spatial": true,
    "attenuation": "ambient_emitter",
    "loop": true,
@@ -591,8 +593,8 @@
    "stinger": false,
    "strike_ms": 0,
    "sustain": null,
-   "needs": "CC0 small-river recording",
-   "unbound": "a positioned emitter at streams; the chapter layouts name no stream emitters yet",
+   "needs": "listening and in-game mix review; the Adelaide park recording includes wildlife and is not verified as Japanese ecology; currently positioned only at the Chapter 03 ward culvert",
+   "unbound": "",
    "notes": ""
   },
   {
@@ -3632,6 +3634,91 @@
    "needs": "CC0 nock layers",
    "unbound": "no nock event yet: the hero nocks as part of the draw",
    "notes": ""
+  },
+  {
+   "id": "workshop.hammer.cue",
+   "bus": "SFX_Telegraph",
+   "status": "ready-cc0",
+   "waves": [
+    "CC0/Workshop/cc0_workshop_small_hammer"
+   ],
+   "spatial": true,
+   "attenuation": "foley_short",
+   "loop": false,
+   "max_instances": 2,
+   "shuffle": true,
+   "pitch_cents": [
+    0,
+    0
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": "Ch05 §2.5: small-hammer cue at the anvil; first cue is a count-in, response due 600 ms later. SFX remains audible with Music at 0."
+  },
+  {
+   "id": "workshop.hammer.hit",
+   "bus": "SFX_Foley",
+   "status": "ready-cc0",
+   "waves": [
+    "CC0/Workshop/cc0_workshop_sledge"
+   ],
+   "spatial": true,
+   "attenuation": "foley_short",
+   "loop": false,
+   "max_instances": 2,
+   "shuffle": true,
+   "pitch_cents": [
+    0,
+    0
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": "Ch05 §5.6: stronger recorded anvil response on an accepted player/assisted strike, independent of whole-phrase completion."
+  },
+  {
+   "id": "workshop.loom.call",
+   "bus": "Voice_Barks",
+   "status": "needed",
+   "waves": [],
+   "spatial": true,
+   "attenuation": "foley_short",
+   "loop": false,
+   "max_instances": 2,
+   "shuffle": true,
+   "pitch_cents": [
+    0,
+    0
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "A cleared recording of Okinu's rhythmic call; no source voice exists in this repository.",
+   "unbound": "",
+   "notes": "Ch05 §2.5: a voice call every 750 ms. The shuttle/cord visual cue works; no unrelated sound or synthesized impersonation stands in for the missing voice."
   }
  ],
  "bindings": {
@@ -4355,6 +4442,32 @@
      "Sound": "MenuClose"
     },
     "cue": "ui.menu.close",
+    "continue": false,
+    "delay_ms": 0
+   }
+  ],
+  "Workshop": [
+   {
+    "when": {
+     "Action": "HammerCue"
+    },
+    "cue": "workshop.hammer.cue",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Action": "HammerHit"
+    },
+    "cue": "workshop.hammer.hit",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Action": "LoomCall"
+    },
+    "cue": "workshop.loom.call",
     "continue": false,
     "delay_ms": 0
    }
@@ -6246,6 +6359,9 @@
  "attached": {
   "drone": "amb.alien.drone",
   "seizure_walker": "amb.alien.seizure_field"
+ },
+ "emitters": {
+  "ward_culvert": "amb.stream"
  },
  "telegraphs": {
   "boss": {

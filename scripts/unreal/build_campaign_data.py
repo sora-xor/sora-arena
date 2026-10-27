@@ -38,8 +38,11 @@ import sys
 from pathlib import Path
 
 import yaml
+from campaign_crank import cooperation, player_work
+from campaign_cargo import cargo_manifest
 
 from campaign_space import derive_space, ride_mount
+from campaign_registry import validate_registry
 
 ROOT = Path(__file__).resolve().parents[2]
 DOCS = ROOT / "docs/campaign"
@@ -67,7 +70,7 @@ PARAMS = {
     "production_task": (("task",), ("stealth", "detection", "takedowns") + WAVE_COMPANIONS),
     "horseback_ride": (("horse", "mode", "route"),
                        ("complete", "gaits", "weapons", "convoy", "fear", "horse_stamina", "auto_steer",
-                        "dismount_allowed", "on_horse_down", "cargo", "objectives") + WAVE_COMPANIONS),
+                        "dismount_allowed", "on_horse_down", "on_spook", "cargo", "objectives") + WAVE_COMPANIONS),
     "boss": (("boss", "arena", "phases", "defeat"),
              ("intro_cinematic", "outro_cinematic", "checkpoint_per_phase", "telegraph", "barks",
               "trigger", "finisher")),
@@ -189,8 +192,6 @@ LINE_KEYS = ("id", "speaker", "ja", "en", "register", "duration_s")
 LINE_SCHEDULE_KEYS = ("beat", "on", "trigger")
 # Lesson gates that name a dojo form, in SoraDojoRules order.
 LESSON_FORMS = {"stance_hold": 0, "front_guard_survive": 1, "awase": 2, "recovery_complete": 3}
-# A lesson gate the runtime does not measure yet; its duel completes on its other gates.
-UNMEASURED_GATES = ("maai_step",)
 # `fail` events and the SoraBeatRules::EFail each one raises.
 FAIL_EVENTS = (
     (r"player_died", "player_died"), (r"match_lost", "match_lost"), (r"target_destroyed", "target_destroyed"),
@@ -205,7 +206,7 @@ BOSS_CUE = re.compile(r"(intro|outro)@(\d+(?:\.\d+)?)")
 # searching guard giving up (USoraFieldcraft and the guards' cues).
 RAISED_PROPOSALS = {"x_wave_start": "wave_start", "x_boss_defeated": "boss_defeated", "x_objective": "interact",
                     "x_signal": "signal", "x_npc_revived": "npc_revived", "x_npc_freed": "npc_freed",
-                    "x_alert_state": "alert_state", "x_fire_out": "fire_out"}
+                    "x_alert_state": "alert_state", "x_fire_out": "fire_out", "x_item_picked": "item_picked"}
 # A dialogue trigger may wait for a collectible found or a story flag set.
 REQUIRES_FLAG = re.compile(r"(collectible:ch0[1-8]\.c0[1-6]|story:[a-z_]+)")
 
@@ -590,6 +591,77 @@ def volume_event(volume):
     return None if volume is None else f"volume_enter:{volume}"
 
 
+def maai_lesson(raw, count, where):
+    """Integer runtime parameters for the authored distance-and-facing lesson."""
+    raw = expect(raw, (dict,), where)
+    keys = {"weapon_range_cm", "ring_inner_cm", "ring_outer_cm", "hold_ms", "facing_dot_min", "hint_after_s", "mentor_moves"}
+    if set(raw) != keys or not 1 <= count <= 8:
+        fail(where, "maai requires its complete distance, timing and mentor-step contract")
+    inner = expect_int(raw["ring_inner_cm"], where, 1)
+    outer = expect_int(raw["ring_outer_cm"], where, 1)
+    reach = expect_int(raw["weapon_range_cm"], where, 1)
+    hold = expect_int(raw["hold_ms"], where, 1)
+    facing = permille(raw["facing_dot_min"], where)
+    hint = whole_ms(raw["hint_after_s"], where)
+    if not inner < reach < outer <= 1000 or not 1 <= hold <= 10000 or not 1 <= facing <= 1000 or not 1 <= hint <= 60000:
+        fail(where, "invalid maai distance, facing or timing")
+    moves = expect(raw["mentor_moves"], (list,), where)
+    if len(moves) != count:
+        fail(where, "each maai confirmation needs its own mentor step")
+    result = []
+    directions = {"back": (-1, 0), "forward": (1, 0), "left": (0, -1), "right": (0, 1)}
+    for index, move in enumerate(moves):
+        expect(move, (dict,), where)
+        if set(move) != {"step", "move", "cm"}:
+            fail(where, "mentor step requires step, move and cm")
+        if expect_int(move["step"], where, 1) != index + 1 or expect(move["move"], (str,), where) not in directions:
+            fail(where, "mentor steps must be consecutive and have a known direction")
+        cm = expect_int(move["cm"], where, 1)
+        if cm > 500:
+            fail(where, "mentor step exceeds the lesson space")
+        forward, right = directions[move["move"]]
+        result.append({"forward_cm": forward * cm, "right_cm": right * cm})
+    return {"inner_cm": inner, "outer_cm": outer, "hold_ms": hold, "facing_permille": facing, "hint_ms": hint, "moves": result}
+
+
+def carry_drop_policy(value, where):
+    """Preserve all authored difficulty values, including uniform booleans."""
+    names = ("easy", "normal", "hard")
+    if isinstance(value, bool):
+        return dict.fromkeys(names, value)
+    expect(value, (dict,), where)
+    if set(value) != set(names):
+        fail(where, "drop_on_hit requires exactly easy, normal and hard")
+    return {name: expect(value[name], (bool,), f"{where}.{name}") for name in names}
+
+
+def carry_dropoff_capacity(raw, names, count, where):
+    """Preserve an authored name-to-capacity map, never dictionary order."""
+    expect(raw, (dict,), where)
+    expect_int(count, f"{where}.count", 1)
+    if count > 99 or not 1 <= len(names) <= 8 or any(not name for name in names) or len(set(names)) != len(names):
+        fail(where, "carry count must be 1-99 with 1-8 unique drop-offs")
+    if set(raw) != set(names):
+        fail(where, "capacity keys must exactly match the named drop-offs")
+    capacities = {name: expect_int(raw[name], f"{where}.{name}", 1) for name in names}
+    if any(value > 99 for value in capacities.values()) or sum(capacities.values()) < count:
+        fail(where, "capacities must be 1-99 and hold all required goods")
+    return capacities
+
+
+def carry_gate(raw, where):
+    if raw is None:
+        return None
+    expect(raw, (dict,), where)
+    points = ids_of(raw.get("interact_points"), where)
+    if len(points) != 1 or raw.get("contest") != "pause" or raw.get("tool") != "yari_ishizuki":
+        fail(where, "carry gate requires one seal, pause on hit and the yari iron butt")
+    hold = whole_ms(raw.get("per_point_s"), where)
+    if hold <= 0:
+        fail(where, "carry gate hold must be positive")
+    return {"point": points[0], "hold_ms": hold, "contest": "pause", "tool": "yari_ishizuki"}
+
+
 def normalize_task(beat):
     """The beat's task in the integer units SoraBeatRules.h runs (§12.2).
 
@@ -597,20 +669,21 @@ def normalize_task(beat):
     are milliseconds, fractions permille and distances centimetres. The loader
     in SoraCatalog.cpp reads this block and the host driver plays it."""
     where, kind, params = beat["id"], beat["type"], beat["params"]
+    cargo_manifest(beat, fail)
     complete = params.get("complete") or {}
     task = {
         "type": kind, "task": params.get("task"), "goal": None, "count": 0, "duration_ms": 0, "skippable": False,
         "anchor_after_lines": False, "pause_when_seen": params.get("stealth") is True,
         "max_alive": params.get("max_alive", 6), "waves": [], "phases": [1000], "defeat": "kill",
-        "capture_event": None, "lesson_mask": 0, "form_reps": [1, 1, 1, 1], "flank_bouts": False,
+        "capture_event": None, "capture_hold_ms": 0, "lesson_mask": 0, "form_reps": [1, 1, 1, 1], "maai": None, "flank_bouts": False,
         "loss": "checkpoint", "loss_limit": 0, "contest": "none", "decay_permille": 0, "min_turn_ms": 0,
-        "max_turn_ms": 0, "speed_cm_s": 0, "wait_cm": 0, "path_cm": 0, "pickups": [], "dropoffs": [],
-        "drop_on_hit": False, "steps": [], "targets": [], "target_loss_limit": 0, "on_detected": "combat",
+        "max_turn_ms": 0, "crank_coop": None, "crank_player": None, "speed_cm_s": 0, "wait_cm": 0, "path_cm": 0, "pickups": [], "dropoffs": [],
+        "dropoff_capacity": None, "drop_on_hit": carry_drop_policy(False, where), "carry_gate": None, "steps": [], "targets": [], "target_loss_limit": 0, "on_detected": "combat",
         "reinforce_wave": -1,
         "horse_down_retries": False, "fail_checkpoint": [], "fail_events": {}, "objectives": [],
         "lines_event": None, "closing_event": None, "exit_event": None, "guards": [], "stealth": None, "opponent": None,
         "sparring": False, "phase_events": [], "carry_item": None, "carry_speed_permille": 1000, "carry_weapons": [],
-        "pickup_hold_ms": 0, "objective_hold_ms": [],
+        "pickup_hold_ms": 0, "unload_hold_ms": 0, "objective_hold_ms": [], "equipment_weapons": None, "recovery": None,
     }
     nonlethal = params.get("nonlethal_types", DEFAULT_NONLETHAL)
     # Waves are what a beat throws at the hero. Only a fight to clear them
@@ -692,13 +765,19 @@ def normalize_task(beat):
                     # Each of the lesson's bouts scores only straight after a 転 flank.
                     flanks = expect_int(gate.get("count"), f"{where}.marobashi_flank", 1)
                     task["flank_bouts"] = True
-                elif name not in UNMEASURED_GATES:
+                elif name == "maai_step":
+                    if task["maai"] is not None:
+                        fail(where, "duplicate maai gate")
+                    task["maai"] = maai_lesson(beat["ext"].get("maai"), expect_int(gate.get("count"), where, 1), where)
+                else:
                     fail(where, f"lesson gate {name!r}")
             # The lesson's scored bouts (x_scored_bouts); a 転 lesson scores one per flank.
             bouts = beat["ext"].get("scored_bouts")
             task["count"] = expect_int(bouts.get("count"), f"{where}.scored_bouts", 1) if bouts else flanks
             if flanks and flanks != task["count"]:
                 fail(where, f"{flanks} 転 flanks for {task['count']} scored bouts")
+            if task["maai"] and (task["lesson_mask"] != 1 or task["count"]):
+                fail(where, "maai follows stance in its own non-attacking lesson")
             if not task["lesson_mask"] and not task["count"]:
                 fail(where, "a lesson duel teaches nothing the runtime measures")
         else:
@@ -734,7 +813,16 @@ def normalize_task(beat):
             seconds = block["hold_s"] if "hold_s" in block else len(points) * block["per_point_s"]
             task.update(goal="hold", duration_ms=whole_ms(seconds, f"{where}.hold"), contest=block["contest"],
                         decay_permille=permille(block.get("decay_per_s", 0), f"{where}.hold.decay_per_s"))
+            # With an authored hold_s the points are ancillary work (the
+            # kitchen fires). Without it, every point is the timed objective.
+            if points and "hold_s" not in block:
+                if len(points) > 8 or len(set(points)) != len(points) or block["contest"] != "pause":
+                    fail(where, "point holds need distinct desks, per_point_s and pause contest")
+                task["objectives"] = list(points)
+                task["objective_hold_ms"] = [whole_ms(block["per_point_s"], f"{where}.hold.per_point_s")] * len(points)
         elif name == "crank":
+            task["crank_coop"] = cooperation(beat, fail)
+            task["crank_player"] = player_work(beat, fail)
             slowest, fastest = block["turn_rate_band"]
             task.update(goal="turns", count=block["turns_required"], min_turn_ms=round(1000 / fastest),
                         max_turn_ms=round(1000 / slowest),
@@ -746,12 +834,17 @@ def normalize_task(beat):
             if expect(block["fail_on_npc_death"], (bool,), f"{where}.escort.fail_on_npc_death"):
                 task["fail_checkpoint"].append("escort_down")
         elif name == "carry":
-            drop = block.get("drop_on_hit", False)
-            # Per-difficulty drops follow Normal until difficulty settings land.
+            task["carry_gate"] = carry_gate(beat["ext"].get("gate_interact"), f"{where}.carry_gate")
             task.update(goal="deliveries", count=block["count"], pickups=ids_of(block["pickups"], f"{where}.pickups"),
                         carry_item=expect(block["item"], (str,), f"{where}.carry.item"),
                         dropoffs=ids_of(block["dropoffs"], f"{where}.dropoffs"),
-                        drop_on_hit=drop if isinstance(drop, bool) else expect(drop.get("normal"), (bool,), where))
+                        drop_on_hit=carry_drop_policy(block.get("drop_on_hit", False), f"{where}.carry.drop_on_hit"))
+            expect_int(task["count"], f"{where}.carry.count", 1)
+            if task["count"] > 99:
+                fail(where, "carry count exceeds the runtime limit of 99")
+            if "x_dropoff_capacity" in block:
+                task["dropoff_capacity"] = carry_dropoff_capacity(block["x_dropoff_capacity"], task["dropoffs"],
+                                                                 task["count"], f"{where}.carry.x_dropoff_capacity")
             # The load slows the hero and leaves at most the katana in one paw.
             task["carry_speed_permille"] = permille(block.get("move_speed_mult", 1), f"{where}.carry.move_speed_mult")
             loadout = expect(block.get("loadout_while_carrying", []), (list,), f"{where}.carry.loadout_while_carrying")
@@ -769,11 +862,24 @@ def normalize_task(beat):
             for index, step in enumerate(block["steps"]):
                 timing = step.get("timing") or {}
                 spot = f"{where}.steps[{index}]"
+                phrase_strikes, phrase_pass = 0, 0
+                if beat["id"] == "ch05.b08" and step["kind"] == "hammer_rhythm":
+                    phrase = beat["ext"].get("hammer_rhythm_phrase")
+                    if (beat["id"] != "ch05.b08" or phrase != {"strikes": 8, "pass_ratio": .75,
+                            "cue": "kozo_kozuchi_tap", "cue_to_strike_ms": 600} or
+                            timing != {"beat_ms": 600, "tolerance_ms": 90} or step["count"] != 4):
+                        fail(spot, "hammer rhythm requires four eight-strike phrases, six hits, and the authored cue timing")
+                    phrase_strikes, phrase_pass = 8, 6
+                elif beat["id"] == "ch05.b11" and step["kind"] == "weave_rhythm":
+                    if beat["id"] != "ch05.b11" or timing != {"beat_ms": 750, "tolerance_ms": 120} or step["count"] != 24:
+                        fail(spot, "weave rhythm requires twenty-four individual picks and the authored cue timing")
+                    phrase_strikes, phrase_pass = 1, 1
                 task["steps"].append({
                     "kind": expect(step["kind"], (str,), f"{spot}.kind"),
                     "count": expect_int(step["count"], f"{spot}.count", 1),
                     "beat_ms": expect_int(timing.get("beat_ms", 0), f"{spot}.beat_ms", 0),
-                    "tolerance_ms": expect_int(timing.get("tolerance_ms", 0), f"{spot}.tolerance_ms", 0)})
+                    "tolerance_ms": expect_int(timing.get("tolerance_ms", 0), f"{spot}.tolerance_ms", 0),
+                    "phrase_strikes": phrase_strikes, "phrase_pass": phrase_pass})
             task["goal"] = "steps"
         elif name == "defend":
             task["targets"] = [{"id": expect(target["actor"], (str,), f"{where}.targets"),
@@ -796,21 +902,59 @@ def normalize_task(beat):
             task.update(goal="exit", exit_event=volume_event(complete["volume"]))
         elif complete["kind"] == "cargo_delivered":
             task["dropoffs"] = ids_of(params["cargo"]["dropoffs"], f"{where}.cargo.dropoffs")
-            task.update(goal="deliveries", count=len(task["dropoffs"]))
+            seconds = expect(params["cargo"].get("unload_hold_s"), (int, float), f"{where}.cargo.unload_hold_s")
+            if not 0 < seconds <= (1 << 30) / 1000:
+                fail(where, "cargo unload hold must be positive and fit the task clock")
+            duration = whole_ms(seconds, f"{where}.cargo.unload_hold_s")
+            if duration < 1:
+                fail(where, "cargo unload hold must span at least one whole millisecond")
+            task.update(goal="deliveries", count=len(task["dropoffs"]), unload_hold_ms=duration)
         else:
             fail(where, f"ride completion {complete['kind']!r}")
     elif kind == "boss":
         task.update(goal="opponent_down", opponent=params["boss"], defeat=BOSS_DEFEATS[params["defeat"]],
                     phases=[permille(phase["hp_pct_start"] / 100, f"{where}.phases") for phase in params["phases"]])
+        if beat["id"] in ("ch06.b13", "ch08.b14") and task["defeat"] != "capture":
+            fail(where, "the authored take-alive ending requires capture")
         if task["defeat"] == "capture":
             # The hand that binds a yielded boss: ch06's bulkhead lever, ch08's engine spine.
             ext = beat["ext"]
-            binding = (ext.get("defeat_interact") or {}).get("id") or (ext.get("post_defeat") or {}).get("interact")
-            if not isinstance(binding, str) or not re.fullmatch(r"\w+", binding):
-                fail(where, "a capture names no interaction that binds the boss")
+            contracts = {"ch06.b13": ("boss_eskro", "defeat_interact", "id", "bulkhead_lever", 2000),
+                         "ch08.b14": ("boss_val_amort", "post_defeat", "interact", "engine_spine", 1500)}
+            contract = contracts.get(beat["id"])
+            if contract is None:
+                fail(where, "capture has no authored held interaction")
+            boss, field, key, binding, duration = contract
+            interaction = expect(ext.get(field), (dict,), f"{where}.{field}")
+            if params["boss"] != boss or interaction.get(key) != binding or \
+                    ("post_defeat" if field == "defeat_interact" else "defeat_interact") in ext:
+                fail(where, "capture must name its own authored boss and interaction")
             task["capture_event"] = f"interact:{binding}"
+            task["capture_hold_ms"] = whole_ms(interaction.get("hold_s"), f"{where}.{field}.hold_s")
+            if task["capture_hold_ms"] != duration:
+                fail(where, f"{binding} requires its authored {duration} ms hold")
     elif kind == "explore_optional":
         task["goal"] = "cache"
+        if beat["id"] == "ch03.b04":
+            # The prose places c01 on the chalk wall and c02 on the widow's
+            # door. Their reward association does not combine their claims.
+            for poi in beat["params"]["pois"]:
+                item = {"poi_chalk": "ch03.c01", "poi_balance_door": "ch03.c02"}.get(poi["id"])
+                if item:
+                    if "collectible" in poi and poi["collectible"] != item:
+                        fail(where, "tenement find bound to the wrong point")
+                    poi["collectible"] = item
+        if beat["id"] == "ch01.b08":
+            completion = beat["ext"].get("complete", {})
+            if completion != {"volume_enter": "vol_ch01_wood_exit"}:
+                fail(where, "wood completes only at its authored exit")
+            task.update(goal="exit", exit_event="volume_enter:vol_ch01_wood_exit")
+            # Chapter §3.5 places these finds separately; the YAML reward list
+            # is an association, not a single cache claim.
+            for poi in beat["params"]["pois"]:
+                item = {"poi_ch01_issoseki": "ch01.c01", "poi_ch01_sakaiishi": "ch01.c02"}.get(poi["id"])
+                if item:
+                    poi["collectible"] = item
 
     for entry in beat["fail"]:
         failure = next((name for pattern, name in FAIL_EVENTS if re.fullmatch(pattern, entry["on"])), None)
@@ -820,6 +964,10 @@ def normalize_task(beat):
         task["fail_events"][entry["on"]] = failure
         if entry["to"] != "retry" and failure not in task["fail_checkpoint"]:
             task["fail_checkpoint"].append(failure)
+    if (beat["ext"].get("maai") is not None) != (task["maai"] is not None):
+        fail(where, "maai parameters require a measured maai lesson gate")
+    if (beat["ext"].get("gate_interact") is not None) != (task["carry_gate"] is not None):
+        fail(where, "gate_interact requires a carry task")
     return task
 
 
@@ -911,6 +1059,11 @@ def normalize_line(raw, context, chapter_prefix):
 
 def trigger_row(beat, event, mode, lines, source, context, repeatable=False, cooldown_s=None, at_ms=None, ext=None):
     ext = dict(ext or {})
+    if "delay_s" in ext:
+        delay = whole_ms(ext["delay_s"], context + ".delay_s")
+        if delay <= 0 or delay > 120000 or "+" in event:
+            fail(context, "a delayed trigger needs one positive delay of at most 120 seconds")
+        event = f"{event}+{delay / 1000:g}s"
     # A conditional line (ch08.b17's returned sword) names what must be found or set first.
     requires = ext.pop("requires_flag", None)
     if requires is not None and not REQUIRES_FLAG.fullmatch(expect(requires, (str,), f"{context}.requires_flag")):
@@ -1009,13 +1162,10 @@ def normalize_beat(raw, previous, chapter_prefix, number, lines, triggers):
     if site is not None:
         expect_enum(expect_int(site, f"{beat_id}.site"), (0, 1, 2), f"{beat_id}.site")
     registry = raw.get("registry")
-    if registry is not None:
-        expect(registry, (dict,), f"{beat_id}.registry")
-        if tuple(registry) != ("item_ja", "item_en", "qty", "unit_ja", "unit_en"):
-            fail(beat_id, f"registry takes item_ja, item_en, qty, unit_ja, unit_en, got {list(registry)}")
-        for key in ("item_ja", "item_en", "unit_ja", "unit_en"):
-            expect(registry[key], (str,), f"{beat_id}.registry.{key}")
-        expect_int(registry["qty"], f"{beat_id}.registry.qty", 1)
+    try:
+        validate_registry(registry, beat_type, raw, ext)
+    except ValueError as error:
+        fail(beat_id, str(error))
     beat = {
         "id": beat_id,
         "type": beat_type,
@@ -1380,6 +1530,117 @@ def bark_pool_triggers(document, chapter_prefix, beats, triggers):
         fail(chapter_prefix, f"bark sets no beat uses: {sorted(set(sets) - used)}")
 
 
+def equipment_recovery(beats):
+    """Carry the chapter's explicit temporary loadout to its authored recovery beat.
+
+    Checkpoints restart a beat: earlier beats stay restricted, a restarted
+    recovery repeats the retrieval, and later beats have the recovered gear.
+    """
+    pending = None
+    carried = None
+    for beat in beats:
+        ext, where = beat["ext"], beat["id"]
+        if carried is not None:
+            # Chapter three's bundle is its carried kit, not permission to
+            # summon every arm earned in an earlier chapter.
+            if where == "ch03.b09":
+                if beat["unlocks"]["weapons"] != [7]:
+                    fail(where, "the workshop manufacture must hand over the festival-shell tube")
+                carried.append(7)
+            if where == "ch03.b14":
+                supply = ext.get("supply_point")
+                expected = {"id": "vol_b14_supply", "slots": {"side": [4], "polearm": [19], "firearm": [7]},
+                            "refill": ["arrows", "shells"]}
+                if supply != expected:
+                    fail(where, "the kitchen supply must retain its authored slots and refills")
+                for slot, weapons in supply["slots"].items():
+                    for weapon in weapons:
+                        expect_int(weapon, where + ".supply_point.slots." + slot, 0)
+                carried.append(19)
+            beat["task"]["equipment_weapons"] = sorted(carried)
+        if "loadout" in ext:
+            raw = expect(ext["loadout"], (dict,), where + ".x_loadout")
+            if pending or set(raw) != {"equipped", "locked_slots", "until"}:
+                fail(where, "loadout needs equipped, locked_slots and one recovery event")
+            if raw["locked_slots"] != ["hip", "back", "polearm", "firearm"]:
+                fail(where, "unrecognized temporary equipment slots")
+            weapons = [expect_int(w, where + ".equipped", 0) for w in expect(raw["equipped"], (list,), where + ".equipped")]
+            if weapons != [4] or raw["until"] != "x_item_picked:sword_bundle":
+                fail(where, "dry-well restriction must leave only the wakizashi")
+            pending = raw
+        if pending:
+            beat["task"]["equipment_weapons"] = pending["equipped"][:]
+        if "pre_step" not in ext:
+            continue
+        raw = expect(ext["pre_step"], (dict,), where + ".x_pre_step")
+        if not pending or set(raw) != {"interact", "descend_cm", "pickup", "restores", "string_bow_s"}:
+            fail(where, "equipment pre-step needs a matching temporary loadout and complete recovery")
+        restored = expect(raw["restores"], (dict,), where + ".restores")
+        if (beat["task"]["task"] != "carry" or raw["pickup"] != "sword_bundle" or
+                raw["interact"] != "act_b05_dry_well_rope" or
+                set(restored) != {"equipped", "quiver"} or restored["equipped"] != [0, 4, 18]):
+            fail(where, "unsupported equipment recovery contract")
+        for weapon in restored["equipped"]:
+            expect_int(weapon, where + ".restores.equipped", 0)
+        depth = expect_int(raw["descend_cm"], where + ".descend_cm", 1)
+        arrows = expect_int(restored["quiver"], where + ".quiver", 1)
+        duration = whole_ms(raw["string_bow_s"], where + ".string_bow_s")
+        if depth != 700 or arrows != 12 or duration != 3000:
+            fail(where, "the dry well requires 700 cm, twelve arrows and three seconds to string the bow")
+        beat["task"]["recovery"] = {"interact": raw["interact"], "item": raw["pickup"],
+            "depth_cm": depth, "string_ms": duration, "weapons": restored["equipped"], "quiver": arrows}
+        pending = None
+        carried = restored["equipped"][:]
+    if pending:
+        fail("equipment", "temporary loadout has no recovery pickup")
+
+
+def infiltration_equipment(document, beats, prefix):
+    """Restrict carried mission arms without granting optional weapon unlocks.
+
+    The b03 setup is a non-blocking animation: its bow is usable at beat entry.
+    A permission for the b07 SMG still needs the ordinary optional-cache unlock.
+    Rebuilding the mask for every beat also covers checkpoint and chapter replay.
+    """
+    if prefix != "ch06":
+        return
+    raw = expect(document.get("start_loadout"), (dict,), prefix + ".start_loadout")
+    expected = {"hip": 0, "side": 4, "back": 18, "back_strung_at": "ch06.b03",
+                "polearm": None, "firearm": None, "quiver_arrows": 12,
+                "armor": "none_infiltration_dress"}
+    if set(raw) != set(expected):
+        fail(prefix, "infiltration needs the complete authored start loadout")
+    for key in ("hip", "side", "back", "quiver_arrows"):
+        expect_int(raw[key], prefix + ".start_loadout." + key, 0)
+    if raw != expected:
+        fail(prefix, "unsupported infiltration start loadout")
+    by_id = {beat["id"]: beat for beat in beats}
+    if len(by_id) != len(beats) or list(by_id) != [f"ch06.b{n:02d}" for n in range(1, 17)]:
+        fail(prefix, "infiltration equipment requires the sixteen authored beats in order")
+    setup = by_id[raw["back_strung_at"]]["ext"].get("setup")
+    if (not isinstance(setup, dict) or set(setup) != {"string_bow_at_start", "string_anim_s"}
+            or setup["string_bow_at_start"] is not True
+            or whole_ms(setup["string_anim_s"], "ch06.b03.string_anim_s") != 3000):
+        fail(prefix, "infiltration bow must become usable at the non-blocking b03 setup")
+    handoffs = {"ch06.b05": ([3], False), "ch06.b07": ([13], True), "ch06.b10": ([10], False)}
+    allowed = {raw["hip"], raw["side"]}
+    for beat in beats:
+        where = beat["id"]
+        weapons = beat["unlocks"]["weapons"]
+        for weapon in weapons:
+            expect_int(weapon, where + ".unlocks.weapons", 0)
+        if weapons != handoffs.get(where, ([], False))[0] or beat["unlocks"]["grants"]:
+            fail(where, "infiltration weapon handoff changed; review carried mission arms")
+        if where in handoffs and beat["optional"] != handoffs[where][1]:
+            fail(where, "infiltration handoff must preserve its required/optional unlock boundary")
+        if beat["task"]["recovery"] is not None:
+            fail(where, "infiltration loadout is not an equipment-recovery interaction")
+        if where == raw["back_strung_at"]:
+            allowed.add(raw["back"])
+        allowed.update(weapons)
+        beat["task"]["equipment_weapons"] = sorted(allowed)
+
+
 def checkpoints(beats):
     """Checkpoint positions in target time (centiseconds from chapter start).
 
@@ -1431,6 +1692,8 @@ def build_chapter(number, places):
         beat = normalize_beat(raw, previous, prefix, number_in_chapter, lines, triggers)
         beats.append(beat)
         previous = beat["id"]
+    equipment_recovery(beats)
+    infiltration_equipment(document, beats, prefix)
     bark_pool_triggers(document, prefix, beats, triggers)
     order = {beat["id"]: index for index, beat in enumerate(beats)}
     # Authored order within a beat; the chapter-wide b00 pool last.
@@ -1545,8 +1808,8 @@ def self_test():
             "register": "samurai_restrained", "duration_s": 1.5}
     ride = {"id": "ch01.b06", "type": "horseback_ride", "unlocks": {"mechanics": []}, "ext": {},
             "params": {"horse": "kurimaru", "gaits": ["walk", "trot"], "weapons": [0, 18]}}
-    capture = {"id": "ch08.b14", "type": "boss", "fail": [], "ext": {"defeat_interact": {"id": "bulkhead_lever"}},
-               "params": {"boss": "boss_val_amort", "defeat": "capture", "phases": [{"hp_pct_start": 100}]}}
+    capture = {"id": "ch06.b13", "type": "boss", "fail": [], "ext": {"defeat_interact": {"id": "bulkhead_lever", "hold_s": 2}},
+               "params": {"boss": "boss_eskro", "defeat": "capture", "phases": [{"hp_pct_start": 100}]}}
     lesson = {"id": "ch01.b04", "type": "duel", "fail": [], "ext": {"scored_bouts": {"count": 2}},
               "params": {"opponent": "npc_matsukichi", "weapons": {"player": "bokuto"}, "loss_policy": "retry",
                          "scoring": {"mode": "lesson_gates"}, "lesson_gates": [{"gate": "marobashi_flank", "count": 2}]}}

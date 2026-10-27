@@ -1,4 +1,6 @@
 #include "SoraHorse.h"
+#include "SoraCollision.h"
+#include "SoraLeadRopeComponent.h"
 #include "SoraCatalog.h"
 #include "SoraGameMode.h"
 #include "SoraSettings.h"
@@ -53,11 +55,13 @@ ASoraHorse::ASoraHorse()
     Frame->SetCollisionResponseToAllChannels(ECR_Ignore);
     Frame->SetCollisionResponseToChannel(ECC_WorldStatic,ECR_Block);
     Frame->SetCollisionResponseToChannel(ECC_WorldDynamic,ECR_Block);
+    Frame->SetCollisionResponseToChannel(SoraCollision::Projectile,ECR_Block);
     Frame->SetGenerateOverlapEvents(false);
     RootComponent=Frame;
     Body=CreateDefaultSubobject<USceneComponent>(TEXT("Body"));
     Body->SetupAttachment(Frame);
     Body->SetRelativeLocation(FVector(0,0,-HorseFrameZ));
+    LeadVisual=CreateDefaultSubobject<USoraLeadRopeComponent>(TEXT("LeadVisual"));
 }
 UStaticMeshComponent* ASoraHorse::Part(USceneComponent* Parent,const FString& Name,const TCHAR* Shape,FVector Location,FVector Scale,FLinearColor Color,FRotator Rotation)
 {
@@ -76,10 +80,13 @@ USceneComponent* ASoraHorse::Joint(USceneComponent* Parent,const FString& Name,F
 }
 void ASoraHorse::Build(FName Coat,ETack Tack)
 {
+    LeadVisual->ClearLead();
+    if(LeadAnchor) LeadAnchor->DestroyComponent();
+    LeadAnchor=nullptr;
     for(const auto& Mesh:Parts) if(Mesh) Mesh->DestroyComponent();
     for(const auto& Hip:Hips) if(Hip) Hip->DestroyComponent();
     if(Head) Head->DestroyComponent();
-    Parts.Reset(); TackParts.Reset(); Hips.Reset();
+    Parts.Reset(); TackParts.Reset(); Hips.Reset(); PackLoads.Reset(); CargoLoads.Reset(); CargoUnitsPerShare=0;
     const FLinearColor Hide=HorseCoatColor(Coat),Points=HorsePointsColor(Coat),Mane=Coat==TEXT("chestnut")?FLinearColor(.55f,.3f,.13f):Points;
     // A native horse's proportions: a deep barrel on short legs, 130 cm at the withers.
     Part(Body,TEXT("Barrel"),HorseCylinder,FVector(0,0,100),FVector(.72f,.62f,1.45f),Hide,FRotator(90,0,0));
@@ -110,6 +117,7 @@ void ASoraHorse::Build(FName Coat,ETack Tack)
     }
     if(Tack==ETack::Riding) BuildRidingTack();
     else if(Tack==ETack::Pack) BuildPackSaddle();
+    if(Leader.IsValid()) LeadVisual->AttachLead(LeadAnchor,Leader->LeadAnchor,LeadSpacing);
 }
 void ASoraHorse::BuildRidingTack()
 {
@@ -125,6 +133,9 @@ void ASoraHorse::BuildRidingTack()
     for(int32 Side:{-1,1}) Tack(FString::Printf(TEXT("Aori%d"),Side),Body,HorseCube,FVector(0,Side*35,112),FVector(.5f,.02f,.4f),FLinearColor(.18f,.1f,.06f));
     Tack(TEXT("Maewa"),Body,HorseCube,FVector(22,0,145),FVector(.07f,.5f,.22f),Lacquer);
     Tack(TEXT("Shizuwa"),Body,HorseCube,FVector(-20,0,143),FVector(.07f,.5f,.18f),Lacquer);
+    // Provisional visual tie beside the rear saddle arch. Its final equine
+    // attachment and handoff animation remain part of the art review.
+    LeadAnchor=Joint(Body,TEXT("LeadTie"),FVector(-20,45,143));
     Tack(TEXT("Igi"),Body,HorseCube,FVector(1,0,137),FVector(.42f,.36f,.05f),Leather);
     const int32 Kura=TackParts.Num();
     // Group 1, 腹帯 haruobi: the girth around the barrel.
@@ -153,11 +164,40 @@ void ASoraHorse::BuildRidingTack()
 }
 void ASoraHorse::BuildPackSaddle()
 {
+    LeadAnchor=Joint(Head,TEXT("LeadHalter"),FVector(30,14,-34));
+    Part(Head,TEXT("PackHalter"),HorseCylinder,FVector(30,0,-34),FVector(.25f,.25f,.025f),
+        FLinearColor(.55f,.45f,.3f),FRotator(0,0,90));
     // 荷鞍 with a 振り分け load: two bales slung either side and roped over.
     Part(Body,TEXT("Niguraa"),HorseCube,FVector(0,0,138),FVector(.6f,.62f,.18f),FLinearColor(.45f,.32f,.18f));
     for(int32 Side:{-1,1})
-        Part(Body,FString::Printf(TEXT("Load%d"),Side),HorseCylinder,FVector(0,Side*44,118),FVector(.4f,.4f,.62f),FLinearColor(.72f,.6f,.33f),FRotator(90,0,0));
+        PackLoads.Add(Part(Body,FString::Printf(TEXT("Load%d"),Side),HorseCylinder,FVector(0,Side*44,118),FVector(.4f,.4f,.62f),FLinearColor(.72f,.6f,.33f),FRotator(90,0,0)));
     Part(Body,TEXT("LoadRope"),HorseCube,FVector(0,0,150),FVector(.04f,1.f,.03f),FLinearColor(.55f,.45f,.3f));
+}
+void ASoraHorse::ConfigureCargo(int32 Shares,int32 UnitsPerShare)
+{
+    if(!CargoLoads.IsEmpty()||Shares<1||Shares>SoraBeatRules::MaxPoints||UnitsPerShare<=0||UnitsPerShare>MAX_int32/Shares) return;
+    CargoUnitsPerShare=UnitsPerShare;
+    for(const auto& Load:PackLoads) if(Load) Load->SetVisibility(false);
+    // These are state-bearing WIP bundles, not final barley art. Allocation
+    // is bounded by destinations, never by an authored sheaf quantity.
+    for(int32 Share=0;Share<Shares;++Share)
+        for(int32 Side:{-1,1})
+            CargoLoads.Add(Part(Body,FString::Printf(TEXT("Cargo%d_%d"),Share,Side),HorseCylinder,
+                FVector((Share-(Shares-1)*.5f)*20.f,Side*44,118),FVector(.18f,.24f,.55f),
+                FLinearColor(.72f,.6f,.33f),FRotator(90,0,0)));
+}
+void ASoraHorse::ShowCargo(int32 SharesRemaining)
+{
+    const int32 Visible=FMath::Clamp(SharesRemaining,0,CargoLoads.Num()/2);
+    for(int32 PartIndex=0;PartIndex<CargoLoads.Num();++PartIndex)
+        if(CargoLoads[PartIndex]) CargoLoads[PartIndex]->SetVisibility(PartIndex/2<Visible);
+}
+int32 ASoraHorse::CargoQuantityShown() const
+{
+    int32 Shares=0;
+    for(int32 Index=0;Index+1<CargoLoads.Num();Index+=2)
+        if(CargoLoads[Index]&&CargoLoads[Index+1]&&CargoLoads[Index]->IsVisible()&&CargoLoads[Index+1]->IsVisible()) ++Shares;
+    return Shares*CargoUnitsPerShare;
 }
 void ASoraHorse::ShowTack(int32 Pieces)
 {
@@ -171,9 +211,12 @@ void ASoraHorse::SetRide(const FSoraMount& Mount,const FSoraZone* InRoad)
     bAutoSteer=Mount.bAutoSteer&&Road!=nullptr;
     Chainage=Road?Road->ChainageOf(FVector2D(GetActorLocation())):0.f;
     Ride=SoraMountRules::FRide();
+    ClearSpookRequest();
 }
 void ASoraHorse::Place(const FVector& Location,float Yaw)
 {
+    ClearLeadTug();
+    ClearSpookRequest();
     SetActorLocationAndRotation(FVector(Location.X,Location.Y,HorseFrameZ),FRotator(0,Yaw,0),false,nullptr,ETeleportType::TeleportPhysics);
     Ride.Gait=SoraMountRules::EGait::Halt;
     if(Road) Chainage=Road->ChainageOf(FVector2D(Location));
@@ -186,6 +229,8 @@ FVector2D ASoraHorse::LocalOf(const FVector& Location) const
 bool ASoraHorse::Mount(ASoraPlayerCharacter& Rider)
 {
     if(RiderPawn.IsValid()) return false;
+    ClearLeadTug();
+    ClearSpookRequest();
     UCharacterMovementComponent* Movement=Rider.GetCharacterMovement();
     Movement->StopMovementImmediately();
     Movement->DisableMovement();
@@ -199,6 +244,8 @@ bool ASoraHorse::Mount(ASoraPlayerCharacter& Rider)
 }
 void ASoraHorse::Dismount()
 {
+    ClearLeadTug();
+    ClearSpookRequest();
     ASoraPlayerCharacter* Rider=RiderPawn.Get();
     RiderPawn=nullptr;
     if(!Rider) return;
@@ -213,17 +260,56 @@ void ASoraHorse::Dismount()
 }
 void ASoraHorse::FollowRoad(const FSoraZone* InRoad,float StartChainage,int32 InPace)
 {
+    LeadVisual->ClearLead();
     Road=InRoad&&InRoad->IsRoute()?InRoad:nullptr;
     Chainage=StartChainage; PaceCmS=InPace; Leader=nullptr;
     if(Road) Place(ASoraWorldBuilder::Floor(Road->PointAlong(Chainage)),Road->HeadingAt(Chainage));
 }
-void ASoraHorse::Lead(ASoraHorse* InLeader,float SpacingCm)
+void ASoraHorse::Lead(ASoraHorse* InLeader,float SpacingCm,int32 FearRecoveryMs)
 {
     Leader=InLeader; LeadSpacing=SpacingCm; Road=nullptr; PaceCmS=0;
+    LeadRecoveryMs=FearRecoveryMs; LeadFear={}; LeadFearClock.Reset(); LeadFearFrame=MAX_uint64;
+    LeadVisual->AttachLead(LeadAnchor,InLeader?InLeader->LeadAnchor.Get():nullptr,SpacingCm);
+}
+void ASoraHorse::ClearLeadTug()
+{
+    LeadTug={}; LeadTugClock.Reset(); LeadTugFrame=MAX_uint64;
+}
+void ASoraHorse::BeginLeadTug()
+{
+    // A rider on foot cannot bank an interruption for a later remount.
+    if(RiderPawn.IsValid()&&SoraMountRules::StartLeadTug(LeadTug))
+    {
+        LeadTugClock.Reset(); LeadTugFrame=GFrameCounter;
+    }
+}
+void ASoraHorse::PullLeader()
+{
+    LeadFearClock.Reset(); LeadFearFrame=GFrameCounter;
+    if(Leader.IsValid()) Leader->BeginLeadTug();
+}
+bool ASoraHorse::ObserveLeadThreat(bool bNear)
+{
+    if(!Leader.IsValid()||!SoraMountRules::ObserveLeadFear(LeadFear,bNear,LeadRecoveryMs)) return false;
+    PullLeader();
+    return true;
+}
+void ASoraHorse::Spook()
+{
+    if(!Leader.IsValid()) { bSpookPending=true; return; }
+    if(SoraMountRules::StartLeadFear(LeadFear,LeadRecoveryMs)) PullLeader();
+}
+bool ASoraHorse::ConsumeSpookOnset()
+{
+    const bool bStarted=RiderPawn.IsValid()&&bSpookOnset;
+    bSpookOnset=false;
+    return bStarted;
 }
 void ASoraHorse::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
+    const ASoraGameMode* Mode=Cast<ASoraGameMode>(GetWorld()->GetAuthGameMode());
+    if(Mode&&Mode->InputState()==SoraInput::Dialogue) return;
     // The rules' clock counts whole milliseconds; the fraction carries over.
     ClockCarryMs+=DeltaSeconds*1000.f;
     const int32 DeltaMs=FMath::FloorToInt32(ClockCarryMs);
@@ -240,6 +326,11 @@ void ASoraHorse::TickRidden(int32 DeltaMs,float DeltaSeconds)
     ASoraPlayerCharacter* Rider=RiderPawn.Get();
     // The rider's hands act only in live play; otherwise she eases down.
     const bool bHands=Rider->CanPlay();
+    // A director can trigger fear before this actor ticks in the same
+    // frame. That frame's elapsed time predates the pull and is excluded.
+    const bool bTugged=LeadTug.RemainingMs>0;
+    if(bTugged&&bHands&&GFrameCounter!=LeadTugFrame)
+        SoraMountRules::StepLeadTug(LeadTug,LeadTugClock.Advance(DeltaSeconds));
     const float Legs=bHands?Rider->GetInputAxisValue(TEXT("MoveForward")):0.f;
     const float Steer=bHands?FMath::Clamp(Rider->GetInputAxisValue(TEXT("MoveRight")),-1.f,1.f):0.f;
     FControl Control;
@@ -249,16 +340,20 @@ void ASoraHorse::TickRidden(int32 DeltaMs,float DeltaSeconds)
     Control.Rein=Legs<-.5f;
     Control.Cap=Cap;
     Control.Spook=bSpookPending;
-    bSpookPending=false;
+    const bool bWasSpooked=Spooked(Ride);
     Step(Ride,Rules,Control);
+    // Retain requests through sub-millisecond ticks. The notice survives
+    // until the director ticks, regardless of the two actors' tick order.
+    if(DeltaMs>0) bSpookPending=false;
+    bSpookOnset|=!bWasSpooked&&Spooked(Ride);
     float Yaw=GetActorRotation().Yaw;
     const float Turn=TurnDegS[Index(Ride.Gait)];
     // A ride that allows it (every chapter ride's auto_steer: setting) steers
     // itself while the player's auto-steer setting is on.
     const ASoraGameMode* Mode=Cast<ASoraGameMode>(GetWorld()->GetAuthGameMode());
     const bool bSteered=bAutoSteer&&Road&&Mode&&Mode->Settings()&&Mode->Settings()->AutoSteer();
-    if(FMath::Abs(Steer)>.2f||!bSteered) Yaw+=Steer*Turn*DeltaSeconds;
-    else if(Ride.Gait!=EGait::Halt)
+    if(!bTugged&&(FMath::Abs(Steer)>.2f||!bSteered)) Yaw+=Steer*Turn*DeltaSeconds;
+    else if(!bTugged&&Ride.Gait!=EGait::Halt)
     {
         // Auto-steer (accessibility): she keeps to the road a little ahead of her.
         const FVector2D Ahead=Road->PointAlong(Chainage+300.f+SpeedCmS()*.8f);
@@ -269,11 +364,16 @@ void ASoraHorse::TickRidden(int32 DeltaMs,float DeltaSeconds)
 }
 void ASoraHorse::TickLed(int32,float DeltaSeconds)
 {
+    const auto* Mode=Cast<ASoraGameMode>(GetWorld()->GetAuthGameMode());
+    if(Mode&&!Mode->IsPlaying()) return;
+    if(LeadFear.RemainingMs>0&&GFrameCounter!=LeadFearFrame)
+        SoraMountRules::StepLeadFear(LeadFear,LeadFearClock.Advance(DeltaSeconds));
     // On a lead rope she trails her leader at the rope's length.
     const ASoraHorse* Front=Leader.Get();
     const FVector Wanted=Front->GetActorLocation()-Front->GetActorForwardVector()*LeadSpacing;
     FVector Offset=Wanted-GetActorLocation(); Offset.Z=0.f;
-    const float Pace=FMath::Min(Offset.Size()/FMath::Max(DeltaSeconds,1e-3f),Front->SpeedCmS()+120.f);
+    const float CatchUp=LeadFear.RemainingMs>0?FMath::Min(Front->SpeedCmS()+120.f,float(Rules.SpeedCmS[1])):Front->SpeedCmS()+120.f;
+    const float Pace=FMath::Min(Offset.Size()/FMath::Max(DeltaSeconds,1e-3f),CatchUp);
     const float Yaw=Offset.Size()>20.f?Offset.Rotation().Yaw:GetActorRotation().Yaw;
     // Led and convoy horses carry no wind; their gait only shows their pace.
     Ride.Gait=HorseGaitForPace(Offset.Size()>20.f?Pace:0.f);

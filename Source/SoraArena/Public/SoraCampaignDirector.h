@@ -1,15 +1,33 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "SoraSummitRules.h"
 #include "Components/ActorComponent.h"
 #include "SoraBeatRules.h"
+#include "SoraCrankInputRules.h"
+#include "SoraRhythmRules.h"
 #include "SoraDojoRules.h"
+#include "SoraArcheryRules.h"
+#include "SoraRegistry.h"
+#include "SoraHelmRules.h"
+#include "SoraFoundryDefenseRules.h"
+#include "SoraHorseTreatmentRules.h"
+#include "SoraPodRules.h"
+#include "SoraMillisecondClock.h"
+#include "SoraWorkshopCraftRules.h"
+#include "SoraTerminalChargeRules.h"
+#include "SoraRelayRules.h"
 #include "SoraCampaignDirector.generated.h"
 class ACameraActor;
+class UStaticMeshComponent;
+class ASoraFoundryFurnace;
+class ASoraCompanion;
 class ASoraBoss;
 class ASoraEnemy;
 class ASoraGameMode;
 class ASoraHorse;
 class ASoraPlayerCharacter;
+class ASoraProjectile;
+class ASoraArcheryTarget;
 class USoraSaveGame;
 struct FSoraBeat;
 struct FSoraBeatSpace;
@@ -19,6 +37,7 @@ struct FSoraDefenseEvent;
 struct FSoraDialogueCue;
 struct FSoraGuard;
 struct FSoraEnemyCueEvent;
+struct FSoraBossPhaseEvent;
 struct FSoraMarobashiEvent;
 struct FSoraStealthDetection;
 struct FSoraPrompt;
@@ -40,7 +59,7 @@ struct FSoraSubtitle
 // mechanic unlocked, a collectible found, a production site restored.
 struct FSoraStoryNotice
 {
-    enum class EKind : uint8 { Weapon, Mechanic, Collectible, Site };
+    enum class EKind : uint8 { Weapon, Mechanic, Collectible, Site, Registry };
     EKind Kind = EKind::Weapon;
     FString Japanese;
     FString English;
@@ -84,6 +103,7 @@ class SORAARENA_API USoraCampaignDirector : public UActorComponent
 public:
     USoraCampaignDirector();
     virtual void BeginPlay() override;
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
     virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
     // Reads the campaign save into the director and the mode; false when no
     // save object can be created. A save of another schema, or one whose
@@ -116,6 +136,18 @@ public:
     // interact trigger); tacks up, mounts (from her right) or dismounts the
     // horse; picks up a loose collectible; or opens an explore cache.
     void Interact(ASoraPlayerCharacter& Player);
+    // Input releases and menu/dialogue boundaries discard the transient cut
+    // immediately, including when the gameplay clock cannot tick.
+    void CancelSpineCut();
+    void CancelBulkheadHold();
+    void ReleaseWindBrace();
+    bool IsWindBraced() const { return WindAnchor!=INDEX_NONE; }
+    bool InWindLee() const { return bWindLee; }
+    int32 WindClockMs() const { return WindMs; }
+    int32 RidgeRecoveries() const { return RidgeFalls; }
+    int32 RidgeLastAnchor() const { return LastBraceAnchor; }
+    FVector ProjectileWind(const FVector& Point,bool Arrow,int32 Weapon) const;
+    void CancelConstructCut();
     // Enter on a cinematic: skips it and starts the next beat now.
     void SkipCinematic();
     void OpponentDefeated(ASoraEnemy* Opponent);
@@ -130,6 +162,20 @@ public:
         bool bFacingAttacker = true, int32 RecoveryMs = 0);
     bool CanScoreDojoBout() const;
     int32 DojoLessonStage() const;
+    bool IsArcheryLesson() const;
+    bool UsesDojoQuiver() const;
+    bool CanLooseArcheryArrow() const;
+    bool AtArcheryLine() const;
+    FVector ArcheryLine() const;
+    ASoraArcheryTarget* ArcheryTarget(int32 Index) const;
+    const SoraArcheryRules::FState& ArcheryProgress() const { return Archery; }
+    int32 ArcheryClockMs() const { return ArcheryMs; }
+    int32 BentArrows() const { return SoraArcheryRules::Bent(BeatState.CompletedMask); }
+    unsigned long long RegisterArcheryArrow(ASoraProjectile& Arrow);
+    void ResolveArcheryArrow(ASoraProjectile& Arrow,const FHitResult* Hit);
+    // R cannot manufacture chapter-one arrows. Recovery belongs to the
+    // range keeper and the authored smithy output.
+    void ExplainDojoQuiver();
     void SaveProgress();
 
     // Events. FireDialogueTrigger plays the lines and HUD prompt an event
@@ -148,6 +194,13 @@ public:
     // The line on screen: a cinematic subtitle on the card, else the head of
     // the dialogue queue.
     const FSoraDialogueCue* CurrentDialogueCue() const;
+    bool IsDialogueBlocking() const { return bDialogueHeld; }
+    bool IsArchiveRevealActive() const { return bArchiveReveal; }
+    double ArchiveRevealTime() const { return ArchiveRevealSeconds; }
+    bool IsToriiEpilogue() const;
+    bool HasWashioSword() const;
+    bool HasReturnedWashioSword() const;
+    bool HasRehungPlaques() const;
     // The dialogue queue, head first.
     TArray<FSoraSubtitle> QueuedSubtitles() const;
     // The active beat's HUD prompt while it shows.
@@ -156,8 +209,16 @@ public:
     FString ObjectiveText() const;
     FString ObjectiveTextEnglish() const;
     FString DojoLessonText(bool bEnglish) const;
+    bool IsMaaiLesson() const;
+    bool MaaiReady() const;
+    bool MaaiInBand() const;
+    bool MaaiNeedsHelp() const;
+    float MaaiDistance() const;
+    ASoraEnemy* MaaiMentor() const;
     // Unlocks, finds and restored sites for the HUD, oldest first.
     const TArray<FSoraStoryNotice>& StoryNotices() const { return Notices; }
+    // Goods completed in this chapter, reconstructed from checkpoint progress.
+    TArray<FSoraRegistryRow> RegistryRows() const;
 
     // Beat state for the HUD and automation.
     const FSoraChapter* ActiveChapter() const;
@@ -182,7 +243,89 @@ public:
     // pickup (ch03.b05's 釣瓶, waiting while a guard watches) or an objective
     // worked with Interact held (a charge planted, a relay node pulled).
     float HeldWorkProgress() const;
+    bool IsRelayRoom() const;
+    // Derived from saved chapter progress, including a checkpoint reload.
+    bool RelayOffline() const;
+    const SoraRelayRules::FState& RelayState() const { return Relay; }
+    FVector RelayNodeLocation(int32 Node) const;
+    FVector RelayWorkLocation(int32 Node) const;
+    bool CanReachRelay(int32 Objective) const;
+    const SoraPodRules::FArrival& PodArrival(int32 Wave) const { check(Wave>=0&&Wave<SoraPodRules::Count); return PodState[Wave]; }
+    AActor* PodWarning(int32 Wave) const { return PodWarnings.IsValidIndex(Wave)?PodWarnings[Wave].Get():nullptr; }
+    bool IsHorseTreatment() const;
+    bool IsHorseShellDefense() const;
+    bool HorseWithdrawalActive() const { return bHorseWithdrawal; }
+    bool HorseShellSession(uint64 Generation) const;
+    AActor* HorseShellQuarry(const ASoraEnemy& Enemy,FVector& Landing) const;
+    bool RegisterHorseShell(ASoraProjectile& Projectile,uint64 Generation);
+    void ResolveHorseShell(ASoraProjectile& Projectile,uint64 Generation);
+    ASoraHorse* TreatmentHorse(int32 Index) const;
+    bool InteractHorseTreatment(ASoraPlayerCharacter& Hero);
+    void CancelHorseTreatment();
+    bool HorseTreatmentOccupiesHands() const { return IsHorseTreatment()&&Treatment.Index>=0; }
+    const SoraHorseTreatmentRules::FState& HorseTreatmentState() const { return Treatment; }
+    bool IsFoundryDefense() const;
+    // The same live capsule-volume test used to suspend kitchen work.
+    bool TenementKitchenContested() const;
+    ASoraFoundryFurnace* FoundryFurnace() const;
+    ASoraCompanion* FoundryKozo() const;
+    bool InteractFoundry(ASoraPlayerCharacter& Hero);
+    void CancelFoundryWork();
+    bool FoundryOccupiesHands() const { return IsFoundryDefense()&&Foundry.Work!=SoraFoundryDefenseRules::EWork::None; }
+    const SoraFoundryDefenseRules::FState& FoundryState() const { return Foundry; }
+    FVector FoundryWorkPoint(SoraFoundryDefenseRules::EWork Work,int32 Index) const;
+    bool IsHelmHold() const;
+    bool HelmNeedsTrim() const { return IsHelmHold()&&Helm.Pending>=0; }
+    const SoraHelmRules::FState& HelmState() const { return Helm; }
+    FVector HelmWheelPoint() const;
+    bool AtHelmWheel() const;
+    bool HelmOccupiesHands() const { return IsHelmHold()&&Helm.Working; }
+    void CancelHelm();
+    bool IsCopying() const { return CopyDesk >= 0; }
+    void CancelCopying();
     bool IsHoisting() const { return HeldWork == EHeldWork::Hoist; }
+    bool IsUnloadingCargo() const { return HeldWork == EHeldWork::CargoUnload; }
+    void CancelCargoUnload();
+    bool IsTerminalCharge() const;
+    void CancelTerminalWork(bool Release=false);
+    bool TerminalOccupiesHands() const { return TerminalCharge.Working; }
+    const SoraTerminalChargeRules::FState& TerminalState() const { return TerminalCharge; }
+    bool TerminalSafe() const;
+    void CancelWorkshopCraft();
+    void ReleaseWorkshopCraft();
+    bool IsWorkshopCraft() const;
+    bool WorkshopCraftOccupiesHands() const { return WorkshopCraft.Step>=0; }
+    const SoraWorkshopCraftRules::FState& WorkshopCraftState() const { return WorkshopCraft; }
+    SoraWorkshopCraftRules::FView WorkshopCraftView() const;
+    bool IsPryingCarryGate() const { return bPryingCarryGate; }
+    bool InLiftGallery() const { return bLiftGallery; }
+    int32 WoodPoiMask() const;
+    bool IsWoodExplore() const;
+    bool IsWoodTransit() const { return bWoodTransit; }
+    bool HasToshiyaCodex() const;
+    FString ToshiyaCodex(bool English) const;
+    int32 GalleryPoiMask() const;
+    bool GalleryArrowsClaimed() const;
+    bool HasGalleryPoi(FName Id) const;
+    bool LiftExitPoint(FVector& Point) const;
+    int32 WorkingCrankHelpers() const { return ActiveCrankHelpers; }
+    bool CrankHelperRetreating() const { return bCrankHelperRetreating; }
+    bool IsWorkingCrank() const;
+    bool PlayerBellowsAxis(float Axis);
+    const SoraRhythmRules::FState& RhythmState() const { return RhythmClock; }
+    bool RhythmAssistActive() const;
+    int32 RhythmCueRemainingMs() const;
+    int32 RhythmCuePeriodMs() const;
+    bool BellowsRightNext() const { return BellowsTreads.RightNext; }
+    bool CrankOccupiesHands() const { return Task.CrankTwoHanded && IsWorkingCrank(); }
+    void StopPlayerCrank(bool bWaitForRelease=true);
+    bool NeedsCarryGate() const { return !SoraBeatRules::CarryGateReady(TaskState,Task); }
+    FVector LooseLoadLocation(int32 Slot) const;
+    bool IsRecoveringEquipment() const { return bStringingBow; }
+    bool IsClimbingRecoveryWell() const { return RecoveryClimb != ERecoveryClimb::None; }
+    bool NeedsEquipmentRecovery() const { return !SoraBeatRules::EquipmentReady(TaskState,Task); }
+    FVector RecoveryApproach() const;
+    FVector RecoveryBottom() const;
     bool IsHeldWorkWatched() const { return bHeldWatched; }
     unsigned long long CollectedMask() const;
     // Where the active beat's objective stands, and whether E works it there.
@@ -200,6 +343,8 @@ public:
     // (INDEX_NONE for the hub, -2 for none).
     FVector PartyLocation() const;
     int32 HeroZone() const;
+    // Read-only choice shared by the held cut and competing nearby work.
+    ASoraEnemy* SealCutCandidate(const ASoraPlayerCharacter& Player) const;
     // Seconds of the running cinematic, whether it opens a fresh chapter (the
     // title card shows first), and the camera it plays through.
     float CinematicElapsed() const;
@@ -232,12 +377,36 @@ public:
     int32 KillsNeeded = 0;
     bool bCampaignComplete = false;
 private:
+    SoraHorseTreatmentRules::FState Treatment;
+    void ResetHorseTreatment();
+    void TickHorseTreatment(int32 DeltaMs);
+    bool HorseTreatmentEligible(int32 Index) const;
+    FString HorseTreatmentText(bool English) const;
+    SoraFoundryDefenseRules::FState Foundry;
+    void ResetFoundry();
+    void TickFoundry(int32 DeltaMs);
+    bool FoundryWorkEligible(SoraFoundryDefenseRules::EWork Work,int32 Index) const;
+    bool FoundryReadyToComplete() const;
+    FString FoundryText(bool English) const;
+    void ResetWind();
+    void FinishWindFall(ASoraPlayerCharacter& Hero);
+    void TickWind(int32 DeltaMs);
+    bool InteractWind(ASoraPlayerCharacter& Hero);
+    bool WindAt(const FVector& Point) const;
+    bool RidgeReadyToComplete() const;
+    int32 WindMs=0,WindWarningSerial=0,WindGustSerial=0,WindAnchor=INDEX_NONE,RidgeFalls=0,LastBraceAnchor=0;
+    bool bWindLee=false,bWindHint=false,bWindFallHeld=false;
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> WindStrip;
     // One opponent a released wave still has to put on the field.
     struct FPendingSpawn
     {
         int32 Wave = INDEX_NONE;
         FName Type;
         bool bInvulnerable = false;
+        int32 PodMember = INDEX_NONE;
+        FName Spawn;
+        int32 SpawnMember = INDEX_NONE;
+        int32 SpawnGroup = INDEX_NONE;
     };
     ASoraGameMode& Mode() const;
     UPROPERTY() TObjectPtr<USoraSaveGame> Save;
@@ -250,14 +419,58 @@ private:
     // have none). Weak keys: a fallen opponent's entry leaves with it, and an
     // opponent built later at a freed address never inherits it.
     TMap<TWeakObjectPtr<const ASoraEnemy>, int32> EnemyWaves;
-    // A captured boss yielded here, waiting for the hero's hand.
+    // A yielded boss persists until its authored held capture completes.
     UPROPERTY() TObjectPtr<ASoraEnemy> Captive;
     TWeakObjectPtr<ASoraEnemy> SealTarget;
     float SealStartedAt = 0.f;
     bool BeginSealCut(ASoraPlayerCharacter& Player);
     void TickSealCut();
-    FVector2D CaptiveAt = FVector2D::ZeroVector;
+    SoraSummitRules::FCut SpineCut;
+    SoraSummitRules::FCut BulkheadHold;
+    FSoraMillisecondClock BulkheadClock;
+    bool IsBulkheadCapture() const;
+    SoraText::FLine BulkheadText() const;
+    bool BulkheadEligible() const;
+    void BeginBulkheadCapture();
+    bool InteractBulkhead();
+    void TickBulkhead(float DeltaSeconds);
+    int32 SpineReadyMs=0;
+    int32 PendingSummitPhaseSave=INDEX_NONE;
+    int32 PendingArchivePhaseSave=INDEX_NONE;
+    bool bArchiveRevealPending=false,bArchiveReveal=false;
+    double ArchiveRevealSeconds=0;
+    FVector ArchiveRevealOrigin=FVector::ZeroVector;
+    TWeakObjectPtr<ASoraBoss> ArchiveRevealRival;
+    bool TickArchiveReveal(float DeltaSeconds);
+    void ResetArchiveReveal(float BlendSeconds=0.f);
+    void SaveArrivedSummitPhase();
+    bool bSpinePromptShown=false,bSpineMutoRaised=false;
+    bool IsSpineCapture() const;
+    bool SpineCutEligible() const;
+    void BeginSpineCapture();
+    bool InteractSpine();
+    void TickSpineCut(int32 DeltaMs);
     TArray<FPendingSpawn> Pending;
+    SoraPodRules::FArrival PodState[SoraPodRules::Count];
+    FSoraMillisecondClock PodClocks[SoraPodRules::Count];
+    UPROPERTY() TArray<TObjectPtr<AActor>> PodWarnings;
+    uint64 PodGeneration=0;
+    uint64 HorseShellGeneration=0;
+    TWeakObjectPtr<ASoraEnemy> HorseGrenadier;
+    TArray<TWeakObjectPtr<ASoraProjectile>> HorseShells;
+    bool bHorseWithdrawal=false,bHorseWithdrawalReady=false,bHorseGateClearQueued=false;
+    int32 HorseWithdrawalBark=INDEX_NONE,HorseGateClearBark=INDEX_NONE;
+    TArray<TWeakObjectPtr<ASoraEnemy>> HorseWithdrawalEnemies;
+    bool HorseWithdrawalReady();
+    bool TickHorseWithdrawal(float DeltaSeconds);
+    void ResetHorseWithdrawal();
+    void ResetHorseShells();
+    void BindHorseGrenadier(ASoraEnemy& Enemy,int32 Wave);
+    unsigned PodQueued=0;
+    void ResetPods();
+    void ActivatePod(int32 Wave);
+    void TickPods(float DeltaSeconds);
+    bool ImpactPod(int32 Wave);
     // Chapter progress and the unlocks and flags held when the chapter began.
     SoraBeatRules::FProgress BeatState{0u, 0u, 0u, 0u, 0u, false};
     unsigned EntryWeapons = 0u;
@@ -274,6 +487,54 @@ private:
     bool bLinesStarted = false;
     bool bChapterOpening = false;
     bool bCrankSlack = false;
+    int32 ActiveCrankHelpers = 0;
+    bool bCrankHelperRetreating = false;
+    int32 CrankHelpers();
+    SoraCrankInputRules::FState CrankInput;
+    SoraCrankInputRules::FTreads BellowsTreads;
+    bool PlayerCrankEligible() const;
+    bool TurnPlayerCrank(bool bBegin);
+    void TickPlayerCrank(int32 DeltaMs);
+    SoraRhythmRules::FState RhythmClock;
+    SoraCrankInputRules::FState RhythmInput;
+    int32 RhythmCueShown = -1;
+    int32 RhythmStrikeMs = -1;
+    int32 BellowsCueStarted = 0;
+    bool PlayerRhythmEligible() const;
+    void StopPlayerRhythm(bool bWaitForRelease);
+    void WorkPlayerRhythm();
+    void TickPlayerRhythm();
+    void RhythmResult(SoraBeatRules::EStroke Result,int32 Step);
+    void PresentRhythmCue();
+    void PresentRhythmResponse(int32 Step);
+    void WorkshopSound(FName Action,int32 Step);
+    bool bLiftGallery=false;
+    FSoraMillisecondClock GalleryClock;
+    int32 GalleryStairNode=0;
+    bool LiftReadyToComplete() const;
+    bool SpireReadyToComplete() const;
+    bool BeginLiftGallery();
+    bool TickLiftGallery(float DeltaSeconds);
+    bool bWoodTransit=false;
+    TMap<uint64,TWeakObjectPtr<ASoraProjectile>> WoodShots;
+    uint64 NextWoodShot=0;
+    bool BeginWoodTransit();
+    bool ResumeWoodJunction();
+    bool AtWoodExit() const;
+    bool TickWoodTransit();
+    bool InteractWood(ASoraPlayerCharacter& Player);
+    void RegisterWoodArrow(ASoraProjectile& Arrow);
+    void ResolveWoodArrow(ASoraProjectile& Arrow,const FHitResult* Hit);
+    void TickGalleryPois();
+    bool InteractGalleryPoi(ASoraPlayerCharacter& Player);
+    int32 TenementExploreBeat() const;
+    void TickTenementFinds();
+    bool InteractTenementFind(ASoraPlayerCharacter& Player);
+    FVector WorkAnchor() const;
+    bool NearFloor(const FVector& Location,float Radius) const;
+    bool AtWorkAnchor(float Radius) const;
+    ASoraEnemy* SpawnLiftOpponent(FName Type,int32 Wave,int32 Slot);
+    int32 LiftDecayMultiplier() const;
     bool bDetected = false;
     float CinematicSeconds = 0.f;
     unsigned DojoLessonMask = 0u;
@@ -293,14 +554,68 @@ private:
     double WhistleAt=-1.0;
     // Work held at a point: what it is, the pickup or objective, the ms held
     // and whether a guard watches.
-    enum class EHeldWork : uint8 { None, Hoist, Objective };
+    SoraHelmRules::FState Helm;
+    void ResetHelm();
+    bool TickHelm(SoraBeatRules::FTick Step);
+    bool InteractHelm(ASoraPlayerCharacter& Player);
+    bool InHelmFloor(const FVector& At) const;
+    FString HelmText(bool English) const;
+    int32 CopyDesk=INDEX_NONE;
+    bool InteractCopyDesk(ASoraPlayerCharacter& Player);
+    bool TickCopyDesk(SoraBeatRules::FTick Step);
+    bool AtCopyDesk(int32 Index) const;
+    bool CopyDeskContested() const;
+    FString CopyDeskText(bool English) const;
+    enum class EHeldWork : uint8 { None, Hoist, Objective, CargoUnload };
     EHeldWork HeldWork=EHeldWork::None;
     int32 HeldPoint=INDEX_NONE;
     int32 HeldMs=0;
+    FSoraMillisecondClock CargoClock;
+    SoraTerminalChargeRules::FState TerminalCharge;
+    FSoraMillisecondClock TerminalWorkClock,TerminalFuseClock;
+    bool AtTerminalPanel() const;
+    bool InteractTerminal();
+    void TickTerminalCharge(float DeltaSeconds);
+    SoraWorkshopCraftRules::FState WorkshopCraft;
+    FSoraMillisecondClock WorkshopCraftClock;
+    unsigned WorkshopFailedStripSerial=0;
+    int32 WorkshopFailedStripMs=-1;
+    SoraWorkshopCraftRules::FAction WorkshopLastAction;
+    FSoraMillisecondClock WorkshopActionClock;
+    void RecordWorkshopAction(int32 Step,int32 Unit);
+    void ResetWorkshopAction();
+    void TickWorkshopAction(float DeltaSeconds);
+    bool AtWorkshopStation() const;
+    bool BeginWorkshopCraft();
+    void TickWorkshopCraft(float DeltaSeconds);
+    void ResolveWorkshopCraft(int32 Step,SoraWorkshopCraftRules::EResult Result,bool bFromTick=false);
     bool bHeldWatched=false;
     bool TakeLoad(int32 Pickup);
+    bool DeliverLoad(int32 Dropoff, int32 HeldDurationMs = 0);
+    bool bPryingCarryGate=false;
+    bool bCarryGateHit=false;
+    FVector LooseLoadAt[SoraBeatRules::MaxPoints] = {};
+    void ResetCarryWork();
+    bool InteractCarryGate(ASoraPlayerCharacter& Hero);
+    void TickCarryWork(int32 DeltaMs);
+    bool SetDownLoad(ASoraPlayerCharacter& Hero);
+    bool TakeLooseLoad(ASoraPlayerCharacter& Hero);
     bool WorkObjectiveAt(int32 Objective);
-    void TickHeldWork(int32 DeltaMs);
+    void TickHeldWork(int32 DeltaMs,float DeltaSeconds);
+    SoraRelayRules::FState Relay;
+    FSoraMillisecondClock RelayClock;
+    int32 RelayCatchAgeMs=0;
+    void TickRelay(float DeltaSeconds);
+    bool InteractRelay();
+    void RelayCaught(int32 AgeMs=0);
+    enum class ERecoveryClimb : uint8 { None, Align, Rise, Enter, Down, Up, Exit, Lower };
+    ERecoveryClimb RecoveryClimb=ERecoveryClimb::None;
+    bool bStringingBow=false;
+    void ResetEquipmentRecovery();
+    bool InteractRecovery(ASoraPlayerCharacter& Player);
+    void TickEquipmentRecovery(int32 DeltaMs);
+    void EndRecoveryClimb();
+    bool AtRecoveryBottom() const;
     // Later zones an earlier zone's detection has warned (x_on_detected_carryover).
     TSet<FString> DetectionCarried;
     // Work under guard was seen last step; each guard's last reported state.
@@ -316,8 +631,13 @@ private:
     int32 LastEscortProgress = 0;
     // Dialogue: lines waiting, the head's remaining time, lines heard this
     // round, triggers already fired in it and when repeatable ones last played.
-    TArray<int32> Queue;
+    struct FQueuedLine { int32 Line; int32 Beat; bool bBlocking; };
+    TArray<FQueuedLine> Queue;
     float LineRemaining = 0.f;
+    float BlockingSeconds = 0.f;
+    bool bDialogueHeld = false;
+    bool bBlockingLimitReached = false;
+    TSet<int32> FinishedLines;
     TSet<int32> Heard;
     TSet<int32> FiredTriggers;
     TMap<int32, double> TriggerTimes;
@@ -334,7 +654,7 @@ private:
     void HeroDamaged(const FSoraDamagedEvent& Event);
     // A dojo awase (the chapter-one guard met within the parry window), which
     // a 転 lesson's flank must follow; and the hero's 転 itself.
-    void HeroGuarded(const FSoraDefenseEvent& Event);
+    void HeroParried(const FSoraDefenseEvent& Event);
     // USoraStealth: a stealth beat (or guarded work) opens the zone on the
     // settings' difficulty, and the zone's detection, alarm and found bodies
     // reach the beat as alert_state:alert, ai_event:alarm_raised and
@@ -350,6 +670,7 @@ private:
     // Opponents' cues the scripts key: alert_state:<state> barks, a retreat,
     // an alarm run, a takedown, a conscript knocked down or freed.
     void EnemyCue(const FSoraEnemyCueEvent& Event);
+    void CollectorCue(const FSoraBossPhaseEvent& Event);
     void TickScheduled();
     void HeroRolled(const FSoraMarobashiEvent& Event);
     // The next bout of a lesson duel opens, numbered across the chapter.
@@ -357,26 +678,59 @@ private:
     void BeginBeat(int32 Index, int32 Phase, bool bResumed);
     void RetryBeatInPlace();
     void CompleteActiveBeat();
+    void TellRegistry(int32 CompletedBeat);
     void FinishChapter();
     void CompleteOptional(int32 Index);
+    bool ClaimGalleryArrows(int32 Index);
+    bool ClaimCacheArrows(int32 Index);
     void Collect(int32 Beat);
     void UpdateObjective();
     void TickBeat(float DeltaSeconds);
+    void TickMaai(int32 DeltaMs);
+    void ResetMaai();
+    SoraArcheryRules::FState Archery;
+    unsigned long long NextArcheryShot=0;
+    int32 ArcheryMs=0;
+    UPROPERTY() TArray<TObjectPtr<ASoraArcheryTarget>> ArcheryTargets;
+    UPROPERTY() TObjectPtr<AActor> ArcheryLineMarker;
+    void ClearArchery();
+    void BeginArchery();
+    void TickArchery(int32 DeltaMs);
+    void StageArcheryTargets();
+    void SetDojoArrows(int32 Count);
+    void RestoreDojoQuiver();
+    FString ArcheryText(bool bEnglish) const;
+    FVector MaaiTarget = FVector::ZeroVector;
+    FVector MaaiForward = FVector::ForwardVector;
+    bool bMaaiMoving = false;
+    bool bMaaiObstructionReported = false;
+    bool bMaaiTooClose = false;
     void TickDialogue(float DeltaSeconds);
     // After any change to the task: plays the progress triggers crossed,
     // releases and spawns due waves and completes the beat once its task is done.
     void Progressed(int32 PermilleBefore);
+    unsigned ReleaseReadyWaves();
     void QueueWaves(unsigned Waves);
     // Releases the volume and event waves an event names.
     void ReleaseEventWaves(const FString& Event);
     void HandleFailure(SoraBeatRules::ERetry Outcome, const FString& Event);
     bool FailureOf(const FString& Event, SoraBeatRules::EFail& Failure) const;
     void StartLines();
+    bool EpilogueObjective(FVector& Location, bool& bInteract) const;
+    FString EpilogueObjectiveText(bool bEnglish) const;
+    bool InteractEpilogue(ASoraPlayerCharacter& Player);
+    void EpilogueLineFinished(const FString& Id);
+    void ShowEpilogue();
     // Plays the triggers and shows the HUD prompt an event raises in Beat
     // (the active beat by default) and the chapter's bark pools.
-    void Fire(const FString& Event, int32 Beat = INDEX_NONE);
+    // Explicit memories may replay a line heard in an earlier beat; trigger
+    // eligibility and once-per-event guards still apply.
+    void Fire(const FString& Event, int32 Beat = INDEX_NONE, bool bReplayLines = false);
     bool TriggerAllowed(int32 Index) const;
-    void Enqueue(const TArray<int32>& Lines, bool bForce);
+    void Enqueue(const TArray<int32>& Lines, bool bForce, const FString& TriggerMode);
+    void RefreshDialogueHold();
+    void ClearDialogue();
+    bool DialogueLinesDone() const;
     void ShowPrompt(const FString& Event, int32 Beat);
     void Notify(const FString& Japanese, const FString& English, float Seconds);
     // A notice from an NSLOCTEXT line (SoraText::Line or Format).
@@ -387,7 +741,10 @@ private:
     // (Content/Data/enemies.json) and data-driven bosses (bosses.json) replace
     // these bodies at merge; until then every opponent is the prototype
     // invader, a sparring pupil or the collector.
-    ASoraEnemy* SpawnWaveOpponent(FName Type, bool bSparring, int32 Slot, bool bInvulnerable = false);
+    ASoraEnemy* SpawnWaveOpponent(FName Type, bool bSparring, int32 Slot, bool bInvulnerable = false, const FVector* Position = nullptr);
+    ASoraEnemy* SpawnTenementDefender(int32 Wave,int32 Group,int32 Member,int32 Slot);
+    ASoraEnemy* SpawnWorkshopDefender(int32 Wave,int32 Group,int32 Member,int32 Slot);
+    bool HeroAtTenementKitchen() const;
     ASoraEnemy* SpawnStealthGuard(const FSoraGuard& Guard, int32 GuardIndex, int32 Slot);
     ASoraEnemy* SpawnDuelOpponent(FName Opponent, bool bSparring, int32 Slot);
     ASoraBoss* SpawnBoss(FName Boss, int32 Slot);
@@ -411,7 +768,7 @@ private:
     void BroadcastBeat(bool bStarted, bool bResumed);
     // A telemetry row for the active beat, or for Beat (an optional beat completed beside it).
     void Telemetry(const TCHAR* Event, int32 Beat = INDEX_NONE) const;
-    void SaveCheckpoint();
+    void SaveCheckpoint(int32 AtBeat=INDEX_NONE);
     void ClearCheckpoint();
     void ClearOfflineProjectiles();
     // Training arena rounds (not campaign).
@@ -425,7 +782,7 @@ private:
     FVector SpawnLocation(int32 Slot) const;
     // The beat's place as it starts: a travel cut to its entry, its kit, its
     // horse and its camera; and what it leaves behind when it ends.
-    void EnterBeatSpace(bool bResumed);
+    void EnterBeatSpace(bool bResumed,bool bKeepPosition=false);
     void LeaveBeatSpace();
     void TickSpace(int32 DeltaMs);
     void TickVolumes();
@@ -434,6 +791,8 @@ private:
     // E on a loose collectible within reach, or on the horse (tack-up, mount, dismount); true when used.
     bool PickUp();
     bool InteractSpace(ASoraPlayerCharacter& Player);
+    bool InteractSupply(ASoraPlayerCharacter& Player);
+    void TickSupplyHint();
     void Dismount();
     void ClearHorses();
     void ShowKit();

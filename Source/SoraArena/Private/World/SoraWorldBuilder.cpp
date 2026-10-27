@@ -1,8 +1,11 @@
 #include "SoraWorldBuilder.h"
+#include "SoraTerminalChargeRules.h"
+#include "SoraNoticeSquareRules.h"
 #include "SoraCatalog.h"
 #include "Components/PointLightComponent.h"
 #include "Components/SceneComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/WidgetComponent.h"
 #include "Engine/PointLight.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
@@ -11,6 +14,8 @@
 
 ASoraWorldBuilder::ASoraWorldBuilder()
 {
+    PrimaryActorTick.bCanEverTick=true;
+    PrimaryActorTick.bStartWithTickEnabled=false;
     RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("ArenaRoot"));
 }
 UStaticMeshComponent* ASoraWorldBuilder::Shape(AActor* Owner, USceneComponent* Parent, const FString& Name, const TCHAR* Asset, FVector Location, FVector Scale, FLinearColor Color, bool Collision)
@@ -180,10 +185,21 @@ void ASoraWorldBuilder::Torii(FVector L,float Yaw)
 }
 void ASoraWorldBuilder::ClearArena()
 {
-    ShowObjective(nullptr); ShowCaches({}); ClearKit();
+    ShowObjective(nullptr); ShowCaches({}); ClearKit(); ClearSummitTiles(); ClearBridge();
     for(const auto& M:PickupPieces) if(M) M->DestroyComponent(); PickupPieces.Reset();
     for(const auto& A:PickupLights) if(A) A->Destroy(); PickupLights.Reset();
     for(const auto& M:Pieces) if(M) M->DestroyComponent(); Pieces.Reset();
+    WoodTargets.Reset(); WoodFloors.Reset(); WoodClapper=nullptr;
+    TenementFindTargets.Reset();
+    if(IsValid(ArchivePageText)) ArchivePageText->DestroyComponent();
+    ArchivePageText=nullptr; ArchivePageFont=nullptr;
+    ArchivePage=nullptr; ArchivePageLight=nullptr; ArchiveNorthGate=nullptr; ArchiveEastRack=nullptr; ArchiveExposure=nullptr;
+    RidgeAnchors.Reset(); RidgeOrigin=FVector2D::ZeroVector;
+    SummitSpine=nullptr; SummitSeam=nullptr;
+    WorkshopDoor=nullptr; WorkshopSeal=nullptr; WorkshopBar=nullptr;
+    WorkshopWindows.Reset(); WorkshopWindowLights.Reset();
+    LanternStationMarks.Reset();
+    SpireShutter=nullptr; SpirePanels.Reset(); SpirePanelGoals.Reset();
     for(const auto& A:DecorActors) if(A) A->Destroy(); DecorActors.Reset(); Nodes.Reset(); SiteEffects.Reset(); SiteRestoredColors.Reset(); Activated.Reset(); NodePositions.Reset();
     bCampaignSpace=false; CampaignStart=FVector::ZeroVector; CampaignStartYaw=0.f;
 }
@@ -199,10 +215,27 @@ void ASoraWorldBuilder::Build(int32 MapId,const FSoraChapter* Chapter)
     if(Chapter) BuildCampaign(*Chapter);
     else BuildArena(MapId,true);
 }
-void ASoraWorldBuilder::BuildArena(int32 MapId,bool bSites)
+void ASoraWorldBuilder::BuildArena(int32 MapId,bool bSites,bool bTenements,bool bLanternWorkshop)
 {
     const FLinearColor Accent=FSoraCatalog::Get().Map(MapId).Accent;
     Box(TEXT("Ground"),FVector(0,0,-50),FVector(6400,5200,100),FLinearColor(.14f,.16f,.13f),true,FRotator::ZeroRotator,TEXT("Soil"));
+    const bool NoticeSquare=MapId==1&&bTenements;
+    if(NoticeSquare)
+    {
+        namespace N=SoraNoticeSquareRules;
+        for(int I=0;I<3;++I)
+        {
+            const auto B=N::StreetFloors[I];
+            Box(FString::Printf(TEXT("NoticeSquareStreet%d"),I),FVector(B.X,B.Y,B.Z),FVector(B.SX,B.SY,B.SZ),
+                FLinearColor(.14f,.16f,.13f),true,FRotator::ZeroRotator,TEXT("Soil"));
+        }
+        for(int I=0;I<6;++I)
+        {
+            const auto B=N::StreetWalls[I];
+            Box(FString::Printf(TEXT("NoticeSquareBoundary%d"),I),FVector(B.X,B.Y,B.Z),FVector(B.SX,B.SY,B.SZ),
+                FLinearColor(.2f,.23f,.23f),true,FRotator::ZeroRotator,TEXT("Stone"));
+        }
+    }
     if(MapId==0) NyaagyuTerrain();
     // The imported estate tiles already carry the photographed stone route.
     // The old raised blockout covered that path and hid its relief entirely.
@@ -210,13 +243,44 @@ void ASoraWorldBuilder::BuildArena(int32 MapId,bool bSites)
         Box(TEXT("CentralRoad"),FVector(0,0,2),FVector(5600,660,5),FLinearColor(.29f,.30f,.28f),false,FRotator::ZeroRotator,TEXT("Stone"));
     for(int32 S:{-1,1})
     {
-        auto* WallX=Box(FString::Printf(TEXT("WallX%d"),S),FVector(S*3150,0,220),FVector(100,5200,540),FLinearColor(.2f,.23f,.23f),true,FRotator::ZeroRotator,TEXT("Stone"));
-        auto* WallY=Box(FString::Printf(TEXT("WallY%d"),S),FVector(0,S*2550,220),FVector(6400,100,540),FLinearColor(.2f,.23f,.23f),true,FRotator::ZeroRotator,TEXT("Stone"));
+        const bool WestJoin=bTenements&&MapId==1&&S==-1;
+        const bool EastJoin=bLanternWorkshop&&MapId==1&&S==1;
+        auto* WallX=Box(FString::Printf(TEXT("WallX%d"),S),FVector(S*3150,WestJoin?-1425:EastJoin?1400:0,220),
+            FVector(100,WestJoin?2350:EastJoin?2400:5200,540),FLinearColor(.2f,.23f,.23f),true,FRotator::ZeroRotator,TEXT("Stone"));
+        if(EastJoin)Box(TEXT("WardEastWallSouth"),FVector(3150,-2500,220),FVector(100,200,540),
+            FLinearColor(.2f,.23f,.23f),true,FRotator::ZeroRotator,TEXT("Stone"));
+        UStaticMeshComponent* WallY=nullptr;
+        if(bTenements&&MapId==1&&S==1)
+        {
+            // Keep the old wall outside the alley/court and the 1.2 m
+            // north passage. The new district owns those openings.
+            Box(TEXT("WardNorthWallWest"),FVector(-1630,2550,220),FVector(1140,100,540),
+                FLinearColor(.2f,.23f,.23f),true,FRotator::ZeroRotator,TEXT("Stone"));
+            for(int I=0;I<2;++I)
+            {
+                const auto B=SoraNoticeSquareRules::NorthWalls[I];
+                WallY=Box(FString::Printf(TEXT("WardNorthWallEast%d"),I),FVector(B.X,B.Y,B.Z),FVector(B.SX,B.SY,B.SZ),
+                    FLinearColor(.2f,.23f,.23f),true,FRotator::ZeroRotator,TEXT("Stone"));
+            }
+        }
+        else WallY=Box(FString::Printf(TEXT("WallY%d"),S),FVector(0,S*2550,220),FVector(6400,100,540),FLinearColor(.2f,.23f,.23f),true,FRotator::ZeroRotator,TEXT("Stone"));
         if(MapId==0) EstatePerimeter(S,WallX,WallY);
         for(int32 I=0;I<5;++I)
         {
+            // The original repeated row placed a house in both arms of the
+            // authored north-south street. Leave the crossing's stubs open.
+            if(NoticeSquare&&!SoraNoticeSquareRules::KeepLegacyHouse(I))continue;
+            if(bLanternWorkshop&&MapId==1&&S==-1&&I==4)continue;
             FVector P(-2000+I*1000,S*(MapId==1?1200:1800),0);
             const float Height=MapId==3?780.f:330.f+(I%2)*100.f;
+            if(bTenements&&MapId==1&&S==1&&I==1)
+            {
+                // Split this house around the authored side passage. Its
+                // foundations, rather than just the walls, clear all 120 cm.
+                for(float X:{-1201.25f,-798.75f})
+                    Building(FVector(X,P.Y,0),FVector(247.5f,700,Height),FLinearColor(.63f,.56f,.40f),false);
+                continue;
+            }
             const int32 BuildingStart=Pieces.Num();
             Building(P,FVector(650,700,Height),MapId==3?FLinearColor(.12f,.15f,.19f):FLinearColor(.63f,.56f,.40f),MapId>=2);
             if(MapId==0) EstateHall(I,S,P,BuildingStart);
@@ -225,7 +289,9 @@ void ASoraWorldBuilder::BuildArena(int32 MapId,bool bSites)
     if(MapId==0) EstateGrounds();
     for(int32 I=0;I<12;++I)
     {
+        if(bLanternWorkshop&&MapId==1&&I==5)continue;
         const float X=-2300+(I%6)*900; const float Y=(I<6?-1:1)*(680+(I%2)*200);
+        if(NoticeSquare&&!SoraNoticeSquareRules::KeepLegacyCover(X,Y))continue;
         auto* Cover=Box(FString::Printf(TEXT("Cover%d"),I),FVector(X,Y,70),FVector(230,180,140),I%2?FLinearColor(.29f,.19f,.09f):FLinearColor(.23f,.27f,.28f),true,FRotator::ZeroRotator,I%2?TEXT("Timber"):TEXT("Stone"));
         // Keep the established cover volume for campaign combat. Dressing
         // meshes are visual only and never enter a P2P practice map.
@@ -238,7 +304,18 @@ void ASoraWorldBuilder::BuildArena(int32 MapId,bool bSites)
     if(bSites) ProductionSites(MapId,Accent);
     if(MapId==3) DebtCitadelKiosk();
     if(MapId==1) LanternWardTerminal();
-    Lanterns();
+    if(MapId==1&&bTenements)
+    {
+        // 103 cm clear behind the terminal fits the fixed 68 cm capsule.
+        // The authored 60 cm squeeze needs a narrower movement mode before it can be restored.
+        for(int I=1;I<3;++I)
+        {
+            const auto S=SoraTerminalChargeRules::Solids[I];
+            Box(I==1?TEXT("NoticeBoard"):TEXT("NoticeBoardRoof"),FVector(S.X,S.Y,S.Z),FVector(S.SX,S.SY,S.SZ),
+                FLinearColor(.30f,.22f,.12f),true);
+        }
+    }
+    Lanterns(bLanternWorkshop&&MapId==1,NoticeSquare);
     Lighting(MapId);
 }
 void ASoraWorldBuilder::ProductionSites(int32 MapId,FLinearColor Accent)
@@ -301,10 +378,14 @@ void ASoraWorldBuilder::SiteStructure(int32 I,FVector P,const FString& Kind,int3
         }
     }
 }
-void ASoraWorldBuilder::Lanterns()
+void ASoraWorldBuilder::Lanterns(bool bLanternWorkshop,bool bNoticeSquare)
 {
     for(int32 I=0;I<10;++I)
     {
+        if(bLanternWorkshop&&I==4)continue;
+        // The repeated arena row puts two poles in the north-south street.
+        // The campaign's licensed corner lamps remain in its fieldcraft set.
+        if(bNoticeSquare&&!SoraNoticeSquareRules::KeepLegacyLantern(I))continue;
         FVector P(-2250+(I%5)*1125,(I<5?-1:1)*470,0);
         const bool HasAuthoredLantern=ImportedProp(TEXT("SM_Edo_LanternPost"),P,FRotator::ZeroRotator);
         if(HasAuthoredLantern)

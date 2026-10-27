@@ -1,6 +1,20 @@
 # Audio: cue list, buses, loudness and sources
 
-**Status (2026-09-27):**
+**Source update (2026-10-26 UTC):** current data has 115 cues, 99 with waves and 16 without. The two
+workshop hammer takes and the new stream loop bring the CC0 derivatives to 89. The stream is a 45 s mono
+loop from Thimras's [Park ambiences](https://opengameart.org/content/park-ambiences), pinned by the existing
+CC0 ledger. `build_cc0_audio.py --stream-only` rebuilds it using only that raw river WAV; `--stream-only
+--check` checks the committed bytes and deterministic rebuild without hydrating unrelated recordings.
+Partial rebuilds preserve other derivatives of the same upstream source, including the park birds and wind.
+
+`audio.json.emitters.ward_culvert` binds `amb.stream` at the Chapter 03 culvert. Its actor-scoped loop uses
+the existing 3 m inner / 35 m falloff attenuation, follows world pause, and is stopped on fieldcraft clear
+or owner destruction. The source recording contains Adelaide wildlife: numerical QA is **not** listening,
+Japanese ecology, or in-game mix approval. The new emitter code and its two UE fixtures have **not** been
+compiled or run. Other stream locations are still unbound. See
+[the source checkpoint](qualification/ward-stream-audio-source-2026-10-26.md) for evidence and next checks.
+
+**Historical status (2026-09-27; counts and run status below are retained for that revision):**
 
 - **Built:**
   - a reproducible audio pipeline;

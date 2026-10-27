@@ -73,7 +73,7 @@ for (letter, tier), item in mesh_records.items():
         raise RuntimeError(f"Fern 02 mesh identity changed: {name}")
 
 mac_config = (root / "Config/Mac/MacEngine.ini").read_text()
-if "r.Nanite=0" not in mac_config or "r.Nanite.ProxyRenderMode=0" not in mac_config:
+if "r.Nanite.ProxyRenderMode=0" not in mac_config:
     raise RuntimeError("Fern 02 Mac conventional render policy changed")
 
 dest = "/Game/Generated/ArtReview/Fern02"

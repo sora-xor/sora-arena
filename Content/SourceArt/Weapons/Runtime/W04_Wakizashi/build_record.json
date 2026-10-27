@@ -44,7 +44,7 @@
     {
      "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04.fbx",
      "triangles": 49300,
-     "sha256": "5412c5d8fa2ab9b450f2e6ce831200535838fe2bd92f237d02c41eee98fcb99f"
+     "sha256": "f84769b607c43b2b23ec7e7b31ef3143f7915b0bf1a83d270ad69a7fbd832dc8"
     },
     {
      "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04_LOD1.fbx",
@@ -83,14 +83,52 @@
     1.0,
     0.35,
     0.12
-   ]
+   ],
+   "socket_axes": {
+    "Grip_L": {
+     "x": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "z": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "Grip_R": {
+     "x": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "z": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "Muzzle": {
+     "x": [
+      0.980801,
+      0.0,
+      0.195013
+     ],
+     "z": [
+      -0.195013,
+      0.0,
+      0.980801
+     ]
+    }
+   }
   },
   "SM_Weapon_04_Saya": {
    "lods": [
     {
      "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04_Saya.fbx",
      "triangles": 19900,
-     "sha256": "8a3c8e96ee40fa8d44132465313ac3b8776819d99ca550596cb54bdb9ace115a"
+     "sha256": "5119770fe95dc997ba9f202c52e9b6da31021d0695dd9e40811934f28227b506"
     },
     {
      "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04_Saya_LOD1.fbx",
@@ -124,7 +162,33 @@
     1.0,
     0.35,
     0.12
-   ]
+   ],
+   "socket_axes": {
+    "Koiguchi": {
+     "x": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "z": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "Kurikata": {
+     "x": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "z": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    }
+   }
   }
  },
  "sources": [
@@ -232,5 +296,32 @@
   "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_04_Neutral_1m.png",
   "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_04_Profile.png",
   "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_04_Estate_1m.png"
- ]
+ ],
+ "socket_fbx": {
+  "export": {
+   "apply_unit_scale": true,
+   "apply_scale_options": "FBX_SCALE_NONE",
+   "global_scale": 1.0,
+   "axis_forward": "Y",
+   "axis_up": "Z",
+   "bake_space_transform": true
+  },
+  "axes": "Blender's own (up Z, forward Y), which are UE 5.8's FBX import axes (Z up, -Y front, right-handed). The file declares them, so no importer converts it",
+  "unit": "centimetres, baked into the vertices and the socket translations. No node carries a rotation or a scale, so each socket imports at scale 1 on its own axes",
+  "gate": "scripts/art/screen_fbx_sockets.py, through scripts/art/fbx_unreal_sockets.py (Interchange's socket rule, calibrated on root's import of the drone's fc0858a9)",
+  "unchanged": "LODs without sockets keep the library's convention (-Y forward, x100 on the node). Unreal bakes both conventions to the same vertices",
+  "rewritten_by": "scripts/art/apply_staged_weapon_sockets.py",
+  "files": [
+   {
+    "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04.fbx",
+    "sha256": "f84769b607c43b2b23ec7e7b31ef3143f7915b0bf1a83d270ad69a7fbd832dc8",
+    "replaces_sha256": "5412c5d8fa2ab9b450f2e6ce831200535838fe2bd92f237d02c41eee98fcb99f"
+   },
+   {
+    "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04_Saya.fbx",
+    "sha256": "5119770fe95dc997ba9f202c52e9b6da31021d0695dd9e40811934f28227b506",
+    "replaces_sha256": "8a3c8e96ee40fa8d44132465313ac3b8776819d99ca550596cb54bdb9ace115a"
+   }
+  ]
+ }
 }

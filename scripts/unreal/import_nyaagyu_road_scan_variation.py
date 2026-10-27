@@ -91,6 +91,7 @@ name = "M_NyaagyuRoadScanVariation_PBR"
 path = dest + "/" + name
 material = assets.load_asset(path) if assets.does_asset_exist(path) else tools.create_asset(
     name, dest, unreal.Material, unreal.MaterialFactoryNew())
+material.set_editor_property("used_with_nanite", True)
 for old in list(lib.get_material_expressions(material)):
     lib.delete_material_expression(material, old)
 if lib.get_num_material_expressions(material):

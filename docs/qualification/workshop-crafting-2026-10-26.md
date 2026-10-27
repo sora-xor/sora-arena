@@ -1,0 +1,31 @@
+# Workshop crafting — October 26, 2026
+
+Chapter-three b09 now admits each bamboo hoop on release within 640–960 ms of pressing Interact. A failed strip repeats without erasing earlier hoops. Holding beyond the window fails once and requires a release before another attempt. Rhythm assistance completes one held strip at 800 ms. Each washi panel requires a continuous 1.5-second hold; the oil application uses the same hold duration. Neither action repeats automatically while the key remains down.
+
+Work reserves both hands. Menu entry, blocking dialogue, damage, leaving the station and losing supported ground cancel an active attempt. Releasing after cancellation cannot award work. The shell bench additionally checks real visibility so its nearby storehouse wall cannot be bypassed with interaction range. The HUD uses a closing ring with a fixed green release band, held-paste progress and Japanese/English mapped-key instructions. Station highlights follow the step-to-station mapping, keeping rim assembly at the paste bench.
+
+Two provisional window panes and actual local warm lights derive their state from b09's completed bit. They are intended to remain lit through later chapter checkpoints without another save flag. These are functional placeholder presentation; they have not received rendered acceptance. The existing recipe completion still supplies the forty-lantern registry entry, weapon 7 and site-restoration event.
+
+## Source evidence
+
+Signed `9e41d0d8846bbfc455ada1e993d8173b000bf44f`, tree `473e8f93ce88db8eadb9e6413d2ac546586c71e3`, passes all 87 local gameplay/asset source gates (65 gameplay, 22 assets) with clean unchanged source. The compiled workshop suite has 22 tests, including release endpoints, held-paste interruption, frame partitions, assistance, single completion per press, recipe accounting and malformed/misplaced control rejection. Native Unreal execution is outside that suite.
+
+Independent review checks the exact command inventory, signed source/tree, exit results, unchanged source and all original logs. The archive is `Saved/Qualification/2026-10-26/workshop-craft-source-9e41d0d8/`; review SHA-256 `44bfa9eab00b026cc4f8a3a8e817a989fbfb46b94aeecec2700269c3ddee1824`, report SHA-256 `3a3d8df4f1fd3f5f601fda03292c785c8a401919015e858fef2556262ae39dfc`.
+
+Signed `c5de5059be2dc4489818838a1dd373c9748234ef`, tree `c3e275dc8985339f2c40f5df49491881c9bdfd11`, follows with three pre-build review corrections: station mapping, one progress publication per held-work frame, and correct iteration of Unreal object pointers. The 87-gate local result precedes these C++ corrections and is not presented as a final-revision run.
+
+Published `679bc634af57b2db8d22c29703c488b396e87d98` passes all 124 source CI gates in run `40412003620`. Tested merge `386e5ac69ae81abf654ac1c9e7a9e07f2afb18ee` has identical tree `5f2bcee322d061130a245c4c4225ef8d485813c4`. All five artifact digests, exact inventories and raw logs verify. Independent review SHA-256 `a5e34e90c0fc692b688c74df271e5bddb5775ae31c213331d88d47c8fd4da7b4`; strict review `c22d241b0c606e2ca42dba9f9e1fa1dc71a76c285644b4c08898b478a9b11ca6`. This source CI precedes the native compilation correction below.
+
+## Native runtime evidence
+
+The first native attempt at `679bc634` fails compilation before editor launch: the player character has no `IsStaggered` method, and four unqualified test-helper calls collide with another helper in Unreal's unity build. Signed `889c5627d7a6e8ea4373af97cb6eec43edb0e35f`, tree `285ad46ef1ec13c2d8f8463c479aece6e8471254`, removes the invalid character call while retaining the equipment's stagger check, and qualifies the test calls. The failed attempt remains archived at `Saved/Qualification/2026-10-26/workshop-craft-runtime-679bc634-attempt1/`; independently verified review SHA-256 `84eceb7ac86ad28b3ac35d322b433128ea9529876506157a1f8f8bc739156f22`. No runtime tests ran at that failed revision.
+
+The corrected revision builds successfully in UE 5.8.3 with the project-pinned Xcode 26.1.1 (18.88 seconds), then passes all **55 selected native cases**, with zero selected test errors or warnings. Four new cases cover release boundaries/assistance, interruptions/paste holds, full recipe and checkpoint persistence, and native catalog rejection. The selection also includes the prior 48 cases and three rhythm regressions. The route case performs a timed release, and the assisted campaign playthrough uses held input for b09. These fixtures use mapped keys and active world time from seeded checkpoints; station placement and campaign progression are assisted. NullRHI does not establish rendered quality or ordinary-play acceptance.
+
+Evidence is in `Saved/Qualification/2026-10-26/workshop-craft-runtime-889c5627-attempt1/`. Independent review SHA-256 `4590114b268342f69080a7e5eb91a5428f55235584fc0744367f3a1f54d59406` verifies all 20 original files, exact test selection, natural EOF and unchanged source/native/config/generated bytes. The run finishes at `2026-10-26T22:43:22.322005+00:00`; the process inventory is empty before the full engine/Blender lane returns to Claude. The review covers these results, not release qualification.
+
+## Remaining presentation and release work
+
+Claude owns the exclusive Unreal/Blender lane again for the separate repaired-paw assembly, import and matched captures. Root's independent s136 host-array review verifies cut topology, preserved parent surface, UV seams and empty-fist orientation; it does not verify final assembly or visuals. No candidate is adopted. Photoshop, Illustrator and Topaz may be used where useful; validation originals remain unchanged.
+
+Still open: rendered HUD/window review; physical rib-form, strip bending/splitting, paste brush/seam and shell/fuse presentation; appropriate lantern output instead of the generic crate stack; first-person and craftsperson animations; ordinary chapter pacing and combat; final character/environment art; current platform packages, controller/accessibility/performance evidence and network/economic qualification. Mac package remains `c655b6b`, native bridge `10ad7dad`. The complete release goal remains active.

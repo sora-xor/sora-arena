@@ -49,7 +49,8 @@ void ASoraCharacterBase::ApplyClass(int32 Id)
 }
 void ASoraCharacterBase::RebuildWeapon()
 {
-    Viewmodel->Build(WeaponId,WieldsDojoBokken(),IsFirstPersonHero());
+    if(UsesHeldWeapon()) Viewmodel->Build(WeaponId,WieldsDojoBokken(),IsFirstPersonHero());
+    else Viewmodel->Clear();
 }
 bool ASoraCharacterBase::CanPlay() const
 {
@@ -59,6 +60,17 @@ bool ASoraCharacterBase::CanPlay() const
 void ASoraCharacterBase::Tick(float Dt)
 {
     Super::Tick(Dt); LifeTime+=Dt; DamageFlash=FMath::Max(0.f,DamageFlash-Dt); HitMarkerTime=FMath::Max(0.f,HitMarkerTime-Dt);
+    const auto* Mode=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this));
+    const bool bHold=!bKernelDriven&&Mode&&Mode->InputState()==SoraInput::Dialogue;
+    if(bHold!=bDialogueMovementHeld)
+    {
+        UCharacterMovementComponent* Movement=GetCharacterMovement();
+        if(bHold) bMovementTickBeforeDialogue=Movement->IsComponentTickEnabled();
+        ConsumeMovementInputVector();
+        Movement->StopMovementImmediately();
+        Movement->SetComponentTickEnabled(!bHold&&!bKernelDriven&&bMovementTickBeforeDialogue);
+        bDialogueMovementHeld=bHold;
+    }
     if(bKernelDriven) return;
     if(!FSoraCatalog::Get().IsReady()) return;
     if(!CanPlay()) { HaltActions(); return; }
@@ -131,6 +143,7 @@ void ASoraCharacterBase::BuildCat()
     for(const auto& P:BodyParts) if(P) P->DestroyComponent(); BodyParts.Reset();
     OnBodyRebuilt();
     bSkeletalVisual=false; GetMesh()->SetSkeletalMesh(nullptr);
+    if(BuildSpecialBody()) return;
     const bool bAlien=UsesAlienBody();
     const bool bOwnerHidden=IsFirstPersonHero();
     const FString CatName=bAlien?TEXT("AlienBanker"):TEXT("NyaagyuSamurai");

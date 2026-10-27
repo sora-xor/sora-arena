@@ -120,6 +120,7 @@ for role, prefix in (("Bark", "bark"), ("Needles", "twig")):
     path = f"{foliage}/{name}"
     material = (assets.load_asset(path) if assets.does_asset_exist(path)
                 else tools.create_asset(name, foliage, unreal.Material, unreal.MaterialFactoryNew()))
+    material.set_editor_property("used_with_nanite", True)
     for old_expression in list(material_lib.get_material_expressions(material)):
         material_lib.delete_material_expression(material, old_expression)
     if material_lib.get_num_material_expressions(material):

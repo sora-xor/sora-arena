@@ -1,20 +1,31 @@
 #pragma once
+#include "SoraLedgerRules.h"
 #include "CoreMinimal.h"
+#include "Engine/HitResult.h"
+#include "Engine/EngineBaseTypes.h"
 #include "GameFramework/Actor.h"
 #include "SoraCatalog.h"
 #include "SoraFieldcraftRules.h"
+#include "SoraFloodRules.h"
+#include "SoraClimbRules.h"
+#include "SoraMoatRules.h"
+#include "SoraMoltenRules.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "SoraFieldcraft.generated.h"
 class APointLight;
 class ASoraCompanion;
+class ASoraCharacterBase;
 class ASoraEnemy;
 class ASoraHorse;
+class ASoraFuelCanister;
+class ASoraWorkshopProp;
 class ASoraPlayerCharacter;
 class UPointLightComponent;
 class USphereComponent;
 class USpotLightComponent;
 class UStaticMeshComponent;
 struct FSoraMeleeCommittedEvent;
+struct FSoraDetonatedEvent;
 
 // A lamp or fire of the beat's fieldcraft: its body, and the point light
 // the guards see by (USoraStealth::LightAt counts every visible APointLight).
@@ -41,6 +52,8 @@ private:
     float GlowHeight = 150.f;
     float Intensity = 0.f;
     bool bShootable = false;
+    bool bArrowOnly = false;
+    FLinearColor LitColor=FLinearColor(1.f,.62f,.25f);
 };
 
 // A tsubute stone in flight on its arc. Where it lands the guards hear it
@@ -91,6 +104,8 @@ struct FSoraFieldcraftReadout
     bool bSwimming = false;
     bool bDiving = false;
     float Breath = 1.f;
+    bool bFloodPassage=false;
+    bool bFloodAirShaft=false;
     // On the wall: grip left (0-1), at a ledge.
     bool bClimbing = false;
     float Grip = 1.f;
@@ -106,10 +121,13 @@ struct FSoraFieldcraftReadout
     bool bCandle = false;
     bool bCupped = false;
     // What Interact held would work now, how far a hold has come (0-1).
-    enum class EHold : uint8 { None, Snuff, Revive, Free, Release, NetCut, Relight };
+    enum class EHold : uint8 { None, Snuff, Revive, Free, Release, NetCut, Relight, WorkshopSeal };
     EHold HoldHere = EHold::None;
     EHold Holding = EHold::None;
     float HoldProgress = 0.f;
+    bool bAtFusuma = false;
+    bool bFusumaOpening = false;
+    bool bFusumaBlocked = false;
     // The escorted party: whether the hero's signal hides or sends them on,
     // and whether they wait for it.
     bool bSignal = false;
@@ -171,7 +189,70 @@ public:
     static USoraFieldcraft* Get(const UObject* WorldContext);
     void Stage(const FSoraBeat& Beat);
     void Clear();
+    bool IsMoatSwimming() const { return MoatSpace&&bMoatPosture; }
+    bool MoatExitReady() const { return !MoatSpace||bMoatGateCrossed; }
+    bool MoatCrouch(ASoraPlayerCharacter& Player);
+    FVector MoatHead() const;
+    float MoatDepth() const;
+    bool MoatBlocksHitscan() const;
+    bool MoatHeadLit() const;
+    bool MoatObjective(FVector& At) const;
+    bool MoveMoatCompanion(ASoraCompanion& Companion,float Dt);
+    void AssignMoatGuard(ASoraEnemy& Enemy,int32 Index);
+    void AssignWardGuard(ASoraEnemy& Enemy,int32 Index);
+    bool FreeWardKidoban(const AActor* Actor);
+    bool WardKidobanDeparture(const ASoraEnemy& Enemy,FVector& Goal) const;
+    bool IsWardWicketOpen() const { return bWardWicketOpen; }
+    bool IsMoatGuard(const ASoraEnemy& Enemy) const;
+    FVector MoatGuardAim(const ASoraEnemy& Enemy) const;
+    bool DriveMoatGuard(ASoraEnemy& Enemy,float Dt,bool& Reached);
+    void MoatDetected(const FVector& Evidence);
+    int32 MoatFootstepPermille(const FVector& Feet) const;
+    bool FloodExitReady() const { return !FloodSpace || SoraFloodRules::Ready(FloodRoute); }
+    bool ClimbExitReady() const { return !ClimbSpace || bClimbCrawled; }
+    bool ClimbObjective(FVector& At) const;
+    bool ClimbCrouch(ASoraPlayerCharacter& Player);
+    bool IsClimbCrawling() const { return bClimbCrawl; }
+    int32 ClimbRouteIndex() const { return ClimbRoute; }
+    int32 ClimbHoldIndex() const { return Grip.Hold; }
+    bool IsClimbResting() const;
+    bool IsClimbFalling() const { return ClimbSpace&&ClimbFall.Airborne; }
+    double ClimbFallPeak() const { return ClimbFall.PeakZ; }
+    int32 ClimbClock() const { return ClimbClockMs; }
+    bool ClimbSentryWatching() const;
+    FVector ClimbSentryAim() const;
+    bool DriveClimbSentry(ASoraEnemy& Enemy,float Dt);
+    bool IsClimbSentry(const ASoraEnemy& Enemy) const;
+    void AssignClimbSentry(ASoraEnemy& Enemy);
+    bool MoveClimbCompanion(ASoraCompanion& Companion,float Dt);
+    bool ClimbGuideWaiting() const { return ClimbSpace&&bClimbGuideWaiting; }
+    FString ClimbDiagnostic() const;
+    int32 FloodElapsedMs() const { return FloodClockMs; }
+    int32 FloodPassageStage() const { return FloodRoute.Stage; }
+    bool FloodCarriesIota() const;
+    bool FloodObjective(FVector& At) const;
+    bool MoveFloodCompanion(ASoraCompanion& Companion,float Dt);
+    int32 FloodFootstepPermille(const FVector& Feet) const;
     bool IsStaged() const { return Staged != nullptr; }
+    // Press masking is sampled when a noise is emitted. An interval is used
+    // for continuous footsteps; overlapping presses never multiply masks.
+    int32 PressNoisePermille(const FVector& Origin) const;
+    int32 PressMaskedMs(const FVector& Origin,int32 IntervalMs) const;
+    bool CanWorkPress(int32 Objective) const;
+    void JamPress(int32 Objective);
+    bool PressRunning(int32 Index) const;
+    int64 PressClock() const { return PressClockMs; }
+    bool PressInspectionArrived(int32 Objective) const;
+    bool PressInspectionOverdue(int32 Objective) const;
+    ASoraEnemy* PressInspector(int32 Objective) const;
+    bool RelayInspectionArrived(int32 Node) const;
+    ASoraEnemy* RelayInspector() const;
+    void AssignLedgerAuditor(ASoraEnemy& Guard,int32 Index);
+    bool LedgerLampLit(int32 Index) const;
+    const SoraLedgerRules::FLockdown& LedgerLockdownState() const { return LedgerLockdown; }
+    bool LedgerShutterBlocked() const { return bLedgerShutterBlocked; }
+    int32 MoltenClock() const { return MoltenClockMs; }
+    int32 MoltenBurnLeft(const ASoraCharacterBase& Body) const;
     const FSoraFieldcraft* Active() const { return Staged; }
     // Every event raised for the beat: npc_downed:<id>, npc_revived:any,
     // signal:hide, interact_done:collar_<id>, event:door_1_open,
@@ -187,11 +268,12 @@ public:
     // foot, or lets go of the wall. Each returns whether it took the press.
     bool Ability(ASoraPlayerCharacter& Hero);
     bool Interact(ASoraPlayerCharacter& Hero);
+    void CancelHeldInteraction();
     bool Jump(ASoraPlayerCharacter& Hero);
     // In the water or on the wall no arm is used and no weapon changes hands.
-    bool ArmsStowed() const { return bSwimming || bClimbing || LadderClimb != INDEX_NONE; }
+    bool ArmsStowed() const { return bSwimming || (bClimbing&&!IsClimbResting()) || bClimbCrawl || IsOnLadder(); }
     // The hero's own movement input is ignored (the wall moves him).
-    bool HoldsHero() const { return bClimbing || LadderClimb != INDEX_NONE; }
+    bool HoldsHero() const { return bClimbing || IsOnLadder(); }
     // A cap on the hero's pace in cm/s (the water), or 0.
     float HeroPace() const;
     bool IsSwimming() const { return bSwimming; }
@@ -207,6 +289,9 @@ public:
     // half, and taken when it is lost.
     void TargetChanged(int32 Target, int32 HealthPermille);
     const TArray<TObjectPtr<ASoraCompanion>>& PeopleInPlay() const { return People; }
+    const TArray<TObjectPtr<ASoraCompanion>>& KitchenResidents() const { return KitchenQueue; }
+    bool NeedsWorkshopSeal() const { return bWorkshopFight&&!bWorkshopSealCut; }
+    const TArray<TObjectPtr<ASoraCompanion>>& WorkshopCraftspeople() const { return WorkshopPeople; }
     // The pace at which the hero's held work fills (a cupped candle halves it).
     int32 WorkRatePermille() const;
     // The events the beat raises, so allies that wait for a wave join it.
@@ -234,6 +319,9 @@ public:
     // The hero snuffs, or relights, lamp Index (automation and the hold).
     bool SnuffLamp(int32 Index);
     const TArray<TObjectPtr<ASoraLamp>>& Lamps() const { return LampActors; }
+    void AssignRegistryAuditor(ASoraEnemy& Guard,int32 Index);
+    bool RegistryLampLit(int32 Index) const;
+    ASoraEnemy* RegistryAuditor(int32 Index) const;
     int32 StonesCarried() const { return Stones; }
     FSoraFieldcraftReadout Readout(const ASoraPlayerCharacter& Hero) const;
     // Look targets raised this beat (automation).
@@ -262,6 +350,7 @@ public:
     int32 QuarryCount() const { return QuarryStates.Num(); }
     SoraFieldcraftRules::ENet NetOf(int32 Quarry) const;
     int32 QuarryHealth(int32 Quarry) const;
+    bool FinishFoundryNetCut(int32 Quarry);
     FVector QuarryLocation(int32 Quarry) const;
     ASoraEnemy* TetherOf(int32 Quarry) const;
     // A netting drone reloading after its net was cut; the drones that net.
@@ -282,7 +371,7 @@ public:
     int32 FiresOut() const;
     FVector FireLocation(int32 Fire) const;
     // Ladders: on one now, and whether the hero stands on a roof.
-    bool IsOnLadder() const { return LadderClimb != INDEX_NONE; }
+    bool IsOnLadder() const { return LadderClimb != INDEX_NONE || PressLadderStep != INDEX_NONE; }
     bool IsOnRoof(const FVector& Location) const;
     // The League's charge: its riders (the rival first), the stakes, and
     // what the riders have struck.
@@ -295,11 +384,95 @@ public:
 
     virtual void Tick(float DeltaTime) override;
     virtual TStatId GetStatId() const override;
+    virtual void OnWorldEndPlay(UWorld& InWorld) override;
     virtual void Deinitialize() override;
 protected:
     virtual bool DoesSupportWorldType(const EWorldType::Type WorldType) const override;
 private:
-    enum class EHoldKind : uint8 { None, Snuff, Companion, Release, NetCut, Relight };
+    struct FFusuma
+    {
+        TWeakObjectPtr<UStaticMeshComponent> Panel;
+        FVector Closed = FVector::ZeroVector;
+        FVector Travel = FVector::ZeroVector;
+        float Fraction = 0.f;
+        bool bOpen = false;
+        bool bBlocked = false;
+        bool bSounded = false;
+    };
+    TArray<FFusuma> Fusuma;
+    void StageFusuma(const FSoraBeat& Beat);
+    void TickFusuma(float DeltaSeconds);
+    int32 FusumaAt(const ASoraPlayerCharacter& Player) const;
+    bool InteractFusuma(const ASoraPlayerCharacter& Player);
+    const FSoraBeatSpace* LedgerSpace=nullptr;
+    TWeakObjectPtr<ASoraEnemy> LedgerAuditors[4];
+    TWeakObjectPtr<APointLight> LedgerLights[4];
+    TWeakObjectPtr<UStaticMeshComponent> LedgerLenses[4];
+    TWeakObjectPtr<UStaticMeshComponent> LedgerShutter,LedgerSouthDoor;
+    SoraLedgerRules::FLockdown LedgerLockdown;
+    bool bLedgerShutterBlocked=false;
+    void StageLedger(const FSoraBeat& Beat);
+    void ClearLedger();
+    void TickLedger(int32 DeltaMs=0);
+    const FSoraBeatSpace* RegistrySpace=nullptr;
+    TWeakObjectPtr<ASoraEnemy> RegistryAuditors[3];
+    TWeakObjectPtr<APointLight> RegistryLights[3];
+    TWeakObjectPtr<UStaticMeshComponent> RegistryLenses[3];
+    void StageRegistry(const FSoraBeat& Beat);
+    void ClearRegistry();
+    void TickRegistry();
+    const FSoraRelayRoom* RelayRoom=nullptr;
+    TArray<TWeakObjectPtr<UStaticMeshComponent>> RelayNodes;
+    TArray<TWeakObjectPtr<UStaticMeshComponent>> RelayFan;
+    TWeakObjectPtr<APointLight> RelayGlow;
+    int64 RelayRoomMs=0;
+    int64 RelayLampOutMs[2]={-1,-1};
+    bool RelayLampNoticed[2]={false,false};
+    TWeakObjectPtr<ASoraEnemy> RelayAuditor;
+    int32 RelayInspecting=INDEX_NONE;
+    unsigned RelayInspected=0;
+    int64 RelayArrivedMs=-1;
+    TArray<FVector> RelayInspectionPath;
+    int32 RelayInspectionLeg=0;
+    int32 RelayInspectionAtLeg=0;
+    void StageRelayRoom(const FSoraBeat& Beat);
+    void ClearRelayRoom();
+    void TickRelayRoom(int32 DeltaMs);
+    void RelayLampExtinguished(int32 Index);
+    void TickRelayInspection();
+    const FSoraPressHall* PressHall=nullptr;
+    int64 PressClockMs=0;
+    double PressCarryMs=0;
+    FDelegateHandle PressClockHandle;
+    void AdvancePressClock(UWorld* World,ELevelTick TickType,float DeltaSeconds);
+    uint32 JammedPresses=0;
+    struct FPressInspection
+    {
+        int64 RequestedMs=-1,ArrivedMs=-1;
+        bool bOverdue=false,bFinished=false;
+        TWeakObjectPtr<ASoraEnemy> Guard;
+    };
+    FPressInspection PressInspections[3];
+    int64 PressLampOutMs[3]={-1,-1,-1};
+    bool PressLampNoticed[3]={false,false,false};
+    TArray<TWeakObjectPtr<UStaticMeshComponent>> PressPlatens;
+    void StagePressHall(const FSoraBeat& Beat);
+    void ClearPressHall();
+    void TickPressHall(int32 DeltaMs);
+    FVector PressCenter(int32 Index) const;
+    bool NearRunningPress(const FVector& Origin) const;
+    void PressLampExtinguished(int32 Index);
+    void TickPressLamps();
+    void StagePressAccess();
+    void TickPressAccess(float DeltaTime);
+    bool AtPressLadder(const ASoraPlayerCharacter& Player,bool& bUp) const;
+    bool PressLadderJump(ASoraPlayerCharacter& Player);
+    TArray<FVector> PressLadderFeet;
+    int32 PressLadderStep=INDEX_NONE;
+    bool bPressLadderUp=false;
+    bool bPressFalling=false;
+    float PressFallPeak=0;
+    enum class EHoldKind : uint8 { None, Snuff, Companion, Release, NetCut, Relight, WorkshopSeal };
     struct FHold
     {
         EHoldKind Kind = EHoldKind::None;
@@ -313,12 +486,44 @@ private:
     ASoraPlayerCharacter* Hero() const;
     int32 StepMs(float DeltaTime);
     void StageWorld(const FSoraBeat& Beat);
+    void StageMolten(const FSoraBeat& Beat);
+    void StageCanisters(const FSoraBeat& Beat);
+    void ClearMolten();
+    void TickMolten(int32 DtMs);
     void StageCompanions(const FSoraBeat& Beat);
+    void StageWorkshop(const FSoraBeat& Beat);
+    void ClearWorkshop();
+    void TickWorkshop(int32 DtMs);
+    void WorkshopDetonated(const FSoraDetonatedEvent& Event);
+    bool CanCutWorkshopSeal(const ASoraPlayerCharacter& Player) const;
+    void CutWorkshopSeal();
+    UPROPERTY() TArray<TObjectPtr<ASoraCompanion>> WorkshopPeople;
+    UPROPERTY() TArray<TObjectPtr<ASoraWorkshopProp>> WorkshopProps;
+    FDelegateHandle WorkshopBurst;
+    uint32 WorkshopGeneration=0;
+    bool bWorkshopFight=false,bWorkshopSealCut=false;
+    void StageKitchenQueue(const FSoraBeat& Beat);
+    void TickKitchenQueue();
     void TickHolds(int32 DtMs);
     void TickCompanions(int32 DtMs);
     void TickLamps(int32 DtMs);
     void TickWater(int32 DtMs);
+    void StageMoat();
+    void ClearMoat();
+    void TickMoatWater(int32 DtMs);
+    bool RestoreMoatPosture(bool Reset);
+    void StageFlood(const FSoraBeat& Beat);
+    void ClearFlood();
+    void TickFloodWater(int32 DtMs);
+    void TickFloodCompanions(int32 DtMs);
+    float FloodSurfaceAt(const FVector& At) const;
+    bool InFloodWater(const FVector& At) const;
     void TickClimb(float DeltaTime, int32 DtMs);
+    void TickClimbRoutes(float DeltaTime,int32 DtMs);
+    void ClearClimbRoutes();
+    bool BeginClimbRoute(ASoraPlayerCharacter& Player);
+    bool AtClimbRoute(const ASoraPlayerCharacter& Player,int32& Route) const;
+    const FSoraClimbRoute* CurrentClimbRoute() const;
     void TickCandle();
     void TickLooks();
     void TickVolley(int32 DtMs);
@@ -332,12 +537,20 @@ private:
     void QuarryDamaged(int32 Quarry, int32 Hp);
     void SaddleCut(const FSoraMeleeCommittedEvent& Event);
     void TickScouts();
+    void StageWardGate(const FSoraBeat& Beat);
+    void TickWardGate();
+    bool bWardGate=false,bWardWicketOpen=false,bWardHavePosition=false,bWardScannerInside=false;
+    FVector WardLastPosition=FVector::ZeroVector;
+    TWeakObjectPtr<ASoraEnemy> WardKidoban;
+    TWeakObjectPtr<UStaticMeshComponent> WardWicket;
     void StageWatch();
     void TickSearchlights(int32 DtMs);
     void BellStruck();
     void TickFires();
     void TickLadders(float DeltaTime);
+    int32 AtLadder(const ASoraPlayerCharacter& Hero, bool& bUp) const;
     bool LadderJump(ASoraPlayerCharacter& Hero);
+    void ReleaseLadder(ASoraPlayerCharacter& Hero);
     void StageCharge();
     void TickCharge(float DeltaTime, int32 DtMs);
     void RiderStrikes(int32 DtMs);
@@ -360,12 +573,28 @@ private:
     int32 RoofAt(const FVector& Location) const;
 
     const FSoraFieldcraft* Staged = nullptr;
+    const FSoraMoltenSpace* MoltenSpace=nullptr;
+    int32 MoltenClockMs=0;
+    uint32 MoltenGeneration=0;
+    struct FMoltenBody
+    {
+        SoraMoltenRules::FBody Exposure;
+        FVector Last=FVector::ZeroVector;
+        bool bGrounded=false;
+    };
+    TMap<TWeakObjectPtr<ASoraCharacterBase>,FMoltenBody> MoltenBodies;
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> MoltenSurfaces;
+    UPROPERTY() TArray<TObjectPtr<UPointLightComponent>> MoltenLights;
     FString BeatId;
     UPROPERTY() TObjectPtr<AActor> Props;
+    UPROPERTY() TArray<TObjectPtr<ASoraFuelCanister>> FuelCanisters;
     UPROPERTY() TArray<TObjectPtr<ASoraLamp>> LampActors;
     UPROPERTY() TArray<TObjectPtr<ASoraCompanion>> Party;
     UPROPERTY() TArray<TObjectPtr<ASoraCompanion>> Allies;
     UPROPERTY() TArray<TObjectPtr<ASoraCompanion>> People;
+    UPROPERTY() TArray<TObjectPtr<ASoraCompanion>> KitchenQueue;
+    TArray<int32> KitchenQueueLeg;
+    bool bKitchenScattered=false;
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> Doors;
     UPROPERTY() TObjectPtr<UPointLightComponent> CandleLight;
     TArray<SoraFieldcraftRules::FLamp> LampStates;
@@ -375,6 +604,23 @@ private:
     FHold Holding;
     float ClockCarryMs = 0.f;
     // Water.
+    const FSoraMoatSpace* MoatSpace=nullptr;
+    bool bMoatPosture=false,bMoatDiveWish=false,bMoatGateCrossed=false,bMoatAlarm=false;
+    float MoatOldRadius=34,MoatOldCrouchHalf=44,MoatOldGravity=1,MoatOldAirControl=.05f,MoatOldFriction=0;
+    float MoatPace=180;
+    FVector MoatLast=FVector::ZeroVector,MoatAlarmAt=FVector::ZeroVector;
+    int32 MoatClockMs=0,MoatGuidePoint=0;
+    TMap<TWeakObjectPtr<ASoraEnemy>,int32> MoatGuards;
+    const FSoraFloodSpace* FloodSpace=nullptr;
+    int32 FloodClockMs=0;
+    SoraFloodRules::FRoute FloodRoute;
+    FVector FloodLast=FVector::ZeroVector;
+    bool bFloodFloating=false;
+    float FloodOldGravity=1.f, FloodOldAirControl=.05f, FloodOldFriction=0.f;
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> FloodSurfaces;
+    UPROPERTY() TArray<TObjectPtr<APointLight>> FloodLights;
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> FloodBoat;
+    bool bFloodCarrying=false;
     bool bSwimming = false;
     bool bDiving = false;
     SoraFieldcraftRules::FBreath Breath{0, 0, 0};
@@ -386,6 +632,26 @@ private:
     bool bFalling = false;
     float FallFromZ = 0.f;
     TSet<int32> LedgesReached;
+    const FSoraClimbSpace* ClimbSpace=nullptr;
+    SoraClimbRules::FFall ClimbFall;
+    int32 ClimbRoute=INDEX_NONE, ClimbClockMs=0, ClimbStepTarget=INDEX_NONE;
+    float ClimbStepAlpha=0.f;
+    FVector ClimbStepStart=FVector::ZeroVector;
+    bool bClimbMounting=false,bClimbReachedTop=false,bClimbCrawl=false,bClimbCrawlWish=false,bClimbCrawled=false;
+    bool bClimbCrawlEntered=false,bClimbWatchRaised=false;
+    float ClimbOldRadius=0.f,ClimbOldCrouchHalf=0.f;
+    UPROPERTY() TWeakObjectPtr<ASoraEnemy> ClimbSentry;
+    UPROPERTY() TObjectPtr<USpotLightComponent> ClimbSentryLamp;
+    UPROPERTY() TArray<TObjectPtr<APointLight>> ClimbStripLights;
+    UPROPERTY() TWeakObjectPtr<ASoraCompanion> ClimbGuide;
+    TArray<FVector> ClimbGuidePath;
+    int32 ClimbGuidePoint=0;
+    bool bClimbGuideWaiting=false;
+    // Read-only fixture diagnostics: the exact most recent movement requests
+    // and returned contacts, never used to choose or advance movement.
+    FHitResult ClimbSweepHit,ClimbGuideVerticalHit,ClimbGuideHorizontalHit,ClimbSentryMoveHit;
+    FVector ClimbSweepFrom=FVector::ZeroVector,ClimbSweepWanted=FVector::ZeroVector,ClimbSentryMoveGoal=FVector::ZeroVector;
+    bool bClimbSweepAccepted=false;
     // Stones and the candle.
     int32 Stones = 0;
     bool bCupped = false;
@@ -471,11 +737,13 @@ private:
     UPROPERTY() TArray<TObjectPtr<ASoraLamp>> FireActors;
     int32 FireMarks = 0;
     int32 LastProgress = 0;
-    // Ladders: the one being climbed, up or down, and how far; the roof he
+    // Ladders: the current physical waypoint, up or down; the roof he
     // last stood on, and the roof a fall started from (INDEX_NONE: none).
     int32 LadderClimb = INDEX_NONE;
     bool bLadderUp = true;
-    float LadderAlong = 0.f;
+    TArray<FVector> LadderFeet;
+    int32 LadderStep = INDEX_NONE;
+    float LadderHealth = 0.f;
     int32 RoofFall = INDEX_NONE;
     float RoofFallZ = 0.f;
     int32 RoofStood = INDEX_NONE;

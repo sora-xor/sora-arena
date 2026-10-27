@@ -2,11 +2,13 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "SoraMountRules.h"
+#include "SoraMillisecondClock.h"
 #include "SoraHorse.generated.h"
 class ASoraPlayerCharacter;
 class UBoxComponent;
 class USceneComponent;
 class UStaticMeshComponent;
+class USoraLeadRopeComponent;
 struct FSoraMount;
 struct FSoraZone;
 
@@ -55,19 +57,31 @@ public:
     void SeatRider(bool bRival);
     // A convoy horse's id (FSoraPackHorse::Id).
     FString PackId;
-    void Lead(ASoraHorse* InLeader, float SpacingCm);
+    void Lead(ASoraHorse* InLeader, float SpacingCm, int32 FearRecoveryMs = 0);
+    bool IsLed() const { return Leader.IsValid(); }
+    const USoraLeadRopeComponent* LeadRope() const { return LeadVisual; }
+    // Functional WIP: each paired bundle represents one validated delivery share.
+    void ConfigureCargo(int32 Shares, int32 UnitsPerShare);
+    void ShowCargo(int32 SharesRemaining);
+    int32 CargoQuantityShown() const;
+    bool ObserveLeadThreat(bool bNear);
+    int32 LeadFearMs() const { return LeadFear.RemainingMs; }
+    int32 LeadTugMs() const { return LeadTug.RemainingMs; }
     void SetWaiting(bool bWait) { bWaiting = bWait; }
     // Places her, halted, on the ground at Location facing Yaw.
     void Place(const FVector& Location, float Yaw);
     // A hazard entered her fear radius, or the road spooks her.
-    void Spook() { bSpookPending = true; }
+    void Spook();
+    // Consumed once by the director after a real mounted own-spook onset.
+    // A led mare's fear is separate and never creates this notice.
+    bool ConsumeSpookOnset();
     // The fastest gait the road, a forced stretch or a laden pack mare allows.
     SoraMountRules::EGait Cap = SoraMountRules::EGait::Gallop;
     // The ride allows auto-steer; the player's setting (USoraSettings::AutoSteer) turns it on.
     bool bAutoSteer = false;
     SoraMountRules::EGait Gait() const { return Ride.Gait; }
     int32 StaminaPoints() const { return Ride.Stamina / 1000; }
-    bool IsSpooked() const { return SoraMountRules::Spooked(Ride); }
+    bool IsSpooked() const { return SoraMountRules::Spooked(Ride)||LeadFear.RemainingMs>0; }
     bool IsWinded() const { return Ride.GallopLocked; }
     int32 SpeedCmS() const { return SoraMountRules::SpeedCmS(Ride, Rules); }
     float RoadChainage() const { return Chainage; }
@@ -78,20 +92,35 @@ private:
     UPROPERTY() TObjectPtr<UBoxComponent> Frame;
     UPROPERTY() TObjectPtr<USceneComponent> Body;
     UPROPERTY() TObjectPtr<USceneComponent> Head;
+    UPROPERTY() TObjectPtr<USceneComponent> LeadAnchor;
+    UPROPERTY() TObjectPtr<USoraLeadRopeComponent> LeadVisual;
     UPROPERTY() TArray<TObjectPtr<USceneComponent>> Hips;
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> Parts;
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> TackParts;
     TWeakObjectPtr<ASoraPlayerCharacter> RiderPawn;
     TWeakObjectPtr<ASoraHorse> Leader;
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> PackLoads;
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> CargoLoads;
+    int32 CargoUnitsPerShare = 0;
     SoraMountRules::FHorse Rules;
     SoraMountRules::FRide Ride;
     const FSoraZone* Road = nullptr;
     float Chainage = 0.f;
     int32 PaceCmS = 0;
     float LeadSpacing = 0.f;
+    int32 LeadRecoveryMs = 0;
+    SoraMountRules::FLeadFear LeadFear;
+    SoraMountRules::FLeadTug LeadTug;
+    FSoraMillisecondClock LeadFearClock, LeadTugClock;
+    uint64 LeadFearFrame=MAX_uint64, LeadTugFrame=MAX_uint64;
+    void PullLeader();
+    void BeginLeadTug();
+    void ClearLeadTug();
     float LaneCm = 0.f;
     bool bWaiting = false;
     bool bSpookPending = false;
+    bool bSpookOnset = false;
+    void ClearSpookRequest() { bSpookPending=false; bSpookOnset=false; }
     float ClockCarryMs = 0.f;
     float LegPhase = 0.f;
     UStaticMeshComponent* Part(USceneComponent* Parent, const FString& Name, const TCHAR* Shape, FVector Location,

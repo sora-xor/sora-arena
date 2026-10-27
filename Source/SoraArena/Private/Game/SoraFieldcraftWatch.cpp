@@ -6,6 +6,7 @@
 #include "SoraCompanion.h"
 #include "SoraEnemy.h"
 #include "SoraEnemyController.h"
+#include "SoraEquipmentComponent.h"
 #include "SoraGameMode.h"
 #include "SoraHorse.h"
 #include "SoraPlayerCharacter.h"
@@ -38,6 +39,7 @@ constexpr float LightWatchCm = 6000.f;
 constexpr float BellWalkCmS = 200.f;
 // Where Jump takes the ladder: its foot, or its top at the roof's edge.
 constexpr float LadderReachCm = 110.f;
+constexpr float LadderStepOntoCm = 150.f;
 constexpr float RoofSlabCm = 20.f;
 constexpr float RoofPostCm = 20.f;
 }
@@ -62,9 +64,11 @@ void USoraFieldcraft::StageWatch()
         FLightState& State = LightStates.AddDefaulted_GetRef();
         State.bOn = Row.ActiveOn.IsEmpty();
         const FVector Mount = Row.IsRoad() ? FVector::ZeroVector : FVector(Row.At, Row.HeightCm);
-        if (!Row.IsRoad())
+        if (!Row.IsRoad() && (!FloodSpace || Row.IsMoatTower()))
         {
-            Piece(TEXT("SearchlightPost_") + Row.Id, Layout::Cylinder, FVector(Row.At, Row.HeightCm * .5f), FVector(.25f, .25f, Row.HeightCm / 100.f),
+            // The physical moat owns an offset support behind its patrol
+            // aisle. A second post at the optical mount would block guards.
+            if(!MoatSpace) Piece(TEXT("SearchlightPost_") + Row.Id, Layout::Cylinder, FVector(Row.At, Row.HeightCm * .5f), FVector(.25f, .25f, Row.HeightCm / 100.f),
                 FLinearColor(.38f, .38f, .4f), true, Layout::Metal);
             Piece(TEXT("SearchlightHousing_") + Row.Id, Layout::Cylinder, Mount + FVector(0.f, 0.f, 40.f), FVector(.9f, .9f, .7f),
                 FLinearColor(.34f, .38f, .42f), false, Layout::Metal);
@@ -214,9 +218,11 @@ void USoraFieldcraft::TickSearchlights(int32 DtMs)
         else
         {
             State.LockedMs = FMath::Max(0, State.LockedMs - DtMs);
-            const float Bearing = Row.Yaw + Craft::BeamMilliDeg(Row.Rules, LightClockMs, Index * (Row.Rules.PeriodMs / 2)) / 1000.f;
-            At = State.LockedMs > 0 ? State.LockedAt : FVector(Row.At, 0.f) + FRotator(0.f, Bearing, 0.f).Vector() * Row.ReachCm;
-            At.Z = (Staged->bWater && Staged->Water.Area.Contains(At) ? Layout::WaterLevel : 0.f) + 2.f;
+            const bool bRelayOffline=(MoatSpace||FloodSpace)&&Row.IsMoatTower()&&Campaign&&Campaign->RelayOffline();
+            const int32 Phase = Row.IsMoatTower() ? (Row.Id == TEXT("s_searchlight_2") ? 1 : 0) : Index;
+            const float Bearing = Row.Yaw + Craft::BeamMilliDeg(Row.Rules, bRelayOffline?0:LightClockMs, Phase * (Row.Rules.PeriodMs / 2)) / 1000.f;
+            At = !bRelayOffline&&State.LockedMs > 0 ? State.LockedAt : FVector(Row.At, 0.f) + FRotator(0.f, Bearing, 0.f).Vector() * Row.ReachCm;
+            At.Z = MoatSpace ? 2.f : FloodSpace ? FloodSurfaceAt(At)+2.f : (Staged->bWater && Staged->Water.Area.Contains(At) ? Layout::WaterLevel : 0.f) + 2.f;
             From = FVector(Row.At, Row.HeightCm);
         }
         Spot->SetWorldLocation(At);
@@ -254,8 +260,8 @@ void USoraFieldcraft::TickSearchlights(int32 DtMs)
         }
         // A head in the spot, above the water, not under the reeds' and
         // lotus' leaves (ch06.b02), and in a clear line from the lamp.
-        const FVector Head = Player->GetCamera()->GetComponentLocation();
-        bool bInSpot = !IsDiving() && !UnderCover(Player->GetActorLocation()) && FVector::Dist2D(Head, At) <= Row.Rules.SpotCm * .5f;
+        const FVector Head = MoatSpace&&bMoatPosture?MoatHead():Player->GetCamera()->GetComponentLocation();
+        bool bInSpot = !(MoatSpace?MoatDepth()>0:IsDiving()) && !UnderCover(Player->GetActorLocation()) && FVector::Dist2D(Head, At) <= Row.Rules.SpotCm * .5f;
         if (bInSpot)
         {
             FCollisionQueryParams Query(SCENE_QUERY_STAT(SoraSearchlight), false, Player);
@@ -264,7 +270,7 @@ void USoraFieldcraft::TickSearchlights(int32 DtMs)
                 for (const auto& Companion : *List)
                     if (IsValid(Companion)) Query.AddIgnoredActor(Companion);
             FHitResult Hit;
-            bInSpot = !GetWorld()->LineTraceSingleByChannel(Hit, From + (Head - From).GetSafeNormal() * 100.f, Head, ECC_Visibility, Query);
+            bInSpot = !GetWorld()->LineTraceSingleByChannel(Hit, From + (Head - From).GetSafeNormal() * ((FloodSpace||MoatSpace)?2.f:100.f), Head, ECC_Visibility, Query);
         }
         State.bSeesHero = bInSpot;
         const Craft::ESpotted Seen = Craft::Spotted(State.InSpotMs, bInSpot, DtMs, Row.Rules);
@@ -359,64 +365,116 @@ bool USoraFieldcraft::IsOnRoof(const FVector& Location) const
     return RoofAt(Location) != INDEX_NONE;
 }
 
-bool USoraFieldcraft::LadderJump(ASoraPlayerCharacter& Player)
+int32 USoraFieldcraft::AtLadder(const ASoraPlayerCharacter& Player, bool& bUp) const
 {
-    if (!Staged || Staged->Ladders.IsEmpty() || LadderClimb != INDEX_NONE) return false;
+    if (!Staged || !Player.IsAlive() || Player.IsCrouched() ||
+        !Player.GetCharacterMovement()->IsMovingOnGround()) return INDEX_NONE;
     const FVector At = Player.GetActorLocation();
+    const float FeetZ = At.Z - Player.GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
     const FVector Forward = Player.GetActorForwardVector().GetSafeNormal2D();
     for (int32 Index = 0; Index < Staged->Ladders.Num(); ++Index)
     {
         const FSoraLadder& Ladder = Staged->Ladders[Index];
         const FVector Facing = FRotator(0.f, Ladder.Yaw, 0.f).Vector();
-        const FVector Foot(Ladder.Foot, At.Z);
-        const FVector Top = Foot + Facing * 140.f;
-        // At the foot, facing the roof: up. On the roof at its top, facing out: down.
-        const bool bUp = !IsOnRoof(At) && FVector::Dist2D(At, Foot) < Layout::LadderReachCm && FVector::DotProduct(Forward, Facing) > .5f &&
-            Player.GetCharacterMovement()->IsMovingOnGround();
-        const bool bDown = IsOnRoof(At) && FVector::Dist2D(At, Top) < Layout::LadderReachCm && FVector::DotProduct(Forward, Facing) < -.5f;
-        if (!bUp && !bDown) continue;
-        LadderClimb = Index;
-        bLadderUp = bUp;
-        LadderAlong = 0.f;
-        Player.StopSprint();
-        UCharacterMovementComponent* Movement = Player.GetCharacterMovement();
-        Movement->StopMovementImmediately();
-        Movement->SetMovementMode(MOVE_Flying);
-        Raise(bUp ? TEXT("ladder_up:") + Ladder.Id : TEXT("ladder_down:") + Ladder.Id);
+        const FVector Foot(Ladder.Foot, 0.f);
+        const FVector Top = Foot + Facing * Layout::LadderStepOntoCm;
+        bUp = FMath::Abs(FeetZ) < 15.f && FVector::Dist2D(At, Foot) < Layout::LadderReachCm &&
+            FVector::DotProduct(Forward, Facing) > .5f;
+        const bool bDown = FMath::Abs(FeetZ - Ladder.HeightCm) < 15.f && Ladder.Roof.Contains(At) &&
+            FVector::Dist2D(At, Top) < Layout::LadderReachCm && FVector::DotProduct(Forward, Facing) < -.5f;
+        if (bUp || bDown) return Index;
+    }
+    return INDEX_NONE;
+}
+
+void USoraFieldcraft::ReleaseLadder(ASoraPlayerCharacter& Player)
+{
+    if (!Staged || !Staged->Ladders.IsValidIndex(LadderClimb)) return;
+    const FString Id = Staged->Ladders[LadderClimb].Id;
+    // A release restores gravity at the actual capsule position. Remember
+    // its height so a fall from the rungs still makes its landing noise.
+    RoofFall = LadderClimb;
+    RoofFallZ = Player.GetActorLocation().Z;
+    RoofStood = INDEX_NONE;
+    LadderClimb = INDEX_NONE; LadderStep = INDEX_NONE; LadderFeet.Reset();
+    Player.GetCharacterMovement()->SetMovementMode(MOVE_Falling);
+    Raise(TEXT("ladder_release:") + Id);
+}
+
+bool USoraFieldcraft::LadderJump(ASoraPlayerCharacter& Player)
+{
+    if (!Staged || Staged->Ladders.IsEmpty()) return false;
+    if (LadderClimb != INDEX_NONE)
+    {
+        ReleaseLadder(Player);
         return true;
     }
-    return false;
+    bool bUp = false;
+    const int32 Index = AtLadder(Player, bUp);
+    if (Index == INDEX_NONE) return false;
+    const FSoraLadder& Ladder = Staged->Ladders[Index];
+    const FVector Facing = FRotator(0.f, Ladder.Yaw, 0.f).Vector();
+    const float Clearance = (UCharacterMovementComponent::MIN_FLOOR_DIST + UCharacterMovementComponent::MAX_FLOOR_DIST) * .5f;
+    const FVector Foot(Ladder.Foot, Clearance);
+    const FVector Above = Foot + FVector(0.f, 0.f, Ladder.HeightCm);
+    const FVector Top = Above + Facing * Layout::LadderStepOntoCm;
+    // Approach, vertical climb and step onto the roof all share one speed
+    // budget. Descending follows the same route in reverse, outside the slab.
+    LadderFeet = bUp ? TArray<FVector>{Foot, Above, Top} : TArray<FVector>{Top, Above, Foot};
+    LadderStep = 0; LadderClimb = Index; bLadderUp = bUp; LadderHealth = Player.Health;
+    RoofFall = INDEX_NONE;
+    Player.StopSprint(); Player.ConsumeMovementInputVector();
+    if (auto* Kit = Player.GetEquipment()) Kit->Halt();
+    UCharacterMovementComponent* Movement = Player.GetCharacterMovement();
+    Movement->StopMovementImmediately();
+    Movement->SetMovementMode(MOVE_Flying);
+    Raise(bUp ? TEXT("ladder_up:") + Ladder.Id : TEXT("ladder_down:") + Ladder.Id);
+    return true;
 }
 
 void USoraFieldcraft::TickLadders(float DeltaTime)
 {
     ASoraPlayerCharacter* Player = Hero();
-    if (Staged->Ladders.IsEmpty() || !Player) return;
+    if (Staged->Ladders.IsEmpty() || !Player || DeltaTime <= 0.f) return;
     UCharacterMovementComponent* Movement = Player->GetCharacterMovement();
     const float HalfHeight = Player->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
     if (LadderClimb != INDEX_NONE)
     {
-        // Up or down the rungs at the ladder's pace; off at the top onto the roof, or at the foot.
+        if (!Player->IsAlive() || Player->Health < LadderHealth)
+        {
+            ReleaseLadder(*Player);
+            return;
+        }
+        LadderHealth = Player->Health;
+        Movement->StopMovementImmediately(); Player->ConsumeMovementInputVector();
+        float Remaining = Craft::LadderCmS * DeltaTime;
+        while (LadderFeet.IsValidIndex(LadderStep) && Remaining > 0.f)
+        {
+            const FVector Goal = LadderFeet[LadderStep] + FVector(0.f, 0.f, HalfHeight);
+            const FVector Delta = Goal - Player->GetActorLocation();
+            const float Distance = Delta.Size();
+            if (Distance <= .1f) { ++LadderStep; continue; }
+            const float Step = FMath::Min(Distance, Remaining);
+            FHitResult Hit;
+            Player->SetActorLocation(Player->GetActorLocation() + Delta * (Step / Distance), true, &Hit);
+            Remaining -= Step;
+            if (FVector::Dist(Player->GetActorLocation(), Goal) <= .1f) ++LadderStep;
+            else if (Hit.bBlockingHit) return;
+        }
+        if (LadderFeet.IsValidIndex(LadderStep)) return;
+        // A removed roof or blocked endpoint cannot award arrival. Remain
+        // held until support returns or the player releases the ladder.
+        FFindFloorResult Floor;
+        Movement->FindFloor(Player->GetActorLocation(), Floor, false);
+        if (!Floor.IsWalkableFloor() || Floor.FloorDist > UCharacterMovementComponent::MAX_FLOOR_DIST + 1.f) return;
         const FSoraLadder& Ladder = Staged->Ladders[LadderClimb];
-        const FVector Facing = FRotator(0.f, Ladder.Yaw, 0.f).Vector();
-        LadderAlong = FMath::Min(LadderAlong + Craft::LadderCmS * DeltaTime, Ladder.HeightCm);
-        const float Height = bLadderUp ? LadderAlong : Ladder.HeightCm - LadderAlong;
-        Movement->Velocity = FVector::ZeroVector;
-        Player->SetActorLocation(FVector(Ladder.Foot, 0.f) + FVector(0.f, 0.f, Height + HalfHeight + 2.f), false, nullptr,
-            ETeleportType::TeleportPhysics);
-        if (LadderAlong < Ladder.HeightCm) return;
-        const FVector Off = bLadderUp ? FVector(Ladder.Foot, Ladder.HeightCm + HalfHeight + 4.f) + Facing * 150.f
-                                      : FVector(Ladder.Foot, HalfHeight + 4.f);
-        Player->SetActorLocation(Off, false, nullptr, ETeleportType::TeleportPhysics);
-        Movement->SetMovementMode(MOVE_Walking);
-        // Remember the completed step onto the roof now. The character can
-        // leave its edge before the next subsystem tick; waiting to sample a
-        // later grounded frame would lose that fall's source and its noise.
         RoofStood = bLadderUp ? LadderClimb : INDEX_NONE;
-        RoofStandZ = Off.Z;
+        RoofStandZ = Player->GetActorLocation().Z;
         RoofFall = INDEX_NONE;
-        Raise(bLadderUp ? TEXT("roof_reached:") + Ladder.Id : TEXT("ladder_foot:") + Ladder.Id);
-        LadderClimb = INDEX_NONE;
+        const FString Event = (bLadderUp ? TEXT("roof_reached:") : TEXT("ladder_foot:")) + Ladder.Id;
+        LadderClimb = INDEX_NONE; LadderStep = INDEX_NONE; LadderFeet.Reset();
+        Movement->SetMovementMode(MOVE_Walking);
+        Raise(Event);
         return;
     }
     // A drop off a roof he last stood on: where he lands, and whether the

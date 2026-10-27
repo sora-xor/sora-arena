@@ -1,12 +1,15 @@
 #include "SoraBoss.h"
 #include "SoraSettings.h"
+#include "SoraGameMode.h"
 #include "Combat/SoraBossCatalog.h"
 #include "Combat/SoraBossHazard.h"
 #include "Combat/SoraDamage.h"
 #include "SoraEquipmentComponent.h"
 #include "SoraPlayerCharacter.h"
 #include "SoraWorldBuilder.h"
+#include "SoraSummitRules.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SceneComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -85,7 +88,10 @@ ASoraBoss* ASoraBoss::SpawnBoss(UWorld& World, FName Id, int32 Slot, const FVect
 {
     FActorSpawnParameters Params;
     Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-    ASoraBoss* Boss = World.SpawnActor<ASoraBoss>(Location, Rotation, Params);
+    // A saved P2 boundary has already completed its retreat. Spawn above the
+    // clear north dais stand and let gravity settle the new body onto it.
+    const FVector Spawn=InSetup.bSummit&&Id==TEXT("boss_val_amort")&&InSetup.Phase==1?InSetup.SummitDaisFloor+FVector(0,0,160):Location;
+    ASoraBoss* Boss = World.SpawnActor<ASoraBoss>(Spawn, Rotation, Params);
     if (Boss && !Boss->InitBoss(Id, Slot, InSetup))
     {
         Boss->Destroy();
@@ -106,6 +112,7 @@ bool ASoraBoss::InitBoss(FName Id, int32 Slot, const FSoraBossSetup& InSetup)
     }
     Info = Found;
     Setup = InSetup;
+    Setup.bSummit=Setup.bSummit&&Id==TEXT("boss_val_amort");
     Setup.Phase = FMath::Clamp(Setup.Phase, 0, Info->Phases.Num() - 1);
     InitScripted(Slot);
     SetActorScale3D(FVector(Info->ScalePermille / 1000.f));
@@ -285,7 +292,7 @@ bool ASoraBoss::IsInvulnerable() const
 {
     if (!Info || !GetWorld())
         return false;
-    if (NowMs() < InvulnerableUntilMs)
+    if (bSummitTransition || NowMs() < InvulnerableUntilMs)
         return true;
     const FSoraBossPhase* Current = CurrentPhase();
     return Current && Current->ShieldWhileAdds != INDEX_NONE && LiveAdds(Current->ShieldWhileAdds) > 0;
@@ -454,15 +461,21 @@ void ASoraBoss::EnterPhase(int32 Next)
     Step = 0; StepDone = 0; Picked = INDEX_NONE; HabitStep = 0;
     GetCharacterMovement()->MaxWalkSpeed = Entered.SpeedCmPerSecond;
     GetCharacterMovement()->MaxFlySpeed = Entered.SpeedCmPerSecond;
-    const int32 Settle = bOpening ? SoraBossBody::OpeningMs : Info->TransitionMs;
+    bSummitTransition=Setup.bSummit&&!bOpening&&Next>0;
+    const int32 Settle = bOpening ? SoraBossBody::OpeningMs : Setup.bSummit?SoraSummitRules::PhaseTransitionMs(Next):Info->TransitionMs;
     NextStartMs = Now + Settle;
-    if (!bOpening && Info->TransitionMs > 0)
+    if (!bOpening && Settle > 0)
     {
-        // The phase's roar: it cannot be hurt and does nothing meanwhile.
-        InvulnerableUntilMs = Now + Info->TransitionMs;
-        ASoraEnemy::Stagger(Info->TransitionMs);
+        // Phase changes protect the boss throughout their transition.
+        InvulnerableUntilMs = Now + Settle;
+        // P2 walks onto the actual dais while protected. A generic stagger
+        // would stop those footsteps; P3 retains its stationary draw interval.
+        if(!Setup.bSummit||Next!=1) ASoraEnemy::Stagger(Settle);
     }
     TimedDueMs.Reset();
+    // A pending ten-second seizure respawn must not cross into the cane duel.
+    for(int32 Group=0;Group<GroupRespawnAtMs.Num();++Group)
+        if(!CanRespawnAddGroup(Group)) GroupRespawnAtMs[Group]=0;
     for (const FSoraBossTimed& Timed : Entered.Concurrent)
         TimedDueMs.Add(Now + Settle + Timed.FirstMs);
     SummonDone.Init(false, Entered.Summons.Num());
@@ -519,7 +532,7 @@ void ASoraBoss::RunTimers()
             StartSide(Current.OnceBelow[Index].Attack);
         }
     for (int32 Group = 0; Group < GroupRespawnAtMs.Num(); ++Group)
-        if (GroupRespawnAtMs[Group] > 0 && Now >= GroupRespawnAtMs[Group])
+        if (GroupRespawnAtMs[Group] > 0 && Now >= GroupRespawnAtMs[Group] && CanRespawnAddGroup(Group))
         {
             GroupRespawnAtMs[Group] = 0;
             Summon(Group);
@@ -564,6 +577,7 @@ void ASoraBoss::TickPlay(float DeltaSeconds)
     if (!Info || bDefeated)
         return;
     SyncPhase();
+    if(TickSummitTransition()) return;
     RunTimers();
     ASoraCharacterBase* Target = Hero();
     const int32 Now = NowMs();
@@ -582,7 +596,10 @@ void ASoraBoss::TickPlay(float DeltaSeconds)
         }
     }
     AdvanceSides();
-    Advance();
+    // Summons and seizure fields keep their own clocks. A returning shield
+    // cancels even a beam/cleave already winding up in the exposed interval.
+    if(IsSummitSeizureShielded()) Run=FRun();
+    else Advance();
     // A shield advance shoves the hero aside; it never hurts.
     if (Target && IsShieldUp() && Run.Attack == INDEX_NONE && GetVelocity().Size2D() > 20.f && Now >= NextPushMs)
     {
@@ -610,9 +627,11 @@ FSoraBossIntent ASoraBoss::Drive(ASoraCharacterBase& Target, float)
     FSoraBossIntent Intent;
     if (!Info || bDefeated || !bPhaseEntered)
         return Intent;
+    if(DriveSummit(Intent,Target)) return Intent;
     const FSoraBossPhase& Current = Info->Phases[PhaseNow];
     // Outflanked by a 転 step, it neither starts an attack nor turns until it can turn again.
-    if (Run.Attack == INDEX_NONE && !IsStaggered() && !IsTurnLocked() && NowMs() >= InvulnerableUntilMs)
+    if (Run.Attack == INDEX_NONE && !IsStaggered() && !IsTurnLocked() && NowMs() >= InvulnerableUntilMs &&
+        !IsSummitSeizureShielded())
     {
         bool bPattern = false;
         int32 Next = INDEX_NONE;
@@ -648,6 +667,9 @@ FSoraBossIntent ASoraBoss::Drive(ASoraCharacterBase& Target, float)
     Intent.TurnDegreesPerSecond = Current.TurnDegreesPerSecond;
     Intent.bFace = bKnows && !Delta.IsNearlyZero() && !IsTurnLocked();
     Intent.Facing = Delta;
+    // P2 stays at its dais stand even while exposed; the player approaches
+    // through the seizure field instead of drawing the collector off it.
+    if(Setup.bSummit&&PhaseNow==1) return Intent;
     switch (Current.Move)
     {
     case ESoraBossMove::Close:
@@ -1236,7 +1258,7 @@ void ASoraBoss::StrikeBlow(ASoraCharacterBase& Target)
         Hit.HeroStaggerMs = Attack.HeroStaggerMs;
         Hit.MutoWindowMs = Attack.bMuto && Info->bMutoFinisher ? MutoWindowMs() : 0;
         const auto* Player = Cast<ASoraPlayerCharacter>(&Target);
-        const bool bGuarding = Player && Player->GetEquipment()->IsGuardHeld() && !Player->GetEquipment()->IsSheathed();
+        const bool bGuarding = Player && Player->GetEquipment()->IsGuardHeld() && !Player->GetEquipment()->IsSheathing();
         Resolved.Target = &Target;
         Resolved.Damage = StrikeHero(Target, Attack.Damage, Hit, Run.LockedDirection);
         Resolved.bHit = Resolved.Damage > 0;
@@ -1331,6 +1353,16 @@ void ASoraBoss::StrikeBeam(ASoraCharacterBase& Target, const FVector& Direction)
     StrikeHero(Target, Attack.Damage, Hit, Flat);
 }
 
+FHitResult ASoraBoss::RangedAimTrace(const ASoraCharacterBase& Target) const
+{
+    const FVector Eye=GetActorLocation()+FVector(0,0,SoraBossBody::EyeHeight*GetActorScale3D().Z);
+    const FVector Chest=Target.GetActorLocation()+FVector(0,0,SoraBossBody::ChestHeight);
+    FHitResult Line; FCollisionQueryParams Query(SCENE_QUERY_STAT(SoraBossRound),false,this);
+    IgnoreOwn(Query);
+    GetWorld()->LineTraceSingleByChannel(Line,Eye,Chest,ECC_Visibility,Query);
+    return Line;
+}
+
 void ASoraBoss::StrikeRound(ASoraCharacterBase& Target)
 {
     const FSoraBossAttack& Attack = AttackAt(Run.Attack);
@@ -1338,10 +1370,7 @@ void ASoraBoss::StrikeRound(ASoraCharacterBase& Target)
     const float Scale = GetActorScale3D().Z;
     const FVector EyePoint = GetActorLocation() + FVector(0.f, 0.f, SoraBossBody::EyeHeight * Scale);
     const FVector Chest = Target.GetActorLocation() + FVector(0.f, 0.f, SoraBossBody::ChestHeight);
-    FHitResult Line;
-    FCollisionQueryParams Query(SCENE_QUERY_STAT(SoraBossRound), false, this);
-    IgnoreOwn(Query);
-    GetWorld()->LineTraceSingleByChannel(Line, EyePoint, Chest, ECC_Visibility, Query);
+    const FHitResult Line=RangedAimTrace(Target);
     const bool bHolds = BossRules::LockHolds(FMath::RoundToInt32(FVector::Dist(Chest, Run.LockedPoint)), Attack.LockCm);
     AnnounceStrike(Run.Attack, Run.Serial);
     SoraDamage::Beam(GetWorld(), EyePoint, Run.LockedPoint, FLinearColor(1.f, .12f, .3f), 1.7f);
@@ -1499,9 +1528,20 @@ void ASoraBoss::AdvanceSides()
 bool ASoraBoss::ZonePoints(int32 Index, int32 Serial, TArray<FVector>& Points) const
 {
     const FSoraBossAttack& Attack = AttackAt(Index);
+    if(Attack.Id==TEXT("slide_props"))
+    {
+        const auto* Mode=GetWorld()->GetAuthGameMode<ASoraGameMode>();
+        if(PhaseNow!=1||!Mode||!Mode->Arena()||!Mode->Arena()->HasBridgeDeck()) return false;
+        Points.Add(Mode->Arena()->BridgeDeckRoot()->GetComponentLocation());
+        return true;
+    }
     const ASoraCharacterBase* Target = Hero();
     if (!Target)
         return false;
+    if(Attack.Id==TEXT("margin_call"))
+        if(const auto* Mode=GetWorld()->GetAuthGameMode<ASoraGameMode>();Mode&&Mode->Arena()&&Mode->Arena()->HasBridgeDeck())
+            if(const auto* Player=Cast<ASoraPlayerCharacter>(Target))
+                return PhaseNow==1&&Mode->Arena()->BridgeMarginPoints(*Player,Points);
     const FVector Feet = Target->GetActorLocation() - FVector(0.f, 0.f, Target->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
     const auto Around = [&](int32 Count, float Spread)
     {
@@ -1546,6 +1586,17 @@ bool ASoraBoss::ZonePoints(int32 Index, int32 Serial, TArray<FVector>& Points) c
 void ASoraBoss::PlaceZones(int32 Index, int32 Serial, int32 WindupMs)
 {
     const FSoraBossAttack& Attack = AttackAt(Index);
+    if(Attack.Id==TEXT("slide_props"))
+    {
+        if(auto* Mode=GetWorld()->GetAuthGameMode<ASoraGameMode>();Mode&&Mode->Arena())
+            Mode->Arena()->BeginBridgeSlide(*this,Index,Serial);
+        return; // Never substitute an invisible stationary damage circle.
+    }
+    if(Attack.Id==TEXT("margin_call"))
+        if(auto* Mode=GetWorld()->GetAuthGameMode<ASoraGameMode>();Mode&&Mode->Arena()&&Mode->Arena()->HasBridgeDeck())
+        { Mode->Arena()->BeginBridgeMargin(*this,Index,Serial); return; }
+    if(Attack.Id==TEXT("amort_seizure_field"))
+        if(auto* Mode=GetWorld()->GetAuthGameMode<ASoraGameMode>();Mode&&Mode->Arena()&&Mode->Arena()->BeginSeizure(*this,Index,Serial,WindupMs)) return;
     TArray<FVector> Points;
     if (!ZonePoints(Index, Serial, Points))
         return;
@@ -1581,6 +1632,7 @@ void ASoraBoss::Summon(int32 Group)
         if (!Add)
             continue;
         Add->SetSummoner(this);
+        if(Setup.bSummit&&Spec.Variant==TEXT("collateral_construct")) Add->EnableCollateralConstruct();
         Adds.Add(Add);
         AddGroups.Add(Group);
     }
@@ -1594,11 +1646,12 @@ void ASoraBoss::AddDefeated(ASoraEnemy& Add)
     if (Index == INDEX_NONE)
         return;
     const int32 Group = AddGroups[Index];
+    if(Add.HasReleasedGoods()) ReleasedGoods.Add(&Add);
     Adds.RemoveAt(Index);
     AddGroups.RemoveAt(Index);
     if (LiveAdds(Group) > 0 || bDefeated)
         return;
-    if (Info->Adds[Group].RespawnMs > 0)
+    if (Info->Adds[Group].RespawnMs > 0 && CanRespawnAddGroup(Group))
         GroupRespawnAtMs[Group] = NowMs() + Info->Adds[Group].RespawnMs;
     const FSoraBossPhase* Current = CurrentPhase();
     if (Current && Current->ShieldWhileAdds == Group)
@@ -1862,6 +1915,13 @@ bool ASoraBoss::Disarm(AActor* By)
     const FSoraBossAttack* Attack = BossAttack();
     if (!Info || !Info->bMutoFinisher || bDefeated || !Attack || !Attack->bMuto)
         return false;
+    // The Collector finale requires the katana in its scabbard. Other
+    // opponents retain the shared sheathed-hand combat contract.
+    if(Setup.bSummit)
+    {
+        const auto* Player=Cast<ASoraPlayerCharacter>(By);
+        if(!Player||Player->WeaponId!=0||!Player->GetEquipment()->IsSheathed()) return false;
+    }
     // 無刀取り: the blade is taken; the fight is over at any health.
     bTakenByMuto = true;
     Health = 0.f;
@@ -2061,6 +2121,9 @@ void ASoraBoss::OnDefeated(AActor* Causer)
 
 void ASoraBoss::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+    // Released collateral stays through capture, and leaves with this encounter.
+    for(ASoraEnemy* Goods:ReleasedGoods) if(IsValid(Goods)) Goods->Destroy();
+    ReleasedGoods.Reset();
     // A boss removed from the world takes its wards, zones, adds and lock with it.
     ClearWards();
     for (ASoraBossHazard* Zone : Zones)

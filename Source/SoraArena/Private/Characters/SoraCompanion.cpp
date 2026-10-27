@@ -203,6 +203,7 @@ void ASoraCompanion::HaltActions()
 ASoraEnemy* ASoraCompanion::Quarry() const
 {
     const bool bShooter = Kind == ERole::Shooter;
+    const bool bSpire=UsesSpireRoute();
     const float Sight = bShooter ? SoraCompanionTuning::ShooterSightCm : SoraCompanionTuning::FighterSightCm;
     ASoraEnemy* Best = nullptr;
     float BestDistance = Sight;
@@ -212,9 +213,10 @@ ASoraEnemy* ASoraCompanion::Quarry() const
         if (!Enemy->IsEnemy() || !Enemy->IsAlive() || Enemy->IsSubdued() || Enemy->IsSeized() || Enemy->IsHidden() ||
             Enemy->IsDojoPupil() || (!bShooter && Enemy->IsFlying()))
             continue;
-        const float Distance = FVector::Dist2D(Enemy->GetActorLocation(), GetActorLocation());
+        const float Distance = bSpire?FVector::Dist(Enemy->GetActorLocation(),GetActorLocation()):
+            FVector::Dist2D(Enemy->GetActorLocation(),GetActorLocation());
         if (Distance >= BestDistance ||
-            (!bShooter && FVector::Dist2D(Enemy->GetActorLocation(), PostAt) > SoraCompanionTuning::LeashCm))
+            (!bShooter && (bSpire?FVector::Dist(Enemy->GetActorLocation(),PostAt):FVector::Dist2D(Enemy->GetActorLocation(),PostAt)) > SoraCompanionTuning::LeashCm))
             continue;
         Best = Enemy;
         BestDistance = Distance;
@@ -224,6 +226,7 @@ ASoraEnemy* ASoraCompanion::Quarry() const
 
 void ASoraCompanion::MoveToward(const FVector& Where, float Pace, float Acceptance)
 {
+    if(UsesSpireRoute()) { MoveOnSpire(Where,Pace,Acceptance); return; }
     FVector Delta = Where - GetActorLocation();
     Delta.Z = 0.f;
     const float Distance = Delta.Size();
@@ -259,6 +262,7 @@ void ASoraCompanion::WalkToGoal(float Dt)
 void ASoraCompanion::Fight(float Dt)
 {
     const float Time = Now();
+    const bool bSpire=UsesSpireRoute();
     const auto Profile = SoraHistoricalArms::Profile(SoraHistoricalArms::FormFor(WeaponId));
     if (bWindup)
     {
@@ -270,7 +274,8 @@ void ASoraCompanion::Fight(float Dt)
         const FVector From = GetActorLocation() + FVector(0.f, 0.f, SoraCompanionTuning::EyeHeight);
         const FVector Delta = Enemy->GetActorLocation() - GetActorLocation();
         // The blow lands only if the opponent is still in its committed reach.
-        if (Delta.Size2D() > Profile.MaximumDistanceCm + 40.f ||
+        if ((bSpire&&!SpireContact(*Enemy,Profile.MaximumDistanceCm+40.f)) ||
+            Delta.Size2D() > Profile.MaximumDistanceCm + 40.f ||
             FVector::DotProduct(GetActorForwardVector(), Delta.GetSafeNormal2D()) < Profile.MinimumFacingDot)
             return;
         FHitResult Trace;
@@ -293,9 +298,9 @@ void ASoraCompanion::Fight(float Dt)
     }
     const FVector Delta = Enemy->GetActorLocation() - GetActorLocation();
     const float Distance = Delta.Size2D();
-    if (Distance > Profile.MaximumDistanceCm * .8f)
+    if (Distance > Profile.MaximumDistanceCm * .8f || (bSpire&&!SpireContact(*Enemy,Profile.MaximumDistanceCm*.8f)))
     {
-        MoveToward(Enemy->GetActorLocation(), SoraCompanionTuning::RunPace, Profile.MaximumDistanceCm * .7f);
+        MoveToward(Enemy->GetActorLocation(), SoraCompanionTuning::RunPace,bSpire?40.f:Profile.MaximumDistanceCm*.7f);
         return;
     }
     UpdateLocomotion(false, 1.f);
@@ -383,7 +388,8 @@ void ASoraCompanion::Guide(float Dt)
 {
     const APawn* Hero = UGameplayStatics::GetPlayerPawn(this, 0);
     if (!Hero) return;
-    const float Distance = FVector::Dist2D(Hero->GetActorLocation(), GetActorLocation());
+    const float Distance = UsesSpireRoute()?FVector::Dist(Hero->GetActorLocation(),GetActorLocation()):
+        FVector::Dist2D(Hero->GetActorLocation(),GetActorLocation());
     if (Distance > SoraCompanionTuning::GuideFarCm)
         MoveToward(Hero->GetActorLocation(), SoraCompanionTuning::RunPace, SoraCompanionTuning::GuideNearCm);
     else UpdateLocomotion(false, 1.f);
@@ -397,6 +403,13 @@ void ASoraCompanion::TickPlay(float Dt)
         if (IsHiddenAway() && bHasGoal) WalkToGoal(Dt);
         return;
     }
+    if(auto* Craft=USoraFieldcraft::Get(this);Craft&&Craft->MoveFloodCompanion(*this,Dt)) return;
+    if(auto* Craft=USoraFieldcraft::Get(this);Craft&&Craft->MoveClimbCompanion(*this,Dt)) return;
+    if(auto* Craft=USoraFieldcraft::Get(this);Craft&&Craft->MoveMoatCompanion(*this,Dt)) return;
+    // The spire's skirmishers accompany the climb instead of defending
+    // their original L1 spawn forever. Other chapters retain fixed posts.
+    if(UsesSpireRoute())
+        if(const auto* Hero=UGameplayStatics::GetPlayerPawn(this,0)) PostAt=Hero->GetActorLocation();
     switch (Kind)
     {
     case ERole::Escort: if (bHasGoal) WalkToGoal(Dt); return;
@@ -404,6 +417,10 @@ void ASoraCompanion::TickPlay(float Dt)
     case ERole::Shooter: Shoot(Dt); return;
     case ERole::Rank: HoldRank(Dt); return;
     case ERole::Guide: Guide(Dt); return;
-    case ERole::Bystander: UpdateLocomotion(false, 1.f); return;
+    case ERole::Bystander:
+        // A crank helper walks to its wheel or cover using character sweeps.
+        if (bHasGoal) MoveToward(GoalAt, GoalPace, 8.f);
+        else UpdateLocomotion(false, 1.f);
+        return;
     }
 }

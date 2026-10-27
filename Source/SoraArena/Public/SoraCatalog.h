@@ -1,8 +1,16 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "SoraBeatRules.h"
+#include "SoraDojoRules.h"
 #include "SoraFieldcraftRules.h"
 #include "SoraMountRules.h"
+#include "SoraCargoRules.h"
+#include "SoraRegistry.h"
+#include "SoraRegistryRules.h"
+#include "SoraSpireRules.h"
+#include "SoraHelmRules.h"
+#include "SoraCacheRewardRules.h"
+#include "SoraLanternWorkshopRules.h"
 
 struct FSoraWeapon
 {
@@ -56,6 +64,8 @@ struct FSoraDialogueCue
     FString Japanese;
     FString English;
     float DurationSeconds = 0.f;
+    // Empty inherits the event's mode; an explicit ambient/radio line keeps control.
+    FString Mode;
     bool bRepeatable = false;
 };
 // A row of the chapter's event-keyed trigger table: "beat_start",
@@ -96,6 +106,8 @@ struct FSoraCollectible
     TArray<int32> Beats;
     // Otherwise it lies loose in the world: its FSoraSpace pickup.
     int32 Pickup = INDEX_NONE;
+    // Optional authored titles; absent pairs use a neutral UI category label.
+    FString Title, TitleEnglish;
     FString Codex;
     FString CodexEnglish;
 };
@@ -140,9 +152,12 @@ struct FSoraVolume
     FString Event;
     FVector2D Center = FVector2D::ZeroVector;
     FVector2D Size = FVector2D::ZeroVector;
+    bool bHeight = false;
+    int32 FloorCm = 0;
     bool Contains(const FVector& Location) const
     {
-        return FMath::Abs(Location.X - Center.X) <= Size.X * .5f && FMath::Abs(Location.Y - Center.Y) <= Size.Y * .5f;
+        return (!bHeight || (Location.Z >= FloorCm - 20 && Location.Z <= FloorCm + 200)) &&
+            FMath::Abs(Location.X - Center.X) <= Size.X * .5f && FMath::Abs(Location.Y - Center.Y) <= Size.Y * .5f;
     }
 };
 // A walled zone for a place, or a route corridor with its road.
@@ -163,7 +178,10 @@ struct FSoraZone
     TArray<FVector2D> Route;
     float RouteLength = 0.f;
     bool IsRoute() const { return Route.Num() >= 2; }
-    bool Contains(const FVector& Location) const { return Rect.IsInside(FVector2D(Location)); }
+    bool bHeightBounds = false;
+    int32 MinZ = 0, MaxZ = 0;
+    bool Contains(const FVector& Location) const
+    { return Rect.IsInside(FVector2D(Location))&&(!bHeightBounds||(Location.Z>=MinZ&&Location.Z<MaxZ)); }
     // The road's point Chainage cm from its start, and how far along the road
     // a point stands (projected onto its nearest stretch).
     FVector2D PointAlong(float Chainage) const;
@@ -217,6 +235,8 @@ struct FSoraMount
     TArray<FSoraGaitCap> Caps;
     TArray<FSoraForcedGait> Forced;
     bool bDismount = true;
+    // Explicit cargo-ride policy; other rides merely shy when spooked.
+    bool bDismountOnSpook = false;
     // The horse follows the road unless the rider steers.
     bool bAutoSteer = false;
     // A mounted fight: the rider dismounts as this phase begins (0: never).
@@ -297,12 +317,14 @@ struct FSoraCompanionSpec
     // A volley rank's gunner: its rank (0 is the first), or INDEX_NONE.
     int32 Rank = INDEX_NONE;
 };
-// A person a defence protects, standing at its defended target.
+// A defended person at a target, or a crank helper (Target INDEX_NONE)
+// at its work and an existing cover slot.
 struct FSoraDefendedPerson
 {
     FString Id;
     int32 Target = INDEX_NONE;
     FVector2D At = FVector2D::ZeroVector;
+    FVector2D Cover = FVector2D::ZeroVector;
 };
 // Rotating volley ranks the hero commands (ch08 volley_command): the ranks
 // are the beat's allies with a Rank, PerRank to a rank, all with WeaponId.
@@ -369,6 +391,7 @@ struct FSoraSearchlight
     FString ActiveOn;
     bool bSpooks = false;
     bool IsRoad() const { return RoadToCm > 0; }
+    bool IsMoatTower() const { return Id == TEXT("s_searchlight_1") || Id == TEXT("s_searchlight_2"); }
 };
 // A one-shot lure object hanging HeightCm up (ch07.b04's temple bell).
 struct FSoraBell
@@ -500,12 +523,160 @@ struct FSoraStealthRulesData
 // Where a beat happens: its zone (INDEX_NONE for the arena hub), where a
 // travel cut places the hero, its anchor and task points, trigger volumes,
 // opponent spawns and patrols, and what the world builds for its task.
+struct FSoraLiftSpace
+{
+    bool bEnabled=false;
+    FVector2D Size=FVector2D::ZeroVector;
+    int32 BottomCm=0,TopCm=0;
+    TArray<int32> GantryCm;
+    FBox2D Gallery;
+    FVector2D GalleryExit=FVector2D::ZeroVector;
+};
+struct FSoraSpireSpace
+{
+    FVector2D Center = FVector2D::ZeroVector;
+    TArray<FVector> Ramp;
+    TArray<FVector> Spawns;
+    bool Enabled() const { return Ramp.Num()==SoraSpireRules::NodeCount; }
+};
+struct FSoraSummitSpace
+{
+    FVector2D Center = FVector2D::ZeroVector;
+    TArray<FVector> Stairs;
+    bool Enabled() const { return Stairs.Num()==6; }
+};
+struct FSoraBridgeSpace
+{
+    bool bEnabled=false;
+    FVector2D Center=FVector2D::ZeroVector;
+};
+struct FSoraHelmSpace
+{
+    bool bEnabled=false;
+    SoraHelmRules::FContract Contract;
+    FSoraVolume Hold;
+    FVector2D Wheel=FVector2D::ZeroVector,Beacon=FVector2D::ZeroVector;
+};
+struct FSoraWindSpace
+{
+    FName Kind;
+    FVector2D Origin=FVector2D::ZeroVector;
+    bool Enabled() const { return !Kind.IsNone(); }
+    bool Ridge() const { return Kind==TEXT("ridge"); }
+};
+// Chapter 6's two authored wall routes. Points are local feet positions;
+// point zero is the ground and the remaining points are reached holds.
+struct FSoraClimbRoute
+{
+    FName Id;
+    TArray<FVector> Points;
+    TArray<int32> RestHolds;
+    int32 StepMs=0;
+    bool bExposed=false;
+};
+struct FSoraClimbSpace
+{
+    bool bEnabled=false;
+    FVector2D Origin=FVector2D::ZeroVector;
+    int32 HeightCm=0;
+    FSoraClimbRoute Corner, Extrusion;
+    int32 LookPeriodMs=0, LookHoldMs=0, GuardIndex=INDEX_NONE;
+    int32 CrawlFloorCm=0, CrawlHeightCm=0, CrawlHalfWidthCm=0, CrawlEntryX=0, CrawlExitX=0;
+};
+struct FSoraMoatSpace
+{
+    bool bEnabled=false;
+    FVector2D Origin=FVector2D::ZeroVector;
+    int32 FloatClearDepthCm=0, HitscanClearDepthCm=0;
+};
+struct FSoraFloodSpace
+{
+    bool bEnabled=false;
+    FVector2D Origin=FVector2D::ZeroVector;
+};
+struct FSoraFoundryDefenseSpace
+{
+    bool bEnabled=false;
+    TArray<FVector2D> Tubs, Crew;
+};
+struct FSoraMoltenSpace
+{
+    bool bEnabled=false;
+    TArray<FSoraVolume> Channels;
+};
+struct FSoraFuelCanister
+{
+    FName Id;
+    FVector Floor=FVector::ZeroVector;
+};
+struct FSoraPodArrival
+{
+    FName Id;
+    FVector Floor=FVector::ZeroVector;
+};
+struct FSoraPressHall
+{
+    bool bEnabled=false;
+    FVector2D Origin=FVector2D::ZeroVector;
+};
+struct FSoraRelayRoom
+{
+    bool bEnabled=false;
+    FVector2D Origin=FVector2D::ZeroVector;
+};
+
+struct FSoraLedgerHall
+{
+    bool bEnabled=false;
+    FVector2D Origin=FVector2D::ZeroVector,PalaceOrigin=FVector2D::ZeroVector;
+    int32 PalaceZone=INDEX_NONE;
+};
+struct FSoraRegistryHall
+{
+    bool bEnabled=false;
+    FVector2D Origin=FVector2D::ZeroVector;
+    float FloorAt(const FVector2D& At) const
+    { const auto P=At-Origin;return SoraRegistryRules::Floor(P.X,P.Y); }
+};
+
 struct FSoraBeatSpace
 {
+    FSoraLedgerHall LedgerHall;
+    FSoraRegistryHall RegistryHall;
+    float FloorAt(const FVector2D& At) const
+    { return bLanternWorkshop?SoraLanternWorkshopRules::FloorAt(At.X,At.Y):RegistryHall.bEnabled?RegistryHall.FloorAt(At):HeightCm; }
+    FSoraPressHall PressHall;
+    FSoraRelayRoom RelayRoom;
+    TArray<FSoraFuelCanister> FuelCanisters;
+    TArray<FSoraPodArrival> PodArrivals;
+    FSoraMoltenSpace Molten;
+    FSoraFoundryDefenseSpace FoundryDefense;
+    bool bHorseTreatment=false;
+    bool bLanding=false;
+    bool bWardGate=false;
+    bool bTenements=false;
+    bool bLanternWorkshop=false;
+    bool bTenementDefense=false;
+    bool bHorseShell=false;
+    bool bHorseWithdrawal=false;
+    FSoraHelmSpace Helm;
+    FSoraBridgeSpace Bridge;
+    FSoraWindSpace Wind;
+    FSoraFloodSpace Flood;
+    FSoraMoatSpace Moat;
+    FSoraClimbSpace Climb;
+    FSoraSummitSpace Summit;
+    FSoraSpireSpace Spire;
+    int32 HeightCm=0;
+    FSoraLiftSpace Lift;
     int32 Zone = INDEX_NONE;
     FVector2D Entry = FVector2D::ZeroVector;
     float EntryYaw = 0.f;
     FVector2D Anchor = FVector2D::ZeroVector;
+    FVector2D Recovery = FVector2D::ZeroVector;
+    FVector2D CarryGate = FVector2D::ZeroVector;
+    bool bBulkhead = false;
+    FVector2D Bulkhead = FVector2D::ZeroVector;
     TArray<FVector2D> Objectives;
     TArray<FVector2D> Pickups;
     TArray<FVector2D> Dropoffs;
@@ -548,6 +719,7 @@ struct FSoraPickup
     int32 Collectible = INDEX_NONE;
     int32 Zone = INDEX_NONE;
     FVector2D At = FVector2D::ZeroVector;
+    int32 HeightCm = 0;
 };
 struct FSoraSpace
 {
@@ -567,6 +739,8 @@ struct FSoraSpace
 struct FSoraWaveGroup
 {
     FName Type;
+    // A location identity admitted by the encounter's spatial contract.
+    FName Spawn;
     int32 Count = 0;
     bool bLethal = true;
     // A scripted opponent that takes no damage (ch08.b02's sweep-only walkers).
@@ -581,17 +755,29 @@ struct FSoraWave
     TArray<FSoraWaveGroup> Groups;
 };
 
+// Authored optional exploration identities. Place-specific implementations
+// can stage a physical interaction without replacing the cache's rewards.
+struct FSoraExplorePoi
+{
+    FString Id;
+    FString Kind;
+    FString Interaction;
+    int32 Collectible=INDEX_NONE;
+};
 // A beat of a chapter. Its task (SoraBeatRules.h) decides what completes it,
 // which waves it releases, its phases and what a failure does; the rest names
 // the lines, points and opponents the director puts in the world.
 struct FSoraBeat
 {
     FString Id;
+    TArray<FString> CrankNpcs;
     FString Place;
     FString Title;
     FString TitleEnglish;
     int32 TargetSeconds = 0;
     SoraBeatRules::FTask Task;
+    SoraCargoRules::FCargo Cargo;
+    TOptional<FSoraRegistryEntry> Registry;
     TArray<FSoraWave> Waves;
     // Dialogue: its lines, the event that starts them ("beat_start",
     // "volume_enter:<id>", "interact:<id>") and, for one that ends at an
@@ -609,14 +795,23 @@ struct FSoraBeat
     TArray<FString> Objectives;
     TArray<FString> Pickups;
     TArray<FString> Dropoffs;
+    // Exact authored map; Task capacities use this array of drop-off names.
+    TMap<FString, int32> DropoffCapacities;
     // What a carry moves ("barley_load"): its pickups and deliveries also
     // raise item_picked:<item> and item_delivered:<item>.
     FString CarryItem;
+    FString CarryGatePoint;
+    FString RecoveryItem;
+    FString RecoveryInteract;
+    // Authored supply station identity; it grants ammunition, never unlocks.
+    FString SupplyPoint;
     TArray<FString> Targets;
     TArray<FString> StepKinds;
     // A duel's opponent or the boss; sparring beats use bokuto, shinai or targets.
     FName Opponent;
     bool bSparring = false;
+    SoraDojoRules::FPupilTiming PupilTiming;
+    bool bArcheryLesson = false;
     // Each objective's hold (ms of Interact held to work it; 0: a press).
     TArray<int32> ObjectiveHoldMs;
     // The guards a stealth zone, or a production task under guard, posts on
@@ -629,16 +824,29 @@ struct FSoraBeat
     // binds a captured boss ("interact:bulkhead_lever").
     TArray<FString> PhaseEvents;
     FString CaptureEvent;
+    int32 CaptureHoldMs=0;
     // The beat's `fail` rows by event.
     TMap<FString, SoraBeatRules::EFail> FailEvents;
-    // Collectibles in an explore beat's cache.
+    // Collectibles associated with an explore beat; wood POIs claim them separately.
     TArray<int32> Rewards;
+    SoraCacheRewardRules::FArrows CacheArrows;
+    int32 GalleryArrowReward=0;
+    TArray<FSoraExplorePoi> Pois;
     FSoraBeatSpace Space;
     bool Is(SoraBeatRules::EType Type) const { return Task.Type == Type; }
     bool Has(SoraBeatRules::EGoal Goal) const { return Task.Goal == Goal; }
 };
 struct FSoraChapter
 {
+    struct FWood
+    {
+        int32 Beat=INDEX_NONE;
+        TArray<FVector2D> Pois,Approach,Trail,Terrace,Bridge;
+        FVector2D Entry=FVector2D::ZeroVector,Arrival=FVector2D::ZeroVector;
+        FVector Naruko=FVector::ZeroVector;
+        FVector2D FaceCm=FVector2D::ZeroVector;
+        bool Enabled() const { return Beat!=INDEX_NONE; }
+    } Wood;
     FString Id;
     FString Title;
     FString TitleEnglish;

@@ -54,7 +54,7 @@ if (record["schema_version"] != 1 or record["name"] != name
         or sha(source / record["fbx"]) != record["fbx_sha256"]):
     raise RuntimeError("Estate wall identity, export, or collision policy changed")
 mac_config = (root / record["mac_conventional_fallback"]["render_config"]).read_text()
-if "r.Nanite=0" not in mac_config or "r.Nanite.ProxyRenderMode=0" not in mac_config:
+if "r.Nanite.ProxyRenderMode=0" not in mac_config:
     raise RuntimeError("Estate wall Mac conventional fallback policy changed")
 bounds = record["bounds_m"]
 if (bounds["min"][0] < -.5 or bounds["max"][0] > .5
@@ -128,6 +128,7 @@ master_name = "M_NyaagyuEstateWall_PBR"
 master_path = dest + "/" + master_name
 master = assets.load_asset(master_path) if assets.does_asset_exist(master_path) else asset_tools.create_asset(
     master_name, dest, unreal.Material, unreal.MaterialFactoryNew())
+master.set_editor_property("used_with_nanite", True)
 for old_expression in list(lib.get_material_expressions(master)):
     lib.delete_material_expression(master, old_expression)
 if lib.get_num_material_expressions(master):

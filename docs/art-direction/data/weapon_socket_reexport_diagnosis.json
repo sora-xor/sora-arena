@@ -1,0 +1,554 @@
+{
+ "what": "run s82, scripts/art/diagnose_weapon_socket_reexport.py: each socketed weapon LOD0 exported twice from its reloaded blend (control: the library's convention; corrected: the socket convention), every geometry array compared. Nothing gated; Content/ untouched.",
+ "source": {
+  "root": "/Users/mtakemiya/dev/sora-arena-wt/art",
+  "head": "091426c4e30c64f96eac6aa6a2cce97d9e2ea6e7"
+ },
+ "blender": "5.2.2 LTS",
+ "files": 25,
+ "skipped": [
+  {
+   "kit": "W14_PlasmaMatchlock",
+   "skipped": "the record and the files differ in this tree",
+   "files": [
+    "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/SM_Weapon_14.fbx"
+   ]
+  }
+ ],
+ "worst_over_files": {
+  "reload": {
+   "Edges": 0.0,
+   "LayerElementBinormal[0].Binormals": 6.65e-06,
+   "LayerElementBinormal[1].Binormals": 4.71e-06,
+   "LayerElementMaterial[0].Materials": 0.0,
+   "LayerElementNormal[0].Normals": 0.0,
+   "LayerElementNormal[0].NormalsIndex": 0.0,
+   "LayerElementSmoothing[0].Smoothing": 0.0,
+   "LayerElementTangent[0].Tangents": 7.14e-06,
+   "LayerElementTangent[1].Tangents": 4.87e-06,
+   "LayerElementUV[0].UV": 0.0,
+   "LayerElementUV[0].UVIndex": 0.0,
+   "LayerElementUV[1].UV": 0.0,
+   "LayerElementUV[1].UVIndex": 0.0,
+   "PolygonVertexIndex": 0.0,
+   "Vertices": 0.0
+  },
+  "convention": {
+   "Edges": 0.0,
+   "LayerElementBinormal[0].Binormals": 6.65e-06,
+   "LayerElementBinormal[1].Binormals": 4.71e-06,
+   "LayerElementMaterial[0].Materials": 0.0,
+   "LayerElementNormal[0].Normals": 0.0,
+   "LayerElementNormal[0].NormalsIndex": 0.0,
+   "LayerElementSmoothing[0].Smoothing": 0.0,
+   "LayerElementTangent[0].Tangents": 7.14e-06,
+   "LayerElementTangent[1].Tangents": 4.87e-06,
+   "LayerElementUV[0].UV": 0.0,
+   "LayerElementUV[0].UVIndex": 0.0,
+   "LayerElementUV[1].UV": 0.0,
+   "LayerElementUV[1].UVIndex": 0.0,
+   "PolygonVertexIndex": 0.0,
+   "Vertices": 0.0
+  },
+  "corrected_vs_original": {
+   "Edges": 0.0,
+   "LayerElementBinormal[0].Binormals": 2.38e-07,
+   "LayerElementBinormal[1].Binormals": 1.49e-06,
+   "LayerElementMaterial[0].Materials": 0.0,
+   "LayerElementNormal[0].Normals": 0.0,
+   "LayerElementNormal[0].NormalsIndex": 0.0,
+   "LayerElementSmoothing[0].Smoothing": 0.0,
+   "LayerElementTangent[0].Tangents": 2.09e-07,
+   "LayerElementTangent[1].Tangents": 1.67e-06,
+   "LayerElementUV[0].UV": 0.0,
+   "LayerElementUV[0].UVIndex": 0.0,
+   "LayerElementUV[1].UV": 0.0,
+   "LayerElementUV[1].UVIndex": 0.0,
+   "PolygonVertexIndex": 0.0,
+   "Vertices": 0.0
+  }
+ },
+ "w00_loops": {
+  "loops": 195816,
+  "tangent0_differing_ulp_level": "about 72,000 against the original, median 5.96e-8 (one float32 ulp)",
+  "above_1e-6": "6 in the control export only, up to 7.14e-6; none in the corrected export against the original"
+ },
+ "finding": "Every array but the tangent basis matches exactly in all three comparisons. The tangents and binormals are recomputed by Blender's exporter on every export and do not reproduce: two exports from one session differ by up to 7.1e-6. The convention changes nothing else.",
+ "per_file": [
+  {
+   "asset": "SM_Weapon_00",
+   "kit": "W00_Katana",
+   "reload": {
+    "LayerElementBinormal[0].Binormals": 6.645917892456055e-06,
+    "LayerElementBinormal[1].Binormals": 4.708766937255859e-06,
+    "LayerElementTangent[0].Tangents": 7.137656211853027e-06,
+    "LayerElementTangent[1].Tangents": 4.872679710388184e-06
+   },
+   "convention": {
+    "LayerElementBinormal[0].Binormals": 6.645917892456055e-06,
+    "LayerElementBinormal[1].Binormals": 4.708766937255859e-06,
+    "LayerElementTangent[0].Tangents": 7.137656211853027e-06,
+    "LayerElementTangent[1].Tangents": 4.872679710388184e-06
+   },
+   "corrected_vs_original": {
+    "LayerElementBinormal[0].Binormals": 2.384185791015625e-07,
+    "LayerElementBinormal[1].Binormals": 2.384185791015625e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   }
+  },
+  {
+   "asset": "SM_Weapon_00_Saya",
+   "kit": "W00_Katana",
+   "reload": {
+    "LayerElementBinormal[0].Binormals": 1.0728836059570312e-06,
+    "LayerElementBinormal[1].Binormals": 1.4901161193847656e-06,
+    "LayerElementTangent[0].Tangents": 1.9073486328125e-06,
+    "LayerElementTangent[1].Tangents": 1.6689300537109375e-06
+   },
+   "convention": {
+    "LayerElementBinormal[0].Binormals": 1.0728836059570312e-06,
+    "LayerElementBinormal[1].Binormals": 1.7881393432617188e-07,
+    "LayerElementTangent[0].Tangents": 1.9073486328125e-06,
+    "LayerElementTangent[1].Tangents": 1.1920928955078125e-07
+   },
+   "corrected_vs_original": {
+    "LayerElementBinormal[0].Binormals": 1.7881393432617188e-07,
+    "LayerElementBinormal[1].Binormals": 1.4901161193847656e-06,
+    "LayerElementTangent[0].Tangents": 2.086162567138672e-07,
+    "LayerElementTangent[1].Tangents": 1.6689300537109375e-06
+   }
+  },
+  {
+   "asset": "SM_Weapon_01",
+   "kit": "W01_ArcCarbine",
+   "reload": {
+    "LayerElementBinormal[0].Binormals": 1.7881393432617188e-07,
+    "LayerElementBinormal[1].Binormals": 2.384185791015625e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 2.384185791015625e-07
+   },
+   "convention": {
+    "LayerElementBinormal[0].Binormals": 1.7881393432617188e-07,
+    "LayerElementBinormal[1].Binormals": 1.7881393432617188e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   },
+   "corrected_vs_original": {
+    "LayerElementBinormal[0].Binormals": 1.7881393432617188e-07,
+    "LayerElementBinormal[1].Binormals": 2.384185791015625e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 2.384185791015625e-07
+   }
+  },
+  {
+   "asset": "SM_Weapon_02",
+   "kit": "W02_Kusarigama",
+   "reload": {},
+   "convention": {},
+   "corrected_vs_original": {}
+  },
+  {
+   "asset": "SM_Weapon_02_Chain",
+   "kit": "W02_Kusarigama",
+   "reload": {
+    "LayerElementBinormal[0].Binormals": 1.7881393432617188e-07,
+    "LayerElementBinormal[1].Binormals": 1.7881393432617188e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   },
+   "convention": {
+    "LayerElementBinormal[0].Binormals": 1.7881393432617188e-07,
+    "LayerElementBinormal[1].Binormals": 2.384185791015625e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   },
+   "corrected_vs_original": {
+    "LayerElementBinormal[0].Binormals": 1.7881393432617188e-07,
+    "LayerElementBinormal[1].Binormals": 2.384185791015625e-07,
+    "LayerElementTangent[0].Tangents": 1.1920928955078125e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   }
+  },
+  {
+   "asset": "SM_Weapon_03",
+   "kit": "W03_NeedleSMG",
+   "reload": {},
+   "convention": {},
+   "corrected_vs_original": {}
+  },
+  {
+   "asset": "SM_Weapon_04",
+   "kit": "W04_Wakizashi",
+   "reload": {
+    "LayerElementBinormal[0].Binormals": 1.0132789611816406e-06,
+    "LayerElementBinormal[1].Binormals": 2.384185791015625e-07,
+    "LayerElementTangent[0].Tangents": 1.0132789611816406e-06,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   },
+   "convention": {
+    "LayerElementBinormal[0].Binormals": 1.0132789611816406e-06,
+    "LayerElementBinormal[1].Binormals": 6.556510925292969e-07,
+    "LayerElementTangent[0].Tangents": 1.0132789611816406e-06,
+    "LayerElementTangent[1].Tangents": 6.556510925292969e-07
+   },
+   "corrected_vs_original": {
+    "LayerElementBinormal[0].Binormals": 2.384185791015625e-07,
+    "LayerElementBinormal[1].Binormals": 6.556510925292969e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 6.556510925292969e-07
+   }
+  },
+  {
+   "asset": "SM_Weapon_04_Saya",
+   "kit": "W04_Wakizashi",
+   "reload": {
+    "LayerElementBinormal[0].Binormals": 2.384185791015625e-07,
+    "LayerElementBinormal[1].Binormals": 1.7881393432617188e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   },
+   "convention": {
+    "LayerElementBinormal[0].Binormals": 1.7881393432617188e-07,
+    "LayerElementBinormal[1].Binormals": 2.384185791015625e-07,
+    "LayerElementTangent[0].Tangents": 1.9371509552001953e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   },
+   "corrected_vs_original": {
+    "LayerElementBinormal[0].Binormals": 2.384185791015625e-07,
+    "LayerElementBinormal[1].Binormals": 1.7881393432617188e-07,
+    "LayerElementTangent[0].Tangents": 1.9371509552001953e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   }
+  },
+  {
+   "asset": "SM_Weapon_05",
+   "kit": "W05_CoilMatchlock",
+   "reload": {
+    "LayerElementBinormal[0].Binormals": 2.384185791015625e-07,
+    "LayerElementBinormal[1].Binormals": 1.7881393432617188e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   },
+   "convention": {
+    "LayerElementBinormal[0].Binormals": 2.384185791015625e-07,
+    "LayerElementBinormal[1].Binormals": 2.384185791015625e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   },
+   "corrected_vs_original": {
+    "LayerElementBinormal[0].Binormals": 2.384185791015625e-07,
+    "LayerElementBinormal[1].Binormals": 2.384185791015625e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   }
+  },
+  {
+   "asset": "SM_Weapon_06",
+   "kit": "W06_Kanabo",
+   "reload": {
+    "LayerElementBinormal[0].Binormals": 2.384185791015625e-07,
+    "LayerElementBinormal[1].Binormals": 2.384185791015625e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   },
+   "convention": {
+    "LayerElementBinormal[0].Binormals": 2.384185791015625e-07,
+    "LayerElementBinormal[1].Binormals": 2.384185791015625e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   },
+   "corrected_vs_original": {
+    "LayerElementBinormal[0].Binormals": 2.384185791015625e-07,
+    "LayerElementBinormal[1].Binormals": 2.384185791015625e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   }
+  },
+  {
+   "asset": "SM_Weapon_07",
+   "kit": "W07_GrenadeLauncher",
+   "reload": {
+    "LayerElementBinormal[0].Binormals": 2.384185791015625e-07,
+    "LayerElementBinormal[1].Binormals": 2.384185791015625e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   },
+   "convention": {
+    "LayerElementBinormal[0].Binormals": 2.384185791015625e-07,
+    "LayerElementBinormal[1].Binormals": 2.384185791015625e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   },
+   "corrected_vs_original": {
+    "LayerElementBinormal[0].Binormals": 1.7881393432617188e-07,
+    "LayerElementBinormal[1].Binormals": 1.7881393432617188e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   }
+  },
+  {
+   "asset": "SM_Weapon_08",
+   "kit": "W08_ForgeHammer",
+   "reload": {},
+   "convention": {},
+   "corrected_vs_original": {}
+  },
+  {
+   "asset": "SM_Weapon_09",
+   "kit": "W09_Repeater",
+   "reload": {
+    "LayerElementBinormal[0].Binormals": 1.7881393432617188e-07,
+    "LayerElementBinormal[1].Binormals": 1.7881393432617188e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   },
+   "convention": {
+    "LayerElementBinormal[0].Binormals": 2.384185791015625e-07,
+    "LayerElementBinormal[1].Binormals": 1.7881393432617188e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   },
+   "corrected_vs_original": {
+    "LayerElementBinormal[0].Binormals": 2.384185791015625e-07,
+    "LayerElementBinormal[1].Binormals": 1.7881393432617188e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   }
+  },
+  {
+   "asset": "SM_Weapon_10",
+   "kit": "W10_Tanto",
+   "reload": {
+    "LayerElementBinormal[0].Binormals": 1.7881393432617188e-07,
+    "LayerElementBinormal[1].Binormals": 1.7881393432617188e-07,
+    "LayerElementTangent[0].Tangents": 1.1920928955078125e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   },
+   "convention": {
+    "LayerElementBinormal[0].Binormals": 1.7881393432617188e-07,
+    "LayerElementBinormal[1].Binormals": 1.7881393432617188e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   },
+   "corrected_vs_original": {
+    "LayerElementBinormal[0].Binormals": 1.7881393432617188e-07,
+    "LayerElementBinormal[1].Binormals": 1.7881393432617188e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   }
+  },
+  {
+   "asset": "SM_Weapon_10_Saya",
+   "kit": "W10_Tanto",
+   "reload": {
+    "LayerElementBinormal[0].Binormals": 1.7881393432617188e-07,
+    "LayerElementBinormal[1].Binormals": 1.7881393432617188e-07,
+    "LayerElementTangent[0].Tangents": 1.1920928955078125e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   },
+   "convention": {
+    "LayerElementBinormal[0].Binormals": 1.7881393432617188e-07,
+    "LayerElementBinormal[1].Binormals": 7.301568984985352e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 9.164214134216309e-07
+   },
+   "corrected_vs_original": {
+    "LayerElementBinormal[0].Binormals": 2.384185791015625e-07,
+    "LayerElementBinormal[1].Binormals": 7.301568984985352e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 9.164214134216309e-07
+   }
+  },
+  {
+   "asset": "SM_Weapon_11",
+   "kit": "W11_PulseCarbine",
+   "reload": {
+    "LayerElementBinormal[0].Binormals": 1.7881393432617188e-07,
+    "LayerElementBinormal[1].Binormals": 2.384185791015625e-07,
+    "LayerElementTangent[0].Tangents": 1.1920928955078125e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   },
+   "convention": {
+    "LayerElementBinormal[0].Binormals": 1.7881393432617188e-07,
+    "LayerElementBinormal[1].Binormals": 2.384185791015625e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   },
+   "corrected_vs_original": {
+    "LayerElementBinormal[0].Binormals": 1.7881393432617188e-07,
+    "LayerElementBinormal[1].Binormals": 1.7881393432617188e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   }
+  },
+  {
+   "asset": "SM_Weapon_12",
+   "kit": "W12_MonofilamentNaginata",
+   "reload": {
+    "LayerElementBinormal[0].Binormals": 1.7881393432617188e-07,
+    "LayerElementBinormal[1].Binormals": 1.825392246246338e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 3.0547380447387695e-07
+   },
+   "convention": {
+    "LayerElementBinormal[0].Binormals": 2.384185791015625e-07,
+    "LayerElementBinormal[1].Binormals": 1.825392246246338e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.825392246246338e-07
+   },
+   "corrected_vs_original": {
+    "LayerElementBinormal[0].Binormals": 2.384185791015625e-07,
+    "LayerElementBinormal[1].Binormals": 1.7881393432617188e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 3.0547380447387695e-07
+   }
+  },
+  {
+   "asset": "SM_Weapon_13",
+   "kit": "W13_PhantomSMG",
+   "reload": {},
+   "convention": {},
+   "corrected_vs_original": {}
+  },
+  {
+   "asset": "SM_Weapon_15",
+   "kit": "W15_MicroMortar",
+   "reload": {
+    "LayerElementBinormal[0].Binormals": 1.7881393432617188e-07,
+    "LayerElementBinormal[1].Binormals": 2.384185791015625e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   },
+   "convention": {
+    "LayerElementBinormal[0].Binormals": 1.7881393432617188e-07,
+    "LayerElementBinormal[1].Binormals": 1.7881393432617188e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   },
+   "corrected_vs_original": {
+    "LayerElementBinormal[0].Binormals": 1.7881393432617188e-07,
+    "LayerElementBinormal[1].Binormals": 2.384185791015625e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   }
+  },
+  {
+   "asset": "SM_Weapon_16",
+   "kit": "W16_ShockEmitter",
+   "reload": {
+    "LayerElementBinormal[0].Binormals": 1.7881393432617188e-07,
+    "LayerElementBinormal[1].Binormals": 1.7881393432617188e-07,
+    "LayerElementTangent[0].Tangents": 1.1920928955078125e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   },
+   "convention": {
+    "LayerElementBinormal[0].Binormals": 1.7881393432617188e-07,
+    "LayerElementBinormal[1].Binormals": 1.7881393432617188e-07,
+    "LayerElementTangent[0].Tangents": 1.1920928955078125e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   },
+   "corrected_vs_original": {
+    "LayerElementBinormal[0].Binormals": 1.7881393432617188e-07,
+    "LayerElementBinormal[1].Binormals": 1.7881393432617188e-07,
+    "LayerElementTangent[0].Tangents": 1.1920928955078125e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   }
+  },
+  {
+   "asset": "SM_Weapon_17",
+   "kit": "W17_HealingLance",
+   "reload": {
+    "LayerElementBinormal[0].Binormals": 2.384185791015625e-07,
+    "LayerElementBinormal[1].Binormals": 2.980232238769531e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 2.384185791015625e-07
+   },
+   "convention": {
+    "LayerElementBinormal[0].Binormals": 2.384185791015625e-07,
+    "LayerElementBinormal[1].Binormals": 2.384185791015625e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   },
+   "corrected_vs_original": {
+    "LayerElementBinormal[0].Binormals": 2.384185791015625e-07,
+    "LayerElementBinormal[1].Binormals": 2.980232238769531e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 2.384185791015625e-07
+   }
+  },
+  {
+   "asset": "SM_Weapon_18",
+   "kit": "W18_Yumi",
+   "reload": {
+    "LayerElementBinormal[0].Binormals": 2.384185791015625e-07,
+    "LayerElementBinormal[1].Binormals": 2.384185791015625e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   },
+   "convention": {
+    "LayerElementBinormal[0].Binormals": 2.384185791015625e-07,
+    "LayerElementBinormal[1].Binormals": 2.384185791015625e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   },
+   "corrected_vs_original": {
+    "LayerElementBinormal[0].Binormals": 2.384185791015625e-07,
+    "LayerElementBinormal[1].Binormals": 1.7881393432617188e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   }
+  },
+  {
+   "asset": "SM_Weapon_18_Ya",
+   "kit": "W18_Yumi",
+   "reload": {},
+   "convention": {},
+   "corrected_vs_original": {}
+  },
+  {
+   "asset": "SM_Weapon_19",
+   "kit": "W19_Yari",
+   "reload": {
+    "LayerElementBinormal[0].Binormals": 1.7881393432617188e-07,
+    "LayerElementBinormal[1].Binormals": 1.4901161193847656e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.1920928955078125e-07
+   },
+   "convention": {
+    "LayerElementBinormal[0].Binormals": 1.7881393432617188e-07,
+    "LayerElementBinormal[1].Binormals": 1.4901161193847656e-07,
+    "LayerElementTangent[0].Tangents": 1.1920928955078125e-07,
+    "LayerElementTangent[1].Tangents": 1.1920928955078125e-07
+   },
+   "corrected_vs_original": {
+    "LayerElementBinormal[0].Binormals": 1.7881393432617188e-07,
+    "LayerElementBinormal[1].Binormals": 1.1920928955078125e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.1920928955078125e-07
+   }
+  },
+  {
+   "asset": "SM_Weapon_20",
+   "kit": "W20_Naginata",
+   "reload": {
+    "LayerElementBinormal[0].Binormals": 1.7881393432617188e-07,
+    "LayerElementBinormal[1].Binormals": 1.7881393432617188e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   },
+   "convention": {
+    "LayerElementBinormal[0].Binormals": 1.7881393432617188e-07,
+    "LayerElementBinormal[1].Binormals": 1.7881393432617188e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.7881393432617188e-07
+   },
+   "corrected_vs_original": {
+    "LayerElementBinormal[0].Binormals": 1.7881393432617188e-07,
+    "LayerElementBinormal[1].Binormals": 1.7881393432617188e-07,
+    "LayerElementTangent[0].Tangents": 1.7881393432617188e-07,
+    "LayerElementTangent[1].Tangents": 1.1920928955078125e-07
+   }
+  }
+ ]
+}

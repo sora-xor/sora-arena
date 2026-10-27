@@ -30,7 +30,8 @@ with tempfile.TemporaryDirectory(prefix="sora-stealth-rules-") as temp:
                     str(ROOT / "scripts/unreal/stealth_rules_driver.cpp"), "-o", str(binary)],
                    check=True, env=env)
     subprocess.run([str(binary)], check=True, env=env)
-print("Stealth rules pass: view cone, line of sight, exposure, stance, range and light; hearing by stance "
+print("Stealth rules pass: fractional clocks at 30/60/120/144 fps and mixed deltas, pause/reset, zero-ms noise; "
+      "view cone, line of sight, exposure, stance, range and light; hearing by stance "
       "and floor; unaware/suspicious/alert/search/combat/retreat transitions; zone vigilance, difficulty, "
       "search decay and wariness; detection, carryover, alarms and found bodies; work under guard; "
       "rear takedowns; slot roles and cover preference; the stuck clock")

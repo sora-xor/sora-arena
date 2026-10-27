@@ -4,11 +4,12 @@
 # renders), never -NullRHI, at 1920x1080 under the platform's graphics preset.
 #
 # 1. The bundle: identifier org.sora.soraarena and a strict code signature.
-# 2. frontend: SoraArena.UIRendered.FrontEndScreens at 1920x1080, which saves
+# 2. fresh-startup: isolated untouched Title/focus assertion and one frame.
+# 3. frontend: SoraArena.UIRendered.FrontEndScreens at 1920x1080, which saves
 #    the title, main menu, chapter select, practice lobby, wallet, settings,
 #    graphics, audio, subtitles, controls and rebind, accessibility, credits,
 #    quit and pause screens.
-# 3. capture: SoraCapture (Source/SoraArena/Private/SoraCaptureAutomation.cpp):
+# 4. capture: SoraCapture (Source/SoraArena/Private/SoraCaptureAutomation.cpp):
 #    campaign beats in every chapter and each arena in practice, with frame
 #    time measured in practice combat.
 #
@@ -170,9 +171,8 @@ wait_idle() {
 # which waits by sleeping, held the game at 20-25 fps. The trailing
 # "-NSAppSleepDisabled YES" pair sets that AppKit default for this launch
 # only (NSUserDefaults' argument domain), after which the sleep takes 6 ms.
-# Unreal also reads the bare YES as a startup map, logs "Can't Find URL: YES"
-# and loads its default URL, /Engine/Maps/Entry?Name=Player, as it does
-# without the pair.
+# Explicitly name the project's entry map first, so Unreal does not mistake
+# AppKit's bare YES argument for the startup URL.
 launch() {
   local name="$1" filter="$2" status sampler
   echo "Launching the package ($name: $filter); log: $OUTPUT/$name.log" >&2
@@ -181,7 +181,7 @@ launch() {
   sampler=$!
   set +e
   /usr/bin/perl -e 'alarm shift @ARGV; exec @ARGV or die "exec failed: $!\n"' "$TIMEOUT_SECONDS" \
-    "$EXE" -game -unattended -nopause -nosplash -nosound -stdout -FullStdOutLogOutput -LLM \
+    "$EXE" /Engine/Maps/Entry -game -unattended -nopause -nosplash -nosound -stdout -FullStdOutLogOutput -LLM \
     -RenderOffscreen "-ResX=$WIDTH" "-ResY=$HEIGHT" -windowed \
     "-UserDir=$APP_DATA/$name-userdir" "-ExecCmds=Automation RunTests $filter;Quit" \
     "-ReportExportPath=$APP_DATA/$name-report" -NSAppSleepDisabled YES >"$OUTPUT/$name.log" 2>&1
@@ -204,6 +204,18 @@ launch() {
 
 LAUNCHES=()
 if [[ "$FRONTEND" != 0 ]]; then
+  launch fresh-startup SoraStartup.RenderedFreshLaunch
+  if ! python3 "$SCRIPT_DIR/verify_fresh_startup.py" "$APP_DATA/fresh-startup-report/index.json" \
+    "$OUTPUT/fresh-startup.log" "$(cat "$OUTPUT/fresh-startup.status")" \
+    "$APP_DATA/fresh-startup-userdir/Saved/Screenshots/SoraStartup/${WIDTH}x${HEIGHT}/01_Title.png" "$WIDTH" "$HEIGHT"; then
+    # Preserve the failed startup before aborting; successful runs are cloned
+    # once below, after navigation and capture have finished.
+    if [[ "$APP_DATA" != "$OUTPUT/app-data" && -d "$APP_DATA" ]]; then
+      /bin/cp -cRp "$APP_DATA" "$OUTPUT/app-data"
+    fi
+    exit 1
+  fi
+  LAUNCHES+=(fresh-startup)
   launch frontend SoraArena.UIRendered
   LAUNCHES+=(frontend)
 fi

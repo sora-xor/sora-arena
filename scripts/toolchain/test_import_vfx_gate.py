@@ -37,6 +37,11 @@ case "$name" in
   import_original_assets.py) marker="SORA_ASSET_IMPORT_COMPLETE: 1 assets" ;;
   import_environment_palette.py) marker="NYAAGYU_PBR_READY: 1 surfaces" ;;
   import_cc0_environment.py) marker="SORA_CC0_ENVIRONMENT_READY: 5 packages" ;;
+  import_sora_craft.py) marker="SORA_CRAFT_IMPORT_COMPLETE: 1 props" ;;
+  import_nyaagyu_dojo_kit.py) marker="NYAAGYU_DOJO_KIT_READY: 1 modules" ;;
+  validate_dojo_kit.py)
+    [[ "$SORA_DOJO_IMPORT_LOG" == *"/logs/import-dojo-kit.log" && -f "$SORA_DOJO_IMPORT_LOG" ]] || exit 5
+    marker="SORA_DOJO_KIT_VALIDATED: 16 saved modules reopened with full fallback and materials" ;;
   create_sora_vfx.py)
     printf 'ONLY=%s\\nREUSE=%s\\n' "${SORA_VFX_ONLY-<unset>}" "${SORA_VFX_REUSE_MATERIALS-<unset>}" >"$FAKE_VFX_ENV"
     marker="$FAKE_VFX_MARKER" ;;
@@ -72,6 +77,7 @@ HOST_CHECKS = {
 }
 EDITOR_STEPS = (
     "import_original_assets.py", "import_environment_palette.py", "import_cc0_environment.py",
+    "import_sora_craft.py", "import_nyaagyu_dojo_kit.py", "validate_dojo_kit.py",
     "create_sora_vfx.py", "validate_imported_assets.py", "validate_cc0_environment.py",
     "import_audio.py", "validate_audio_import.py",
 )
@@ -180,6 +186,7 @@ class ImportGate(unittest.TestCase):
 
     def test_each_validator_requires_its_own_source_count(self):
         for name, marker in (
+                ("validate_dojo_kit.py", "SORA_DOJO_KIT_VALIDATED: 12 saved modules reopened with full fallback and materials"),
                 ("validate_imported_assets.py", "SORA_ASSET_VALIDATION_COMPLETE: 2 packages loaded with expected types"),
                 ("validate_cc0_environment.py", "SORA_CC0_ENVIRONMENT_VALIDATED: 4 packages loaded with expected types"),
                 ("validate_audio_import.py", "SORA_AUDIO_VALIDATION_COMPLETE: 6 packages loaded with expected types and routing")):
@@ -200,6 +207,15 @@ class ImportGate(unittest.TestCase):
                 self.assertIn(diagnostic, result.stderr)
                 self.assertNotIn("PASS:", result.stdout)
                 self.assertTrue(self.trace.read_text().splitlines()[-1].startswith("editor:import_audio.py:"))
+
+    def test_missing_campaign_craft_or_dojo_assets_stop_the_pipeline(self):
+        for name in ("import_sora_craft.py", "import_nyaagyu_dojo_kit.py", "validate_dojo_kit.py"):
+            with self.subTest(importer=name):
+                result = self.run_import("SORA_VFX_READY: 27 systems", FAKE_PYTHON_ERROR_SCRIPT=name)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertNotIn("PASS:", result.stdout)
+                self.assertIn("Python error lines", result.stderr)
+                self.assertTrue(self.trace.read_text().splitlines()[-1].startswith("editor:" + name + ":"))
 
     def test_a_short_count_fails(self):
         for marker in ("SORA_VFX_READY: 1 systems", "SORA_VFX_READY: 0 systems", "SORA_VFX_READY: 2 systems"):

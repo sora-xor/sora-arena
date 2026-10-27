@@ -75,6 +75,7 @@ void USoraFieldcraft::StageNets()
 
 void USoraFieldcraft::OpponentJoined(ASoraEnemy& Enemy, int32 Wave)
 {
+    if(MoatSpace) { AssignMoatGuard(Enemy,MoatGuards.Num());return; }
     if (!Staged || !Staged->bNets || Enemy.ArchetypeId() != TEXT("drone")) return;
     const FSoraNets& Nets = Staged->Nets;
     // A net wave's first drones, as many as it nets with, take quarry; the
@@ -260,7 +261,7 @@ void USoraFieldcraft::TickNets(int32 DtMs)
         }
         // The tether line up to the drone that holds the net.
         if (State.Net.State == Craft::ENet::Netted && State.Drone.IsValid())
-            SoraDamage::Beam(GetWorld(), At + FVector(0.f, 0.f, 80.f), State.Drone->GetActorLocation(), FLinearColor(.1f, .8f, .9f), 1.2f, .05f);
+            SoraDamage::Beam(GetWorld(), At + FVector(0.f, 0.f, 80.f), State.Drone->NetMuzzle(), FLinearColor(.1f, .8f, .9f), 1.2f, .05f);
     }
     // Opponents standing at a pack horse or the cart wear it down (the
     // defence's siege rule, SoraBeatRules::SiegeHpPerSecond); a drone on an
@@ -434,4 +435,12 @@ void USoraFieldcraft::TickScouts()
     if (FVector::DotProduct(Offset, Right) <= Layout::CrossedCm) return;
     bDroneCrossed = true;
     Raise(TEXT("ai:drone_crossed_right"));
+}
+
+bool USoraFieldcraft::FinishFoundryNetCut(int32 Quarry)
+{
+    const auto* Mode=GetWorld()?Cast<ASoraGameMode>(GetWorld()->GetAuthGameMode()):nullptr;
+    if(!Mode||!Mode->Campaign()||!Mode->Campaign()->IsFoundryDefense()||!QuarryStates.IsValidIndex(Quarry)) return false;
+    if(!Craft::CutNet(QuarryStates[Quarry].Net)) return false;
+    NetChanged(Quarry,Craft::ENetChange::Freed); return true;
 }

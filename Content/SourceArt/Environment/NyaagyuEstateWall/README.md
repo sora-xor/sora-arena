@@ -42,7 +42,7 @@ UnrealEditor-Cmd SoraArena.uproject -ExecutePythonScript=scripts/unreal/import_n
 
 It creates `/Game/Generated/Environment/Props/SM_Nyaagyu_EstateWall_4m`
 and six exact material instances. The Windows import builds Nanite; its full
-conventional mesh remains for the Mac configuration that disables Nanite.
+conventional mesh remains for M1 Macs, whose `METAL_SM5` path cannot run Nanite.
 The WorldBuilder must place visual instances above its unchanged collision
 proxies with collision disabled on the visual components.
 

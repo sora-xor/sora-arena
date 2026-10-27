@@ -49,6 +49,12 @@ public:
     void ReleaseTrigger() { bFireHeld = false; }
     bool EquipClassSlot(int32 Slot);
     bool EquipCampaignWeapon(int32 WeaponId);
+    // Supply cache: fill only unlocked ranged magazines, preserving the held
+    // weapon and every action timer. -1 while busy, otherwise weapons refilled.
+    int32 RestockUnlocked(unsigned Weapons);
+    // Finite authored pickup, capped to the yumi magazine. Same busy-state
+    // protection as supplies; returns -1 when it cannot be claimed.
+    int32 GrantArrows(int32 Count,unsigned Weapons,bool bRefill=false);
     // Guard reserve drains while held and recovers otherwise (not in the dojo);
     // a 残心 hold after a defeat restores it instead.
     void TickGuard(float DeltaSeconds);
@@ -72,6 +78,10 @@ public:
     float MoveScale(bool bSprinting) const;
     bool IsBowDrawing() const { return bBowDrawing; }
     float BowDrawProgress() const;
+    // Camera-local visible sway and its world aim ray. HUD, held bow and
+    // released projectile share these; no hidden accuracy roll on release.
+    FRotator BowAimOffset() const;
+    FVector BowAimDirection() const;
     bool IsCommittedStrike() const { return bCommittedStrike; }
     // The committed action is the kusarigama's chain, not a cut.
     bool IsChainCast() const { return bCommittedStrike && bChainCast; }
@@ -83,7 +93,7 @@ public:
     bool IsGuardHeld() const { return bGuardHeld; }
     float GuardPressedAt() const { return GuardPressedTime; }
     float GuardReserve() const { return GuardStamina; }
-    // The stamina a guard or parry costs (SoraCombatRules::Defend).
+    // The shared stamina a guard, parry or authored player crank costs.
     void SpendGuard(float Amount) { GuardStamina = FMath::Max(0.f, GuardStamina - Amount); }
     // A broken guard or a heavy blow: the guard, a draw and a committed strike
     // drop, and nothing can be raised, drawn or swung for Seconds.
@@ -93,6 +103,7 @@ public:
     bool bReloading = false;
     TArray<int32> AmmoByWeapon;
 private:
+    bool CanRestock() const;
     ASoraPlayerCharacter* Hero() const;
     void Fire();
     void ReleaseBow();
@@ -105,7 +116,7 @@ private:
     void RaiseBeatEvent(const FString& Event) const;
     bool bFireHeld = false;
     bool bBowDrawing = false;
-    float BowDrawStartedAt = 0.f;
+    double BowDrawStartedAt = 0.0;
     bool bCommittedStrike = false;
     bool bChainCast = false;
     TWeakObjectPtr<ASoraEnemy> ChainTarget;

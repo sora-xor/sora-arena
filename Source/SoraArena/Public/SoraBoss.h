@@ -23,6 +23,9 @@ struct FSoraBossSetup
     bool bLockArena = false;
     // A phase checkpoint: the boss returns at that phase's start.
     int32 Phase = 0;
+    // Only the campaign's physical summit uses the authored dais retreat.
+    bool bSummit = false;
+    FVector SummitDaisFloor = FVector::ZeroVector;
 };
 
 // Where the boss wants to go and look this frame; its controller walks it.
@@ -71,6 +74,8 @@ public:
     // An arena anchor of Kind (heat_slot, wet_slot, channel, cover, slide,
     // beam_fall) from the level; zone attacks that need anchors wait for them.
     void AddAnchor(FName Kind, const FVector& Location);
+    // Same visibility ray as a live pistol round, used for actual cover occupancy.
+    FHitResult RangedAimTrace(const ASoraCharacterBase& Target) const;
     // A points duel's score: the hero's lead picks the rival's habits.
     void SetDuelScore(int32 HeroPoints, int32 RivalPoints);
     // The arena strikes the boss (a crane's cargo net): stunned for
@@ -86,6 +91,8 @@ public:
     FName BossId() const;
     SoraBossRules::EDifficulty Difficulty() const { return Setup.Difficulty; }
     int32 PhaseIndex() const { return PhaseNow; }
+    bool IsPhaseTransitioning() const { return bSummitTransition; }
+    bool IsOnSummitDais() const;
     const FSoraBossPhase* CurrentPhase() const;
     int32 HealthPermille() const;
     // The attack under way and its serial (INDEX_NONE and zero when idle).
@@ -208,6 +215,10 @@ private:
     int32 FloorPermille() const;
     void EnterPhase(int32 Next);
     void SyncPhase();
+    bool DriveSummit(FSoraBossIntent& Intent,const ASoraCharacterBase& Target) const;
+    bool TickSummitTransition();
+    bool CanRespawnAddGroup(int32 Group) const;
+    bool IsSummitSeizureShielded() const;
     void RunTimers();
     ASoraCharacterBase* Hero() const;
     FVector TargetPoint(const ASoraCharacterBase& Target) const;
@@ -255,6 +266,7 @@ private:
     FSoraBossSetup Setup;
     int32 PhaseNow = 0;
     bool bPhaseEntered = false;
+    bool bSummitTransition = false;
     int32 PhaseStartedMs = 0;
     // A metronome counts its beats from the phase's first attack.
     int32 BeatOriginMs = -1;
@@ -305,6 +317,7 @@ private:
     int32 WardRespawnAtMs = 0;
     UPROPERTY() TArray<TObjectPtr<ASoraBossHazard>> Zones;
     UPROPERTY() TArray<TObjectPtr<ASoraEnemy>> Adds;
+    UPROPERTY() TArray<TObjectPtr<ASoraEnemy>> ReleasedGoods;
     TArray<int32> AddGroups;
     TArray<int32> GroupRespawnAtMs;
     TArray<TPair<FName, FVector>> Anchors;

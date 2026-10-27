@@ -1,4 +1,5 @@
 #include "SoraWorldBuilder.h"
+#include "SoraTerminalChargeRules.h"
 #include "ArenaKernelSubsystem.h"
 #include "World/SoraPracticeArena.h"
 #include "Components/StaticMeshComponent.h"
@@ -8,11 +9,34 @@ void ASoraWorldBuilder::LanternWardTerminal()
 {
     // The occupied street faces the road at local -Y. Use the same simple
     // campaign collision whether the authored mesh imported or not.
+    const int First=Pieces.Num();
+    TerminalPieces.Reset();bTerminalDestroyed=false;
     const FVector StreetTerminal(-730,460,0);
     const bool HasStreetTerminal=ImportedProp(TEXT("SM_Alien_StreetDebtTerminal"),StreetTerminal,FRotator::ZeroRotator);
-    auto* Proxy=Box(TEXT("StreetDebtTerminalCollision"),StreetTerminal+FVector(0,0,121),
-        FVector(140,74,242),FLinearColor(.10f,.15f,.20f),true);
+    const auto S=SoraTerminalChargeRules::Solids[0];
+    auto* Proxy=Box(TEXT("StreetDebtTerminalCollision"),FVector(S.X,S.Y,S.Z),
+        FVector(S.SX,S.SY,S.SZ),FLinearColor(.10f,.15f,.20f),true);
+    TerminalCollision=Proxy;
+    Proxy->SetMobility(EComponentMobility::Movable);
     if(HasStreetTerminal) Proxy->SetVisibility(false);
+    for(int I=First;I<Pieces.Num();++I)if(Pieces[I]->IsVisible())TerminalPieces.Add(Pieces[I]);
+    const auto R=SoraTerminalChargeRules::Rubble;
+    BrokenTerminal=Box(TEXT("BrokenDebtTerminal"),FVector(R.X,R.Y,R.Z),FVector(R.SX,R.SY,R.SZ),
+        FLinearColor(.035f,.04f,.045f),false);
+    BrokenTerminal->SetVisibility(false);
+}
+
+void ASoraWorldBuilder::SetTerminalDestroyed(bool Destroyed)
+{
+    bTerminalDestroyed=Destroyed;
+    if(IsValid(TerminalCollision))
+    {
+        const auto S=Destroyed?SoraTerminalChargeRules::Rubble:SoraTerminalChargeRules::Solids[0];
+        TerminalCollision->SetRelativeLocation(FVector(S.X,S.Y,S.Z));
+        TerminalCollision->SetRelativeScale3D(FVector(S.SX,S.SY,S.SZ)/100.f);
+    }
+    for(UStaticMeshComponent* P:TerminalPieces)if(IsValid(P))P->SetVisibility(!Destroyed);
+    if(IsValid(BrokenTerminal))BrokenTerminal->SetVisibility(Destroyed);
 }
 
 // Practice: the occupied merchant street. Machiya with koshi lattices and lit

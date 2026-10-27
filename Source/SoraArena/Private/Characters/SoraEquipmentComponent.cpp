@@ -1,6 +1,8 @@
 #include "SoraEquipmentComponent.h"
 #include "Combat/SoraDamage.h"
+#include "Combat/SoraMeleeTrace.h"
 #include "SoraCampaignDirector.h"
+#include "SoraBowRules.h"
 #include "SoraCatalog.h"
 #include "SoraCombatRules.h"
 #include "SoraCompanion.h"
@@ -37,6 +39,11 @@ USoraCampaignDirector* HeroCampaign(const ASoraPlayerCharacter& Hero)
     auto* G=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(&Hero));
     return G&&G->bCampaign?G->Campaign():nullptr;
 }
+bool HelmHands(const ASoraPlayerCharacter& Hero)
+{
+    const auto* Campaign=HeroCampaign(Hero);
+    return Campaign&&(Campaign->HelmOccupiesHands()||Campaign->FoundryOccupiesHands()||Campaign->HorseTreatmentOccupiesHands()||Campaign->IsCopying()||Campaign->WorkshopCraftOccupiesHands()||Campaign->TerminalOccupiesHands());
+}
 // In the saddle a weapon acts only in its mounted arc, and under a carried
 // load only if the load leaves it in hand; a refusal raises a notice.
 bool ArmsReady(const ASoraPlayerCharacter& Hero,int32 WeaponId)
@@ -69,7 +76,7 @@ void USoraEquipmentComponent::ResetForClass()
     bReloading=false; NextShot=0; bFireHeld=false; bBowDrawing=false; GuardStamina=100.f;
     bCommittedStrike=false; bHistoricalRecovery=false; CommittedWeaponId=INDEX_NONE;
     bChainCast=false; ChainTarget.Reset();
-    bSheathed=false; bStepping=false; Awased.Reset(); bZanshinDue=false;
+    bSheathed=false; bStepping=false; Awased.Reset(); bZanshinDue=false; ZanshinAt=-1000.f;
 }
 void USoraEquipmentComponent::Hold(int32 WeaponId)
 {
@@ -87,7 +94,17 @@ void USoraEquipmentComponent::Halt()
 }
 float USoraEquipmentComponent::BowDrawProgress() const
 {
-    return bBowDrawing&&GetWorld()?FMath::Clamp((GetWorld()->GetTimeSeconds()-BowDrawStartedAt)/.65f,0.f,1.f):0.f;
+    return bBowDrawing&&GetWorld()?FMath::Clamp((GetWorld()->GetTimeSeconds()-BowDrawStartedAt)*1000.0/SoraBowRules::DrawMs,0.0,1.0):0.f;
+}
+FRotator USoraEquipmentComponent::BowAimOffset() const
+{
+    if(!bBowDrawing||Hero()->WeaponId!=18||!Hero()->CanPlay()) return FRotator::ZeroRotator;
+    const auto Aim=SoraBowRules::AimSway(GetWorld()->GetTimeSeconds()-BowDrawStartedAt);
+    return FRotator(Aim.Pitch,Aim.Yaw,0);
+}
+FVector USoraEquipmentComponent::BowAimDirection() const
+{
+    return Hero()->GetCamera()->GetComponentQuat().RotateVector(BowAimOffset().Vector());
 }
 float USoraEquipmentComponent::StrikeWindupProgress() const
 {
@@ -106,6 +123,7 @@ float USoraEquipmentComponent::MoveScale(bool bSprinting) const
 }
 void USoraEquipmentComponent::Stagger(float Seconds)
 {
+    if(auto* Campaign=HeroCampaign(*Hero())) Campaign->StopPlayerCrank();
     const float Until=GetWorld()->GetTimeSeconds()+Seconds;
     StaggeredUntil=FMath::Max(StaggeredUntil,Until);
     bGuardHeld=false; bBowDrawing=false; bFireHeld=false;
@@ -115,6 +133,7 @@ void USoraEquipmentComponent::Stagger(float Seconds)
 bool USoraEquipmentComponent::IsStaggered() const { return GetWorld()&&GetWorld()->GetTimeSeconds()<StaggeredUntil; }
 void USoraEquipmentComponent::Sheathe(bool bSheathe)
 {
+    if(HelmHands(*Hero())) return;
     if(bSheathe==bSheathed) return;
     if(bSheathe&&(!SoraHistoricalArms::IsMelee(Hero()->WeaponId)||bCommittedStrike||bReloading)) return;
     bSheathed=bSheathe; SheathedAt=GetWorld()->GetTimeSeconds();
@@ -218,6 +237,7 @@ void USoraEquipmentComponent::TickWeapon()
 void USoraEquipmentComponent::TriggerDown()
 {
     ASoraPlayerCharacter* H=Hero();
+    if(HelmHands(*H)) return;
     const int32 WeaponId=H->WeaponId;
     const auto& W=FSoraCatalog::Get().Weapon(WeaponId);
     if(IsStaggered()||bStepping) return;
@@ -226,6 +246,7 @@ void USoraEquipmentComponent::TriggerDown()
     if(!ArmsReady(*H,WeaponId)) return;
     if(W.Kind==TEXT("bow"))
     {
+        if(const auto* Campaign=HeroCampaign(*H); Campaign&&!Campaign->CanLooseArcheryArrow()) return;
         if(!bBowDrawing&&!bReloading&&!H->IsSprinting()&&Ammo>0&&GetWorld()->GetTimeSeconds()>=NextShot)
         { bBowDrawing=true; bDrawCompleteRaised=false; BowDrawStartedAt=GetWorld()->GetTimeSeconds(); }
         return;
@@ -237,6 +258,7 @@ void USoraEquipmentComponent::TriggerUp() { bFireHeld=false; if(bBowDrawing) Rel
 void USoraEquipmentComponent::Fire()
 {
     ASoraPlayerCharacter* H=Hero();
+    if(HelmHands(*H)) return;
     if(H->IsKernelDriven()) return;
     if(!H->CanPlay()||bReloading||H->IsSprinting()||bBowDrawing||bCommittedStrike||GetWorld()->GetTimeSeconds()<NextShot) return;
     const auto& W=FSoraCatalog::Get().Weapon(H->WeaponId);
@@ -280,6 +302,7 @@ void USoraEquipmentComponent::Fire()
 void USoraEquipmentComponent::Melee()
 {
     ASoraPlayerCharacter* H=Hero();
+    if(HelmHands(*H)) return;
     if(H->CanPlay()&&bSheathed&&!IsStaggered()) { Sheathe(false); return; }
     if(!H->CanPlay()||GetWorld()->GetTimeSeconds()<NextShot||bReloading||bCommittedStrike||bBowDrawing||IsStaggered()||bSheathed||
         bStepping||(bGuardHeld&&!H->IsDojoTraining())) return;
@@ -335,7 +358,7 @@ void USoraEquipmentComponent::Melee()
         Events->OnMeleeCommitted.Broadcast(Committed);
     }
     FCollisionQueryParams Params(SCENE_QUERY_STAT(Melee),false,H); TArray<FHitResult> Hits;
-    GetWorld()->SweepMultiByChannel(Hits,Start,Start+Dir*W.Range,FQuat::Identity,ECC_Pawn,FCollisionShape::MakeSphere(45),Params);
+    SoraMeleeTrace::Sweep(*GetWorld(),Hits,Start,Start+Dir*W.Range,45.f,H);
     TSet<AActor*> Damaged;
     bool bStruck=false;
     for(const auto& Hit:Hits) if(Hit.GetActor()&&!Damaged.Contains(Hit.GetActor()))
@@ -385,8 +408,7 @@ void USoraEquipmentComponent::ResolveCommittedStrike()
     const FVector End=Start+CommittedDirection*Profile.MaximumDistanceCm;
     FCollisionQueryParams Params(SCENE_QUERY_STAT(HistoricalMelee),false,H);
     TArray<FHitResult> Hits;
-    GetWorld()->SweepMultiByChannel(Hits,Start,End,FQuat::Identity,ECC_Pawn,
-        FCollisionShape::MakeSphere(StrikeWeapon==19?16.f:36.f),Params);
+    SoraMeleeTrace::Sweep(*GetWorld(),Hits,Start,End,StrikeWeapon==19?16.f:36.f,H);
     AActor* TargetActor=nullptr;
     FHitResult TargetHit;
     float BestDistance=MAX_flt;
@@ -466,16 +488,27 @@ void USoraEquipmentComponent::ResolveChain()
 void USoraEquipmentComponent::ReleaseBow()
 {
     ASoraPlayerCharacter* H=Hero();
+    // Sample the visible aim before ending this draw, including releases
+    // between world ticks. Ending it first would silently recenter the shot.
+    const FVector Direction=BowAimDirection();
     bBowDrawing=false;
     if(!H->CanPlay()||H->WeaponId!=18||bReloading||H->IsSprinting()||Ammo<=0||
-        GetWorld()->GetTimeSeconds()-BowDrawStartedAt<.65f||!ArmsReady(*H,18)) return;
+        GetWorld()->GetTimeSeconds()-BowDrawStartedAt<SoraBowRules::DrawMs/1000.0||!ArmsReady(*H,18)) return;
+    auto* Campaign=HeroCampaign(*H);
+    if(Campaign&&!Campaign->CanLooseArcheryArrow()) return;
     const auto& W=FSoraCatalog::Get().Weapon(18);
-    const FVector Direction=H->GetCamera()->GetForwardVector();
     const FVector Origin=H->GetCamera()->GetComponentLocation()+Direction*65.f;
     auto* Arrow=GetWorld()->SpawnActorDeferred<ASoraProjectile>(ASoraProjectile::StaticClass(),
         FTransform(Direction.Rotation(),Origin),H,H,ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
     if(!Arrow) return;
     Arrow->bArrow=true; Arrow->Damage=W.Damage; Arrow->Velocity=Direction*W.ProjectileSpeed; Arrow->WeaponId=18;
+    if(Campaign)
+    {
+        // Both the range lesson and the optional wood challenge observe the
+        // actual released projectile. Only the lesson requires a range-shot ID.
+        Arrow->ArcheryShotId=Campaign->RegisterArcheryArrow(*Arrow);
+        if(Campaign->IsArcheryLesson()&&!Arrow->ArcheryShotId) { Arrow->Destroy(); return; }
+    }
     UGameplayStatics::FinishSpawningActor(Arrow,Arrow->GetActorTransform());
     --Ammo; NextShot=GetWorld()->GetTimeSeconds()+W.Cooldown;
     // The loose, and a quiver running low (ch02.b08's event:arrows_below:4).
@@ -491,11 +524,19 @@ void USoraEquipmentComponent::ReleaseBow()
 void USoraEquipmentComponent::Reload()
 {
     ASoraPlayerCharacter* H=Hero();
+    if(HelmHands(*H)) return;
+    if(auto* Campaign=HeroCampaign(*H)) Campaign->StopPlayerCrank();
     if(!H->CanPlay()||bReloading) return; const auto& W=FSoraCatalog::Get().Weapon(H->WeaponId);
+    if(H->WeaponId==18) if(auto* Campaign=HeroCampaign(*H); Campaign&&Campaign->UsesDojoQuiver())
+    {
+        Campaign->ExplainDojoQuiver(); return;
+    }
     if(W.Kind==TEXT("melee")||Ammo>=W.Magazine) return; bReloading=true; ReloadEnd=GetWorld()->GetTimeSeconds()+W.Reload;
 }
 void USoraEquipmentComponent::GuardDown(bool bDojo,bool bCampaignHero)
 {
+    if(HelmHands(*Hero())) return;
+    if(auto* Campaign=HeroCampaign(*Hero()); Campaign&&Campaign->CrankOccupiesHands()) return;
     const bool bCampaignBlade=bCampaignHero&&SoraHistoricalArms::IsMelee(Hero()->WeaponId)&&
         !bCommittedStrike&&!(bHistoricalRecovery&&GetWorld()->GetTimeSeconds()<NextShot)&&!IsStaggered()&&
         GuardStamina>=SoraCombatRules::MinimumGuardStamina;
