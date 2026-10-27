@@ -38,7 +38,8 @@ manifest.partial.json records what was done.
 
 Run (lane holder, full editor):
   scripts/toolchain/run-editor-script.sh --editor scripts/unreal/render_b09_workshop_review.py B09_REVIEW_COMPLETE <log> -- \\
-      out=<new folder> readback=Saved/B09Workshop/Unreal/<the import's readback>.json
+      out=<new folder> readback=Saved/B09Workshop/Unreal/<the import's readback>.json [review=<its host review>.json]
+A readback with problems is drawn only with a host review (review_b09_import_readback.py) that explains every one.
 """
 from __future__ import annotations
 
@@ -64,6 +65,8 @@ ASSETS = unreal.EditorAssetLibrary
 M = unreal.MathLibrary
 SPEC = ROOT / "docs/art-direction/data/b09_workshop_craft_spec.json"
 MESHES = MATS = None                # main(): the import readback's base (a new folder for each import run)
+CANDIDATE_MATS = {}                 # main(): slot -> its candidate material, from the readback
+STATES = {}                         # review_state's instances: (slot, scalars) -> MaterialInstanceConstant
 BINDINGS = {}                       # mesh: the material each slot draws in this fresh editor, before any instance
 LEVEL = f"/Game/ArtReview/B09Workshop/L_B09Review_{int(time.time())}"
 MARKER = "B09_REVIEW_COMPLETE"
@@ -194,27 +197,46 @@ def yawed(p, centre, deg):
     return [centre[0] + dx * math.cos(a) - dy * math.sin(a), centre[1] + dx * math.sin(a) + dy * math.cos(a), p[2]]
 
 
+def review_state(slot, scalars):
+    """A review instance of a slot's candidate material with these scalar values (a MaterialInstanceConstant in the
+    review folder, made through MaterialEditingLibrary as the import makes its own), made once."""
+    key = (slot, tuple(sorted(scalars.items())))
+    if key not in STATES:
+        folder = LEVEL.rsplit("/", 1)[0]
+        name = "MI_B09R_" + slot[len("M_B09_"):] + "".join(f"_{k}{v:g}".replace(".", "p") for k, v in key[1])
+        lib = unreal.MaterialEditingLibrary
+        mi = unreal.AssetToolsHelpers.get_asset_tools().create_asset(name, folder, unreal.MaterialInstanceConstant,
+                                                                     unreal.MaterialInstanceConstantFactoryNew())
+        lib.set_material_instance_parent(mi, load(CANDIDATE_MATS[slot]))
+        for k, v in key[1]:
+            lib.set_material_instance_scalar_parameter_value(mi, k, v)
+        ASSETS.save_loaded_asset(mi)
+        STATES[key] = mi
+    return STATES[key]
+
+
+def slot_index(mesh, slot):
+    for i, m in enumerate(mesh.get_editor_property("static_materials")):
+        if str(m.get_editor_property("material_slot_name")) == slot:
+            return i
+    fail(f"{mesh.get_name()} has no slot {slot}")
+
+
 def place(name, loc, rot=None, params=None):
-    """A candidate mesh at a world location, without collision; params {slot: {scalar: value}} make dynamic
-    instances of the slot's candidate material."""
+    """A candidate mesh at a world location (the candidates carry no collision). params {slot: {scalar: value}} draw
+    that slot with a review instance of its candidate material (review_state)."""
     mesh = load(f"{MESHES}/{name}.{name}")
     a = spawn(unreal.StaticMeshActor, tuple(loc), rot)
     smc = a.static_mesh_component
     smc.set_editor_property("mobility", unreal.ComponentMobility.MOVABLE)
     smc.set_static_mesh(mesh)
-    smc.set_collision_enabled(unreal.CollisionEnabled.NO_COLLISION)
     if name not in BINDINGS:            # the import's binding, proved in this editor (package bytes are not proof)
         drawn = [smc.get_material(i) for i in range(smc.get_num_materials())]
         BINDINGS[name] = [m.get_path_name() if m is not None else None for m in drawn]
         if not drawn or any(m is None or not m.get_path_name().startswith(MATS + "/") for m in drawn):
             fail(f"{name} draws {BINDINGS[name]}, not its candidate materials")
     for slot, scalars in (params or {}).items():
-        idx = mesh.get_material_index(slot)
-        if idx < 0:
-            fail(f"{name} has no slot {slot}")
-        mid = smc.create_dynamic_material_instance(idx, smc.get_material(idx))
-        for k, v in scalars.items():
-            mid.set_scalar_parameter_value(k, v)
+        smc.set_material(slot_index(mesh, slot), review_state(slot, scalars))
     return a
 
 
@@ -377,7 +399,7 @@ def shots(spec):
 
 
 def main():
-    opts = {"out": "", "readback": ""}
+    opts = {"out": "", "readback": "", "review": ""}
     for a in sys.argv[1:]:
         if "=" in a:
             k, v = a.split("=", 1)
@@ -387,18 +409,30 @@ def main():
     out = ROOT / "Saved/B09Workshop/Review" / opts["out"]
     if out.exists():
         fail(f"{out} exists: originals go to a new folder")
-    global MESHES, MATS
+    global MESHES, MATS, CANDIDATE_MATS
     rb_bytes = (ROOT / opts["readback"]).read_bytes()
     rb = json.loads(rb_bytes.decode("utf-8"))
-    if rb["problems"]:
-        fail("the import's readback has problems")
+    review_bytes = None
+    if rb["problems"]:                  # only with a host review that explains every one (review_b09_import_readback.py)
+        if not opts["review"]:
+            fail("the import's readback has problems and no host review explains them")
+        review_bytes = (ROOT / opts["review"]).read_bytes()
+        review = json.loads(review_bytes.decode("utf-8"))
+        if review["readback_sha256"] != hashlib.sha256(rb_bytes).hexdigest() or review["unexplained"] or \
+                sorted(review["explained"]) != sorted(rb["problems"]):
+            fail("the host review does not explain every problem of this readback")
     MESHES, MATS = f"{rb['base']}/Meshes", f"{rb['base']}/Materials"
+    CANDIDATE_MATS = dict(rb["materials"])
     spec_bytes = SPEC.read_bytes()
     spec = json.loads(spec_bytes.decode("utf-8"))
     queue = shots(spec)
     ev100, lux = metered_ev100(spec)
     out.mkdir(parents=True)
     build(spec, ev100)
+    for s in queue:                     # every review instance the shots draw, made before the first frame
+        for mesh, loc, rot, params in s["items"]:
+            for slot, scalars in (params or {}).items():
+                review_state(slot, scalars)
     runup = highres_runup()
     unreal.SystemLibrary.execute_console_command(world(), "Editor.AsyncAssetCompilationFinishAll")
     record = {"level": LEVEL, "engine": unreal.SystemLibrary.get_engine_version(), "candidates": rb["base"], "hfov_deg": HFOV,
@@ -408,8 +442,10 @@ def main():
               "highres_runup": runup, "shots_requested": [s["name"] for s in queue],
               "inputs": {str(SPEC.relative_to(ROOT)): hashlib.sha256(spec_bytes).hexdigest(),
                          opts["readback"]: hashlib.sha256(rb_bytes).hexdigest(),
+                         **({opts["review"]: hashlib.sha256(review_bytes).hexdigest()} if review_bytes else {}),
                          "scripts/unreal/render_b09_workshop_review.py": sha256(__file__)},
               "shots": {}, "files": {}, "bindings": BINDINGS,
+              "review_states": {f"{slot} {dict(sc)}": STATES[(slot, sc)].get_path_name() for slot, sc in STATES},
               "scope": "socket-pose review captures of the b09 candidates at the hero's 94 deg (editor originals): each "
                        "state mesh at its socket, held by nothing. Not runtime first-person hand contact (paws, grips, "
                        "strip and brush contact stay production work), not the game's lighting or post-process, and "

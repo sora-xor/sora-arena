@@ -279,6 +279,15 @@ class Candidates(unittest.TestCase):
         self.assertFalse(any(c for c, _ in parts))                           # paper is open
 
 
+class UnrealBuild(unittest.TestCase):
+    def test_unreal_drops_only_the_shells_pole_slivers(self):
+        """s147: Unreal's build dropped 128 triangles from each shell. They are the slivers at the sphere poles, with
+        corners within THRESH_POINTS_ARE_SAME. No other candidate has any."""
+        import review_b09_import_readback as R
+        counts = {n: int(R.degenerate(m).sum()) for n, m, *_ in B.candidates()}
+        self.assertEqual({n: c for n, c in counts.items() if c}, {"SM_B09_ShellCore": 128, "SM_B09_ShellWrapped": 128})
+
+
 class Spec(unittest.TestCase):
     def test_the_committed_spec_is_the_modules(self):
         self.assertEqual(json.loads(SPEC.read_text()), json.loads(json.dumps(B.spec(), ensure_ascii=False)))

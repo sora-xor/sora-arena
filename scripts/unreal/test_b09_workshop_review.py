@@ -173,6 +173,24 @@ class Capture(unittest.TestCase):
         self.assertAlmostEqual(ev, math.log2(float(np.median(lux)) / 2.5))
         self.assertTrue(2.0 < ev < 6.0, ev)
 
+    def test_its_engine_calls_are_ones_working_scripts_use(self):
+        code = re.sub(r"#.*", "", self.text)
+        for call in ("create_dynamic_material_instance", "set_collision_enabled", "get_material_index", "set_light_color"):
+            self.assertNotIn(call, code)                                     # no working script calls these
+        state = ast.get_source_segment(self.text, next(n for n in ast.walk(ast.parse(self.text))
+                                                       if isinstance(n, ast.FunctionDef) and n.name == "review_state"))
+        for call in ("set_material_instance_parent", "set_material_instance_scalar_parameter_value", "MaterialInstanceConstantFactoryNew"):
+            self.assertIn(call, state)
+
+    def test_a_readback_with_problems_needs_a_review_that_explains_each(self):
+        main = ast.get_source_segment(self.text, next(n for n in ast.walk(ast.parse(self.text))
+                                                      if isinstance(n, ast.FunctionDef) and n.name == "main"))
+        self.assertIn('fail("the import\'s readback has problems and no host review explains them")', main)
+        for needle in ('review["readback_sha256"] != hashlib.sha256(rb_bytes).hexdigest()', 'review["unexplained"]',
+                       'sorted(review["explained"]) != sorted(rb["problems"])'):
+            self.assertIn(needle, main)
+        self.assertLess(main.index('if rb["problems"]:'), main.index("build(spec, ev100)"))
+
     def test_it_draws_the_readbacks_candidates(self):
         main = next(n for n in ast.walk(ast.parse(self.text)) if isinstance(n, ast.FunctionDef) and n.name == "main")
         src = ast.get_source_segment(self.text, main)

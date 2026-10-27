@@ -67,9 +67,18 @@ def main():
     spec_sha = man["inputs"].get(SPEC)
     if spec_sha != sha256(ROOT / SPEC):
         problems.append("the run was made from another spec")
-    readback = next((k for k in man["inputs"] if k.startswith("Saved/B09Workshop/Unreal/")), None)
-    if readback is None or sha256(ROOT / readback) != man["inputs"][readback] or json.loads((ROOT / readback).read_text())["problems"]:
-        problems.append(f"the readback {readback} is not the import's clean one")
+    unreal_inputs = [k for k in man["inputs"] if k.startswith("Saved/B09Workshop/Unreal/")]
+    readback = next((k for k in unreal_inputs if not k.endswith("_review.json")), None)
+    review = next((k for k in unreal_inputs if k.endswith("_review.json")), None)
+    if readback is None or sha256(ROOT / readback) != man["inputs"][readback]:
+        problems.append(f"the readback {readback} is not the one named")
+    else:
+        rb_problems = json.loads((ROOT / readback).read_text())["problems"]
+        if rb_problems:                 # drawn only with a host review that explains every one
+            rv = json.loads((ROOT / review).read_text()) if review and sha256(ROOT / review) == man["inputs"][review] else None
+            if rv is None or rv["unexplained"] or sorted(rv["explained"]) != sorted(rb_problems) or \
+                    rv["readback_sha256"] != man["inputs"][readback]:
+                problems.append(f"the readback {readback} has problems that no named review explains")
     out = {"run": str(run.relative_to(ROOT)), "manifest_sha256": sha256(run / "manifest.json"), "checker_sha256": sha256(__file__),
            "shots": len(rows), "ev100": man.get("ev100"), "problems": problems,
            "luma_p50": {k: r["stats"]["luma_p50"] for k, r in rows.items()},
