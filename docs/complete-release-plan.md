@@ -15,7 +15,7 @@ The local coordination mailboxes record current ownership, commits and lane use.
 
 The [ground-route checkpoint](qualification/notice-square-ground-routes-2026-10-27.md) opens the crossing's north–south street and adds its missing north/east floor. Five ground guards use physical arrival-gated schedules with authored periods and paired phase offsets; the conscripts retain the full −20 m / +38 m extent and the blade patrol reaches ±40 m. P1's clearance detour remains distinct from the authored control rectangle. Signed `943c57a4` builds and passes all **66 selected native tests**, with zero selected errors/warnings, including the assisted eight-chapter, 126-beat campaign. Independent review verifies exact selection, natural EOF and all original evidence. Two earlier failed runs exposed workshop/street wall conflicts, a seal-cut fixture overlap and legacy lantern poles in the reopened street; all are repaired and the failures retained. The source checks pass at their recorded revisions (88 gates, then affected 44 and 20 unit tests). The marksman roof, drone circuit, squeeze, final environment and ordinary play remain open.
 
-Published `d0488603` passes all 125 source CI checks in authenticated run `40425982729`, tested merge `3e32e596` with the identical `72c64490` tree. This precedes the new ground-route work. The release goal remains active.
+Published `102c18d9` passes all 125 source CI checks in authenticated run `40435485610`, tested merge `7c475d03` with the identical `e726111a` tree. This includes the ground-route work and repairs. The release goal remains active.
 
 ## October 26–27 terminal charge and workshop presentation state
 
