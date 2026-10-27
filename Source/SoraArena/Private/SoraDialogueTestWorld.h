@@ -51,7 +51,10 @@ inline bool StartAuthored(SoraFieldcraftAutomation::FBeatWorld& W,int64 Collecti
         if(W.Campaign()->ActiveBeat()!=Before) break;
         // Timed defense advances on its actual task clock, with every
         // arriving wave fought before it can destroy the defended objects.
-        if(!W.Tick(1,.5f)) return false;
+        // Subdivide the observation interval so CharacterMovement can
+        // simulate newly arrived guards within its normal iteration limit.
+        for(int32 Step=0;Step<5&&W.Campaign()->ActiveBeat()==Before;++Step)
+            if(!W.Tick(1,.1f)) return false;
     }
     if(!W.Test.TestEqual(TEXT("Real prerequisite play reaches the requested dialogue"),W.Campaign()->ActiveBeat(),W.Beat)) return false;
     // A walk-and-talk test begins before its trigger volume, not at the
