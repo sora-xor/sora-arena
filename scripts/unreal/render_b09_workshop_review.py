@@ -4,7 +4,7 @@ the state contract names; nothing holds it. These are editor review originals of
 first-person hand contact (paws, grips, strip and brush contact stay production work), not the game's lighting or
 post-process, and not an adoption.
 
-**The level** (new each run, /Game/ArtReview/B09Workshop/L_B09Review_<time>):
+**The level** (new each run, in its own folder /Game/ArtReview/B09Workshop/<out>/L_B09Review):
 - the workshop's room and yard solids (the spec's copy of SoraLanternWorkshopRules::Solids) as cubes over a ground
   slab, in plain review materials;
 - the candidate station meshes at their station points, and the drying poles and hooks;
@@ -70,7 +70,9 @@ MESHES = MATS = None                # main(): the import readback's base (a new 
 CANDIDATE_MATS = {}                 # main(): slot -> its candidate material, from the readback
 STATES = {}                         # review_state's instances: (slot, scalars) -> MaterialInstanceConstant
 BINDINGS = {}                       # mesh: the material each slot draws in this fresh editor, before any instance
-LEVEL = f"/Game/ArtReview/B09Workshop/L_B09Review_{int(time.time())}"
+# main(): each run's own review folder, named for its out=, refused if it exists. s151 shared one folder with s148:
+# create_asset returned None for s148's review instances, and the shared M_B09R_Wood was rebuilt in place.
+FOLDER = LEVEL = None
 MARKER = "B09_REVIEW_COMPLETE"
 HFOV = 94.0
 EYE_CM = (4.0, 0.0, 152.0)          # the standing eye over the stand: capsule centre (floor + 88) + (4, 0, 64)
@@ -127,7 +129,7 @@ def cvar(name):
 
 def plain_material(name, colour, rough):
     """A constant-albedo review material in the level's folder, rebuilt each run."""
-    folder = LEVEL.rsplit("/", 1)[0]
+    folder = FOLDER
     path = f"{folder}/{name}"
     lib = unreal.MaterialEditingLibrary
     if ASSETS.does_asset_exist(path):
@@ -214,11 +216,13 @@ def review_state(slot, scalars):
     review folder, made through MaterialEditingLibrary as the import makes its own), made once."""
     key = (slot, tuple(sorted(scalars.items())))
     if key not in STATES:
-        folder = LEVEL.rsplit("/", 1)[0]
+        folder = FOLDER
         name = "MI_B09R_" + slot[len("M_B09_"):] + "".join(f"_{k}{v:g}".replace(".", "p") for k, v in key[1])
         lib = unreal.MaterialEditingLibrary
         mi = unreal.AssetToolsHelpers.get_asset_tools().create_asset(name, folder, unreal.MaterialInstanceConstant,
                                                                      unreal.MaterialInstanceConstantFactoryNew())
+        if mi is None:
+            fail(f"could not create {folder}/{name}")
         lib.set_material_instance_parent(mi, load(CANDIDATE_MATS[slot]))
         for k, v in key[1]:
             lib.set_material_instance_scalar_parameter_value(mi, k, v)
@@ -271,7 +275,7 @@ def metered_ev100(spec):
 
 
 def build(spec, ev100, light):
-    ASSETS.make_directory(LEVEL.rsplit("/", 1)[0])
+    ASSETS.make_directory(FOLDER)
     if not LEVELS.new_level(LEVEL):
         fail("could not create the level")
     cube = load("/Engine/BasicShapes/Cube.Cube")
@@ -422,6 +426,13 @@ def main():
     out = ROOT / "Saved/B09Workshop/Review" / opts["out"]
     if out.exists():
         fail(f"{out} exists: originals go to a new folder")
+    global FOLDER, LEVEL
+    if not all(c.isalnum() or c == "_" for c in opts["out"]):
+        fail(f"out={opts['out']!r}: letters, digits and _ only (it names the review folder)")
+    FOLDER = f"/Game/ArtReview/B09Workshop/{opts['out']}"
+    LEVEL = f"{FOLDER}/L_B09Review"
+    if ASSETS.does_directory_exist(FOLDER) and ASSETS.list_assets(FOLDER, recursive=True):
+        fail(f"{FOLDER} exists: each run's review assets are its own")
     global MESHES, MATS, CANDIDATE_MATS
     rb_bytes = (ROOT / opts["readback"]).read_bytes()
     rb = json.loads(rb_bytes.decode("utf-8"))

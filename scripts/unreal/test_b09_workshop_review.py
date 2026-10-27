@@ -184,6 +184,20 @@ class Capture(unittest.TestCase):
         self.assertTrue(surfaces <= set(self.R.REVIEW), surfaces)
         self.assertTrue({"Floor", "Ceiling"} <= set(self.R.REVIEW))
 
+    def test_each_run_reviews_in_its_own_folder(self):
+        """s151 shared /Game/ArtReview/B09Workshop with s148: create_asset returned None for s148's review instances,
+        and the shared M_B09R_Wood was rebuilt in place."""
+        main = ast.get_source_segment(self.text, next(n for n in ast.walk(ast.parse(self.text))
+                                                      if isinstance(n, ast.FunctionDef) and n.name == "main"))
+        self.assertIn('FOLDER = f"/Game/ArtReview/B09Workshop/{opts[\'out\']}"', main)
+        self.assertIn('fail(f"{FOLDER} exists: each run\'s review assets are its own")', main)
+        self.assertLess(main.index("FOLDER = f"), main.index("build(spec, ev100"))
+        state = ast.get_source_segment(self.text, next(n for n in ast.walk(ast.parse(self.text))
+                                                       if isinstance(n, ast.FunctionDef) and n.name == "review_state"))
+        self.assertIn("folder = FOLDER", state)
+        self.assertIn('fail(f"could not create {folder}/{name}")', state)
+        self.assertNotIn("L_B09Review_{int(time.time())}", self.text)
+
     def test_its_engine_calls_are_ones_working_scripts_use(self):
         code = re.sub(r"#.*", "", self.text)
         for call in ("create_dynamic_material_instance", "set_collision_enabled", "get_material_index", "set_light_color"):
