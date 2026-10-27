@@ -1,0 +1,3938 @@
+{
+ "schema": 1,
+ "generator": "scripts/art/b09_workshop_craft.py",
+ "inputs": {
+  "root_commit": "2a846a6a96e40333d37deba028553ac5c62c63d7",
+  "blobs": {
+   "Source/SoraArena/Public/SoraLanternWorkshopRules.h": "ee2f3b7772e7754eeb0ba067c9b1843025519184",
+   "Source/SoraArena/Public/SoraWorkshopCraftRules.h": "39c36512c2a772c187164d8f1b3547e8ebac2d2b",
+   "Source/SoraArena/Public/SoraWorldBuilder.h": "bd9220c5e0f1e34d404bbea7bec90dad9930d255",
+   "Source/SoraArena/Private/Game/SoraCampaignReach.h": "96ede9639f397714300be52c4a0b5e5b2520418f",
+   "Source/SoraArena/Private/Game/SoraCampaignWorkshopCraft.cpp": "ddac4fc51ac93d31cc33fd77fcf45b742812b8b9",
+   "Source/SoraArena/Private/Characters/SoraCharacterBase.cpp": "3221fa817a15e57d94f0426b202409e8d56289b2",
+   "Source/SoraArena/Private/Characters/SoraPlayerCharacter.cpp": "b8e4fb6b25592aae949ab855fe33e7ea33a2039e",
+   "docs/campaign/chapter-03.md": "4141dcc335b4ecf24e9d3ad626b55f1325f3647d",
+   "Content/Data/campaign/chapter_03.json": "772154d7963a2e7ef92e90fee5f70051fabbaf35",
+   "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/build_record.json": "95f796814125b324f8a5325a92c2b537307d502b"
+  }
+ },
+ "frames": "Unreal cm, Z up. A station's frame: its origin is the station point on its floor (world X, Y, FloorAt), with the world's axes. The hero works from -X, facing +X.",
+ "view_contract": "SoraWorkshopCraftRules::FView via FSoraKitView::LanternCraft: Active, RecipeComplete, Assist, Step, Committed[6], HeldStep, HeldMs, FailedStripSerial, FailedStripAgeMs",
+ "states_all": [
+  {
+   "view": "RecipeComplete (later checkpoints)",
+   "shows": "every station in its finished state and all 40 slots filled"
+  },
+  {
+   "view": "!Active && !RecipeComplete",
+   "shows": "every station at its start; the suggested 24 craftspeople's lanterns"
+  }
+ ],
+ "recipe": {
+  "steps": [
+   {
+    "step": 0,
+    "kind": "bend",
+    "count": 6,
+    "station": "st_b09_rib_form"
+   },
+   {
+    "step": 1,
+    "kind": "paste",
+    "count": 4,
+    "station": "st_b09_paste_bench"
+   },
+   {
+    "step": 2,
+    "kind": "assemble",
+    "count": 1,
+    "station": "st_b09_paste_bench"
+   },
+   {
+    "step": 3,
+    "kind": "paste",
+    "count": 1,
+    "station": "st_b09_oil_rack"
+   },
+   {
+    "step": 4,
+    "kind": "assemble",
+    "count": 3,
+    "station": "st_b09_shell_bench"
+   },
+   {
+    "step": 5,
+    "kind": "inspect",
+    "count": 1,
+    "station": "st_b09_shell_bench"
+   }
+  ],
+  "bend_ms": [
+   800,
+   160
+  ],
+  "paste_ms": 1500,
+  "output_lanterns": 40
+ },
+ "collision": "every mesh is visual only; root keeps or replaces its boxes with the proposed proxies, each under the 88 cm start of the station trace",
+ "lantern": {
+  "height_cm": 44.0,
+  "diameter_cm": 30.0,
+  "rim_diameter_cm": 18.0,
+  "hoop_heights_cm": [
+   -15.714,
+   -9.429,
+   -3.143,
+   3.143,
+   9.429,
+   15.714
+  ],
+  "hoop_radii_cm": [
+   13.549,
+   14.638,
+   15.042,
+   15.042,
+   14.638,
+   13.549
+  ],
+  "hang_point_cm": [
+   0.0,
+   0.0,
+   32.0
+  ],
+  "flex_stages": [
+   0.0,
+   0.25,
+   0.5,
+   0.75,
+   1.0
+  ],
+  "pivot": "its centre (lantern frame); at the rib form and paste bench it sits at the station point",
+  "stages": {
+   "frame": {
+    "meshes": [
+     "SM_B09_Form",
+     "SM_B09_Hoop1",
+     "SM_B09_Hoop2",
+     "SM_B09_Hoop3",
+     "SM_B09_Hoop4",
+     "SM_B09_Hoop5",
+     "SM_B09_Hoop6"
+    ],
+    "bounds_cm": [
+     [
+      -15.12,
+      -15.11,
+      -30.0
+     ],
+     [
+      15.35,
+      15.11,
+      38.0
+     ]
+    ]
+   },
+   "papered": {
+    "meshes": [
+     "SM_B09_Form",
+     "SM_B09_Hoop1",
+     "SM_B09_Hoop2",
+     "SM_B09_Hoop3",
+     "SM_B09_Hoop4",
+     "SM_B09_Hoop5",
+     "SM_B09_Hoop6",
+     "SM_B09_Washi1",
+     "SM_B09_Washi2",
+     "SM_B09_Washi3",
+     "SM_B09_Washi4"
+    ],
+    "bounds_cm": [
+     [
+      -15.27,
+      -15.23,
+      -30.0
+     ],
+     [
+      15.35,
+      15.27,
+      38.0
+     ]
+    ]
+   },
+   "rimmed": {
+    "meshes": [
+     "SM_B09_Form",
+     "SM_B09_Hoop1",
+     "SM_B09_Hoop2",
+     "SM_B09_Hoop3",
+     "SM_B09_Hoop4",
+     "SM_B09_Hoop5",
+     "SM_B09_Hoop6",
+     "SM_B09_RimBottom",
+     "SM_B09_RimTop",
+     "SM_B09_Washi1",
+     "SM_B09_Washi2",
+     "SM_B09_Washi3",
+     "SM_B09_Washi4"
+    ],
+    "bounds_cm": [
+     [
+      -15.27,
+      -15.23,
+      -30.0
+     ],
+     [
+      15.35,
+      15.27,
+      38.0
+     ]
+    ]
+   },
+   "finished": {
+    "meshes": [
+     "SM_B09_Bail",
+     "SM_B09_Hoop1",
+     "SM_B09_Hoop2",
+     "SM_B09_Hoop3",
+     "SM_B09_Hoop4",
+     "SM_B09_Hoop5",
+     "SM_B09_Hoop6",
+     "SM_B09_RimBottom",
+     "SM_B09_RimTop",
+     "SM_B09_Washi1",
+     "SM_B09_Washi2",
+     "SM_B09_Washi3",
+     "SM_B09_Washi4"
+    ],
+    "bounds_cm": [
+     [
+      -15.27,
+      -15.23,
+      -23.0
+     ],
+     [
+      15.35,
+      15.27,
+      33.29
+     ]
+    ]
+   }
+  }
+ },
+ "camera": {
+  "world_hfov_deg": 94.0,
+  "aspects": [
+   "16:9",
+   "21:9"
+  ],
+  "margin_deg": 2.0,
+  "dial_facing_max_deg": 65.0,
+  "band_min_deg": 2.0,
+  "note": "a CPU geometric estimate of framing; it does not establish Unreal framing, materials or hand contact"
+ },
+ "lantern_centre_by_station_cm": {
+  "st_b09_rib_form": 110.0,
+  "st_b09_paste_bench": 130.0,
+  "st_b09_oil_rack": 130.0
+ },
+ "gauge": {
+  "pivot_cm": [
+   -4.0,
+   34.0,
+   132.0
+  ],
+  "angles_deg": [
+   -90.0,
+   90.0
+  ],
+  "full_ms": 960,
+  "band_radii_cm": [
+   8.0,
+   12.0
+  ],
+  "face_radius_cm": 13.5,
+  "ticks_ms": [
+   0,
+   400,
+   800
+  ],
+  "needle": "points along (0, sin a, cos a) in the station frame, a = gauge_angle(ms)",
+  "green_band_deg": [
+   30.0,
+   90.0
+  ]
+ },
+ "shells": {
+  "core_cm": 4.8,
+  "wrapped_cm": 5.4,
+  "neck_cm": 1.6,
+  "bore_fit": {
+   "bore_cm": 5.6,
+   "wrapped_shell_cm": 5.4,
+   "radial_clear_mm": 1.0
+  }
+ },
+ "room": {
+  "solids_cm": [
+   [
+    2050.0,
+    -950.0,
+    22.5,
+    540.0,
+    1100.0,
+    45.0
+   ],
+   [
+    1745.0,
+    -950.0,
+    11.25,
+    70.0,
+    1088.0,
+    22.5
+   ],
+   [
+    1900.0,
+    -1535.0,
+    11.25,
+    140.0,
+    70.0,
+    22.5
+   ],
+   [
+    1600.0,
+    -950.0,
+    215.0,
+    12.0,
+    1100.0,
+    430.0
+   ],
+   [
+    2320.0,
+    -950.0,
+    215.0,
+    12.0,
+    1100.0,
+    430.0
+   ],
+   [
+    1960.0,
+    -400.0,
+    215.0,
+    720.0,
+    12.0,
+    430.0
+   ],
+   [
+    1715.0,
+    -1500.0,
+    215.0,
+    230.0,
+    12.0,
+    430.0
+   ],
+   [
+    2145.0,
+    -1500.0,
+    215.0,
+    350.0,
+    12.0,
+    430.0
+   ],
+   [
+    1900.0,
+    -1500.0,
+    345.0,
+    140.0,
+    12.0,
+    170.0
+   ],
+   [
+    1960.0,
+    -950.0,
+    440.0,
+    750.0,
+    1130.0,
+    20.0
+   ],
+   [
+    2860.0,
+    -650.0,
+    210.0,
+    1080.0,
+    500.0,
+    420.0
+   ],
+   [
+    1600.0,
+    -1850.0,
+    100.0,
+    12.0,
+    700.0,
+    200.0
+   ],
+   [
+    1755.0,
+    -2200.0,
+    100.0,
+    310.0,
+    12.0,
+    200.0
+   ],
+   [
+    2495.0,
+    -2200.0,
+    100.0,
+    810.0,
+    12.0,
+    200.0
+   ],
+   [
+    3400.0,
+    -1375.0,
+    80.0,
+    12.0,
+    450.0,
+    160.0
+   ],
+   [
+    3700.0,
+    -1150.0,
+    100.0,
+    12.0,
+    2700.0,
+    200.0
+   ],
+   [
+    2535.0,
+    -1400.0,
+    40.0,
+    30.0,
+    160.0,
+    80.0
+   ],
+   [
+    2600.0,
+    -1465.0,
+    40.0,
+    100.0,
+    30.0,
+    80.0
+   ],
+   [
+    2665.0,
+    -1400.0,
+    40.0,
+    30.0,
+    160.0,
+    80.0
+   ],
+   [
+    2600.0,
+    -1335.0,
+    40.0,
+    100.0,
+    30.0,
+    80.0
+   ],
+   [
+    3400.0,
+    -1900.0,
+    319.0,
+    16.0,
+    600.0,
+    638.0
+   ],
+   [
+    3150.0,
+    -1600.0,
+    319.0,
+    500.0,
+    16.0,
+    638.0
+   ],
+   [
+    3150.0,
+    -2200.0,
+    319.0,
+    500.0,
+    16.0,
+    638.0
+   ],
+   [
+    2900.0,
+    -2095.0,
+    319.0,
+    16.0,
+    210.0,
+    638.0
+   ],
+   [
+    2900.0,
+    -1705.0,
+    319.0,
+    16.0,
+    210.0,
+    638.0
+   ],
+   [
+    2900.0,
+    -1900.0,
+    444.0,
+    16.0,
+    180.0,
+    388.0
+   ],
+   [
+    3050.0,
+    -1900.0,
+    644.0,
+    700.0,
+    640.0,
+    12.0
+   ]
+  ],
+  "floor_slabs": [
+   0,
+   1,
+   2
+  ],
+  "ceilings": [
+   9,
+   26
+  ],
+  "source": "SoraLanternWorkshopRules::Solids (the ground slab left out)"
+ },
+ "stations": [
+  {
+   "id": "st_b09_rib_form",
+   "index": 0,
+   "world_cm": [
+    2100.0,
+    -620.0
+   ],
+   "floor_cm": 45.0,
+   "steps": [
+    0
+   ],
+   "work_stand": {
+    "local_cm": [
+     -80.0,
+     0.0,
+     0.0
+    ],
+    "yaw_deg": 0.0
+   },
+   "work_point_cm": [
+    0.0,
+    0.0,
+    110.0
+   ],
+   "parts": [
+    {
+     "name": "SM_B09_RibFormBench",
+     "slots": [
+      "M_B09_TimberBench"
+     ],
+     "triangles": 84,
+     "bounds_cm": [
+      [
+       -30.0,
+       -50.0,
+       0.0
+      ],
+      [
+       30.0,
+       50.0,
+       75.0
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_FormBase",
+     "slots": [
+      "M_B09_TimberForm"
+     ],
+     "triangles": 192,
+     "bounds_cm": [
+      [
+       -6.5,
+       -6.5,
+       75.0
+      ],
+      [
+       6.5,
+       6.5,
+       80.0
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Form",
+     "slots": [
+      "M_B09_TimberForm"
+     ],
+     "triangles": 1336,
+     "bounds_cm": [
+      [
+       -13.87,
+       -13.87,
+       80.0
+      ],
+      [
+       13.87,
+       13.87,
+       148.0
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_FlexGauge",
+     "slots": [
+      "M_B09_GaugeBand",
+      "M_B09_GaugeFace",
+      "M_B09_GaugeMarks",
+      "M_B09_TimberBench"
+     ],
+     "triangles": 808,
+     "bounds_cm": [
+      [
+       -7.0,
+       20.5,
+       75.0
+      ],
+      [
+       -1.0,
+       47.5,
+       145.5
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_StripStock",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 192,
+     "bounds_cm": [
+      [
+       17.8,
+       -48.0,
+       75.22
+      ],
+      [
+       19.7,
+       48.0,
+       75.78
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    }
+   ],
+   "sockets": {
+    "GaugePivot": {
+     "cm": [
+      -4.0,
+      34.0,
+      132.0
+     ],
+     "x_axis": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "HoopSeat1": {
+     "cm": [
+      0.0,
+      0.0,
+      94.286
+     ]
+    },
+    "HoopSeat2": {
+     "cm": [
+      0.0,
+      0.0,
+      100.571
+     ]
+    },
+    "HoopSeat3": {
+     "cm": [
+      0.0,
+      0.0,
+      106.857
+     ]
+    },
+    "HoopSeat4": {
+     "cm": [
+      0.0,
+      0.0,
+      113.143
+     ]
+    },
+    "HoopSeat5": {
+     "cm": [
+      0.0,
+      0.0,
+      119.429
+     ]
+    },
+    "HoopSeat6": {
+     "cm": [
+      0.0,
+      0.0,
+      125.714
+     ]
+    },
+    "SplitStripRest": {
+     "cm": [
+      -18.0,
+      -6.0,
+      75.16
+     ],
+     "x_axis": [
+      0.0,
+      1.0,
+      0.0
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "StationPoint": {
+     "cm": [
+      0.0,
+      0.0,
+      110.0
+     ]
+    },
+    "StripHoldL": {
+     "cm": [
+      -17.549,
+      14.0,
+      94.286
+     ]
+    },
+    "StripHoldR": {
+     "cm": [
+      -17.549,
+      -14.0,
+      94.286
+     ]
+    },
+    "StripStock": {
+     "cm": [
+      18.0,
+      0.0,
+      75.3
+     ],
+     "x_axis": [
+      0.0,
+      1.0,
+      0.0
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "WorkStand": {
+     "cm": [
+      -80.0,
+      0.0,
+      0.0
+     ],
+     "x_axis": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "LanternCentre": {
+     "cm": [
+      0.0,
+      0.0,
+      110.0
+     ]
+    }
+   },
+   "collision_proxies": [
+    {
+     "lo_cm": [
+      -32.0,
+      -52.0,
+      0.0
+     ],
+     "hi_cm": [
+      32.0,
+      52.0,
+      78.0
+     ]
+    }
+   ],
+   "states": [
+    {
+     "view": "Committed[0] = n (0..6)",
+     "shows": "SM_B09_Hoop1..n on the form (HoopSeat1..n)"
+    },
+    {
+     "view": "HeldStep == 0, HeldMs",
+     "shows": "hoop n+1's strip at flex_stage(HeldMs) (SM_B09_Hoop{n+1}_Flex000..075, then Hoop{n+1}); the needle along gauge_angle(HeldMs)"
+    },
+    {
+     "view": "HeldStep == -1",
+     "shows": "the needle at rest (gauge_angle(0), -90 deg); no strip on the form"
+    },
+    {
+     "view": "FailedStripAgeMs >= 0",
+     "shows": "SM_B09_SplitStrip at SplitStripRest while FailedStripAgeMs < 1200 (suggested), then a fresh strip; a new press clears it (root's -1)"
+    },
+    {
+     "view": "Assist",
+     "shows": "the same gauge; the strip completes at 800 ms (the rules' assist pass)"
+    }
+   ],
+   "clearance": {
+    "eligible_positions": 1500,
+    "grid_cm": 10.0,
+    "rays_blocked_by_proposed_proxies": 0,
+    "rays_blocked_by_room_today": 0,
+    "work_stand_eligible": true,
+    "work_stand_ray_clear": true,
+    "capsule_gap_cm": 16.0,
+    "eye_to_work_cm": 86.8,
+    "eye_pitch_deg": -28.9,
+    "sight_occluded_by": [],
+    "proxy_tops_cm": [
+     78.0
+    ]
+   },
+   "state_meshes": [
+    {
+     "name": "SM_B09_Hoop1_Flex000",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 776,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre",
+     "bounds_cm": [
+      [
+       -13.63,
+       -45.52,
+       -15.91
+      ],
+      [
+       -13.47,
+       45.52,
+       -15.51
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop1_Flex025",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 776,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre",
+     "bounds_cm": [
+      [
+       -13.63,
+       -32.94,
+       -15.91
+      ],
+      [
+       16.43,
+       32.94,
+       -15.51
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop1_Flex050",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 776,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre",
+     "bounds_cm": [
+      [
+       -13.63,
+       -13.62,
+       -15.91
+      ],
+      [
+       24.11,
+       13.62,
+       -15.51
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop1_Flex075",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 776,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre",
+     "bounds_cm": [
+      [
+       -13.63,
+       -13.62,
+       -15.91
+      ],
+      [
+       17.71,
+       13.62,
+       -15.51
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop1",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 800,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre",
+     "bounds_cm": [
+      [
+       -13.63,
+       -13.62,
+       -15.91
+      ],
+      [
+       13.89,
+       13.62,
+       -15.51
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop2_Flex000",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 776,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre",
+     "bounds_cm": [
+      [
+       -14.72,
+       -49.18,
+       -9.63
+      ],
+      [
+       -14.56,
+       49.18,
+       -9.23
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop2_Flex025",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 776,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre",
+     "bounds_cm": [
+      [
+       -14.72,
+       -35.58,
+       -9.63
+      ],
+      [
+       17.75,
+       35.58,
+       -9.23
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop2_Flex050",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 776,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre",
+     "bounds_cm": [
+      [
+       -14.72,
+       -14.71,
+       -9.63
+      ],
+      [
+       26.05,
+       14.71,
+       -9.23
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop2_Flex075",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 776,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre",
+     "bounds_cm": [
+      [
+       -14.72,
+       -14.71,
+       -9.63
+      ],
+      [
+       19.12,
+       14.71,
+       -9.23
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop2",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 800,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre",
+     "bounds_cm": [
+      [
+       -14.72,
+       -14.71,
+       -9.63
+      ],
+      [
+       14.95,
+       14.71,
+       -9.23
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop3_Flex000",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 776,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre",
+     "bounds_cm": [
+      [
+       -15.12,
+       -50.54,
+       -3.34
+      ],
+      [
+       -14.96,
+       50.54,
+       -2.94
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop3_Flex025",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 776,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre",
+     "bounds_cm": [
+      [
+       -15.12,
+       -36.56,
+       -3.34
+      ],
+      [
+       18.24,
+       36.56,
+       -2.94
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop3_Flex050",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 776,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre",
+     "bounds_cm": [
+      [
+       -15.12,
+       -15.11,
+       -3.34
+      ],
+      [
+       26.77,
+       15.11,
+       -2.94
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop3_Flex075",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 776,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre",
+     "bounds_cm": [
+      [
+       -15.12,
+       -15.11,
+       -3.34
+      ],
+      [
+       19.65,
+       15.11,
+       -2.94
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop3",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 800,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre",
+     "bounds_cm": [
+      [
+       -15.12,
+       -15.11,
+       -3.34
+      ],
+      [
+       15.35,
+       15.11,
+       -2.94
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop4_Flex000",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 776,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre",
+     "bounds_cm": [
+      [
+       -15.12,
+       -50.54,
+       2.94
+      ],
+      [
+       -14.96,
+       50.54,
+       3.34
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop4_Flex025",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 776,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre",
+     "bounds_cm": [
+      [
+       -15.12,
+       -36.56,
+       2.94
+      ],
+      [
+       18.24,
+       36.56,
+       3.34
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop4_Flex050",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 776,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre",
+     "bounds_cm": [
+      [
+       -15.12,
+       -15.11,
+       2.94
+      ],
+      [
+       26.77,
+       15.11,
+       3.34
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop4_Flex075",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 776,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre",
+     "bounds_cm": [
+      [
+       -15.12,
+       -15.11,
+       2.94
+      ],
+      [
+       19.65,
+       15.11,
+       3.34
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop4",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 800,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre",
+     "bounds_cm": [
+      [
+       -15.12,
+       -15.11,
+       2.94
+      ],
+      [
+       15.35,
+       15.11,
+       3.34
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop5_Flex000",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 776,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre",
+     "bounds_cm": [
+      [
+       -14.72,
+       -49.18,
+       9.23
+      ],
+      [
+       -14.56,
+       49.18,
+       9.63
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop5_Flex025",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 776,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre",
+     "bounds_cm": [
+      [
+       -14.72,
+       -35.58,
+       9.23
+      ],
+      [
+       17.75,
+       35.58,
+       9.63
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop5_Flex050",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 776,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre",
+     "bounds_cm": [
+      [
+       -14.72,
+       -14.71,
+       9.23
+      ],
+      [
+       26.05,
+       14.71,
+       9.63
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop5_Flex075",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 776,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre",
+     "bounds_cm": [
+      [
+       -14.72,
+       -14.71,
+       9.23
+      ],
+      [
+       19.12,
+       14.71,
+       9.63
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop5",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 800,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre",
+     "bounds_cm": [
+      [
+       -14.72,
+       -14.71,
+       9.23
+      ],
+      [
+       14.95,
+       14.71,
+       9.63
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop6_Flex000",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 776,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre",
+     "bounds_cm": [
+      [
+       -13.63,
+       -45.52,
+       15.51
+      ],
+      [
+       -13.47,
+       45.52,
+       15.91
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop6_Flex025",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 776,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre",
+     "bounds_cm": [
+      [
+       -13.63,
+       -32.94,
+       15.51
+      ],
+      [
+       16.43,
+       32.94,
+       15.91
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop6_Flex050",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 776,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre",
+     "bounds_cm": [
+      [
+       -13.63,
+       -13.62,
+       15.51
+      ],
+      [
+       24.11,
+       13.62,
+       15.91
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop6_Flex075",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 776,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre",
+     "bounds_cm": [
+      [
+       -13.63,
+       -13.62,
+       15.51
+      ],
+      [
+       17.71,
+       13.62,
+       15.91
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop6",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 800,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre",
+     "bounds_cm": [
+      [
+       -13.63,
+       -13.62,
+       15.51
+      ],
+      [
+       13.89,
+       13.62,
+       15.91
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_SplitStrip",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 656,
+     "pivot": "its middle, lying flat",
+     "placed_at": "SplitStripRest",
+     "bounds_cm": [
+      [
+       -45.52,
+       -3.2,
+       0.0
+      ],
+      [
+       45.52,
+       3.2,
+       0.76
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_GaugeNeedle",
+     "slots": [
+      "M_B09_GaugeNeedle",
+      "M_B09_Iron"
+     ],
+     "triangles": 84,
+     "pivot": "its hinge",
+     "placed_at": "GaugePivot",
+     "bounds_cm": [
+      [
+       -0.75,
+       -0.9,
+       -1.2
+      ],
+      [
+       -0.2,
+       0.9,
+       11.6
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    }
+   ],
+   "first_person": {
+    "hfov_deg": 94.0,
+    "margin_deg": 2.0,
+    "stand": {
+     "16:9": {
+      "gauge": {
+       "in_frame": true,
+       "occluded_by": [],
+       "facing_deg": 28.7,
+       "band_deg": 6.19,
+       "ok": true
+      },
+      "hoops": {
+       "in_frame": true,
+       "occluded_by": [],
+       "ok": true
+      }
+     },
+     "21:9": {
+      "gauge": {
+       "in_frame": true,
+       "occluded_by": [],
+       "facing_deg": 28.7,
+       "band_deg": 6.19,
+       "ok": true
+      },
+      "hoops": {
+       "in_frame": true,
+       "occluded_by": [],
+       "ok": true
+      }
+     }
+    },
+    "approach": {
+     "16:9": {
+      "gauge": 0.9211,
+      "hoops": 1.0
+     },
+     "21:9": {
+      "gauge": 0.9211,
+      "hoops": 1.0
+     }
+    },
+    "approach_positions": 152
+   }
+  },
+  {
+   "id": "st_b09_paste_bench",
+   "index": 1,
+   "world_cm": [
+    2100.0,
+    -950.0
+   ],
+   "floor_cm": 45.0,
+   "steps": [
+    1,
+    2
+   ],
+   "work_stand": {
+    "local_cm": [
+     -80.0,
+     0.0,
+     0.0
+    ],
+    "yaw_deg": 0.0
+   },
+   "work_point_cm": [
+    0.0,
+    0.0,
+    130.0
+   ],
+   "parts": [
+    {
+     "name": "SM_B09_PasteBench",
+     "slots": [
+      "M_B09_TimberBench"
+     ],
+     "triangles": 84,
+     "bounds_cm": [
+      [
+       -35.0,
+       -55.0,
+       0.0
+      ],
+      [
+       35.0,
+       55.0,
+       75.0
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_FormBase",
+     "slots": [
+      "M_B09_TimberForm"
+     ],
+     "triangles": 336,
+     "bounds_cm": [
+      [
+       -7.5,
+       -7.5,
+       75.0
+      ],
+      [
+       7.5,
+       7.5,
+       100.0
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Form",
+     "slots": [
+      "M_B09_TimberForm"
+     ],
+     "triangles": 1336,
+     "bounds_cm": [
+      [
+       -13.87,
+       -13.87,
+       100.0
+      ],
+      [
+       13.87,
+       13.87,
+       168.0
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop1",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 800,
+     "bounds_cm": [
+      [
+       -13.63,
+       -13.62,
+       114.09
+      ],
+      [
+       13.89,
+       13.62,
+       114.49
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop2",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 800,
+     "bounds_cm": [
+      [
+       -14.72,
+       -14.71,
+       120.37
+      ],
+      [
+       14.95,
+       14.71,
+       120.77
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop3",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 800,
+     "bounds_cm": [
+      [
+       -15.12,
+       -15.11,
+       126.66
+      ],
+      [
+       15.35,
+       15.11,
+       127.06
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop4",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 800,
+     "bounds_cm": [
+      [
+       -15.12,
+       -15.11,
+       132.94
+      ],
+      [
+       15.35,
+       15.11,
+       133.34
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop5",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 800,
+     "bounds_cm": [
+      [
+       -14.72,
+       -14.71,
+       139.23
+      ],
+      [
+       14.95,
+       14.71,
+       139.63
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop6",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 800,
+     "bounds_cm": [
+      [
+       -13.63,
+       -13.62,
+       145.51
+      ],
+      [
+       13.89,
+       13.62,
+       145.91
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_PastePot",
+     "slots": [
+      "M_B09_Ceramic"
+     ],
+     "triangles": 288,
+     "bounds_cm": [
+      [
+       -26.2,
+       -48.2,
+       75.0
+      ],
+      [
+       -13.8,
+       -35.8,
+       82.0
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    }
+   ],
+   "sockets": {
+    "BrushRest": {
+     "cm": [
+      -22.0,
+      -32.0,
+      75.5
+     ],
+     "x_axis": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "HoopSeat1": {
+     "cm": [
+      0.0,
+      0.0,
+      114.286
+     ]
+    },
+    "HoopSeat2": {
+     "cm": [
+      0.0,
+      0.0,
+      120.571
+     ]
+    },
+    "HoopSeat3": {
+     "cm": [
+      0.0,
+      0.0,
+      126.857
+     ]
+    },
+    "HoopSeat4": {
+     "cm": [
+      0.0,
+      0.0,
+      133.143
+     ]
+    },
+    "HoopSeat5": {
+     "cm": [
+      0.0,
+      0.0,
+      139.429
+     ]
+    },
+    "HoopSeat6": {
+     "cm": [
+      0.0,
+      0.0,
+      145.714
+     ]
+    },
+    "RimBottomRest": {
+     "cm": [
+      14.0,
+      32.0,
+      76.0
+     ]
+    },
+    "RimBottomSeat": {
+     "cm": [
+      0.0,
+      0.0,
+      108.0
+     ]
+    },
+    "RimTopRest": {
+     "cm": [
+      14.0,
+      32.0,
+      78.0
+     ]
+    },
+    "RimTopSeat": {
+     "cm": [
+      0.0,
+      0.0,
+      152.0
+     ]
+    },
+    "Seam1_0": {
+     "cm": [
+      -9.82,
+      0.0,
+      108.0
+     ]
+    },
+    "Seam1_1": {
+     "cm": [
+      -14.073,
+      0.0,
+      113.5
+     ]
+    },
+    "Seam1_2": {
+     "cm": [
+      -15.187,
+      0.0,
+      119.0
+     ]
+    },
+    "Seam1_3": {
+     "cm": [
+      -15.689,
+      0.0,
+      124.5
+     ]
+    },
+    "Seam1_4": {
+     "cm": [
+      -15.82,
+      0.0,
+      130.0
+     ]
+    },
+    "Seam1_5": {
+     "cm": [
+      -15.689,
+      0.0,
+      135.5
+     ]
+    },
+    "Seam1_6": {
+     "cm": [
+      -15.187,
+      0.0,
+      141.0
+     ]
+    },
+    "Seam1_7": {
+     "cm": [
+      -14.073,
+      0.0,
+      146.5
+     ]
+    },
+    "Seam1_8": {
+     "cm": [
+      -9.82,
+      0.0,
+      152.0
+     ]
+    },
+    "Seam2_0": {
+     "cm": [
+      -0.0,
+      -9.82,
+      108.0
+     ]
+    },
+    "Seam2_1": {
+     "cm": [
+      -0.0,
+      -14.073,
+      113.5
+     ]
+    },
+    "Seam2_2": {
+     "cm": [
+      -0.0,
+      -15.187,
+      119.0
+     ]
+    },
+    "Seam2_3": {
+     "cm": [
+      -0.0,
+      -15.689,
+      124.5
+     ]
+    },
+    "Seam2_4": {
+     "cm": [
+      -0.0,
+      -15.82,
+      130.0
+     ]
+    },
+    "Seam2_5": {
+     "cm": [
+      -0.0,
+      -15.689,
+      135.5
+     ]
+    },
+    "Seam2_6": {
+     "cm": [
+      -0.0,
+      -15.187,
+      141.0
+     ]
+    },
+    "Seam2_7": {
+     "cm": [
+      -0.0,
+      -14.073,
+      146.5
+     ]
+    },
+    "Seam2_8": {
+     "cm": [
+      -0.0,
+      -9.82,
+      152.0
+     ]
+    },
+    "Seam3_0": {
+     "cm": [
+      9.82,
+      -0.0,
+      108.0
+     ]
+    },
+    "Seam3_1": {
+     "cm": [
+      14.073,
+      -0.0,
+      113.5
+     ]
+    },
+    "Seam3_2": {
+     "cm": [
+      15.187,
+      -0.0,
+      119.0
+     ]
+    },
+    "Seam3_3": {
+     "cm": [
+      15.689,
+      -0.0,
+      124.5
+     ]
+    },
+    "Seam3_4": {
+     "cm": [
+      15.82,
+      -0.0,
+      130.0
+     ]
+    },
+    "Seam3_5": {
+     "cm": [
+      15.689,
+      -0.0,
+      135.5
+     ]
+    },
+    "Seam3_6": {
+     "cm": [
+      15.187,
+      -0.0,
+      141.0
+     ]
+    },
+    "Seam3_7": {
+     "cm": [
+      14.073,
+      -0.0,
+      146.5
+     ]
+    },
+    "Seam3_8": {
+     "cm": [
+      9.82,
+      -0.0,
+      152.0
+     ]
+    },
+    "Seam4_0": {
+     "cm": [
+      0.0,
+      9.82,
+      108.0
+     ]
+    },
+    "Seam4_1": {
+     "cm": [
+      0.0,
+      14.073,
+      113.5
+     ]
+    },
+    "Seam4_2": {
+     "cm": [
+      0.0,
+      15.187,
+      119.0
+     ]
+    },
+    "Seam4_3": {
+     "cm": [
+      0.0,
+      15.689,
+      124.5
+     ]
+    },
+    "Seam4_4": {
+     "cm": [
+      0.0,
+      15.82,
+      130.0
+     ]
+    },
+    "Seam4_5": {
+     "cm": [
+      0.0,
+      15.689,
+      135.5
+     ]
+    },
+    "Seam4_6": {
+     "cm": [
+      0.0,
+      15.187,
+      141.0
+     ]
+    },
+    "Seam4_7": {
+     "cm": [
+      0.0,
+      14.073,
+      146.5
+     ]
+    },
+    "Seam4_8": {
+     "cm": [
+      0.0,
+      9.82,
+      152.0
+     ]
+    },
+    "StationPoint": {
+     "cm": [
+      0.0,
+      0.0,
+      110.0
+     ]
+    },
+    "Turntable": {
+     "cm": [
+      0.0,
+      0.0,
+      100.0
+     ],
+     "x_axis": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "WashiSheet1": {
+     "cm": [
+      8.0,
+      -34.5,
+      75.0
+     ]
+    },
+    "WashiSheet2": {
+     "cm": [
+      8.0,
+      -34.5,
+      75.1
+     ]
+    },
+    "WashiSheet3": {
+     "cm": [
+      8.0,
+      -34.5,
+      75.2
+     ]
+    },
+    "WashiSheet4": {
+     "cm": [
+      8.0,
+      -34.5,
+      75.3
+     ]
+    },
+    "WorkStand": {
+     "cm": [
+      -80.0,
+      0.0,
+      0.0
+     ],
+     "x_axis": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "LanternCentre": {
+     "cm": [
+      0.0,
+      0.0,
+      130.0
+     ]
+    }
+   },
+   "collision_proxies": [
+    {
+     "lo_cm": [
+      -37.0,
+      -57.0,
+      0.0
+     ],
+     "hi_cm": [
+      37.0,
+      57.0,
+      78.0
+     ]
+    }
+   ],
+   "states": [
+    {
+     "view": "Committed[0] == 6",
+     "shows": "the form with all six hoops (the bends are done to come here)"
+    },
+    {
+     "view": "Committed[1] = n (0..4)",
+     "shows": "SM_B09_Washi1..n; the stack keeps sheets 1..4 - n (1..3 - n while a paste is held: its sheet is Washi{n+1}); the turntable turns the lantern by -90 deg x n about Z, so seam n+1 faces the hero"
+    },
+    {
+     "view": "HeldStep == 1, HeldMs",
+     "shows": "Washi{n+1} revealed to height_frac <= HeldMs / 1500 along seam n+1 (sockets Seam{n+1}_0..8, bottom to top), the brush between them"
+    },
+    {
+     "view": "Committed[2] == 1",
+     "shows": "SM_B09_RimTop/Bottom from Rim*Rest to Rim*Seat"
+    }
+   ],
+   "clearance": {
+    "eligible_positions": 1648,
+    "grid_cm": 10.0,
+    "rays_blocked_by_proposed_proxies": 0,
+    "rays_blocked_by_room_today": 0,
+    "work_stand_eligible": true,
+    "work_stand_ray_clear": true,
+    "capsule_gap_cm": 11.0,
+    "eye_to_work_cm": 79.1,
+    "eye_pitch_deg": -16.1,
+    "sight_occluded_by": [],
+    "proxy_tops_cm": [
+     78.0
+    ]
+   },
+   "state_meshes": [
+    {
+     "name": "SM_B09_Washi1",
+     "slots": [
+      "M_B09_Washi"
+     ],
+     "triangles": 768,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre (turned by the turntable)",
+     "bounds_cm": [
+      [
+       -15.21,
+       -15.21,
+       -22.0
+      ],
+      [
+       1.06,
+       1.06,
+       22.0
+      ]
+     ],
+     "attributes": [
+      "azimuth_frac",
+      "height_frac"
+     ],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Washi2",
+     "slots": [
+      "M_B09_Washi"
+     ],
+     "triangles": 768,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre (turned by the turntable)",
+     "bounds_cm": [
+      [
+       -1.06,
+       -15.23,
+       -22.0
+      ],
+      [
+       15.23,
+       1.06,
+       22.0
+      ]
+     ],
+     "attributes": [
+      "azimuth_frac",
+      "height_frac"
+     ],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Washi3",
+     "slots": [
+      "M_B09_Washi"
+     ],
+     "triangles": 768,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre (turned by the turntable)",
+     "bounds_cm": [
+      [
+       -1.06,
+       -1.06,
+       -22.0
+      ],
+      [
+       15.25,
+       15.25,
+       22.0
+      ]
+     ],
+     "attributes": [
+      "azimuth_frac",
+      "height_frac"
+     ],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Washi4",
+     "slots": [
+      "M_B09_Washi"
+     ],
+     "triangles": 768,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre (turned by the turntable)",
+     "bounds_cm": [
+      [
+       -15.27,
+       -1.07,
+       -22.0
+      ],
+      [
+       1.07,
+       15.27,
+       22.0
+      ]
+     ],
+     "attributes": [
+      "azimuth_frac",
+      "height_frac"
+     ],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_WashiSheet1",
+     "slots": [
+      "M_B09_Washi"
+     ],
+     "triangles": 12,
+     "pivot": "its bottom face's centre",
+     "placed_at": "WashiSheet1 (the stack: sheet 4 on top, taken first)",
+     "bounds_cm": [
+      [
+       -14.0,
+       -12.5,
+       0.0
+      ],
+      [
+       14.0,
+       12.5,
+       0.1
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_WashiSheet2",
+     "slots": [
+      "M_B09_Washi"
+     ],
+     "triangles": 12,
+     "pivot": "its bottom face's centre",
+     "placed_at": "WashiSheet2 (the stack: sheet 4 on top, taken first)",
+     "bounds_cm": [
+      [
+       -14.0,
+       -12.5,
+       0.0
+      ],
+      [
+       14.0,
+       12.5,
+       0.1
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_WashiSheet3",
+     "slots": [
+      "M_B09_Washi"
+     ],
+     "triangles": 12,
+     "pivot": "its bottom face's centre",
+     "placed_at": "WashiSheet3 (the stack: sheet 4 on top, taken first)",
+     "bounds_cm": [
+      [
+       -14.0,
+       -12.5,
+       0.0
+      ],
+      [
+       14.0,
+       12.5,
+       0.1
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_WashiSheet4",
+     "slots": [
+      "M_B09_Washi"
+     ],
+     "triangles": 12,
+     "pivot": "its bottom face's centre",
+     "placed_at": "WashiSheet4 (the stack: sheet 4 on top, taken first)",
+     "bounds_cm": [
+      [
+       -14.0,
+       -12.5,
+       0.0
+      ],
+      [
+       14.0,
+       12.5,
+       0.1
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_RimTop",
+     "slots": [
+      "M_B09_RimLacquer"
+     ],
+     "triangles": 384,
+     "pivot": "the ring's centre",
+     "placed_at": "RimTopRest, then RimTopSeat",
+     "bounds_cm": [
+      [
+       -9.4,
+       -9.4,
+       -1.0
+      ],
+      [
+       9.4,
+       9.4,
+       1.0
+      ]
+     ],
+     "attributes": [
+      "azimuth_frac",
+      "height_frac"
+     ],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_RimBottom",
+     "slots": [
+      "M_B09_RimLacquer"
+     ],
+     "triangles": 384,
+     "pivot": "the ring's centre",
+     "placed_at": "RimBottomRest, then RimBottomSeat",
+     "bounds_cm": [
+      [
+       -9.4,
+       -9.4,
+       -1.0
+      ],
+      [
+       9.4,
+       9.4,
+       1.0
+      ]
+     ],
+     "attributes": [
+      "azimuth_frac",
+      "height_frac"
+     ],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_PasteBrush",
+     "slots": [
+      "M_B09_Bristle",
+      "M_B09_TimberBench"
+     ],
+     "triangles": 24,
+     "pivot": "the bristles' tip",
+     "placed_at": "BrushRest, then along Seam{k}_0..8",
+     "bounds_cm": [
+      [
+       -3.0,
+       0.0,
+       -0.6
+      ],
+      [
+       3.0,
+       22.0,
+       0.6
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    }
+   ],
+   "first_person": {
+    "hfov_deg": 94.0,
+    "margin_deg": 2.0,
+    "stand": {
+     "16:9": {
+      "seam": {
+       "in_frame": true,
+       "occluded_by": [],
+       "ok": true
+      }
+     },
+     "21:9": {
+      "seam": {
+       "in_frame": true,
+       "occluded_by": [],
+       "ok": true
+      }
+     }
+    },
+    "approach": {
+     "16:9": {
+      "seam": 1.0
+     },
+     "21:9": {
+      "seam": 1.0
+     }
+    },
+    "approach_positions": 153
+   }
+  },
+  {
+   "id": "st_b09_oil_rack",
+   "index": 2,
+   "world_cm": [
+    2100.0,
+    -1300.0
+   ],
+   "floor_cm": 45.0,
+   "steps": [
+    3
+   ],
+   "work_stand": {
+    "local_cm": [
+     -80.0,
+     0.0,
+     0.0
+    ],
+    "yaw_deg": 0.0
+   },
+   "work_point_cm": [
+    0.0,
+    0.0,
+    130.0
+   ],
+   "parts": [
+    {
+     "name": "SM_B09_OilRack",
+     "slots": [
+      "M_B09_TimberBench"
+     ],
+     "triangles": 72,
+     "bounds_cm": [
+      [
+       -35.0,
+       -48.0,
+       0.0
+      ],
+      [
+       35.0,
+       48.0,
+       185.0
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_RackHook",
+     "slots": [
+      "M_B09_Iron"
+     ],
+     "triangles": 48,
+     "bounds_cm": [
+      [
+       -0.22,
+       -0.25,
+       161.82
+      ],
+      [
+       1.12,
+       0.25,
+       175.0
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_OilJar",
+     "slots": [
+      "M_B09_Ceramic"
+     ],
+     "triangles": 504,
+     "bounds_cm": [
+      [
+       -1.0,
+       15.0,
+       20.5
+      ],
+      [
+       17.0,
+       33.0,
+       44.5
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_DripTray",
+     "slots": [
+      "M_B09_Ceramic"
+     ],
+     "triangles": 320,
+     "bounds_cm": [
+      [
+       -18.0,
+       -18.0,
+       0.0
+      ],
+      [
+       18.0,
+       18.0,
+       3.0
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    }
+   ],
+   "sockets": {
+    "BrushRest": {
+     "cm": [
+      8.0,
+      22.0,
+      45.1
+     ],
+     "x_axis": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "LanternHang": {
+     "cm": [
+      0.0,
+      0.0,
+      162.0
+     ]
+    },
+    "OilJar": {
+     "cm": [
+      8.0,
+      24.0,
+      44.5
+     ]
+    },
+    "OilStroke0_0": {
+     "cm": [
+      -9.92,
+      0.0,
+      152.0
+     ]
+    },
+    "OilStroke0_1": {
+     "cm": [
+      -14.173,
+      0.0,
+      146.5
+     ]
+    },
+    "OilStroke0_2": {
+     "cm": [
+      -15.287,
+      0.0,
+      141.0
+     ]
+    },
+    "OilStroke0_3": {
+     "cm": [
+      -15.789,
+      0.0,
+      135.5
+     ]
+    },
+    "OilStroke0_4": {
+     "cm": [
+      -15.92,
+      0.0,
+      130.0
+     ]
+    },
+    "OilStroke0_5": {
+     "cm": [
+      -15.789,
+      0.0,
+      124.5
+     ]
+    },
+    "OilStroke0_6": {
+     "cm": [
+      -15.287,
+      0.0,
+      119.0
+     ]
+    },
+    "OilStroke0_7": {
+     "cm": [
+      -14.173,
+      0.0,
+      113.5
+     ]
+    },
+    "OilStroke0_8": {
+     "cm": [
+      -9.92,
+      0.0,
+      108.0
+     ]
+    },
+    "OilStroke1_0": {
+     "cm": [
+      -7.014,
+      -7.014,
+      152.0
+     ]
+    },
+    "OilStroke1_1": {
+     "cm": [
+      -10.022,
+      -10.022,
+      146.5
+     ]
+    },
+    "OilStroke1_2": {
+     "cm": [
+      -10.809,
+      -10.809,
+      141.0
+     ]
+    },
+    "OilStroke1_3": {
+     "cm": [
+      -11.165,
+      -11.165,
+      135.5
+     ]
+    },
+    "OilStroke1_4": {
+     "cm": [
+      -11.257,
+      -11.257,
+      130.0
+     ]
+    },
+    "OilStroke1_5": {
+     "cm": [
+      -11.165,
+      -11.165,
+      124.5
+     ]
+    },
+    "OilStroke1_6": {
+     "cm": [
+      -10.809,
+      -10.809,
+      119.0
+     ]
+    },
+    "OilStroke1_7": {
+     "cm": [
+      -10.022,
+      -10.022,
+      113.5
+     ]
+    },
+    "OilStroke1_8": {
+     "cm": [
+      -7.014,
+      -7.014,
+      108.0
+     ]
+    },
+    "OilStroke2_0": {
+     "cm": [
+      -7.014,
+      7.014,
+      152.0
+     ]
+    },
+    "OilStroke2_1": {
+     "cm": [
+      -10.022,
+      10.022,
+      146.5
+     ]
+    },
+    "OilStroke2_2": {
+     "cm": [
+      -10.809,
+      10.809,
+      141.0
+     ]
+    },
+    "OilStroke2_3": {
+     "cm": [
+      -11.165,
+      11.165,
+      135.5
+     ]
+    },
+    "OilStroke2_4": {
+     "cm": [
+      -11.257,
+      11.257,
+      130.0
+     ]
+    },
+    "OilStroke2_5": {
+     "cm": [
+      -11.165,
+      11.165,
+      124.5
+     ]
+    },
+    "OilStroke2_6": {
+     "cm": [
+      -10.809,
+      10.809,
+      119.0
+     ]
+    },
+    "OilStroke2_7": {
+     "cm": [
+      -10.022,
+      10.022,
+      113.5
+     ]
+    },
+    "OilStroke2_8": {
+     "cm": [
+      -7.014,
+      7.014,
+      108.0
+     ]
+    },
+    "StationPoint": {
+     "cm": [
+      0.0,
+      0.0,
+      110.0
+     ]
+    },
+    "WorkStand": {
+     "cm": [
+      -80.0,
+      0.0,
+      0.0
+     ],
+     "x_axis": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    }
+   },
+   "collision_proxies": [
+    {
+     "lo_cm": [
+      -38.0,
+      -52.0,
+      0.0
+     ],
+     "hi_cm": [
+      38.0,
+      52.0,
+      22.0
+     ]
+    }
+   ],
+   "states": [
+    {
+     "view": "Committed[2] == 1, Committed[3] == 0",
+     "shows": "the finished lantern (bail fitted, form drawn out) on LanternHang, dry washi; before that the rack is empty"
+    },
+    {
+     "view": "HeldStep == 3, HeldMs",
+     "shows": "oil wetness to height_frac >= 1 - HeldMs / 1500 (top down); the brush along OilStroke0_0..8"
+    },
+    {
+     "view": "Committed[3] == 1",
+     "shows": "the rack empties; the lantern hangs at PLAYER_SLOT in the rafters"
+    }
+   ],
+   "clearance": {
+    "eligible_positions": 1428,
+    "grid_cm": 10.0,
+    "rays_blocked_by_proposed_proxies": 0,
+    "rays_blocked_by_room_today": 0,
+    "work_stand_eligible": true,
+    "work_stand_ray_clear": true,
+    "capsule_gap_cm": 11.0,
+    "eye_to_work_cm": 79.1,
+    "eye_pitch_deg": -16.1,
+    "sight_occluded_by": [],
+    "proxy_tops_cm": [
+     22.0
+    ]
+   },
+   "state_meshes": [
+    {
+     "name": "SM_B09_LanternFinished",
+     "slots": [
+      "M_B09_Bamboo",
+      "M_B09_Iron",
+      "M_B09_RimLacquer",
+      "M_B09_Washi"
+     ],
+     "triangles": 9096,
+     "pivot": "the lantern's centre; it hangs from its hang point",
+     "placed_at": "LanternHang - hang_point",
+     "bounds_cm": [
+      [
+       -15.27,
+       -15.23,
+       -23.0
+      ],
+      [
+       15.35,
+       15.27,
+       33.29
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_OilBrush",
+     "slots": [
+      "M_B09_Bristle",
+      "M_B09_TimberBench"
+     ],
+     "triangles": 24,
+     "pivot": "the bristles' tip",
+     "placed_at": "BrushRest, then along OilStroke*",
+     "bounds_cm": [
+      [
+       -2.5,
+       0.0,
+       -0.6
+      ],
+      [
+       2.5,
+       20.0,
+       0.6
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    }
+   ],
+   "first_person": {
+    "hfov_deg": 94.0,
+    "margin_deg": 2.0,
+    "stand": {
+     "16:9": {
+      "oil front stroke": {
+       "in_frame": true,
+       "occluded_by": [],
+       "ok": true
+      },
+      "oil side strokes (reported)": {
+       "in_frame": true,
+       "occluded_by": [
+        "SM_B09_Washi4"
+       ],
+       "ok": false
+      }
+     },
+     "21:9": {
+      "oil front stroke": {
+       "in_frame": true,
+       "occluded_by": [],
+       "ok": true
+      },
+      "oil side strokes (reported)": {
+       "in_frame": true,
+       "occluded_by": [
+        "SM_B09_Washi4"
+       ],
+       "ok": false
+      }
+     }
+    },
+    "approach": {
+     "16:9": {
+      "oil front stroke": 1.0,
+      "oil side strokes (reported)": 0.6644
+     },
+     "21:9": {
+      "oil front stroke": 1.0,
+      "oil side strokes (reported)": 0.6644
+     }
+    },
+    "approach_positions": 149
+   }
+  },
+  {
+   "id": "st_b09_shell_bench",
+   "index": 3,
+   "world_cm": [
+    2790.0,
+    -2050.0
+   ],
+   "floor_cm": 0.0,
+   "steps": [
+    4,
+    5
+   ],
+   "work_stand": {
+    "local_cm": [
+     -80.0,
+     0.0,
+     0.0
+    ],
+    "yaw_deg": 0.0
+   },
+   "work_point_cm": [
+    -12.0,
+    -10.0,
+    80.0
+   ],
+   "parts": [
+    {
+     "name": "SM_B09_ShellBench",
+     "slots": [
+      "M_B09_TimberBench"
+     ],
+     "triangles": 84,
+     "bounds_cm": [
+      [
+       -35.0,
+       -60.0,
+       0.0
+      ],
+      [
+       35.0,
+       60.0,
+       72.0
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_WeaponCradle",
+     "slots": [
+      "M_B09_TimberBench"
+     ],
+     "triangles": 72,
+     "bounds_cm": [
+      [
+       6.0,
+       -10.5,
+       72.0
+      ],
+      [
+       18.0,
+       32.5,
+       80.8
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_ShellRack",
+     "slots": [
+      "M_B09_TimberBench"
+     ],
+     "triangles": 12,
+     "bounds_cm": [
+      [
+       -24.0,
+       -50.0,
+       72.0
+      ],
+      [
+       -15.0,
+       -24.0,
+       76.0
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_ShellTray",
+     "slots": [
+      "M_B09_TimberBench"
+     ],
+     "triangles": 280,
+     "bounds_cm": [
+      [
+       -27.6,
+       20.4,
+       72.0
+      ],
+      [
+       -8.4,
+       39.6,
+       75.0
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_WrapPaper",
+     "slots": [
+      "M_B09_ShellPaper"
+     ],
+     "triangles": 12,
+     "bounds_cm": [
+      [
+       -30.0,
+       -8.0,
+       72.0
+      ],
+      [
+       -10.0,
+       12.0,
+       72.2
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_FuseCoil",
+     "slots": [
+      "M_B09_FuseCord"
+     ],
+     "triangles": 1080,
+     "bounds_cm": [
+      [
+       -11.27,
+       42.23,
+       72.03
+      ],
+      [
+       2.26,
+       54.77,
+       72.47
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    }
+   ],
+   "sockets": {
+    "FuseCoil": {
+     "cm": [
+      -4.0,
+      48.0,
+      72.5
+     ]
+    },
+    "FuseInspect": {
+     "cm": [
+      6.0,
+      -21.8,
+      83.0
+     ],
+     "x_axis": [
+      0.0,
+      1.0,
+      0.0
+     ],
+     "z_axis": [
+      -1.0,
+      0.0,
+      0.0
+     ]
+    },
+    "Muzzle": {
+     "cm": [
+      12.0,
+      42.0,
+      81.8
+     ],
+     "x_axis": [
+      0.0,
+      1.0,
+      0.0
+     ],
+     "z_axis": [
+      -1.0,
+      0.0,
+      0.0
+     ]
+    },
+    "ShellCore1": {
+     "cm": [
+      -18.0,
+      24.5,
+      75.9
+     ]
+    },
+    "ShellCore2": {
+     "cm": [
+      -18.0,
+      30.0,
+      75.9
+     ]
+    },
+    "ShellCore3": {
+     "cm": [
+      -18.0,
+      35.5,
+      75.9
+     ]
+    },
+    "ShellSeat1": {
+     "cm": [
+      -19.5,
+      -45.0,
+      76.7
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "ShellSeat2": {
+     "cm": [
+      -19.5,
+      -37.0,
+      76.7
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "ShellSeat3": {
+     "cm": [
+      -19.5,
+      -29.0,
+      76.7
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "StationPoint": {
+     "cm": [
+      0.0,
+      0.0,
+      110.0
+     ]
+    },
+    "WeaponRest": {
+     "cm": [
+      12.0,
+      -22.0,
+      81.8
+     ],
+     "x_axis": [
+      0.0,
+      1.0,
+      0.0
+     ],
+     "z_axis": [
+      -1.0,
+      0.0,
+      0.0
+     ]
+    },
+    "WorkStand": {
+     "cm": [
+      -80.0,
+      0.0,
+      0.0
+     ],
+     "x_axis": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "WrapSpot": {
+     "cm": [
+      -20.0,
+      2.0,
+      74.9
+     ]
+    }
+   },
+   "collision_proxies": [
+    {
+     "lo_cm": [
+      -37.0,
+      -62.0,
+      0.0
+     ],
+     "hi_cm": [
+      37.0,
+      62.0,
+      75.0
+     ]
+    }
+   ],
+   "states": [
+    {
+     "view": "Committed[4] = n (0..3)",
+     "shows": "n wrapped shells seated (ShellSeat1..n); 3 - n cores in the tray"
+    },
+    {
+     "view": "Committed[5] == 1",
+     "shows": "the fuse inspected (FuseInspect); weapon 7 is handed over at the beat's end"
+    }
+   ],
+   "clearance": {
+    "eligible_positions": 1336,
+    "grid_cm": 10.0,
+    "rays_blocked_by_proposed_proxies": 0,
+    "rays_blocked_by_room_today": 386,
+    "work_stand_eligible": true,
+    "work_stand_ray_clear": true,
+    "capsule_gap_cm": 11.0,
+    "eye_to_work_cm": 96.9,
+    "eye_pitch_deg": -48.0,
+    "sight_occluded_by": [],
+    "proxy_tops_cm": [
+     75.0
+    ]
+   },
+   "state_meshes": [
+    {
+     "name": "SM_B09_ShellCore",
+     "slots": [
+      "M_B09_FuseCord",
+      "M_B09_ShellCore"
+     ],
+     "triangles": 1124,
+     "pivot": "its centre",
+     "placed_at": "ShellCore1..3",
+     "bounds_cm": [
+      [
+       -2.4,
+       -2.4,
+       -2.4
+      ],
+      [
+       2.4,
+       2.4,
+       5.45
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_ShellWrapped",
+     "slots": [
+      "M_B09_FuseCord",
+      "M_B09_ShellPaper",
+      "M_B09_Twine"
+     ],
+     "triangles": 1268,
+     "pivot": "its centre",
+     "placed_at": "WrapSpot, then ShellSeat1..3",
+     "bounds_cm": [
+      [
+       -2.7,
+       -2.7,
+       -2.7
+      ],
+      [
+       2.7,
+       2.7,
+       7.35
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    }
+   ],
+   "first_person": {
+    "hfov_deg": 94.0,
+    "margin_deg": 2.0,
+    "stand": {
+     "16:9": {
+      "shells": {
+       "in_frame": true,
+       "occluded_by": [],
+       "ok": true
+      },
+      "fuse": {
+       "in_frame": true,
+       "occluded_by": [],
+       "ok": true
+      }
+     },
+     "21:9": {
+      "shells": {
+       "in_frame": true,
+       "occluded_by": [],
+       "ok": true
+      },
+      "fuse": {
+       "in_frame": true,
+       "occluded_by": [],
+       "ok": true
+      }
+     }
+    },
+    "approach": {
+     "16:9": {
+      "shells": 1.0,
+      "fuse": 1.0
+     },
+     "21:9": {
+      "shells": 1.0,
+      "fuse": 1.0
+     }
+    },
+    "approach_positions": 129
+   }
+  }
+ ],
+ "hanging_output": {
+  "poles_y_cm": [
+   -560.0,
+   -820.0,
+   -1080.0,
+   -1340.0
+  ],
+  "pole_z_cm": 395.0,
+  "pole_x_cm": [
+   1795.0,
+   2305.0
+  ],
+  "slots": [
+   {
+    "slot": 1,
+    "hook_cm": [
+     1830.0,
+     -557.6,
+     391.0
+    ],
+    "yaw_deg": 0.0
+   },
+   {
+    "slot": 2,
+    "hook_cm": [
+     1880.0,
+     -557.6,
+     391.0
+    ],
+    "yaw_deg": 137.51
+   },
+   {
+    "slot": 3,
+    "hook_cm": [
+     1930.0,
+     -557.6,
+     391.0
+    ],
+    "yaw_deg": 275.02
+   },
+   {
+    "slot": 4,
+    "hook_cm": [
+     1980.0,
+     -557.6,
+     391.0
+    ],
+    "yaw_deg": 52.52
+   },
+   {
+    "slot": 5,
+    "hook_cm": [
+     2030.0,
+     -557.6,
+     391.0
+    ],
+    "yaw_deg": 190.03
+   },
+   {
+    "slot": 6,
+    "hook_cm": [
+     2080.0,
+     -557.6,
+     391.0
+    ],
+    "yaw_deg": 327.54
+   },
+   {
+    "slot": 7,
+    "hook_cm": [
+     2130.0,
+     -557.6,
+     391.0
+    ],
+    "yaw_deg": 105.05
+   },
+   {
+    "slot": 8,
+    "hook_cm": [
+     2180.0,
+     -557.6,
+     391.0
+    ],
+    "yaw_deg": 242.56
+   },
+   {
+    "slot": 9,
+    "hook_cm": [
+     2230.0,
+     -557.6,
+     391.0
+    ],
+    "yaw_deg": 20.06
+   },
+   {
+    "slot": 10,
+    "hook_cm": [
+     2280.0,
+     -557.6,
+     391.0
+    ],
+    "yaw_deg": 157.57
+   },
+   {
+    "slot": 11,
+    "hook_cm": [
+     1830.0,
+     -817.6,
+     391.0
+    ],
+    "yaw_deg": 295.08
+   },
+   {
+    "slot": 12,
+    "hook_cm": [
+     1880.0,
+     -817.6,
+     391.0
+    ],
+    "yaw_deg": 72.59
+   },
+   {
+    "slot": 13,
+    "hook_cm": [
+     1930.0,
+     -817.6,
+     391.0
+    ],
+    "yaw_deg": 210.1
+   },
+   {
+    "slot": 14,
+    "hook_cm": [
+     1980.0,
+     -817.6,
+     391.0
+    ],
+    "yaw_deg": 347.6
+   },
+   {
+    "slot": 15,
+    "hook_cm": [
+     2030.0,
+     -817.6,
+     391.0
+    ],
+    "yaw_deg": 125.11
+   },
+   {
+    "slot": 16,
+    "hook_cm": [
+     2080.0,
+     -817.6,
+     391.0
+    ],
+    "yaw_deg": 262.62
+   },
+   {
+    "slot": 17,
+    "hook_cm": [
+     2130.0,
+     -817.6,
+     391.0
+    ],
+    "yaw_deg": 40.13
+   },
+   {
+    "slot": 18,
+    "hook_cm": [
+     2180.0,
+     -817.6,
+     391.0
+    ],
+    "yaw_deg": 177.64
+   },
+   {
+    "slot": 19,
+    "hook_cm": [
+     2230.0,
+     -817.6,
+     391.0
+    ],
+    "yaw_deg": 315.14
+   },
+   {
+    "slot": 20,
+    "hook_cm": [
+     2280.0,
+     -817.6,
+     391.0
+    ],
+    "yaw_deg": 92.65
+   },
+   {
+    "slot": 21,
+    "hook_cm": [
+     1830.0,
+     -1077.6,
+     391.0
+    ],
+    "yaw_deg": 230.16
+   },
+   {
+    "slot": 22,
+    "hook_cm": [
+     1880.0,
+     -1077.6,
+     391.0
+    ],
+    "yaw_deg": 7.67
+   },
+   {
+    "slot": 23,
+    "hook_cm": [
+     1930.0,
+     -1077.6,
+     391.0
+    ],
+    "yaw_deg": 145.18
+   },
+   {
+    "slot": 24,
+    "hook_cm": [
+     1980.0,
+     -1077.6,
+     391.0
+    ],
+    "yaw_deg": 282.68
+   },
+   {
+    "slot": 25,
+    "hook_cm": [
+     2030.0,
+     -1077.6,
+     391.0
+    ],
+    "yaw_deg": 60.19
+   },
+   {
+    "slot": 26,
+    "hook_cm": [
+     2080.0,
+     -1077.6,
+     391.0
+    ],
+    "yaw_deg": 197.7
+   },
+   {
+    "slot": 27,
+    "hook_cm": [
+     2130.0,
+     -1077.6,
+     391.0
+    ],
+    "yaw_deg": 335.21
+   },
+   {
+    "slot": 28,
+    "hook_cm": [
+     2180.0,
+     -1077.6,
+     391.0
+    ],
+    "yaw_deg": 112.72
+   },
+   {
+    "slot": 29,
+    "hook_cm": [
+     2230.0,
+     -1077.6,
+     391.0
+    ],
+    "yaw_deg": 250.22
+   },
+   {
+    "slot": 30,
+    "hook_cm": [
+     2280.0,
+     -1077.6,
+     391.0
+    ],
+    "yaw_deg": 27.73
+   },
+   {
+    "slot": 31,
+    "hook_cm": [
+     1830.0,
+     -1337.6,
+     391.0
+    ],
+    "yaw_deg": 165.24
+   },
+   {
+    "slot": 32,
+    "hook_cm": [
+     1880.0,
+     -1337.6,
+     391.0
+    ],
+    "yaw_deg": 302.75
+   },
+   {
+    "slot": 33,
+    "hook_cm": [
+     1930.0,
+     -1337.6,
+     391.0
+    ],
+    "yaw_deg": 80.26
+   },
+   {
+    "slot": 34,
+    "hook_cm": [
+     1980.0,
+     -1337.6,
+     391.0
+    ],
+    "yaw_deg": 217.76
+   },
+   {
+    "slot": 35,
+    "hook_cm": [
+     2030.0,
+     -1337.6,
+     391.0
+    ],
+    "yaw_deg": 355.27
+   },
+   {
+    "slot": 36,
+    "hook_cm": [
+     2080.0,
+     -1337.6,
+     391.0
+    ],
+    "yaw_deg": 132.78
+   },
+   {
+    "slot": 37,
+    "hook_cm": [
+     2130.0,
+     -1337.6,
+     391.0
+    ],
+    "yaw_deg": 270.29
+   },
+   {
+    "slot": 38,
+    "hook_cm": [
+     2180.0,
+     -1337.6,
+     391.0
+    ],
+    "yaw_deg": 47.8
+   },
+   {
+    "slot": 39,
+    "hook_cm": [
+     2230.0,
+     -1337.6,
+     391.0
+    ],
+    "yaw_deg": 185.3
+   },
+   {
+    "slot": 40,
+    "hook_cm": [
+     2280.0,
+     -1337.6,
+     391.0
+    ],
+    "yaw_deg": 322.81
+   }
+  ],
+  "player_slot": 36,
+  "lantern_pivot": "its hang point (the bail's ring) on the hook",
+  "clearance": {
+   "slots": 40,
+   "min_head_clear_cm": 96.0,
+   "hook_top_below_ceiling_cm": 33.0,
+   "neighbour_gap_cm": 20.0,
+   "pole_gap_cm": 230.0,
+   "inside_room": true
+  },
+  "suggested_fill": "root's, from the completion mask: e.g. 24 of the craftspeople's lanterns from the start, the player's at PLAYER_SLOT once the oil step completes, and all 40 at the beat's end"
+ }
+}
