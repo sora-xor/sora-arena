@@ -381,7 +381,8 @@ void USoraFieldcraft::Clear()
     bDroneCrossed = false; StringShyMs = 0;
     LightStates.Reset(); LightClockMs = 0; bBellStaged = false; BellUses = 0;
     FiresLit.Reset(); FireActors.Reset(); FireMarks = 0; LastProgress = 0;
-    LadderClimb = INDEX_NONE; bLadderUp = true; LadderAlong = 0.f; RoofFall = INDEX_NONE; RoofFallZ = 0.f; RoofStood = INDEX_NONE; RoofStandZ = 0.f;
+    LadderClimb = INDEX_NONE; bLadderUp = true; LadderFeet.Reset(); LadderStep = INDEX_NONE; LadderHealth = 0.f;
+    RoofFall = INDEX_NONE; RoofFallZ = 0.f; RoofStood = INDEX_NONE; RoofStandZ = 0.f;
     Riders.Reset(); Stakes.Reset(); StakeArrows.Reset(); StakeHeldMs.Reset(); StakeChainage.Reset(); PackChainage = 0.f;
     RiderClockMs = 0; RiderStrikeCount = 0;
 }
@@ -1599,12 +1600,8 @@ FSoraFieldcraftReadout USoraFieldcraft::Readout(const ASoraPlayerCharacter& Play
     Out.bOnLadder = IsOnLadder();
     bool bPressUp=false;
     Out.bAtLadder = !Out.bOnLadder&&AtPressLadder(Player,bPressUp);
-    for (const FSoraLadder& Ladder : Staged->Ladders)
-    {
-        const FVector Foot(Ladder.Foot, Player.GetActorLocation().Z);
-        const FVector Top = Foot + FRotator(0.f, Ladder.Yaw, 0.f).Vector() * 140.f;
-        Out.bAtLadder |= !Out.bOnLadder && (FVector::Dist2D(Player.GetActorLocation(), IsOnRoof(Player.GetActorLocation()) ? Top : Foot) < 110.f);
-    }
+    bool bLadderGoingUp=false;
+    Out.bAtLadder |= !Out.bOnLadder && AtLadder(Player,bLadderGoingUp)!=INDEX_NONE;
     for (const auto& Rider : Riders) Out.Riders += IsValid(Rider);
     for (int32 Stake = 0; Stake < Stakes.Num(); ++Stake) Out.StakesStanding += IsStakeStanding(Stake);
     return Out;

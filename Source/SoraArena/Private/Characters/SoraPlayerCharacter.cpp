@@ -448,7 +448,7 @@ void ASoraPlayerCharacter::InteractUp()
 void ASoraPlayerCharacter::CrouchPressed()
 {
     if(bKernelDriven||!CanPlay()) return;
-    if(USoraFieldcraft* Craft=HeroFieldcraft(*this);Craft&&(Craft->MoatCrouch(*this)||Craft->ClimbCrouch(*this))) return;
+    if(USoraFieldcraft* Craft=HeroFieldcraft(*this);Craft&&(Craft->IsOnLadder()||Craft->MoatCrouch(*this)||Craft->ClimbCrouch(*this))) return;
     // The wish, not the stance: under a low ceiling the stand waits for headroom.
     if(GetCharacterMovement()->bWantsToCrouch) { UnCrouch(); return; }
     bSprint=false; Crouch();

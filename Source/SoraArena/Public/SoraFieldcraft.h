@@ -548,7 +548,9 @@ private:
     void BellStruck();
     void TickFires();
     void TickLadders(float DeltaTime);
+    int32 AtLadder(const ASoraPlayerCharacter& Hero, bool& bUp) const;
     bool LadderJump(ASoraPlayerCharacter& Hero);
+    void ReleaseLadder(ASoraPlayerCharacter& Hero);
     void StageCharge();
     void TickCharge(float DeltaTime, int32 DtMs);
     void RiderStrikes(int32 DtMs);
@@ -735,11 +737,13 @@ private:
     UPROPERTY() TArray<TObjectPtr<ASoraLamp>> FireActors;
     int32 FireMarks = 0;
     int32 LastProgress = 0;
-    // Ladders: the one being climbed, up or down, and how far; the roof he
+    // Ladders: the current physical waypoint, up or down; the roof he
     // last stood on, and the roof a fall started from (INDEX_NONE: none).
     int32 LadderClimb = INDEX_NONE;
     bool bLadderUp = true;
-    float LadderAlong = 0.f;
+    TArray<FVector> LadderFeet;
+    int32 LadderStep = INDEX_NONE;
+    float LadderHealth = 0.f;
     int32 RoofFall = INDEX_NONE;
     float RoofFallZ = 0.f;
     int32 RoofStood = INDEX_NONE;
