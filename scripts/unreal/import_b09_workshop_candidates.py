@@ -164,7 +164,7 @@ def washi_master(tex):
     m = TOOLS.create_asset("M_B09_WashiCandidate", MATS, unreal.Material, unreal.MaterialFactoryNew())
     m.set_editor_property("two_sided", True)
     m.set_editor_property("blend_mode", unreal.BlendMode.BLEND_MASKED)
-    m.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_TWOSIDED_FOLIAGE)
+    m.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_TWO_SIDED_FOLIAGE)
     P = unreal.MaterialProperty
     albedo = node(m, unreal.MaterialExpressionTextureSampleParameter2D, -1400, -500, parameter_name="AlbedoMap", texture=tex["T_B09_Washi_Albedo"])
     normal = node(m, unreal.MaterialExpressionTextureSampleParameter2D, -1400, -150, parameter_name="NormalMap", texture=tex["T_B09_Washi_NormalDX"],

@@ -9,7 +9,7 @@ post-process, and not an adoption.
   slab, in plain review materials;
 - the candidate station meshes at their station points, and the drying poles and hooks;
 - a night interior: two 1900 K paper-lamp lights over the plank floor, a hearth glow by the passage, a lamp under
-  the storehouse eaves, and a dim sky light;
+  the storehouse eaves, and a real-time-capture sky light (as render_sora_lookdev.py's night);
 - manual exposure, metered at the work points: EV100 = log2(E / 2.5), E the median of the stations' inverse-square
   illuminance from the lamps (unoccluded, as render_nyaakoto_tp_review meters the sun).
 
@@ -64,6 +64,8 @@ ASSETS = unreal.EditorAssetLibrary
 M = unreal.MathLibrary
 SPEC = ROOT / "docs/art-direction/data/b09_workshop_craft_spec.json"
 MESHES = "/Game/Generated/Candidates/B09Workshop/Meshes"
+MATS = "/Game/Generated/Candidates/B09Workshop/Materials"
+BINDINGS = {}                       # mesh: the material each slot draws in this fresh editor, before any instance
 LEVEL = f"/Game/ArtReview/B09Workshop/L_B09Review_{int(time.time())}"
 MARKER = "B09_REVIEW_COMPLETE"
 HFOV = 94.0
@@ -71,7 +73,7 @@ EYE_CM = (4.0, 0.0, 152.0)          # the standing eye over the stand: capsule c
 # (world cm, lumens, kelvin): two paper lamps over the plank floor, a hearth glow by the passage, the eaves lamp
 LAMPS = (((2000.0, -780.0, 235.0), 1200.0, 1900.0), ((2000.0, -1120.0, 235.0), 1200.0, 1900.0),
          ((1690.0, -950.0, 60.0), 600.0, 1800.0), ((2760.0, -1980.0, 230.0), 1500.0, 1900.0))
-SKY = {"intensity": 0.08, "colour": (0.35, 0.42, 0.6)}
+SKY = {"intensity": 1.0, "real_time_capture": True}    # as render_sora_lookdev.py's night: Lumen carries the bounce
 REVIEW = {"Wood": ((0.30, 0.20, 0.12), 0.7), "Plaster": ((0.55, 0.52, 0.46), 0.85), "Ceiling": ((0.10, 0.07, 0.05), 0.8),
           "Soil": ((0.12, 0.10, 0.08), 0.9)}
 CVARS = ("r.ScreenPercentage", "r.AntiAliasingMethod", "r.TSR.History.SampleCount", "r.HighResScreenshotDelay",
@@ -202,6 +204,11 @@ def place(name, loc, rot=None, params=None):
     smc.set_editor_property("mobility", unreal.ComponentMobility.MOVABLE)
     smc.set_static_mesh(mesh)
     smc.set_collision_enabled(unreal.CollisionEnabled.NO_COLLISION)
+    if name not in BINDINGS:            # the import's binding, proved in this editor (package bytes are not proof)
+        drawn = [smc.get_material(i) for i in range(smc.get_num_materials())]
+        BINDINGS[name] = [m.get_path_name() if m is not None else None for m in drawn]
+        if not drawn or any(m is None or not m.get_path_name().startswith(MATS + "/") for m in drawn):
+            fail(f"{name} draws {BINDINGS[name]}, not its candidate materials")
     for slot, scalars in (params or {}).items():
         idx = mesh.get_material_index(slot)
         if idx < 0:
@@ -259,8 +266,8 @@ def build(spec, ev100):
         lc.set_editor_property("source_radius", 4.0)
     sky = spawn(unreal.SkyLight, (2500.0, -1000.0, 700.0))
     sky.light_component.set_editor_property("mobility", unreal.ComponentMobility.MOVABLE)
+    sky.light_component.set_editor_property("real_time_capture", SKY["real_time_capture"])
     sky.light_component.set_intensity(SKY["intensity"])
-    sky.light_component.set_light_color(unreal.LinearColor(*SKY["colour"], 1.0))
     exposure(ev100)
     for i, st in enumerate(spec["stations"]):
         place(STATION_MESH[i], (st["world_cm"][0], st["world_cm"][1], st["floor_cm"]))
@@ -399,7 +406,7 @@ def main():
               "inputs": {str(SPEC.relative_to(ROOT)): hashlib.sha256(spec_bytes).hexdigest(),
                          opts["readback"]: hashlib.sha256(rb_bytes).hexdigest(),
                          "scripts/unreal/render_b09_workshop_review.py": sha256(__file__)},
-              "shots": {}, "files": {},
+              "shots": {}, "files": {}, "bindings": BINDINGS,
               "scope": "socket-pose review captures of the b09 candidates at the hero's 94 deg (editor originals): each "
                        "state mesh at its socket, held by nothing. Not runtime first-person hand contact (paws, grips, "
                        "strip and brush contact stay production work), not the game's lighting or post-process, and "
