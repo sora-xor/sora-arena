@@ -321,22 +321,59 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraMoatHands,"SoraArena.Campaign.MoatHands",E
 bool FSoraMoatHands::RunTest(const FString&)
 {
     SoraMoatTest::FWorld W(*this,TEXT("MoatHands"),5,1);if(!SoraMoatTest::Start(W))return false;
-    // Only this equipment fixture holds combat to isolate actual held-draw
+    // Only this equipment fixture holds combat to isolate held-action
     // cancellation. MoatTraversal and MoatSenses retain every living guard.
     SoraLiftAutomation::HoldThreats(*W.World);
     if(!SoraMoatTest::Walk(W,FVector(1000,-700,100))||!W.Tick(60))return false;
     auto* C=W.Fieldcraft();auto* Kit=W.Hero()->GetEquipment();
     TestFalse(TEXT("The real bank frees the arms"),C->ArmsStowed());
     if(!W.Press(SoraMoatAutomation::Key(*W.Hero(),TEXT("WeaponThree")))||!W.Tick(30))return false;
-    if(!TestEqual(TEXT("Mapped selection equips the unlocked bow on land"),W.Hero()->WeaponId,18))return false;
-    const FKey Fire=SoraMoatAutomation::Key(*W.Hero(),TEXT("Fire"));const int32 Ammo=Kit->Ammo;
-    if(!W.World->InjectKey(Fire,IE_Pressed)||!W.Tick(50)||!TestTrue(TEXT("The land draw is really held"),Kit->IsBowDrawing()))return false;
-    if(!SoraMoatTest::Walk(W,FVector(1000,200,0))||!W.World->InjectKey(Fire,IE_Released)||!W.Tick(2))return false;
-    TestTrue(TEXT("Water admission cancels the held draw through production equipment semantics"),C->ArmsStowed()&&!Kit->IsBowDrawing()&&!Kit->IsTriggerHeld()&&Kit->Ammo==Ammo);
-    if(!W.Hold(Fire,90)||!W.Press(SoraMoatAutomation::Key(*W.Hero(),TEXT("WeaponOne"))))return false;
-    TestTrue(TEXT("New fire and weapon selection remain refused while swimming"),!Kit->IsBowDrawing()&&Kit->Ammo==Ammo&&W.Hero()->WeaponId==18);
-    if(!SoraMoatTest::Walk(W,FVector(1000,-700,100))||!W.Tick(60)||!W.Hold(Fire,50))return false;
-    TestEqual(TEXT("The same mapped bow fires normally after ordinary bank exit"),Kit->Ammo,Ammo-1);
+    // In b02 the carried yumi is still unstrung, even on this bank. Exercise
+    // the actual mission katana instead; ClimbHands covers held bow draws
+    // after the authored b03 stringing transition makes them possible.
+    if(!TestEqual(TEXT("The unstrung bow cannot replace the mission katana on land"),W.Hero()->WeaponId,0))return false;
+    const FKey Fire=SoraMoatAutomation::Key(*W.Hero(),TEXT("Fire"));
+    const FKey Block=SoraMoatAutomation::Key(*W.Hero(),TEXT("Block"));
+    const int32 Arrows=Kit->AmmoByWeapon[18];
+    if(!W.World->InjectKey(Block,IE_Pressed)||!W.Tick(2)||
+        !TestTrue(TEXT("The katana guard is actually held on land"),Kit->IsGuardHeld())||
+        !W.World->InjectKey(Fire,IE_Pressed))return false;
+    TestFalse(TEXT("A trigger pressed under the guard starts no committed strike"),Kit->IsCommittedStrike());
+    W.Look(FRotator(0,90,0));
+    for(int Frame=0;Frame<600&&!C->IsMoatSwimming();++Frame)
+    {
+        // Require the guard immediately before water admission, so natural
+        // stamina exhaustion cannot impersonate cancellation by swimming.
+        if(!TestTrue(TEXT("The guard survives every dry approach frame"),Kit->IsGuardHeld())||
+            !W.World->InjectKey(EKeys::W,IE_Pressed)||!W.Tick(1))return false;
+    }
+    if(!W.World->InjectKey(EKeys::W,IE_Released)||!TestTrue(TEXT("Mapped walking enters the actual moat"),C->IsMoatSwimming()))return false;
+    TestTrue(TEXT("Water admission cancels the guard and held trigger"),C->ArmsStowed()&&!Kit->IsGuardHeld()&&!Kit->IsTriggerHeld()&&!Kit->IsCommittedStrike());
+    if(!W.World->InjectKey(Block,IE_Released)||!W.World->InjectKey(Fire,IE_Released)||
+        !SoraMoatTest::Walk(W,FVector(1000,200,0)))return false;
+    if(!W.World->InjectKey(Block,IE_Pressed)||!W.Tick(2))return false;
+    TestFalse(TEXT("A fresh guard input is refused while swimming"),Kit->IsGuardHeld());
+    if(!W.World->InjectKey(Block,IE_Released)||!W.World->InjectKey(Fire,IE_Pressed)||!W.Tick(2))return false;
+    TestTrue(TEXT("A fresh trigger cannot start a swimming strike"),!Kit->IsTriggerHeld()&&!Kit->IsCommittedStrike());
+    if(!W.World->InjectKey(Fire,IE_Released))return false;
+    for(const TCHAR* Action:{TEXT("WeaponOne"),TEXT("ArmsNext"),TEXT("ArmsPrevious")})
+    {
+        if(!W.Press(SoraMoatAutomation::Key(*W.Hero(),Action)))return false;
+        TestEqual(*FString::Printf(TEXT("%s cannot change the stowed weapon while swimming"),Action),W.Hero()->WeaponId,0);
+    }
+    if(!SoraMoatTest::Walk(W,FVector(1000,-700,100))||!W.Tick(60))return false;
+    if(!W.Press(SoraMoatAutomation::Key(*W.Hero(),TEXT("ArmsNext")))||!W.Tick(30))return false;
+    TestEqual(TEXT("The same next-weapon input selects the wakizashi after bank exit"),W.Hero()->WeaponId,4);
+    if(!W.Press(SoraMoatAutomation::Key(*W.Hero(),TEXT("ArmsPrevious")))||!W.Tick(30))return false;
+    if(!TestEqual(TEXT("Previous-weapon input restores the katana after bank exit"),W.Hero()->WeaponId,0))return false;
+    if(!W.World->InjectKey(Block,IE_Pressed)||!W.Tick(2))return false;
+    TestTrue(TEXT("The same guard input works again after bank exit"),Kit->IsGuardHeld());
+    if(!W.World->InjectKey(Block,IE_Released)||!W.World->InjectKey(Fire,IE_Pressed)||!W.Tick(1))return false;
+    TestTrue(TEXT("The land trigger starts a real committed katana strike"),Kit->IsCommittedStrike());
+    if(!W.World->InjectKey(Fire,IE_Released)||!W.Tick(90)||
+        !W.Press(SoraMoatAutomation::Key(*W.Hero(),TEXT("WeaponThree"))))return false;
+    TestEqual(TEXT("Leaving the water early cannot string the bow"),W.Hero()->WeaponId,0);
+    TestEqual(TEXT("This swim and its refused bow inputs consume no arrows"),Kit->AmmoByWeapon[18],Arrows);
     return !HasAnyErrors();
 }
 

@@ -11,6 +11,21 @@ production. Work runs in isolated worktrees, with a single coordinated Unreal
 and GPU rendering lane. The shared checkout is not a build or render workspace.
 The local coordination mailboxes record current ownership, commits and lane use.
 
+## October 27 current Mac package
+
+The fresh [541c61ae Development package](qualification/mac-package-2026-10-27.md)
+builds, cooks, stages and passes both startup checks, but fails full client
+qualification: 267/271 tests pass, five with 607 warnings. Moat hand-use,
+campaign-space support, stone distraction and guarded-work setup fail. Exact
+source/bundle identities, all 93 original evidence files, natural exits and
+unchanged inputs verify; all 20 original UI captures are inspected. The same
+source passes 125 authenticated CI gates. The package failures remain failures.
+The first source repair restores the authored unstrung-bow test expectation and
+blocks guard and wheel selection while hands are stowed; its 12 host tests pass,
+but Unreal validation is pending. Other failures, warnings and final visual
+acceptance remain open. The full engine lane returns to Claude under
+Coordination 251 while ROOT works only on the CPU in isolated SOURCE.
+
 ## October 27 workshop action interface
 
 The [action-view checkpoint](qualification/workshop-action-view-2026-10-27.md)

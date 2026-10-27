@@ -477,6 +477,7 @@ void ASoraPlayerCharacter::BlockDown()
     // With the toggle setting, a second press lowers the guard.
     if(TogglesGuard()&&IsGuarding()) { BlockUp(); return; }
     if(bKernelDriven) { KernelHeldButtons|=4; return; }
+    if(const USoraFieldcraft* Craft=HeroFieldcraft(*this); Craft&&Craft->ArmsStowed()) return;
     Equipment->GuardDown(bDojoTraining,bCampaignHero);
 }
 void ASoraPlayerCharacter::BlockUp() { KernelHeldButtons&=~4u; Equipment->GuardUp(); }
@@ -546,6 +547,7 @@ unsigned ASoraPlayerCharacter::ArmsMask(bool bNow) const
 unsigned ASoraPlayerCharacter::HoldableArms() const { return ArmsMask(true); }
 bool ASoraPlayerCharacter::TakeUpArm(int32 NewWeaponId)
 {
+    if(const USoraFieldcraft* Craft=HeroFieldcraft(*this); Craft&&Craft->ArmsStowed()) return false;
     if(NewWeaponId==INDEX_NONE) return false;
     if(NewWeaponId==WeaponId) { ArmsTakenTime=GetWorld()->GetTimeSeconds(); return true; }
     if(!Equipment->EquipCampaignWeapon(NewWeaponId)) return false;
