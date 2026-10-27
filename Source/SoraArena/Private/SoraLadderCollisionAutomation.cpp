@@ -106,7 +106,7 @@ bool FSoraLadderCollisionTest::RunTest(const FString&)
         if (!Finish() || !W.Tick(5)) return false;
         TestTrue(TEXT("A clear ascent ends on the supported roof"), !Craft->IsOnLadder() &&
             Player->GetCharacterMovement()->IsMovingOnGround() && FVector::Dist(Feet(), Top) < 5.f &&
-            W.Count(TEXT("roof_reached:") + Ladder.Id) == 1);
+            W.Count(*(TEXT("roof_reached:") + Ladder.Id)) == 1);
         W.Look(FRotator(0, Ladder.Yaw + 180.f, 0));
         Barrier = Block(W, Foot + FVector(0, 0, 280), FVector(70, 70, 10));
         if (!TestNotNull(TEXT("An obstruction spans the descent"), Barrier) || !W.Press(EKeys::J) || !Finish()) return false;
@@ -124,7 +124,7 @@ bool FSoraLadderCollisionTest::RunTest(const FString&)
         FBeatWorld::Hurt(*Player, 1.f);
         if (!W.Tick(2)) return false;
         TestTrue(TEXT("An injury interrupts the grip without awarding a roof"), !Craft->IsOnLadder() &&
-            Player->GetCharacterMovement()->MovementMode != MOVE_Flying && W.Count(TEXT("roof_reached:") + Ladder.Id) == 1);
+            Player->GetCharacterMovement()->MovementMode != MOVE_Flying && W.Count(*(TEXT("roof_reached:") + Ladder.Id)) == 1);
         if (!W.Tick(150)) return false;
         W.Look(FRotator(0, Ladder.Yaw, 0));
         if (!W.Press(EKeys::J) || !Finish() || !W.Tick(5)) return false;
@@ -132,7 +132,7 @@ bool FSoraLadderCollisionTest::RunTest(const FString&)
         if (!W.Press(EKeys::J) || !Finish() || !W.Tick(5)) return false;
         TestTrue(TEXT("The clear reverse route returns to the ground endpoint"), !Craft->IsOnLadder() &&
             Player->GetCharacterMovement()->IsMovingOnGround() && FVector::Dist(Feet(), Foot) < 5.f &&
-            W.Count(TEXT("ladder_foot:") + Ladder.Id) == 1);
+            W.Count(*(TEXT("ladder_foot:") + Ladder.Id)) == 1);
         W.Look(FRotator(0, Ladder.Yaw, 0));
         if (!W.Press(EKeys::J) || !W.Tick(30)) return false;
         FBeatWorld::Hurt(*Player, Player->Health + 1000.f);
