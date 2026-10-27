@@ -1,5 +1,15 @@
 # Complete first-release plan
 
+## Latest isolated runtime slice: elevated ladder flights
+
+`4c4fb7fa` supports ladders beginning on raised landings while preserving
+street-level defaults. Seven selected native ladder/notice/campaign-space
+tests pass with zero selected errors or warnings; original evidence is
+independently reviewed. The actual notice-square two-stage roof and drone
+route remain open. See [the scoped validation record](qualification/elevated-ladder-flights-2026-10-27.md).
+The integration worktree is frozen at published `b6ba3c11`; its preserved
+passing package is still `1b6dfadc`.
+
 Development resumed on 2026-10-18 at the user's explicit request to finish the
 complete game and collaborate with Claude's **Photoreal art WIP checkpoint**.
 The release is incomplete. This plan tracks remaining work; historical test
