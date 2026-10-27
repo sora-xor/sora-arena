@@ -629,8 +629,8 @@ from validate_ui_fonts import validate_font_coverage
 text = json.dumps(catalog,ensure_ascii=False)
 text += "".join(path.read_text() for path in sorted((content / "Data/campaign").glob("*.json")))
 text += "".join(p.read_text() for p in (ROOT / "Source/SoraArena").rglob("*.cpp"))
-# These files are also rendered by LoadCredits; checking only source literals
-# previously missed Arabic titles until a runtime regression test named one.
+# Include staged source acknowledgements and legal notices; checking only
+# source literals previously missed Arabic titles until a runtime test named one.
 text += "".join(p.read_text() for p in sorted((ROOT / "ThirdPartyNotices").iterdir())
                 if p.suffix in {".md", ".txt"})
 validate_font_coverage(ROOT, text)

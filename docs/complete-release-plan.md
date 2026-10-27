@@ -28,6 +28,12 @@ zero errors/warnings. Original failed-package evidence is preserved. A fresh
 package, player-facing credits, final visual acceptance and the wider release
 criteria remain open. The coordination mailboxes record current lane ownership.
 
+The [readable-credits source change](qualification/credits-presentation-2026-10-27.md)
+separates the in-game source acknowledgements from the unchanged asset audit.
+All 32 ledger/notices tests, output freshness and source content/font coverage
+pass. Native font selection, menu navigation, rendered layout and packaged
+staging verification remain pending while Claude owns the engine lane.
+
 ## October 27 workshop action interface
 
 The [action-view checkpoint](qualification/workshop-action-view-2026-10-27.md)

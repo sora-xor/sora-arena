@@ -37,7 +37,7 @@ public class SoraArena : ModuleRules
         // this engine file from disk even in a packaged automation target.
         if (Target.WithAutomationTests)
             RuntimeDependencies.Add("$(EngineDir)/Content/Automation/Report-Template.html", StagedFileType.NonUFS);
-        // The credits screen reads every third-party notice at runtime.
+        // Stage the readable credits, separate licenses and complete asset audit.
         RuntimeDependencies.Add("$(ProjectDir)/ThirdPartyNotices/...", StagedFileType.NonUFS);
         // Practice reads the kernel's arena data (wall labels, spawns, lanes)
         // after matching every shared value against the kernel's own queries.

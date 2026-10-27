@@ -73,7 +73,7 @@ struct FCodexEntry
     SoraText::FLine Title, Context, Body;
 };
 
-// One line of the credits: our own, then each file in ThirdPartyNotices.
+// One line of the credits: our own, then source acknowledgements and licenses.
 // Our own lines carry an English subtitle; the notices are shown as written.
 struct FCreditLine
 {
@@ -111,7 +111,8 @@ SORAARENA_API FText SpecialTradeoff(int32 WeaponId);
 // The name of one of Nyaakoto's six groups of arms (SoraArmsRules::EGroup),
 // or empty for another number.
 SORAARENA_API FText ArmsGroupName(int32 Group);
-// Reads ThirdPartyNotices/*.md and *.txt under the project directory.
+// Reads ThirdPartyNotices/CREDITS.md and separate license notices. ASSETS.md
+// remains staged for the complete asset audit but is not a menu document.
 SORAARENA_API bool LoadCredits(TArray<FCreditLine>& Out, SoraText::FLine& Error);
 // Smallest Slate font sizes (points at the 1080p reference); the game
 // viewport scales them to 0.666 at 720p.
