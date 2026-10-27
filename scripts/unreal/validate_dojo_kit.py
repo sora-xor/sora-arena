@@ -11,6 +11,9 @@ import sys
 
 
 def main():
+    # Embedded Python does not honor the host's -B flag. Keep this read-only
+    # validation from rewriting project bytecode caches when helpers change.
+    sys.dont_write_bytecode = True
     import unreal
     root = Path(unreal.Paths.project_dir()).resolve()
     sys.path.insert(0, str(root / "scripts/unreal"))
