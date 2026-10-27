@@ -1,5 +1,6 @@
 #include "SoraTerminalChargeRules.h"
 #include "SoraMillisecondClock.h"
+#include "SoraNoticeSquareRules.h"
 #include <cassert>
 #include <climits>
 #include <iostream>
@@ -35,5 +36,16 @@ int main()
     FSoraMillisecondClock Clock;S={};S.Stage=EStage::Burning;
     for(int I=0;I<19999;++I)assert(Fuse(S,Clock.Advance(.001))==EEvent::None);
     assert(Fuse(S,Clock.Advance(.001))==EEvent::Detonated);
-    std::cout<<"terminal charge boundaries, interruption, overflow, safety and partitions passed\n";
+    namespace N=SoraNoticeSquareRules;
+    std::cout<<"{\"patrols\":[";
+    for(int G=2;G<7;++G)
+    {
+        if(G>2)std::cout<<',';std::cout<<'[';
+        for(int I=0;I<N::PatrolCount(G);++I)
+        {const auto P=N::PatrolPoint(G,I);if(I)std::cout<<',';std::cout<<'['<<P.X<<','<<P.Y<<']';}
+        std::cout<<']';
+    }
+    std::cout<<"],\"periods_ms\":[";
+    for(int G=2;G<7;++G){if(G>2)std::cout<<',';std::cout<<N::PatrolPeriod(G);}
+    std::cout<<"]}\n";
 }

@@ -124,7 +124,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraTerminalLoaderTest,"SoraArena.Campaign.Not
 bool FSoraTerminalLoaderTest::RunTest(const FString&)
 {
     if(!FSoraCatalog::Get().Load())return false;
-    for(int Case=0;Case<12;++Case)
+    for(int Case=0;Case<19;++Case)
     {
         TSharedPtr<FJsonObject> Data;if(!SoraCatalogJson::ReadJson(TEXT("campaign/chapter_03.json"),Data))return false;
         auto O=Data->GetObjectField(TEXT("space"))->GetArrayField(TEXT("beats"))[9]->AsObject();
@@ -141,6 +141,13 @@ bool FSoraTerminalLoaderTest::RunTest(const FString&)
         if(Case==9)Zone.Place=TEXT("pl_ura_nagaya");
         if(Case==10)Zone.Rect.Max.X+=1;
         if(Case==11)Zone.Walls.AddDefaulted();
+        if(Case==12)O->GetObjectField(TEXT("terminal_charge"))->SetArrayField(TEXT("ground_patrol_periods_ms"),{MakeShared<FJsonValueNumber>(60000)});
+        if(Case==13)O->GetObjectField(TEXT("terminal_charge"))->SetArrayField(TEXT("ground_patrol_pair_spacing_ms"),{MakeShared<FJsonValueNumber>(4000),MakeShared<FJsonValueNumber>(4000)});
+        if(Case==14)Copy.Beats[9].Space.Patrols[6][1].X=3200;
+        if(Case==15)Copy.Beats[9].Space.Patrols[3]=Copy.Beats[9].Space.Patrols[2];
+        if(Case==16)Copy.Beats[9].Guards[4].Type=TEXT("enforcer_rifle");
+        if(Case==17)Copy.Beats[9].Guards[2].bPost=true;
+        if(Case==18)Copy.Beats[9].Space.Patrols[4][6].Y=1500;
         TestEqual(TEXT("The native catalog binds the charge and real escape location"),
             SoraCatalogTerminalCharge::Read(*O,Copy.Beats[9],Copy.Space),Case==0);
     }

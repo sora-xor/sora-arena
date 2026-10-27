@@ -1,4 +1,5 @@
 #include "SoraCampaignDirector.h"
+#include "SoraNoticeSquareRules.h"
 #include "SoraFoundryFurnace.h"
 #include "SoraCompanion.h"
 #include "Combat/SoraDamage.h"
@@ -1228,6 +1229,15 @@ ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int
         Route.bThreeDimensional=true;Route.bSupportedSegments=true;
         Post=Route.Points[0];
     }
+    const bool NoticeGround=IsTerminalCharge()&&SoraNoticeSquareRules::GroundGuard(GuardIndex);
+    if(NoticeGround)
+    {
+        Route.Points.Reset();
+        for(const auto& P:Space->Patrols[GuardIndex])Route.Points.Add(FVector(P,90));
+        Route.PeriodMs=SoraNoticeSquareRules::PatrolPeriod(GuardIndex);Route.PauseMs=0;
+        Route.bThreeDimensional=true;Route.bSupportedSegments=true;
+        Post=Route.Points[0];
+    }
     if(Route.Points.IsEmpty()) Route.Points.Add(FVector(Post.X,Post.Y,90.f));
     // A route of two points is walked back and forth; a longer one loops. A
     // guard the chapter posts keeps the first point of its round as its post.
@@ -1308,6 +1318,14 @@ ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int
         GuardActor->SetActorRotation(FRotator(0,180,0));
         if(auto* Brain=Cast<ASoraEnemyController>(GuardActor->GetController()))Brain->BeginPatrol(Route);
         if(auto* Craft=USoraFieldcraft::Get(this))Craft->AssignWardGuard(*GuardActor,GuardIndex);
+    }
+    if(GuardActor&&NoticeGround)
+    {
+        for(auto& P:Route.Points)P.Z=GuardActor->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2.f;
+        GuardActor->SetActorLocation(Route.Points[0]);
+        GuardActor->SetActorRotation((Route.Points[1]-Route.Points[0]).Rotation());
+        GuardActor->Tags.Add(FName(*FString::Printf(TEXT("NoticeGroundGuard%d"),GuardIndex)));
+        if(auto* Brain=Cast<ASoraEnemyController>(GuardActor->GetController()))Brain->BeginPatrol(Route);
     }
     if(GuardActor&&Space->Moat.bEnabled)
         if(auto* Craft=USoraFieldcraft::Get(this))Craft->AssignMoatGuard(*GuardActor,GuardIndex);

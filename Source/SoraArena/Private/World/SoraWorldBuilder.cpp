@@ -1,5 +1,6 @@
 #include "SoraWorldBuilder.h"
 #include "SoraTerminalChargeRules.h"
+#include "SoraNoticeSquareRules.h"
 #include "SoraCatalog.h"
 #include "Components/PointLightComponent.h"
 #include "Components/SceneComponent.h"
@@ -217,6 +218,17 @@ void ASoraWorldBuilder::BuildArena(int32 MapId,bool bSites,bool bTenements,bool 
 {
     const FLinearColor Accent=FSoraCatalog::Get().Map(MapId).Accent;
     Box(TEXT("Ground"),FVector(0,0,-50),FVector(6400,5200,100),FLinearColor(.14f,.16f,.13f),true,FRotator::ZeroRotator,TEXT("Soil"));
+    const bool NoticeSquare=MapId==1&&bTenements;
+    if(NoticeSquare)
+    {
+        namespace N=SoraNoticeSquareRules;
+        for(int I=0;I<2;++I)
+        {
+            const auto B=N::StreetFloors[I];
+            Box(FString::Printf(TEXT("NoticeSquareStreet%d"),I),FVector(B.X,B.Y,B.Z),FVector(B.SX,B.SY,B.SZ),
+                FLinearColor(.14f,.16f,.13f),true,FRotator::ZeroRotator,TEXT("Soil"));
+        }
+    }
     if(MapId==0) NyaagyuTerrain();
     // The imported estate tiles already carry the photographed stone route.
     // The old raised blockout covered that path and hid its relief entirely.
@@ -237,13 +249,20 @@ void ASoraWorldBuilder::BuildArena(int32 MapId,bool bSites,bool bTenements,bool 
             // north passage. The new district owns those openings.
             Box(TEXT("WardNorthWallWest"),FVector(-1630,2550,220),FVector(1140,100,540),
                 FLinearColor(.2f,.23f,.23f),true,FRotator::ZeroRotator,TEXT("Stone"));
-            WallY=Box(TEXT("WardNorthWallEast"),FVector(1130,2550,220),FVector(4140,100,540),
-                FLinearColor(.2f,.23f,.23f),true,FRotator::ZeroRotator,TEXT("Stone"));
+            for(int I=0;I<2;++I)
+            {
+                const auto B=SoraNoticeSquareRules::NorthWalls[I];
+                WallY=Box(FString::Printf(TEXT("WardNorthWallEast%d"),I),FVector(B.X,B.Y,B.Z),FVector(B.SX,B.SY,B.SZ),
+                    FLinearColor(.2f,.23f,.23f),true,FRotator::ZeroRotator,TEXT("Stone"));
+            }
         }
         else WallY=Box(FString::Printf(TEXT("WallY%d"),S),FVector(0,S*2550,220),FVector(6400,100,540),FLinearColor(.2f,.23f,.23f),true,FRotator::ZeroRotator,TEXT("Stone"));
         if(MapId==0) EstatePerimeter(S,WallX,WallY);
         for(int32 I=0;I<5;++I)
         {
+            // The original repeated row placed a house in both arms of the
+            // authored north-south street. Leave the crossing's stubs open.
+            if(NoticeSquare&&!SoraNoticeSquareRules::KeepLegacyHouse(I))continue;
             if(bLanternWorkshop&&MapId==1&&S==-1&&I==4)continue;
             FVector P(-2000+I*1000,S*(MapId==1?1200:1800),0);
             const float Height=MapId==3?780.f:330.f+(I%2)*100.f;
@@ -265,6 +284,7 @@ void ASoraWorldBuilder::BuildArena(int32 MapId,bool bSites,bool bTenements,bool 
     {
         if(bLanternWorkshop&&MapId==1&&I==5)continue;
         const float X=-2300+(I%6)*900; const float Y=(I<6?-1:1)*(680+(I%2)*200);
+        if(NoticeSquare&&!SoraNoticeSquareRules::KeepLegacyCover(X,Y))continue;
         auto* Cover=Box(FString::Printf(TEXT("Cover%d"),I),FVector(X,Y,70),FVector(230,180,140),I%2?FLinearColor(.29f,.19f,.09f):FLinearColor(.23f,.27f,.28f),true,FRotator::ZeroRotator,I%2?TEXT("Timber"):TEXT("Stone"));
         // Keep the established cover volume for campaign combat. Dressing
         // meshes are visual only and never enter a P2P practice map.

@@ -426,6 +426,17 @@ def check_space(chapter, beats, rewards, labels, where):
 
     elevated_rect = None
     def on_floor(index, point, what, cover_margin=COVER_CLEAR):
+        if what=='ch03.b10 patrol' and chapter['id']=='ch03_lantern_ward':
+            # notice_valid pins every point before this loop. The two long
+            # street patrols cross the zone boundary onto real connected floors;
+            # a bounded union check keeps this exception local to those routes.
+            x,y=point
+            supported=(-3150<=x<=3150 and -2550<=y<=2550 or
+                       -4640<=x<=-3150 and -340<=y<=4240 or
+                       3150<=x<=4040 and -340<=y<=340 or
+                       -340<=x<=340 and 2550<=y<=3840)
+            require(supported,f"{what}: point leaves the connected street floors")
+            return
         if index>=0 and zones[index]['place']=='pl_chochin_kobo' and chapter['id']=='ch03_lantern_ward':
             require(_inside(zones[index]['rect'],point,60),f"{what}: workshop point leaves its floor")
             return

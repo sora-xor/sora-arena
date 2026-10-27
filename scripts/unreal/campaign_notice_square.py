@@ -1,7 +1,9 @@
 """Place the charge encounter on the ward's existing terminal and north alley.
 
-This binds the charge/escape contract. Roof and patrol staging are provisional;
-their authored heights, circuits and timings are a separate open requirement.
+This binds the charge/escape contract and five ground patrol schedules. P1
+uses clearance waypoints around the existing board and side-passage walls;
+P2 keeps the authored -20 m / +38 m endpoints in separate passing lanes.
+The marksman's rooftop and the drone's circle remain provisional.
 """
 
 BEATS=('ch03.b10','ch03.b11','ch03.b12')
@@ -9,18 +11,48 @@ ZONE=[-2200,-1000,3200,3200]
 ENTRY=[-1000,2800,-90]
 PANEL=[-730,560]
 SAFE=[-1600,3000]
+P1=[[-1020,-700],[-510,-700],[0,-700],[510,-700],[1020,-700],
+    [1020,-350],[1020,0],[1020,350],[1020,700],[510,700],[0,700],[-510,700],
+    [-1020,700],[-1020,233],[-1020,-233]]
+P2=[[-60,-2000],[-60,-1033],[-60,-67],[-60,900],[-60,1867],[-60,2833],[-60,3800],
+    [60,3800],[60,2971],[60,2143],[60,1314],[60,486],[60,-343],[60,-1171],[60,-2000]]
+
+
+def ground_patrols():
+    return [P1,P1[-1:]+P1[:-1],P2,P2[-1:]+P2[:-1],[[-4000,0],[4000,0]]]
+
+
+def ground_authored_valid(beat,layout):
+    paths={p['id']:p for p in layout['patrols']}
+    expected=[('pt_b10_p1',60,[[-800,-600],[800,-600],[800,600],[-800,600]]),
+              ('pt_b10_p2',45,[[0,-2000],[0,3800]]),('pt_b10_p3',70,[[-4000,0],[4000,0]])]
+    if any(paths.get(name,{}).get('loop_s')!=seconds or paths[name]['points_cm']!=points or
+           paths[name]['alt_cm'] is not None or paths[name]['circle_cm'] is not None
+           for name,seconds,points in expected):return False
+    guards=beat['params']['guards']
+    kinds=['marksman','drone','enforcer_rifle','enforcer_rifle','bound_conscript','bound_conscript','blade_retainer']
+    routes=['static:sp_b10_roof','pt_b10_d','pt_b10_p1','pt_b10_p1','pt_b10_p2','pt_b10_p2','pt_b10_p3']
+    return (len(guards)==7 and [g['type'] for g in guards]==kinds and
+            [g['patrol'] for g in guards]==routes and
+            [g.get('x_patrol_offset_s',0) for g in guards]==[0,0,0,4,0,3,0] and
+            [g['type'] for g in beat['task']['guards']]==kinds and
+            [g['post'] for g in beat['task']['guards']]==[True,False,False,False,False,False,False])
 
 
 def contract():
     return {'terminal_cm':[-730,460,0],'panel_cm':PANEL+[110],
             'holds_ms':[4000,1000],'fuse_ms':[20000],
-            'blast_cm_hp':[800,120],'safe_cm':[-2200,2900,0,-1000,3100,400,1500]}
+            'blast_cm_hp':[800,120],'safe_cm':[-2200,2900,0,-1000,3100,400,1500],
+            'ground_patrol_periods_ms':[60000,60000,45000,45000,70000],
+            'ground_patrol_pair_spacing_ms':[4000,3000]}
 
 
 def place_notice_square(beats,records,zones,layout,fail):
     selected=[(b,r) for b,r in zip(beats,records,strict=True) if b['id'] in BEATS]
     if not selected:return
     if len(selected)!=3:fail('notice square','all three square beats are required')
+    if not ground_authored_valid(selected[0][0],layout):
+        fail('notice square','authored ground patrols changed; review the physical routes and timing')
     for b,r in selected:
         z=zones[r['zone']]
         if z.place!='pl_kosatsuba':fail(b['id'],'charge needs the notice square')
@@ -32,6 +64,8 @@ def place_notice_square(beats,records,zones,layout,fail):
                           [[0,-600],[0,600]]])
         if b['id']=='ch03.b10':
             r['terminal_charge']=contract()
+            # The marksman's current platform and drone line stay provisional.
+            r['patrols']=[[[900,1200]],[[0,-600],[0,600]]]+ground_patrols()
             r['objectives']=[list(PANEL),list(PANEL),list(SAFE)]
             r['volumes']=[{'event':'volume_enter:vol_b10_glint','center':[0,0],'size':[1800,1400]},
                           {'event':'volume_enter:vol_b10_dobuita','center':[0,382],'size':[1800,300]}]
@@ -76,7 +110,8 @@ def notice_valid(chapter):
                     r['entry']!=ENTRY or r['anchor']!=PANEL or r['height_cm']!=0):return False
         r=next(r for r in selected if r['beat']=='ch03.b10')
         beat=next(b for b in chapter['beats'] if b['id']=='ch03.b10');task=beat['task']
-        return (r['terminal_charge']==contract() and r['objectives']==[PANEL,PANEL,SAFE] and
+        return (ground_authored_valid(beat,chapter['layout']) and r['terminal_charge']==contract() and r['objectives']==[PANEL,PANEL,SAFE] and
+                r['patrols']==[[[900,1200]],[[0,-600],[0,600]]]+ground_patrols() and
                 task['goal']=='objectives' and task['count']==3 and task['objective_hold_ms']==[4000,1000,0] and
                 task['objectives']==['obj_plant_charge','obj_light_fuse','obj_reach_safe'] and
                 beat['ext']['charge']=={'fuse_s':20,'blast_radius_cm':800,'damages_player':True} and

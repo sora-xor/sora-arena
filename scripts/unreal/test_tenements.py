@@ -174,6 +174,31 @@ class TenementTests(unittest.TestCase):
             next(b for b in c['space']['beats'] if b['beat']==r['beat'])['entry']=[-2700,0,0]
             self.assertFalse(tenements.tenements_valid(c),'legacy spawn overlaps tenements')
 
+    def test_notice_ground_routes_have_connected_clear_floors(self):
+        self.assertEqual(self.native['kept_houses'],[0,1,3,4])
+        self.assertNotIn([-500,-680],self.native['kept_cover'])
+        self.assertNotIn([-500,680],self.native['kept_cover'])
+        boxes=self.solids+self.native['notice_solids']+self.native['north_walls']
+        boxes += [[x,y,70,230,180,140,0,1] for x,y in self.native['kept_cover']]
+        # The generic row's foundations are wider than its walls. The side
+        # passage splits its northwest house; that house is away from these
+        # street routes, so conservatively keep its full foundation here.
+        boxes += [[-2000+i*1000,side*1200,24,685,735,48,0,2]
+                  for side in (-1,1) for i in self.native['kept_houses']]
+        boxes += [[-2000+i*1000,side*1200,(330+(i%2)*100)/2,650,700,330+(i%2)*100,0,1]
+                  for side in (-1,1) for i in self.native['kept_houses']]
+        floors=self.native['street_floors']
+        for route in square.ground_patrols():
+            for point in self.sample([p+[2.15] for p in route+route[:1]],step=10):
+                self.assertTrue(self.floor_at(*point[:2])==0 or any(
+                    abs(point[0]-b[0])<=b[3]/2 and abs(point[1]-b[1])<=b[4]/2 and b[2]+b[5]/2==0
+                    for b in floors),('unsupported ground route',point))
+                for box in boxes:self.assertFalse(self.hits(box,point),(point,box))
+        self.assertEqual((min(p[1] for p in square.P2),max(p[1] for p in square.P2)),(-2000,3800))
+        # The pre-change house and solid boundary wall would fail this test.
+        self.assertTrue(self.hits([0,1200,24,685,735,48,0,2],[0,1200,2.15]))
+        self.assertTrue(self.hits([1130,2550,220,4140,100,540,0,1],[0,2550,2.15]))
+
     def test_notice_panel_and_north_escape_clear_actual_solids(self):
         self.clear([[-1000,2800,2.15],[-1000,540,2.15],[-730,548,2.15]])
         route=[[-730,548,2.15],[-1000,548,2.15],[-1000,3000,2.15],[-1600,3000,2.15]]

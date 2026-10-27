@@ -1,5 +1,6 @@
 #include "SoraTenementRules.h"
 #include "SoraTerminalChargeRules.h"
+#include "SoraNoticeSquareRules.h"
 #include "SoraTenementDefenseRules.h"
 #include "SoraTenementFindRules.h"
 #include "SoraTenementQueueRules.h"
@@ -86,6 +87,28 @@ int main()
     {
         if(Comma)std::cout<<',';Comma=true;
         std::cout<<'['<<B.X<<','<<B.Y<<','<<B.Z<<','<<B.SX<<','<<B.SY<<','<<B.SZ<<",0,1]";
+    }
+    std::cout<<"],\"street_floors\":[";Comma=false;
+    for(const auto B:SoraNoticeSquareRules::StreetFloors)
+    {
+        if(Comma)std::cout<<',';Comma=true;
+        std::cout<<'['<<B.X<<','<<B.Y<<','<<B.Z<<','<<B.SX<<','<<B.SY<<','<<B.SZ<<",0,0]";
+    }
+    std::cout<<"],\"north_walls\":[";Comma=false;
+    for(const auto B:SoraNoticeSquareRules::NorthWalls)
+    {
+        if(Comma)std::cout<<',';Comma=true;
+        std::cout<<'['<<B.X<<','<<B.Y<<','<<B.Z<<','<<B.SX<<','<<B.SY<<','<<B.SZ<<",0,1]";
+    }
+    std::cout<<"],\"kept_houses\":[";Comma=false;
+    for(int I=0;I<5;++I)if(SoraNoticeSquareRules::KeepLegacyHouse(I))
+    {if(Comma)std::cout<<',';Comma=true;std::cout<<I;}
+    std::cout<<"],\"kept_cover\":[";Comma=false;
+    for(int I=0;I<12;++I)
+    {
+        const int X=-2300+(I%6)*900,Y=(I<6?-1:1)*(680+(I%2)*200);
+        if(SoraNoticeSquareRules::KeepLegacyCover(X,Y))
+        {if(Comma)std::cout<<',';Comma=true;std::cout<<'['<<X<<','<<Y<<"]";}
     }
     std::cout<<"]}\n";
 }

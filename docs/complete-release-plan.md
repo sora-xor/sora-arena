@@ -11,6 +11,12 @@ production. Work runs in isolated worktrees, with a single coordinated Unreal
 and GPU rendering lane. The shared checkout is not a build or render workspace.
 The local coordination mailboxes record current ownership, commits and lane use.
 
+## October 27 notice-square ground routes
+
+The [ground-route source checkpoint](qualification/notice-square-ground-routes-2026-10-27.md) opens the crossing's north–south street and adds its missing north/east floor. Five ground guards use physical arrival-gated schedules with authored periods and paired phase offsets; the conscripts retain the full −20 m / +38 m extent and the blade patrol reaches ±40 m. P1's clearance detour remains distinct from the authored control rectangle. Targeted CPU and content checks pass; the new native traversal, live patrol, obstruction, pause and retry cases are still unbuilt/unrun. The marksman roof, drone circuit, squeeze, final environment and ordinary play remain open. Work stays isolated while Claude owns the engine lane for workshop art.
+
+Published `d0488603` passes all 125 source CI checks in authenticated run `40425982729`, tested merge `3e32e596` with the identical `72c64490` tree. This precedes the new ground-route work. The release goal remains active.
+
 ## October 26–27 terminal charge and workshop presentation state
 
 The [charge checkpoint](qualification/terminal-charge-2026-10-26.md) implements four-second planting, separate one-second ignition, a twenty-second fuse, covered escape at detonation, self-blast and retry on the actual notice-square terminal. It fixes idle-damage input cancellation, nearest seal/lantern priority and shared-place reporting. Signed `ef57f987` builds and passes all 63 selected native cases, with two retained HTTP timeout warnings. The assisted campaign passes eight chapters and 126 beats; its earlier planting failure came from four alarm reinforcements still alive after conscripts were freed. Failed attempts remain archived with independent reviews.
