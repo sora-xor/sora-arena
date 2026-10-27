@@ -11,6 +11,14 @@ production. Work runs in isolated worktrees, with a single coordinated Unreal
 and GPU rendering lane. The shared checkout is not a build or render workspace.
 The local coordination mailboxes record current ownership, commits and lane use.
 
+## October 26–27 terminal charge and workshop presentation state
+
+The [charge checkpoint](qualification/terminal-charge-2026-10-26.md) implements four-second planting, separate one-second ignition, a twenty-second fuse, covered escape at detonation, self-blast and retry on the actual notice-square terminal. It fixes idle-damage input cancellation, nearest seal/lantern priority and shared-place reporting. Signed `ef57f987` builds and passes all 63 selected native cases, with two retained HTTP timeout warnings. The assisted campaign passes eight chapters and 126 beats; its earlier planting failure came from four alarm reinforcements still alive after conscripts were freed. Failed attempts remain archived with independent reviews.
+
+Signed `2a846a6a` then matches destroyed collision to the visible remnant and exposes authoritative workshop counts/held time/failure state for Claude's props. It builds and passes all seven affected native cases, including the full assisted campaign, with zero selected errors/warnings. Original logs, exact selections, natural EOF and unchanged inputs verify. The other 56 cases retain the earlier revision's result. These directed NullRHI fixtures do not establish ordinary play or visual acceptance.
+
+Earlier published `7f015f0b` passes 124 authenticated source CI gates in run `40414827965`; the new inventory has 125. Root returns the exclusive Unreal/Blender lane to Claude after the follow-up for b09 asset production. The repaired-paw candidate remains unadopted; gauge framing, physical craft presentation, first-person contact, final art and authored notice-square patrols/roof routes remain open. Mac package remains `c655b6b`, native bridge `10ad7dad`; the complete-release goal stays active.
+
 ## October 26 workshop crafting controls
 
 The [crafting checkpoint](qualification/workshop-crafting-2026-10-26.md) implements timed bamboo releases, sustained paste/oil holds, interruption and hand-use guards, shell-bench visibility, mapped HUD cues and provisional restored-window state. All 87 local gameplay/asset source gates pass at signed `9e41d0d8`, including 22 compiled workshop tests. Signed `889c5627` builds in UE 5.8.3 and passes all 55 selected native cases with zero selected errors/warnings, including four new craft cases and the assisted campaign playthrough. The first attempt's compile errors are retained and corrected; exact selections, original logs, natural exit and unchanged inputs are independently verified. Physical craft presentation, rendered acceptance and ordinary play remain open.
