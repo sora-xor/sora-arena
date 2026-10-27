@@ -79,7 +79,10 @@ def main():
             if rv is None or rv["unexplained"] or sorted(rv["explained"]) != sorted(rb_problems) or \
                     rv["readback_sha256"] != man["inputs"][readback]:
                 problems.append(f"the readback {readback} has problems that no named review explains")
-    out = {"run": str(run.relative_to(ROOT)), "manifest_sha256": sha256(run / "manifest.json"), "checker_sha256": sha256(__file__),
+    if man.get("readback_problems") and not man.get("status", "").startswith("a diagnostic capture of a failed import"):
+        problems.append("a capture of a failed import that is not labelled diagnostic")
+    out = {"run": str(run.relative_to(ROOT)), "status": man.get("status"), "readback_problems": man.get("readback_problems"),
+           "manifest_sha256": sha256(run / "manifest.json"), "checker_sha256": sha256(__file__),
            "shots": len(rows), "ev100": man.get("ev100"), "problems": problems,
            "luma_p50": {k: r["stats"]["luma_p50"] for k, r in rows.items()},
            "median_display_stops": {k: r["stats"]["median_display_stops"] for k, r in rows.items()}, "rows": rows,
@@ -89,7 +92,8 @@ def main():
     if record_path is not None:
         with open(record_path, "x") as fh:
             fh.write(text + "\n")
-    print("B09_REVIEW_CHECK " + json.dumps({k: out[k] for k in ("run", "shots", "ev100", "problems", "luma_p50")}, indent=1))
+    print("B09_REVIEW_CHECK " + json.dumps({k: out[k] for k in ("run", "status", "readback_problems", "shots", "ev100", "problems",
+                                                                "luma_p50")}, indent=1))
     sys.exit(1 if problems else 0)
 
 

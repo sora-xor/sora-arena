@@ -190,6 +190,8 @@ class Capture(unittest.TestCase):
                        'sorted(review["explained"]) != sorted(rb["problems"])'):
             self.assertIn(needle, main)
         self.assertLess(main.index('if rb["problems"]:'), main.index("build(spec, ev100)"))
+        self.assertIn('"a diagnostic capture of a failed import candidate: its readback problems stand.', main)
+        self.assertIn('"readback_problems": rb["problems"]', main)                  # kept verbatim (Coordination 237)
 
     def test_it_draws_the_readbacks_candidates(self):
         main = next(n for n in ast.walk(ast.parse(self.text)) if isinstance(n, ast.FunctionDef) and n.name == "main")

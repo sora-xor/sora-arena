@@ -444,6 +444,9 @@ def main():
                          opts["readback"]: hashlib.sha256(rb_bytes).hexdigest(),
                          **({opts["review"]: hashlib.sha256(review_bytes).hexdigest()} if review_bytes else {}),
                          "scripts/unreal/render_b09_workshop_review.py": sha256(__file__)},
+              "status": ("a diagnostic capture of a failed import candidate: its readback problems stand. A host review "
+                         "explains them; it does not pass them" if rb["problems"] else "a review capture of a passed import"),
+              "readback_problems": rb["problems"],
               "shots": {}, "files": {}, "bindings": BINDINGS,
               "review_states": {f"{slot} {dict(sc)}": STATES[(slot, sc)].get_path_name() for slot, sc in STATES},
               "scope": "socket-pose review captures of the b09 candidates at the hero's 94 deg (editor originals): each "
