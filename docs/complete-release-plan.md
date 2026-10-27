@@ -13,6 +13,27 @@ The local coordination mailboxes record current ownership, commits and lane use.
 
 ## October 27 current Mac package
 
+Published `1b6dfadc` passes all 125 source CI gates in authenticated run
+`40464428877`; tested merge `d612f617` has the identical source tree. The
+[first-launch save fix and restored dojo rails](qualification/first-launch-dojo-restore-2026-10-27.md)
+are adopted locally. The fresh [1b6 package](qualification/mac-package-1b6-2026-10-27.md)
+passes all 271 selected client cases with zero selected errors or warnings,
+plus smoke and fresh startup. Its bundle, 93 original files and 20 original
+images are reviewed. Raw engine startup/build warnings remain, while the
+absent-save and missing-rail diagnostics are gone. The prior [5b45 package](qualification/mac-package-5b45-2026-10-27.md)
+passes all 271 selected client cases, smoke and fresh startup, with one selected
+warning and separately retained raw startup diagnostics. Its 20 original menu
+images and bundle evidence are reviewed.
+
+The isolated [saved-dojo validation change](qualification/saved-dojo-import-validation-2026-10-27.md)
+makes the production import reopen all 16 saved modules in another process and
+compare them with the completed import. All 38 focused host tests pass. A
+fresh editor process at `da669a33` verifies all 16 modules with unchanged
+inputs after a preserved first-attempt bytecode-cache mutation. This isolated
+pipeline change is not adopted by ROOT yet.
+
+## October 27 earlier failed package and repairs
+
 The fresh [541c61ae Development package](qualification/mac-package-2026-10-27.md)
 builds, cooks, stages and passes both startup checks, but fails full client
 qualification: 267/271 tests pass, five with 607 warnings. Moat hand-use,
@@ -2017,18 +2038,20 @@ chapter-six data hash; no art mesh or texture was regenerated.
 
 ## Milestones and evidence
 
-The latest completed Mac checkpoint is [5b45dc86](qualification/mac-package-5b45-2026-10-27.md):
-all 271 selected client tests pass, with one engine console-lookup warning,
-plus smoke and a separate rendered startup. All 20 original menu screenshots
-are reviewed. The older 541 package remains failed and preserved.
+The latest completed Mac checkpoint is [1b6dfadc](qualification/mac-package-1b6-2026-10-27.md):
+all 271 selected client tests pass with zero selected errors or warnings, plus
+smoke and separate rendered startup. All 20 original menu screenshots and
+93 original evidence files are reviewed. Raw engine startup/build warnings
+remain; the absent-save and four missing-rail diagnostics are resolved.
+Older failed and passing packages remain preserved.
 
-The separate [SOURCE c4b47fbb follow-up](qualification/first-launch-dojo-restore-2026-10-27.md)
-passes 15 native save/control/campaign regressions and restores the four missing
-required dojo rails through the full importer. All 16 saved modules reopen;
-six SM6 and six SM5 images are authenticated and viewed on M2 Ultra. The
-integration checkout remains frozen at 5b45 at this checkpoint; the SOURCE
-follow-up is not yet integrated or packaged. SM5 on M2 is not M1 qualification,
-and saved Nanite resources do not independently establish raster coverage.
+The [c4b47fbb follow-up](qualification/first-launch-dojo-restore-2026-10-27.md)
+is integrated into that package: it passed 15 native regressions and restored
+all 16 dojo modules. Six SM6 and six SM5 images were viewed on M2. The new
+[permanent saved-module guard](qualification/saved-dojo-import-validation-2026-10-27.md)
+passes 38 host checks and fresh readback of all 16 modules at isolated SOURCE
+`da669a33`; that pipeline change is not yet integrated. SM5 on M2 is not M1
+qualification, and saved Nanite resources do not establish raster coverage.
 
 Dated checkpoints above preserve earlier failures and their repair history.
 Directed automation and fixed captures do not close ordinary play, authored
@@ -2036,17 +2059,17 @@ content, final art, performance, Windows, M1 or economic/network release gates.
 
 | ID | Deliverable | Owner | Current state / completion evidence |
 | --- | --- | --- | --- |
-| T1 | Reproducible Mac development toolchain | Codex toolchain lane | UE 5.8.3 / CL 58210709 and project-scoped Xcode 26.1.1 are installed and build/cook-ready on M2 Ultra; Xcode 27 and global selection are preserved and unqualified. SOURCE c4b47fbb restores all 16 dojo-kit modules through the production importer, preserves a full backup, and passes separate saved geometry/material readback. Actual SM6 and SM5 captures pass on M2. Full asset/art acceptance and actual M1 remain separate; general doctor still notes Git LFS 3.8.1 versus the 3.8.0 pin. |
-| G1 | Complete authored offline campaign mechanics | Codex gameplay lane | The 5b45 Mac client passes all 271 selected cases including the assisted eight-chapter campaign. SOURCE c4b47fbb separately passes 15 save, settings, input and campaign regressions. The standing-workshop case passed within the 42-case editor run at `558df255`. These directed fixtures do not establish normal campaign controls, pacing, difficulty or all authored mechanics. Remaining encounter and presentation work stays open. |
-| G2 | Complete playable campaign spaces and encounters | Codex + Claude | The four cases that failed in package `541` (MoatHands, Spaces, Stones and GuardedWork) pass in package `5b45` after the documented runtime/fixture repairs. The authored marksman roof and drone circuit, squeeze route, charge/rubble and blackout presentation, final art and normal traversal/stealth remain open. Verify all eight chapters and 133 beats with ordinary mapped controls; assisted checkpoints and prepared collision fixtures do not qualify the complete spaces. |
-| U1 | Readable bilingual gameplay and accessible controls | Codex HUD lane | The earlier nine-scene SM6 HUD matrix at 1280×720 and 1920×1080 retains its 36 reviewed originals and scoped results. Package5b45 adds 20 reviewed 1280×720 menu/startup originals with readable credits, settings and keyboard/pad prompts. SOURCE `b489` repairs the UI-tour collector with 54 host tests and a 19-frame replay against preserved originals; its earlier failed wrapper stays failed. Dense gameplay labels, all scrolling/resolution states, motion, controller/accessibility usability and ordinary play remain open. |
-| A1 | Unique timber kit and golden-hour Estate/dojo slice | Claude | Baseline kit and prior captures remain WIP. SOURCE `c4b47fbb` restores four required rails and verifies all 16 existing modules, then reviews six SM6 and six SM5 originals on M2. The hall still has overbright highlights, repeated timber/coffer surfaces, floor seams, proxy props and missing dressing. Earlier v2.1/v2.2 timber visual failures remain rejected. Unique per-placement geometry, provenance, golden-hour composition and photoreal acceptance remain open. M2 SM5 does not qualify M1. |
+| T1 | Reproducible Mac development toolchain | Codex toolchain lane | UE 5.8.3 / CL 58210709 and project-scoped Xcode 26.1.1 are installed and build/cook-ready on M2 Ultra; Xcode 27 and global selection are preserved and unqualified. Integrated c4b47fbb restores all 16 dojo-kit modules through the production importer, preserves a full backup, and passes separate saved geometry/material readback. Actual SM6 and SM5 captures pass on M2. The isolated permanent saved-module guard at da669a33 passes 38 host checks and read-only Unreal validation. Full asset/art acceptance and actual M1 remain separate; general doctor still notes Git LFS 3.8.1 versus the 3.8.0 pin. |
+| G1 | Complete authored offline campaign mechanics | Codex gameplay lane | The 1b6 Mac client passes all 271 selected cases including the assisted eight-chapter campaign. Integrated c4b47fbb separately passes 15 save, settings, input and campaign regressions. The standing-workshop case passed within the 42-case editor run at `558df255`. These directed fixtures do not establish normal campaign controls, pacing, difficulty or all authored mechanics. Remaining encounter and presentation work stays open. |
+| G2 | Complete playable campaign spaces and encounters | Codex + Claude | The four cases that failed in package `541` (MoatHands, Spaces, Stones and GuardedWork) pass in packages `5b45` and `1b6` after the documented runtime/fixture repairs. The authored marksman roof and drone circuit, squeeze route, charge/rubble and blackout presentation, final art and normal traversal/stealth remain open. Verify all eight chapters and 133 beats with ordinary mapped controls; assisted checkpoints and prepared collision fixtures do not qualify the complete spaces. |
+| U1 | Readable bilingual gameplay and accessible controls | Codex HUD lane | The earlier nine-scene SM6 HUD matrix at 1280×720 and 1920×1080 retains its 36 reviewed originals and scoped results. Package1b6 includes 20 reviewed 1280×720 menu/startup originals with readable credits, settings and keyboard/pad prompts. SOURCE `b489` repairs the UI-tour collector with 54 host tests and a 19-frame replay against preserved originals; its earlier failed wrapper stays failed. Dense gameplay labels, all scrolling/resolution states, motion, controller/accessibility usability and ordinary play remain open. |
+| A1 | Unique timber kit and golden-hour Estate/dojo slice | Claude | Baseline kit and prior captures remain WIP. Integrated `c4b47fbb` restores four required rails and verifies all 16 existing modules, then reviews six SM6 and six SM5 originals on M2. The hall still has overbright highlights, repeated timber/coffer surfaces, floor seams, proxy props and missing dressing. Earlier v2.1/v2.2 timber visual failures remain rejected. Unique per-placement geometry, provenance, golden-hour composition and photoreal acceptance remain open. M2 SM5 does not qualify M1. |
 | A2 | Complete character and first-person presentation | Claude | Nyaakoto, paws, sword/saya, clothing, fur and motion must pass [photoreal acceptance](art-direction/photoreal-acceptance.md) in actual gameplay and cinematics. Generated references and Blender images are source evidence only. |
 | A3 | Complete campaign/arena art, animation, audio and effects | Claude + Codex integration | Extend approved visual direction across every environment, character and encounter; complete dialogue presentation, cinematics, sound, music and effects. Review every asset's rights and ledger records. Missing original references remain explicit, rather than being claimed as matched. |
-| Q1 | Repeatable source validation and CI | Codex validation lane | Authenticated CI `40457799905` passes all 125 gates at `5b45dc86`. Tested merge `6dd761b9` has the identical source tree; all five artifact archives, exact commands, reports and raw logs verify. Later SOURCE `b489`, `f5b` and `c4b` changes have their separate host/native evidence; no newer 125-gate CI result is claimed here. Source checks, Unreal execution, assets, packages and release acceptance remain distinct. |
+| Q1 | Repeatable source validation and CI | Codex validation lane | Authenticated CI `40464428877` passes all 125 gates at `1b6dfadc`. Tested merge `d612f617` has the identical source tree; all five archives, exact commands, reports and raw logs verify. Later isolated saved-dojo validation at `da669a33` has 38 host checks and a passing native readback, but no newer CI result is claimed. Source checks, Unreal execution, assets, packages and release acceptance remain distinct. |
 | N1 | Matching native kernel and Connect integration | Codex | Kernel ABI4 stages and passes 94 parity cases/99,043 ticks. Signed clean native `10ad7daddf` passes29/29 directed tests and has a fresh frozen ABI30 release build with its original sidecar. All29 frozen files and six consumer hashes were checked before staging; actual UE NativeLoader passes in the `56b95f3` editor and the `b4a02d1` packaged Metal client, with the exact staged library path. Strict package/artifact hashes verify before and after execution. These tests cover loading, binding, canonical JSON and hashing; signing, submission and finality are not tested. Earlier producer records remain preserved. Windows loading remains unverified. |
 | N2 | Complete native execution proof and real settlement | Codex | Bounded native `01d4e46` completes actual crate compilation/31 CPU tests and a 3,005,248-byte proof with separate verification and 55 negative cases, but its proof attempt fails the unchanged disk reserve. Signed `6fd03be8` adds Katana fallback, and `cd9263628d` adds final-tick death/account/FFA completion with independently authenticated standalone source evidence. Fresh `cd9263628d` passes 18 provenance tests, 70 standalone constraints, exact regeneration of four final-death fixture files, and 46 actual-crate CPU tests with four ignored proofs. The actual adapter covers 254 layouts, at most 3,803,712 bytes; independent CPU review and the unchanged retained binary are sealed into the completed proof plan. Two earlier runner failures and the successful observer retry remain preserved. Fresh native proof cohort completes: one separately verified 3,666,144-byte proof, 92 verifier rejections and eleven actual-prover Constraint rejections, natural EOF zero and 116 files independently verified. This remains an unregistered two-player/two-tick relation. Historical outputs are partly missing, with no cause inferred. No registered full Arena execution profile, full World/death/ability/terminal composition, full-size proof or settlement acceptance is established. Four-validator admission/dispute/settlement, market recovery and Connect signing/finality remain open; live funding/trading stay disabled. |
-| R1 | Windows and Mac release candidates | Codex | Latest completed Mac Development package `5b45dc86` passes all 271 selected client tests, with one engine console-lookup warning, plus smoke and separate fresh rendered startup. Bundle/native/signature, 93 original evidence files and 20 images verify. The package retains raw absent-save/four-missing-rail diagnostics; separate SOURCE `c4b` repairs are not in it. Prior failed `541` and c655 packages remain preserved. Ordinary play, clean-machine install, controller/accessibility, Windows, actual M1, performance and multiplayer/release recovery remain open. |
+| R1 | Windows and Mac release candidates | Codex | Latest Mac Development package `1b6dfadc` passes all 271 selected client tests with zero selected errors/warnings, plus smoke and separate fresh startup. Bundle/native/signature, 93 original evidence files and 20 images verify. Absent-save and missing-rail diagnostics are resolved; raw engine build/startup warnings remain. Older packages and failures are preserved. Ordinary play, clean-machine install, controller/accessibility, Windows, actual M1, performance and multiplayer/release recovery remain open. |
 | R2 | Complete release acceptance | Codex + user visual review | Close every gate below, review unresolved defects, and deliver identifiable packages and their source/evidence. No milestone is completed by relabeling prototype content or weakening a gate. |
 
 ## Release gates
