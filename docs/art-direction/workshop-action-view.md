@@ -74,6 +74,17 @@ Actual rim-line contact must remain reachable and visible at 16:9 and 21:9;
 moving a marker or changing a mask does not repair hidden contact. These are
 requirements for the pending layout, not evidence that it passes.
 
+The measured prototype region is now 15 cm deep from the natural collision
+stop, with ±10 cm lateral placement and ±10° yaw (Coordination 269). The earlier
+22 cm / ±15 cm / ±15° target was exploratory; its measured reach conflict stays
+recorded. The smaller target is approved for layout work, not accepted as
+usable. Matching supports/proxies must put an ordinary walk-up at its nearest
+valid boundary, maintain the measured 2.5 cm body clearance, and support
+keyboard/controller approach, turning, stopping and retry without snapping or
+a pixel hunt. Final signed bounds, axes, origins and contact paths must pass
+physical and view checks throughout the admitted region. Runtime region/yaw
+admission and the presenter remain unimplemented.
+
 No workshop craft paw assets or presenter are integrated by this interface.
 The [station-lifetime and continuous-exit follow-up](../qualification/workshop-lifetime-2026-10-27.md)
 passes all 70 selected native cases at signed `94eb18bb`, including the mapped
