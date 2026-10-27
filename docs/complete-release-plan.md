@@ -20,11 +20,13 @@ campaign-space support, stone distraction and guarded-work setup fail. Exact
 source/bundle identities, all 93 original evidence files, natural exits and
 unchanged inputs verify; all 20 original UI captures are inspected. The same
 source passes 125 authenticated CI gates. The package failures remain failures.
-The first source repair restores the authored unstrung-bow test expectation and
-blocks guard and wheel selection while hands are stowed; its 12 host tests pass,
-but Unreal validation is pending. Other failures, warnings and final visual
-acceptance remain open. The full engine lane returns to Claude under
-Coordination 251 while ROOT works only on the CPU in isolated SOURCE.
+The [native repair checkpoint](qualification/package-repairs-2026-10-27.md)
+passes all 39 selected cases at `73753dde`, including all four former failures
+and the assisted campaign, with four warnings. A fixture-only timestep repair
+at `86caa5d3` then passes all seven affected dialogue and epilogue cases with
+zero errors/warnings. Original failed-package evidence is preserved. A fresh
+package, player-facing credits, final visual acceptance and the wider release
+criteria remain open. The coordination mailboxes record current lane ownership.
 
 ## October 27 workshop action interface
 
