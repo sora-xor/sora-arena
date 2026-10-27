@@ -2,11 +2,11 @@
  "schema": 1,
  "generator": "scripts/art/b09_workshop_craft.py",
  "inputs": {
-  "root_commit": "fcf3ffb56eb4412f268208021a3970e8dc7bee45",
+  "root_commit": "102c18d9e3b0664c9f6970dec64a24b1c5b30d78",
   "blobs": {
-   "Source/SoraArena/Public/SoraLanternWorkshopRules.h": "ee2f3b7772e7754eeb0ba067c9b1843025519184",
+   "Source/SoraArena/Public/SoraLanternWorkshopRules.h": "c7aa71efafc72ecfdd085f67bedbdf84899c4b51",
    "Source/SoraArena/Public/SoraWorkshopCraftRules.h": "39c36512c2a772c187164d8f1b3547e8ebac2d2b",
-   "Source/SoraArena/Public/SoraWorldBuilder.h": "bd9220c5e0f1e34d404bbea7bec90dad9930d255",
+   "Source/SoraArena/Public/SoraWorldBuilder.h": "72ce871f533a7019591062e5c2bc6626e2c3d254",
    "Source/SoraArena/Private/Game/SoraCampaignReach.h": "96ede9639f397714300be52c4a0b5e5b2520418f",
    "Source/SoraArena/Private/Game/SoraCampaignWorkshopCraft.cpp": "ddac4fc51ac93d31cc33fd77fcf45b742812b8b9",
    "Source/SoraArena/Private/Characters/SoraCharacterBase.cpp": "3221fa817a15e57d94f0426b202409e8d56289b2",
@@ -122,12 +122,12 @@
     "bounds_cm": [
      [
       -15.12,
-      -15.11,
+      -15.12,
       -30.0
      ],
      [
       15.12,
-      15.11,
+      15.12,
       38.0
      ]
     ]
@@ -213,7 +213,7 @@
      [
       15.26,
       15.28,
-      33.29
+      33.3
      ]
     ]
    }
@@ -396,10 +396,10 @@
    ],
    [
     3700.0,
-    -1150.0,
+    -1450.0,
     100.0,
     12.0,
-    2700.0,
+    2100.0,
     200.0
    ],
    [
@@ -500,6 +500,35 @@
    9,
    26
   ],
+  "surfaces": [
+   "Wood",
+   "Wood",
+   "Wood",
+   "Wood",
+   "Wood",
+   "Wood",
+   "Wood",
+   "Wood",
+   "Wood",
+   "Wood",
+   "Wood",
+   "Wood",
+   "Wood",
+   "Wood",
+   "Wood",
+   "Stone",
+   "Stone",
+   "Stone",
+   "Stone",
+   "Stone",
+   "Stone",
+   "Stone",
+   "Stone",
+   "Stone",
+   "Stone",
+   "Stone",
+   "Wood"
+  ],
   "source": "SoraLanternWorkshopRules::Solids (the ground slab left out)"
  },
  "stations": [
@@ -554,7 +583,7 @@
      "slots": [
       "M_B09_TimberForm"
      ],
-     "triangles": 144,
+     "triangles": 384,
      "bounds_cm": [
       [
        -6.5,
@@ -575,7 +604,7 @@
      "slots": [
       "M_B09_TimberForm"
      ],
-     "triangles": 1256,
+     "triangles": 1520,
      "bounds_cm": [
       [
        -13.87,
@@ -599,7 +628,7 @@
       "M_B09_GaugeMarks",
       "M_B09_TimberBench"
      ],
-     "triangles": 808,
+     "triangles": 1896,
      "bounds_cm": [
       [
        -7.0,
@@ -840,7 +869,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -863,7 +892,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -886,18 +915,18 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
       [
        -13.63,
-       -13.62,
+       -13.63,
        -15.91
       ],
       [
        24.11,
-       13.62,
+       13.63,
        -15.51
       ]
      ],
@@ -909,18 +938,18 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
       [
        -13.63,
-       -13.62,
+       -13.63,
        -15.91
       ],
       [
        17.71,
-       13.62,
+       13.63,
        -15.51
       ]
      ],
@@ -932,18 +961,18 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
       [
        -13.63,
-       -13.62,
+       -13.63,
        -15.91
       ],
       [
        13.63,
-       13.62,
+       13.63,
        -15.51
       ]
      ],
@@ -955,7 +984,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -978,7 +1007,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -1001,18 +1030,18 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
       [
        -14.72,
-       -14.71,
+       -14.72,
        -9.63
       ],
       [
        26.05,
-       14.71,
+       14.72,
        -9.23
       ]
      ],
@@ -1024,18 +1053,18 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
       [
        -14.72,
-       -14.71,
+       -14.72,
        -9.63
       ],
       [
        19.12,
-       14.71,
+       14.72,
        -9.23
       ]
      ],
@@ -1047,18 +1076,18 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
       [
        -14.72,
-       -14.71,
+       -14.72,
        -9.63
       ],
       [
        14.72,
-       14.71,
+       14.72,
        -9.23
       ]
      ],
@@ -1070,7 +1099,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -1093,7 +1122,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -1116,18 +1145,18 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
       [
        -15.12,
-       -15.11,
+       -15.12,
        -3.34
       ],
       [
        26.77,
-       15.11,
+       15.12,
        -2.94
       ]
      ],
@@ -1139,18 +1168,18 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
       [
        -15.12,
-       -15.11,
+       -15.12,
        -3.34
       ],
       [
        19.65,
-       15.11,
+       15.12,
        -2.94
       ]
      ],
@@ -1162,18 +1191,18 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
       [
        -15.12,
-       -15.11,
+       -15.12,
        -3.34
       ],
       [
        15.12,
-       15.11,
+       15.12,
        -2.94
       ]
      ],
@@ -1185,7 +1214,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -1208,7 +1237,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -1231,18 +1260,18 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
       [
        -15.12,
-       -15.11,
+       -15.12,
        2.94
       ],
       [
        26.77,
-       15.11,
+       15.12,
        3.34
       ]
      ],
@@ -1254,18 +1283,18 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
       [
        -15.12,
-       -15.11,
+       -15.12,
        2.94
       ],
       [
        19.65,
-       15.11,
+       15.12,
        3.34
       ]
      ],
@@ -1277,18 +1306,18 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
       [
        -15.12,
-       -15.11,
+       -15.12,
        2.94
       ],
       [
        15.12,
-       15.11,
+       15.12,
        3.34
       ]
      ],
@@ -1300,7 +1329,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -1323,7 +1352,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -1346,18 +1375,18 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
       [
        -14.72,
-       -14.71,
+       -14.72,
        9.23
       ],
       [
        26.05,
-       14.71,
+       14.72,
        9.63
       ]
      ],
@@ -1369,18 +1398,18 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
       [
        -14.72,
-       -14.71,
+       -14.72,
        9.23
       ],
       [
        19.12,
-       14.71,
+       14.72,
        9.63
       ]
      ],
@@ -1392,18 +1421,18 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
       [
        -14.72,
-       -14.71,
+       -14.72,
        9.23
       ],
       [
        14.72,
-       14.71,
+       14.72,
        9.63
       ]
      ],
@@ -1415,7 +1444,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -1438,7 +1467,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -1461,18 +1490,18 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
       [
        -13.63,
-       -13.62,
+       -13.63,
        15.51
       ],
       [
        24.11,
-       13.62,
+       13.63,
        15.91
       ]
      ],
@@ -1484,18 +1513,18 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
       [
        -13.63,
-       -13.62,
+       -13.63,
        15.51
       ],
       [
        17.71,
-       13.62,
+       13.63,
        15.91
       ]
      ],
@@ -1507,18 +1536,18 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
       [
        -13.63,
-       -13.62,
+       -13.63,
        15.51
       ],
       [
        13.63,
-       13.62,
+       13.63,
        15.91
       ]
      ],
@@ -1554,7 +1583,7 @@
       "M_B09_GaugeNeedle",
       "M_B09_Iron"
      ],
-     "triangles": 60,
+     "triangles": 108,
      "pivot": "its hinge",
      "placed_at": "GaugePivot",
      "bounds_cm": [
@@ -1671,7 +1700,7 @@
      "slots": [
       "M_B09_TimberForm"
      ],
-     "triangles": 288,
+     "triangles": 768,
      "bounds_cm": [
       [
        -7.5,
@@ -1692,7 +1721,7 @@
      "slots": [
       "M_B09_TimberForm"
      ],
-     "triangles": 1256,
+     "triangles": 1520,
      "bounds_cm": [
       [
        -13.87,
@@ -1713,16 +1742,16 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "bounds_cm": [
       [
        -13.63,
-       -13.62,
+       -13.63,
        114.09
       ],
       [
        13.63,
-       13.62,
+       13.63,
        114.49
       ]
      ],
@@ -1734,16 +1763,16 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "bounds_cm": [
       [
        -14.72,
-       -14.71,
+       -14.72,
        120.37
       ],
       [
        14.72,
-       14.71,
+       14.72,
        120.77
       ]
      ],
@@ -1755,16 +1784,16 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "bounds_cm": [
       [
        -15.12,
-       -15.11,
+       -15.12,
        126.66
       ],
       [
        15.12,
-       15.11,
+       15.12,
        127.06
       ]
      ],
@@ -1776,16 +1805,16 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "bounds_cm": [
       [
        -15.12,
-       -15.11,
+       -15.12,
        132.94
       ],
       [
        15.12,
-       15.11,
+       15.12,
        133.34
       ]
      ],
@@ -1797,16 +1826,16 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "bounds_cm": [
       [
        -14.72,
-       -14.71,
+       -14.72,
        139.23
       ],
       [
        14.72,
-       14.71,
+       14.72,
        139.63
       ]
      ],
@@ -1818,16 +1847,16 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 792,
+     "triangles": 1560,
      "bounds_cm": [
       [
        -13.63,
-       -13.62,
+       -13.63,
        145.51
       ],
       [
        13.63,
-       13.62,
+       13.63,
        145.91
       ]
      ],
@@ -1839,7 +1868,7 @@
      "slots": [
       "M_B09_Ceramic"
      ],
-     "triangles": 240,
+     "triangles": 480,
      "bounds_cm": [
       [
        -26.2,
@@ -2528,7 +2557,7 @@
      "slots": [
       "M_B09_RimLacquer"
      ],
-     "triangles": 384,
+     "triangles": 768,
      "pivot": "the ring's centre",
      "placed_at": "RimTopRest, then RimTopSeat",
      "bounds_cm": [
@@ -2554,7 +2583,7 @@
      "slots": [
       "M_B09_RimLacquer"
      ],
-     "triangles": 384,
+     "triangles": 768,
      "pivot": "the ring's centre",
      "placed_at": "RimBottomRest, then RimBottomSeat",
      "bounds_cm": [
@@ -2697,15 +2726,15 @@
      "slots": [
       "M_B09_Iron"
      ],
-     "triangles": 48,
+     "triangles": 80,
      "bounds_cm": [
       [
-       -0.22,
+       -0.24,
        -0.25,
-       161.82
+       161.8
       ],
       [
-       1.12,
+       1.14,
        0.25,
        175.0
       ]
@@ -2718,7 +2747,7 @@
      "slots": [
       "M_B09_Ceramic"
      ],
-     "triangles": 448,
+     "triangles": 1024,
      "bounds_cm": [
       [
        -1.0,
@@ -2739,7 +2768,7 @@
      "slots": [
       "M_B09_Ceramic"
      ],
-     "triangles": 256,
+     "triangles": 512,
      "bounds_cm": [
       [
        -18.0,
@@ -3060,7 +3089,7 @@
       "M_B09_RimLacquer",
       "M_B09_Washi"
      ],
-     "triangles": 24408,
+     "triangles": 30088,
      "pivot": "the lantern's centre; it hangs from its hang point",
      "placed_at": "LanternHang - hang_point",
      "bounds_cm": [
@@ -3072,7 +3101,7 @@
       [
        15.26,
        15.28,
-       33.29
+       33.3
       ]
      ],
      "attributes": [],
@@ -3245,7 +3274,7 @@
      "slots": [
       "M_B09_TimberBench"
      ],
-     "triangles": 224,
+     "triangles": 512,
      "bounds_cm": [
       [
        -27.6,
@@ -3287,17 +3316,17 @@
      "slots": [
       "M_B09_FuseCord"
      ],
-     "triangles": 1080,
+     "triangles": 1800,
      "bounds_cm": [
       [
        -11.27,
        42.23,
-       72.03
+       72.01
       ],
       [
        2.26,
        54.77,
-       72.47
+       72.49
       ]
      ],
      "pivot": "station frame origin",
@@ -3504,7 +3533,7 @@
       "M_B09_FuseCord",
       "M_B09_ShellCore"
      ],
-     "triangles": 996,
+     "triangles": 2268,
      "pivot": "its centre",
      "placed_at": "ShellCore1..3",
      "bounds_cm": [
@@ -3529,7 +3558,7 @@
       "M_B09_ShellPaper",
       "M_B09_Twine"
      ],
-     "triangles": 1140,
+     "triangles": 2556,
      "pivot": "its centre",
      "placed_at": "WrapSpot, then ShellSeat1..3",
      "bounds_cm": [

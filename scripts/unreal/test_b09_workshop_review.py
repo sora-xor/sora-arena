@@ -173,6 +173,17 @@ class Capture(unittest.TestCase):
         self.assertAlmostEqual(ev, math.log2(float(np.median(lux)) / 2.5))
         self.assertTrue(2.0 < ev < 6.0, ev)
 
+    def test_two_light_sets_and_roots_surfaces(self):
+        self.assertEqual(set(self.R.LIGHT_SETS), {"neutral", "night"})
+        self.assertEqual(self.R.LIGHT_SETS["neutral"]["lamp_kelvin"], 6500.0)
+        night = self.R.LIGHT_SETS["night"]
+        shift = 1e6 / 2200 - 1e6 / 3400                                       # the intended lamp under a tungsten balance
+        self.assertAlmostEqual(1e6 / (1e6 / 6500 + shift), night["lamp_kelvin"], delta=60.0)
+        self.assertLess(night["ev_offset"], 0.0)
+        surfaces = set(self.spec["room"]["surfaces"])
+        self.assertTrue(surfaces <= set(self.R.REVIEW), surfaces)
+        self.assertTrue({"Floor", "Ceiling"} <= set(self.R.REVIEW))
+
     def test_its_engine_calls_are_ones_working_scripts_use(self):
         code = re.sub(r"#.*", "", self.text)
         for call in ("create_dynamic_material_instance", "set_collision_enabled", "get_material_index", "set_light_color"):
@@ -189,7 +200,7 @@ class Capture(unittest.TestCase):
         for needle in ('review["readback_sha256"] != hashlib.sha256(rb_bytes).hexdigest()', 'review["unexplained"]',
                        'sorted(review["explained"]) != sorted(rb["problems"])'):
             self.assertIn(needle, main)
-        self.assertLess(main.index('if rb["problems"]:'), main.index("build(spec, ev100)"))
+        self.assertLess(main.index('if rb["problems"]:'), main.index("build(spec, ev100, opts[\"light\"])"))
         self.assertIn('"a diagnostic capture of a failed import candidate: its readback problems stand.', main)
         self.assertIn('"readback_problems": rb["problems"]', main)                  # kept verbatim (Coordination 237)
 
@@ -197,7 +208,7 @@ class Capture(unittest.TestCase):
         main = next(n for n in ast.walk(ast.parse(self.text)) if isinstance(n, ast.FunctionDef) and n.name == "main")
         src = ast.get_source_segment(self.text, main)
         self.assertIn('MESHES, MATS = f"{rb[\'base\']}/Meshes", f"{rb[\'base\']}/Materials"', src)
-        self.assertLess(src.index("MESHES, MATS ="), src.index("build(spec, ev100)"))
+        self.assertLess(src.index("MESHES, MATS ="), src.index("build(spec, ev100, opts[\"light\"])"))
 
     def test_it_is_a_socket_pose_review_and_never_quits_from_slate(self):
         self.assertIn("socket-pose review", self.text)
@@ -212,7 +223,7 @@ class Import(unittest.TestCase):
     text = IMPORT.read_text(encoding="utf-8")
 
     def test_every_candidate_slot_has_a_material(self):
-        bound = set(re.findall(r'"(M_B09_[A-Za-z]+)": \("(?:wood|neutral)"', self.text)) | {"M_B09_Washi"}
+        bound = set(re.findall(r'"(M_B09_[A-Za-z]+)": \("(?:cargo_wood|straw|ash|urushi|iron|bamboo|neutral)"', self.text)) | {"M_B09_Washi"}
         used = set()
         for name, mesh, *_ in B.candidates():
             used |= set(mesh.slots().tolist())
@@ -223,6 +234,37 @@ class Import(unittest.TestCase):
         tree = ast.parse(self.text)
         node = next(n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef) and n.name == name)
         return ast.get_source_segment(self.text, node)
+
+    def test_every_material_source_is_in_the_tree_and_tracked(self):
+        import subprocess
+        tree = ast.parse(self.text)
+        consts = {}
+        for n in tree.body:
+            if isinstance(n, ast.Assign) and len(n.targets) == 1 and isinstance(n.targets[0], ast.Name):
+                try:
+                    consts[n.targets[0].id] = ast.literal_eval(n.value)
+                except ValueError:
+                    pass
+        env = {k: v for k, v in consts.items() if isinstance(v, str)}
+        textures = {}
+        for n in tree.body:
+            if isinstance(n, ast.Assign) and getattr(n.targets[0], "id", "") == "TEXTURES":
+                for k, v in zip(n.value.keys, n.value.values):
+                    path = "".join(env[x.value.id] if isinstance(x, ast.FormattedValue) else x.value for x in v.elts[0].values) \
+                        if isinstance(v.elts[0], ast.JoinedStr) else v.elts[0].value
+                    textures[k.value] = path
+        self.assertGreaterEqual(len(textures), 25)
+        for name, path in textures.items():
+            self.assertTrue((ART / path).is_file(), (name, path))
+            r = subprocess.run(["git", "-C", str(ART), "ls-files", "--error-unmatch", path], capture_output=True)
+            self.assertEqual(r.returncode, 0, f"{path} is not tracked")
+        for slot, (maps, *_rest) in consts["OPAQUE"].items():
+            if maps != "neutral":
+                for k in ("Albedo", "NormalDX", "ORM"):
+                    self.assertIn(f"T_B09_{consts['MAPSETS'][maps]}_{k}", textures, slot)
+            self.assertGreater(_rest[-1], 0.0)                                 # each slot's tile, in cm
+        self.assertNotIn("M_Nyaakoto_PBR\"", self.text)                       # the furred character's master is gone
+        self.assertNotIn("wood_planks_dirt_", self.text)
 
     def test_sockets_are_read_back_by_name_on_their_axes(self):
         read = self.function("read_socket")
@@ -240,7 +282,7 @@ class Import(unittest.TestCase):
         main = self.function("main")
         self.assertIn('base = arg("--base")', main)
         self.assertIn('fail(f"{BASE} exists: the candidates are new assets")', main)
-        for part in ("import_mesh(name, a, build, mats, rows, problems)", "import_weapon(tex, pbr, rows, problems)",
+        for part in ("import_mesh(name, a, build, mats, rows, problems)", "import_weapon(tex, prop, rows, problems)",
                      "washi = washi_master(tex)"):
             i = main.index(part)
             self.assertIn("try:", main[max(0, i - 120):i])                 # a failure is a problem, not the run's end

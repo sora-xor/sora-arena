@@ -20,15 +20,23 @@ clearances, proposed before integration. Root owns state, accounting and collisi
 
 ## 1. Inputs and root's decisions
 
-The design reads root's tree at commit `fcf3ffb5`, each file pinned by its git blob in `INPUTS`.
+The design reads root's tree at commit `102c18d9`, each file pinned by its git blob in `INPUTS`.
 `scripts/art/check_b09_root_inputs.py` verifies the pins and the constants, read-only. Its record is
-`Saved/W18Rebuild/b09_root_inputs_check_v5.json`:
-- no problems, and no pinned file changed at root's head `fcf3ffb5`;
+`Saved/W18Rebuild/b09_root_inputs_check_v6.json`:
+- no problems, and no pinned file changed at root's head `102c18d9`;
+- it now also compares the room's solids with the header box by box: centre, size and surface. The module's copy
+  leaves out the ground slab;
 - the earlier pins stay recorded: `c1f0b5af` (v1), and `2a846a6a` (v2 and v4; v3 read the wrong tree and failed,
   empty).
 
 **From `2a846a6a` to `fcf3ffb5`,** only `chapter_03.json` changed, for b10's ground routes in `ch03_lantern_ward`. The
 `ch03.b09` beat is identical.
+
+**From `fcf3ffb5` to `102c18d9`** (Coordination 240), two pinned files changed:
+- `SoraLanternWorkshopRules.h` shortens the east yard wall to end at Y −400, opening the main street. Its box is now
+  (3700, −1450, 100), 2100 cm long; `SOLIDS` follows it.
+- `SoraWorldBuilder.h` gives `Lanterns` a notice-square argument.
+The stations, recipe, state and eligibility are unchanged.
 
 **From `c1f0b5af` to `2a846a6a`,** two pinned files changed, both additively:
 - `SoraWorkshopCraftRules.h` gained `FView`;
@@ -342,18 +350,35 @@ All are kept.
 
 ## 9. Materials (slots to bind)
 
-| Slot | Use | Source to start from |
-|---|---|---|
-| `M_B09_Bamboo` | hoops, strips, poles | the project's bamboo (weapon 7's culm look) |
-| `M_B09_TimberBench` | benches, rack, cradles, posts, brush handles | `wood_planks_dirt` (CC0), aged |
-| `M_B09_TimberForm` | the form, its base and pedestal | a smoother hinoki |
-| `M_B09_Washi` | gores and sheets. Its paste and oil parameters come from the per-vertex fractions. | `MI_LanternWardRain_ChochinPaper` (`texturecan_paper_0017`). **Measured transmission is required** (chapter-03 §5). |
-| `M_B09_RimLacquer` | rims | black urushi |
-| `M_B09_Iron` | bail, hooks, the needle's hub | the project's blackened iron |
-| `M_B09_Ceramic` | paste pot, oil jar, drip tray | a dark glaze |
-| `M_B09_GaugeFace`, `M_B09_GaugeBand`, `M_B09_GaugeMarks`, `M_B09_GaugeNeedle` | the dial: cream face, green band, dark ticks, vermilion needle | painted wood and lacquer |
-| `M_B09_Bristle`, `M_B09_Cord`, `M_B09_Twine` | brushes, cords, twine | |
-| `M_B09_ShellPaper`, `M_B09_ShellCore`, `M_B09_FuseCord` | shells and fuse | |
+**The candidate masters,** both built by `import_b09_workshop_candidates.py`:
+- **`M_B09_PropCandidate`** serves every opaque slot. It takes albedo × Tint, the normal map, and ORM (AO, roughness
+  × RoughnessScale, metallic × MetallicScale), all at UV0 × UVScale. UV0 is in metres and follows each part's
+  construction (`box_uv`):
+  - along a strip, so bamboo grain runs with it;
+  - round a turned part, so paper fibre and wood grain wrap it;
+  - a box projection only on boxes.
+  So each slot's UVScale is 100 / its tile.
+- **`M_B09_WashiCandidate`** is two-sided foliage, with the fibre contrast stretched and the oil darkening,
+  glossing and passing light.
+
+s147 bound these slots to the furred character's `M_Nyaakoto_PBR`, and its timber to `wood_planks_dirt` (a
+weathered plank scan) tiled once a metre against a 2 m scan. Root's s148 review read that as broad blurry mottling.
+
+| Slot | Use | Source (in the tree) | Tile |
+|---|---|---|---|
+| `M_B09_TimberBench` | benches, rack, cradles, posts, brush handles | planed wood, the cargo stack's original procedural maps | 100 cm |
+| `M_B09_TimberForm` | the form, its base and pedestal | the yari's procedural ash wood, lightened toward a planed hinoki | 50 cm |
+| `M_B09_Bamboo` | hoops, strips, poles | Poly Haven `bamboo_veneer` (CC0), its grain along each strip | 40 cm |
+| `M_B09_Washi` | gores and sheets; paste and oil read UV1 | `paper_0017`. **Measured transmission is required** (chapter-03 §5) | 30 cm |
+| `M_B09_RimLacquer` | rims | the yari's procedural black urushi | 30 cm |
+| `M_B09_Iron` | bail, hooks, the needle's hub | the yari's procedural patinated iron | 30 cm |
+| `M_B09_Bristle`, `M_B09_Cord`, `M_B09_Twine` | brushes, cords, twine | the cargo stack's procedural straw | 6–10 cm |
+| `M_B09_Ceramic` | paste pot, oil jar, drip tray | a dark glaze (a tint on neutral maps) | — |
+| `M_B09_GaugeFace`, `M_B09_GaugeBand`, `M_B09_GaugeMarks`, `M_B09_GaugeNeedle` | the dial: cream face, green band, dark ticks, vermilion needle | tints on neutral maps | — |
+| `M_B09_ShellPaper`, `M_B09_ShellCore`, `M_B09_FuseCord` | shells and fuse | tints on neutral maps | — |
+
+The yari's sets and the cargo maps are project-authored procedural maps with art-estimated values, not measured
+scans.
 
 Photoshop, Illustrator and Topaz may help with source textures and marks, keeping provenance and leaving validation
 originals untouched.
@@ -418,6 +443,15 @@ log, outputs and failure are kept.
   - A triangle-exact gate holds every strip at least 0.04 cm under the paper; the measured least is 0.052 cm.
 - **The gores** are sampled 48 × 32, plus every strip's edges, against the faceting.
 - **The ray and proxy proof is labelled standing-only (§6).**
+
+**The corrected pass** (Coordination 240) rebuilds, reimports and recaptures with these fixes and the new materials
+(§9), each run in a new folder.
+- **Two light sets.** The editor's white balance stays at 6500 K, because no working script sets it.
+  - **neutral:** 6500 K lamps, exposure as metered, to judge material colour.
+  - **night:** the intended oil-lamp look: about 2200 K, as a tungsten-balanced camera (about 3400 K) shows it. That
+    is a 160-mired warm shift, so 3200 K lamps, with exposure 0.7 EV under metered.
+- **A per-channel clipping gate** in `check_b09_review_captures.py`: no channel clipped over 2% of a frame. Under it,
+  s148's `paste_halfseam` (7.3% red) would have failed.
 
 **Still open:**
 - **Neutral material colour and the intended night lighting,** reviewed separately.

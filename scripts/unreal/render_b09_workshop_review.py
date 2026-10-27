@@ -8,8 +8,9 @@ post-process, and not an adoption.
 - the workshop's room and yard solids (the spec's copy of SoraLanternWorkshopRules::Solids) as cubes over a ground
   slab, in plain review materials;
 - the candidate station meshes at their station points, and the drying poles and hooks;
-- a night interior: two 1900 K paper-lamp lights over the plank floor, a hearth glow by the passage, a lamp under
-  the storehouse eaves, and a real-time-capture sky light (as render_sora_lookdev.py's night);
+- two paper-lamp lights over the plank floor, a hearth glow by the passage, a lamp under the storehouse eaves, and a
+  real-time-capture sky light (as render_sora_lookdev.py's night), in one of two light sets (LIGHT_SETS, light=):
+  neutral (6500 K, for material colour) or night (the intended oil-lamp look);
 - manual exposure, metered at the work points: EV100 = log2(E / 2.5), E the median of the stations' inverse-square
   illuminance from the lamps (unoccluded, as render_nyaakoto_tp_review meters the sun).
 
@@ -38,7 +39,8 @@ manifest.partial.json records what was done.
 
 Run (lane holder, full editor):
   scripts/toolchain/run-editor-script.sh --editor scripts/unreal/render_b09_workshop_review.py B09_REVIEW_COMPLETE <log> -- \\
-      out=<new folder> readback=Saved/B09Workshop/Unreal/<the import's readback>.json [review=<its host review>.json]
+      out=<new folder> readback=Saved/B09Workshop/Unreal/<the import's readback>.json light=neutral|night \\
+      [review=<its host review>.json]
 A readback with problems is drawn only with a host review (review_b09_import_readback.py) that explains every one.
 """
 from __future__ import annotations
@@ -72,12 +74,22 @@ LEVEL = f"/Game/ArtReview/B09Workshop/L_B09Review_{int(time.time())}"
 MARKER = "B09_REVIEW_COMPLETE"
 HFOV = 94.0
 EYE_CM = (4.0, 0.0, 152.0)          # the standing eye over the stand: capsule centre (floor + 88) + (4, 0, 64)
-# (world cm, lumens, kelvin): two paper lamps over the plank floor, a hearth glow by the passage, the eaves lamp
-LAMPS = (((2000.0, -780.0, 235.0), 1200.0, 1900.0), ((2000.0, -1120.0, 235.0), 1200.0, 1900.0),
-         ((1690.0, -950.0, 60.0), 600.0, 1800.0), ((2760.0, -1980.0, 230.0), 1500.0, 1900.0))
+# (world cm, lumens, role): two paper lamps over the plank floor, a hearth glow by the passage, the eaves lamp
+LAMPS = (((2000.0, -780.0, 235.0), 1200.0, "lamp"), ((2000.0, -1120.0, 235.0), 1200.0, "lamp"),
+         ((1690.0, -950.0, 60.0), 600.0, "hearth"), ((2760.0, -1980.0, 230.0), 1500.0, "lamp"))
+# The light sets (light=). The editor's white balance stays at 6500 K: no working script sets post-process white
+# balance, so a set's colour lives in its lamps' temperature.
+# - neutral: 6500 K, exposure as metered, to judge material colour.
+# - night: the intended look, warm oil-lamp light (about 2200 K) as a camera balanced for tungsten (about 3400 K)
+#   would show it. That is a warm shift of 1e6/2200 - 1e6/3400 = 160 mireds, which from the 6500 K balance is a
+#   3200 K lamp. Exposure 0.7 EV under metered, for night. s148's 1900 K lamps were a 372-mired shift, which turned
+#   every material orange.
+LIGHT_SETS = {"neutral": {"lamp_kelvin": 6500.0, "hearth_kelvin": 6500.0, "ev_offset": 0.0},
+              "night": {"lamp_kelvin": 3200.0, "hearth_kelvin": 2900.0, "ev_offset": -0.7}}
 SKY = {"intensity": 1.0, "real_time_capture": True}    # as render_sora_lookdev.py's night: Lumen carries the bounce
-REVIEW = {"Wood": ((0.30, 0.20, 0.12), 0.7), "Plaster": ((0.55, 0.52, 0.46), 0.85), "Ceiling": ((0.10, 0.07, 0.05), 0.8),
-          "Soil": ((0.12, 0.10, 0.08), 0.9)}
+# Plain review colours for the room, by root's ESurface (spec room.surfaces); the floor slabs and ceilings apart.
+REVIEW = {"Floor": ((0.30, 0.20, 0.12), 0.7), "Wood": ((0.26, 0.18, 0.11), 0.8), "Stone": ((0.33, 0.32, 0.30), 0.85),
+          "Ceiling": ((0.10, 0.07, 0.05), 0.8), "Soil": ((0.12, 0.10, 0.08), 0.9)}
 CVARS = ("r.ScreenPercentage", "r.AntiAliasingMethod", "r.TSR.History.SampleCount", "r.HighResScreenshotDelay",
          "r.TextureStreaming", "r.DynamicGlobalIlluminationMethod", "r.ReflectionMethod", "r.Shadow.Virtual.Enable")
 RUNUP_PER_HISTORY_SAMPLE = 2
@@ -135,13 +147,13 @@ def plain_material(name, colour, rough):
     return m
 
 
-def exposure(ev100):
+def exposure(ev100, offset=0.0):
     volume = spawn(unreal.PostProcessVolume)
     volume.set_editor_property("unbound", True)
     s = volume.get_editor_property("settings")
     for key, value in (("auto_exposure_method", unreal.AutoExposureMethod.AEM_MANUAL),
                        ("auto_exposure_apply_physical_camera_exposure", False),
-                       ("auto_exposure_bias", -ev100 + 1.0), ("bloom_intensity", 0.675), ("vignette_intensity", 0.4),
+                       ("auto_exposure_bias", -ev100 + 1.0 + offset), ("bloom_intensity", 0.675), ("vignette_intensity", 0.4),
                        ("motion_blur_amount", 0.0)):
         s.set_editor_property(f"override_{key}", True)
         s.set_editor_property(key, value)
@@ -251,14 +263,14 @@ def metered_ev100(spec):
     for st in spec["stations"]:
         w = world_of(st, st["work_point_cm"])
         e = 0.0
-        for (x, y, z), lumens, _ in LAMPS:
+        for (x, y, z), lumens, _role in LAMPS:
             d2 = ((x - w[0]) ** 2 + (y - w[1]) ** 2 + (z - w[2]) ** 2) / 1e4          # m^2
             e += lumens / (4.0 * math.pi) / d2
         lux.append(e)
     return math.log2(statistics.median(lux) / 2.5), lux
 
 
-def build(spec, ev100):
+def build(spec, ev100, light):
     ASSETS.make_directory(LEVEL.rsplit("/", 1)[0])
     if not LEVELS.new_level(LEVEL):
         fail("could not create the level")
@@ -272,12 +284,13 @@ def build(spec, ev100):
     for k, (cx, cy, cz, sx, sy, sz) in enumerate(room["solids_cm"]):
         a = spawn(unreal.StaticMeshActor, (cx, cy, cz))
         a.static_mesh_component.set_static_mesh(cube)
-        kind = "Wood" if k in room["floor_slabs"] else "Ceiling" if k in room["ceilings"] else "Plaster"
+        kind = "Floor" if k in room["floor_slabs"] else "Ceiling" if k in room["ceilings"] else room["surfaces"][k]
         a.static_mesh_component.set_material(0, mats[kind])
         a.set_actor_scale3d(unreal.Vector(sx / 100.0, sy / 100.0, sz / 100.0))
-    for (x, y, z), lumens, kelvin in LAMPS:
-        light = spawn(unreal.PointLight, (x, y, z))
-        lc = light.point_light_component
+    for (x, y, z), lumens, role in LAMPS:
+        kelvin = LIGHT_SETS[light]["hearth_kelvin" if role == "hearth" else "lamp_kelvin"]
+        lamp = spawn(unreal.PointLight, (x, y, z))
+        lc = lamp.point_light_component
         lc.set_editor_property("mobility", unreal.ComponentMobility.MOVABLE)
         lc.set_editor_property("intensity_units", unreal.LightUnits.LUMENS)
         lc.set_intensity(lumens)
@@ -289,7 +302,7 @@ def build(spec, ev100):
     sky.light_component.set_editor_property("mobility", unreal.ComponentMobility.MOVABLE)
     sky.light_component.set_editor_property("real_time_capture", SKY["real_time_capture"])
     sky.light_component.set_intensity(SKY["intensity"])
-    exposure(ev100)
+    exposure(ev100, LIGHT_SETS[light]["ev_offset"])
     for i, st in enumerate(spec["stations"]):
         place(STATION_MESH[i], (st["world_cm"][0], st["world_cm"][1], st["floor_cm"]))
     place("SM_B09_DryingPoles", (0.0, 0.0, 0.0))
@@ -399,13 +412,13 @@ def shots(spec):
 
 
 def main():
-    opts = {"out": "", "readback": "", "review": ""}
+    opts = {"out": "", "readback": "", "review": "", "light": ""}
     for a in sys.argv[1:]:
         if "=" in a:
             k, v = a.split("=", 1)
             opts[k] = v
-    if not opts["out"] or not opts["readback"]:
-        fail("out=<new folder> and readback=<the import's readback> are required")
+    if not opts["out"] or not opts["readback"] or opts["light"] not in LIGHT_SETS:
+        fail(f"out=<new folder>, readback=<the import's readback> and light={'|'.join(LIGHT_SETS)} are required")
     out = ROOT / "Saved/B09Workshop/Review" / opts["out"]
     if out.exists():
         fail(f"{out} exists: originals go to a new folder")
@@ -428,7 +441,7 @@ def main():
     queue = shots(spec)
     ev100, lux = metered_ev100(spec)
     out.mkdir(parents=True)
-    build(spec, ev100)
+    build(spec, ev100, opts["light"])
     for s in queue:                     # every review instance the shots draw, made before the first frame
         for mesh, loc, rot, params in s["items"]:
             for slot, scalars in (params or {}).items():
@@ -438,7 +451,8 @@ def main():
     record = {"level": LEVEL, "engine": unreal.SystemLibrary.get_engine_version(), "candidates": rb["base"], "hfov_deg": HFOV,
               "eye_over_stand_cm": EYE_CM,
               "ev100": ev100, "exposure_bias": 1.0 - ev100, "work_point_lux": dict(zip([s["id"] for s in spec["stations"]], lux)),
-              "lamps": [{"cm": list(p), "lumens": l, "kelvin": k} for p, l, k in LAMPS], "sky": SKY, "review_materials": REVIEW,
+              "light": dict(LIGHT_SETS[opts["light"]], name=opts["light"]),
+              "lamps": [{"cm": list(p), "lumens": l, "role": r} for p, l, r in LAMPS], "sky": SKY, "review_materials": REVIEW,
               "highres_runup": runup, "shots_requested": [s["name"] for s in queue],
               "inputs": {str(SPEC.relative_to(ROOT)): hashlib.sha256(spec_bytes).hexdigest(),
                          opts["readback"]: hashlib.sha256(rb_bytes).hexdigest(),

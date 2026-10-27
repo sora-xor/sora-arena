@@ -5,7 +5,9 @@ For the run's manifest.json:
 - every camera is the world's 94 deg, at its image's aspect;
 - every placed candidate drew its candidate materials in the capture's own editor;
 - the inputs are the committed spec and the named import readback, which has no problems;
-- no frame is unreadable: a median display luma under 0.02 (crushed) or over a fifth of its pixels near saturation.
+- no frame is unreadable: a median display luma under 0.02 (crushed), over a fifth of its pixels near saturation,
+  or any one channel clipped (>= 254) over CLIP_PCT of the frame. Root's s148 review found paste_halfseam 7.32% red
+  >= 254 with 0% all-channel, a loss a luminance gate misses. The glow demonstration's clipping is reported only.
 The luma figures are display-output statistics (analyze_capture_luminance.stats). They say whether a frame can be
 read, not whether its light or materials are right.
 
@@ -25,6 +27,9 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 sys.path.insert(0, str(HERE))
 import analyze_capture_luminance as L  # noqa: E402
+import numpy as np  # noqa: E402
+
+CLIP_PCT = 2.0
 
 SPEC = "docs/art-direction/data/b09_workshop_craft_spec.json"
 
@@ -51,7 +56,11 @@ def main():
         w, h = cam["resolution"]
         px = L.read_png(path)
         st = L.stats(px)
-        rows[name] = {"station": shot["station"], "state": shot["state"], "camera": cam, "stats": st}
+        clip = [round(100.0 * float(np.mean(px[..., c] >= 254)), 3) for c in range(3)]
+        rows[name] = {"station": shot["station"], "state": shot["state"], "camera": cam, "stats": st,
+                      "channel_clip_pct_rgb": clip}
+        if max(clip) > CLIP_PCT and not name.endswith("_glow_demo"):
+            problems.append(f"{name}: a channel clips over {CLIP_PCT}% of the frame (R, G, B {clip}%)")
         if st["size"] != [w, h]:
             problems.append(f"{name}: {st['size']}, the camera asked {w}x{h}")
         if abs(cam["field_of_view_deg"] - 94.0) > 1e-4 or abs(cam["aspect_ratio"] - w / h) > 1e-4:
@@ -85,6 +94,7 @@ def main():
            "manifest_sha256": sha256(run / "manifest.json"), "checker_sha256": sha256(__file__),
            "shots": len(rows), "ev100": man.get("ev100"), "problems": problems,
            "luma_p50": {k: r["stats"]["luma_p50"] for k, r in rows.items()},
+           "channel_clip_pct_rgb": {k: r["channel_clip_pct_rgb"] for k, r in rows.items()},
            "median_display_stops": {k: r["stats"]["median_display_stops"] for k, r in rows.items()}, "rows": rows,
            "scope": "display-output statistics of socket-pose review captures: readability only, not light, material "
                     "or hand-contact acceptance"}

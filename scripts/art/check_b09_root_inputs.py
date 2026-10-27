@@ -6,6 +6,7 @@ For each file in b09_workshop_craft.INPUTS:
 
 The constants the design rests on are parsed from the pinned files and compared with the module's:
 - the stations and their steps;
+- the room's solids, box by box (b09_workshop_craft.SOLIDS and SOLID_SURFACES);
 - the bend and paste timing;
 - the reach;
 - the hero's capsule and standing eye;
@@ -48,6 +49,11 @@ def main():
             problems.append(f"{path}: blob {at_pin} at {commit}, pinned {blob}")
     show = lambda p: git(root, "show", f"{commit}:{p}")  # noqa: E731
     rules = show("Source/SoraArena/Public/SoraLanternWorkshopRules.h")
+    solids = parse_solids(rules)
+    mine = [(list(c), list(sz), surf) for (c, sz), surf in zip(B.SOLIDS, B.SOLID_SURFACES)]
+    if solids[0][2] != "Soil" or [(c, sz, srf) for c, sz, srf in solids[1:]] != mine:
+        problems.append(f"Solids: the header has {len(solids)} boxes; the module's {len(mine)} (with the ground slab "
+                        "left out) differ")
     stations = [(float(x), float(y)) for x, y in re.findall(r"\{(-?\d+),(-?\d+)\}",
                                                              re.search(r"Stations\[\]=\{(.*?)\};", rules).group(1))]
     steps = tuple(int(v) for v in re.search(r"StepStations\[\]=\{(.*?)\}", rules).group(1).split(","))
@@ -98,6 +104,33 @@ def main():
            "changed_since_pin": sorted(p for p, f in files.items() if f["changed_since"])}
     print("B09_ROOT_INPUTS " + json.dumps(out, indent=1))
     sys.exit(1 if problems else 0)
+
+
+def parse_solids(text):
+    """SoraLanternWorkshopRules::Solids as [(centre, size, surface)], its one `for(int S:{-1,1})` loop expanded."""
+    body = text[text.index("Solids()"):]
+    body = body[:body.index("return B;")]
+    call = re.compile(r"Box\(([^;]*?)\);")
+
+    def boxes(chunk, env):
+        out = []
+        for m in call.finditer(chunk):
+            args = [a.strip() for a in m.group(1).split(",")]
+            surf = args[6].split("::")[1] if len(args) > 6 else "Wood"
+            vals = []
+            for a in args[:6]:
+                if not re.fullmatch(r"[-+*0-9.S ]+", a):
+                    raise ValueError(f"unparsed Box argument {a!r}")
+                vals.append(float(eval(a, {"__builtins__": {}}, env)))
+            out.append((vals[:3], vals[3:], surf))
+        return out
+    loop = re.search(r"for\(int S:\{-1,1\}\)\s*\{(.*?)\}", body, re.S)
+    before, after = (body[:loop.start()], body[loop.end():]) if loop else (body, "")
+    out = boxes(before, {})
+    if loop:
+        for sgn in (-1, 1):
+            out += boxes(loop.group(1), {"S": sgn})
+    return out + boxes(after, {})
 
 
 def _find_beat(node):

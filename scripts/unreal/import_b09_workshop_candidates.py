@@ -2,20 +2,26 @@
 materials, and read them back. These are separate candidate assets under /Game/Generated/Candidates/B09Workshop:
 nothing is adopted or placed in a game level.
 
-**Textures** (candidates, from sources already in the tree):
-- wood: `wood_planks_dirt` (Poly Haven, CC0), its albedo, DirectX normal and ARM (as ORM);
-- washi: `paper_0017` (the project's ShojiPaperArtReview), its colour, DirectX normal and roughness, and the
-  translucency map. That map is an art estimate, **not a measured transmission**: chapter-03 section 5 still requires
-  measuring it.
+**Textures** (candidates, from sources already in the tree; every source's SHA-256 is in the readback):
+- **planed wood and straw:** the cargo stack's original procedural maps (NyaagyuCargoStack README);
+- **ash wood, black urushi and patinated iron:** the yari's project-authored procedural sets, with art-estimated
+  values;
+- **bamboo:** Poly Haven `bamboo_veneer` (CC0), as the yumi study pins it;
+- **washi:** `paper_0017` (the project's ShojiPaperArtReview): its colour, DirectX normal, roughness and translucency
+  maps. The translucency map is an art estimate, **not a measured transmission**; chapter-03 section 5 still
+  requires measuring it.
+s147 used Poly Haven's `wood_planks_dirt` on every timber slot, tiled once a metre against its 2 m scan. Root's s148
+review read it as broad blurry mottling, and the s147 assets keep it.
 
 **Materials:**
-- **The opaque slots:** instances of the project's M_Nyaakoto_PBR, with the wood or neutral maps, a tint, and
-  roughness and metallic scales.
-  - Placeholders: the bamboo, iron, ceramic, cord, shell and gauge colours are tints over the neutral maps.
-- **The washi:** M_B09_WashiCandidate, built here: two-sided foliage (light through paper), masked, with paper maps
-  and three parameters on UV1 (`Reveal`):
+- **M_B09_PropCandidate,** built here, serves every opaque slot. It takes albedo x Tint, the normal map, and ORM (AO,
+  roughness x RoughnessScale, metallic x MetallicScale), all at UV0 x UVScale. UV0 is in metres, so each slot's
+  UVScale is 100 / its tile (OPAQUE). It replaces s147's borrowed M_Nyaakoto_PBR, a furred character's master.
+  - The ceramic, shells, cord, fuse and gauge are still tints over neutral maps.
+- **M_B09_WashiCandidate,** built here: two-sided foliage (light through paper), masked, with the paper maps round
+  the lantern, a stretched fibre contrast, and three parameters on UV1 (`Reveal`):
   - **PasteReveal:** shows the gore up to that height fraction;
-  - **OilWet:** darkens and glosses from the top down;
+  - **OilWet:** darkens, glosses and passes more light, from the top down;
   - **Glow:** emission through the paper, scaled by the translucency estimate.
 
 **Meshes:**
@@ -58,18 +64,37 @@ LIB = unreal.MaterialEditingLibrary
 SMES = unreal.get_editor_subsystem(unreal.StaticMeshEditorSubsystem)
 CANDIDATES = "/Game/Generated/Candidates"
 BASE = MESHES = MATS = TEX = None    # main(): CANDIDATES/<--base>, new for each run, so a failed run's assets stay
-PBR = "/Game/Generated/Characters/Nyaakoto/M_Nyaakoto_PBR"
 NEUTRAL = "/Game/Generated/Characters/Nyaakoto/Textures/T_Nyaakoto_neutral_{}"
 MARKER = "B09_CANDIDATES_IMPORTED"
 SOCKET_TOL_CM = 0.05
 SOCKET_TOL_AXIS = 1e-3
 W07 = "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher"
-PH = "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt"
 PAPER = "Content/SourceArt/Environment/ShojiPaperArtReview/Textures"
+CARGO = "Content/SourceArt/Environment/NyaagyuCargoStack/PBR"
+YARI = "Content/SourceArt/Weapons/NyaagyuYari/Textures"
+YUMI = "Content/SourceArt/Weapons/NyaagyuYumi/Textures"
 TEXTURES = {
-    "T_B09_Wood_Albedo": (f"{PH}/wood_planks_dirt_diff_4k.jpg", "color"),
-    "T_B09_Wood_NormalDX": (f"{PH}/wood_planks_dirt_nor_dx_4k.png", "normal"),
-    "T_B09_Wood_ORM": (f"{PH}/wood_planks_dirt_arm_4k.png", "masks"),
+    # Original procedural project maps (NyaagyuCargoStack README): planed wood and straw.
+    "T_B09_CargoWood_Albedo": (f"{CARGO}/T_NyaagyuCargo_Wood_Albedo.png", "color"),
+    "T_B09_CargoWood_NormalDX": (f"{CARGO}/T_NyaagyuCargo_Wood_NormalDX.png", "normal"),
+    "T_B09_CargoWood_ORM": (f"{CARGO}/T_NyaagyuCargo_Wood_ORM.png", "masks"),
+    "T_B09_Straw_Albedo": (f"{CARGO}/T_NyaagyuCargo_Straw_Albedo.png", "color"),
+    "T_B09_Straw_NormalDX": (f"{CARGO}/T_NyaagyuCargo_Straw_NormalDX.png", "normal"),
+    "T_B09_Straw_ORM": (f"{CARGO}/T_NyaagyuCargo_Straw_ORM.png", "masks"),
+    # Project-authored procedural sets (the yari's texture_manifest.json; art-estimated values).
+    "T_B09_AshWood_Albedo": (f"{YARI}/T_Yari_AshWood_Albedo.png", "color"),
+    "T_B09_AshWood_NormalDX": (f"{YARI}/T_Yari_AshWood_NormalDX.png", "normal"),
+    "T_B09_AshWood_ORM": (f"{YARI}/T_Yari_AshWood_ORM.png", "masks"),
+    "T_B09_Urushi_Albedo": (f"{YARI}/T_Yari_BlackUrushi_Albedo.png", "color"),
+    "T_B09_Urushi_NormalDX": (f"{YARI}/T_Yari_BlackUrushi_NormalDX.png", "normal"),
+    "T_B09_Urushi_ORM": (f"{YARI}/T_Yari_BlackUrushi_ORM.png", "masks"),
+    "T_B09_Iron_Albedo": (f"{YARI}/T_Yari_PatinatedIron_Albedo.png", "color"),
+    "T_B09_Iron_NormalDX": (f"{YARI}/T_Yari_PatinatedIron_NormalDX.png", "normal"),
+    "T_B09_Iron_ORM": (f"{YARI}/T_Yari_PatinatedIron_ORM.png", "masks"),
+    # Poly Haven bamboo_veneer (CC0), as the yumi study pins it.
+    "T_B09_Bamboo_Albedo": (f"{YUMI}/bamboo_veneer_diff_2k.jpg", "color"),
+    "T_B09_Bamboo_NormalDX": (f"{YUMI}/bamboo_veneer_nor_dx_2k.png", "normal"),
+    "T_B09_Bamboo_ORM": (f"{YUMI}/bamboo_veneer_arm_2k.png", "masks"),
     "T_B09_Washi_Albedo": (f"{PAPER}/paper_0017_color_2k.jpg", "color"),
     "T_B09_Washi_NormalDX": (f"{PAPER}/paper_0017_normal_directx_2k.png", "normal"),
     "T_B09_Washi_Roughness": (f"{PAPER}/paper_0017_roughness_2k.jpg", "linear"),
@@ -78,25 +103,29 @@ TEXTURES = {
     "T_B09_W07_NormalDX": (f"{W07}/T_Weapon_07_NormalDX.png", "normal"),
     "T_B09_W07_ORM": (f"{W07}/T_Weapon_07_ORM.png", "masks"),
 }
-# slot: (maps, tint, roughness scale, metallic scale)
+MAPSETS = {"cargo_wood": "CargoWood", "straw": "Straw", "ash": "AshWood", "urushi": "Urushi", "iron": "Iron",
+           "bamboo": "Bamboo"}
+# slot: (maps, tint, roughness scale, metallic scale, tile cm). UV0 is in metres (b09_workshop_craft.box_uv: along a
+# strip, round a turned part, else a box projection), so a slot's UVScale is 100 / its tile.
 OPAQUE = {
-    "M_B09_TimberBench": ("wood", (0.62, 0.48, 0.36), 1.0, 0.0),
-    "M_B09_TimberForm": ("wood", (0.95, 0.80, 0.62), 0.9, 0.0),
-    "M_B09_Bamboo": ("neutral", (0.78, 0.70, 0.43), 0.55, 0.0),
-    "M_B09_RimLacquer": ("neutral", (0.05, 0.045, 0.045), 0.25, 0.0),
-    "M_B09_Iron": ("neutral", (0.16, 0.16, 0.17), 0.6, 1.0),
-    "M_B09_Ceramic": ("neutral", (0.30, 0.20, 0.14), 0.35, 0.0),
-    "M_B09_Bristle": ("neutral", (0.62, 0.55, 0.42), 0.8, 0.0),
-    "M_B09_Cord": ("neutral", (0.50, 0.42, 0.30), 0.9, 0.0),
-    "M_B09_Twine": ("neutral", (0.52, 0.40, 0.25), 0.9, 0.0),
-    "M_B09_ShellPaper": ("neutral", (0.72, 0.60, 0.45), 0.85, 0.0),
-    "M_B09_ShellCore": ("neutral", (0.55, 0.45, 0.36), 0.9, 0.0),
-    "M_B09_FuseCord": ("neutral", (0.20, 0.18, 0.16), 0.8, 0.0),
-    "M_B09_GaugeFace": ("neutral", (0.86, 0.82, 0.70), 0.7, 0.0),
-    "M_B09_GaugeBand": ("neutral", (0.16, 0.62, 0.30), 0.5, 0.0),
-    "M_B09_GaugeMarks": ("neutral", (0.08, 0.07, 0.07), 0.6, 0.0),
-    "M_B09_GaugeNeedle": ("neutral", (0.80, 0.20, 0.10), 0.35, 0.0),
+    "M_B09_TimberBench": ("cargo_wood", (1.0, 1.0, 1.0), 1.0, 0.0, 100.0),
+    "M_B09_TimberForm": ("ash", (1.6, 1.45, 1.25), 0.9, 0.0, 50.0),        # lightened toward a planed hinoki
+    "M_B09_Bamboo": ("bamboo", (1.0, 1.0, 1.0), 0.8, 0.0, 40.0),
+    "M_B09_RimLacquer": ("urushi", (1.0, 1.0, 1.0), 1.0, 0.0, 30.0),
+    "M_B09_Iron": ("iron", (1.0, 1.0, 1.0), 1.0, 1.0, 30.0),
+    "M_B09_Ceramic": ("neutral", (0.30, 0.20, 0.14), 0.35, 0.0, 100.0),
+    "M_B09_Bristle": ("straw", (1.0, 0.95, 0.85), 1.0, 0.0, 8.0),
+    "M_B09_Cord": ("straw", (0.85, 0.75, 0.60), 1.0, 0.0, 10.0),
+    "M_B09_Twine": ("straw", (0.80, 0.65, 0.45), 1.0, 0.0, 6.0),
+    "M_B09_ShellPaper": ("neutral", (0.72, 0.60, 0.45), 0.85, 0.0, 100.0),
+    "M_B09_ShellCore": ("neutral", (0.55, 0.45, 0.36), 0.9, 0.0, 100.0),
+    "M_B09_FuseCord": ("neutral", (0.20, 0.18, 0.16), 0.8, 0.0, 100.0),
+    "M_B09_GaugeFace": ("neutral", (0.86, 0.82, 0.70), 0.7, 0.0, 100.0),
+    "M_B09_GaugeBand": ("neutral", (0.16, 0.62, 0.30), 0.5, 0.0, 100.0),
+    "M_B09_GaugeMarks": ("neutral", (0.08, 0.07, 0.07), 0.6, 0.0, 100.0),
+    "M_B09_GaugeNeedle": ("neutral", (0.80, 0.20, 0.10), 0.35, 0.0, 100.0),
 }
+WASHI_TILE_CM = 30.0
 
 
 def fail(message):
@@ -170,23 +199,78 @@ def node(m, cls, x, y, **props):
     return e
 
 
+def sampler(m, name, x, y, texture, kind, uvs):
+    """A texture parameter sampled at uvs (sampler source as import_cc0_environment.py sets it, for tiling)."""
+    st = {"normal": unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL, "masks": unreal.MaterialSamplerType.SAMPLERTYPE_MASKS,
+          "color": unreal.MaterialSamplerType.SAMPLERTYPE_COLOR}[kind]
+    e = node(m, unreal.MaterialExpressionTextureSampleParameter2D, x, y, parameter_name=name, texture=texture, sampler_type=st,
+             sampler_source=unreal.SamplerSourceMode.SSM_WRAP_WORLD_GROUP_SETTINGS)
+    LIB.connect_material_expressions(uvs, "", e, "UVs")
+    return e
+
+
+def scaled_uv0(m, x, y, default):
+    uv = node(m, unreal.MaterialExpressionTextureCoordinate, x, y, coordinate_index=0)
+    scale = node(m, unreal.MaterialExpressionScalarParameter, x, y + 150, parameter_name="UVScale", default_value=default)
+    uvs = node(m, unreal.MaterialExpressionMultiply, x + 200, y + 50)
+    LIB.connect_material_expressions(uv, "", uvs, "A")
+    LIB.connect_material_expressions(scale, "", uvs, "B")
+    return uvs
+
+
+def prop_master(neutral):
+    """M_B09_PropCandidate, for every opaque slot: albedo x Tint, the normal map, and ORM (AO, roughness x
+    RoughnessScale, metallic x MetallicScale), all at UV0 x UVScale. It replaces s147's borrowed M_Nyaakoto_PBR, a
+    furred character's master, whose look root's s148 review rejected on the props."""
+    m = TOOLS.create_asset("M_B09_PropCandidate", MATS, unreal.Material, unreal.MaterialFactoryNew())
+    P = unreal.MaterialProperty
+    uvs = scaled_uv0(m, -1800, 0, 1.0)
+    albedo = sampler(m, "AlbedoMap", -1400, -400, neutral["Albedo"], "color", uvs)
+    normal = sampler(m, "NormalMap", -1400, -50, neutral["NormalDX"], "normal", uvs)
+    orm = sampler(m, "ORMMap", -1400, 300, neutral["ORM"], "masks", uvs)
+    tint = node(m, unreal.MaterialExpressionVectorParameter, -1100, -550, parameter_name="Tint", default_value=unreal.LinearColor(1, 1, 1, 1))
+    base = node(m, unreal.MaterialExpressionMultiply, -800, -450)
+    LIB.connect_material_expressions(albedo, "RGB", base, "A")
+    LIB.connect_material_expressions(tint, "", base, "B")
+    LIB.connect_material_property(base, "", P.MP_BASE_COLOR)
+    LIB.connect_material_property(normal, "RGB", P.MP_NORMAL)
+    LIB.connect_material_property(orm, "R", P.MP_AMBIENT_OCCLUSION)
+    for prop, pin, pname, default, y in ((P.MP_ROUGHNESS, "G", "RoughnessScale", 1.0, 250), (P.MP_METALLIC, "B", "MetallicScale", 0.0, 450)):
+        k = node(m, unreal.MaterialExpressionScalarParameter, -1100, y, parameter_name=pname, default_value=default)
+        mul = node(m, unreal.MaterialExpressionMultiply, -800, y)
+        LIB.connect_material_expressions(orm, pin, mul, "A")
+        LIB.connect_material_expressions(k, "", mul, "B")
+        sat = node(m, unreal.MaterialExpressionSaturate, -600, y)
+        LIB.connect_material_expressions(mul, "", sat, "")
+        LIB.connect_material_property(sat, "", prop)
+    LIB.recompile_material(m)
+    ASSETS.save_loaded_asset(m)
+    return m
+
+
 def washi_master(tex):
-    """M_B09_WashiCandidate (see the module's notes)."""
+    """M_B09_WashiCandidate: two-sided foliage (light through paper), masked, its paper maps at UV0 x UVScale (round
+    the lantern, a WASHI_TILE_CM tile), with three parameters on UV1 (`Reveal`):
+    - **PasteReveal:** the gore shows up to that height fraction;
+    - **OilWet:** from the top down, the paper darkens (x0.62), glosses (roughness 0.22) and passes more light (x1.8),
+      as oiled washi does;
+    - **Glow:** emission through the paper, scaled by the translucency estimate.
+    **FibreContrast** stretches the albedo about its mean (0.82), because paper_0017's normal map is nearly flat and
+    s148 read as flat yellow."""
     m = TOOLS.create_asset("M_B09_WashiCandidate", MATS, unreal.Material, unreal.MaterialFactoryNew())
     m.set_editor_property("two_sided", True)
     m.set_editor_property("blend_mode", unreal.BlendMode.BLEND_MASKED)
     m.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_TWO_SIDED_FOLIAGE)
     P = unreal.MaterialProperty
-    albedo = node(m, unreal.MaterialExpressionTextureSampleParameter2D, -1400, -500, parameter_name="AlbedoMap", texture=tex["T_B09_Washi_Albedo"])
-    normal = node(m, unreal.MaterialExpressionTextureSampleParameter2D, -1400, -150, parameter_name="NormalMap", texture=tex["T_B09_Washi_NormalDX"],
-                  sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL)
-    rough = node(m, unreal.MaterialExpressionTextureSampleParameter2D, -1400, 150, parameter_name="RoughnessMap", texture=tex["T_B09_Washi_Roughness"],
-                 sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_MASKS)
-    trans = node(m, unreal.MaterialExpressionTextureSampleParameter2D, -1400, 450, parameter_name="TranslucencyMap",
-                 texture=tex["T_B09_Washi_TranslucencyEstimate"], sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_MASKS)
-    tint = node(m, unreal.MaterialExpressionVectorParameter, -1100, -650, parameter_name="Tint", default_value=unreal.LinearColor(0.93, 0.91, 0.85, 1))
+    uvs = scaled_uv0(m, -2000, -200, 100.0 / WASHI_TILE_CM)
+    albedo = sampler(m, "AlbedoMap", -1600, -500, tex["T_B09_Washi_Albedo"], "color", uvs)
+    normal = sampler(m, "NormalMap", -1600, -150, tex["T_B09_Washi_NormalDX"], "normal", uvs)
+    rough = sampler(m, "RoughnessMap", -1600, 150, tex["T_B09_Washi_Roughness"], "masks", uvs)
+    trans = sampler(m, "TranslucencyMap", -1600, 450, tex["T_B09_Washi_TranslucencyEstimate"], "masks", uvs)
+    tint = node(m, unreal.MaterialExpressionVectorParameter, -1100, -700, parameter_name="Tint", default_value=unreal.LinearColor(0.95, 0.94, 0.90, 1))
+    contrast = node(m, unreal.MaterialExpressionScalarParameter, -1300, -650, parameter_name="FibreContrast", default_value=2.5)
     rscale = node(m, unreal.MaterialExpressionScalarParameter, -1100, 250, parameter_name="RoughnessScale", default_value=1.0)
-    tscale = node(m, unreal.MaterialExpressionScalarParameter, -1100, 550, parameter_name="TransmissionScale", default_value=0.8)
+    tscale = node(m, unreal.MaterialExpressionScalarParameter, -1100, 550, parameter_name="TransmissionScale", default_value=0.6)
     paste = node(m, unreal.MaterialExpressionScalarParameter, -1100, 800, parameter_name="PasteReveal", default_value=1.0)
     oil = node(m, unreal.MaterialExpressionScalarParameter, -1100, 950, parameter_name="OilWet", default_value=0.0)
     glow = node(m, unreal.MaterialExpressionScalarParameter, -1100, 1100, parameter_name="Glow", default_value=0.0)
@@ -217,10 +301,20 @@ def washi_master(tex):
     LIB.connect_material_expressions(k2, "", a2, "A")
     oilm = node(m, unreal.MaterialExpressionSaturate, -340, 950)
     LIB.connect_material_expressions(a2, "", oilm, "")
-    base = node(m, unreal.MaterialExpressionMultiply, -900, -550)
-    LIB.connect_material_expressions(albedo, "RGB", base, "A")
+    # Fibre: (albedo - 0.82) x FibreContrast + 0.82, then the tint.
+    f0 = node(m, unreal.MaterialExpressionSubtract, -1300, -500, const_b=0.82)
+    LIB.connect_material_expressions(albedo, "RGB", f0, "A")
+    f1 = node(m, unreal.MaterialExpressionMultiply, -1150, -500)
+    LIB.connect_material_expressions(f0, "", f1, "A")
+    LIB.connect_material_expressions(contrast, "", f1, "B")
+    f2 = node(m, unreal.MaterialExpressionAdd, -1000, -500, const_b=0.82)
+    LIB.connect_material_expressions(f1, "", f2, "A")
+    f3 = node(m, unreal.MaterialExpressionSaturate, -900, -500)
+    LIB.connect_material_expressions(f2, "", f3, "")
+    base = node(m, unreal.MaterialExpressionMultiply, -800, -550)
+    LIB.connect_material_expressions(f3, "", base, "A")
     LIB.connect_material_expressions(tint, "", base, "B")
-    dark = node(m, unreal.MaterialExpressionMultiply, -700, -450, const_b=0.72)
+    dark = node(m, unreal.MaterialExpressionMultiply, -650, -450, const_b=0.62)
     LIB.connect_material_expressions(base, "", dark, "A")
     bc = node(m, unreal.MaterialExpressionLinearInterpolate, -500, -550)
     LIB.connect_material_expressions(base, "", bc, "A")
@@ -231,16 +325,21 @@ def washi_master(tex):
     rr = node(m, unreal.MaterialExpressionMultiply, -900, 150)
     LIB.connect_material_expressions(rough, "R", rr, "A")
     LIB.connect_material_expressions(rscale, "", rr, "B")
-    rl = node(m, unreal.MaterialExpressionLinearInterpolate, -500, 150, const_b=0.3)
+    rl = node(m, unreal.MaterialExpressionLinearInterpolate, -500, 150, const_b=0.22)
     LIB.connect_material_expressions(rr, "", rl, "A")
     LIB.connect_material_expressions(oilm, "", rl, "Alpha")
     LIB.connect_material_property(rl, "", P.MP_ROUGHNESS)
     tr = node(m, unreal.MaterialExpressionMultiply, -900, 450)
     LIB.connect_material_expressions(trans, "R", tr, "A")
     LIB.connect_material_expressions(tscale, "", tr, "B")
-    sss = node(m, unreal.MaterialExpressionMultiply, -700, 450)
-    LIB.connect_material_expressions(base, "", sss, "A")
-    LIB.connect_material_expressions(tr, "", sss, "B")
+    wet = node(m, unreal.MaterialExpressionLinearInterpolate, -760, 600, const_a=1.0, const_b=1.8)
+    LIB.connect_material_expressions(oilm, "", wet, "Alpha")
+    trw = node(m, unreal.MaterialExpressionMultiply, -620, 500)
+    LIB.connect_material_expressions(tr, "", trw, "A")
+    LIB.connect_material_expressions(wet, "", trw, "B")
+    sss = node(m, unreal.MaterialExpressionMultiply, -480, 450)
+    LIB.connect_material_expressions(bc, "", sss, "A")
+    LIB.connect_material_expressions(trw, "", sss, "B")
     LIB.connect_material_property(sss, "", P.MP_SUBSURFACE_COLOR)
     em = node(m, unreal.MaterialExpressionMultiply, -700, 1150)
     LIB.connect_material_expressions(glow_c, "", em, "A")
@@ -318,7 +417,7 @@ def import_mesh(name, a, build, mats, rows, problems):
                   "slots": {s: mats[s].get_path_name() for s in bound}}
 
 
-def import_weapon(tex, pbr, rows, problems):
+def import_weapon(tex, prop, rows, problems):
     """Weapon 7's in-tree mesh as SM_B09_Weapon07_ReviewStandIn, with its maps; its sockets read back."""
     w_src = ROOT / W07 / "SM_Weapon_07.fbx"
     opts = unreal.FbxImportUI()
@@ -329,10 +428,10 @@ def import_weapon(tex, pbr, rows, problems):
     weapon = ASSETS.load_asset(f"{MESHES}/SM_B09_Weapon07_ReviewStandIn")
     if not isinstance(weapon, unreal.StaticMesh):
         fail("weapon 7's stand-in did not import")
-    wmi = instance("MI_B09_Weapon07_ReviewStandIn", pbr)
+    wmi = instance("MI_B09_Weapon07_ReviewStandIn", prop)       # its own UVs: UVScale 1, metallic from its ORM
     for p_, t in (("AlbedoMap", tex["T_B09_W07_BaseColor"]), ("NormalMap", tex["T_B09_W07_NormalDX"]), ("ORMMap", tex["T_B09_W07_ORM"])):
         LIB.set_material_instance_texture_parameter_value(wmi, p_, t)
-    LIB.set_material_instance_scalar_parameter_value(wmi, "CoatBlendEnabled", 0.0)
+    LIB.set_material_instance_scalar_parameter_value(wmi, "MetallicScale", 1.0)
     ASSETS.save_loaded_asset(wmi)
     for i in range(len(weapon.get_editor_property("static_materials"))):
         weapon.set_material(i, wmi)
@@ -367,26 +466,28 @@ def main():
     for name, a in man["assets"].items():
         if sha256(build / a["fbx"]) != a["sha256"]:
             fail(f"{a['fbx']} is not the build's")
-    pbr = unreal.load_asset(PBR)
-    if pbr is None:
-        fail(f"{PBR} is missing")
     for d in (MESHES, MATS, TEX):
         ASSETS.make_directory(d)
     tex, tex_src = {}, {}
     for name, (src, kind) in TEXTURES.items():
         tex[name], tex_src[name] = import_texture(name, src, kind)
     neutral = {k: unreal.load_asset(NEUTRAL.format(k)) for k in ("Albedo", "NormalDX", "ORM")}
+    if any(v is None for v in neutral.values()):
+        fail(f"the neutral maps {NEUTRAL} are missing")
+    prop = prop_master(neutral)
     mats = {}
-    for slot, (maps, tint, rough, metal) in OPAQUE.items():
-        mi = instance("MI_" + slot[2:], pbr)
-        a, n, o = ((tex["T_B09_Wood_Albedo"], tex["T_B09_Wood_NormalDX"], tex["T_B09_Wood_ORM"]) if maps == "wood"
-                   else (neutral["Albedo"], neutral["NormalDX"], neutral["ORM"]))
+    for slot, (maps, tint, rough, metal, tile_cm) in OPAQUE.items():
+        mi = instance("MI_" + slot[2:], prop)
+        if maps == "neutral":
+            a, n, o = neutral["Albedo"], neutral["NormalDX"], neutral["ORM"]
+        else:
+            a, n, o = (tex[f"T_B09_{MAPSETS[maps]}_{k}"] for k in ("Albedo", "NormalDX", "ORM"))
         for p, t in (("AlbedoMap", a), ("NormalMap", n), ("ORMMap", o)):
             LIB.set_material_instance_texture_parameter_value(mi, p, t)
         LIB.set_material_instance_vector_parameter_value(mi, "Tint", unreal.LinearColor(*tint, 1.0))
         LIB.set_material_instance_scalar_parameter_value(mi, "RoughnessScale", rough)
         LIB.set_material_instance_scalar_parameter_value(mi, "MetallicScale", metal)
-        LIB.set_material_instance_scalar_parameter_value(mi, "CoatBlendEnabled", 0.0)
+        LIB.set_material_instance_scalar_parameter_value(mi, "UVScale", 100.0 / tile_cm)
         ASSETS.save_loaded_asset(mi)
         mats[slot] = mi
     rows, problems, washi = {}, [], None
@@ -402,7 +503,7 @@ def main():
         except Exception as exc:
             problems.append(f"{name}: {exc!r}")
     try:                                   # weapon 7, a review stand-in for the shell bench's capture
-        import_weapon(tex, pbr, rows, problems)
+        import_weapon(tex, prop, rows, problems)
     except Exception as exc:
         problems.append(f"weapon 7's stand-in: {exc!r}")
     for name in rows:

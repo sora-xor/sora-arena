@@ -73,11 +73,14 @@ INPUTS = {
     # eligibility and station trace are unchanged. SoraWorldBuilder.h carries FSoraKitView::LanternCraft.
     # Re-pinned to fcf3ffb5 (Coordination 239): of these files only chapter_03.json changed, for b10's ground routes
     # in ch03_lantern_ward. The ch03.b09 beat is identical.
-    "root_commit": "fcf3ffb56eb4412f268208021a3970e8dc7bee45",
+    # Re-pinned to 102c18d9 (Coordination 240). SoraLanternWorkshopRules.h shortens the east yard wall to end at
+    # Y -400, opening the main street; SOLIDS follows it. SoraWorldBuilder.h gives Lanterns a notice-square argument.
+    # The stations, recipe, state and eligibility are unchanged.
+    "root_commit": "102c18d9e3b0664c9f6970dec64a24b1c5b30d78",
     "blobs": {
-        "Source/SoraArena/Public/SoraLanternWorkshopRules.h": "ee2f3b7772e7754eeb0ba067c9b1843025519184",
+        "Source/SoraArena/Public/SoraLanternWorkshopRules.h": "c7aa71efafc72ecfdd085f67bedbdf84899c4b51",
         "Source/SoraArena/Public/SoraWorkshopCraftRules.h": "39c36512c2a772c187164d8f1b3547e8ebac2d2b",
-        "Source/SoraArena/Public/SoraWorldBuilder.h": "bd9220c5e0f1e34d404bbea7bec90dad9930d255",
+        "Source/SoraArena/Public/SoraWorldBuilder.h": "72ce871f533a7019591062e5c2bc6626e2c3d254",
         "Source/SoraArena/Private/Game/SoraCampaignReach.h": "96ede9639f397714300be52c4a0b5e5b2520418f",
         "Source/SoraArena/Private/Game/SoraCampaignWorkshopCraft.cpp": "ddac4fc51ac93d31cc33fd77fcf45b742812b8b9",
         "Source/SoraArena/Private/Characters/SoraCharacterBase.cpp": "3221fa817a15e57d94f0426b202409e8d56289b2",
@@ -122,13 +125,14 @@ def floor_at(x, y):
 
 
 def _solids():
-    """SoraLanternWorkshopRules::Solids, as (centre, size) boxes in world cm (the ground slab left out)."""
+    """SoraLanternWorkshopRules::Solids, as (centre, size) boxes in world cm (the ground slab left out).
+    check_b09_root_inputs.py compares them, box by box, with the pinned header."""
     b = [(2050, -950, 22.5, 540, 1100, 45), (1745, -950, 11.25, 70, 1088, 22.5), (1900, -1535, 11.25, 140, 70, 22.5),
          (1600, -950, 215, 12, 1100, 430), (2320, -950, 215, 12, 1100, 430), (1960, -400, 215, 720, 12, 430),
          (1715, -1500, 215, 230, 12, 430), (2145, -1500, 215, 350, 12, 430), (1900, -1500, 345, 140, 12, 170),
          (1960, -950, 440, 750, 1130, 20), (2860, -650, 210, 1080, 500, 420),
          (1600, -1850, 100, 12, 700, 200), (1755, -2200, 100, 310, 12, 200), (2495, -2200, 100, 810, 12, 200),
-         (3400, -1375, 80, 12, 450, 160), (3700, -1150, 100, 12, 2700, 200)]
+         (3400, -1375, 80, 12, 450, 160), (3700, -1450, 100, 12, 2100, 200)]
     for s in (-1, 1):
         b += [(2600 + s * 65, -1400, 40, 30, 160, 80), (2600, -1400 + s * 65, 40, 100, 30, 80)]
     b += [(3400, -1900, 319, 16, 600, 638), (3150, -1600, 319, 500, 16, 638), (3150, -2200, 319, 500, 16, 638),
@@ -138,6 +142,9 @@ def _solids():
 
 
 SOLIDS = _solids()
+# Each box's ESurface in the header (Wood unless named): the yard's east wall, the well curb and the storehouse are
+# Stone.
+SOLID_SURFACES = ["Wood"] * 15 + ["Stone"] * 5 + ["Stone"] * 6 + ["Wood"]
 FLOOR_SLABS = (0, 1, 2)                     # the plank floor and its two steps: walked on, not walls
 
 # --- The lantern ----------------------------------------------------------------------------------------------------
@@ -187,6 +194,7 @@ class Mesh:
     attrs: dict = field(default_factory=dict)
     collision: str = "none (visual only)"
     tri_slots: object = None                 # per-triangle material slots, where a mesh has more than one
+    tri_uv0: object = None                   # per-corner UV0 (n_tris, 3, 2) in metres, from its construction (box_uv)
 
     def slots(self):
         return np.asarray(self.tri_slots, object) if self.tri_slots is not None else np.full(len(self.tris), self.slot, object)
@@ -195,7 +203,8 @@ class Mesh:
         v = self.verts @ np.asarray(rot, float).T if rot is not None else self.verts.copy()
         return Mesh(name or self.name, v + np.asarray(offset, float), self.tris.copy(), self.slot,
                     {k: a.copy() for k, a in self.attrs.items()}, self.collision,
-                    None if self.tri_slots is None else np.asarray(self.tri_slots, object).copy())
+                    None if self.tri_slots is None else np.asarray(self.tri_slots, object).copy(),
+                    None if self.tri_uv0 is None else np.asarray(self.tri_uv0, float).copy())
 
     def bounds(self):
         return self.verts.min(0), self.verts.max(0)
@@ -212,8 +221,11 @@ def merge(name, meshes, slot=None):
         off += len(m.verts)
     tri_slots = np.concatenate(ts)
     primary = slot or meshes[0].slot
+    uv = None
+    if any(m.tri_uv0 is not None for m in meshes):         # each part keeps its own mapping (box parts their projection)
+        uv = np.concatenate([np.asarray(box_uv(m), float) for m in meshes])
     return Mesh(name, np.concatenate(v), np.concatenate(t), primary, {}, "none (visual only)",
-                None if (tri_slots == primary).all() else tri_slots)
+                None if (tri_slots == primary).all() else tri_slots, uv)
 
 
 def box(name, lo, hi, slot):
@@ -260,21 +272,29 @@ def sweep(name, path, slot, radius=None, rect=None, closed=False, segments=8, up
     m = len(sec)
     v = np.array([p[i] + a * nrm[i] + b * bin_[i] for i in range(len(p)) for a, b in sec])
     rows = len(p) if not closed else len(p) + 1
-    t = []
+    # UV0 (m): u is the arc length along the path, v the distance round the section, so grain runs along a strip.
+    run = np.concatenate([[0.0], np.cumsum(np.linalg.norm(np.diff(np.vstack([p, p[:1]]) if closed else p, axis=0), axis=1))])
+    sv = np.concatenate([[0.0], np.cumsum([math.dist(sec[k], sec[(k + 1) % m]) for k in range(m)])])
+    t, uv = [], []
     for i in range(rows - 1):
         i0, i1 = i % len(p), (i + 1) % len(p)
+        u0, u1 = run[i] / 100.0, run[i + 1] / 100.0
         for k in range(m):
             a, b = i0 * m + k, i0 * m + (k + 1) % m
             c, d = i1 * m + k, i1 * m + (k + 1) % m
+            va, vb = sv[k] / 100.0, sv[k + 1] / 100.0
             t += [[a, c, b], [b, c, d]]
+            uv += [[(u0, va), (u1, va), (u0, vb)], [(u0, vb), (u1, va), (u1, vb)]]
     if not closed:
         for i0, flip in ((0, True), (len(p) - 1, False)):
             ctr = len(v)
             v = np.vstack([v, p[i0]])
             for k in range(m):
                 a, b = i0 * m + k, i0 * m + (k + 1) % m
+                ka, kb = (np.asarray(sec[k]) / 100.0, np.asarray(sec[(k + 1) % m]) / 100.0)
                 t.append([ctr, b, a] if flip else [ctr, a, b])
-    return Mesh(name, v, np.array(t), slot)
+                uv.append([(0.0, 0.0), tuple(kb), tuple(ka)] if flip else [(0.0, 0.0), tuple(ka), tuple(kb)])
+    return Mesh(name, v, np.array(t), slot, tri_uv0=np.array(uv, float))
 
 
 def revolve(name, zr, slot, az0=0.0, az1=360.0, n_az=48, cap=False):
@@ -305,21 +325,31 @@ def revolve(name, zr, slot, az0=0.0, az1=360.0, n_az=48, cap=False):
             v += [[r * math.cos(t), r * math.sin(t), z] for t in a]
             hf += [hf_of[i]] * cols
             af += list(np.arange(cols) / n_az)
-    t = []
+    t, uv = [], []
+    # UV0 (m): u round the widest radius, v along the profile, so paper fibre and wood grain wrap the part.
+    r_ref = max(float(zr[:, 1].max()), 1e-6)
+    ua = (az1 - az0) * np.arange(n_az + 1) / n_az * math.pi / 180.0 * r_ref / 100.0
+    vrow = np.concatenate([[0.0], np.cumsum(np.hypot(np.diff(zr[:, 0]), np.diff(zr[:, 1])))]) / 100.0
     for i in range(len(zr) - 1):
         pole_a, pole_b = zr[i, 1] == 0.0, zr[i + 1, 1] == 0.0
         for j in range(n_az):
             if pole_a and pole_b:
                 break
+            um = 0.5 * (ua[j] + ua[j + 1])
             if pole_a:                                           # [p, q, r] of the quad, with p = q at the pole: dropped
                 t.append([first[i], first[i + 1] + (j + 1) % cols, first[i + 1] + j])
+                uv.append([(um, vrow[i]), (ua[j + 1], vrow[i + 1]), (ua[j], vrow[i + 1])])
             elif pole_b:                                         # [q, s, r] of the quad, with s = r at the pole: dropped
                 t.append([first[i] + j, first[i] + (j + 1) % cols, first[i + 1]])
+                uv.append([(ua[j], vrow[i]), (ua[j + 1], vrow[i]), (um, vrow[i + 1])])
             else:
                 p, q = first[i] + j, first[i] + (j + 1) % cols
                 r_, s_ = first[i + 1] + j, first[i + 1] + (j + 1) % cols
                 t += [[p, q, r_], [q, s_, r_]]
-    mesh = Mesh(name, np.array(v, float), np.array(t), slot, {"height_frac": np.array(hf), "azimuth_frac": np.array(af)})
+                uv += [[(ua[j], vrow[i]), (ua[j + 1], vrow[i]), (ua[j], vrow[i + 1])],
+                       [(ua[j + 1], vrow[i]), (ua[j + 1], vrow[i + 1]), (ua[j], vrow[i + 1])]]
+    mesh = Mesh(name, np.array(v, float), np.array(t), slot, {"height_frac": np.array(hf), "azimuth_frac": np.array(af)},
+                tri_uv0=np.array(uv, float))
     if cap and full:                                             # close an end ring with a centre vertex
         for i, flip in ((0, True), (len(zr) - 1, False)):
             if zr[i, 1] == 0.0:
@@ -329,12 +359,14 @@ def revolve(name, zr, slot, az0=0.0, az1=360.0, n_az=48, cap=False):
             for k in range(n_az):
                 p, q = first[i] + k, first[i] + (k + 1) % cols
                 mesh.tris = np.vstack([mesh.tris, [ctr, q, p] if flip else [ctr, p, q]])
+                cap = [(0.0, 0.0), tuple(mesh.verts[q][:2] / 100.0), tuple(mesh.verts[p][:2] / 100.0)]   # planar (x, y)
+                mesh.tri_uv0 = np.vstack([mesh.tri_uv0, [cap if flip else [cap[0], cap[2], cap[1]]]])
             for key in mesh.attrs:
                 mesh.attrs[key] = np.append(mesh.attrs[key], mesh.attrs[key][first[i]])
     return mesh
 
 
-def sphere(name, r, slot, n=16):
+def sphere(name, r, slot, n=24):
     """A sphere of radius r with true poles (one vertex each, met by a fan)."""
     zr = [(r * math.cos(math.pi * (1 - k / n)), 0.0 if k in (0, n) else r * math.sin(math.pi * k / n)) for k in range(n + 1)]
     return revolve(name, zr, slot, n_az=2 * n)
@@ -361,7 +393,7 @@ def bench(name, depth, width, top, slot="M_B09_TimberBench", leg=6.0, thick=4.0)
 
 
 # --- The lantern's parts (lantern frame) ------------------------------------------------------------------------------
-def hoop_path(k, flex=1.0, segments=96):
+def hoop_path(k, flex=1.0, segments=192):
     """Strip k's centreline as it bends: (points, outward normals, arc parameter s, end). flex 0 is a straight strip
     tangent to the form on the hero's side (-X); 1 is the closed hoop, its ends lapped. end is -1 on the trailing
     end's scarf, +1 on the leading end's and 0 between. The strip keeps its length at every flex."""
@@ -385,7 +417,7 @@ def hoop_path(k, flex=1.0, segments=96):
     return np.array(pts), np.array(nrm), s, end
 
 
-def hoop(k, flex=1.0, segments=96):
+def hoop(k, flex=1.0, segments=192):
     """Hoop k (1..6) as its strip bends (hoop_path).
 
     **The ends are scarfed (削ぎ):** each is shaved to half thickness over the lap, the leading end on the outer half
@@ -461,25 +493,25 @@ def rim(which):
     r_in = LANTERN_RIM_R - RIM_T / 2
     pts = [(zc - RIM_H / 2, r_in), (zc - RIM_H / 2, r_in + RIM_T), (zc + RIM_H / 2, r_in + RIM_T),
            (zc + RIM_H / 2, r_in), (zc - RIM_H / 2, r_in)]
-    return revolve(f"SM_B09_Rim{which}", pts, "M_B09_RimLacquer", n_az=48)
+    return revolve(f"SM_B09_Rim{which}", pts, "M_B09_RimLacquer", n_az=96)
 
 
 def bail():
     h = LANTERN_H / 2.0 + RIM_H / 2
     pts = [[LANTERN_RIM_R * math.cos(t), 0.0, h + BAIL_RISE * math.sin(t)] for t in np.linspace(0, math.pi, 25)]
     ring = [[0.6 * math.cos(t), 0.0, h + BAIL_RISE + 0.6 + 0.6 * math.sin(t)] for t in np.linspace(0, 2 * math.pi, 13)]
-    return merge("SM_B09_Bail", [sweep("SM_B09_Bail", pts, "M_B09_Iron", radius=0.12, segments=6),
-                                 sweep("SM_B09_Bail", ring, "M_B09_Iron", radius=0.1, segments=6)])
+    return merge("SM_B09_Bail", [sweep("SM_B09_Bail", pts, "M_B09_Iron", radius=0.12, segments=10),
+                                 sweep("SM_B09_Bail", ring, "M_B09_Iron", radius=0.1, segments=10)])
 
 
 def form(collapsed=False, boards=8):
     """The collapsible form (型): a spindle, two collars and radial boards just inside the hoops. Collapsed, the boards
     fold to 40% of their reach, as when the form is drawn out of a pasted lantern."""
     h = LANTERN_H / 2.0
-    parts = [sweep("SM_B09_Form", [[0, 0, -h - 8], [0, 0, h + 16]], "M_B09_TimberForm", radius=1.25, segments=10)]
+    parts = [sweep("SM_B09_Form", [[0, 0, -h - 8], [0, 0, h + 16]], "M_B09_TimberForm", radius=1.25, segments=20)]
     for zc in (-h - 1.0, h + 1.0):
         parts.append(revolve("SM_B09_Form", [(zc - 1, 0.0), (zc - 1, 3.0), (zc + 1, 3.0), (zc + 1, 0.0)],
-                             "M_B09_TimberForm", n_az=20))
+                             "M_B09_TimberForm", n_az=48))
     zs = np.linspace(-h, h, 23)
     reach = profile_r(zs) - 0.15
     if collapsed:
@@ -562,9 +594,9 @@ def gauge_mesh(top):
     band = (gauge_angle(BEND_MS - BEND_TOL_MS), gauge_angle(BEND_MS + BEND_TOL_MS))
     parts = [box("SM_B09_FlexGauge", (g[0] - 3, g[1] - 4, top), (g[0] + 3, g[1] + 4, top + 1.5), "M_B09_TimberBench"),
              box("SM_B09_FlexGauge", (g[0] - 0.8, g[1] - 1.2, top + 1.5), (g[0] + 0.8, g[1] + 1.2, g[2] - 0.5), "M_B09_TimberBench"),
-             _sector("SM_B09_FlexGauge", 0.05, GAUGE["face_r"], -90.0, 90.0, -0.8, 0.8, "M_B09_GaugeFace", n=36),
-             _sector("SM_B09_FlexGauge", hi_b, hi_b + 0.5, *GAUGE["angles_deg"], 0.02, 0.12, "M_B09_GaugeMarks", n=36),
-             _sector("SM_B09_FlexGauge", lo_b, hi_b, *band, 0.02, 0.12, "M_B09_GaugeBand", n=16)]
+             _sector("SM_B09_FlexGauge", 0.05, GAUGE["face_r"], -90.0, 90.0, -0.8, 0.8, "M_B09_GaugeFace", n=96),
+             _sector("SM_B09_FlexGauge", hi_b, hi_b + 0.5, *GAUGE["angles_deg"], 0.02, 0.12, "M_B09_GaugeMarks", n=96),
+             _sector("SM_B09_FlexGauge", lo_b, hi_b, *band, 0.02, 0.12, "M_B09_GaugeBand", n=32)]
     for a in sorted({gauge_angle(ms) for ms in GAUGE["ticks_ms"]} | set(band)):
         parts.append(_sector("SM_B09_FlexGauge", lo_b - 0.6, hi_b + 0.5, a - 0.9, a + 0.9, 0.02, 0.16, "M_B09_GaugeMarks", n=2))
     return merge("SM_B09_FlexGauge", parts, "M_B09_GaugeFace")
@@ -603,10 +635,10 @@ def station_parts(i):
         base_top = lift[2] - LANTERN_H / 2 - 8.0                 # the form's spindle starts 8 cm below the lantern
         if base_top - top <= 6.0:
             parts.append(revolve("SM_B09_FormBase", [(top, 0.0), (top, 6.5), (top + 4, 6.5), (base_top, 2.0), (base_top, 0.0)],
-                                 "M_B09_TimberForm", n_az=24))
+                                 "M_B09_TimberForm", n_az=64))
         else:                                                    # a turned pedestal and turntable, to chest height
             parts.append(revolve("SM_B09_FormBase", [(top, 0.0), (top, 7.5), (top + 3, 7.5), (top + 3.5, 2.6), (base_top - 3.5, 2.6),
-                                                     (base_top - 3, 6.5), (base_top, 6.5), (base_top, 0.0)], "M_B09_TimberForm", n_az=24))
+                                                     (base_top - 3, 6.5), (base_top, 6.5), (base_top, 0.0)], "M_B09_TimberForm", n_az=64))
         proxies.append((np.array([-depth / 2 - 2, -width / 2 - 2, 0.0]), np.array([depth / 2 + 2, width / 2 + 2, top + 3])))
         for k, (z, r) in enumerate(zip(hoop_z(), hoop_r()), 1):
             sockets[f"HoopSeat{k}"] = (lift + [0.0, 0.0, z], None, None)
@@ -629,7 +661,7 @@ def station_parts(i):
                 sockets[f"WashiSheet{j}"] = (np.array([8.0, -34.5, top + 0.1 * (j - 1)]), None, None)
             parts += [m.moved(lift) for m in lantern("frame") if m.name != "SM_B09_Form"]   # the six hoops, done at the form
             parts.append(revolve("SM_B09_PastePot", [(top, 0.0), (top, 5.0), (top + 0.6, 6.0), (top + 6.5, 6.2), (top + 7.0, 5.6),
-                                                     (top + 1.0, 5.3), (top + 1.0, 0.0)], "M_B09_Ceramic", n_az=24).moved((-20.0, -42.0, 0.0)))
+                                                     (top + 1.0, 5.3), (top + 1.0, 0.0)], "M_B09_Ceramic", n_az=48).moved((-20.0, -42.0, 0.0)))
             sockets["BrushRest"] = (np.array([-22.0, -32.0, top + 0.5]), np.array([1.0, 0.0, 0.0]), np.array([0.0, 0.0, 1.0]))
             for which, z in (("Bottom", RIM_H / 2), ("Top", 1.5 * RIM_H)):     # stacked, bottom rim under the top
                 sockets[f"Rim{which}Rest"] = (np.array([14.0, 32.0, top + z]), None, None)
@@ -654,11 +686,11 @@ def station_parts(i):
         parts.append(box("SM_B09_OilRack", (-20.0, -42.0, 18.0), (20.0, 42.0, 20.5), "M_B09_TimberBench"))
         parts = [merge("SM_B09_OilRack", parts)]
         parts.append(sweep("SM_B09_RackHook", [[0, 0, bar], [0, 0, hook_top + 1.8], [0.9, 0, hook_top + 0.6], [0, 0, hook_top]],
-                           "M_B09_Iron", radius=0.25, segments=6))
+                           "M_B09_Iron", radius=0.25, segments=10))
         parts.append(revolve("SM_B09_OilJar", [(20.5, 0.0), (20.5, 6.0), (24.0, 8.8), (34.0, 9.0), (41.0, 6.5), (43.5, 4.2),
-                                               (44.5, 4.6), (44.5, 3.6), (36.0, 3.2), (36.0, 0.0)], "M_B09_Ceramic", n_az=28).moved((8.0, 24.0, 0.0)))
+                                               (44.5, 4.6), (44.5, 3.6), (36.0, 3.2), (36.0, 0.0)], "M_B09_Ceramic", n_az=64).moved((8.0, 24.0, 0.0)))
         parts.append(revolve("SM_B09_DripTray", [(0.0, 0.0), (0.0, 17.0), (3.0, 18.0), (3.0, 17.2), (0.8, 16.4), (0.8, 0.0)],
-                             "M_B09_Ceramic", n_az=32))
+                             "M_B09_Ceramic", n_az=64))
         proxies.append((np.array([-38.0, -52.0, 0.0]), np.array([38.0, 52.0, 22.0])))
         sockets["LanternHang"] = (np.array([0.0, 0.0, hook_top]), None, None)
         sockets["OilJar"] = (np.array([8.0, 24.0, 44.5]), None, None)
@@ -689,11 +721,11 @@ def station_parts(i):
             sockets[f"ShellSeat{k}"] = (np.array([-19.5, y, top + 4.0 - 2.0 + SHELL["wrapped_cm"] / 2]), None, np.array([0.0, 0.0, 1.0]))
             sockets[f"ShellCore{k}"] = (np.array([-18.0, 30.0 + 5.5 * (k - 2), top + 1.5 + SHELL["core_cm"] / 2]), None, None)
         parts.append(revolve("SM_B09_ShellTray", [(top, 0.0), (top, 9.0), (top + 3.0, 9.6), (top + 3.0, 9.0), (top + 1.0, 8.4), (top + 1.0, 0.0)],
-                             "M_B09_TimberBench", n_az=28).moved((-18.0, 30.0, 0.0)))
+                             "M_B09_TimberBench", n_az=64).moved((-18.0, 30.0, 0.0)))
         parts.append(box("SM_B09_WrapPaper", (-30.0, -8.0, top), (-10.0, 12.0, top + 0.2), "M_B09_ShellPaper"))
         sockets["WrapSpot"] = (np.array([-20.0, 2.0, top + 0.2 + SHELL["wrapped_cm"] / 2]), None, None)
         coil = [[-4.0 + (2.0 + 0.32 * t) * math.cos(t), 48.0 + (2.0 + 0.32 * t) * math.sin(t), top + 0.25] for t in np.linspace(0, 5 * math.pi, 90)]
-        parts.append(sweep("SM_B09_FuseCoil", coil, "M_B09_FuseCord", radius=0.25, segments=6))
+        parts.append(sweep("SM_B09_FuseCoil", coil, "M_B09_FuseCord", radius=0.25, segments=10))
         sockets["FuseCoil"] = (np.array([-4.0, 48.0, top + 0.5]), None, None)
         work = np.array([-12.0, -10.0, top + 8.0])
     sockets["StationPoint"] = (np.array([0.0, 0.0, WORK_Z]), None, None)      # the trace's target, wherever the lantern sits
@@ -708,7 +740,7 @@ def needle():
     v = np.array([[-0.3, -0.45, -1.2], [-0.3, 0.45, -1.2], [-0.3, 0.12, r], [-0.3, -0.12, r],
                   [-0.6, -0.45, -1.2], [-0.6, 0.45, -1.2], [-0.6, 0.12, r], [-0.6, -0.12, r]])
     t = np.array([[0, 1, 2], [0, 2, 3], [4, 6, 5], [4, 7, 6], [0, 4, 5], [0, 5, 1], [1, 5, 6], [1, 6, 2], [2, 6, 7], [2, 7, 3], [3, 7, 4], [3, 4, 0]])
-    hub = revolve("SM_B09_GaugeNeedle", [(-0.75, 0.0), (-0.75, 0.9), (-0.2, 0.9), (-0.2, 0.0)], "M_B09_Iron", n_az=12)
+    hub = revolve("SM_B09_GaugeNeedle", [(-0.75, 0.0), (-0.75, 0.9), (-0.2, 0.9), (-0.2, 0.0)], "M_B09_Iron", n_az=24)
     hub.verts = hub.verts[:, [2, 1, 0]]                    # its axis along X
     hub.tris = hub.tris[:, [0, 2, 1]]
     return merge("SM_B09_GaugeNeedle", [Mesh("SM_B09_GaugeNeedle", v, t, "M_B09_GaugeNeedle"), hub], "M_B09_GaugeNeedle")
@@ -754,14 +786,14 @@ def shell(stage):
     top = d / 2
     if stage == "wrapped":
         neck = [(top - 0.3, 0.9), (top + 0.4, 0.45), (top + SHELL["neck_cm"] - 0.3, 0.35), (top + SHELL["neck_cm"], 0.6)]
-        parts.append(revolve("SM_B09_ShellWrapped", neck, "M_B09_ShellPaper", n_az=12))
+        parts.append(revolve("SM_B09_ShellWrapped", neck, "M_B09_ShellPaper", n_az=24))
         parts.append(revolve("SM_B09_ShellWrapped", [(top + 0.5, 0.52), (top + 0.5, 0.62), (top + 0.8, 0.62), (top + 0.8, 0.52)],
-                             "M_B09_Twine", n_az=12))
+                             "M_B09_Twine", n_az=24))
         fuse_from = top + SHELL["neck_cm"]
     else:
         fuse_from = top
     parts.append(sweep("SM_B09_Shell" + stage.title(), [[0, 0, fuse_from - 0.2], [0.1, 0, fuse_from + 1.8], [0.5, 0, fuse_from + 3.0]],
-                       "M_B09_FuseCord", radius=0.18, segments=6))
+                       "M_B09_FuseCord", radius=0.18, segments=10))
     return merge("SM_B09_Shell" + stage.title(), parts)
 
 
@@ -788,15 +820,15 @@ def slots():
 def hanging_parts():
     parts = []
     for y in POLES_Y:
-        parts.append(sweep("SM_B09_DryingPole", [[POLE_X[0], y, POLE_Z], [POLE_X[1], y, POLE_Z]], "M_B09_Bamboo", radius=2.0, segments=10))
+        parts.append(sweep("SM_B09_DryingPole", [[POLE_X[0], y, POLE_Z], [POLE_X[1], y, POLE_Z]], "M_B09_Bamboo", radius=2.0, segments=24))
         for x in (POLE_X[0] + 40.0, POLE_X[1] - 40.0):
-            parts.append(sweep("SM_B09_PoleHanger", [[x, y, CEILING_Z], [x, y, POLE_Z + 2.0]], "M_B09_Cord", radius=0.35, segments=6))
+            parts.append(sweep("SM_B09_PoleHanger", [[x, y, CEILING_Z], [x, y, POLE_Z + 2.0]], "M_B09_Cord", radius=0.35, segments=10))
     hooks = []
     for _, _, hp, _ in slots():
         top = np.array([hp[0], hp[1] - 2.4, POLE_Z + 2.3])
         hooks.append(sweep("SM_B09_SlotHook", [top + [0, -0.6, -0.4], top + [0, 0.4, 0.2], top + [0, 2.4, -1.2], hp + [0, 0, 1.0],
                                                hp + [0, 0.3, 0.0], hp + [0, 0.6, 0.6]],
-                           "M_B09_Iron", radius=0.18, segments=6))
+                           "M_B09_Iron", radius=0.18, segments=10))
     return merge("SM_B09_DryingPoles", parts, "M_B09_Bamboo"), merge("SM_B09_SlotHooks", hooks, "M_B09_Iron")
 
 
@@ -1133,6 +1165,7 @@ def spec():
            "room": {"solids_cm": [np.concatenate([c, s]).round(3).tolist() for c, s in SOLIDS],
                     "floor_slabs": list(FLOOR_SLABS),
                     "ceilings": [k for k, (c, s) in enumerate(SOLIDS) if c[2] - s[2] / 2 >= CEILING_Z],
+                    "surfaces": list(SOLID_SURFACES),
                     "source": "SoraLanternWorkshopRules::Solids (the ground slab left out)"},
            "stations": [], "hanging_output": {}}
     for i, (sid, (x, y)) in enumerate(STATIONS):
@@ -1226,8 +1259,11 @@ def reveal_uv(mesh, lantern_frame):
 
 
 def box_uv(mesh):
-    """UV0 per triangle corner, (n_tris, 3, 2) in the module's corner order: a metric box projection (one unit per
-    metre), each triangle projected along its normal's dominant axis, for tiling maps."""
+    """UV0 per triangle corner, (n_tris, 3, 2) in the module's corner order, in metres: the mesh's own mapping from its
+    construction (sweep: along the path; revolve: round the widest radius) where it has one. Otherwise a box
+    projection, each triangle along its normal's dominant axis. The materials scale metres to their tile."""
+    if mesh.tri_uv0 is not None:
+        return np.asarray(mesh.tri_uv0, float)
     t = mesh.tris
     n = np.cross(mesh.verts[t[:, 1]] - mesh.verts[t[:, 0]], mesh.verts[t[:, 2]] - mesh.verts[t[:, 0]])
     keep = np.array([[1, 2], [0, 2], [0, 1]])[np.argmax(np.abs(n), 1)]
