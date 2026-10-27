@@ -451,6 +451,9 @@ void ASoraPlayerCharacter::CrouchPressed()
     if(USoraFieldcraft* Craft=HeroFieldcraft(*this);Craft&&(Craft->IsOnLadder()||Craft->MoatCrouch(*this)||Craft->ClimbCrouch(*this))) return;
     // The wish, not the stance: under a low ceiling the stand waits for headroom.
     if(GetCharacterMovement()->bWantsToCrouch) { UnCrouch(); return; }
+    // Cancel before CharacterMovement lowers the capsule, including a release
+    // arriving in this same input frame inside a successful bend's timing band.
+    if(auto* G=PlayerGameMode(this);G&&G->Campaign())G->Campaign()->CancelWorkshopCraft();
     bSprint=false; Crouch();
 }
 void ASoraPlayerCharacter::SheathePressed()

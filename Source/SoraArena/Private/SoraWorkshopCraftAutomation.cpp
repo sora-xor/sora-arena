@@ -7,6 +7,7 @@
 #include "SoraSettings.h"
 #include "SoraLiftAutomation.h"
 #include "SoraWorldBuilder.h"
+#include "SoraViewmodelComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/PointLightComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -208,6 +209,60 @@ bool FSoraWorkshopCraftInterruptTest::RunTest(const FString&)
     if(!W.World->InjectKey(EKeys::E,IE_Pressed)||!Milliseconds(W,1000)||!W.Press(EKeys::Escape))return false;
     W.World->InjectKey(EKeys::E,IE_Released);W.Mode()->ResumePlay();if(!W.Tick(3)||!Hold(W,500))return false;
     TestEqual(TEXT("A paused seam cannot carry partial time into a new press"),C->TaskProgress().StepDone,1);
+    return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraWorkshopCraftStanceTest,"SoraArena.Campaign.LanternWorkshop.CraftStandingReach",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FSoraWorkshopCraftStanceTest::RunTest(const FString&)
+{
+    using namespace SoraWorkshopCraftTest;
+    FWorld W(*this,TEXT("WorkshopCraftStandingReach"),2,8);if(!SoraWorkshopCraftTest::Ready(W))return false;
+    auto* C=W.Campaign();auto* Movement=W.Hero()->GetCharacterMovement();
+    const int Counts[]={6,4,1,1,3,1};
+    for(int Step=0;Step<6;++Step)
+    {
+        if(!TestEqual(TEXT("The stance probe reaches the next authored recipe step"),C->TaskProgress().Step,Step)||!Station(W))return false;
+        const int Before=C->TaskProgress().Done;
+        const auto Serial=C->WorkshopCraftView().LastAction.Serial;
+        // A crouch wish is effective before the capsule's next movement tick.
+        if(!W.World->InjectKey(EKeys::C,IE_Pressed)||!W.World->InjectKey(EKeys::C,IE_Released))return false;
+        TestTrue(TEXT("Mapped crouch requests a lower working stance"),Movement->bWantsToCrouch);
+        if(!W.World->InjectKey(EKeys::E,IE_Pressed))return false;
+        TestFalse(TEXT("Crouch intent refuses a hold before the movement tick"),C->WorkshopCraftOccupiesHands());
+        if(!W.World->InjectKey(EKeys::E,IE_Released)||!W.Tick(8))return false;
+        if(!TestTrue(TEXT("The stance probe actually crouches on the authored floor"),W.Hero()->IsCrouched())||!Hold(W,1600))return false;
+        TestEqual(TEXT("Crouched work cannot credit a timed or instant recipe step"),C->TaskProgress().Done,Before);
+        TestEqual(TEXT("Refused crouched work publishes no completed action"),C->WorkshopCraftView().LastAction.Serial,Serial);
+        // Standing intent does not grant reach until the actual capsule rises.
+        if(!W.World->InjectKey(EKeys::C,IE_Pressed)||!W.World->InjectKey(EKeys::C,IE_Released)||
+           !W.World->InjectKey(EKeys::E,IE_Pressed)||!W.World->InjectKey(EKeys::E,IE_Released))return false;
+        TestEqual(TEXT("An unprocessed stand request cannot credit work"),C->TaskProgress().Done,Before);
+        if(!W.Tick(8)||!TestFalse(TEXT("The worker returns to standing"),W.Hero()->IsCrouched()))return false;
+        if(SoraWorkshopCraftRules::Timed(Step))
+        {
+            // Crouch in the bend's valid release band, or partway through paste/oil.
+            if(!W.World->InjectKey(EKeys::E,IE_Pressed)||!Milliseconds(W,800)||
+               !TestTrue(TEXT("A standing timed action occupies the hands"),C->WorkshopCraftOccupiesHands())||
+               !W.World->InjectKey(EKeys::C,IE_Pressed)||!W.World->InjectKey(EKeys::C,IE_Released))return false;
+            TestFalse(TEXT("The crouch input immediately frees both hands"),C->WorkshopCraftOccupiesHands());
+            TestFalse(TEXT("Cancellation restores the normal held-weapon presentation"),W.Hero()->GetViewmodel()->bHiddenInGame);
+            TestTrue(TEXT("Cancellation requires release before another attempt"),C->WorkshopCraftState().WaitRelease);
+            TestEqual(TEXT("Crouching preserves completed work and discards the current unit"),C->TaskProgress().Done,Before);
+            if(!W.Tick(8)||!W.Press(EKeys::C)||!W.Tick(8)||!Milliseconds(W,1800))return false;
+            TestFalse(TEXT("Standing with Interact still held does not restart work"),C->WorkshopCraftOccupiesHands());
+            TestEqual(TEXT("No held time is banked while crouched or standing again"),C->TaskProgress().Done,Before);
+            if(!W.World->InjectKey(EKeys::E,IE_Released)||!W.Tick(1))return false;
+            TestEqual(TEXT("Releasing the cancelled attempt cannot award a unit"),C->TaskProgress().Done,Before);
+            TestEqual(TEXT("Cancellation publishes no successful action clip"),C->WorkshopCraftView().LastAction.Serial,Serial);
+        }
+        for(int Unit=0;Unit<Counts[Step];++Unit)
+        {
+            if(SoraWorkshopCraftRules::Timed(Step)) { if(!Hold(W,Step==0?800:1500))return false; }
+            else if(!W.Press(EKeys::E))return false;
+        }
+    }
+    TestEqual(TEXT("Fresh standing interactions complete the full recipe"),C->ActiveBeat(),9);
     return !HasAnyErrors();
 }
 

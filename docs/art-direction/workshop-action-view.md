@@ -34,6 +34,22 @@ temporary `KitPieces` / `KitActors`, which are still cleared on a beat change.
 Surviving state alone is not proof that final inspection is visible. ROOT owns
 that integration; Claude owns authored paws, contact poses and clips.
 
+Workshop interactions require standing: both an actual crouch and a pending
+crouch request refuse every recipe step. A mapped crouch request cancels a
+timed action immediately, before the movement tick; no unit is awarded, earlier
+completed units remain, and the cancelled attempt must be released before a
+fresh standing interaction. A stand request alone does not grant reach while
+the capsule remains crouched. A refused crouched interaction tells the player
+to stand up to reach the bench.
+
+The presenter must also stop when this posture becomes invalid, including a
+recent completion clip. It must consume that clip's serial when abandoning it,
+so standing again does not replay old work. The historical `LastAction` record
+is not erased by a posture change. Standing is a necessary condition; world
+contact, player position, reach and view checks remain separate requirements.
+The [standing-reach source checkpoint](../qualification/workshop-standing-reach-2026-10-27.md)
+adds runtime input coverage for all six steps; its native run is pending.
+
 No workshop craft paw assets or presenter are integrated by this interface.
 The [station-lifetime and continuous-exit follow-up](../qualification/workshop-lifetime-2026-10-27.md)
 passes all 70 selected native cases at signed `94eb18bb`, including the mapped

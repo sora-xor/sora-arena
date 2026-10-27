@@ -2162,7 +2162,12 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
             const double Feet=Player.GetActorLocation().Z-Player.GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
             if(!Player.GetCharacterMovement()->IsMovingOnGround()||FMath::Abs(Feet-Space.FloorAt(At))>8.)break;
         }
-        if(IsWorkshopCraft()&&!AtWorkshopStation())break;
+        if(IsWorkshopCraft()&&!AtWorkshopStation())
+        {
+            if(Player.IsCrouched()||Player.GetCharacterMovement()->bWantsToCrouch)
+                Notify(TEXT("立って作業台に手を伸ばそう。"),TEXT("Stand up to reach the workbench."),3.f);
+            break;
+        }
         if(BeginWorkshopCraft())return;
         if(SoraRhythmRules::Supported(TaskState,Task)) { WorkPlayerRhythm(); return; }
         const EStroke Struck=SoraBeatRules::Stroke(TaskState,Task);

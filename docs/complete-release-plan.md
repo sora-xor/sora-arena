@@ -34,6 +34,12 @@ All 32 ledger/notices tests, output freshness and source content/font coverage
 pass. Native font selection, menu navigation, rendered layout and packaged
 staging verification remain pending while Claude owns the engine lane.
 
+The [standing-workshop source change](qualification/workshop-standing-reach-2026-10-27.md)
+refuses crouched craft actions and cancels a held unit on crouch without losing
+completed work. It adds mapped-input coverage across all six recipe steps.
+Twenty-two compiled workshop source tests and content validation pass; the
+new Unreal test and visual contact remain unverified until the lane returns.
+
 ## October 27 workshop action interface
 
 The [action-view checkpoint](qualification/workshop-action-view-2026-10-27.md)
