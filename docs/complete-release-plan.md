@@ -24,10 +24,14 @@ or final art. Root verifies all 30 corrected workshop capture originals and
 visually reviews five: materials improve, but production adoption stays open.
 
 Published `98e881be` passes all 125 source CI gates in authenticated run
-`40442943753`; tested merge `c326f6f2` has the identical tree. The next isolated
-source change makes workshop stations persist across tasks and retains the
-player's place after inspection, with a mapped walked exit and retry checks.
-Its Unreal validation is pending; it is not covered by the prior pass.
+`40442943753`; tested merge `c326f6f2` has the identical tree. The subsequent
+[station-lifetime checkpoint](qualification/workshop-lifetime-2026-10-27.md)
+keeps four benches after completion and preserves the player's position and
+camera. Signed `94eb18bb` builds and passes all 70 selected native cases,
+including the mapped workshop exit, component identity, retry and the full
+assisted campaign, with zero selected errors/warnings. The first 69/70 run
+is retained; its campaign fixture still expected the removed travel cut and
+now walks the connecting route. New source CI follows publication.
 
 ## October 27 physical ladders
 

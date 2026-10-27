@@ -35,5 +35,6 @@ Surviving state alone is not proof that final inspection is visible. ROOT owns
 that integration; Claude owns authored paws, contact poses and clips.
 
 No workshop craft paw assets or presenter are integrated by this interface.
-The station-lifetime and continuous-exit follow-up is pending native validation;
-the earlier 70-case pass does not qualify that follow-up.
+The [station-lifetime and continuous-exit follow-up](../qualification/workshop-lifetime-2026-10-27.md)
+passes all 70 selected native cases at signed `94eb18bb`, including the mapped
+exit and death/retry checks. This does not qualify visible contact or final art.
