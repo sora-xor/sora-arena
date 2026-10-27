@@ -838,6 +838,9 @@ def check_fieldcraft_sets(beat, record, index, zones, craft, area, on_floor):
                     f"{what}: cook-fire {fire['id']} stands outside the hold")
     for ladder in craft["ladders"]:
         area(ladder["roof"], f"roof of {ladder['id']}")
+        base = ladder.get("base_height_cm", 0)
+        require(type(base) is int and 0 <= base < ladder["height_cm"],
+                f"{what}: ladder {ladder['id']} base must be below its roof")
         on_floor(index, ladder["foot"], f"{what} ladder {ladder['id']}", 0)
         if ladder["straw"]:
             on_floor(index, ladder["straw"]["center"], f"{what} straw by {ladder['id']}", 0)
@@ -1525,6 +1528,16 @@ def self_test(catalog, campaign, chapters, legacy, roster):
     def drop_heard_past_the_rules(data):
         space(data, 2, "ch03.b03")["fieldcraft"]["ladders"][0]["drop_noise_cm"] = 10 * LANDING_NOISE_CM + 1
 
+    def ladder_base_above_roof(data):
+        ladder = space(data, 2, "ch03.b10")["fieldcraft"]["ladders"][0]
+        ladder["base_height_cm"] = ladder["height_cm"]
+
+    def ladder_base_below_street(data):
+        space(data, 2, "ch03.b10")["fieldcraft"]["ladders"][0]["base_height_cm"] = -1
+
+    def ladder_base_wrong_type(data):
+        space(data, 2, "ch03.b10")["fieldcraft"]["ladders"][0]["base_height_cm"] = True
+
     def fire_outside_the_hold(data):
         fire = space(data, 2, "ch03.b14")["fieldcraft"]["fires"]["points"][0]
         fire["at"] = [fire["at"][0] - 600, fire["at"][1]]
@@ -1565,6 +1578,7 @@ def self_test(catalog, campaign, chapters, legacy, roster):
                  lamp_in_wall, terminal_glow_snuffable, terminal_glow_short_radius, terminal_glow_missing,
                  climb_around_the_face, ally_joins_no_wave, party_without_escort, volley_rank_short,
                  net_wave_without_drones, netters_beyond_the_wave, crossing_off_the_road, drop_heard_past_the_rules,
+                 ladder_base_above_roof, ladder_base_below_street, ladder_base_wrong_type,
                  fire_outside_the_hold, stakes_out_of_order,
                  copies_without_desks, copies_one_desk_repeated, copies_shortened, copies_ignore_guards)
     for mutate in mutations:

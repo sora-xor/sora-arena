@@ -144,4 +144,75 @@ bool FSoraLadderCollisionTest::RunTest(const FString&)
     AddInfo(TEXT("Directed ladder collision and interruption evidence. Roof architecture, ordinary route play and visual acceptance remain separate."));
     return !HasAnyErrors();
 }
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraElevatedLadderTest, "SoraArena.Fieldcraft.ElevatedLadder",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::ClientContext | EAutomationTestFlags::EngineFilter)
+bool FSoraElevatedLadderTest::RunTest(const FString&)
+{
+    using namespace SoraLadderTest;
+    if (!FSoraCatalog::Get().Load()) return false;
+    // Keep this local staged definition alive until the world's destruction.
+    FSoraBeat StagedBeat;
+    FBeatWorld W(*this, TEXT("ElevatedLadder"), 2, 9);
+    if (!W.Start() || !Controls(W)) return false;
+    for (TActorIterator<ASoraEnemy> It(W.World->GetTestWorld()); It; ++It) It->Destroy();
+    StagedBeat = W.BeatData();
+    auto& Ladder = StagedBeat.Space.Fieldcraft.Ladders[0];
+    Ladder.BaseHeightCm = 340.f; Ladder.HeightCm = 560.f;
+    auto* Craft = W.Fieldcraft(); auto* Player = W.Hero();
+    Craft->Stage(StagedBeat);
+    const float Half = Player->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+    const FVector Facing = FRotator(0, Ladder.Yaw, 0).Vector();
+    const FVector Foot(Ladder.Foot, Ladder.BaseHeightCm);
+    const FVector Top = Foot + Facing * 150.f + FVector(0, 0, Ladder.RiseCm());
+    const auto Feet = [&]() { return Player->GetActorLocation() - FVector(0, 0, Half); };
+    const auto Finish = [&]()
+    {
+        float Largest = 0;
+        for (int I = 0; I < 400 && Craft->IsOnLadder(); ++I)
+        {
+            const FVector Before = Player->GetActorLocation();
+            if (!W.Tick(1)) return false;
+            Largest = FMath::Max(Largest, float(FVector::Dist(Before, Player->GetActorLocation())));
+        }
+        return TestTrue(TEXT("An elevated flight retains the physical 150 cm/s speed budget"), Largest <= 2.6f);
+    };
+    // Standing directly beneath the flight is not an admission point.
+    Player->SetActorLocation(FVector(Ladder.Foot, Half + 2.f), false, nullptr, ETeleportType::TeleportPhysics);
+    W.Look(FRotator(0, Ladder.Yaw, 0));
+    if (!W.Tick(10)) return false;
+    TestFalse(TEXT("A roof-level ladder cannot be mounted from the street below it"), Craft->Readout(*Player).bAtLadder);
+    AActor* Landing = Block(W, Foot - Facing * 100.f - FVector(0, 0, 10), FVector(160, 200, 10));
+    if (!TestNotNull(TEXT("The elevated foot has a solid lower landing"), Landing)) return false;
+    // The initial upper-level fixture is placed once. Every ascent/descent,
+    // interruption and retry below is ordinary mapped input and swept motion.
+    Player->SetActorLocation(Foot - Facing * 100.f + FVector(0, 0, Half + 2.f), false, nullptr, ETeleportType::TeleportPhysics);
+    Player->GetCharacterMovement()->SetMovementMode(MOVE_Falling);
+    if (!W.Tick(10) || !W.Press(EKeys::Escape) ||
+        !Player->RemapCombatAction(TEXT("Jump"), EKeys::J) || !W.Press(EKeys::Escape)) return false;
+    TestTrue(TEXT("The supported elevated approach advertises the flight"), Craft->Readout(*Player).bAtLadder);
+    if (!W.Press(EKeys::J) || !W.Tick(30) || !W.Press(EKeys::Escape)) return false;
+    const FVector Paused = Player->GetActorLocation();
+    if (!W.Tick(120)) return false;
+    TestTrue(TEXT("Pause preserves the real elevated climbing position"), Player->GetActorLocation().Equals(Paused, .1f));
+    if (!W.Press(EKeys::Escape) || !Finish() || !W.Tick(5)) return false;
+    TestTrue(TEXT("The 2.2 m flight reaches the 5.6 m roof, not base plus absolute height"),
+        !Craft->IsOnLadder() && Player->GetCharacterMovement()->IsMovingOnGround() && FVector::Dist(Feet(), Top) < 5.f);
+    W.Look(FRotator(0, Ladder.Yaw + 180.f, 0));
+    if (!W.Press(EKeys::J) || !Finish() || !W.Tick(5)) return false;
+    TestTrue(TEXT("The reverse flight stops on the 3.4 m landing, not at street level"),
+        !Craft->IsOnLadder() && Player->GetCharacterMovement()->IsMovingOnGround() && FVector::Dist(Feet(), Foot) < 5.f);
+    W.Look(FRotator(0, Ladder.Yaw, 0));
+    if (!W.Press(EKeys::J) || !Finish() || !W.Tick(5)) return false;
+    W.Look(FRotator(0, Ladder.Yaw + 180.f, 0));
+    Landing->SetActorEnableCollision(false);
+    if (!W.Press(EKeys::J) || !Finish()) return false;
+    TestTrue(TEXT("A removed lower landing does not award a descent or drop to the street"),
+        Craft->IsOnLadder() && FVector::Dist(Feet(), Foot) < 5.f && W.Count(*(TEXT("ladder_foot:") + Ladder.Id)) == 1);
+    Landing->SetActorEnableCollision(true);
+    if (!Finish() || !W.Tick(5)) return false;
+    TestTrue(TEXT("Restored lower support completes the held descent exactly once"),
+        !Craft->IsOnLadder() && W.Count(*(TEXT("ladder_foot:") + Ladder.Id)) == 2);
+    AddInfo(TEXT("Directed elevated-flight fixture; the authored multi-stage roof route and ordinary route play remain separate."));
+    return !HasAnyErrors();
+}
 #endif

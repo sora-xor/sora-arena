@@ -782,6 +782,11 @@ def _ladders(beat, layout, fail):
         rows.append({"id": entry["id"], "foot": foot, "yaw": 0, "roof": roof,
                      "height_cm": _whole(entry["height_cm"], where, fail),
                      "drop_noise_cm": _whole(entry["drop_noise_cm"], where, fail), "straw": straw, "guards": posted})
+        if "base_height_cm" in entry:
+            base = entry["base_height_cm"]
+            if type(base) is not int or not 0 <= base < rows[-1]["height_cm"]:
+                fail(where, "ladder base must be a nonnegative integer below its roof")
+            rows[-1]["base_height_cm"] = base
     return rows
 
 

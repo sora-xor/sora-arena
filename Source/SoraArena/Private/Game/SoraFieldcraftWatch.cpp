@@ -140,13 +140,13 @@ void USoraFieldcraft::StageWatch()
                 FVector(Layout::RoofPostCm / 100.f, Layout::RoofPostCm / 100.f, (Ladder.HeightCm - Layout::RoofSlabCm) / 100.f),
                 FLinearColor(.5f, .4f, .31f), true, Layout::Timber);
         // Two rails and the rungs between them, leaning on the roof's edge.
-        const FVector Foot(Ladder.Foot, 0.f);
+        const FVector Foot(Ladder.Foot, Ladder.BaseHeightCm);
         const FRotator Facing(0.f, Ladder.Yaw, 0.f);
         for (const float Side : {-24.f, 24.f})
             Piece(TEXT("LadderRail_") + Ladder.Id, Layout::Cube, Foot + FRotator(0.f, Ladder.Yaw + 90.f, 0.f).Vector() * Side + Facing.Vector() * 35.f +
-                FVector(0.f, 0.f, Ladder.HeightCm * .5f), FVector(.05f, .05f, Ladder.HeightCm / 100.f), FLinearColor(.8f, .68f, .52f), false,
+                FVector(0.f, 0.f, Ladder.RiseCm() * .5f), FVector(.05f, .05f, Ladder.RiseCm() / 100.f), FLinearColor(.8f, .68f, .52f), false,
                 Layout::Timber);
-        for (float Rung = 30.f; Rung < Ladder.HeightCm; Rung += 35.f)
+        for (float Rung = 30.f; Rung < Ladder.RiseCm(); Rung += 35.f)
             Piece(TEXT("LadderRung_") + Ladder.Id, Layout::Cube, Foot + Facing.Vector() * 35.f + FVector(0.f, 0.f, Rung),
                 FRotator(0.f, Ladder.Yaw + 90.f, 0.f).Vector().GetAbs() * .5f + FVector(.04f, .04f, .03f), FLinearColor(.8f, .68f, .52f), false,
                 Layout::Timber);
@@ -356,8 +356,14 @@ void USoraFieldcraft::TickFires()
 int32 USoraFieldcraft::RoofAt(const FVector& Location) const
 {
     if (!Staged) return INDEX_NONE;
-    return Staged->Ladders.IndexOfByPredicate([&](const FSoraLadder& Ladder)
-        { return Ladder.Roof.Contains(Location) && Location.Z > Ladder.HeightCm; });
+    int32 Found = INDEX_NONE;
+    for (int32 Index = 0; Index < Staged->Ladders.Num(); ++Index)
+    {
+        const auto& Ladder = Staged->Ladders[Index];
+        if (Ladder.Roof.Contains(Location) && Location.Z > Ladder.HeightCm &&
+            (Found == INDEX_NONE || Ladder.HeightCm > Staged->Ladders[Found].HeightCm)) Found = Index;
+    }
+    return Found;
 }
 
 bool USoraFieldcraft::IsOnRoof(const FVector& Location) const
@@ -376,9 +382,9 @@ int32 USoraFieldcraft::AtLadder(const ASoraPlayerCharacter& Player, bool& bUp) c
     {
         const FSoraLadder& Ladder = Staged->Ladders[Index];
         const FVector Facing = FRotator(0.f, Ladder.Yaw, 0.f).Vector();
-        const FVector Foot(Ladder.Foot, 0.f);
+        const FVector Foot(Ladder.Foot, Ladder.BaseHeightCm);
         const FVector Top = Foot + Facing * Layout::LadderStepOntoCm;
-        bUp = FMath::Abs(FeetZ) < 15.f && FVector::Dist2D(At, Foot) < Layout::LadderReachCm &&
+        bUp = FMath::Abs(FeetZ - Ladder.BaseHeightCm) < 15.f && FVector::Dist2D(At, Foot) < Layout::LadderReachCm &&
             FVector::DotProduct(Forward, Facing) > .5f;
         const bool bDown = FMath::Abs(FeetZ - Ladder.HeightCm) < 15.f && Ladder.Roof.Contains(At) &&
             FVector::Dist2D(At, Top) < Layout::LadderReachCm && FVector::DotProduct(Forward, Facing) < -.5f;
@@ -415,8 +421,8 @@ bool USoraFieldcraft::LadderJump(ASoraPlayerCharacter& Player)
     const FSoraLadder& Ladder = Staged->Ladders[Index];
     const FVector Facing = FRotator(0.f, Ladder.Yaw, 0.f).Vector();
     const float Clearance = (UCharacterMovementComponent::MIN_FLOOR_DIST + UCharacterMovementComponent::MAX_FLOOR_DIST) * .5f;
-    const FVector Foot(Ladder.Foot, Clearance);
-    const FVector Above = Foot + FVector(0.f, 0.f, Ladder.HeightCm);
+    const FVector Foot(Ladder.Foot, Ladder.BaseHeightCm + Clearance);
+    const FVector Above = Foot + FVector(0.f, 0.f, Ladder.RiseCm());
     const FVector Top = Above + Facing * Layout::LadderStepOntoCm;
     // Approach, vertical climb and step onto the roof all share one speed
     // budget. Descending follows the same route in reverse, outside the slab.

@@ -420,7 +420,11 @@ struct FSoraLadder
     FVector2D Foot = FVector2D::ZeroVector;
     float Yaw = 0.f;
     FSoraVolume Roof;
+    // Absolute floor elevations. Existing ladders start at street level;
+    // a second flight can begin on a supported roof or landing.
+    float BaseHeightCm = 0.f;
     float HeightCm = 0.f;
+    float RiseCm() const { return HeightCm - BaseHeightCm; }
     int32 DropNoiseCm = 0;
     bool bStraw = false;
     FSoraVolume Straw;

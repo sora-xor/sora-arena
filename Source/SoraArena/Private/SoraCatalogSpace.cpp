@@ -424,7 +424,7 @@ bool SpaceReadFieldcraftSets(const FJsonObject& O, const FSoraBeat& Beat, FSoraF
     for (const auto& Row : *LadderRows)
     {
         const auto L = Row.IsValid() ? Row->AsObject() : nullptr;
-        FSoraLadder Ladder; int32 Yaw = 0, Height = 0;
+        FSoraLadder Ladder; int32 Yaw = 0, Height = 0, BaseHeight = 0;
         const TSharedPtr<FJsonObject> Roof = L ? Child(*L, TEXT("roof")) : nullptr;
         if (!L || !Roof || !Str(*L, TEXT("id"), Ladder.Id) || !SpacePoint(L->TryGetField(TEXT("foot")), Ladder.Foot) ||
             !Int(*L, TEXT("yaw"), Yaw) || !SpaceArea(*Roof, Ladder.Roof) || !Int(*L, TEXT("height_cm"), Height) || Height <= 0 ||
@@ -432,6 +432,8 @@ bool SpaceReadFieldcraftSets(const FJsonObject& O, const FSoraBeat& Beat, FSoraF
             Ladder.DropNoiseCm > 10 * SoraStealthRules::NoiseRadiusCm(SoraStealthRules::ENoise::Landing) || !L->HasField(TEXT("straw")) ||
             !SpaceInts(Rows(*L, TEXT("guards")), Ladder.Guards))
             return false;
+        if ((L->HasField(TEXT("base_height_cm")) && !Int(*L, TEXT("base_height_cm"), BaseHeight)) ||
+            BaseHeight < 0 || BaseHeight >= Height) return false;
         Ladder.bStraw = !IsNull(*L, TEXT("straw"));
         if (Ladder.bStraw)
         {
@@ -441,6 +443,7 @@ bool SpaceReadFieldcraftSets(const FJsonObject& O, const FSoraBeat& Beat, FSoraF
         for (const int32 Guard : Ladder.Guards)
             if (Guard < 0 || Guard >= Beat.Guards.Num()) return false;
         Ladder.Yaw = static_cast<float>(Yaw); Ladder.HeightCm = static_cast<float>(Height);
+        Ladder.BaseHeightCm = static_cast<float>(BaseHeight);
         F.Ladders.Add(MoveTemp(Ladder));
     }
     F.bCharge = !IsNull(O, TEXT("charge"));
