@@ -51,6 +51,29 @@ The [standing-reach source checkpoint](../qualification/workshop-standing-reach-
 passes its all-six-step mapped-input case within the 42-case native run at
 `558df255`. Working-region/yaw admission and visible paw contact remain open.
 
+The next authored presentation uses physical sheet placement and brush contact
+(Coordination 268; design approved, implementation and visual proof pending).
+The earlier height-only panel reveal and whole-lantern oil mask are withdrawn:
+a measured 41–47° brush footprint cannot apply a 98° panel-wide pass or a 360°
+coat. The left paw places a complete sheet against the frame; the right paw
+brushes its overlap/seam. Paper coverage follows the sheet geometry, and
+adhesive/wetness changes follow the swept bristles.
+
+The oil station presents a prepared batch workpiece with an accessible remaining
+swath. Its existing coat is visible before work. The 1.5-second unit finishes
+that swath through actual contact; it does not newly coat the entire lantern.
+This is a representative finishing action within the compressed forty-lantern
+batch. The authored spec and captures must state that scope and show preparation,
+held work, completion, cancellation and retry. Accounting, recipe units and
+input timing remain unchanged; implausible timing must be reported for review.
+
+A supported tilting cradle or a different supported oil posture is permitted.
+Its support, workpiece, brush, both paws and collision proxy must fit together
+throughout the usable working region, including its boundaries and yaw extremes.
+Actual rim-line contact must remain reachable and visible at 16:9 and 21:9;
+moving a marker or changing a mask does not repair hidden contact. These are
+requirements for the pending layout, not evidence that it passes.
+
 No workshop craft paw assets or presenter are integrated by this interface.
 The [station-lifetime and continuous-exit follow-up](../qualification/workshop-lifetime-2026-10-27.md)
 passes all 70 selected native cases at signed `94eb18bb`, including the mapped
