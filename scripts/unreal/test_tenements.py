@@ -179,6 +179,9 @@ class TenementTests(unittest.TestCase):
         self.assertNotIn([-500,-680],self.native['kept_cover'])
         self.assertNotIn([-500,680],self.native['kept_cover'])
         boxes=self.solids+self.native['notice_solids']+self.native['north_walls']+self.native['street_walls']+self.native['workshop_solids']
+        self.assertEqual(self.native['kept_lanterns'],[0,1,3,4,5,6,8,9])
+        boxes += [[-2250+(i%5)*1125,(-1 if i<5 else 1)*470,175,14,14,350,0,1]
+                  for i in self.native['kept_lanterns']]
         boxes += [[x,y,70,230,180,140,0,1] for x,y in self.native['kept_cover']]
         # The generic row's foundations are wider than its walls. The side
         # passage splits its northwest house; that house is away from these
@@ -194,6 +197,9 @@ class TenementTests(unittest.TestCase):
                     abs(point[0]-b[0])<=b[3]/2 and abs(point[1]-b[1])<=b[4]/2 and b[2]+b[5]/2==0
                     for b in floors),('unsupported ground route',point))
                 for box in boxes:self.assertFalse(self.hits(box,point),(point,box))
+        for point in self.sample([[0,-2000,2.15],[0,3800,2.15]],step=10):
+            for box in boxes:self.assertFalse(self.hits(box,point),(point,box))
+        self.assertTrue(self.hits([0,-470,175,14,14,350,0,1],[0,-470,2.15]))
         self.assertEqual((min(p[1] for p in square.P2),max(p[1] for p in square.P2)),(-2000,3800))
         # The pre-change house and solid boundary wall would fail this test.
         self.assertTrue(self.hits([0,1200,24,685,735,48,0,2],[0,1200,2.15]))

@@ -7,6 +7,7 @@ namespace SoraNoticeSquareRules
 constexpr int WestTurnaround=-4000,EastTurnaround=4000;
 constexpr int NorthStub=3800,SouthStub=-2000;
 constexpr bool KeepLegacyHouse(int Index){return Index!=2;}
+constexpr bool KeepLegacyLantern(int Index){return Index%5!=2;}
 constexpr bool KeepLegacyCover(double X,double Y)
 {return X<-900||X>900||Y<-700||Y>700;}
 // The hub stops at x=3200, while the workshop already extends to x=3700

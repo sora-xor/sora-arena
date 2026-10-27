@@ -401,7 +401,7 @@ private:
     bool ImportedProp(const FString& Name, FVector Location, FRotator Rotation, float Scale = 1.f);
     void Torii(FVector Location, float Yaw);
     void ProductionSites(int32 MapId, FLinearColor Accent);
-    void Lanterns(bool bLanternWorkshop=false);
+    void Lanterns(bool bLanternWorkshop=false,bool bNoticeSquare=false);
     void ClearArena();
     // Sun, sky, fog and grade per map (SoraWorldBuilderLighting.cpp).
     void Lighting(int32 MapId);

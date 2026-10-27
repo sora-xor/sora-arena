@@ -116,6 +116,9 @@ int main()
     std::cout<<"],\"kept_houses\":[";Comma=false;
     for(int I=0;I<5;++I)if(SoraNoticeSquareRules::KeepLegacyHouse(I))
     {if(Comma)std::cout<<',';Comma=true;std::cout<<I;}
+    std::cout<<"],\"kept_lanterns\":[";Comma=false;
+    for(int I=0;I<10;++I)if(SoraNoticeSquareRules::KeepLegacyLantern(I))
+    {if(Comma)std::cout<<',';Comma=true;std::cout<<I;}
     std::cout<<"],\"kept_cover\":[";Comma=false;
     for(int I=0;I<12;++I)
     {

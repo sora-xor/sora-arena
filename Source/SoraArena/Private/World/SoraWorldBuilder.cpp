@@ -314,7 +314,7 @@ void ASoraWorldBuilder::BuildArena(int32 MapId,bool bSites,bool bTenements,bool 
                 FLinearColor(.30f,.22f,.12f),true);
         }
     }
-    Lanterns(bLanternWorkshop&&MapId==1);
+    Lanterns(bLanternWorkshop&&MapId==1,NoticeSquare);
     Lighting(MapId);
 }
 void ASoraWorldBuilder::ProductionSites(int32 MapId,FLinearColor Accent)
@@ -377,11 +377,14 @@ void ASoraWorldBuilder::SiteStructure(int32 I,FVector P,const FString& Kind,int3
         }
     }
 }
-void ASoraWorldBuilder::Lanterns(bool bLanternWorkshop)
+void ASoraWorldBuilder::Lanterns(bool bLanternWorkshop,bool bNoticeSquare)
 {
     for(int32 I=0;I<10;++I)
     {
         if(bLanternWorkshop&&I==4)continue;
+        // The repeated arena row puts two poles in the north-south street.
+        // The campaign's licensed corner lamps remain in its fieldcraft set.
+        if(bNoticeSquare&&!SoraNoticeSquareRules::KeepLegacyLantern(I))continue;
         FVector P(-2250+(I%5)*1125,(I<5?-1:1)*470,0);
         const bool HasAuthoredLantern=ImportedProp(TEXT("SM_Edo_LanternPost"),P,FRotator::ZeroRotator);
         if(HasAuthoredLantern)
