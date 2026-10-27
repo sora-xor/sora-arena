@@ -580,6 +580,11 @@ private:
     FSoraMillisecondClock WorkshopCraftClock;
     unsigned WorkshopFailedStripSerial=0;
     int32 WorkshopFailedStripMs=-1;
+    SoraWorkshopCraftRules::FAction WorkshopLastAction;
+    FSoraMillisecondClock WorkshopActionClock;
+    void RecordWorkshopAction(int32 Step,int32 Unit);
+    void ResetWorkshopAction();
+    void TickWorkshopAction(float DeltaSeconds);
     bool AtWorkshopStation() const;
     bool BeginWorkshopCraft();
     void TickWorkshopCraft(float DeltaSeconds);

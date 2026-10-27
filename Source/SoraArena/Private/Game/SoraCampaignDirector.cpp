@@ -323,6 +323,7 @@ bool USoraCampaignDirector::LoadSave()
 }
 void USoraCampaignDirector::ResetRound()
 {
+    ResetWorkshopAction();
     Relay={};RelayClock.Reset();RelayCatchAgeMs=0;
     ResetWind();
     BulkheadHold={}; BulkheadClock.Reset();
@@ -451,6 +452,10 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     ASoraGameMode& M=Mode();
     const FSoraChapter& Chapter=*ActiveChapter();
     const FSoraBeat& Beat=Chapter.Beats[Index];
+    // Final inspection credits output immediately. Its read-only clip record
+    // may outlive that normal beat change, but never a retry or another beat.
+    const bool bKeepWorkshopAction=!bResumed&&IsWorkshopCraft()&&Beat.Id==TEXT("ch03.b10");
+    if(!bKeepWorkshopAction)ResetWorkshopAction();
     if(Save) Save->WoodJunction=false;
     // Consecutive lesson duels keep their pupil on the floor; any other
     // change of beat clears the field.
@@ -707,6 +712,7 @@ void USoraCampaignDirector::TickComponent(float DeltaTime,ELevelTick TickType,FA
     TickPlayerCrank(0);
     if(!PlayerRhythmEligible()&&(RhythmClock.Step>=0||RhythmInput.Active)) StopPlayerRhythm(true);
     if(!Beat||!Save||M.bDeterministicPractice||M.bMenu||M.bDefeated||M.bChapterComplete) return;
+    if(M.IsPlaying())TickWorkshopAction(DeltaTime);
     if(Task.Goal==SoraBeatRules::EGoal::Elapsed)
     {
         UpdateCinematicCamera();
@@ -1488,6 +1494,7 @@ bool USoraCampaignDirector::AwaitingCapture() const
 }
 void USoraCampaignDirector::ClearEncounter()
 {
+    ResetWorkshopAction();
     CancelWorkshopCraft();
     CancelTerminalWork();TerminalCharge={};TerminalFuseClock.Reset();WorkshopCraft={};
     WorkshopFailedStripSerial=0;WorkshopFailedStripMs=-1;
@@ -2166,7 +2173,11 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
             Notify(TEXT("調子が外れた。拍に合わせて、もう一度。"),TEXT("Off the beat. Find the rhythm and strike again."),3.f);
         }
         else if(bWorked)
-            Fire(FString::Printf(TEXT("step_complete:%s:%d"),*Beat->StepKinds[Step],Struck==EStroke::Counted?TaskState.StepDone:Task.Steps[Step].Count));
+        {
+            const int Unit=Struck==EStroke::Counted?TaskState.StepDone:Task.Steps[Step].Count;
+            RecordWorkshopAction(Step,Unit);
+            Fire(FString::Printf(TEXT("step_complete:%s:%d"),*Beat->StepKinds[Step],Unit));
+        }
         if(Struck==EStroke::StepDone) Fire(TEXT("step_start:")+Beat->StepKinds[TaskState.Step]);
         if(Struck==EStroke::Finished) Fire(TEXT("output_complete"));
         break;

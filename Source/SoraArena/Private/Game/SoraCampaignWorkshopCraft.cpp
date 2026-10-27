@@ -24,12 +24,30 @@ SoraWorkshopCraftRules::FView USoraCampaignDirector::WorkshopCraftView() const
     for(int I=0;I<6;++I)
         V.Committed[I]=V.RecipeComplete?Recipe.Steps[I].Count:
             I<TaskState.Step?Task.Steps[I].Count:I==TaskState.Step?TaskState.StepDone:0;
+    V.LastAction=WorkshopLastAction;
     if(!V.Active)return V;
     V.Step=TaskState.Step;V.Assist=Mode().Settings()&&Mode().Settings()->RhythmAssist();
     V.HeldStep=WorkshopCraft.Step;V.HeldMs=WorkshopCraft.ElapsedMs;
     V.FailedStripSerial=WorkshopFailedStripSerial;
     V.FailedStripAgeMs=WorkshopFailedStripMs>=0?FMath::Max(0,TaskState.ElapsedMs-WorkshopFailedStripMs):-1;
     return V;
+}
+void USoraCampaignDirector::RecordWorkshopAction(int32 Step,int32 Unit)
+{
+    if(!IsWorkshopCraft())return;
+    ++WorkshopLastAction.Serial;
+    WorkshopLastAction.Step=Step;WorkshopLastAction.Unit=Unit;WorkshopLastAction.AgeMs=0;
+    WorkshopActionClock.Reset();
+}
+void USoraCampaignDirector::ResetWorkshopAction()
+{
+    WorkshopLastAction={};WorkshopActionClock.Reset();
+}
+void USoraCampaignDirector::TickWorkshopAction(float DeltaSeconds)
+{
+    constexpr int Limit=SoraWorkshopCraftRules::ActionPresentationMs;
+    if(WorkshopLastAction.AgeMs<0||WorkshopLastAction.AgeMs>=Limit)return;
+    WorkshopLastAction.AgeMs+=FMath::Min(WorkshopActionClock.Advance(DeltaSeconds),Limit-WorkshopLastAction.AgeMs);
 }
 bool USoraCampaignDirector::AtWorkshopStation() const
 {
@@ -111,7 +129,9 @@ void USoraCampaignDirector::ResolveWorkshopCraft(int32 Step,SoraWorkshopCraftRul
     if(Result!=R::EResult::Passed)return;
     const int Before=SoraBeatRules::ProgressPermille(TaskState,Task),DoneBefore=TaskState.Done;
     const auto Struck=SoraBeatRules::CreditStroke(TaskState,Task);if(Struck==EStroke::Refused)return;
-    Fire(FString::Printf(TEXT("step_complete:%s:%d"),*Kind,Struck==EStroke::Counted?TaskState.StepDone:Task.Steps[Step].Count));
+    const int Unit=Struck==EStroke::Counted?TaskState.StepDone:Task.Steps[Step].Count;
+    RecordWorkshopAction(Step,Unit);
+    Fire(FString::Printf(TEXT("step_complete:%s:%d"),*Kind,Unit));
     if(!ActiveBeatData()||ActiveBeatData()->Id!=Id)return;
     if(Struck==EStroke::StepDone)Fire(TEXT("step_start:")+Beat->StepKinds[TaskState.Step]);
     if(Struck==EStroke::Finished)Fire(TEXT("output_complete"));

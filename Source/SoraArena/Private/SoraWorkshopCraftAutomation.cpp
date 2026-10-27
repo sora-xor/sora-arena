@@ -73,11 +73,23 @@ bool Windows(FWorld& W,bool Warm)
     return W.Test.TestEqual(TEXT("The workshop has two window panes"),Panes,2)&&
         W.Test.TestEqual(TEXT("The workshop has two local window lights"),Lights,2);
 }
-bool Registry(FWorld& W)
+bool Action(FWorld& W,unsigned Serial,int Step,int Unit)
+{
+    const auto A=W.Campaign()->WorkshopCraftView().LastAction;
+    return W.Test.TestEqual(TEXT("Exactly one presentation serial per credited unit"),A.Serial,Serial)&&
+        W.Test.TestEqual(TEXT("The action identifies the step that was credited"),A.Step,Step)&&
+        W.Test.TestEqual(TEXT("The action identifies its one-based unit within the step"),A.Unit,Unit)&&
+        W.Test.TestTrue(TEXT("The action has a bounded active-time age"),
+            A.AgeMs>=0&&A.AgeMs<=SoraWorkshopCraftRules::ActionPresentationMs);
+}
+bool Registry(FWorld& W,bool RecentInspection=false)
 {
     const auto V=W.Campaign()->WorkshopCraftView();
     W.Test.TestTrue(TEXT("The saved output presents a complete recipe without a stale held strip"),
         !V.Active&&V.RecipeComplete&&V.HeldStep==-1&&V.HeldMs==0&&V.FailedStripSerial==0&&V.FailedStripAgeMs==-1);
+    if(RecentInspection)Action(W,16,5,1);
+    else W.Test.TestTrue(TEXT("Restoring completed production does not replay a craft action"),
+        V.LastAction.Serial==0&&V.LastAction.Step==-1&&V.LastAction.Unit==0&&V.LastAction.AgeMs==-1);
     const int Counts[]={6,4,1,1,3,1};
     for(int I=0;I<6;++I)W.Test.TestEqual(TEXT("Saved recipe presentation retains each completed station's count"),V.Committed[I],Counts[I]);
     int Rows=0;for(const auto& R:W.Campaign()->RegistryRows())if(R.BeatId==TEXT("ch03.b09"))
@@ -97,16 +109,20 @@ bool FSoraWorkshopCraftReleaseTest::RunTest(const FString&)
     const auto Initial=C->WorkshopCraftView();
     TestTrue(TEXT("A fresh workshop has no old progress or failure animation"),Initial.Active&&!Initial.RecipeComplete&&
         Initial.Step==0&&Initial.Committed[0]==0&&Initial.HeldStep==-1&&Initial.FailedStripSerial==0&&Initial.FailedStripAgeMs==-1);
+    TestTrue(TEXT("A fresh workshop has no committed action to replay"),Initial.LastAction.Serial==0&&
+        Initial.LastAction.Step==-1&&Initial.LastAction.Unit==0&&Initial.LastAction.AgeMs==-1);
     if(!Hold(W,639))return false;
     TestEqual(TEXT("An early release splits the strip without adding a hoop"),C->TaskProgress().Done,0);
     const auto Missed=C->WorkshopCraftView();
     TestTrue(TEXT("A split is published once with active-time age and no held work"),Missed.FailedStripSerial==1&&
         Missed.FailedStripAgeMs>=0&&Missed.Committed[0]==0&&Missed.HeldStep==-1);
+    TestEqual(TEXT("A split publishes no successful action"),Missed.LastAction.Serial,0u);
     if(!Hold(W,640))return false;
     TestEqual(TEXT("The first millisecond in the green band accepts a hoop"),C->TaskProgress().Done,1);
     const auto Passed=C->WorkshopCraftView();
     TestTrue(TEXT("A fresh successful strip clears the old split pose and shows one committed hoop"),
         Passed.Committed[0]==1&&Passed.Committed[1]==0&&Passed.FailedStripSerial==1&&Passed.FailedStripAgeMs==-1);
+    if(!Action(W,1,0,1))return false;
     if(!Hold(W,800))return false;
     TestEqual(TEXT("The authored beat accepts a second hoop"),C->TaskProgress().Done,2);
     if(!Hold(W,961))return false;
@@ -130,6 +146,7 @@ bool FSoraWorkshopCraftReleaseTest::RunTest(const FString&)
     TestEqual(TEXT("Assistance completes the held bend at 800 ms"),C->TaskProgress().Done,4);
     if(!Milliseconds(W,2400))return false;
     TestEqual(TEXT("Assistance never repeats a held press"),C->TaskProgress().Done,4);
+    if(!Action(W,4,0,4))return false;
     if(!W.World->InjectKey(EKeys::E,IE_Released))return false;
     AddInfo(TEXT("Mapped input and active world time at seeded b09. This is mechanical coverage, not a visual or ordinary-play acceptance."));
     return !HasAnyErrors();
@@ -198,19 +215,36 @@ bool FSoraWorkshopCraftRecipeTest::RunTest(const FString&)
             {if(E.bCampaign&&E.ChapterId==2&&E.SiteIndex==1)++Restored;});
         ON_SCOPE_EXIT{Events->OnSiteRestored.Remove(Handle);};
         if(!SixRibs(W)||!Station(W))return false;
-        for(int I=0;I<4;++I)if(!Hold(W,1500))return false;
+        if(!Action(W,6,0,6))return false;
+        for(int I=0;I<4;++I)if(!Hold(W,1500)||!Action(W,7+I,1,I+1))return false;
         if(!TestEqual(TEXT("Four pasted panels lead to rim assembly"),W.Campaign()->TaskProgress().Step,2)||!W.Press(EKeys::E))return false;
+        if(!Action(W,11,2,1))return false;
+        const auto Rim=W.Campaign()->WorkshopCraftView().LastAction;
+        for(int I=0;I<100;++I)(void)W.Campaign()->WorkshopCraftView();
+        TestEqual(TEXT("Reading the action cannot age its presentation"),W.Campaign()->WorkshopCraftView().LastAction.AgeMs,Rim.AgeMs);
+        TestEqual(TEXT("Reading the action cannot credit another unit"),W.Campaign()->TaskProgress().Done,11);
+        if(!W.Press(EKeys::Escape))return false;
+        const int PausedAge=W.Campaign()->WorkshopCraftView().LastAction.AgeMs;
+        if(!W.Tick(120))return false;
+        TestEqual(TEXT("The menu freezes the successful action's age"),W.Campaign()->WorkshopCraftView().LastAction.AgeMs,PausedAge);
+        W.Mode()->ResumePlay();
+        if(!Milliseconds(W,2400))return false;
+        TestEqual(TEXT("An old action saturates at the clip limit"),W.Campaign()->WorkshopCraftView().LastAction.AgeMs,
+            SoraWorkshopCraftRules::ActionPresentationMs);
+        TestEqual(TEXT("Finishing a presentation never credits work"),W.Campaign()->TaskProgress().Done,11);
         if(!TestEqual(TEXT("Rims lead to the oil rack"),W.Campaign()->TaskProgress().Step,3)||!Station(W)||!Hold(W,1500))return false;
+        if(!Action(W,12,3,1))return false;
         if(!TestEqual(TEXT("Oil leads to the separate shell bench"),W.Campaign()->TaskProgress().Step,4))return false;
         // The storehouse wall is within interaction radius of this bench.
         // A same-height inside placement must still fail its visibility ray.
         W.Hero()->SetActorLocation(FVector(2930,-2050,90.15),false,nullptr,ETeleportType::TeleportPhysics);
         if(!W.Tick(8)||!W.Press(EKeys::E))return false;
         TestEqual(TEXT("The shell bench cannot be worked through the storehouse wall"),W.Campaign()->TaskProgress().StepDone,0);
+        if(!Action(W,12,3,1))return false;
         if(!Station(W))return false;
-        for(int I=0;I<3;++I)if(!W.Press(EKeys::E))return false;
+        for(int I=0;I<3;++I)if(!W.Press(EKeys::E)||!Action(W,13+I,4,I+1))return false;
         if(!TestEqual(TEXT("Three shells lead to fuse inspection"),W.Campaign()->TaskProgress().Step,5)||!W.Press(EKeys::E))return false;
-        if(!TestEqual(TEXT("The full recipe enters the next beat"),W.Campaign()->ActiveBeat(),9)||!Registry(W))return false;
+        if(!TestEqual(TEXT("The full recipe enters the next beat"),W.Campaign()->ActiveBeat(),9)||!Registry(W,true))return false;
         TestEqual(TEXT("Completion emits one site restoration event"),Restored,1);
         for(int I=0;I<3000&&!W.Mode()->IsPlaying();++I)if(!W.Tick(1))return false;
         UGameplayStatics::ApplyDamage(W.Hero(),W.Hero()->Health,nullptr,nullptr,UDamageType::StaticClass());

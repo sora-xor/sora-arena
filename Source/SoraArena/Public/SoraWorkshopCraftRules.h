@@ -4,8 +4,14 @@
 namespace SoraWorkshopCraftRules
 {
 constexpr int BendMs=800,BendToleranceMs=160,PasteMs=1500;
+constexpr int ActionPresentationMs=1200;
 enum class EResult { None,Passed,Missed,Cancelled };
 struct FState { int Step=-1,ElapsedMs=0;bool WaitRelease=false; };
+// Latest credited unit, never an animation queue or a source of progress.
+// Step is zero-based; Unit is one-based within that step. Age uses active
+// gameplay time and saturates at ActionPresentationMs (the clip is then over).
+// A reset/reload clears the record; presentation must also reset its cursor.
+struct FAction { unsigned Serial=0;int Step=-1,Unit=0,AgeMs=-1; };
 // Read-only scene/HUD state. Animation consumes these values; it must never
 // advance a hold, credit a step or award the workshop's output.
 struct FView
@@ -14,6 +20,7 @@ struct FView
     int Step=-1,Committed[6]={},HeldStep=-1,HeldMs=0;
     unsigned FailedStripSerial=0;
     int FailedStripAgeMs=-1;
+    FAction LastAction;
 };
 constexpr bool Timed(int Step){return Step==0||Step==1||Step==3;}
 constexpr bool Begin(FState& S,int Step)

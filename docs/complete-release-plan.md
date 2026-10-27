@@ -11,6 +11,18 @@ production. Work runs in isolated worktrees, with a single coordinated Unreal
 and GPU rendering lane. The shared checkout is not a build or render workspace.
 The local coordination mailboxes record current ownership, commits and lane use.
 
+## October 27 physical ladders
+
+The [ladder checkpoint](qualification/ladder-traversal-2026-10-27.md) replaces
+unswept approach/roof snaps with continuous capsule sweeps and a real floor
+support check. Signed `46da7357` builds and passes all 70 selected native tests
+with zero selected errors/warnings, natural EOF and independently verified
+unchanged inputs. The first test compilation failure remains preserved.
+Blocked climb/descent, missing roof support, pause, crouch, release, injury and
+retry are covered. This does not complete the authored roof route, animation,
+ordinary play or release acceptance. The next workshop action interface is
+specified in [its presentation contract](art-direction/workshop-action-view.md).
+
 ## October 27 notice-square ground routes
 
 The [ground-route checkpoint](qualification/notice-square-ground-routes-2026-10-27.md) opens the crossing's north–south street and adds its missing north/east floor. Five ground guards use physical arrival-gated schedules with authored periods and paired phase offsets; the conscripts retain the full −20 m / +38 m extent and the blade patrol reaches ±40 m. P1's clearance detour remains distinct from the authored control rectangle. Signed `943c57a4` builds and passes all **66 selected native tests**, with zero selected errors/warnings, including the assisted eight-chapter, 126-beat campaign. Independent review verifies exact selection, natural EOF and all original evidence. Two earlier failed runs exposed workshop/street wall conflicts, a seal-cut fixture overlap and legacy lantern poles in the reopened street; all are repaired and the failures retained. The source checks pass at their recorded revisions (88 gates, then affected 44 and 20 unit tests). The marksman roof, drone circuit, squeeze, final environment and ordinary play remain open.
