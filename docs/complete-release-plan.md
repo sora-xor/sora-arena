@@ -11,6 +11,18 @@ production. Work runs in isolated worktrees, with a single coordinated Unreal
 and GPU rendering lane. The shared checkout is not a build or render workspace.
 The local coordination mailboxes record current ownership, commits and lane use.
 
+## October 27 workshop action interface
+
+The [action-view checkpoint](qualification/workshop-action-view-2026-10-27.md)
+provides the successful unit's serial, step, unit and bounded active-time age
+for Claude's craft clips. Signed `904b1cc5` passes all 22 compiled workshop
+source tests, builds, and passes all 70 selected native cases with zero
+selected errors/warnings. Exact selection, original evidence, natural EOF and
+unchanged inputs verify. A prepared-run omission failed before any engine
+launch; its log is preserved. The interface does not deliver the paw presenter
+or final art. Root verifies all 30 corrected workshop capture originals and
+visually reviews five: materials improve, but production adoption stays open.
+
 ## October 27 physical ladders
 
 The [ladder checkpoint](qualification/ladder-traversal-2026-10-27.md) replaces
@@ -20,7 +32,7 @@ with zero selected errors/warnings, natural EOF and independently verified
 unchanged inputs. The first test compilation failure remains preserved.
 Blocked climb/descent, missing roof support, pause, crouch, release, injury and
 retry are covered. This does not complete the authored roof route, animation,
-ordinary play or release acceptance. The next workshop action interface is
+ordinary play or release acceptance. The workshop action interface is
 specified in [its presentation contract](art-direction/workshop-action-view.md).
 
 ## October 27 notice-square ground routes
