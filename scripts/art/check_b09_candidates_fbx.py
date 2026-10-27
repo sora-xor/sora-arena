@@ -9,6 +9,8 @@ For each of b09_workshop_craft.candidates(), the build's manifest.json must list
 - hold the module's triangles, in order, with each winding reversed, as Blender holds them (the Y flip mirrors);
 - carry two UV layers, UV0 and Reveal, equal at every triangle corner to box_uv and reveal_uv within TOL_UV;
 - give every triangle its slot's material;
+- keep every triangle through Unreal's build: none with two corners within THRESH_POINTS_ARE_SAME, and no edge under
+  B.MIN_EDGE_CM (s147 lost 128 pole slivers from each shell to that build);
 - face outward: each closed part (its vertices welded by position, every edge shared by two triangles running
   opposite ways) has positive signed volume in the file's own right-handed frame. Open parts (paper, strips) are
   counted, not judged.
@@ -141,6 +143,11 @@ def check_asset(name, mesh, socks, lantern_frame, path, entry):
     if row["winding"] != "the module's, reversed (Blender's)":
         problems.append(f"triangles: {row['winding']}")
         return problems, row
+    ue_mesh = B.Mesh(name, v, tris[:, [0, 2, 1]], mesh.slot)     # as Unreal holds it (the mirror reverses the winding)
+    row["unreal_degenerate"] = int(B.unreal_degenerate(ue_mesh).sum())
+    row["shortest_edge_cm"] = B.shortest_edge(ue_mesh)
+    if row["unreal_degenerate"] or row["shortest_edge_cm"] < B.MIN_EDGE_CM:
+        problems.append(f"{row['unreal_degenerate']} triangles Unreal would drop; shortest edge {row['shortest_edge_cm']:.2e} cm")
     parts = closed_parts(scene["nodes"][name]["vertices"], tris)
     row["parts"] = {"closed": sum(1 for c, _ in parts if c), "open": sum(1 for c, _ in parts if not c),
                     "closed_inward": sum(1 for c, vol in parts if c and vol <= 0.0)}

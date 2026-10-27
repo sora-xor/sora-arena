@@ -71,7 +71,9 @@ INPUTS = {
     # Re-pinned from c1f0b5af to root's 2a846a6a: two files changed, both additively. SoraWorkshopCraftRules.h gained
     # FView; SoraCampaignWorkshopCraft.cpp gained WorkshopCraftView() and the failed-strip bookkeeping. The timing,
     # eligibility and station trace are unchanged. SoraWorldBuilder.h carries FSoraKitView::LanternCraft.
-    "root_commit": "2a846a6a96e40333d37deba028553ac5c62c63d7",
+    # Re-pinned to fcf3ffb5 (Coordination 239): of these files only chapter_03.json changed, for b10's ground routes
+    # in ch03_lantern_ward. The ch03.b09 beat is identical.
+    "root_commit": "fcf3ffb56eb4412f268208021a3970e8dc7bee45",
     "blobs": {
         "Source/SoraArena/Public/SoraLanternWorkshopRules.h": "ee2f3b7772e7754eeb0ba067c9b1843025519184",
         "Source/SoraArena/Public/SoraWorkshopCraftRules.h": "39c36512c2a772c187164d8f1b3547e8ebac2d2b",
@@ -81,7 +83,7 @@ INPUTS = {
         "Source/SoraArena/Private/Characters/SoraCharacterBase.cpp": "3221fa817a15e57d94f0426b202409e8d56289b2",
         "Source/SoraArena/Private/Characters/SoraPlayerCharacter.cpp": "b8e4fb6b25592aae949ab855fe33e7ea33a2039e",
         "docs/campaign/chapter-03.md": "4141dcc335b4ecf24e9d3ad626b55f1325f3647d",
-        "Content/Data/campaign/chapter_03.json": "772154d7963a2e7ef92e90fee5f70051fabbaf35",
+        "Content/Data/campaign/chapter_03.json": "75874ff583570026946b889c31e075dcedd07e79",
         "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/build_record.json": "95f796814125b324f8a5325a92c2b537307d502b",
     },
 }
@@ -96,6 +98,10 @@ FEET_TOL_CM = 8.0
 CAPSULE_R, CAPSULE_HALF = 34.0, 88.0
 EYE = (4.0, 0.0, 64.0)                       # from the capsule's centre, in the hero's facing frame
 RAY_FROM_Z, RAY_TO_Z = 88.0, 110.0           # the station trace: capsule centre -> station point (above the floor)
+# Standing only. AtWorkshopStation starts the trace at the actor's centre and does not forbid crouching, and a crouched
+# capsule's half-height is 44 cm (root, Coordination 236). The ray and proxy proof below covers the standing capsule;
+# crouched and native coverage are root's. clearance() reports a crouched CPU estimate, labelled as one.
+CROUCH_HALF = 44.0
 HEAD_TOP_CM = 195.0                          # feet to ear tips, a conservative head clearance for hanging work
 # The hero's camera draws the world at 94 deg (horizontal, held at every aspect). 70 deg is its first-person field of
 # view, for first-person primitives (the viewmodel) only (SoraPlayerCharacter.cpp). The props here are world meshes.
@@ -272,38 +278,66 @@ def sweep(name, path, slot, radius=None, rect=None, closed=False, segments=8, up
 
 
 def revolve(name, zr, slot, az0=0.0, az1=360.0, n_az=48, cap=False):
-    """A surface of revolution about Z from (z, r) samples, azimuths az0..az1 (deg). Attributes: height fraction (0 at
-    the lowest sample, 1 at the highest) and azimuth fraction across the patch. (It was once 0 at the first sample and
-    1 at the last, which runs to 2e12 on a profile that ends where it began, as a rim's does.)"""
+    """A surface of revolution about Z from (z, r) samples, azimuths az0..az1 (deg).
+
+    A sample on the axis (r = 0) is a pole: one vertex, met by a fan. A ring stands for it only if Unreal would keep
+    the ring's triangles. A 1e-4 cm pole ring has corners 2e-5 cm apart, within THRESH_POINTS_ARE_SAME, so Unreal's
+    build dropped 128 slivers from each shell (s147).
+
+    Attributes: height fraction (0 at the lowest sample, 1 at the highest) and azimuth fraction across the patch (0 at
+    a pole). (It was once 0 at the first sample and 1 at the last, which runs to 2e12 on a profile that ends where it
+    began, as a rim's does.)"""
     zr = np.asarray(zr, float)
+    if (zr[:, 1] < 0).any():
+        raise ValueError(f"{name}: a negative radius")
     full = abs((az1 - az0) - 360.0) < 1e-9
     cols = n_az if full else n_az + 1
     a = np.radians(az0 + (az1 - az0) * np.arange(cols) / n_az)
-    v = np.array([[r * math.cos(t), r * math.sin(t), z] for z, r in zr for t in a])
+    hf_of = (zr[:, 0] - zr[:, 0].min()) / max(np.ptp(zr[:, 0]), 1e-12)
+    v, hf, af, first = [], [], [], []
+    for i, (z, r) in enumerate(zr):
+        first.append(len(v))
+        if r == 0.0:                                             # a pole
+            v.append([0.0, 0.0, z])
+            hf.append(hf_of[i])
+            af.append(0.0)
+        else:
+            v += [[r * math.cos(t), r * math.sin(t), z] for t in a]
+            hf += [hf_of[i]] * cols
+            af += list(np.arange(cols) / n_az)
     t = []
     for i in range(len(zr) - 1):
+        pole_a, pole_b = zr[i, 1] == 0.0, zr[i + 1, 1] == 0.0
         for j in range(n_az):
-            p, q = i * cols + j, i * cols + (j + 1) % cols
-            r_, s = (i + 1) * cols + j, (i + 1) * cols + (j + 1) % cols
-            t += [[p, q, r_], [q, s, r_]]
-    hf = np.repeat((zr[:, 0] - zr[:, 0].min()) / max(np.ptp(zr[:, 0]), 1e-12), cols)
-    af = np.tile(np.arange(cols) / n_az, len(zr))
-    mesh = Mesh(name, v, np.array(t), slot, {"height_frac": hf, "azimuth_frac": af})
-    if cap and full:
+            if pole_a and pole_b:
+                break
+            if pole_a:                                           # [p, q, r] of the quad, with p = q at the pole: dropped
+                t.append([first[i], first[i + 1] + (j + 1) % cols, first[i + 1] + j])
+            elif pole_b:                                         # [q, s, r] of the quad, with s = r at the pole: dropped
+                t.append([first[i] + j, first[i] + (j + 1) % cols, first[i + 1]])
+            else:
+                p, q = first[i] + j, first[i] + (j + 1) % cols
+                r_, s_ = first[i + 1] + j, first[i + 1] + (j + 1) % cols
+                t += [[p, q, r_], [q, s_, r_]]
+    mesh = Mesh(name, np.array(v, float), np.array(t), slot, {"height_frac": np.array(hf), "azimuth_frac": np.array(af)})
+    if cap and full:                                             # close an end ring with a centre vertex
         for i, flip in ((0, True), (len(zr) - 1, False)):
+            if zr[i, 1] == 0.0:
+                continue
             ctr = len(mesh.verts)
             mesh.verts = np.vstack([mesh.verts, [0.0, 0.0, zr[i, 0]]])
             for k in range(n_az):
-                p, q = i * cols + k, i * cols + (k + 1) % cols
+                p, q = first[i] + k, first[i] + (k + 1) % cols
                 mesh.tris = np.vstack([mesh.tris, [ctr, q, p] if flip else [ctr, p, q]])
             for key in mesh.attrs:
-                mesh.attrs[key] = np.append(mesh.attrs[key], mesh.attrs[key][i * cols])
+                mesh.attrs[key] = np.append(mesh.attrs[key], mesh.attrs[key][first[i]])
     return mesh
 
 
 def sphere(name, r, slot, n=16):
-    zr = [(r * math.cos(math.pi * (1 - k / n)), max(r * math.sin(math.pi * k / n), 1e-4)) for k in range(n + 1)]
-    return revolve(name, zr, slot, n_az=2 * n, cap=True)
+    """A sphere of radius r with true poles (one vertex each, met by a fan)."""
+    zr = [(r * math.cos(math.pi * (1 - k / n)), 0.0 if k in (0, n) else r * math.sin(math.pi * k / n)) for k in range(n + 1)]
+    return revolve(name, zr, slot, n_az=2 * n)
 
 
 def brush(name, width, bristle=4.0, handle=18.0):
@@ -327,37 +361,49 @@ def bench(name, depth, width, top, slot="M_B09_TimberBench", leg=6.0, thick=4.0)
 
 
 # --- The lantern's parts (lantern frame) ------------------------------------------------------------------------------
-def hoop(k, flex=1.0, segments=96):
-    """Hoop k (1..6) as its strip bends: flex 0 is a straight strip tangent to the form on the hero's side (-X), and
-    1 is the closed hoop with its ends lapped at the hook."""
+def hoop_path(k, flex=1.0, segments=96):
+    """Strip k's centreline as it bends: (points, outward normals, arc parameter s, end). flex 0 is a straight strip
+    tangent to the form on the hero's side (-X); 1 is the closed hoop, its ends lapped. end is -1 on the trailing
+    end's scarf, +1 on the leading end's and 0 between. The strip keeps its length at every flex."""
     z, r = hoop_z()[k - 1], hoop_r()[k - 1]
-    total = math.radians(360.0 + HOOP_LAP_DEG)
-    length = r * total
+    length = r * math.radians(360.0 + HOOP_LAP_DEG)
+    lap = r * math.radians(HOOP_LAP_DEG)
     s = np.linspace(-length / 2, length / 2, segments + 1)
     wrapped = flex * length / 2.0
-    pts = []
+    pts, nrm = [], []
     for si in s:
         if abs(si) <= wrapped:
             th = math.pi + si / r                               # centred on -X, facing the hero
-            lap = (abs(si) - (length / 2 - r * math.radians(HOOP_LAP_DEG))) / (r * math.radians(HOOP_LAP_DEG))
-            rr = r + HOOP_T * (1.0 if si > 0 and lap > 0 else 0.0)  # the leading end rides over the trailing one
-            pts.append([rr * math.cos(th), rr * math.sin(th), z])
+            pts.append([r * math.cos(th), r * math.sin(th), z])
         else:
             sign = 1.0 if si > 0 else -1.0
             th = math.pi + sign * wrapped / r
             base = np.array([r * math.cos(th), r * math.sin(th), z])
-            tang = sign * np.array([-math.sin(th), math.cos(th), 0.0])
-            pts.append(base + tang * (abs(si) - wrapped))
-    m = sweep(f"SM_B09_Hoop{k}" + ("" if flex >= 1.0 else f"_Flex{int(round(flex * 100)):03d}"), pts,
-              "M_B09_Bamboo", rect=(HOOP_W, HOOP_T), up=(0.0, 0.0, 1.0))
-    if flex >= 1.0:                                              # the hook: a small turned-back tip
-        th = math.pi + length / 2 / r
-        tip = np.array([(r + HOOP_T) * math.cos(th), (r + HOOP_T) * math.sin(th), z])
-        out = np.array([math.cos(th), math.sin(th), 0.0])
-        hook = sweep(m.name, [tip, tip + out * 0.35, tip + out * 0.35 - np.array([-math.sin(th), math.cos(th), 0]) * 0.4],
-                     "M_B09_Bamboo", rect=(HOOP_W, HOOP_T), up=(0.0, 0.0, 1.0))
-        m = merge(m.name, [m, hook])
-    return m
+            pts.append(base + sign * np.array([-math.sin(th), math.cos(th), 0.0]) * (abs(si) - wrapped))
+        nrm.append([math.cos(th), math.sin(th), 0.0])
+    end = np.where(s >= length / 2 - lap - 1e-9, 1, np.where(s <= -length / 2 + lap + 1e-9, -1, 0))
+    return np.array(pts), np.array(nrm), s, end
+
+
+def hoop(k, flex=1.0, segments=96):
+    """Hoop k (1..6) as its strip bends (hoop_path).
+
+    **The ends are scarfed (削ぎ):** each is shaved to half thickness over the lap, the leading end on the outer half
+    and the trailing end on the inner half. Closed, the lap is flush within the strip's own thickness, so the washi
+    clears it as it clears the rest. s148 showed the earlier lap, the leading end riding a full thickness out, and its
+    outward hook tip piercing the paper. The hoops sit in the form boards' notches, so a hoop needs no hook of its
+    own (the notches are not modelled)."""
+    pts, nrm, s, end = hoop_path(k, flex, segments)
+    name = f"SM_B09_Hoop{k}" + ("" if flex >= 1.0 else f"_Flex{int(round(flex * 100)):03d}")
+    i_trail = int(np.nonzero(end == -1)[0].max())                # the last sample of the trailing scarf
+    i_lead = int(np.nonzero(end == 1)[0].min())                  # the first of the leading scarf
+    runs = [(slice(0, i_trail + 1), -1), (slice(i_trail, i_lead + 1), 0), (slice(i_lead, len(s)), 1)]
+    parts = []
+    for sl, e in runs:
+        off = e * HOOP_T / 4                                     # a scarf's centre: a quarter thickness in or out
+        th = HOOP_T if e == 0 else HOOP_T / 2
+        parts.append(sweep(name, pts[sl] + nrm[sl] * off, "M_B09_Bamboo", rect=(HOOP_W, th), up=(0.0, 0.0, 1.0)))
+    return merge(name, parts)
 
 
 def split_strip(k=6):
@@ -376,12 +422,35 @@ def split_strip(k=6):
     return merge("SM_B09_SplitStrip", halves)
 
 
-def gore(k, n_z=24, n_az=16):
-    """Washi gore k (1..4): a quarter of the round plus GORE_OVERLAP_DEG at each seam, over the hoops. Attributes for
+RIB_RAMP = 0.6                               # cm: the washi returns from a rib to its profile over this height
+
+
+def paper_r(z):
+    """The washi's radius at height z. It rests on the ribs, as pasted paper does: PAPER_GAP outside a strip's outer
+    face wherever a strip lies under it, easing back over RIB_RAMP. Between the ribs it is HOOP_T + PAPER_GAP outside
+    the profile.
+
+    A strip's face is upright (its width along the axis), so on the lantern's shoulders, where the profile slopes
+    0.26, its narrow-side edge stood outside paper that followed only the profile. s148 showed the end hoops crossing
+    it."""
+    z = np.asarray(z, float)
+    out = profile_r(z) + HOOP_T + PAPER_GAP
+    for zk, rk in zip(hoop_z(), hoop_r()):
+        over = rk + HOOP_T / 2 + PAPER_GAP                       # PAPER_GAP outside the strip's outer face
+        d = np.abs(z - zk) - HOOP_W / 2
+        w = np.clip(1.0 - d / RIB_RAMP, 0.0, 1.0)                # 1 over the strip, 0 beyond the ramp
+        out = np.maximum(out, out + (over - out) * w)
+    return out
+
+
+def gore(k, n_z=48, n_az=32):
+    """Washi gore k (1..4): a quarter of the round plus GORE_OVERLAP_DEG at each seam, resting on the hoops (paper_r).
+    It is sampled at every strip's edges and ramp ends, so the paper lies over each strip's full width. Attributes for
     root's paste progress: height_frac (0 at the bottom rim, 1 at the top) and azimuth_frac (0 at its leading seam)."""
     h = LANTERN_H / 2.0
-    zs = np.linspace(-h, h, n_z + 1)
-    zr = np.stack([zs, profile_r(zs) + HOOP_T + PAPER_GAP + 0.02 * (k - 1)], 1)   # later gores lie over earlier ones
+    edges = [zk + sgn * e for zk in hoop_z() for sgn in (-1, 1) for e in (HOOP_W / 2, HOOP_W / 2 + RIB_RAMP)]
+    zs = np.unique(np.round(np.concatenate([np.linspace(-h, h, n_z + 1), edges]), 9))
+    zr = np.stack([zs, paper_r(zs) + 0.02 * (k - 1)], 1)       # later gores lie over earlier ones
     a0 = 180.0 + 90.0 * (k - 1) - GORE_OVERLAP_DEG
     return revolve(f"SM_B09_Washi{k}", zr, "M_B09_Washi", a0, a0 + 90.0 + 2 * GORE_OVERLAP_DEG, n_az)
 
@@ -409,7 +478,7 @@ def form(collapsed=False, boards=8):
     h = LANTERN_H / 2.0
     parts = [sweep("SM_B09_Form", [[0, 0, -h - 8], [0, 0, h + 16]], "M_B09_TimberForm", radius=1.25, segments=10)]
     for zc in (-h - 1.0, h + 1.0):
-        parts.append(revolve("SM_B09_Form", [(zc - 1, 0.01), (zc - 1, 3.0), (zc + 1, 3.0), (zc + 1, 0.01)],
+        parts.append(revolve("SM_B09_Form", [(zc - 1, 0.0), (zc - 1, 3.0), (zc + 1, 3.0), (zc + 1, 0.0)],
                              "M_B09_TimberForm", n_az=20))
     zs = np.linspace(-h, h, 23)
     reach = profile_r(zs) - 0.15
@@ -533,11 +602,11 @@ def station_parts(i):
         parts = [bench("SM_B09_RibFormBench" if i == 0 else "SM_B09_PasteBench", depth, width, top)]
         base_top = lift[2] - LANTERN_H / 2 - 8.0                 # the form's spindle starts 8 cm below the lantern
         if base_top - top <= 6.0:
-            parts.append(revolve("SM_B09_FormBase", [(top, 0.01), (top, 6.5), (top + 4, 6.5), (base_top, 2.0), (base_top, 0.01)],
+            parts.append(revolve("SM_B09_FormBase", [(top, 0.0), (top, 6.5), (top + 4, 6.5), (base_top, 2.0), (base_top, 0.0)],
                                  "M_B09_TimberForm", n_az=24))
         else:                                                    # a turned pedestal and turntable, to chest height
-            parts.append(revolve("SM_B09_FormBase", [(top, 0.01), (top, 7.5), (top + 3, 7.5), (top + 3.5, 2.6), (base_top - 3.5, 2.6),
-                                                     (base_top - 3, 6.5), (base_top, 6.5), (base_top, 0.01)], "M_B09_TimberForm", n_az=24))
+            parts.append(revolve("SM_B09_FormBase", [(top, 0.0), (top, 7.5), (top + 3, 7.5), (top + 3.5, 2.6), (base_top - 3.5, 2.6),
+                                                     (base_top - 3, 6.5), (base_top, 6.5), (base_top, 0.0)], "M_B09_TimberForm", n_az=24))
         proxies.append((np.array([-depth / 2 - 2, -width / 2 - 2, 0.0]), np.array([depth / 2 + 2, width / 2 + 2, top + 3])))
         for k, (z, r) in enumerate(zip(hoop_z(), hoop_r()), 1):
             sockets[f"HoopSeat{k}"] = (lift + [0.0, 0.0, z], None, None)
@@ -559,8 +628,8 @@ def station_parts(i):
             for j in range(1, 5):
                 sockets[f"WashiSheet{j}"] = (np.array([8.0, -34.5, top + 0.1 * (j - 1)]), None, None)
             parts += [m.moved(lift) for m in lantern("frame") if m.name != "SM_B09_Form"]   # the six hoops, done at the form
-            parts.append(revolve("SM_B09_PastePot", [(top, 0.01), (top, 5.0), (top + 0.6, 6.0), (top + 6.5, 6.2), (top + 7.0, 5.6),
-                                                     (top + 1.0, 5.3), (top + 1.0, 0.01)], "M_B09_Ceramic", n_az=24).moved((-20.0, -42.0, 0.0)))
+            parts.append(revolve("SM_B09_PastePot", [(top, 0.0), (top, 5.0), (top + 0.6, 6.0), (top + 6.5, 6.2), (top + 7.0, 5.6),
+                                                     (top + 1.0, 5.3), (top + 1.0, 0.0)], "M_B09_Ceramic", n_az=24).moved((-20.0, -42.0, 0.0)))
             sockets["BrushRest"] = (np.array([-22.0, -32.0, top + 0.5]), np.array([1.0, 0.0, 0.0]), np.array([0.0, 0.0, 1.0]))
             for which, z in (("Bottom", RIM_H / 2), ("Top", 1.5 * RIM_H)):     # stacked, bottom rim under the top
                 sockets[f"Rim{which}Rest"] = (np.array([14.0, 32.0, top + z]), None, None)
@@ -569,7 +638,7 @@ def station_parts(i):
             for k in range(1, 5):
                 az = math.radians(180.0 + 90.0 * (k - 1))
                 for j, z in enumerate(np.linspace(-LANTERN_H / 2, LANTERN_H / 2, 9)):
-                    r = float(profile_r(z)) + HOOP_T + PAPER_GAP + 0.6
+                    r = float(paper_r(z)) + 0.6
                     sockets[f"Seam{k}_{j}"] = (lift + [r * math.cos(az), r * math.sin(az), z], None, None)
         work = lift
     elif i == 2:
@@ -586,9 +655,9 @@ def station_parts(i):
         parts = [merge("SM_B09_OilRack", parts)]
         parts.append(sweep("SM_B09_RackHook", [[0, 0, bar], [0, 0, hook_top + 1.8], [0.9, 0, hook_top + 0.6], [0, 0, hook_top]],
                            "M_B09_Iron", radius=0.25, segments=6))
-        parts.append(revolve("SM_B09_OilJar", [(20.5, 0.01), (20.5, 6.0), (24.0, 8.8), (34.0, 9.0), (41.0, 6.5), (43.5, 4.2),
-                                               (44.5, 4.6), (44.5, 3.6), (36.0, 3.2), (36.0, 0.01)], "M_B09_Ceramic", n_az=28).moved((8.0, 24.0, 0.0)))
-        parts.append(revolve("SM_B09_DripTray", [(0.0, 0.01), (0.0, 17.0), (3.0, 18.0), (3.0, 17.2), (0.8, 16.4), (0.8, 0.01)],
+        parts.append(revolve("SM_B09_OilJar", [(20.5, 0.0), (20.5, 6.0), (24.0, 8.8), (34.0, 9.0), (41.0, 6.5), (43.5, 4.2),
+                                               (44.5, 4.6), (44.5, 3.6), (36.0, 3.2), (36.0, 0.0)], "M_B09_Ceramic", n_az=28).moved((8.0, 24.0, 0.0)))
+        parts.append(revolve("SM_B09_DripTray", [(0.0, 0.0), (0.0, 17.0), (3.0, 18.0), (3.0, 17.2), (0.8, 16.4), (0.8, 0.0)],
                              "M_B09_Ceramic", n_az=32))
         proxies.append((np.array([-38.0, -52.0, 0.0]), np.array([38.0, 52.0, 22.0])))
         sockets["LanternHang"] = (np.array([0.0, 0.0, hook_top]), None, None)
@@ -597,7 +666,7 @@ def station_parts(i):
         sockets["BrushRest"] = (np.array([8.0, 22.0, 45.1]), np.array([1.0, 0.0, 0.0]), np.array([0.0, 0.0, 1.0]))
         for j, z in enumerate(np.linspace(LANTERN_H / 2, -LANTERN_H / 2, 9)):
             for q, az in enumerate((180.0, 225.0, 135.0)):
-                r = float(profile_r(z)) + HOOP_T + PAPER_GAP + 0.7
+                r = float(paper_r(z)) + 0.7
                 a = math.radians(az)
                 sockets[f"OilStroke{q}_{j}"] = (lift + [r * math.cos(a), r * math.sin(a), z], None, None)
         work = lift
@@ -619,7 +688,7 @@ def station_parts(i):
         for k, y in enumerate((-45.0, -37.0, -29.0), 1):
             sockets[f"ShellSeat{k}"] = (np.array([-19.5, y, top + 4.0 - 2.0 + SHELL["wrapped_cm"] / 2]), None, np.array([0.0, 0.0, 1.0]))
             sockets[f"ShellCore{k}"] = (np.array([-18.0, 30.0 + 5.5 * (k - 2), top + 1.5 + SHELL["core_cm"] / 2]), None, None)
-        parts.append(revolve("SM_B09_ShellTray", [(top, 0.01), (top, 9.0), (top + 3.0, 9.6), (top + 3.0, 9.0), (top + 1.0, 8.4), (top + 1.0, 0.01)],
+        parts.append(revolve("SM_B09_ShellTray", [(top, 0.0), (top, 9.0), (top + 3.0, 9.6), (top + 3.0, 9.0), (top + 1.0, 8.4), (top + 1.0, 0.0)],
                              "M_B09_TimberBench", n_az=28).moved((-18.0, 30.0, 0.0)))
         parts.append(box("SM_B09_WrapPaper", (-30.0, -8.0, top), (-10.0, 12.0, top + 0.2), "M_B09_ShellPaper"))
         sockets["WrapSpot"] = (np.array([-20.0, 2.0, top + 0.2 + SHELL["wrapped_cm"] / 2]), None, None)
@@ -639,7 +708,7 @@ def needle():
     v = np.array([[-0.3, -0.45, -1.2], [-0.3, 0.45, -1.2], [-0.3, 0.12, r], [-0.3, -0.12, r],
                   [-0.6, -0.45, -1.2], [-0.6, 0.45, -1.2], [-0.6, 0.12, r], [-0.6, -0.12, r]])
     t = np.array([[0, 1, 2], [0, 2, 3], [4, 6, 5], [4, 7, 6], [0, 4, 5], [0, 5, 1], [1, 5, 6], [1, 6, 2], [2, 6, 7], [2, 7, 3], [3, 7, 4], [3, 4, 0]])
-    hub = revolve("SM_B09_GaugeNeedle", [(-0.75, 0.01), (-0.75, 0.9), (-0.2, 0.9), (-0.2, 0.01)], "M_B09_Iron", n_az=12)
+    hub = revolve("SM_B09_GaugeNeedle", [(-0.75, 0.0), (-0.75, 0.9), (-0.2, 0.9), (-0.2, 0.0)], "M_B09_Iron", n_az=12)
     hub.verts = hub.verts[:, [2, 1, 0]]                    # its axis along X
     hub.tris = hub.tris[:, [0, 2, 1]]
     return merge("SM_B09_GaugeNeedle", [Mesh("SM_B09_GaugeNeedle", v, t, "M_B09_GaugeNeedle"), hub], "M_B09_GaugeNeedle")
@@ -775,7 +844,10 @@ def eligible(i, x, y, proxies_world):
 
 def clearance(i, step=10.0):
     """Station i's clearances: the work stand, the eye's line to the work, and every eligible station ray against the
-    proposed proxies (and the room's own solids, which the trace already meets today)."""
+    proposed proxies (and the room's own solids, which the trace already meets today).
+
+    The rays start at the **standing** capsule's centre (RAY_FROM_Z). The crouched rays, from CROUCH_HALF, are a CPU
+    estimate for root: the same plan positions and boxes, not root's crouch or native coverage."""
     parts, sockets, proxies, work = station_parts(i)
     sx, sy = STATIONS[i][1]
     fz = floor_at(sx, sy)
@@ -793,6 +865,7 @@ def clearance(i, step=10.0):
     blocked_by_proxy = [(x, y) for x, y in ok if any(segment_hits_box(np.array([x, y, fz + RAY_FROM_Z]), ray_end, lo, hi) for lo, hi in pw)]
     walls = [(cc - size / 2, cc + size / 2) for k, (cc, size) in enumerate(SOLIDS) if k not in FLOOR_SLABS]
     blocked_by_room = [(x, y) for x, y in ok if any(segment_hits_box(np.array([x, y, fz + RAY_FROM_Z]), ray_end, lo, hi) for lo, hi in walls)]
+    crouched = [(x, y) for x, y in ok if any(segment_hits_box(np.array([x, y, fz + CROUCH_HALF]), ray_end, lo, hi) for lo, hi in pw)]
     # The hero at the work stand: the capsule's gap to every part, and the eye's line to the work point.
     capsule_gap = min(_capsule_gap(stand, m.moved(o)) for m in parts)
     eye = stand + [EYE[0], EYE[1], CAPSULE_HALF + EYE[2]]
@@ -800,8 +873,12 @@ def clearance(i, step=10.0):
     sight = wp - eye
     occluders = sorted({m.name for m in parts if m.name not in WORK_OBJECT and _segment_meets_mesh(eye, wp, m.moved(o))})
     pitch = math.degrees(math.atan2(sight[2], math.hypot(sight[0], sight[1])))
-    return {"eligible_positions": len(ok), "grid_cm": step,
+    return {"posture": "standing: rays from the capsule's centre at 88 cm. Crouched (half-height 44) is not covered by "
+                       "this proof; crouched and native coverage are root's",
+            "eligible_positions": len(ok), "grid_cm": step,
             "rays_blocked_by_proposed_proxies": len(blocked_by_proxy), "rays_blocked_by_room_today": len(blocked_by_room),
+            "crouched_estimate": {"ray_from_cm": CROUCH_HALF, "rays_blocked_by_proposed_proxies": len(crouched),
+                                  "note": "a CPU estimate on the same plan positions and boxes, not root's coverage"},
             "work_stand_eligible": eligible(i, stand[0], stand[1], pw),
             "work_stand_ray_clear": not any(segment_hits_box(stand + [0, 0, RAY_FROM_Z], ray_end, lo, hi) for lo, hi in pw + walls),
             "capsule_gap_cm": round(capsule_gap, 2), "eye_to_work_cm": round(float(np.linalg.norm(sight)), 1),
@@ -856,7 +933,11 @@ def key_points(i):
         return {"gauge": (dial, {"SM_B09_FlexGauge"}), "hoops": (hoops, WORK_OBJECT)}
     if i == 1:
         _, sockets, _, _ = station_parts(1)
-        return {"seam": ([sockets[f"Seam1_{j}"][0] for j in range(9)], WORK_OBJECT)}
+        # The seam's bottom end, at the rim line, is reported. From standing eye height the lantern's lower flare hides
+        # it, as a real lantern's would. The v5 gores' coarse facets dipped inside that flare and passed it; the
+        # 48-row gores resolve it.
+        return {"seam": ([sockets[f"Seam1_{j}"][0] for j in range(1, 9)], WORK_OBJECT),
+                "seam's bottom end at the rim (reported)": ([sockets["Seam1_0"][0]], WORK_OBJECT)}
     if i == 2:
         _, sockets, _, _ = station_parts(2)
         # The front stroke is required. The side strokes (+-45 deg) are reported: their lowest samples, on the bottom
@@ -1029,15 +1110,19 @@ def spec():
            "recipe": {"steps": [{"step": k, "kind": kind, "count": n, "station": STATIONS[STEP_STATIONS[k]][0]}
                                 for k, (kind, n) in enumerate(STEPS)], "bend_ms": [BEND_MS, BEND_TOL_MS], "paste_ms": PASTE_MS,
                       "output_lanterns": OUTPUT_LANTERNS},
-           "collision": "every mesh is visual only; root keeps or replaces its boxes with the proposed proxies, each "
-                        "under the 88 cm start of the station trace",
+           "collision": "every mesh is visual only; root keeps or replaces its boxes with the proposed proxies. Each "
+                        "proxy is under the standing station trace's 88 cm start, so no standing ray meets one. That "
+                        "covers the standing capsule only: crouched (half-height 44) the trace starts at 44 cm, and "
+                        "proxy tops of 75-78 cm can block close crouched approaches, as today's generic benches can. "
+                        "Crouched and native coverage are root's",
            "lantern": {"height_cm": LANTERN_H, "diameter_cm": 2 * LANTERN_R, "rim_diameter_cm": 2 * LANTERN_RIM_R,
                        "hoop_heights_cm": [round(float(z), 3) for z in hoop_z()], "hoop_radii_cm": [round(float(r), 3) for r in hoop_r()],
                        "hang_point_cm": hang_point().round(3).tolist(), "flex_stages": list(FLEX_STAGES),
                        "pivot": "its centre (lantern frame); at the rib form and paste bench it sits at the station point"},
            "camera": {"world_hfov_deg": WORLD_HFOV_DEG, "aspects": list(ASPECTS), "margin_deg": VIEW_MARGIN_DEG,
                       "dial_facing_max_deg": DIAL_FACING_DEG, "band_min_deg": BAND_MIN_DEG,
-                      "note": "a CPU geometric estimate of framing; it does not establish Unreal framing, materials or hand contact"},
+                      "note": "a CPU geometric estimate of framing from the standing eye; it does not establish Unreal framing, "
+                              "materials or hand contact"},
            "lantern_centre_by_station_cm": {STATIONS[k][0]: z for k, z in LANTERN_Z.items()},
            "gauge": {"pivot_cm": list(GAUGE["pivot"]), "angles_deg": list(GAUGE["angles_deg"]), "full_ms": GAUGE["full_ms"],
                      "band_radii_cm": list(GAUGE["band_r"]), "face_radius_cm": GAUGE["face_r"], "ticks_ms": list(GAUGE["ticks_ms"]),
@@ -1148,6 +1233,24 @@ def box_uv(mesh):
     keep = np.array([[1, 2], [0, 2], [0, 1]])[np.argmax(np.abs(n), 1)]
     p = mesh.verts[t] / 100.0
     return np.take_along_axis(p, np.repeat(keep[:, None, :], 3, 1), 2)
+
+
+# --- Unreal's build ---------------------------------------------------------------------------------------------------
+THRESH_POINTS_ARE_SAME = 2e-5                # cm (UnrealMathUtility.h): corners this close in every component are one
+MIN_EDGE_CM = 1e-3                           # the host gate: 50 x that, so no candidate edge comes near it
+
+
+def unreal_degenerate(mesh):
+    """Per triangle: two corners within THRESH_POINTS_ARE_SAME in every component (FVector::Equals). Unreal's
+    static-mesh build drops such triangles; s147 lost 128 pole slivers from each shell."""
+    v = mesh.verts[mesh.tris]
+    same = lambda a, b: (np.abs(a - b) <= THRESH_POINTS_ARE_SAME).all(1)  # noqa: E731
+    return same(v[:, 0], v[:, 1]) | same(v[:, 1], v[:, 2]) | same(v[:, 2], v[:, 0])
+
+
+def shortest_edge(mesh):
+    v = mesh.verts[mesh.tris]
+    return float(np.linalg.norm(v - np.roll(v, -1, axis=1), axis=2).min())
 
 
 # --- Previews (presentation only) ---------------------------------------------------------------------------------------

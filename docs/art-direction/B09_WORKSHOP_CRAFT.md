@@ -4,10 +4,14 @@ Chapter 03 beat b09 (提灯を張れ / Make the lanterns) needs physical craft a
 (Coordination 232, 2026-10-26) for a CPU-only design first: asset roles, bounds, pivots, sockets and craft pose
 clearances, proposed before integration. Root owns state, accounting and collision.
 
-**Status: a proposal.**
-- Nothing is built in Blender or imported into Unreal, and nothing is adopted.
-- The CPU previews are presentation only. They show shape, layout and framing as a geometric estimate. They do not
-  establish Unreal framing, materials, light or hand and tool contact.
+**Status: a proposal, with one diagnostic engine pass (s144–s148, 2026-10-27, §11).** Nothing is adopted.
+- **Built and imported:** Blender built the candidates (s145), and Unreal imported them as separate candidate assets.
+  The import, s147, failed its exact triangle-count contract, and the failure stands.
+- **Captured:** s148's 15 captures are a diagnostic of that failed candidate. Root's review: the structure and
+  sockets read, but the production look is rejected.
+- **Since then,** the geometry those captures exposed is fixed on the CPU (§11). It is not yet rebuilt or recaptured.
+- **The CPU previews are presentation only.** They show shape, layout and framing as a geometric estimate. They do
+  not establish Unreal framing, materials, light, or hand and tool contact.
 
 **Source of truth:**
 - `scripts/art/b09_workshop_craft.py` builds every mesh, socket and check in numpy. It writes
@@ -16,11 +20,15 @@ clearances, proposed before integration. Root owns state, accounting and collisi
 
 ## 1. Inputs and root's decisions
 
-The design reads root's tree at commit `2a846a6a`, each file pinned by its git blob in `INPUTS`.
+The design reads root's tree at commit `fcf3ffb5`, each file pinned by its git blob in `INPUTS`.
 `scripts/art/check_b09_root_inputs.py` verifies the pins and the constants, read-only. Its record is
-`Saved/W18Rebuild/b09_root_inputs_check_v2.json`:
-- no problems, and no pinned file changed at root's head `d0488603`;
-- the first pin, at `c1f0b5af`, stays recorded in `b09_root_inputs_check.json`.
+`Saved/W18Rebuild/b09_root_inputs_check_v5.json`:
+- no problems, and no pinned file changed at root's head `fcf3ffb5`;
+- the earlier pins stay recorded: `c1f0b5af` (v1), and `2a846a6a` (v2 and v4; v3 read the wrong tree and failed,
+  empty).
+
+**From `2a846a6a` to `fcf3ffb5`,** only `chapter_03.json` changed, for b10's ground routes in `ch03_lantern_ward`. The
+`ch03.b09` beat is identical.
 
 **From `c1f0b5af` to `2a846a6a`,** two pinned files changed, both additively:
 - `SoraWorkshopCraftRules.h` gained `FView`;
@@ -133,8 +141,8 @@ the split pose, pause or cancel clears held work, and a retry clears the failure
 ## 4. Stations
 
 **Every station passes these:**
-- `clearance()` on a 10 cm grid of hero positions: no proposed proxy blocks a station ray, and the stand is eligible
-  with its own ray clear.
+- `clearance()` on a 10 cm grid of hero positions: no proposed proxy blocks a **standing** station ray, and the
+  stand is eligible with its own ray clear. Crouching is not covered (§6).
 - `first_person()` at 94°, 16:9 and 21:9, from the stand, looking at the work: the required elements are in frame with
   a 2° margin and unoccluded.
 - The same check from every eligible working-side position (in front of the bench, within 60° of the approach, on a
@@ -143,8 +151,14 @@ the split pose, pause or cancel clears held work, and a retry clears the failure
 | Station | Capsule gap at the stand | Eye to work, pitch | Stand (16:9 and 21:9) | Working side that passes |
 |---|---|---|---|---|
 | rib form | 16 cm | 86.8 cm, −28.9° | dial and hoops pass | dial 92%, hoops 100% (152 positions) |
-| paste bench | 11 cm | 79.1 cm, −16.1° | seam passes | seam 100% (153) |
-| oil rack | 11 cm | 79.1 cm, −16.1° | front stroke passes | front stroke 100%; side strokes 66%, reported only (149) |
+| paste bench | 11 cm | 79.1 cm, −16.1° | seam passes; its bottom end at the rim is hidden, reported only | seam 100%; the bottom end 95%, reported only (153) |
+| oil rack | 11 cm | 79.1 cm, −16.1° | front stroke passes | front stroke 97%; side strokes 47%, reported only (149) |
+
+**What changed in the 48-row gores.** The washi now rests on the ribs and is sampled 48 × 32 (§11). The finer rows
+resolve the lantern's lower flare.
+- From standing eye height, that flare hides the paste seam's bottom end at the rim, as a real lantern's would. It is
+  now reported, like the oil's side strokes. The v5 gores' coarse facets dipped inside the flare and passed it.
+- The oil's front stroke passes from 97% of the working side (was 100%), and its side strokes from 47% (was 66%).
 | shell bench | 11 cm | 96.9 cm, −48.0° | shells and fuse pass | 100% (129) |
 
 **Shell bench:** of its 1,336 eligible positions, 386 lie inside the storehouse. Their trace already meets its wall
@@ -287,9 +301,15 @@ The bench is about 10 m from the oil jars and away from flame.
 
 - **Every mesh here is visual only.** This follows the dojo kit's pattern: the world builder keeps its boxes as
   collision.
-- **The proxies:** each station gets one box under its bench or sled, each under 86 cm. Every station ray starts at
-  88 cm, so no proxy can block the trace from any position.
-- **Tested:** on a 10 cm grid of eligible positions at every station, no ray meets a proxy.
+- **The proxies:** each station gets one box under its bench or sled, each under 86 cm. A standing station ray starts
+  at 88 cm, so no proxy can block a standing trace from any position.
+- **Tested, standing only:** on a 10 cm grid of eligible positions at every station, no standing ray meets a proxy.
+- **Not covered: crouching** (root, Coordination 236). Station eligibility has no standing-only gate, and a crouched
+  capsule's half-height is 44 cm. Its trace starts at 44 cm, and proxy tops of 75–78 cm can block close crouched
+  approaches, as today's generic benches can.
+  - So this is not yet a regression.
+  - `clearance()` reports a crouched CPU estimate, labelled as one.
+  - Crouched and native collision coverage are root's.
 - **Tall parts carry no collision:** the dial, the spindles, the pedestal, the rack's posts, the poles and the lanterns.
 - **Root decides,** after its own trace and traversal review. The current generic boxes are not an approved footprint.
 
@@ -364,3 +384,48 @@ originals untouched.
   - the warm windows;
   - the photoreal gate.
 - **No adoption and no visual acceptance** is claimed.
+
+## 11. The engine pass (s144–s148, 2026-10-27) and what it exposed
+
+Root returned the full lane (Coordination 234); the sequence was posted first and bounded (two reruns). Every run's
+log, outputs and failure are kept.
+
+| Run | Job | Result |
+|---|---|---|
+| s144 | Blender build | **failed.** It exported one asset, then removing the exported objects left stale view-layer entries. The one file passes the host gate. |
+| s145 | Blender rebuild (rerun 1) | **passed.** 54 assets; `check_b09_candidates_fbx.py` found no problems, and root's frozen rerun matched (d262a6c3). |
+| s146 | Unreal import | **failed.** Python cannot read `StaticMesh.Sockets`. Its partial assets stay under `/Game/Generated/Candidates/B09Workshop`. |
+| s147 | Unreal import (rerun 2, the last) | **failed its exact triangle contract.** Unreal's build dropped 128 pole slivers from each shell, and the failure stands. Every other check passed. `review_b09_import_readback.py` explains the loss exactly; root reproduced it. |
+| s148 | Unreal capture | **diagnostic capture of the failed candidate.** 15 socket-pose captures at 94°. Its host check passed. |
+
+**What s148 shows** (socket poses in candidate materials under review light; not hand contact, not acceptance):
+- From the stand, the dial (band and needle) sits in frame at 16:9 and 21:9, and it shows from both approach
+  positions.
+- The seam and oil states and the shell bench read.
+- Root's review rejects the production look:
+  - the strong orange cast of 1900 K lamps without white balance;
+  - flat yellow paper with little readable fibre or wetness;
+  - blurry wood and faceting;
+  - the hoop/paper clash.
+
+**Fixed since, on the CPU:**
+- **Poles:** a revolve that meets the axis now ends in one vertex and a fan. A short-edge gate keeps every
+  triangle Unreal's build would drop out of the candidates (no two corners within 2e-5 cm; no edge under 1e-3 cm).
+- **The strips:**
+  - Their lapped ends are scarfed to half thickness, so a closed hoop stays within its own 0.16 cm.
+  - The outward hook tip is gone; the form's notches hold the hoops.
+  - The washi rests on the ribs, `PAPER_GAP` outside each strip's outer face.
+  - A triangle-exact gate holds every strip at least 0.04 cm under the paper; the measured least is 0.052 cm.
+- **The gores** are sampled 48 × 32, plus every strip's edges, against the faceting.
+- **The ray and proxy proof is labelled standing-only (§6).**
+
+**Still open:**
+- **Neutral material colour and the intended night lighting,** reviewed separately.
+- **Paper fibre, wetness and translucency:** measured transmission is required.
+- **Wood resolution.**
+- **The form's notches.**
+- **Authored craft paws and arm poses with believable contact,** at the world's 94° projection. The 70° viewmodel
+  cannot be used uncorrected at world contact points.
+- **Action presentation** for the press-committed steps.
+- **A rebuild and recapture,** in a later lane window.
+

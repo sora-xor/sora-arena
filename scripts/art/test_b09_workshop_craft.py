@@ -51,11 +51,8 @@ def arc_length(points):
 
 
 def centreline(k, flex):
-    """The strip's centreline: the mean of each cross-section's four corners."""
-    m = B.hoop(k, flex)
-    n = (len(m.verts) - 2) // 4 if flex < 1.0 else None
-    v = m.verts[: (n * 4 if n else (len(m.verts) // 4) * 4)]
-    return v.reshape(-1, 4, 3).mean(1)
+    """The strip's centreline (hoop_path), which its mesh is swept along."""
+    return B.hoop_path(k, flex)[0]
 
 
 class RootInputs(unittest.TestCase):
@@ -96,6 +93,28 @@ class Lantern(unittest.TestCase):
                 self.assertTrue((g.attrs[key] >= -1e-12).all() and (g.attrs[key] <= 1 + 1e-12).all())
         self.assertTrue((cover >= 2).all())                               # every degree covered
         self.assertGreater(int((cover >= 4).sum()), 4 * 2 * int(B.GORE_OVERLAP_DEG) - 4)   # doubled at the seams
+
+    def test_the_washi_clears_every_strip(self):
+        """Triangle-exact (mesh_clearance.exact_separation): no strip crosses or touches the paper, on the papered
+        frame or the finished lantern. s148 showed the end hoops' edges and the lapped ends piercing it."""
+        import mesh_clearance as MC
+        paper = B.merge("paper", [B.gore(k) for k in range(1, 5)])
+        for k in range(1, 7):
+            h = B.hoop(k, 1.0)
+            r = MC.exact_separation(h.verts, h.tris, paper.verts, paper.tris, limit=1.0)
+            self.assertIsNotNone(r["separation_m"], k)
+            self.assertGreaterEqual(r["separation_m"], 0.04, (k, r["kind"]))
+        fin = B.lantern("finished")
+        hoops = B.merge("h", [m for m in fin if m.name.startswith("SM_B09_Hoop")])
+        washi = B.merge("w", [m for m in fin if m.name.startswith("SM_B09_Washi")])
+        self.assertGreaterEqual(MC.exact_separation(hoops.verts, hoops.tris, washi.verts, washi.tris, limit=1.0)["separation_m"], 0.04)
+
+    def test_a_closed_hoop_laps_within_its_own_thickness(self):
+        for k in (1, 3, 6):
+            h = B.hoop(k, 1.0)
+            rad = np.hypot(h.verts[:, 0], h.verts[:, 1]) - B.profile_r(B.hoop_z()[k - 1])
+            self.assertGreaterEqual(float(rad.min()), -1e-9)
+            self.assertLessEqual(float(rad.max()), B.HOOP_T + 1e-9)          # scarfed ends: no ride-over, no hook
 
     def test_rims_and_hang_point(self):
         lo, hi = B.rim("Top").bounds()
@@ -280,12 +299,29 @@ class Candidates(unittest.TestCase):
 
 
 class UnrealBuild(unittest.TestCase):
-    def test_unreal_drops_only_the_shells_pole_slivers(self):
-        """s147: Unreal's build dropped 128 triangles from each shell. They are the slivers at the sphere poles, with
-        corners within THRESH_POINTS_ARE_SAME. No other candidate has any."""
+    def test_unreal_keeps_every_candidate_triangle(self):
+        """s147: Unreal's build dropped 128 triangles from each shell, the slivers at the sphere poles, which had
+        corners within THRESH_POINTS_ARE_SAME. The poles are now single vertices met by fans, so no candidate has one
+        and no edge comes near the threshold."""
+        for name, mesh, *_ in B.candidates():
+            self.assertFalse(B.unreal_degenerate(mesh).any(), name)
+            self.assertGreaterEqual(B.shortest_edge(mesh), B.MIN_EDGE_CM, name)
+
+    def test_the_review_reproduces_s147s_loss_on_the_old_poles(self):
         import review_b09_import_readback as R
-        counts = {n: int(R.degenerate(m).sum()) for n, m, *_ in B.candidates()}
-        self.assertEqual({n: c for n, c in counts.items() if c}, {"SM_B09_ShellCore": 128, "SM_B09_ShellWrapped": 128})
+        ring = B.revolve("old_pole", [(-1.0, 1e-4), (0.0, 1.0), (1.0, 1e-4)], "M_B09_ShellCore", n_az=32, cap=True)
+        self.assertEqual(int(R.degenerate(ring).sum()), 128)                 # s147's count per shell
+        self.assertEqual(int(B.unreal_degenerate(ring).sum()), 128)
+        fan = B.revolve("pole", [(-1.0, 0.0), (0.0, 1.0), (1.0, 0.0)], "M_B09_ShellCore", n_az=32)
+        self.assertEqual(int(B.unreal_degenerate(fan).sum()), 0)
+        self.assertEqual(len(fan.tris), 64)                                  # two fans of 32
+
+    def test_poles_close_and_face_outward(self):
+        import check_b09_candidates_fbx as C
+        s = B.sphere("t", 2.4, "M_B09_ShellCore")
+        (closed, vol), = C.closed_parts(s.verts * [1.0, -1.0, 1.0], s.tris[:, [0, 2, 1]])
+        self.assertTrue(closed)
+        self.assertGreater(vol, 0.95 * 4 / 3 * math.pi * 2.4 ** 3)          # outward, and nearly the sphere's volume
 
 
 class Spec(unittest.TestCase):

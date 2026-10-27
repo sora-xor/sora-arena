@@ -2,7 +2,7 @@
  "schema": 1,
  "generator": "scripts/art/b09_workshop_craft.py",
  "inputs": {
-  "root_commit": "2a846a6a96e40333d37deba028553ac5c62c63d7",
+  "root_commit": "fcf3ffb56eb4412f268208021a3970e8dc7bee45",
   "blobs": {
    "Source/SoraArena/Public/SoraLanternWorkshopRules.h": "ee2f3b7772e7754eeb0ba067c9b1843025519184",
    "Source/SoraArena/Public/SoraWorkshopCraftRules.h": "39c36512c2a772c187164d8f1b3547e8ebac2d2b",
@@ -12,7 +12,7 @@
    "Source/SoraArena/Private/Characters/SoraCharacterBase.cpp": "3221fa817a15e57d94f0426b202409e8d56289b2",
    "Source/SoraArena/Private/Characters/SoraPlayerCharacter.cpp": "b8e4fb6b25592aae949ab855fe33e7ea33a2039e",
    "docs/campaign/chapter-03.md": "4141dcc335b4ecf24e9d3ad626b55f1325f3647d",
-   "Content/Data/campaign/chapter_03.json": "772154d7963a2e7ef92e90fee5f70051fabbaf35",
+   "Content/Data/campaign/chapter_03.json": "75874ff583570026946b889c31e075dcedd07e79",
    "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/build_record.json": "95f796814125b324f8a5325a92c2b537307d502b"
   }
  },
@@ -74,7 +74,7 @@
   "paste_ms": 1500,
   "output_lanterns": 40
  },
- "collision": "every mesh is visual only; root keeps or replaces its boxes with the proposed proxies, each under the 88 cm start of the station trace",
+ "collision": "every mesh is visual only; root keeps or replaces its boxes with the proposed proxies. Each proxy is under the standing station trace's 88 cm start, so no standing ray meets one. That covers the standing capsule only: crouched (half-height 44) the trace starts at 44 cm, and proxy tops of 75-78 cm can block close crouched approaches, as today's generic benches can. Crouched and native coverage are root's",
  "lantern": {
   "height_cm": 44.0,
   "diameter_cm": 30.0,
@@ -126,7 +126,7 @@
       -30.0
      ],
      [
-      15.35,
+      15.12,
       15.11,
       38.0
      ]
@@ -148,13 +148,13 @@
     ],
     "bounds_cm": [
      [
-      -15.27,
-      -15.23,
+      -15.28,
+      -15.24,
       -30.0
      ],
      [
-      15.35,
-      15.27,
+      15.26,
+      15.28,
       38.0
      ]
     ]
@@ -177,13 +177,13 @@
     ],
     "bounds_cm": [
      [
-      -15.27,
-      -15.23,
+      -15.28,
+      -15.24,
       -30.0
      ],
      [
-      15.35,
-      15.27,
+      15.26,
+      15.28,
       38.0
      ]
     ]
@@ -206,13 +206,13 @@
     ],
     "bounds_cm": [
      [
-      -15.27,
-      -15.23,
+      -15.28,
+      -15.24,
       -23.0
      ],
      [
-      15.35,
-      15.27,
+      15.26,
+      15.28,
       33.29
      ]
     ]
@@ -228,7 +228,7 @@
   "margin_deg": 2.0,
   "dial_facing_max_deg": 65.0,
   "band_min_deg": 2.0,
-  "note": "a CPU geometric estimate of framing; it does not establish Unreal framing, materials or hand contact"
+  "note": "a CPU geometric estimate of framing from the standing eye; it does not establish Unreal framing, materials or hand contact"
  },
  "lantern_centre_by_station_cm": {
   "st_b09_rib_form": 110.0,
@@ -554,7 +554,7 @@
      "slots": [
       "M_B09_TimberForm"
      ],
-     "triangles": 192,
+     "triangles": 144,
      "bounds_cm": [
       [
        -6.5,
@@ -575,7 +575,7 @@
      "slots": [
       "M_B09_TimberForm"
      ],
-     "triangles": 1336,
+     "triangles": 1256,
      "bounds_cm": [
       [
        -13.87,
@@ -814,10 +814,16 @@
     }
    ],
    "clearance": {
+    "posture": "standing: rays from the capsule's centre at 88 cm. Crouched (half-height 44) is not covered by this proof; crouched and native coverage are root's",
     "eligible_positions": 1500,
     "grid_cm": 10.0,
     "rays_blocked_by_proposed_proxies": 0,
     "rays_blocked_by_room_today": 0,
+    "crouched_estimate": {
+     "ray_from_cm": 44.0,
+     "rays_blocked_by_proposed_proxies": 56,
+     "note": "a CPU estimate on the same plan positions and boxes, not root's coverage"
+    },
     "work_stand_eligible": true,
     "work_stand_ray_clear": true,
     "capsule_gap_cm": 16.0,
@@ -834,7 +840,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 776,
+     "triangles": 792,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -857,7 +863,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 776,
+     "triangles": 792,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -868,7 +874,7 @@
       ],
       [
        16.43,
-       32.94,
+       32.88,
        -15.51
       ]
      ],
@@ -880,7 +886,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 776,
+     "triangles": 792,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -903,7 +909,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 776,
+     "triangles": 792,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -926,7 +932,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 800,
+     "triangles": 792,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -936,7 +942,7 @@
        -15.91
       ],
       [
-       13.89,
+       13.63,
        13.62,
        -15.51
       ]
@@ -949,7 +955,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 776,
+     "triangles": 792,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -972,7 +978,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 776,
+     "triangles": 792,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -983,7 +989,7 @@
       ],
       [
        17.75,
-       35.58,
+       35.52,
        -9.23
       ]
      ],
@@ -995,7 +1001,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 776,
+     "triangles": 792,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -1018,7 +1024,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 776,
+     "triangles": 792,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -1041,7 +1047,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 800,
+     "triangles": 792,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -1051,7 +1057,7 @@
        -9.63
       ],
       [
-       14.95,
+       14.72,
        14.71,
        -9.23
       ]
@@ -1064,7 +1070,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 776,
+     "triangles": 792,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -1087,7 +1093,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 776,
+     "triangles": 792,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -1098,7 +1104,7 @@
       ],
       [
        18.24,
-       36.56,
+       36.5,
        -2.94
       ]
      ],
@@ -1110,7 +1116,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 776,
+     "triangles": 792,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -1133,7 +1139,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 776,
+     "triangles": 792,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -1156,7 +1162,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 800,
+     "triangles": 792,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -1166,7 +1172,7 @@
        -3.34
       ],
       [
-       15.35,
+       15.12,
        15.11,
        -2.94
       ]
@@ -1179,7 +1185,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 776,
+     "triangles": 792,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -1202,7 +1208,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 776,
+     "triangles": 792,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -1213,7 +1219,7 @@
       ],
       [
        18.24,
-       36.56,
+       36.5,
        3.34
       ]
      ],
@@ -1225,7 +1231,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 776,
+     "triangles": 792,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -1248,7 +1254,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 776,
+     "triangles": 792,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -1271,7 +1277,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 800,
+     "triangles": 792,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -1281,7 +1287,7 @@
        2.94
       ],
       [
-       15.35,
+       15.12,
        15.11,
        3.34
       ]
@@ -1294,7 +1300,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 776,
+     "triangles": 792,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -1317,7 +1323,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 776,
+     "triangles": 792,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -1328,7 +1334,7 @@
       ],
       [
        17.75,
-       35.58,
+       35.52,
        9.63
       ]
      ],
@@ -1340,7 +1346,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 776,
+     "triangles": 792,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -1363,7 +1369,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 776,
+     "triangles": 792,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -1386,7 +1392,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 800,
+     "triangles": 792,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -1396,7 +1402,7 @@
        9.23
       ],
       [
-       14.95,
+       14.72,
        14.71,
        9.63
       ]
@@ -1409,7 +1415,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 776,
+     "triangles": 792,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -1432,7 +1438,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 776,
+     "triangles": 792,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -1443,7 +1449,7 @@
       ],
       [
        16.43,
-       32.94,
+       32.88,
        15.91
       ]
      ],
@@ -1455,7 +1461,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 776,
+     "triangles": 792,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -1478,7 +1484,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 776,
+     "triangles": 792,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -1501,7 +1507,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 800,
+     "triangles": 792,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre",
      "bounds_cm": [
@@ -1511,7 +1517,7 @@
        15.51
       ],
       [
-       13.89,
+       13.63,
        13.62,
        15.91
       ]
@@ -1548,7 +1554,7 @@
       "M_B09_GaugeNeedle",
       "M_B09_Iron"
      ],
-     "triangles": 84,
+     "triangles": 60,
      "pivot": "its hinge",
      "placed_at": "GaugePivot",
      "bounds_cm": [
@@ -1665,7 +1671,7 @@
      "slots": [
       "M_B09_TimberForm"
      ],
-     "triangles": 336,
+     "triangles": 288,
      "bounds_cm": [
       [
        -7.5,
@@ -1686,7 +1692,7 @@
      "slots": [
       "M_B09_TimberForm"
      ],
-     "triangles": 1336,
+     "triangles": 1256,
      "bounds_cm": [
       [
        -13.87,
@@ -1707,7 +1713,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 800,
+     "triangles": 792,
      "bounds_cm": [
       [
        -13.63,
@@ -1715,7 +1721,7 @@
        114.09
       ],
       [
-       13.89,
+       13.63,
        13.62,
        114.49
       ]
@@ -1728,7 +1734,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 800,
+     "triangles": 792,
      "bounds_cm": [
       [
        -14.72,
@@ -1736,7 +1742,7 @@
        120.37
       ],
       [
-       14.95,
+       14.72,
        14.71,
        120.77
       ]
@@ -1749,7 +1755,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 800,
+     "triangles": 792,
      "bounds_cm": [
       [
        -15.12,
@@ -1757,7 +1763,7 @@
        126.66
       ],
       [
-       15.35,
+       15.12,
        15.11,
        127.06
       ]
@@ -1770,7 +1776,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 800,
+     "triangles": 792,
      "bounds_cm": [
       [
        -15.12,
@@ -1778,7 +1784,7 @@
        132.94
       ],
       [
-       15.35,
+       15.12,
        15.11,
        133.34
       ]
@@ -1791,7 +1797,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 800,
+     "triangles": 792,
      "bounds_cm": [
       [
        -14.72,
@@ -1799,7 +1805,7 @@
        139.23
       ],
       [
-       14.95,
+       14.72,
        14.71,
        139.63
       ]
@@ -1812,7 +1818,7 @@
      "slots": [
       "M_B09_Bamboo"
      ],
-     "triangles": 800,
+     "triangles": 792,
      "bounds_cm": [
       [
        -13.63,
@@ -1820,7 +1826,7 @@
        145.51
       ],
       [
-       13.89,
+       13.63,
        13.62,
        145.91
       ]
@@ -1833,7 +1839,7 @@
      "slots": [
       "M_B09_Ceramic"
      ],
-     "triangles": 288,
+     "triangles": 240,
      "bounds_cm": [
       [
        -26.2,
@@ -1947,7 +1953,7 @@
     },
     "Seam1_1": {
      "cm": [
-      -14.073,
+      -14.078,
       0.0,
       113.5
      ]
@@ -1989,7 +1995,7 @@
     },
     "Seam1_7": {
      "cm": [
-      -14.073,
+      -14.078,
       0.0,
       146.5
      ]
@@ -2011,7 +2017,7 @@
     "Seam2_1": {
      "cm": [
       -0.0,
-      -14.073,
+      -14.078,
       113.5
      ]
     },
@@ -2053,7 +2059,7 @@
     "Seam2_7": {
      "cm": [
       -0.0,
-      -14.073,
+      -14.078,
       146.5
      ]
     },
@@ -2073,7 +2079,7 @@
     },
     "Seam3_1": {
      "cm": [
-      14.073,
+      14.078,
       -0.0,
       113.5
      ]
@@ -2115,7 +2121,7 @@
     },
     "Seam3_7": {
      "cm": [
-      14.073,
+      14.078,
       -0.0,
       146.5
      ]
@@ -2137,7 +2143,7 @@
     "Seam4_1": {
      "cm": [
       0.0,
-      14.073,
+      14.078,
       113.5
      ]
     },
@@ -2179,7 +2185,7 @@
     "Seam4_7": {
      "cm": [
       0.0,
-      14.073,
+      14.078,
       146.5
      ]
     },
@@ -2300,10 +2306,16 @@
     }
    ],
    "clearance": {
+    "posture": "standing: rays from the capsule's centre at 88 cm. Crouched (half-height 44) is not covered by this proof; crouched and native coverage are root's",
     "eligible_positions": 1648,
     "grid_cm": 10.0,
     "rays_blocked_by_proposed_proxies": 0,
     "rays_blocked_by_room_today": 0,
+    "crouched_estimate": {
+     "ray_from_cm": 44.0,
+     "rays_blocked_by_proposed_proxies": 80,
+     "note": "a CPU estimate on the same plan positions and boxes, not root's coverage"
+    },
     "work_stand_eligible": true,
     "work_stand_ray_clear": true,
     "capsule_gap_cm": 11.0,
@@ -2320,13 +2332,13 @@
      "slots": [
       "M_B09_Washi"
      ],
-     "triangles": 768,
+     "triangles": 4608,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre (turned by the turntable)",
      "bounds_cm": [
       [
-       -15.21,
-       -15.21,
+       -15.22,
+       -15.22,
        -22.0
       ],
       [
@@ -2346,17 +2358,17 @@
      "slots": [
       "M_B09_Washi"
      ],
-     "triangles": 768,
+     "triangles": 4608,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre (turned by the turntable)",
      "bounds_cm": [
       [
        -1.06,
-       -15.23,
+       -15.24,
        -22.0
       ],
       [
-       15.23,
+       15.24,
        1.06,
        22.0
       ]
@@ -2372,7 +2384,7 @@
      "slots": [
       "M_B09_Washi"
      ],
-     "triangles": 768,
+     "triangles": 4608,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre (turned by the turntable)",
      "bounds_cm": [
@@ -2382,8 +2394,8 @@
        -22.0
       ],
       [
-       15.25,
-       15.25,
+       15.26,
+       15.26,
        22.0
       ]
      ],
@@ -2398,18 +2410,18 @@
      "slots": [
       "M_B09_Washi"
      ],
-     "triangles": 768,
+     "triangles": 4608,
      "pivot": "the lantern's centre",
      "placed_at": "LanternCentre (turned by the turntable)",
      "bounds_cm": [
       [
-       -15.27,
+       -15.28,
        -1.07,
        -22.0
       ],
       [
        1.07,
-       15.27,
+       15.28,
        22.0
       ]
      ],
@@ -2597,6 +2609,13 @@
        "in_frame": true,
        "occluded_by": [],
        "ok": true
+      },
+      "seam's bottom end at the rim (reported)": {
+       "in_frame": true,
+       "occluded_by": [
+        "SM_B09_Washi4"
+       ],
+       "ok": false
       }
      },
      "21:9": {
@@ -2604,15 +2623,24 @@
        "in_frame": true,
        "occluded_by": [],
        "ok": true
+      },
+      "seam's bottom end at the rim (reported)": {
+       "in_frame": true,
+       "occluded_by": [
+        "SM_B09_Washi4"
+       ],
+       "ok": false
       }
      }
     },
     "approach": {
      "16:9": {
-      "seam": 1.0
+      "seam": 1.0,
+      "seam's bottom end at the rim (reported)": 0.9542
      },
      "21:9": {
-      "seam": 1.0
+      "seam": 1.0,
+      "seam's bottom end at the rim (reported)": 0.9542
      }
     },
     "approach_positions": 153
@@ -2690,7 +2718,7 @@
      "slots": [
       "M_B09_Ceramic"
      ],
-     "triangles": 504,
+     "triangles": 448,
      "bounds_cm": [
       [
        -1.0,
@@ -2711,7 +2739,7 @@
      "slots": [
       "M_B09_Ceramic"
      ],
-     "triangles": 320,
+     "triangles": 256,
      "bounds_cm": [
       [
        -18.0,
@@ -2769,7 +2797,7 @@
     },
     "OilStroke0_1": {
      "cm": [
-      -14.173,
+      -14.178,
       0.0,
       146.5
      ]
@@ -2811,7 +2839,7 @@
     },
     "OilStroke0_7": {
      "cm": [
-      -14.173,
+      -14.178,
       0.0,
       113.5
      ]
@@ -2832,8 +2860,8 @@
     },
     "OilStroke1_1": {
      "cm": [
-      -10.022,
-      -10.022,
+      -10.025,
+      -10.025,
       146.5
      ]
     },
@@ -2874,8 +2902,8 @@
     },
     "OilStroke1_7": {
      "cm": [
-      -10.022,
-      -10.022,
+      -10.025,
+      -10.025,
       113.5
      ]
     },
@@ -2895,8 +2923,8 @@
     },
     "OilStroke2_1": {
      "cm": [
-      -10.022,
-      10.022,
+      -10.025,
+      10.025,
       146.5
      ]
     },
@@ -2937,8 +2965,8 @@
     },
     "OilStroke2_7": {
      "cm": [
-      -10.022,
-      10.022,
+      -10.025,
+      10.025,
       113.5
      ]
     },
@@ -3003,10 +3031,16 @@
     }
    ],
    "clearance": {
+    "posture": "standing: rays from the capsule's centre at 88 cm. Crouched (half-height 44) is not covered by this proof; crouched and native coverage are root's",
     "eligible_positions": 1428,
     "grid_cm": 10.0,
     "rays_blocked_by_proposed_proxies": 0,
     "rays_blocked_by_room_today": 0,
+    "crouched_estimate": {
+     "ray_from_cm": 44.0,
+     "rays_blocked_by_proposed_proxies": 0,
+     "note": "a CPU estimate on the same plan positions and boxes, not root's coverage"
+    },
     "work_stand_eligible": true,
     "work_stand_ray_clear": true,
     "capsule_gap_cm": 11.0,
@@ -3026,18 +3060,18 @@
       "M_B09_RimLacquer",
       "M_B09_Washi"
      ],
-     "triangles": 9096,
+     "triangles": 24408,
      "pivot": "the lantern's centre; it hangs from its hang point",
      "placed_at": "LanternHang - hang_point",
      "bounds_cm": [
       [
-       -15.27,
-       -15.23,
+       -15.28,
+       -15.24,
        -23.0
       ],
       [
-       15.35,
-       15.27,
+       15.26,
+       15.28,
        33.29
       ]
      ],
@@ -3082,6 +3116,7 @@
       "oil side strokes (reported)": {
        "in_frame": true,
        "occluded_by": [
+        "SM_B09_Washi1",
         "SM_B09_Washi4"
        ],
        "ok": false
@@ -3096,6 +3131,7 @@
       "oil side strokes (reported)": {
        "in_frame": true,
        "occluded_by": [
+        "SM_B09_Washi1",
         "SM_B09_Washi4"
        ],
        "ok": false
@@ -3104,12 +3140,12 @@
     },
     "approach": {
      "16:9": {
-      "oil front stroke": 1.0,
-      "oil side strokes (reported)": 0.6644
+      "oil front stroke": 0.9732,
+      "oil side strokes (reported)": 0.4698
      },
      "21:9": {
-      "oil front stroke": 1.0,
-      "oil side strokes (reported)": 0.6644
+      "oil front stroke": 0.9732,
+      "oil side strokes (reported)": 0.4698
      }
     },
     "approach_positions": 149
@@ -3209,7 +3245,7 @@
      "slots": [
       "M_B09_TimberBench"
      ],
-     "triangles": 280,
+     "triangles": 224,
      "bounds_cm": [
       [
        -27.6,
@@ -3441,10 +3477,16 @@
     }
    ],
    "clearance": {
+    "posture": "standing: rays from the capsule's centre at 88 cm. Crouched (half-height 44) is not covered by this proof; crouched and native coverage are root's",
     "eligible_positions": 1336,
     "grid_cm": 10.0,
     "rays_blocked_by_proposed_proxies": 0,
     "rays_blocked_by_room_today": 386,
+    "crouched_estimate": {
+     "ray_from_cm": 44.0,
+     "rays_blocked_by_proposed_proxies": 56,
+     "note": "a CPU estimate on the same plan positions and boxes, not root's coverage"
+    },
     "work_stand_eligible": true,
     "work_stand_ray_clear": true,
     "capsule_gap_cm": 11.0,
@@ -3462,7 +3504,7 @@
       "M_B09_FuseCord",
       "M_B09_ShellCore"
      ],
-     "triangles": 1124,
+     "triangles": 996,
      "pivot": "its centre",
      "placed_at": "ShellCore1..3",
      "bounds_cm": [
@@ -3487,7 +3529,7 @@
       "M_B09_ShellPaper",
       "M_B09_Twine"
      ],
-     "triangles": 1268,
+     "triangles": 1140,
      "pivot": "its centre",
      "placed_at": "WrapSpot, then ShellSeat1..3",
      "bounds_cm": [
