@@ -139,6 +139,10 @@ run_step import-cc0 import_cc0_environment.py 'SORA_CC0_ENVIRONMENT_READY: '
 # material depends on the craft master, so craft must precede the dojo kit.
 run_step import-craft import_sora_craft.py 'SORA_CRAFT_IMPORT_COMPLETE: '
 run_step import-dojo-kit import_nyaagyu_dojo_kit.py 'NYAAGYU_DOJO_KIT_READY: '
+# A separate process must reopen the saved modules, including all four rails.
+# In-memory import success alone does not establish a reproducible kit.
+SORA_DOJO_IMPORT_LOG="$OUTPUT/import-dojo-kit.log" run_step validate-dojo-kit validate_dojo_kit.py \
+  'SORA_DOJO_KIT_VALIDATED: 16 saved modules reopened with full fallback and materials'
 run_step import-vfx create_sora_vfx.py "SORA_VFX_READY: $EXPECTED_VFX_SYSTEMS systems" rhi
 run_step validate validate_imported_assets.py \
   "SORA_ASSET_VALIDATION_COMPLETE: $EXPECTED_PACKAGES packages loaded with expected types"

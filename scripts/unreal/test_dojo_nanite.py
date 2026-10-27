@@ -165,6 +165,82 @@ class DojoNaniteTests(unittest.TestCase):
         self.assets = Assets()
     def enable(self): return D.enable_full_fallback(self.mesh, self.module, self.editor, U, self.library, self.assets, self.source_root)
 
+    def read_saved(self):
+        U.StaticMesh = Mesh
+        return D.audit_saved_module(self.module, self.source_root, U, self.editor, self.assets, self.library)
+
+    def saved_fixture(self):
+        self.saved_baseline = self.enable()
+        def load(path):
+            self.assertEqual(path, "/Game/Generated/Environment/DojoKit/SM_Dojo")
+            return self.mesh
+        self.assets.load_asset = load
+
+    def test_saved_package_readback_checks_all_lods_without_writes_or_repairs(self):
+        self.saved_fixture()
+        before = D.conventional(self.mesh, self.editor, Procedural)
+        counts = self.assets.saves, self.editor.applied, self.editor.imports, self.editor.removals
+        result = self.read_saved()
+        D.verify_saved_import(result, self.saved_baseline)
+        self.assertEqual(result["conventional"], before[0])
+        self.assertEqual([lod["triangles"] for lod in result["conventional"]["lods"]], [4, 2, 2])
+        self.assertEqual(result["source"]["sha256"], self.module["lods"][0]["sha256"])
+        self.assertEqual(result["materials"][1]["shading"], "TwoSidedFoliage")
+        self.assertEqual(D.conventional(self.mesh, self.editor, Procedural), before)
+        self.assertEqual((self.assets.saves, self.editor.applied, self.editor.imports, self.editor.removals), counts)
+
+    def test_reopened_geometry_must_match_import_not_only_triangle_counts(self):
+        self.saved_fixture()
+        self.mesh.geometry[0][0][0][0].z += .001
+        observed = self.read_saved()
+        with self.assertRaisesRegex(RuntimeError, "saved conventional differs"):
+            D.verify_saved_import(observed, self.saved_baseline)
+        self.assertEqual(self.assets.saves, 2)
+
+    def test_import_baseline_requires_complete_unique_inventory_and_no_python_failure(self):
+        self.saved_fixture()
+        line = "LogPython: SORA_DOJO_NANITE_IMPORT " + json.dumps(self.saved_baseline) + "\n"
+        marker = "LogPython: NYAAGYU_DOJO_KIT_READY: 1 modules: SM_Dojo\n"
+        path = self.source_root / "import.log"
+        path.write_text(line + marker)
+        self.assertEqual(D.read_import_baselines(path, ["SM_Dojo"]), {"SM_Dojo": self.saved_baseline})
+        for text in (line, marker, line + line + marker, line + marker + "LogPython: Error: failed\n"):
+            path.write_text(text)
+            with self.assertRaises(RuntimeError):
+                D.read_import_baselines(path, ["SM_Dojo"])
+
+    def test_saved_readback_rejects_missing_or_wrong_asset(self):
+        self.saved_fixture()
+        for missing in (None, object()):
+            self.assets.load_asset = lambda path: missing
+            with self.assertRaisesRegex(RuntimeError, "saved static mesh is missing"):
+                self.read_saved()
+        self.assertEqual(self.assets.saves, 2)
+
+    def test_saved_readback_rejects_stale_source_and_changed_fallback_or_slots(self):
+        for failure in ("source", "lods", "slots"):
+            with self.subTest(failure=failure):
+                self.setUp(); self.saved_fixture()
+                if failure == "source": self.mesh.hi_res_source = "/other/LOD0.fbx"
+                elif failure == "lods":
+                    self.mesh.lods.pop(); self.mesh.geometry.pop(); self.mesh.screens.pop()
+                else: self.mesh.names[0] = "UnexpectedSlot"
+                with self.assertRaisesRegex(RuntimeError, "source filename|fallback LODs|material slots"):
+                    self.read_saved()
+                self.assertEqual(self.assets.saves, 2)
+
+    def test_saved_readback_rejects_incomplete_resources_settings_and_bindings(self):
+        for failure in ("resources", "fallback", "material", "usage"):
+            with self.subTest(failure=failure):
+                self.setUp(); self.saved_fixture()
+                if failure == "resources": self.mesh.nanite_triangles = 0
+                elif failure == "fallback": self.mesh.settings.values["fallback_percent_triangles"] = .25
+                elif failure == "material": self.mesh.materials[0] = None
+                else: self.mesh.materials[0].usages.remove("Nanite")
+                with self.assertRaisesRegex(RuntimeError, "resources are empty|settings differ|binding is missing|Nanite material usage"):
+                    self.read_saved()
+                self.assertEqual(self.assets.saves, 2)
+
     def test_explicit_full_fallback_retains_three_authored_lods_slots_and_foliage(self):
         before, _ = D.conventional(self.mesh, self.editor, Procedural)
         result = self.enable()

@@ -173,6 +173,66 @@ def require_nanite_source(mesh, subsystem, source):
     return str(filename)
 
 
+def audit_saved_module(module, source_root, unreal, subsystem, assets, library):
+    """Reopen one imported package and inspect it without saving or repairing it."""
+    name = module["asset"]
+    mesh = assets.load_asset("/Game/Generated/Environment/DojoKit/" + name)
+    require(isinstance(mesh, unreal.StaticMesh), f"{name}: saved static mesh is missing")
+    source, digest = verify_lod0_source(module, source_root)
+    filename = require_nanite_source(mesh, subsystem, source)
+    report, _ = conventional(mesh, subsystem, unreal.ProceduralMeshLibrary)
+    require([lod["triangles"] for lod in report["lods"]] == [lod["triangles"] for lod in module["lods"]],
+            f"{name}: saved fallback LODs differ from the authored triangle counts")
+    require(len(report["slot_names"]) == len(set(report["slot_names"])) and
+            set(report["slot_names"]) == set(module["material_slots"]), f"{name}: saved material slots differ")
+    settings = subsystem.get_nanite_settings(mesh)
+    expected = {"enabled": True, "generate_fallback": unreal.NaniteGenerateFallback.ENABLED,
+                "fallback_target": unreal.NaniteFallbackTarget.PERCENT_TRIANGLES,
+                "fallback_percent_triangles": 1.0, "fallback_relative_error": 0.0,
+                "keep_percent_triangles": 1.0, "trim_relative_error": 0.0}
+    require(all(settings.get_editor_property(k) == v for k, v in expected.items()),
+            f"{name}: saved Nanite/full-fallback settings differ")
+    triangles, vertices = mesh.get_num_nanite_triangles(), mesh.get_num_nanite_vertices()
+    require(triangles > 0 and vertices > 0, f"{name}: saved Nanite resources are empty")
+    require(all(mesh.get_material(i) is not None for i in range(len(report["slot_names"]))),
+            f"{name}: saved material binding is missing")
+    materials = [material_audit(mesh.get_material(i), unreal, library) for i in range(len(report["slot_names"]))]
+    return {"asset": name, "conventional": report, "materials": materials,
+            "source": {"file": str(source), "sha256": digest, "readback": filename},
+            "nanite_triangles": triangles, "nanite_vertices": vertices,
+            "settings": {k: v if isinstance(v, (bool, float)) else str(v) for k, v in expected.items()}}
+
+
+def read_import_baselines(log_path, expected_names):
+    """Read audit data from the completed import, never execute log contents."""
+    lines = Path(log_path).read_text(errors="replace").splitlines()
+    require(not any("LogPython: Error" in line or "Traceback (most recent call last)" in line for line in lines),
+            "import baseline contains a Python failure")
+    marker = f"LogPython: NYAAGYU_DOJO_KIT_READY: {len(expected_names)} modules:"
+    require(any(marker in line for line in lines), "import baseline has no full completion marker")
+    rows = {}
+    for line in lines:
+        _, separator, payload = line.partition("LogPython: SORA_DOJO_NANITE_IMPORT ")
+        if separator:
+            row = json.loads(payload)
+            require(row["asset"] not in rows, "duplicate import baseline module")
+            rows[row["asset"]] = row
+    require(set(rows) == set(expected_names), "import baseline module inventory differs")
+    return rows
+
+
+def verify_saved_import(observed, baseline):
+    """Bind reopened geometry, material behavior and resources to import output."""
+    require(observed["asset"] == baseline["asset"], "saved/imported module identity differs")
+    for key, original in (("conventional", "conventional_after"), ("materials", "materials"),
+                          ("settings", "settings"), ("nanite_triangles", "nanite_input_triangles"),
+                          ("nanite_vertices", "nanite_input_vertices")):
+        require(observed[key] == baseline[original], f"{observed['asset']}: saved {key} differs from completed import")
+    require(observed["source"]["sha256"] == baseline["nanite_source"]["sha256"] and
+            observed["source"]["file"] == baseline["nanite_source"]["resolved_file"],
+            "saved/imported original source identity differs")
+
+
 def enable_full_fallback(mesh, module, subsystem, unreal, library, assets, source_root):
     source, source_digest = verify_lod0_source(module, source_root)
     require(subsystem.get_nanite_settings(mesh).get_editor_property("enabled") is False and
