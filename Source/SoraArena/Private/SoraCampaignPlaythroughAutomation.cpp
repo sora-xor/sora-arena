@@ -53,6 +53,7 @@
 #include "Misc/AutomationTest.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+#include "Misc/ScopeExit.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "Serialization/JsonWriter.h"
@@ -69,8 +70,8 @@
 // opens every explore cache; the hero walks (is placed, or rides) onto points,
 // into the volumes that release waves and beside an escorted party; the clock
 // runs holds and survivals; lethal damage reaches OpponentDefeated; and the
-// dojo forms are recorded. Every beat starts with the hero in its place (a
-// travel cut), and every ride in the saddle.
+// dojo forms are recorded. Travel cuts enter disconnected places; the
+// completed workshop is left on foot. Every ride starts in the saddle.
 // The disk save is read back at every checkpoint beat. In every chapter the
 // first checkpoint of each task goal, and every boss and duel phase
 // checkpoint, is restored in a fresh world (the old one torn down) and played
@@ -1911,8 +1912,39 @@ bool PlayUntil(FAutomationTestBase& Test, FState& State, int32 StopBeat = INDEX_
             return true;
         const FSoraChapter& Chapter = ChapterData(State);
         const int32 Beat = Campaign(State)->ActiveBeat();
-        // Every beat starts with the hero in its place, holding only what
-        // the completed beats unlocked.
+        // The completed workshop now keeps the player at the inspection
+        // bench. Traverse its real exit before checking the square's place.
+        // Hold threats only during this directed traversal, then restore their
+        // tick states; this assisted campaign does not test stealth balance.
+        if(Chapter.Beats[Beat].Id==TEXT("ch03.b10")&&
+           Campaign(State)->HeroZone()==Chapter.Beats[8].Space.Zone)
+        {
+            if(!WaitForDialogue(Test,State))return false;
+            struct FHeld {TWeakObjectPtr<ASoraEnemy> Enemy;bool Actor,Movement,Controller;};
+            TArray<FHeld> Held;
+            for(auto* Enemy:LiveEnemies(State))
+            {
+                auto* Movement=Enemy->GetCharacterMovement();auto* Controller=Enemy->GetController();
+                Held.Add({Enemy,Enemy->IsActorTickEnabled(),Movement->IsComponentTickEnabled(),
+                    Controller&&Controller->IsActorTickEnabled()});
+                Enemy->SetActorTickEnabled(false);Movement->StopMovementImmediately();Movement->SetComponentTickEnabled(false);
+                if(Controller)Controller->SetActorTickEnabled(false);
+            }
+            ON_SCOPE_EXIT
+            {
+                for(const auto& Row:Held)if(auto* Enemy=Row.Enemy.Get())
+                {
+                    Enemy->SetActorTickEnabled(Row.Actor);Enemy->GetCharacterMovement()->SetComponentTickEnabled(Row.Movement);
+                    if(auto* Controller=Enemy->GetController())Controller->SetActorTickEnabled(Row.Controller);
+                }
+            };
+            for(const FVector Point:{FVector(2650,-1900,0),FVector(2650,-1800,0),FVector(2440,-1800,0),
+                FVector(2440,-1030,0),FVector(3280,-1030,0),FVector(3480,-1030,0),FVector(3480,0,0),
+                FVector(3000,0,0),FVector(1100,0,0)})
+                if(!Test.TestTrue(TEXT("The campaign walks from final inspection into the square"),
+                    SoraLiftAutomation::Walk(*State.World,Point)))return false;
+        }
+        // At the destination, hold only what the completed beats unlocked.
         if (const FSoraBeatSpace* Space = Campaign(State)->ActiveSpace();
             Space && !Test.TestEqual(*(Where(State) + TEXT(": the hero stands in the beat's place")), Campaign(State)->HeroZone(), Space->Zone))
             return Fail(Test, State, Where(State) + TEXT(" did not travel to its place"));
