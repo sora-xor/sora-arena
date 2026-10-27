@@ -48,7 +48,8 @@ so standing again does not replay old work. The historical `LastAction` record
 is not erased by a posture change. Standing is a necessary condition; world
 contact, player position, reach and view checks remain separate requirements.
 The [standing-reach source checkpoint](../qualification/workshop-standing-reach-2026-10-27.md)
-adds runtime input coverage for all six steps; its native run is pending.
+passes its all-six-step mapped-input case within the 42-case native run at
+`558df255`. Working-region/yaw admission and visible paw contact remain open.
 
 No workshop craft paw assets or presenter are integrated by this interface.
 The [station-lifetime and continuous-exit follow-up](../qualification/workshop-lifetime-2026-10-27.md)

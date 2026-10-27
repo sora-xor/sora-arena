@@ -39,8 +39,32 @@ CPU validation in the isolated source worktree:
 
 The native frontend navigation test now requires the readable acknowledgements
 and rejects audit headings/fields. The existing CreditsFontCoverage test still
-requires the original Arabic title and the bundled Arabic face. Those native
-tests have not run at this source. Native font shaping, both credits capture
-positions, menu scrolling, and fresh packaged staging/runtime remain pending.
-No Unreal, Blender, build or render process was launched for this source work;
-Claude retains the full engine lane under Coordination 256.
+requires the original Arabic title and the bundled Arabic face. Both pass in
+the exact 42-case native selection at signed `558df255` with zero errors or
+warnings. The isolated SOURCE editor build succeeds in 45.50 seconds; natural
+EOF is `2026-10-27T05:28:35.111035Z`. The native review digest is
+`c436d059225e19fa8d3cdf71847486d28a93b4f5e07dcfba56dcfc0fe046f237`.
+
+The subsequent `SoraArena.UIRendered.FrontEndScreens` run also passes with zero
+errors/warnings, using Metal Bindless SM6 on the M2 Ultra at 1280×720. Its outer
+collection wrapper fails because the generic capture tool does not recognize
+UI-tour frame markers and archives zero frames. That failed status and empty
+generic manifest are preserved. A separate review authenticates all 19 original
+PNGs against 19 engine screenshot acknowledgements, exact dimensions, fresh
+timestamps and hashes. No rerender or image modification was used to recover
+them. Recovery review digest:
+`946f42ac861f877598b63dcef750a2eeba3ff6140e5976acfc5bef2a81c4a245`.
+
+The top and scrolled credits are visually reviewed: notices are readable,
+scrolling stays inside the panel, Back and footer remain visible, and the audit
+instructions/storage table are gone. The other 17 frames are authenticated but
+not visually reviewed here. The Arabic title passes native font selection and
+shaping; it is outside these two sampled scroll positions. Visual review digest:
+`39004404bf6a8d81f7e564c04da2002eb534933ef0989d5e966fd5e1f49b0c5e`.
+
+Both runs preserve source/native/Config/Generated inputs and the frozen ROOT
+checkout at `c096eb98`. Evidence is under SOURCE's ignored
+`Saved/Qualification/2026-10-27/credits-stance-runtime-558df255-attempt1` and
+`credits-rendered-558df255-ui-review`. These are editor results; fresh packaged
+staging/runtime remain pending. The full lane returned to Claude under
+Coordination 263 after terminal processes and an empty inventory were verified.

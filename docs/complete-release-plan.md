@@ -31,14 +31,19 @@ criteria remain open. The coordination mailboxes record current lane ownership.
 The [readable-credits source change](qualification/credits-presentation-2026-10-27.md)
 separates the in-game source acknowledgements from the unchanged asset audit.
 All 32 ledger/notices tests, output freshness and source content/font coverage
-pass. Native font selection, menu navigation, rendered layout and packaged
-staging verification remain pending while Claude owns the engine lane.
+pass. Native font selection and menu navigation pass within the 42-case SOURCE
+run at `558df255`. Its SM6 UI tour passes; an outer collection failure is retained
+and all 19 original frames independently recovered and authenticated. Both
+credits views are visually reviewed at 720p. Fresh packaged staging remains open.
 
 The [standing-workshop source change](qualification/workshop-standing-reach-2026-10-27.md)
 refuses crouched craft actions and cancels a held unit on crouch without losing
 completed work. It adds mapped-input coverage across all six recipe steps.
-Twenty-two compiled workshop source tests and content validation pass; the
-new Unreal test and visual contact remain unverified until the lane returns.
+Twenty-two compiled workshop source tests and content validation pass. All 42
+selected Unreal cases then pass with zero errors/warnings, including the new
+stance test and assisted campaign. Comfortable working regions with matching
+proxies, visible paw contact and fresh package validation remain open. These
+SOURCE results leave Claude's ROOT `c096eb98` input checkout unchanged.
 
 ## October 27 workshop action interface
 
