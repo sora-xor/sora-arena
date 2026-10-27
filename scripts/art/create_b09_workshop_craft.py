@@ -149,9 +149,10 @@ def main():
                                   "sockets": {s: np.round(p, 3).tolist() for s, (p, _, _) in sorted(socks.items())},
                                   "socket_axes": {s: {"x": list(unit(xa, (1.0, 0.0, 0.0))), "z": list(unit(za, (0.0, 0.0, 1.0)))}
                                                   for s, (_, xa, za) in sorted(socks.items())}}
+        # The next asset reuses socket names (StationPoint, WorkStand), so these empties step aside by renaming.
+        # Removing them instead (s144) left stale view-layer entries that fbx_socket_export.export then met as None.
         for e in empties:
-            bpy.data.objects.remove(e, do_unlink=True)
-        bpy.data.objects.remove(obj, do_unlink=True)
+            e.name = f"Done{len(record['assets']):02d}_{e.name}"
     with open(out / "manifest.json", "x") as fh:
         json.dump(record, fh, indent=1)
     print(MARKER, json.dumps({"assets": len(record["assets"]), "out": str(out.relative_to(ROOT))}), flush=True)
