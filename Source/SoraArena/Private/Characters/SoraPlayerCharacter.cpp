@@ -927,7 +927,8 @@ void ASoraPlayerCharacter::LoadControlProfile()
     // The game mode names the slot. Without one the defaults apply and nothing is saved.
     const auto* G=PlayerGameMode(this);
     ControlSlot=G?G->ControlSlotName:FString();
-    ControlProfile=ControlSlot.IsEmpty()?nullptr:Cast<USoraControlSaveGame>(UGameplayStatics::LoadGameFromSlot(ControlSlot,0));
+    ControlProfile=!ControlSlot.IsEmpty()&&UGameplayStatics::DoesSaveGameExist(ControlSlot,0)
+        ?Cast<USoraControlSaveGame>(UGameplayStatics::LoadGameFromSlot(ControlSlot,0)):nullptr;
     if(!ControlProfile||ControlProfile->SaveSchema!=USoraControlSaveGame::Schema)
         ControlProfile=USoraControlSaveGame::New();
     if(!ControlProfile) return;

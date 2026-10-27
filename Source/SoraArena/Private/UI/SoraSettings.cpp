@@ -183,7 +183,8 @@ void USoraSettings::Load(const FString& Slot, bool bAttachToEngine)
 {
     SlotName = Slot;
     bAttached = bAttachToEngine && UGameUserSettings::GetGameUserSettings() != nullptr;
-    Save = Slot.IsEmpty() ? nullptr : Cast<USoraSettingsSaveGame>(UGameplayStatics::LoadGameFromSlot(Slot, 0));
+    Save = !Slot.IsEmpty() && UGameplayStatics::DoesSaveGameExist(Slot, 0)
+        ? Cast<USoraSettingsSaveGame>(UGameplayStatics::LoadGameFromSlot(Slot, 0)) : nullptr;
     if (Save && Save->SaveSchema != USoraSettingsSaveGame::Schema)
         Save = nullptr;
     // Values out of range fall back to their defaults, one by one.

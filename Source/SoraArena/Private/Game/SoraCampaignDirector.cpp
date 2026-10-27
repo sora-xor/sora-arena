@@ -290,7 +290,10 @@ bool USoraCampaignDirector::LoadSave()
 {
     ASoraGameMode& M=Mode();
     const FSoraCatalog& Catalog=FSoraCatalog::Get();
-    Save=Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(M.SaveSlotName,0));
+    // An absent first-launch slot is expected. Existing unreadable saves
+    // still go through the loader and the validation/fallback below.
+    Save=!M.SaveSlotName.IsEmpty()&&UGameplayStatics::DoesSaveGameExist(M.SaveSlotName,0)
+        ?Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(M.SaveSlotName,0)):nullptr;
     // Only a schema-6 save whose chapter, entry unlocks, story flags and
     // collectibles a route through the earlier chapters reaches is read;
     // anything else is a fresh campaign (the unreadable file is replaced at
