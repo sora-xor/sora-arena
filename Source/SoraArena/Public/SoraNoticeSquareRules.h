@@ -15,6 +15,11 @@ constexpr bool KeepLegacyCover(double X,double Y)
 constexpr int EastFloorMinX=3200,EastFloorMaxX=4100,StreetHalfWidth=400;
 struct FBox { double X,Y,Z,SX,SY,SZ; };
 constexpr FBox StreetFloors[]={{3650,0,-25,900,800,50},{0,3250,-25,800,1300,50}};
+// Closed street stubs keep the new floor edges inside the playable ward.
+// Inner wall faces meet the floor edges; turnarounds retain 100 cm clearance.
+constexpr FBox StreetWalls[]={{-425,3250,220,50,1300,540},{425,3250,220,50,1300,540},
+    {0,3925,220,900,50,540},{3650,-425,220,900,50,540},
+    {3650,425,220,900,50,540},{4125,0,220,50,900,540}};
 // Preserve the north wall around the alley and both sides of the new street.
 constexpr FBox NorthWalls[]={{-670,2550,220,540,100,540},{1800,2550,220,2800,100,540}};
 

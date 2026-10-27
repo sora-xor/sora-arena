@@ -178,7 +178,7 @@ class TenementTests(unittest.TestCase):
         self.assertEqual(self.native['kept_houses'],[0,1,3,4])
         self.assertNotIn([-500,-680],self.native['kept_cover'])
         self.assertNotIn([-500,680],self.native['kept_cover'])
-        boxes=self.solids+self.native['notice_solids']+self.native['north_walls']
+        boxes=self.solids+self.native['notice_solids']+self.native['north_walls']+self.native['street_walls']
         boxes += [[x,y,70,230,180,140,0,1] for x,y in self.native['kept_cover']]
         # The generic row's foundations are wider than its walls. The side
         # passage splits its northwest house; that house is away from these
@@ -198,6 +198,9 @@ class TenementTests(unittest.TestCase):
         # The pre-change house and solid boundary wall would fail this test.
         self.assertTrue(self.hits([0,1200,24,685,735,48,0,2],[0,1200,2.15]))
         self.assertTrue(self.hits([1130,2550,220,4140,100,540,0,1],[0,2550,2.15]))
+        for point in ([0,3900,2.15],[-400,3250,2.15],[400,3250,2.15],
+                      [4100,0,2.15],[3650,-400,2.15],[3650,400,2.15]):
+            self.assertTrue(any(self.hits(b,point) for b in self.native['street_walls']),('open edge',point))
 
     def test_notice_panel_and_north_escape_clear_actual_solids(self):
         self.clear([[-1000,2800,2.15],[-1000,540,2.15],[-730,548,2.15]])

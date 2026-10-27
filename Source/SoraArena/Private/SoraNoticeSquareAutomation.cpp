@@ -32,6 +32,20 @@ bool FSoraNoticeStreetRoutesTest::RunTest(const FString&)
     for(int Y:{-700,700,N::NorthStub})if(!Walk(FVector(0,Y,0)))return false;
     W.Stand(FVector(N::WestTurnaround,0,0));if(!W.Tick(8))return false;
     for(int X:{0,N::EastTurnaround})if(!Walk(FVector(X,0,0)))return false;
+    const TPair<FVector,FVector> Edges[]={
+        {FVector(0,3800,90),FVector(0,4100,90)},
+        {FVector(0,3250,90),FVector(-500,3250,90)},
+        {FVector(0,3250,90),FVector(500,3250,90)},
+        {FVector(4000,0,90),FVector(4300,0,90)},
+        {FVector(3650,0,90),FVector(3650,-500,90)},
+        {FVector(3650,0,90),FVector(3650,500,90)}};
+    for(const auto& Edge:Edges)
+    {
+        FHitResult Hit;FCollisionQueryParams Query(SCENE_QUERY_STAT(NoticeStreetBoundary),false,W.Hero());
+        const bool Blocked=W.World->GetTestWorld()->LineTraceSingleByChannel(Hit,Edge.Key,Edge.Value,ECC_Visibility,Query);
+        if(!TestTrue(TEXT("Each new street edge has its real blocking boundary"),Blocked&&Hit.GetComponent()&&
+            Hit.GetComponent()->GetName().StartsWith(TEXT("NoticeSquareBoundary"))))return false;
+    }
     TestEqual(TEXT("Walking either street does not credit the terminal objectives"),W.Campaign()->TaskProgress().Done,0);
     AddInfo(TEXT("Seeded b10 with guards removed; real street traversal only. Authored patrol timing, rooftop routes and visual acceptance remain separate."));
     return !HasAnyErrors();

@@ -228,6 +228,12 @@ void ASoraWorldBuilder::BuildArena(int32 MapId,bool bSites,bool bTenements,bool 
             Box(FString::Printf(TEXT("NoticeSquareStreet%d"),I),FVector(B.X,B.Y,B.Z),FVector(B.SX,B.SY,B.SZ),
                 FLinearColor(.14f,.16f,.13f),true,FRotator::ZeroRotator,TEXT("Soil"));
         }
+        for(int I=0;I<6;++I)
+        {
+            const auto B=N::StreetWalls[I];
+            Box(FString::Printf(TEXT("NoticeSquareBoundary%d"),I),FVector(B.X,B.Y,B.Z),FVector(B.SX,B.SY,B.SZ),
+                FLinearColor(.2f,.23f,.23f),true,FRotator::ZeroRotator,TEXT("Stone"));
+        }
     }
     if(MapId==0) NyaagyuTerrain();
     // The imported estate tiles already carry the photographed stone route.

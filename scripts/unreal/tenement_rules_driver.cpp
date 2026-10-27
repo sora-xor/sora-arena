@@ -94,6 +94,12 @@ int main()
         if(Comma)std::cout<<',';Comma=true;
         std::cout<<'['<<B.X<<','<<B.Y<<','<<B.Z<<','<<B.SX<<','<<B.SY<<','<<B.SZ<<",0,0]";
     }
+    std::cout<<"],\"street_walls\":[";Comma=false;
+    for(const auto B:SoraNoticeSquareRules::StreetWalls)
+    {
+        if(Comma)std::cout<<',';Comma=true;
+        std::cout<<'['<<B.X<<','<<B.Y<<','<<B.Z<<','<<B.SX<<','<<B.SY<<','<<B.SZ<<",0,1]";
+    }
     std::cout<<"],\"north_walls\":[";Comma=false;
     for(const auto B:SoraNoticeSquareRules::NorthWalls)
     {
