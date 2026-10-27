@@ -429,6 +429,7 @@ private:
     // Lantern Ward, map 1 (SoraMapLanternWard.cpp).
     void LanternWardTerminal();
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> TerminalPieces;
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> TerminalCollision=nullptr;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> BrokenTerminal=nullptr;
     bool bTerminalDestroyed=false;
     // Silk Foundry, map 2 (SoraMapSilkFoundry.cpp).

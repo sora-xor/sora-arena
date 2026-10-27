@@ -8,6 +8,7 @@
 #include "SoraCatalogTerminalCharge.h"
 #include "SoraCatalogJson.h"
 #include "GameFramework/DamageType.h"
+#include "Components/StaticMeshComponent.h"
 
 namespace SoraTerminalTest
 {
@@ -21,6 +22,30 @@ bool Ready(FWorld& W)
 }
 bool Panel(FWorld& W)
 {W.Stand(FVector(-730,560,0));return W.Tick(8)&&W.Hero()->GetCharacterMovement()->IsMovingOnGround();}
+bool Collision(FAutomationTestBase& Test,FWorld& W,bool Destroyed)
+{
+    auto* World=W.World->GetTestWorld();
+    const auto Trace=[&](float Z)
+    {
+        FHitResult Hit;FCollisionQueryParams Q(SCENE_QUERY_STAT(TerminalRubble),false,W.Hero());
+        World->LineTraceSingleByChannel(Hit,FVector(-900,460,Z),FVector(-560,460,Z),ECC_Visibility,Q);
+        return Hit;
+    };
+    const auto Low=Trace(90),High=Trace(190);
+    const bool Base=Low.GetComponent()&&Low.GetComponent()->GetName().StartsWith(TEXT("StreetDebtTerminalCollision"));
+    const bool Upper=High.bBlockingHit;
+    bool Ok=Test.TestTrue(TEXT("The terminal remnant still blocks a trace through its visible base"),Base);
+    Ok&=Test.TestEqual(TEXT("The upper terminal blocks only while its intact geometry is visible"),Upper,!Destroyed);
+    if(Destroyed&&Base)
+    {
+        TArray<UStaticMeshComponent*> Meshes;W.Mode()->Arena()->GetComponents(Meshes);
+        const auto* Broken=Meshes.FindByPredicate([](const auto* M){return M->GetName().StartsWith(TEXT("BrokenDebtTerminal"));});
+        Ok&=Test.TestTrue(TEXT("Visible rubble and blocking collision occupy the same bounds"),Broken&&(*Broken)->IsVisible()&&
+            (*Broken)->Bounds.Origin.Equals(Low.GetComponent()->Bounds.Origin,.01f)&&
+            (*Broken)->Bounds.BoxExtent.Equals(Low.GetComponent()->Bounds.BoxExtent,.01f));
+    }
+    return Ok;
+}
 }
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraTerminalEscapeTest,"SoraArena.Campaign.NoticeSquare.ChargeEscape",
     EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
@@ -30,11 +55,14 @@ bool FSoraTerminalEscapeTest::RunTest(const FString&)
     if(!SoraTerminalTest::Ready(W))return false;
     TestEqual(TEXT("The shared alley belongs to the active notice encounter"),W.Campaign()->HeroZone(),W.BeatData().Space.Zone);
     TestFalse(TEXT("Checkpoint begins with an intact terminal"),W.Mode()->Arena()->IsTerminalDestroyed());
+    if(!SoraTerminalTest::Collision(*this,W,false))return false;
     if(!TestTrue(TEXT("Walk to the actual service panel, hold both stages and escape through the real north passage"),
         SoraTerminalChargeAutomation::Escape(*W.World)))return false;
     TestTrue(TEXT("Only the real detonation advances to blackout"),W.Mode()->Arena()->IsTerminalDestroyed());
+    if(!SoraTerminalTest::Collision(*this,W,true))return false;
     W.Mode()->Campaign()->ResetRound();
     TestTrue(TEXT("The next saved checkpoint restores the destroyed terminal"),W.Mode()->Arena()->IsTerminalDestroyed());
+    if(!SoraTerminalTest::Collision(*this,W,true))return false;
     return !HasAnyErrors();
 }
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraTerminalInterruptTest,"SoraArena.Campaign.NoticeSquare.ChargeInterruptions",
@@ -83,9 +111,11 @@ bool FSoraTerminalBlastTest::RunTest(const FString&)
         TestTrue(TEXT("The actual eight-metre self blast damages the player"),W.Hero()->Health<Before);
         TestTrue(TEXT("Death or missing the escape deadline offers checkpoint retry"),W.Mode()->bDefeated);
         TestEqual(TEXT("A missed escape never starts blackout"),W.Campaign()->ActiveBeat(),9);
+        if(!SoraTerminalTest::Collision(*this,W,true))return false;
         W.Campaign()->ResetRound();
         TestTrue(TEXT("Retry discards charge progress"),W.Campaign()->TerminalState().Stage==EStage::Empty);
         TestFalse(TEXT("Retry restores the intact terminal"),W.Mode()->Arena()->IsTerminalDestroyed());
+        if(!SoraTerminalTest::Collision(*this,W,false))return false;
     }
     return !HasAnyErrors();
 }

@@ -11,6 +11,10 @@ constexpr int TerminalX=-730,TerminalY=460,PanelX=-730,PanelY=560;
 struct FSolid { double X,Y,Z,SX,SY,SZ; };
 // Shared with the actual campaign builder and capsule-clearance tests.
 constexpr FSolid Solids[]={{-730,460,121,140,74,242},{-730,620,150,300,40,300},{-730,620,310,350,160,20}};
+// Temporary rubble geometry: the collision and visible remnant use the same
+// bounds. Final authored rubble must replace this shared shape, not just hide
+// the intact terminal while leaving its upper collision behind.
+constexpr FSolid Rubble={-730,460,65,140,74,130};
 enum class EStage { Empty,Planted,Burning,Detonated };
 enum class EEvent { None,Planted,Ignited,Detonated };
 struct FState

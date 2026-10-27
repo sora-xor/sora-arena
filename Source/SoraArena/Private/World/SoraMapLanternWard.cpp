@@ -16,9 +16,12 @@ void ASoraWorldBuilder::LanternWardTerminal()
     const auto S=SoraTerminalChargeRules::Solids[0];
     auto* Proxy=Box(TEXT("StreetDebtTerminalCollision"),FVector(S.X,S.Y,S.Z),
         FVector(S.SX,S.SY,S.SZ),FLinearColor(.10f,.15f,.20f),true);
+    TerminalCollision=Proxy;
+    Proxy->SetMobility(EComponentMobility::Movable);
     if(HasStreetTerminal) Proxy->SetVisibility(false);
     for(int I=First;I<Pieces.Num();++I)if(Pieces[I]->IsVisible())TerminalPieces.Add(Pieces[I]);
-    BrokenTerminal=Box(TEXT("BrokenDebtTerminal"),StreetTerminal+FVector(0,0,65),FVector(140,74,130),
+    const auto R=SoraTerminalChargeRules::Rubble;
+    BrokenTerminal=Box(TEXT("BrokenDebtTerminal"),FVector(R.X,R.Y,R.Z),FVector(R.SX,R.SY,R.SZ),
         FLinearColor(.035f,.04f,.045f),false);
     BrokenTerminal->SetVisibility(false);
 }
@@ -26,6 +29,12 @@ void ASoraWorldBuilder::LanternWardTerminal()
 void ASoraWorldBuilder::SetTerminalDestroyed(bool Destroyed)
 {
     bTerminalDestroyed=Destroyed;
+    if(IsValid(TerminalCollision))
+    {
+        const auto S=Destroyed?SoraTerminalChargeRules::Rubble:SoraTerminalChargeRules::Solids[0];
+        TerminalCollision->SetRelativeLocation(FVector(S.X,S.Y,S.Z));
+        TerminalCollision->SetRelativeScale3D(FVector(S.SX,S.SY,S.SZ)/100.f);
+    }
     for(UStaticMeshComponent* P:TerminalPieces)if(IsValid(P))P->SetVisibility(!Destroyed);
     if(IsValid(BrokenTerminal))BrokenTerminal->SetVisibility(Destroyed);
 }
