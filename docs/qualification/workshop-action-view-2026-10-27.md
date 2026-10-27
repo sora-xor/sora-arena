@@ -49,3 +49,13 @@ The action view is ready for presenter integration; no paw assets or animation
 are delivered by this checkpoint. The b09 → b10 kit/place transition still
 needs physical presentation work. Native bridge remains `10ad7dad` and Mac
 package remains older `c655b6b`. Release qualification remains open.
+
+Published `98e881beb6f0d5b61cd7fa434d947c2a69e7fa9d`, tree
+`c57d3e54242c0824c3499bb87c87ca20b0039865`, passes all **125 source CI gates**
+in run `40442943753`. Tested merge `c326f6f2a34ade78fc4f51505df47d0be7495521`
+has the identical tree. All five artifact digests, exact inventories, original
+logs and signed source verify. Independent review SHA-256
+`89baaac1b30f07d1e336cefc839b8a2f8ec2ecfd81e69ba03850139503270e7e`;
+strict authentication `cf090e20e9487aadeda2012cbd6539c12076d9b517aed3c22fa1161d77026efa`;
+raw logs `41541a58cecc0c02e4874c53b9c58669115aa17817489a3233b4d5e81216686e`.
+This covers the action interface and ladder repairs, not later source changes.

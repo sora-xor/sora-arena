@@ -5,6 +5,7 @@
 #include "SoraEquipmentComponent.h"
 #include "SoraGameEvents.h"
 #include "SoraSettings.h"
+#include "SoraLiftAutomation.h"
 #include "SoraWorldBuilder.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/PointLightComponent.h"
@@ -92,6 +93,13 @@ bool Registry(FWorld& W,bool RecentInspection=false)
         V.LastAction.Serial==0&&V.LastAction.Step==-1&&V.LastAction.Unit==0&&V.LastAction.AgeMs==-1);
     const int Counts[]={6,4,1,1,3,1};
     for(int I=0;I<6;++I)W.Test.TestEqual(TEXT("Saved recipe presentation retains each completed station's count"),V.Committed[I],Counts[I]);
+    TArray<UStaticMeshComponent*> Parts;W.Mode()->Arena()->GetComponents(Parts);
+    int Benches=0;for(const auto* P:Parts)if(P->ComponentHasTag(TEXT("LanternWorkshopBench")))
+    {
+        ++Benches;W.Test.TestTrue(TEXT("The completed workshop still owns solid registered stations"),
+            P->IsRegistered()&&P->GetCollisionEnabled()==ECollisionEnabled::QueryAndPhysics);
+    }
+    W.Test.TestEqual(TEXT("The restored chapter has exactly four workshop benches"),Benches,4);
     int Rows=0;for(const auto& R:W.Campaign()->RegistryRows())if(R.BeatId==TEXT("ch03.b09"))
     {++Rows;W.Test.TestEqual(TEXT("The registry records the workshop's forty lanterns"),R.Entry.Quantity,40);}
     return W.Test.TestEqual(TEXT("The workshop is recorded once"),Rows,1)&&
@@ -210,6 +218,10 @@ bool FSoraWorkshopCraftRecipeTest::RunTest(const FString&)
     using namespace SoraWorkshopCraftTest;
     {
         FWorld W(*this,TEXT("WorkshopCraftRecipe"),2,8);if(!SoraWorkshopCraftTest::Ready(W)||!Windows(W,false))return false;
+        TArray<UStaticMeshComponent*> Parts;W.Mode()->Arena()->GetComponents(Parts);
+        TArray<TWeakObjectPtr<UStaticMeshComponent>> Benches;
+        for(auto* P:Parts)if(P->ComponentHasTag(TEXT("LanternWorkshopBench")))Benches.Add(P);
+        if(!TestEqual(TEXT("The recipe starts at four chapter-owned benches"),Benches.Num(),4))return false;
         auto* Events=USoraGameEvents::Get(W.Mode());if(!TestNotNull(TEXT("Production events exist"),Events))return false;
         int Restored=0;const auto Handle=Events->OnSiteRestored.AddLambda([&](const FSoraSiteRestoredEvent& E)
             {if(E.bCampaign&&E.ChapterId==2&&E.SiteIndex==1)++Restored;});
@@ -243,14 +255,36 @@ bool FSoraWorkshopCraftRecipeTest::RunTest(const FString&)
         if(!Action(W,12,3,1))return false;
         if(!Station(W))return false;
         for(int I=0;I<3;++I)if(!W.Press(EKeys::E)||!Action(W,13+I,4,I+1))return false;
-        if(!TestEqual(TEXT("Three shells lead to fuse inspection"),W.Campaign()->TaskProgress().Step,5)||!W.Press(EKeys::E))return false;
+        if(!TestEqual(TEXT("Three shells lead to fuse inspection"),W.Campaign()->TaskProgress().Step,5))return false;
+        const FVector InspectionAt=W.Hero()->GetActorLocation();
+        const FRotator InspectionLook=W.Hero()->GetControlRotation();
+        if(!W.Press(EKeys::E))return false;
         if(!TestEqual(TEXT("The full recipe enters the next beat"),W.Campaign()->ActiveBeat(),9)||!Registry(W,true))return false;
+        TestTrue(TEXT("Finishing inspection preserves the player's physical place"),W.Hero()->GetActorLocation().Equals(InspectionAt,.1));
+        TestTrue(TEXT("Finishing inspection preserves the player-controlled camera"),W.Hero()->GetControlRotation().Equals(InspectionLook,.01));
+        for(const auto& P:Benches)TestTrue(TEXT("The same station component survives the task transition"),P.IsValid()&&P->IsRegistered());
         TestEqual(TEXT("Completion emits one site restoration event"),Restored,1);
         for(int I=0;I<3000&&!W.Mode()->IsPlaying();++I)if(!W.Tick(1))return false;
+        // Isolate physical exit from stealth balance. These are actual mapped
+        // walking segments, with the new square's opponents held in place.
+        for(TActorIterator<ASoraEnemy> It(W.World->GetTestWorld());It;++It)if(It->IsEnemy()&&It->IsAlive())
+        {
+            It->SetActorTickEnabled(false);It->GetCharacterMovement()->StopMovementImmediately();
+            It->GetCharacterMovement()->SetComponentTickEnabled(false);
+            if(auto* C=It->GetController())C->SetActorTickEnabled(false);
+        }
+        for(const FVector P:{FVector(2650,-1900,0),FVector(2650,-1800,0),FVector(2440,-1800,0),
+            FVector(2440,-1030,0),FVector(3280,-1030,0),FVector(3480,-1030,0),FVector(3480,0,0),
+            FVector(3000,0,0),FVector(1100,0,0)})
+            if(!TestTrue(TEXT("The completed workshop has a continuous walked exit to the square"),SoraLiftAutomation::Walk(*W.World,P)))return false;
+        TestEqual(TEXT("Walking to the square does not skip its charge encounter"),W.Campaign()->ActiveBeat(),9);
         UGameplayStatics::ApplyDamage(W.Hero(),W.Hero()->Health,nullptr,nullptr,UDamageType::StaticClass());
         if(!TestTrue(TEXT("The next checkpoint is retried through real defeat"),W.Mode()->bDefeated)||!W.Press(EKeys::Enter))return false;
         for(int I=0;I<3000&&!W.Mode()->IsPlaying();++I)if(!W.Tick(1))return false;
         if(!Registry(W))return false;
+        TestTrue(TEXT("A retry still restores the square's checkpoint entry"),FVector::Dist2D(W.Hero()->GetActorLocation(),
+            FVector(W.Campaign()->ActiveSpace()->Entry,0))<30.);
+        for(const auto& P:Benches)TestTrue(TEXT("Retry removes the old chapter's station components"),!P.IsValid()||!P->IsRegistered());
         TestEqual(TEXT("Retry does not replay the production award"),Restored,1);
     }
     {

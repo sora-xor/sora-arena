@@ -262,6 +262,8 @@ private:
     UPROPERTY() TObjectPtr<UStaticMeshComponent> WorkshopSeal;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> WorkshopBar;
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> WorkshopWindows;
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> LanternStationMarks;
+    void ShowLanternWorkshopCraft(const SoraWorkshopCraftRules::FView& View);
     UPROPERTY() TArray<TObjectPtr<APointLight>> WorkshopWindowLights;
     FVector BulkheadAt=FVector::ZeroVector;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> BulkheadLever;

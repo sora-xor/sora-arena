@@ -276,7 +276,7 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
     else if(KitWork==TEXT("stations"))
     {
         KitStepStations=Space.StepStations;
-        for(int32 Station=0;Station<Space.Stations.Num();++Station)
+        for(int32 Station=0;!Space.bLanternWorkshop&&Station<Space.Stations.Num();++Station)
         {
             const FVector P=Floor(Space.Stations[Station],Space.bLanternWorkshop?Space.FloorAt(Space.Stations[Station]):0.f);
             KitShape(TEXT("Bench"),KitCube,P+FVector(0,0,40),FVector(1.2f,.8f,.8f),KitTimber,TEXT("Timber"),true);
@@ -361,6 +361,7 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
 }
 void ASoraWorldBuilder::ShowKit(const FSoraKitView& View)
 {
+    ShowLanternWorkshopCraft(View.LanternCraft);
     const float Progress=FMath::Clamp(View.ProgressPermille/1000.f,0.f,1.f);
     if(KitWork==TEXT("sluice")&&KitGauge&&KitFill&&KitWheel)
     {
@@ -426,6 +427,9 @@ void ASoraWorldBuilder::ShowKit(const FSoraKitView& View)
     }
     else if(KitWork==TEXT("stations"))
     {
+        // Lantern manufacture has chapter-owned stations and authored craft
+        // output under production. Generic cargo crates are not its output.
+        if(View.LanternCraft.Active)return;
         ShowWorkshop(View);
         const int32 ActiveStation=KitStepStations.IsValidIndex(View.Step)?KitStepStations[View.Step]:INDEX_NONE;
         for(int32 Station=0;Station<KitStations.Num();++Station)

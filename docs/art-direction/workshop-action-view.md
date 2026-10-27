@@ -27,8 +27,13 @@ This state does not establish a viable hand pose. The presenter must separately
 check player posture, location, current activity, world contact and prop
 lifetime, and relinquish an invalid pose. It may not stretch arms, reposition
 the camera/player, replay output, or delay accounting to finish a clip. The
-existing beat transition can rebuild the active kit or change places; surviving
-state alone is not proof that the final inspection is visible. ROOT owns that
-integration; Claude owns authored paws, contact poses and clips.
+normal b09 → b10 transition now preserves the player's place and four
+chapter-owned station components; checkpoint entry retains its saved start.
+New craft props must share that chapter lifetime rather than belong to the
+temporary `KitPieces` / `KitActors`, which are still cleared on a beat change.
+Surviving state alone is not proof that final inspection is visible. ROOT owns
+that integration; Claude owns authored paws, contact poses and clips.
 
 No workshop craft paw assets or presenter are integrated by this interface.
+The station-lifetime and continuous-exit follow-up is pending native validation;
+the earlier 70-case pass does not qualify that follow-up.

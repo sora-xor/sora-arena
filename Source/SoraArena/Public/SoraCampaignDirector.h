@@ -782,7 +782,7 @@ private:
     FVector SpawnLocation(int32 Slot) const;
     // The beat's place as it starts: a travel cut to its entry, its kit, its
     // horse and its camera; and what it leaves behind when it ends.
-    void EnterBeatSpace(bool bResumed);
+    void EnterBeatSpace(bool bResumed,bool bKeepPosition=false);
     void LeaveBeatSpace();
     void TickSpace(int32 DeltaMs);
     void TickVolumes();

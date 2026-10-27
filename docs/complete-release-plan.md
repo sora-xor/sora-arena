@@ -23,6 +23,12 @@ launch; its log is preserved. The interface does not deliver the paw presenter
 or final art. Root verifies all 30 corrected workshop capture originals and
 visually reviews five: materials improve, but production adoption stays open.
 
+Published `98e881be` passes all 125 source CI gates in authenticated run
+`40442943753`; tested merge `c326f6f2` has the identical tree. The next isolated
+source change makes workshop stations persist across tasks and retains the
+player's place after inspection, with a mapped walked exit and retry checks.
+Its Unreal validation is pending; it is not covered by the prior pass.
+
 ## October 27 physical ladders
 
 The [ladder checkpoint](qualification/ladder-traversal-2026-10-27.md) replaces

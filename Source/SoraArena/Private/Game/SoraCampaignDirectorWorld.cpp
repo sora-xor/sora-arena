@@ -259,7 +259,7 @@ FVector USoraCampaignDirector::SpawnLocation(int32 Slot) const
     }
     return ASoraWorldBuilder::Floor(Space->Spawns[FMath::Abs(Slot)%Space->Spawns.Num()],Space->HeightCm+120.f);
 }
-void USoraCampaignDirector::EnterBeatSpace(bool bResumed)
+void USoraCampaignDirector::EnterBeatSpace(bool bResumed,bool bKeepPosition)
 {
     ASoraGameMode& M=Mode();
     ASoraWorldBuilder* World=M.Arena();
@@ -278,7 +278,10 @@ void USoraCampaignDirector::EnterBeatSpace(bool bResumed)
     const FVector Feet=Hero?Hero->GetActorLocation()-FVector(0,0,Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()):FVector::ZeroVector;
     const bool NeedsPressEntry=Space.PressHall.bEnabled&&(bResumed||
         FVector2D::Distance(FVector2D(Feet),Space.Entry)>180.f||FMath::Abs(Feet.Z-SoraPressRules::CatwalkHeightCm)>20.f);
-    if(Hero&&(NeedsLiftEntry||NeedsSummitEntry||NeedsPressEntry||Chapter->Space.ZoneAt(Hero->GetActorLocation())!=Space.Zone))
+    // Leaving the connected workshop for the square is ordinary travel.
+    // Retain the inspection's position and camera; checkpoint entry still
+    // places the hero at the new beat's saved start as usual.
+    if(Hero&&!bKeepPosition&&(NeedsLiftEntry||NeedsSummitEntry||NeedsPressEntry||Chapter->Space.ZoneAt(Hero->GetActorLocation())!=Space.Zone))
     {
         ClearHorses();
         Hero->SetBase(static_cast<FMovementBaseInterfaceData*>(nullptr));

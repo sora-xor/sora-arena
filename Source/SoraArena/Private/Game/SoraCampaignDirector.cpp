@@ -454,8 +454,8 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     const FSoraBeat& Beat=Chapter.Beats[Index];
     // Final inspection credits output immediately. Its read-only clip record
     // may outlive that normal beat change, but never a retry or another beat.
-    const bool bKeepWorkshopAction=!bResumed&&IsWorkshopCraft()&&Beat.Id==TEXT("ch03.b10");
-    if(!bKeepWorkshopAction)ResetWorkshopAction();
+    const bool bLeavingWorkshop=!bResumed&&IsWorkshopCraft()&&Beat.Id==TEXT("ch03.b10");
+    if(!bLeavingWorkshop)ResetWorkshopAction();
     if(Save) Save->WoodJunction=false;
     // Consecutive lesson duels keep their pupil on the floor; any other
     // change of beat clears the field.
@@ -511,7 +511,7 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     // camera dollies over the place.
     if(Task.Goal==SoraBeatRules::EGoal::Elapsed) M.TitleCardTime=Task.DurationMs/1000.f;
     // The beat's place: a travel cut to its entry, its kit, horse and camera.
-    EnterBeatSpace(bResumed);
+    EnterBeatSpace(bResumed,bLeavingWorkshop);
     if(ChapterId==2&&M.Arena())
     {
         M.Arena()->ShowWorkshopDoor((BeatState.CompletedMask&SoraBeatRules::BeatBit(7))!=0u,false);

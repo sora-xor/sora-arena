@@ -41,6 +41,32 @@ void ASoraWorldBuilder::BuildLanternWorkshop()
         WorkshopWindowLights.Add(Light);DecorActors.Add(Light);
     }
     ShowWorkshopRestored(false);
+    // The workshop is a permanent place in the chapter. Its benches must not
+    // disappear beneath a finished action when the active task kit is cleared.
+    // These retain the existing functional dimensions until the craft art's
+    // measured collision/contact envelope is integrated.
+    for(int I=0;I<4;++I)
+    {
+        const auto S=R::Stations[I];const FVector P(S.X,S.Y,R::FloorAt(S.X,S.Y));
+        auto* Bench=Box(FString::Printf(TEXT("LanternWorkshopBench%d"),I),P+FVector(0,0,40),FVector(120,80,80),
+            FLinearColor(.36f,.23f,.12f),true,FRotator::ZeroRotator,TEXT("Timber"));
+        Bench->ComponentTags.Add(TEXT("LanternWorkshopBench"));
+        LanternStationMarks.Add(Box(FString::Printf(TEXT("LanternWorkshopStation%d"),I),P+FVector(0,0,84),
+            FVector(90,50,6),FLinearColor(.16f,.14f,.12f),false));
+    }
+}
+
+void ASoraWorldBuilder::ShowLanternWorkshopCraft(const SoraWorkshopCraftRules::FView& View)
+{
+    namespace R=SoraLanternWorkshopRules;
+    const int Active=View.Active&&View.Step>=0&&View.Step<6?R::StepStations[View.Step]:-1;
+    for(int I=0;I<LanternStationMarks.Num();++I)
+    {
+        int Last=-1;for(int Step=0;Step<6;++Step)if(R::StepStations[Step]==I)Last=Step;
+        const bool Complete=View.RecipeComplete||(View.Active&&Last>=0&&Last<View.Step);
+        Tint(LanternStationMarks[I],I==Active?FLinearColor(.94f,.65f,.21f):
+            Complete?FLinearColor(.1f,.62f,.55f):FLinearColor(.16f,.14f,.12f));
+    }
 }
 
 void ASoraWorldBuilder::ShowWorkshopRestored(bool Restored)

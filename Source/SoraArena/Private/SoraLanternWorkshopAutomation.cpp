@@ -48,7 +48,7 @@ bool FSoraLanternWorkshopSolidsTest::RunTest(const FString&)
        !Floor(FVector(3150,-1900,120),0)||!Floor(FVector(3150,-1900,800),650))return false;
     int Benches=0;
     for(const auto* C:Components)
-        if(C->GetName().StartsWith(TEXT("KitBench")))
+        if(C->ComponentHasTag(TEXT("LanternWorkshopBench")))
         {
             ++Benches;
             const FVector P=C->GetComponentLocation();
