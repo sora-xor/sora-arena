@@ -467,6 +467,7 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     SoraBeatRules::ApplyRhythmDifficulty(Task,static_cast<int32>(SoraAccessibility::CampaignDifficulty(this)));
     TaskState=SoraBeatRules::StartTask(Task,Phase);
     WorkshopCraft={};WorkshopCraftClock.Reset();
+    WorkshopFailedStripSerial=0;WorkshopFailedStripMs=-1;
     TerminalCharge={};TerminalWorkClock.Reset();TerminalFuseClock.Reset();
     ResetFoundry();
     ResetHorseTreatment();
@@ -1471,6 +1472,7 @@ void USoraCampaignDirector::ClearEncounter()
 {
     CancelWorkshopCraft();
     CancelTerminalWork();TerminalCharge={};TerminalFuseClock.Reset();WorkshopCraft={};
+    WorkshopFailedStripSerial=0;WorkshopFailedStripMs=-1;
     ResetFoundry();
     ResetHorseTreatment();
     BulkheadHold={}; BulkheadClock.Reset();

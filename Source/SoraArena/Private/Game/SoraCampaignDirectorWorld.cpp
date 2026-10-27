@@ -556,6 +556,7 @@ void USoraCampaignDirector::ShowKit()
     View.BellowsNotches=SoraBeatRules::CrankFlameNotches(TaskState,Task);
     View.BellowsFoot=IsWorkingCrank()?BellowsTreads.LatchedSide:0;
     View.Strokes=Task.Goal==SoraBeatRules::EGoal::Steps?TaskState.Done:0;
+    View.LanternCraft=WorkshopCraftView();
     if(SoraRhythmRules::Active(RhythmClock,TaskState,Task))
     {
         View.RhythmStep=TaskState.Step;

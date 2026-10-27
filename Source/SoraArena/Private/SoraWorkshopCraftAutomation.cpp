@@ -75,6 +75,11 @@ bool Windows(FWorld& W,bool Warm)
 }
 bool Registry(FWorld& W)
 {
+    const auto V=W.Campaign()->WorkshopCraftView();
+    W.Test.TestTrue(TEXT("The saved output presents a complete recipe without a stale held strip"),
+        !V.Active&&V.RecipeComplete&&V.HeldStep==-1&&V.HeldMs==0&&V.FailedStripSerial==0&&V.FailedStripAgeMs==-1);
+    const int Counts[]={6,4,1,1,3,1};
+    for(int I=0;I<6;++I)W.Test.TestEqual(TEXT("Saved recipe presentation retains each completed station's count"),V.Committed[I],Counts[I]);
     int Rows=0;for(const auto& R:W.Campaign()->RegistryRows())if(R.BeatId==TEXT("ch03.b09"))
     {++Rows;W.Test.TestEqual(TEXT("The registry records the workshop's forty lanterns"),R.Entry.Quantity,40);}
     return W.Test.TestEqual(TEXT("The workshop is recorded once"),Rows,1)&&
@@ -89,10 +94,19 @@ bool FSoraWorkshopCraftReleaseTest::RunTest(const FString&)
     using namespace SoraWorkshopCraftTest;
     FWorld W(*this,TEXT("WorkshopCraftRelease"),2,8);if(!SoraWorkshopCraftTest::Ready(W)||!Station(W))return false;
     auto* C=W.Campaign();
+    const auto Initial=C->WorkshopCraftView();
+    TestTrue(TEXT("A fresh workshop has no old progress or failure animation"),Initial.Active&&!Initial.RecipeComplete&&
+        Initial.Step==0&&Initial.Committed[0]==0&&Initial.HeldStep==-1&&Initial.FailedStripSerial==0&&Initial.FailedStripAgeMs==-1);
     if(!Hold(W,639))return false;
     TestEqual(TEXT("An early release splits the strip without adding a hoop"),C->TaskProgress().Done,0);
+    const auto Missed=C->WorkshopCraftView();
+    TestTrue(TEXT("A split is published once with active-time age and no held work"),Missed.FailedStripSerial==1&&
+        Missed.FailedStripAgeMs>=0&&Missed.Committed[0]==0&&Missed.HeldStep==-1);
     if(!Hold(W,640))return false;
     TestEqual(TEXT("The first millisecond in the green band accepts a hoop"),C->TaskProgress().Done,1);
+    const auto Passed=C->WorkshopCraftView();
+    TestTrue(TEXT("A fresh successful strip clears the old split pose and shows one committed hoop"),
+        Passed.Committed[0]==1&&Passed.Committed[1]==0&&Passed.FailedStripSerial==1&&Passed.FailedStripAgeMs==-1);
     if(!Hold(W,800))return false;
     TestEqual(TEXT("The authored beat accepts a second hoop"),C->TaskProgress().Done,2);
     if(!Hold(W,961))return false;
@@ -107,6 +121,11 @@ bool FSoraWorkshopCraftReleaseTest::RunTest(const FString&)
     W.Mode()->Settings()->SetRhythmAssist(true);
     if(!W.World->InjectKey(EKeys::E,IE_Pressed)||!Milliseconds(W,799))return false;
     TestEqual(TEXT("Assistance still waits for the authored beat"),C->TaskProgress().Done,3);
+    const auto Held=C->WorkshopCraftView();
+    TestTrue(TEXT("The scene receives the same held milliseconds and assistance as the controls"),Held.Assist&&
+        Held.HeldStep==0&&Held.HeldMs==799&&Held.Committed[0]==3&&Held.FailedStripAgeMs==-1);
+    for(int I=0;I<100;++I)(void)C->WorkshopCraftView();
+    TestEqual(TEXT("Reading presentation never advances the hold clock"),C->WorkshopCraftState().ElapsedMs,799);
     if(!Milliseconds(W,1))return false;
     TestEqual(TEXT("Assistance completes the held bend at 800 ms"),C->TaskProgress().Done,4);
     if(!Milliseconds(W,2400))return false;
@@ -127,6 +146,9 @@ bool FSoraWorkshopCraftInterruptTest::RunTest(const FString&)
     TestFalse(TEXT("Work reserves both hands against weapon selection"),W.Hero()->GetEquipment()->EquipCampaignWeapon(0));
     if(!W.Press(EKeys::Escape)||!W.Tick(120))return false;
     TestFalse(TEXT("The menu cancels a bend inside its valid release band"),C->WorkshopCraftOccupiesHands());
+    const auto Paused=C->WorkshopCraftView();
+    TestTrue(TEXT("Menu cancellation publishes no stale held or failed strip"),Paused.HeldStep==-1&&Paused.HeldMs==0&&
+        Paused.Committed[0]==1&&Paused.FailedStripAgeMs==-1);
     W.World->InjectKey(EKeys::E,IE_Released);W.Mode()->ResumePlay();if(!W.Tick(3))return false;
     TestEqual(TEXT("Menu input flushing cannot turn a bend into a successful release"),C->TaskProgress().Done,1);
     if(!W.World->InjectKey(EKeys::E,IE_Pressed)||!Milliseconds(W,800))return false;
@@ -149,6 +171,9 @@ bool FSoraWorkshopCraftInterruptTest::RunTest(const FString&)
     if(!Hold(W,1499))return false;
     TestEqual(TEXT("A released 1499 ms application does not paste a panel"),C->TaskProgress().StepDone,0);
     if(!W.World->InjectKey(EKeys::E,IE_Pressed)||!Milliseconds(W,1499))return false;
+    const auto Paste=C->WorkshopCraftView();
+    TestTrue(TEXT("Paste presentation retains all six hoops and shows the current seam's hold"),
+        Paste.Committed[0]==6&&Paste.Committed[1]==0&&Paste.HeldStep==1&&Paste.HeldMs==1499);
     TestTrue(TEXT("The HUD receives continuous paste progress"),C->HeldWorkProgress()>.99f&&C->HeldWorkProgress()<1.f);
     if(!Milliseconds(W,1))return false;
     TestEqual(TEXT("A continuous 1500 ms hold pastes one panel"),C->TaskProgress().StepDone,1);

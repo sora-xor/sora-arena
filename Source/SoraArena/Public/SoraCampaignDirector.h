@@ -296,6 +296,7 @@ public:
     bool IsWorkshopCraft() const;
     bool WorkshopCraftOccupiesHands() const { return WorkshopCraft.Step>=0; }
     const SoraWorkshopCraftRules::FState& WorkshopCraftState() const { return WorkshopCraft; }
+    SoraWorkshopCraftRules::FView WorkshopCraftView() const;
     bool IsPryingCarryGate() const { return bPryingCarryGate; }
     bool InLiftGallery() const { return bLiftGallery; }
     int32 WoodPoiMask() const;
@@ -577,6 +578,8 @@ private:
     void TickTerminalCharge(float DeltaSeconds);
     SoraWorkshopCraftRules::FState WorkshopCraft;
     FSoraMillisecondClock WorkshopCraftClock;
+    unsigned WorkshopFailedStripSerial=0;
+    int32 WorkshopFailedStripMs=-1;
     bool AtWorkshopStation() const;
     bool BeginWorkshopCraft();
     void TickWorkshopCraft(float DeltaSeconds);

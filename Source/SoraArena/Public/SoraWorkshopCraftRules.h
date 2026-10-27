@@ -6,6 +6,15 @@ namespace SoraWorkshopCraftRules
 constexpr int BendMs=800,BendToleranceMs=160,PasteMs=1500;
 enum class EResult { None,Passed,Missed,Cancelled };
 struct FState { int Step=-1,ElapsedMs=0;bool WaitRelease=false; };
+// Read-only scene/HUD state. Animation consumes these values; it must never
+// advance a hold, credit a step or award the workshop's output.
+struct FView
+{
+    bool Active=false,RecipeComplete=false,Assist=false;
+    int Step=-1,Committed[6]={},HeldStep=-1,HeldMs=0;
+    unsigned FailedStripSerial=0;
+    int FailedStripAgeMs=-1;
+};
 constexpr bool Timed(int Step){return Step==0||Step==1||Step==3;}
 constexpr bool Begin(FState& S,int Step)
 {

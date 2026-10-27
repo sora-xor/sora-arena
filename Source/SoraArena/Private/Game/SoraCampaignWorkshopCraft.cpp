@@ -13,6 +13,24 @@
 
 bool USoraCampaignDirector::IsWorkshopCraft() const
 {return ActiveBeatData()&&ActiveBeatData()->Id==TEXT("ch03.b09");}
+SoraWorkshopCraftRules::FView USoraCampaignDirector::WorkshopCraftView() const
+{
+    SoraWorkshopCraftRules::FView V;
+    if(ChapterId!=2)return V;
+    V.Active=IsWorkshopCraft();
+    V.RecipeComplete=(BeatState.CompletedMask&SoraBeatRules::BeatBit(8))!=0u;
+    if(!V.Active&&!V.RecipeComplete)return V;
+    const auto& Recipe=FSoraCatalog::Get().Chapter(2).Beats[8].Task;
+    for(int I=0;I<6;++I)
+        V.Committed[I]=V.RecipeComplete?Recipe.Steps[I].Count:
+            I<TaskState.Step?Task.Steps[I].Count:I==TaskState.Step?TaskState.StepDone:0;
+    if(!V.Active)return V;
+    V.Step=TaskState.Step;V.Assist=Mode().Settings()&&Mode().Settings()->RhythmAssist();
+    V.HeldStep=WorkshopCraft.Step;V.HeldMs=WorkshopCraft.ElapsedMs;
+    V.FailedStripSerial=WorkshopFailedStripSerial;
+    V.FailedStripAgeMs=WorkshopFailedStripMs>=0?FMath::Max(0,TaskState.ElapsedMs-WorkshopFailedStripMs):-1;
+    return V;
+}
 bool USoraCampaignDirector::AtWorkshopStation() const
 {
     const auto* Hero=Mode().Hero();const auto* Space=ActiveSpace();
@@ -36,6 +54,7 @@ void USoraCampaignDirector::CancelWorkshopCraft()
     {
         if(Mode().Hero())Mode().Hero()->GetViewmodel()->SetHiddenInGame(false,true);
         SoraWorkshopCraftRules::Cancel(WorkshopCraft);
+        WorkshopFailedStripMs=-1;
     }
     WorkshopCraftClock.Reset();
 }
@@ -47,6 +66,7 @@ bool USoraCampaignDirector::BeginWorkshopCraft()
     if(!R::Timed(TaskState.Step))return false;
     if(AtWorkshopStation()&&R::Begin(WorkshopCraft,TaskState.Step))
     {
+        WorkshopFailedStripMs=-1;
         WorkshopCraftClock.Reset();auto* Hero=Mode().Hero();
         Hero->GetEquipment()->Halt();Hero->GetEquipment()->DropStance();Hero->StopSprint();
         Hero->GetViewmodel()->SetHiddenInGame(true,true);
@@ -82,6 +102,7 @@ void USoraCampaignDirector::ResolveWorkshopCraft(int32 Step,SoraWorkshopCraftRul
     const FString Kind=Beat->StepKinds[Step],Id=Beat->Id;
     if(Result==R::EResult::Missed)
     {
+        ++WorkshopFailedStripSerial;WorkshopFailedStripMs=TaskState.ElapsedMs;
         Fire(TEXT("step_failed:")+Kind);
         Notify(TEXT("竹が割れた。新しい一本で、緑の帯に合わせて離そう。"),
             TEXT("The strip split. Take a fresh strip and release in the green band."),3.f);

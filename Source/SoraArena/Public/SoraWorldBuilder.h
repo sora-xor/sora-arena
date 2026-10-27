@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "SoraMarginRules.h"
+#include "SoraWorkshopCraftRules.h"
 #include "SoraWorldBuilder.generated.h"
 class ASoraFoundryFurnace;
 class ADirectionalLight;
@@ -47,6 +48,7 @@ struct FSoraKitView
     int32 RhythmElapsedMs = 0;
     int32 RhythmPeriodMs = 0;
     int32 RhythmHitAgeMs = -1;
+    SoraWorkshopCraftRules::FView LanternCraft;
     // Each defended target's health, 0-1.
     TArray<float> TargetHealth;
     // Carry: the load in hand, loads taken from each pickup, delivered to each drop-off.
