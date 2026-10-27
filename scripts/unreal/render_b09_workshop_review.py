@@ -63,8 +63,7 @@ LEVELS = unreal.get_editor_subsystem(unreal.LevelEditorSubsystem)
 ASSETS = unreal.EditorAssetLibrary
 M = unreal.MathLibrary
 SPEC = ROOT / "docs/art-direction/data/b09_workshop_craft_spec.json"
-MESHES = "/Game/Generated/Candidates/B09Workshop/Meshes"
-MATS = "/Game/Generated/Candidates/B09Workshop/Materials"
+MESHES = MATS = None                # main(): the import readback's base (a new folder for each import run)
 BINDINGS = {}                       # mesh: the material each slot draws in this fresh editor, before any instance
 LEVEL = f"/Game/ArtReview/B09Workshop/L_B09Review_{int(time.time())}"
 MARKER = "B09_REVIEW_COMPLETE"
@@ -388,9 +387,12 @@ def main():
     out = ROOT / "Saved/B09Workshop/Review" / opts["out"]
     if out.exists():
         fail(f"{out} exists: originals go to a new folder")
+    global MESHES, MATS
     rb_bytes = (ROOT / opts["readback"]).read_bytes()
-    if json.loads(rb_bytes.decode("utf-8"))["problems"]:
+    rb = json.loads(rb_bytes.decode("utf-8"))
+    if rb["problems"]:
         fail("the import's readback has problems")
+    MESHES, MATS = f"{rb['base']}/Meshes", f"{rb['base']}/Materials"
     spec_bytes = SPEC.read_bytes()
     spec = json.loads(spec_bytes.decode("utf-8"))
     queue = shots(spec)
@@ -399,7 +401,8 @@ def main():
     build(spec, ev100)
     runup = highres_runup()
     unreal.SystemLibrary.execute_console_command(world(), "Editor.AsyncAssetCompilationFinishAll")
-    record = {"level": LEVEL, "engine": unreal.SystemLibrary.get_engine_version(), "hfov_deg": HFOV, "eye_over_stand_cm": EYE_CM,
+    record = {"level": LEVEL, "engine": unreal.SystemLibrary.get_engine_version(), "candidates": rb["base"], "hfov_deg": HFOV,
+              "eye_over_stand_cm": EYE_CM,
               "ev100": ev100, "exposure_bias": 1.0 - ev100, "work_point_lux": dict(zip([s["id"] for s in spec["stations"]], lux)),
               "lamps": [{"cm": list(p), "lumens": l, "kelvin": k} for p, l, k in LAMPS], "sky": SKY, "review_materials": REVIEW,
               "highres_runup": runup, "shots_requested": [s["name"] for s in queue],

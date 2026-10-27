@@ -34,7 +34,7 @@ nothing is adopted or placed in a game level.
 
 Run (lane holder; materials compile with a renderer):
   scripts/toolchain/run-editor-script.sh --rhi scripts/unreal/import_b09_workshop_candidates.py B09_CANDIDATES_IMPORTED \\
-      <log> -- --build Saved/B09Workshop/Candidates/<run> --readback Saved/B09Workshop/Unreal/<new>.json
+      <log> -- --base B09Workshop_<run> --build Saved/B09Workshop/Candidates/<build> --readback Saved/B09Workshop/Unreal/<new>.json
 """
 from __future__ import annotations
 
@@ -56,8 +56,8 @@ ASSETS = unreal.EditorAssetLibrary
 TOOLS = unreal.AssetToolsHelpers.get_asset_tools()
 LIB = unreal.MaterialEditingLibrary
 SMES = unreal.get_editor_subsystem(unreal.StaticMeshEditorSubsystem)
-BASE = "/Game/Generated/Candidates/B09Workshop"
-MESHES, MATS, TEX = f"{BASE}/Meshes", f"{BASE}/Materials", f"{BASE}/Textures"
+CANDIDATES = "/Game/Generated/Candidates"
+BASE = MESHES = MATS = TEX = None    # main(): CANDIDATES/<--base>, new for each run, so a failed run's assets stay
 PBR = "/Game/Generated/Characters/Nyaakoto/M_Nyaakoto_PBR"
 NEUTRAL = "/Game/Generated/Characters/Nyaakoto/Textures/T_Nyaakoto_neutral_{}"
 MARKER = "B09_CANDIDATES_IMPORTED"
@@ -150,6 +150,17 @@ def rotator_axes(r):
     sy, cy = math.sin(math.radians(r.yaw)), math.cos(math.radians(r.yaw))
     sr, cr = math.sin(math.radians(r.roll)), math.cos(math.radians(r.roll))
     return [cp * cy, cp * sy, sp], [-(cr * sp * cy + sr * sy), cy * sr - cr * sp * sy, cr * cp]
+
+
+def read_socket(mesh, name):
+    """A static mesh's socket by name (find_socket; the Sockets array is protected from Python), or None."""
+    s = mesh.find_socket(name)
+    if s is None:
+        return None
+    loc, rot, scale = (s.get_editor_property(k) for k in ("relative_location", "relative_rotation", "relative_scale"))
+    fwd, up = rotator_axes(rot)
+    return {"cm": [loc.x, loc.y, loc.z], "rotation_deg": [rot.pitch, rot.yaw, rot.roll], "x": fwd, "z": up,
+            "scale": [scale.x, scale.y, scale.z]}
 
 
 def node(m, cls, x, y, **props):
@@ -249,7 +260,102 @@ def instance(name, parent):
     return mi
 
 
+def import_mesh(name, a, build, mats, rows, problems):
+    """One candidate FBX as a static mesh, its slots bound, read back against the build's manifest into rows."""
+    opts = unreal.FbxImportUI()
+    opts.import_mesh = True
+    opts.import_as_skeletal = False
+    opts.import_materials = False
+    opts.import_textures = False
+    opts.import_animations = False
+    opts.mesh_type_to_import = unreal.FBXImportType.FBXIT_STATIC_MESH
+    sm = opts.static_mesh_import_data
+    sm.set_editor_property("combine_meshes", True)
+    sm.set_editor_property("auto_generate_collision", False)
+    sm.set_editor_property("generate_lightmap_u_vs", False)
+    import_task(build / a["fbx"], MESHES, name, opts)
+    mesh = ASSETS.load_asset(f"{MESHES}/{name}")
+    if not isinstance(mesh, unreal.StaticMesh):
+        problems.append(f"{name} did not import as a static mesh")
+        return
+    bound = []
+    for i, sm_ in enumerate(mesh.get_editor_property("static_materials")):
+        slot = str(sm_.get_editor_property("material_slot_name"))
+        mi = mats.get(slot)
+        if mi is None:
+            problems.append(f"{name}: slot {slot} has no candidate material")
+            continue
+        mesh.set_material(i, mi)
+        bound.append(slot)
+    ASSETS.save_loaded_asset(mesh)
+    box = mesh.get_bounding_box()
+    lo, hi = [box.min.x, box.min.y, box.min.z], [box.max.x, box.max.y, box.max.z]
+    socks = {}
+    for sname, want in a["sockets"].items():
+        got = read_socket(mesh, sname)          # StaticMesh.Sockets is protected from Python (s146): by name
+        if got is None:
+            problems.append(f"{name}: no socket {sname}")
+            continue
+        socks[sname] = got
+        axes = a["socket_axes"][sname]
+        if max(abs(g - w) for g, w in zip(got["cm"], want)) > SOCKET_TOL_CM:
+            problems.append(f"{name}: socket {sname} at {got['cm']}, wants {want}")
+        if max(abs(g - w) for g, w in zip(got["x"] + got["z"], axes["x"] + axes["z"])) > SOCKET_TOL_AXIS:
+            problems.append(f"{name}: socket {sname} axes x {got['x']} z {got['z']}, want {axes}")
+        if max(abs(c - 1.0) for c in got["scale"]) > 1e-4:
+            problems.append(f"{name}: socket {sname} scale {got['scale']}")
+    want_lo, want_hi = a["bounds_cm"]
+    bounds_err = max(max(abs(g - w) for g, w in zip(lo, want_lo)), max(abs(g - w) for g, w in zip(hi, want_hi)))
+    if bounds_err > 0.1:
+        problems.append(f"{name}: bounds {lo} {hi}, want {want_lo} {want_hi}")
+    uvs = SMES.get_num_uv_channels(mesh, 0)
+    simple = SMES.get_simple_collision_count(mesh)
+    tris = mesh.get_num_triangles(0)
+    if uvs != 2 or simple != 0 or sorted(set(bound)) != sorted(set(a["slots"])):
+        problems.append(f"{name}: uv channels {uvs}, simple collision {simple}, slots {bound} vs {a['slots']}")
+    rows[name] = {"asset": f"{MESHES}/{name}", "triangles": tris, "triangles_built": a["triangles"], "bounds_cm": [lo, hi],
+                  "bounds_err_cm": bounds_err, "sockets": socks, "uv_channels": uvs, "simple_collision": simple,
+                  "slots": {s: mats[s].get_path_name() for s in bound}}
+
+
+def import_weapon(tex, pbr, rows, problems):
+    """Weapon 7's in-tree mesh as SM_B09_Weapon07_ReviewStandIn, with its maps; its sockets read back."""
+    w_src = ROOT / W07 / "SM_Weapon_07.fbx"
+    opts = unreal.FbxImportUI()
+    opts.import_mesh, opts.import_as_skeletal, opts.import_materials, opts.import_textures = True, False, False, False
+    opts.mesh_type_to_import = unreal.FBXImportType.FBXIT_STATIC_MESH
+    opts.static_mesh_import_data.set_editor_property("auto_generate_collision", False)
+    import_task(w_src, MESHES, "SM_B09_Weapon07_ReviewStandIn", opts)
+    weapon = ASSETS.load_asset(f"{MESHES}/SM_B09_Weapon07_ReviewStandIn")
+    if not isinstance(weapon, unreal.StaticMesh):
+        fail("weapon 7's stand-in did not import")
+    wmi = instance("MI_B09_Weapon07_ReviewStandIn", pbr)
+    for p_, t in (("AlbedoMap", tex["T_B09_W07_BaseColor"]), ("NormalMap", tex["T_B09_W07_NormalDX"]), ("ORMMap", tex["T_B09_W07_ORM"])):
+        LIB.set_material_instance_texture_parameter_value(wmi, p_, t)
+    LIB.set_material_instance_scalar_parameter_value(wmi, "CoatBlendEnabled", 0.0)
+    ASSETS.save_loaded_asset(wmi)
+    for i in range(len(weapon.get_editor_property("static_materials"))):
+        weapon.set_material(i, wmi)
+    ASSETS.save_loaded_asset(weapon)
+    w_record = json.loads((ROOT / W07 / "build_record.json").read_text())["assets"]["SM_Weapon_07"]["sockets"]
+    wsock = {n: read_socket(weapon, n) for n in sorted(w_record)}
+    wbox = weapon.get_bounding_box()
+    muzzle = (wsock.get("Muzzle") or {}).get("cm")
+    if muzzle is None or abs(muzzle[0] - 64.0) > 0.5 or abs(muzzle[1]) > 0.5 or abs(muzzle[2]) > 0.5:
+        problems.append(f"weapon 7's stand-in Muzzle reads {muzzle}, not (64, 0, 0)")
+    rows["SM_B09_Weapon07_ReviewStandIn"] = {"asset": weapon.get_path_name(), "source": str(w_src.relative_to(ROOT)),
+                                             "source_sha256": sha256(w_src), "review_stand_in": True, "sockets": wsock,
+                                             "bounds_cm": [[wbox.min.x, wbox.min.y, wbox.min.z], [wbox.max.x, wbox.max.y, wbox.max.z]],
+                                             "triangles": weapon.get_num_triangles(0), "triangles_built": weapon.get_num_triangles(0)}
+
+
 def main():
+    global BASE, MESHES, MATS, TEX
+    base = arg("--base")
+    if not base.startswith("B09Workshop") or "/" in base:
+        fail(f"--base {base}: a new folder name under {CANDIDATES}, starting B09Workshop")
+    BASE = f"{CANDIDATES}/{base}"
+    MESHES, MATS, TEX = f"{BASE}/Meshes", f"{BASE}/Materials", f"{BASE}/Textures"
     build = (ROOT / arg("--build")).resolve()
     readback_path = (ROOT / arg("--readback")).resolve()
     if readback_path.exists() or not readback_path.is_relative_to(ROOT / "Saved/B09Workshop/Unreal"):
@@ -283,106 +389,29 @@ def main():
         LIB.set_material_instance_scalar_parameter_value(mi, "CoatBlendEnabled", 0.0)
         ASSETS.save_loaded_asset(mi)
         mats[slot] = mi
-    washi = washi_master(tex)
-    mats["M_B09_Washi"] = instance("MI_B09_Washi", washi)
-    ASSETS.save_loaded_asset(mats["M_B09_Washi"])
-    rows, problems = {}, []
+    rows, problems, washi = {}, [], None
+    try:                                   # each part fails on its own: s146 lost the rest and the readback
+        washi = washi_master(tex)
+        mats["M_B09_Washi"] = instance("MI_B09_Washi", washi)
+        ASSETS.save_loaded_asset(mats["M_B09_Washi"])
+    except Exception as exc:
+        problems.append(f"the washi master: {exc!r}")
     for name, a in sorted(man["assets"].items()):
-        opts = unreal.FbxImportUI()
-        opts.import_mesh = True
-        opts.import_as_skeletal = False
-        opts.import_materials = False
-        opts.import_textures = False
-        opts.import_animations = False
-        opts.mesh_type_to_import = unreal.FBXImportType.FBXIT_STATIC_MESH
-        sm = opts.static_mesh_import_data
-        sm.set_editor_property("combine_meshes", True)
-        sm.set_editor_property("auto_generate_collision", False)
-        sm.set_editor_property("generate_lightmap_u_vs", False)
-        import_task(build / a["fbx"], MESHES, name, opts)
-        mesh = ASSETS.load_asset(f"{MESHES}/{name}")
-        if not isinstance(mesh, unreal.StaticMesh):
-            problems.append(f"{name} did not import as a static mesh")
-            continue
-        bound = []
-        for i, sm_ in enumerate(mesh.get_editor_property("static_materials")):
-            slot = str(sm_.get_editor_property("material_slot_name"))
-            mi = mats.get(slot)
-            if mi is None:
-                problems.append(f"{name}: slot {slot} has no candidate material")
-                continue
-            mesh.set_material(i, mi)
-            bound.append(slot)
-        ASSETS.save_loaded_asset(mesh)
-        box = mesh.get_bounding_box()
-        lo, hi = [box.min.x, box.min.y, box.min.z], [box.max.x, box.max.y, box.max.z]
-        socks = {}
-        for s in mesh.get_editor_property("sockets"):
-            loc, rot = s.get_editor_property("relative_location"), s.get_editor_property("relative_rotation")
-            scale = s.get_editor_property("relative_scale")
-            fwd, up = rotator_axes(rot)
-            socks[str(s.get_editor_property("socket_name"))] = {"cm": [loc.x, loc.y, loc.z], "rotation_deg": [rot.pitch, rot.yaw, rot.roll],
-                                                                "x": fwd, "z": up, "scale": [scale.x, scale.y, scale.z]}
-        if sorted(socks) != sorted(a["sockets"]):
-            problems.append(f"{name}: sockets {sorted(socks)}, the build has {sorted(a['sockets'])}")
-        for sname, want in a["sockets"].items():
-            got = socks.get(sname)
-            if got is None:
-                continue
-            axes = a["socket_axes"][sname]
-            if max(abs(g - w) for g, w in zip(got["cm"], want)) > SOCKET_TOL_CM:
-                problems.append(f"{name}: socket {sname} at {got['cm']}, wants {want}")
-            if max(abs(g - w) for g, w in zip(got["x"] + got["z"], axes["x"] + axes["z"])) > SOCKET_TOL_AXIS:
-                problems.append(f"{name}: socket {sname} axes x {got['x']} z {got['z']}, want {axes}")
-            if max(abs(c - 1.0) for c in got["scale"]) > 1e-4:
-                problems.append(f"{name}: socket {sname} scale {got['scale']}")
-        want_lo, want_hi = a["bounds_cm"]
-        bounds_err = max(max(abs(g - w) for g, w in zip(lo, want_lo)), max(abs(g - w) for g, w in zip(hi, want_hi)))
-        if bounds_err > 0.1:
-            problems.append(f"{name}: bounds {lo} {hi}, want {want_lo} {want_hi}")
-        uvs = SMES.get_num_uv_channels(mesh, 0)
-        simple = SMES.get_simple_collision_count(mesh)
-        tris = mesh.get_num_triangles(0)
-        if uvs != 2 or simple != 0 or sorted(set(bound)) != sorted(set(a["slots"])):
-            problems.append(f"{name}: uv channels {uvs}, simple collision {simple}, slots {bound} vs {a['slots']}")
-        rows[name] = {"asset": f"{MESHES}/{name}", "triangles": tris, "triangles_built": a["triangles"], "bounds_cm": [lo, hi],
-                      "bounds_err_cm": bounds_err, "sockets": socks, "uv_channels": uvs, "simple_collision": simple,
-                      "slots": {s: mats[s].get_path_name() for s in bound}}
-    # Weapon 7, a review stand-in for the shell bench's capture.
-    w_src = ROOT / W07 / "SM_Weapon_07.fbx"
-    opts = unreal.FbxImportUI()
-    opts.import_mesh, opts.import_as_skeletal, opts.import_materials, opts.import_textures = True, False, False, False
-    opts.mesh_type_to_import = unreal.FBXImportType.FBXIT_STATIC_MESH
-    opts.static_mesh_import_data.set_editor_property("auto_generate_collision", False)
-    import_task(w_src, MESHES, "SM_B09_Weapon07_ReviewStandIn", opts)
-    weapon = ASSETS.load_asset(f"{MESHES}/SM_B09_Weapon07_ReviewStandIn")
-    if not isinstance(weapon, unreal.StaticMesh):
-        fail("weapon 7's stand-in did not import")
-    wmi = instance("MI_B09_Weapon07_ReviewStandIn", pbr)
-    for p_, t in (("AlbedoMap", tex["T_B09_W07_BaseColor"]), ("NormalMap", tex["T_B09_W07_NormalDX"]), ("ORMMap", tex["T_B09_W07_ORM"])):
-        LIB.set_material_instance_texture_parameter_value(wmi, p_, t)
-    LIB.set_material_instance_scalar_parameter_value(wmi, "CoatBlendEnabled", 0.0)
-    ASSETS.save_loaded_asset(wmi)
-    for i in range(len(weapon.get_editor_property("static_materials"))):
-        weapon.set_material(i, wmi)
-    ASSETS.save_loaded_asset(weapon)
-    wsock = {str(s.get_editor_property("socket_name")): [s.get_editor_property("relative_location").x, s.get_editor_property("relative_location").y,
-                                                         s.get_editor_property("relative_location").z] for s in weapon.get_editor_property("sockets")}
-    wbox = weapon.get_bounding_box()
-    muzzle = wsock.get("Muzzle")
-    if muzzle is None or abs(muzzle[0] - 64.0) > 0.5 or abs(muzzle[1]) > 0.5 or abs(muzzle[2]) > 0.5:
-        problems.append(f"weapon 7's stand-in Muzzle reads {muzzle}, not (64, 0, 0)")
-    rows["SM_B09_Weapon07_ReviewStandIn"] = {"asset": weapon.get_path_name(), "source": str(w_src.relative_to(ROOT)),
-                                             "source_sha256": sha256(w_src), "review_stand_in": True, "sockets": wsock,
-                                             "bounds_cm": [[wbox.min.x, wbox.min.y, wbox.min.z], [wbox.max.x, wbox.max.y, wbox.max.z]],
-                                             "triangles": weapon.get_num_triangles(0), "triangles_built": weapon.get_num_triangles(0)}
+        try:
+            import_mesh(name, a, build, mats, rows, problems)
+        except Exception as exc:
+            problems.append(f"{name}: {exc!r}")
+    try:                                   # weapon 7, a review stand-in for the shell bench's capture
+        import_weapon(tex, pbr, rows, problems)
+    except Exception as exc:
+        problems.append(f"weapon 7's stand-in: {exc!r}")
     for name in rows:
         if abs(rows[name]["triangles"] - rows[name]["triangles_built"]) > 0:
             problems.append(f"{name}: {rows[name]['triangles']} triangles, built {rows[name]['triangles_built']}")
-    readback = {"build": str(build.relative_to(ROOT)), "build_manifest_sha256": hashlib.sha256(man_bytes).hexdigest(),
+    readback = {"base": BASE, "build": str(build.relative_to(ROOT)), "build_manifest_sha256": hashlib.sha256(man_bytes).hexdigest(),
                 "textures": {k: {"asset": f"{TEX}/{k}", "source": TEXTURES[k][0], "source_sha256": tex_src[k]} for k in TEXTURES},
                 "translucency": "paper_0017_translucency_ART_ESTIMATE: an estimate, not a measured transmission",
-                "materials": {s: m.get_path_name() for s, m in mats.items()}, "washi_master": washi.get_path_name(),
+                "materials": {s: m.get_path_name() for s, m in mats.items()}, "washi_master": washi.get_path_name() if washi is not None else None,
                 "meshes": rows, "problems": problems,
                 "inputs": {"scripts/unreal/import_b09_workshop_candidates.py": sha256(__file__)}}
     readback_path.parent.mkdir(parents=True, exist_ok=True)

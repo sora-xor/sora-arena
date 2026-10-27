@@ -173,6 +173,12 @@ class Capture(unittest.TestCase):
         self.assertAlmostEqual(ev, math.log2(float(np.median(lux)) / 2.5))
         self.assertTrue(2.0 < ev < 6.0, ev)
 
+    def test_it_draws_the_readbacks_candidates(self):
+        main = next(n for n in ast.walk(ast.parse(self.text)) if isinstance(n, ast.FunctionDef) and n.name == "main")
+        src = ast.get_source_segment(self.text, main)
+        self.assertIn('MESHES, MATS = f"{rb[\'base\']}/Meshes", f"{rb[\'base\']}/Materials"', src)
+        self.assertLess(src.index("MESHES, MATS ="), src.index("build(spec, ev100)"))
+
     def test_it_is_a_socket_pose_review_and_never_quits_from_slate(self):
         self.assertIn("socket-pose review", self.text)
         self.assertIn("not runtime first-person hand contact", self.text.replace("\n", " ").replace("  ", " ").replace('" "', ""))
@@ -193,14 +199,33 @@ class Import(unittest.TestCase):
         self.assertEqual(used - bound, set())
         self.assertIn('mats["M_B09_Washi"] = instance("MI_B09_Washi", washi)', self.text)
 
-    def test_sockets_are_read_back_on_their_axes(self):
+    def function(self, name):
         tree = ast.parse(self.text)
-        main = next(n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef) and n.name == "main")
-        src = ast.get_source_segment(self.text, main)
-        for needle in ('get_editor_property("relative_rotation")', 'get_editor_property("relative_scale")',
-                       'a["socket_axes"][sname]', "SOCKET_TOL_AXIS", "SOCKET_TOL_CM"):
-            self.assertIn(needle, src)
-        self.assertIn('set_editor_property("auto_generate_collision", False)', src)
+        node = next(n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef) and n.name == name)
+        return ast.get_source_segment(self.text, node)
+
+    def test_sockets_are_read_back_by_name_on_their_axes(self):
+        read = self.function("read_socket")
+        self.assertIn("mesh.find_socket(name)", read)                      # StaticMesh.Sockets is protected (s146)
+        for key in ("relative_location", "relative_rotation", "relative_scale"):
+            self.assertIn(key, read)
+        self.assertNotIn('get_editor_property("sockets")', re.sub(r"#.*", "", self.text))
+        mesh = self.function("import_mesh")
+        for needle in ("read_socket(mesh, sname)", 'a["socket_axes"][sname]', "SOCKET_TOL_AXIS", "SOCKET_TOL_CM"):
+            self.assertIn(needle, mesh)
+        self.assertIn('set_editor_property("auto_generate_collision", False)', mesh)
+        self.assertIn("read_socket(weapon, n) for n in sorted(w_record)", self.function("import_weapon"))
+
+    def test_each_run_imports_into_a_new_base_and_fails_part_by_part(self):
+        main = self.function("main")
+        self.assertIn('base = arg("--base")', main)
+        self.assertIn('fail(f"{BASE} exists: the candidates are new assets")', main)
+        for part in ("import_mesh(name, a, build, mats, rows, problems)", "import_weapon(tex, pbr, rows, problems)",
+                     "washi = washi_master(tex)"):
+            i = main.index(part)
+            self.assertIn("try:", main[max(0, i - 120):i])                 # a failure is a problem, not the run's end
+        self.assertLess(main.index("json.dump(readback, fh"), main.index('fail(f"{len(problems)} problems'))
+        self.assertIn('"base": BASE', main)
 
 
 if __name__ == "__main__":
