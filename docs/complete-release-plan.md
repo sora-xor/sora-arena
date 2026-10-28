@@ -1,5 +1,16 @@
 # Complete first-release plan
 
+## Latest isolated runtime slice: opening HUD readability
+
+`c5c5092e` fixes word wrapping, readable dojo hints and mapped control labels.
+All nine selected native cases pass with zero selected errors or warnings.
+The corrected capture at `9eeadad4` passes and all three original 720p SM6
+images are visually checked: actual New Campaign text, keyboard and controller
+prompts. Failed runs and the rejected earlier chapter image remain preserved.
+See [the scoped validation record](qualification/opening-hud-readability-2026-10-28.md).
+ROOT stays frozen at published `b6ba3c11`, whose authenticated CI passes all
+125 source gates; its preserved passing package is still `1b6dfadc`.
+
 ## Latest isolated runtime slice: elevated ladder flights
 
 `4c4fb7fa` supports ladders beginning on raised landings while preserving
@@ -39,8 +50,8 @@ The isolated [saved-dojo validation change](qualification/saved-dojo-import-vali
 makes the production import reopen all 16 saved modules in another process and
 compare them with the completed import. All 38 focused host tests pass. A
 fresh editor process at `da669a33` verifies all 16 modules with unchanged
-inputs after a preserved first-attempt bytecode-cache mutation. This isolated
-pipeline change is not adopted by ROOT yet.
+inputs after a preserved first-attempt bytecode-cache mutation. ROOT adopted
+this pipeline change at `b6ba3c11`; it does not change the preserved package.
 
 ## October 27 earlier failed package and repairs
 
