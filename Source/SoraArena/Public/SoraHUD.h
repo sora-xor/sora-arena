@@ -26,6 +26,8 @@ public:
     virtual void DrawHUD() override;
     // Text in the bundled Noto Sans CJK JP font.
     void Label(const FString& Text,float X,float Y,float Scale,FLinearColor Color);
+    // Canvas font metrics and locale-aware word boundaries, also usable between draw frames.
+    TArray<FString> WrappedLines(const FString& Text,float Scale,float MaxWidth);
     int32 WrappedLabel(const FString& Text,float X,float Y,float Scale,FLinearColor Color,float MaxWidth,float LineHeight,int32 MaxLines = 3);
     void Panel(float X,float Y,float W,float H,FLinearColor Color);
     float LabelWidth(const FString& Text,float Scale);

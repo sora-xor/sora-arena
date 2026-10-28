@@ -4,6 +4,8 @@
 #include "SoraFieldcraftTestWorld.h"
 #include "SoraFrontEnd.h"
 #include "SoraSettings.h"
+#include "SoraHUD.h"
+#include "HUD/SoraHUDPanels.h"
 
 namespace SoraDojoTests
 {
@@ -42,6 +44,87 @@ bool LearnRecovery(FBeatWorld& W)
         if(!W.Tick(1)) return false;
     return W.Test.TestEqual(TEXT("A real released cut teaches the recovery form"),W.Campaign()->DojoLessonStage(),4);
 }
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraOpeningTextWrapTest,"SoraArena.UI.OpeningTextWrap",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraOpeningTextWrapTest::RunTest(const FString& Parameters)
+{
+    using namespace SoraDojoTests;
+    if(!FSoraCatalog::Get().Load()) return false;
+    FBeatWorld W(*this,TEXT("OpeningTextWrap"),0,2);
+    if(!W.Start()) return false;
+    auto* HUD=W.World->GetTestWorld()->SpawnActor<ASoraHUD>();
+    if(!TestNotNull(TEXT("The production HUD spawns"),HUD)) return false;
+    const FString Sentence=TEXT("Keep a distance from the pupil.");
+    const float Width=HUD->LabelWidth(TEXT("Keep a distan"),.6f);
+    const auto English=HUD->WrappedLines(Sentence,.6f,Width);
+    TestTrue(TEXT("A constrained English line wraps"),English.Num()>1);
+    TestEqual(TEXT("Wrapping keeps every English word intact and in order"),FString::Join(English,TEXT(" ")),Sentence);
+    for(const auto& Line:English) TestTrue(TEXT("Each wrapped English line fits"),HUD->LabelWidth(Line,.6f)<=Width+1.f);
+    const FString Japanese=TEXT("相手に向き、防御を保って一撃を受ける。");
+    const auto Wrapped=HUD->WrappedLines(Japanese,.65f,180.f);
+    TestTrue(TEXT("Japanese without spaces wraps"),Wrapped.Num()>1);
+    TestEqual(TEXT("Wrapping retains the complete Japanese text"),FString::Join(Wrapped,TEXT("")),Japanese);
+    const auto Explicit=HUD->WrappedLines(TEXT("First line\nSecond line"),.6f,800.f);
+    TestEqual(TEXT("An explicit line break is retained"),FString::Join(Explicit,TEXT("\n")),FString(TEXT("First line\nSecond line")));
+    TestTrue(TEXT("An empty label draws no rows"),HUD->WrappedLines(TEXT(""),.6f,800.f).IsEmpty());
+    // Exercise actual authored opening copy, not a synthetic replacement.
+    for(const FVector2D Size:{FVector2D(1280,720),FVector2D(1920,1080),FVector2D(2560,1080)})
+    {
+        const FSoraHUDFrame Frame(*HUD,*W.Mode(),Size.X,Size.Y);
+        const auto& Chapter=FSoraCatalog::Get().Chapter(0);
+        const auto Rows=HUD->WrappedLines(Chapter.NarrativeEnglish,Frame.EnglishSubtitleScale,Size.X-240*Frame.S);
+        TestTrue(TEXT("The opening narrative fits the chapter card's four rows"),Rows.Num()<=4);
+        TestEqual(TEXT("The actual opening keeps its complete words"),FString::Join(Rows,TEXT(" ")),Chapter.NarrativeEnglish);
+    }
+    return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraDojoPromptLayoutTest,"SoraArena.UI.DojoPromptLayout",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraDojoPromptLayoutTest::RunTest(const FString& Parameters)
+{
+    using namespace SoraDojoTests;
+    if(!FSoraCatalog::Get().Load()) return false;
+    FBeatWorld W(*this,TEXT("DojoPromptLayout"),0,2);
+    if(!W.Start()||!W.Tick(30)) return false;
+    auto* HUD=W.World->GetTestWorld()->SpawnActor<ASoraHUD>();
+    if(!TestNotNull(TEXT("The production HUD spawns"),HUD)) return false;
+    if(!W.Press(EKeys::Escape)||!TestTrue(TEXT("Guard can be rebound in the ordinary menu"),W.Hero()->RemapCombatAction(TEXT("Guard"),EKeys::J))||
+        !Menu(W,SoraUI::EAction::Resume)) return false;
+    const auto Check=[&](const TCHAR* Action)
+    {
+        for(const auto Device:{SoraUI::EDevice::KeyboardMouse,SoraUI::EDevice::Gamepad})
+        {
+            W.Mode()->FrontEnd()->NoteDevice(Device);
+            const auto Key=SoraUI::ActionKey(HUD,Action);
+            TestTrue(TEXT("The Japanese lesson names the current bound control"),W.Campaign()->DojoLessonText(false).Contains(Key.Japanese));
+            TestTrue(TEXT("The English lesson names the current bound control"),W.Campaign()->DojoLessonText(true).Contains(Key.English));
+            for(bool English:{false,true})
+            {
+                W.Mode()->Settings()->SetEnglishSubtitles(English);
+                for(const FVector2D Size:{FVector2D(1280,720),FVector2D(1920,1080),FVector2D(2560,1080)})
+                {
+                    FString Why;
+                    const FSoraHUDFrame Frame(*HUD,*W.Mode(),Size.X,Size.Y);
+                    const bool Fits=SoraHUDPanels::DojoLayoutFits(Frame,Why);
+                    TestTrue(*FString::Printf(TEXT("Lesson %d fits %.0fx%.0f: %s"),W.Campaign()->DojoLessonStage(),Size.X,Size.Y,*Why),Fits);
+                }
+            }
+        }
+        W.Mode()->FrontEnd()->NoteDevice(SoraUI::EDevice::KeyboardMouse);
+    };
+    TestEqual(TEXT("The guard hint uses the rebound key"),SoraUI::ActionKey(HUD,TEXT("Guard")).English,FString(TEXT("J")));
+    Check(TEXT("Guard"));
+    FMeeting Met;
+    if(!Meet(*this,*W.World,false,Met,EKeys::J)) return false;
+    TestEqual(TEXT("Real front guard opens parry coaching"),W.Campaign()->DojoLessonStage(),2);
+    Check(TEXT("Guard"));
+    if(!Meet(*this,*W.World,true,Met,EKeys::J)||!Meet(*this,*W.World,true,Met,EKeys::J)) return false;
+    TestEqual(TEXT("Real parries open recovery coaching"),W.Campaign()->DojoLessonStage(),3);
+    Check(TEXT("Fire"));
+    return !HasAnyErrors();
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraDojoGuardLessonsTest,"SoraArena.Campaign.DojoGuardLessons",

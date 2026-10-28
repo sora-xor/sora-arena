@@ -132,21 +132,23 @@ void ASoraHUD::Label(const FString& T,float X,float Y,float S,FLinearColor C)
 {
     DrawText(T,C,X,Y,JapaneseFontObject(),S,false);
 }
+TArray<FString> ASoraHUD::WrappedLines(const FString& Text,float Scale,float MaxWidth)
+{
+    TArray<FString> Lines;
+    if(Text.IsEmpty()||MaxWidth<=0.f||Scale<=0.f) return Lines;
+    FTextSizingParameters Parameters(JapaneseFontObject(),Scale,Scale);
+    Parameters.DrawXL=MaxWidth;
+    FCanvasWordWrapper Wrapper;
+    TArray<FWrappedStringElement> Wrapped;
+    Wrapper.Execute(Text,Parameters,Wrapped,nullptr);
+    for(const auto& Line:Wrapped) Lines.Add(Line.Value);
+    return Lines;
+}
 int32 ASoraHUD::WrappedLabel(const FString& Text,float X,float Y,float Scale,FLinearColor Color,float MaxWidth,float LineHeight,int32 MaxLines)
 {
-    FString Line; int32 Count=0;
-    for(int32 I=0;I<Text.Len();++I)
-    {
-        const FString Candidate=Line+Text.Mid(I,1); float Width=0,Height=0;
-        GetTextSize(Candidate,Width,Height,JapaneseFontObject(),Scale);
-        if((Width>MaxWidth&&!Line.IsEmpty())||Text[I]=='\n')
-        {
-            Label(Line,X,Y+Count*LineHeight,Scale,Color); ++Count; Line.Empty();
-            if(Count>=MaxLines) return Count;
-        }
-        if(Text[I]!='\n') Line+=Text.Mid(I,1);
-    }
-    if(!Line.IsEmpty()&&Count<MaxLines) { Label(Line,X,Y+Count*LineHeight,Scale,Color); ++Count; }
+    const auto Lines=WrappedLines(Text,Scale,MaxWidth);
+    const int32 Count=FMath::Clamp(MaxLines,0,Lines.Num());
+    for(int32 I=0;I<Count;++I) Label(Lines[I],X,Y+I*LineHeight,Scale,Color);
     return Count;
 }
 void ASoraHUD::Panel(float X,float Y,float W,float H,FLinearColor C) { DrawRect(C,X,Y,W,H); }

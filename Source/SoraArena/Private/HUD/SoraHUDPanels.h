@@ -66,6 +66,7 @@ void DrawObjective(const FSoraHUDFrame& Frame);
 // Exact wrapped objective rows must remain inside their allocated header panel.
 bool ObjectiveLayoutFits(const FSoraHUDFrame& Frame, FString& Why);
 void DrawDojoLesson(const FSoraHUDFrame& Frame);
+bool DojoLayoutFits(const FSoraHUDFrame& Frame, FString& Why);
 void DrawBoss(const FSoraHUDFrame& Frame);
 // The exact complete boss rows and meters, placed after story panels.
 bool BossLayoutFits(const FSoraHUDFrame& Frame, FString& Why);

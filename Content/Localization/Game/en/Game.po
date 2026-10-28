@@ -156,6 +156,30 @@ msgctxt "SoraArena.Campaign,CrankHands"
 msgid "両手で輪を回している。手を離せば武器を使える。"
 msgstr "Both hands are on the wheel. Release it to use a weapon."
 
+#. Key:	DojoGuard
+#: Source/SoraArena/Private/Game/SoraCampaignDirector.cpp
+msgctxt "SoraArena.Campaign,DojoGuard"
+msgid "弐・受け：相手に向き、防御［{Guard}］を保って一撃を受ける"
+msgstr "GUARD: face a pupil and hold Guard [{Guard}] through its strike."
+
+#. Key:	DojoParry
+#: Source/SoraArena/Private/Game/SoraCampaignDirector.cpp
+msgctxt "SoraArena.Campaign,DojoParry"
+msgid "参・捌き：防御を解き、金色の予兆に合わせて［{Guard}］を押す"
+msgstr "PARRY: release Guard, then press [{Guard}] during the golden warning."
+
+#. Key:	DojoRecovery
+#: Source/SoraArena/Private/Game/SoraCampaignDirector.cpp
+msgctxt "SoraArena.Campaign,DojoRecovery"
+msgid "肆・残心：［{Fire}］で木刀を一度振り、攻撃を止めて刃の戻りを待つ"
+msgstr "RECOVERY: swing once with [{Fire}], release attack, and wait for the blade to return."
+
+#. Key:	DojoStance
+#: Source/SoraArena/Private/Game/SoraCampaignDirector.cpp
+msgctxt "SoraArena.Campaign,DojoStance"
+msgid "壱・構え：防御［{Guard}］を 0.6 秒保つ"
+msgstr "STANCE: hold Guard [{Guard}] for 0.6 seconds."
+
 #. Key:	FindBundleFirst
 #: Source/SoraArena/Private/Game/SoraCampaignRecovery.cpp
 msgctxt "SoraArena.Campaign,FindBundleFirst"

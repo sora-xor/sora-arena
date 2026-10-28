@@ -132,12 +132,30 @@ FObjectiveLayout ObjectiveLayout(const FSoraHUDFrame& F)
     return L;
 }
 FBox2D ObjectivePanelBounds(const FSoraHUDFrame& F) { return ObjectiveLayout(F).Bounds; }
-FBox2D DojoPanelBounds(const FSoraHUDFrame& F)
+FObjectiveLayout DojoLayout(const FSoraHUDFrame& F)
 {
-    if(!F.Mode.bCampaign||F.Mode.Campaign()->ChapterId!=0||F.Mode.Campaign()->DojoLessonStage()>=4) return FBox2D(ForceInit);
+    FObjectiveLayout L;
+    if(!F.Mode.bCampaign||F.Mode.Campaign()->ChapterId!=0||F.Mode.Campaign()->DojoLessonStage()>=4) return L;
     const float Top=FMath::Max(static_cast<float>(ObjectivePanelBounds(F).Max.Y)+4*F.S,F.Mode.bEnglishSubtitles?FMath::Max(217*F.S,164*F.S+2*F.EnglishSubtitleLineHeight+8*F.S):169*F.S);
-    return FBox2D({25*F.S,Top},{745*F.S,Top+(F.Mode.bEnglishSubtitles?72:47)*F.S});
+    const float Left=25*F.S,Right=FMath::Min(745*F.S,F.W-20*F.S),Padding=10*F.S,Gap=4.f;
+    float Y=Top+Padding;
+    for(int32 Language=0;Language<(F.Mode.bEnglishSubtitles?2:1);++Language)
+    {
+        L.Original[Language]=F.Mode.Campaign()->DojoLessonText(Language==1);
+        const float Scale=Language==0?F.JapaneseSubtitleScale:F.EnglishSubtitleScale;
+        const float Leading=Language==0?F.JapaneseSubtitleLineHeight:F.EnglishSubtitleLineHeight;
+        for(const auto& Row:F.HUD.WrappedLines(L.Original[Language],Scale,Right-Left-2*Padding))
+        {
+            const auto Ink=SoraHUDPanels::CaptionGlyphBounds(F,Row,Scale);
+            L.Text.Add({Row,FVector2D(Left+Padding,Y)-Ink.Min,Scale,Language==0?F.Ivory:F.Muted,Language});
+            Y+=FMath::Max(Leading,static_cast<float>(Ink.GetSize().Y)+Gap);
+        }
+        Y+=Gap;
+    }
+    L.Bounds=FBox2D({Left,Top},{Right,Y+Padding});
+    return L;
 }
+FBox2D DojoPanelBounds(const FSoraHUDFrame& F) { return DojoLayout(F).Bounds; }
 struct FBossRect { FBox2D Bounds; FLinearColor Color; };
 struct FBossLayout
 {
@@ -395,18 +413,31 @@ bool SoraHUDPanels::ObjectiveLayoutFits(const FSoraHUDFrame& F,FString& Why)
 }
 void SoraHUDPanels::DrawDojoLesson(const FSoraHUDFrame& Frame)
 {
-    ASoraHUD& HUD=Frame.HUD;
-    const ASoraGameMode* G=&Frame.Mode;
-    const float S=Frame.S;
-    const FLinearColor Ivory=Frame.Ivory,Muted=Frame.Muted;
-    if(G->bCampaign&&G->Campaign()->ChapterId==0&&G->Campaign()->DojoLessonStage()<4)
+    const auto L=DojoLayout(Frame); if(!L.Bounds.bIsValid) return;
+    Frame.HUD.Panel(L.Bounds.Min.X,L.Bounds.Min.Y,L.Bounds.GetSize().X,L.Bounds.GetSize().Y,FLinearColor(.013,.027,.033,.88f));
+    for(const auto& Row:L.Text) Frame.HUD.Label(Row.Text,Row.At.X,Row.At.Y,Row.Scale,Row.Color);
+}
+bool SoraHUDPanels::DojoLayoutFits(const FSoraHUDFrame& F,FString& Why)
+{
+    const auto L=DojoLayout(F); if(!L.Bounds.bIsValid) return true;
+    if(L.Bounds.Min.X<0||L.Bounds.Max.X>F.W||L.Bounds.Min.Y<0||L.Bounds.Max.Y>GameplayStoryTop(F))
+    { Why=TEXT("Dojo lesson panel escapes the available gameplay area"); return false; }
+    TArray<FBox2D> Occupied; FString Joined[2];
+    for(const auto& Row:L.Text)
     {
-        const auto Panel=DojoPanelBounds(Frame);
-        const float LessonTop=Panel.Min.Y;
-        HUD.Panel(Panel.Min.X,Panel.Min.Y,Panel.GetSize().X,Panel.GetSize().Y,FLinearColor(.013,.027,.033,.88f));
-        HUD.Label(G->Campaign()->DojoLessonText(false),40*S,LessonTop+6*S,.46*S,Ivory);
-        if(G->bEnglishSubtitles) HUD.Label(G->Campaign()->DojoLessonText(true),40*S,LessonTop+36*S,.34*S,Muted);
+        const auto Ink=CaptionGlyphBounds(F,Row.Text,Row.Scale);
+        const FBox2D Box(Row.At+Ink.Min,Row.At+Ink.Max);
+        if(Row.Scale<(Row.Group==0?.65f:.6f)||Box.Min.X<L.Bounds.Min.X||Box.Max.X>L.Bounds.Max.X+.5f||Box.Min.Y<L.Bounds.Min.Y||Box.Max.Y>L.Bounds.Max.Y+.5f)
+        { Why=TEXT("Dojo lesson text is too small or escapes its measured panel"); return false; }
+        for(const auto& Other:Occupied) if(Box.Intersect(Other))
+        { Why=TEXT("Dojo lesson text rows overlap"); return false; }
+        Occupied.Add(Box); Joined[Row.Group]+=Row.Text;
     }
+    // Canvas wrapping trims boundary whitespace. Every other character must survive.
+    const auto Compact=[](FString Text) { Text.ReplaceInline(TEXT(" "),TEXT("")); Text.ReplaceInline(TEXT("\n"),TEXT("")); return Text; };
+    for(int32 Language=0;Language<2;++Language) if(Compact(Joined[Language])!=Compact(L.Original[Language]))
+    { Why=TEXT("Dojo lesson wrapping lost text"); return false; }
+    return true;
 }
 void SoraHUDPanels::DrawBoss(const FSoraHUDFrame& Frame)
 {

@@ -32,6 +32,7 @@
 #include "SoraSaveGame.h"
 #include "SoraSettings.h"
 #include "SoraText.h"
+#include "SoraFrontEnd.h"
 #include "SoraWorldBuilder.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
@@ -2629,15 +2630,13 @@ FString USoraCampaignDirector::DojoLessonText(bool bEnglish) const
             {{TEXT("Done"),TaskState.Maai.Done},{TEXT("Count"),Task.Maai.Count}});
         return bEnglish?Line.English:Line.Japanese;
     }
-    static const TCHAR* Japanese[]={
-        TEXT("壱・構え：防御を 0.6 秒保つ"),
-        TEXT("弐・受け：相手に向き、防御を保って一撃を受ける"),
-        TEXT("参・捌き：金色の予兆に合わせて防御を押す"),
-        TEXT("肆・残心：木刀を振り、攻撃を止めて刃の戻りを待つ")};
-    static const TCHAR* English[]={
-        TEXT("STANCE: hold Guard for 0.6 seconds."),
-        TEXT("GUARD: face a pupil and hold Guard through its strike."),
-        TEXT("PARRY: release, then press Guard during the golden warning."),
-        TEXT("RECOVERY: swing once, release attack, and wait for the blade to return.")};
-    return bEnglish?English[DojoLessonStage()]:Japanese[DojoLessonStage()];
+    const FText Lessons[]={
+        NSLOCTEXT("SoraArena.Campaign","DojoStance","壱・構え：防御［{Guard}］を 0.6 秒保つ"),
+        NSLOCTEXT("SoraArena.Campaign","DojoGuard","弐・受け：相手に向き、防御［{Guard}］を保って一撃を受ける"),
+        NSLOCTEXT("SoraArena.Campaign","DojoParry","参・捌き：防御を解き、金色の予兆に合わせて［{Guard}］を押す"),
+        NSLOCTEXT("SoraArena.Campaign","DojoRecovery","肆・残心：［{Fire}］で木刀を一度振り、攻撃を止めて刃の戻りを待つ")};
+    const auto Line=SoraText::Format(Lessons[DojoLessonStage()],{
+        {TEXT("Guard"),SoraUI::ActionKey(this,TEXT("Guard"))},
+        {TEXT("Fire"),SoraUI::ActionKey(this,TEXT("Fire"))}});
+    return bEnglish?Line.English:Line.Japanese;
 }
