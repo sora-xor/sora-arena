@@ -94,7 +94,8 @@ bool FSoraLadderCollisionTest::RunTest(const FString&)
         {
             TArray<UStaticMeshComponent*> Parts; It->GetComponents(Parts);
             for (auto* Part : Parts)
-                if (Part->GetName().StartsWith(TEXT("Roof_") + Ladder.Id)) Roof = Part;
+                if (Part->GetName().StartsWith(TEXT("Roof_") + Ladder.Id)||
+                    (Ladder.RoofGeometry==FSoraLadder::ERoof::NoticePent&&Part->GetName().StartsWith(TEXT("NoticePentRoof")))) Roof = Part;
         }
         if (!TestNotNull(TEXT("The staged ladder has its actual roof slab"), Roof)) return false;
         const auto RoofCollision = Roof->GetCollisionEnabled();
@@ -158,6 +159,7 @@ bool FSoraElevatedLadderTest::RunTest(const FString&)
     StagedBeat = W.BeatData();
     auto& Ladder = StagedBeat.Space.Fieldcraft.Ladders[0];
     Ladder.BaseHeightCm = 340.f; Ladder.HeightCm = 560.f;
+    Ladder.RoofGeometry=FSoraLadder::ERoof::StagedBoard;
     auto* Craft = W.Fieldcraft(); auto* Player = W.Hero();
     Craft->Stage(StagedBeat);
     const float Half = Player->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();

@@ -175,11 +175,11 @@ class TenementTests(unittest.TestCase):
             self.assertFalse(tenements.tenements_valid(c),'legacy spawn overlaps tenements')
 
     def test_notice_ground_routes_have_connected_clear_floors(self):
-        self.assertEqual(self.native['kept_houses'],[0,1,3,4])
+        self.assertEqual(self.native['kept_houses'],[[-1,0],[-1,1],[-1,3],[-1,4],[1,0],[1,1],[1,4]])
         self.assertNotIn([-500,-680],self.native['kept_cover'])
         self.assertNotIn([-500,680],self.native['kept_cover'])
         boxes=self.solids+self.native['notice_solids']+self.native['north_walls']+self.native['street_walls']+self.native['workshop_solids']
-        self.assertEqual(self.native['kept_lanterns'],[0,1,3,4,5,6,8,9])
+        self.assertEqual(self.native['kept_lanterns'],[0,1,3,4,5,6,9])
         boxes += [[-2250+(i%5)*1125,(-1 if i<5 else 1)*470,175,14,14,350,0,1]
                   for i in self.native['kept_lanterns']]
         boxes += [[x,y,70,230,180,140,0,1] for x,y in self.native['kept_cover']]
@@ -187,9 +187,9 @@ class TenementTests(unittest.TestCase):
         # passage splits its northwest house; that house is away from these
         # street routes, so conservatively keep its full foundation here.
         boxes += [[-2000+i*1000,side*1200,24,685,735,48,0,2]
-                  for side in (-1,1) for i in self.native['kept_houses']]
+                  for side,i in self.native['kept_houses']]
         boxes += [[-2000+i*1000,side*1200,(330+(i%2)*100)/2,650,700,330+(i%2)*100,0,1]
-                  for side in (-1,1) for i in self.native['kept_houses']]
+                  for side,i in self.native['kept_houses']]
         floors=self.native['street_floors']+[b for b in self.native['workshop_solids'] if b[2]+b[5]/2==0]
         for route in square.ground_patrols():
             for point in self.sample([p+[2.15] for p in route+route[:1]],step=10):

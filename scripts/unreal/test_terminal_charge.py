@@ -63,7 +63,7 @@ class TerminalChargeTests(unittest.TestCase):
             c=copy.deepcopy(chapter);r=next(r for r in c['space']['beats'] if r['beat']=='ch03.b10')
             r['terminal_charge'][key][0]+=1
             self.assertFalse(square.notice_valid(c),key)
-        for change in ('missing','unexpected','objective','lamp','zone','anchor','patrol','pair_phase','authored_period','authored_extent','authored_offset','guard_type','drone_point','drone_count','drone_radius','drone_height','drone_period'):
+        for change in ('missing','unexpected','objective','lamp','zone','anchor','patrol','pair_phase','authored_period','authored_extent','authored_offset','guard_type','drone_point','drone_count','drone_radius','drone_height','drone_period','roof_missing','roof_base','roof_kind','roof_guards','roof_post','roof_noise','authored_roof'):
             c=copy.deepcopy(chapter);r=next(r for r in c['space']['beats'] if r['beat']=='ch03.b10')
             if change=='missing':del r['terminal_charge']
             elif change=='unexpected':c['space']['beats'][0]['terminal_charge']=square.contract()
@@ -81,6 +81,13 @@ class TerminalChargeTests(unittest.TestCase):
             elif change=='drone_radius':next(p for p in c['layout']['patrols'] if p['id']=='pt_b10_d')['circle_cm']['radius']=1200
             elif change=='drone_height':next(p for p in c['layout']['patrols'] if p['id']=='pt_b10_d')['alt_cm']=599
             elif change=='drone_period':next(p for p in c['layout']['patrols'] if p['id']=='pt_b10_d')['loop_s']=35
+            elif change=='roof_missing':r['fieldcraft']['ladders'].pop()
+            elif change=='roof_base':r['fieldcraft']['ladders'][1]['base_height_cm']=0
+            elif change=='roof_kind':r['fieldcraft']['ladders'][1]['world_roof']='notice_pent'
+            elif change=='roof_guards':r['fieldcraft']['ladders'][1]['guards']=[]
+            elif change=='roof_post':r['patrols'][0][0][1]=1200
+            elif change=='roof_noise':next(s for s in r['fieldcraft']['surfaces'] if s['kind']=='board_roof')['height_cm']=540
+            elif change=='authored_roof':c['beats'][9]['ext']['ladders'][1]['base_height_cm']=0
             else:r['anchor'][0]-=1
             self.assertFalse(square.notice_valid(c),change)
 

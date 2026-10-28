@@ -213,7 +213,7 @@ WEST (-X) ......................................................................
 - **Corner buildings:**
   - North-east: the 両替屋 (X +6 to +13.2, Y +4 to +13), two storeys with a kawara roof. The marksman perches on its 7.5 m ridge at (+9, +8).
   - South-east: a sake shop (酒屋).
-  - South-west: a pawnbroker (質屋), with a ladder on its west wall up to the board roofs.
+  - South-west: a pawnbroker (質屋). The playable roof ascent is on the money-changer’s west canopy.
 - **Lights and noise:** two licensed 辻行灯 (the existing `SM_Edo_LanternPost`) at (−8, −6) and (+8, −6). 溝板 run along all four frontages, with a silent edge strip.
 - **Routes** (see b10): the north alley (dark and intended), over the roofs, or along the main-street eaves (lit).
 - **After the blast:** residents stand in doorways (b11). Oyuki steps out from under the 高札場 roof (b12).
@@ -602,7 +602,7 @@ requires its own collision and ordinary-play review.
 
 Routes:
 1. **North alley (intended):** from the tenement court east behind the north lots, then down a side passage to the notice board. It is dark and wet, with puddles.
-2. **Roof:** a ladder at the pawnbroker's side leads onto the roofs. From there the player can take the marksman down from behind (lethal), which removes the glint threat.
+2. **Roof:** a ladder at the north end of the money-changer's west canopy reaches the 3.2 m boards; a second flight reaches the north kawara slope. The player climbs the slope and approaches the ridge from the east, behind the west-facing marksman, for a lethal takedown. Both flights provide a supported return route. The lower canopy spans X +4.5 to +6, Y +9 to +15 m at 3.2 m. Its ladder starts at (+5, +16) facing south; the upper ladder starts at (+5, +12.5) on that canopy, faces east, and exits at (+6.5, +12.5), 5.4 m high. The kawara spans X +5.7 to +13.5, Y +3.4 to +13.6 m; its east-west ridge lies at Y +8 m, 7.5 m high, with a 0.475 rise/run on both slopes. The east approach stays behind the west-facing marksman at (+9, +8).
 3. **Main-street eaves:** lit and fast, but risky.
 
 Objectives: plant the charge (hold 4 s), light the 火縄 fuse (1 s), then reach any point in `vol_b10_blast_safe` (at least 15 m away and out of sight) within the 20 s fuse. Runtime completion checks that the player is still grounded in that cover at detonation; entering it and returning to the blast is not an escape. A surviving player who misses this deadline receives a checkpoint retry instead of a soft-locked destroyed objective. The provisional self-blast deals 120 damage through the shared explosion/cover rules. Standing within 8 m at detonation damages the player. If detected, reinforcements come from the east: three enforcers and a grenadier. On Easy, detection falls back to plain combat.
@@ -1950,7 +1950,8 @@ beats:
       - {kind: x_dobuita, mult: 1.5, volumes: [vol_b10_dobuita_n, vol_b10_dobuita_s], silent_edge: true}
       - {kind: x_board_roof, mult: 1.5, volumes: [vol_b10_roofs]}
     x_ladders:
-      - {id: ladder_b10_pawnshop, roof: vol_b10_roofs, height_cm: 320, drop_noise_cm: 900, guards: [g_b10_m1]}
+      - {id: ladder_b10_pent, roof: vol_b10_roofs, height_cm: 320, drop_noise_cm: 900}
+      - {id: ladder_b10_kawara, roof: vol_b10_kawara, base_height_cm: 320, height_cm: 540, drop_noise_cm: 900, guards: [g_b10_m1]}
     on_detected: "reinforce:w_b10_reinforce"
     waves:
       - id: w_b10_reinforce
@@ -2307,7 +2308,8 @@ layout:
     vol_b10_glint: {min: [-900, -700, 0], max: [900, 700, 500]}
     vol_b10_dobuita_n: {min: [-900, 360, 0], max: [900, 405, 50]}
     vol_b10_dobuita_s: {min: [-900, -405, 0], max: [900, -360, 50]}
-    vol_b10_roofs: {min: [-1600, 405, 450], max: [1600, 1300, 900]}
+    vol_b10_roofs: {min: [450, 900, 320], max: [600, 1500, 375]}
+    vol_b10_kawara: {min: [570, 340, 484], max: [1350, 1360, 900]}
     vol_b10_blast_safe: {min: [-2200, 2900, 0], max: [-1000, 3100, 400]}
     vol_b14_kitchen: {min: [-3400, 2220, 0], max: [-2200, 3600, 600]}
     vol_b14_supply: {min: [-2500, 3500, 0], max: [-2300, 3700, 300]}

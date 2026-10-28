@@ -89,6 +89,8 @@ int main()
         if(Comma)std::cout<<',';Comma=true;
         std::cout<<'['<<B.X<<','<<B.Y<<','<<B.Z<<','<<B.SX<<','<<B.SY<<','<<B.SZ<<",0,1]";
     }
+    {const auto B=SoraNoticeSquareRules::MoneyChangerGround;
+     std::cout<<",["<<B.X<<','<<B.Y<<','<<B.Z<<','<<B.SX<<','<<B.SY<<','<<B.SZ<<",0,1]";}
     std::cout<<"],\"workshop_solids\":[";Comma=false;
     for(const auto B:SoraLanternWorkshopRules::Solids())
     {
@@ -114,8 +116,8 @@ int main()
         std::cout<<'['<<B.X<<','<<B.Y<<','<<B.Z<<','<<B.SX<<','<<B.SY<<','<<B.SZ<<",0,1]";
     }
     std::cout<<"],\"kept_houses\":[";Comma=false;
-    for(int I=0;I<5;++I)if(SoraNoticeSquareRules::KeepLegacyHouse(I))
-    {if(Comma)std::cout<<',';Comma=true;std::cout<<I;}
+    for(int Side:{-1,1})for(int I=0;I<5;++I)if(SoraNoticeSquareRules::KeepLegacyHouse(I,Side))
+    {if(Comma)std::cout<<',';Comma=true;std::cout<<'['<<Side<<','<<I<<']';}
     std::cout<<"],\"kept_lanterns\":[";Comma=false;
     for(int I=0;I<10;++I)if(SoraNoticeSquareRules::KeepLegacyLantern(I))
     {if(Comma)std::cout<<',';Comma=true;std::cout<<I;}

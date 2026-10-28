@@ -2393,9 +2393,16 @@
     ],
     "ladders": [
      {
-      "id": "ladder_b10_pawnshop",
+      "id": "ladder_b10_pent",
       "roof": "vol_b10_roofs",
       "height_cm": 320,
+      "drop_noise_cm": 900
+     },
+     {
+      "id": "ladder_b10_kawara",
+      "roof": "vol_b10_kawara",
+      "base_height_cm": 320,
+      "height_cm": 540,
       "drop_noise_cm": 900,
       "guards": [
        "g_b10_m1"
@@ -9343,14 +9350,31 @@
     "place": null,
     "shape": "box",
     "center_cm": [
-     0,
-     852.5,
-     675
+     525,
+     1200,
+     347.5
     ],
     "size_cm": [
-     3200,
-     895,
-     450
+     150,
+     600,
+     55
+    ],
+    "ext": {}
+   },
+   {
+    "id": "vol_b10_kawara",
+    "frame": "ch03",
+    "place": null,
+    "shape": "box",
+    "center_cm": [
+     960,
+     850,
+     692
+    ],
+    "size_cm": [
+     780,
+     1020,
+     416
     ],
     "ext": {}
    },
@@ -13358,7 +13382,7 @@
      [
       [
        900,
-       1200
+       800
       ]
      ],
      [
@@ -13522,14 +13546,14 @@
       ],
       [
        1020,
-       350
+       300
       ],
       [
-       1020,
-       700
+       440,
+       300
       ],
       [
-       510,
+       440,
        700
       ],
       [
@@ -13588,14 +13612,14 @@
       ],
       [
        1020,
-       350
+       300
       ],
       [
-       1020,
-       700
+       440,
+       300
       ],
       [
-       510,
+       440,
        700
       ],
       [
@@ -13879,14 +13903,14 @@
       {
        "kind": "board_roof",
        "center": [
-        900,
+        525,
         1200
        ],
        "size": [
-        760,
+        150,
         600
        ],
-       "height_cm": 750,
+       "height_cm": 320,
        "step_permille": 1500,
        "crouch_permille": 1500
       }
@@ -13909,23 +13933,49 @@
      "fires": null,
      "ladders": [
       {
-       "id": "ladder_b10_pawnshop",
+       "id": "ladder_b10_pent",
        "foot": [
-        450,
-        1200
+        500,
+        1600
        ],
-       "yaw": 0,
+       "yaw": -90,
+       "base_height_cm": 0,
+       "height_cm": 320,
        "roof": {
         "center": [
-         900,
+         525,
          1200
         ],
         "size": [
-         760,
+         150,
          600
         ]
        },
-       "height_cm": 750,
+       "world_roof": "notice_pent",
+       "drop_noise_cm": 900,
+       "straw": null,
+       "guards": []
+      },
+      {
+       "id": "ladder_b10_kawara",
+       "foot": [
+        500,
+        1250
+       ],
+       "yaw": 0,
+       "base_height_cm": 320,
+       "height_cm": 540,
+       "roof": {
+        "center": [
+         960,
+         850
+        ],
+        "size": [
+         780,
+         1020
+        ]
+       },
+       "world_roof": "notice_kawara",
        "drop_noise_cm": 900,
        "straw": null,
        "guards": [
@@ -13986,6 +14036,19 @@
       600,
       36000,
       32
+     ],
+     "roof_cm_permille": [
+      600,
+      400,
+      1320,
+      1300,
+      570,
+      340,
+      1350,
+      1360,
+      800,
+      750,
+      475
      ]
     }
    },

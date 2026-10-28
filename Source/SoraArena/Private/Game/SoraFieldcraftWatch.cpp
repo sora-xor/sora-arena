@@ -131,6 +131,8 @@ void USoraFieldcraft::StageWatch()
     {
         const FSoraLadder& Ladder = F.Ladders[Index];
         const FVector2D Half = Ladder.Roof.Size * .5f;
+        if(Ladder.RoofGeometry==FSoraLadder::ERoof::StagedBoard)
+        {
         Piece(TEXT("Roof_") + Ladder.Id, Layout::Cube, FVector(Ladder.Roof.Center, Ladder.HeightCm - Layout::RoofSlabCm * .5f),
             FVector(Ladder.Roof.Size.X / 100.f, Ladder.Roof.Size.Y / 100.f, Layout::RoofSlabCm / 100.f), FLinearColor(.66f, .55f, .43f), true,
             Layout::Timber);
@@ -139,7 +141,9 @@ void USoraFieldcraft::StageWatch()
                 FVector(Ladder.Roof.Center + (Half - FVector2D(Layout::RoofPostCm)) * Corner, (Ladder.HeightCm - Layout::RoofSlabCm) * .5f),
                 FVector(Layout::RoofPostCm / 100.f, Layout::RoofPostCm / 100.f, (Ladder.HeightCm - Layout::RoofSlabCm) / 100.f),
                 FLinearColor(.5f, .4f, .31f), true, Layout::Timber);
-        // Two rails and the rungs between them, leaning on the roof's edge.
+        }
+        // Rails stand clear of the capsule; the upper brackets anchor the
+        // notice-square ladders to the canopy and the building's roof edge.
         const FVector Foot(Ladder.Foot, Ladder.BaseHeightCm);
         const FRotator Facing(0.f, Ladder.Yaw, 0.f);
         for (const float Side : {-24.f, 24.f})
@@ -150,6 +154,12 @@ void USoraFieldcraft::StageWatch()
             Piece(TEXT("LadderRung_") + Ladder.Id, Layout::Cube, Foot + Facing.Vector() * 35.f + FVector(0.f, 0.f, Rung),
                 FRotator(0.f, Ladder.Yaw + 90.f, 0.f).Vector().GetAbs() * .5f + FVector(.04f, .04f, .03f), FLinearColor(.8f, .68f, .52f), false,
                 Layout::Timber);
+        if(Ladder.RoofGeometry!=FSoraLadder::ERoof::StagedBoard)
+            for(const float Side:{-24.f,24.f})
+                Piece(TEXT("LadderBracket_")+Ladder.Id,Layout::Cube,
+                    Foot+Facing.Vector()*72.5f+FRotator(0,Ladder.Yaw+90,0).Vector()*Side+FVector(0,0,Ladder.RiseCm()-12),
+                    Facing.Vector().GetAbs()*.75f+FRotator(0,Ladder.Yaw+90,0).Vector().GetAbs()*.05f+FVector(0,0,.05f),
+                    FLinearColor(.5f,.4f,.31f),false,Layout::Timber);
         if (Ladder.bStraw)
             Piece(TEXT("Straw_") + Ladder.Id, Layout::Cube, FVector(Ladder.Straw.Center, 22.f),
                 FVector(Ladder.Straw.Size.X / 100.f, Ladder.Straw.Size.Y / 100.f, .44f), FLinearColor(.72f, .62f, .34f));
@@ -360,8 +370,9 @@ int32 USoraFieldcraft::RoofAt(const FVector& Location) const
     for (int32 Index = 0; Index < Staged->Ladders.Num(); ++Index)
     {
         const auto& Ladder = Staged->Ladders[Index];
-        if (Ladder.Roof.Contains(Location) && Location.Z > Ladder.HeightCm &&
-            (Found == INDEX_NONE || Ladder.HeightCm > Staged->Ladders[Found].HeightCm)) Found = Index;
+        const float Height=Ladder.SurfaceHeightAt(FVector2D(Location));
+        if (Ladder.Roof.Contains(Location) && Location.Z > Height &&
+            (Found == INDEX_NONE || Height > Staged->Ladders[Found].SurfaceHeightAt(FVector2D(Location)))) Found = Index;
     }
     return Found;
 }

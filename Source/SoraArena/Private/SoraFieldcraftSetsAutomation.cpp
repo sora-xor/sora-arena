@@ -916,12 +916,12 @@ bool FSoraFieldcraftLaddersTest::RunTest(const FString& Parameters)
             Movement->MovementMode != MOVE_Flying && Movement->IsMovingOnGround());
     }
     {
-        // ch03.b10: the marksman keeps his post up on the board roofs.
+        // ch03.b10: the marksman keeps his post on the actual kawara ridge.
         FBeatWorld W(*this, TEXT("FieldcraftRoofMarksman"), 2, 9);
         if (!W.Start())
             return false;
         const TArray<ASoraEnemy*> Posted = Guards(W);
-        const FSoraLadder& Ladder = W.Craft().Ladders[0];
+        const FSoraLadder& Ladder = W.Craft().Ladders[1];
         TestTrue(TEXT("The marksman stands on the roof"), !Posted.IsEmpty() && Posted[0]->ArchetypeId() == TEXT("marksman") &&
             Posted[0]->GetActorLocation().Z > Ladder.HeightCm && Ladder.Roof.Contains(Posted[0]->GetActorLocation()));
         // His glint, as the scripts key it, shows the glint prompt.

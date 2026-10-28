@@ -11,6 +11,7 @@
 #include "Engine/World.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInterface.h"
+#include "ProceduralMeshComponent.h"
 
 ASoraWorldBuilder::ASoraWorldBuilder()
 {
@@ -189,6 +190,7 @@ void ASoraWorldBuilder::ClearArena()
     for(const auto& M:PickupPieces) if(M) M->DestroyComponent(); PickupPieces.Reset();
     for(const auto& A:PickupLights) if(A) A->Destroy(); PickupLights.Reset();
     for(const auto& M:Pieces) if(M) M->DestroyComponent(); Pieces.Reset();
+    for(const auto& M:NoticeBuildingMeshes) if(M) M->DestroyComponent(); NoticeBuildingMeshes.Reset();
     WoodTargets.Reset(); WoodFloors.Reset(); WoodClapper=nullptr;
     TenementFindTargets.Reset();
     if(IsValid(ArchivePageText)) ArchivePageText->DestroyComponent();
@@ -269,7 +271,7 @@ void ASoraWorldBuilder::BuildArena(int32 MapId,bool bSites,bool bTenements,bool 
         {
             // The original repeated row placed a house in both arms of the
             // authored north-south street. Leave the crossing's stubs open.
-            if(NoticeSquare&&!SoraNoticeSquareRules::KeepLegacyHouse(I))continue;
+            if(NoticeSquare&&!SoraNoticeSquareRules::KeepLegacyHouse(I,S))continue;
             if(bLanternWorkshop&&MapId==1&&S==-1&&I==4)continue;
             FVector P(-2000+I*1000,S*(MapId==1?1200:1800),0);
             const float Height=MapId==3?780.f:330.f+(I%2)*100.f;
@@ -286,6 +288,7 @@ void ASoraWorldBuilder::BuildArena(int32 MapId,bool bSites,bool bTenements,bool 
             if(MapId==0) EstateHall(I,S,P,BuildingStart);
         }
     }
+    if(NoticeSquare) BuildNoticeRoof();
     if(MapId==0) EstateGrounds();
     for(int32 I=0;I<12;++I)
     {

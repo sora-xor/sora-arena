@@ -416,6 +416,7 @@ struct FSoraFires
 // their index).
 struct FSoraLadder
 {
+    enum class ERoof { StagedBoard, NoticePent, NoticeKawara };
     FString Id;
     FVector2D Foot = FVector2D::ZeroVector;
     float Yaw = 0.f;
@@ -425,6 +426,10 @@ struct FSoraLadder
     float BaseHeightCm = 0.f;
     float HeightCm = 0.f;
     float RiseCm() const { return HeightCm - BaseHeightCm; }
+    // These two roofs belong to the persistent chapter building. Staging a
+    // ladder must not create a floating slab through their real geometry.
+    ERoof RoofGeometry = ERoof::StagedBoard;
+    float SurfaceHeightAt(const FVector2D& At) const;
     int32 DropNoiseCm = 0;
     bool bStraw = false;
     FSoraVolume Straw;

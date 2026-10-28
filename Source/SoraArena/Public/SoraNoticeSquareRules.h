@@ -6,15 +6,20 @@ namespace SoraNoticeSquareRules
 {
 constexpr int WestTurnaround=-4000,EastTurnaround=4000;
 constexpr int NorthStub=3800,SouthStub=-2000;
-constexpr bool KeepLegacyHouse(int Index){return Index!=2;}
-constexpr bool KeepLegacyLantern(int Index){return Index%5!=2;}
+constexpr bool KeepLegacyHouse(int Index,int Side){return Index!=2&&!(Side==1&&Index==3);}
+constexpr bool KeepLegacyLantern(int Index){return Index%5!=2&&Index!=8;}
 constexpr bool KeepLegacyCover(double X,double Y)
-{return X<-900||X>900||Y<-700||Y>700;}
+{return (X<-900||X>900||Y<-700||Y>700)&&!(Y>0&&(X==400||X==1300));}
 // The hub stops at x=3200, while the workshop already extends to x=3700
 // through y=200. Tile around that floor and leave its side passage open.
 // The tenement floor already covers the western turnaround.
 constexpr int EastFloorMinX=3200,EastFloorMaxX=4100,StreetHalfWidth=400;
 struct FBox { double X,Y,Z,SX,SY,SZ; };
+constexpr int PentHeight=320,RidgeY=800,RidgeHeight=750;
+constexpr double RoofSlope=.475,RoofThickness=20;
+constexpr double RoofHeight(double Y){return RidgeHeight-RoofSlope*(Y<RidgeY?RidgeY-Y:Y-RidgeY);}
+constexpr FBox MoneyChangerGround={960,850,256.25,720,900,512.5};
+constexpr FBox Pent={525,1200,310,150,600,20};
 constexpr FBox StreetFloors[]={{3450,300,-25,500,200,50},{3900,0,-25,400,800,50},
     {0,3250,-25,800,1300,50}};
 // Closed street stubs keep the new floor edges inside the playable ward.
@@ -40,7 +45,7 @@ constexpr FPoint DroneCircuit[]={
 // P1 and three seconds for P2. The second guard starts one leg behind; no
 // clock-driven position updates or skipped arrivals are needed.
 constexpr FPoint P1[]={{-1020,-700},{-510,-700},{0,-700},{510,-700},{1020,-700},
-    {1020,-350},{1020,0},{1020,350},{1020,700},{510,700},{0,700},{-510,700},
+    {1020,-350},{1020,0},{1020,300},{440,300},{440,700},{0,700},{-510,700},
     {-1020,700},{-1020,233},{-1020,-233}};
 // Separate sides of the street let the conscripts pass each other on their
 // return legs without their collision capsules occupying the same line.

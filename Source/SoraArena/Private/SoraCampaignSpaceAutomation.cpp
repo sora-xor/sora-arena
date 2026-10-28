@@ -285,7 +285,7 @@ bool CheckChapter(FAutomationTestBase& Test, int32 Chapter)
                     {
                         bOk&=Test.TestTrue(*(What+TEXT(" roof guard lies inside its assigned roof")),
                             Roof->Roof.Contains(FVector(Post,Roof->HeightCm+1)));
-                        Probe.StandAt(Post,Roof->HeightCm,What+TEXT(" roof patrol support"));
+                        Probe.StandAt(Post,Roof->SurfaceHeightAt(Post),What+TEXT(" roof patrol support"));
                         continue;
                     }
                     Probe.Stand(Post,What+TEXT(" patrol post support"));

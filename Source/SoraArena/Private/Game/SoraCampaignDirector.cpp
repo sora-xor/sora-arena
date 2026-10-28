@@ -1267,9 +1267,13 @@ ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int
         for(const FSoraLadder& Ladder:Fieldcraft->Active()->Ladders)
             if(Ladder.Guards.Contains(GuardIndex))
             {
-                Post=FVector(Ladder.Roof.Center,Ladder.HeightCm+120.f);
+                const FVector2D At=Ladder.RoofGeometry!=FSoraLadder::ERoof::StagedBoard&&
+                    Space->Patrols.IsValidIndex(GuardIndex)&&!Space->Patrols[GuardIndex].IsEmpty()
+                    ?Space->Patrols[GuardIndex][0]:Ladder.Roof.Center;
+                const float Height=Ladder.SurfaceHeightAt(At);
+                Post=FVector(At,Height+120.f);
                 Route.Points.Reset();
-                Route.Points.Add(FVector(Ladder.Roof.Center,Ladder.HeightCm+90.f));
+                Route.Points.Add(FVector(At,Height+90.f));
                 Route.bPingPong=false;
             }
     // The senses the chapter authors for this guard.

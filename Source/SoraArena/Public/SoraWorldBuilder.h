@@ -226,6 +226,8 @@ public:
 private:
     // Campaign spaces (SoraWorldBuilderLayout.cpp, SoraWorldBuilderLayoutZones.cpp).
     void BuildArena(int32 MapId, bool bSites, bool bTenements=false, bool bLanternWorkshop=false);
+    void BuildNoticeRoof();
+    UPROPERTY() TArray<TObjectPtr<UProceduralMeshComponent>> NoticeBuildingMeshes;
     void BuildCampaign(const FSoraChapter& Chapter);
     void BuildChapterWood(const FSoraChapter& Chapter);
     TArray<FVector> WoodFloors;

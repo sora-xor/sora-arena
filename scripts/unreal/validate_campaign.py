@@ -841,6 +841,9 @@ def check_fieldcraft_sets(beat, record, index, zones, craft, area, on_floor):
         base = ladder.get("base_height_cm", 0)
         require(type(base) is int and 0 <= base < ladder["height_cm"],
                 f"{what}: ladder {ladder['id']} base must be below its roof")
+        if 'world_roof' in ladder:
+            require(what=='ch03.b10' and ladder['world_roof'] in ('notice_pent','notice_kawara'),
+                    f"{what}: ladder roof must have a supported chapter builder")
         on_floor(index, ladder["foot"], f"{what} ladder {ladder['id']}", 0)
         if ladder["straw"]:
             on_floor(index, ladder["straw"]["center"], f"{what} straw by {ladder['id']}", 0)

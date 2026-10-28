@@ -124,7 +124,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraTerminalLoaderTest,"SoraArena.Campaign.Not
 bool FSoraTerminalLoaderTest::RunTest(const FString&)
 {
     if(!FSoraCatalog::Get().Load())return false;
-    for(int Case=0;Case<22;++Case)
+    for(int Case=0;Case<31;++Case)
     {
         TSharedPtr<FJsonObject> Data;if(!SoraCatalogJson::ReadJson(TEXT("campaign/chapter_03.json"),Data))return false;
         auto O=Data->GetObjectField(TEXT("space"))->GetArrayField(TEXT("beats"))[9]->AsObject();
@@ -151,6 +151,15 @@ bool FSoraTerminalLoaderTest::RunTest(const FString&)
         if(Case==19)Copy.Beats[9].Space.Patrols[1][0].X+=1;
         if(Case==20)Copy.Beats[9].Space.Patrols[1].Pop();
         if(Case==21)O->GetObjectField(TEXT("terminal_charge"))->SetArrayField(TEXT("drone_circuit_cm_ms"),{MakeShared<FJsonValueNumber>(1200)});
+        if(Case==22)O->GetObjectField(TEXT("terminal_charge"))->RemoveField(TEXT("roof_cm_permille"));
+        if(Case==23)Copy.Beats[9].Space.Fieldcraft.Ladders.Pop();
+        if(Case==24)Copy.Beats[9].Space.Fieldcraft.Ladders[1].BaseHeightCm=0;
+        if(Case==25)Copy.Beats[9].Space.Fieldcraft.Ladders[1].RoofGeometry=FSoraLadder::ERoof::StagedBoard;
+        if(Case==26)Copy.Beats[9].Space.Fieldcraft.Ladders[0].Foot.X+=1;
+        if(Case==27)Copy.Beats[9].Space.Patrols[0][0].Y=1200;
+        if(Case==28)Copy.Beats[9].Space.Fieldcraft.Ladders[1].Guards.Empty();
+        if(Case==29)Copy.Beats[9].Space.Fieldcraft.Ladders[1].Roof.Size.X+=1;
+        if(Case==30)for(auto& P:Copy.Beats[9].Space.Fieldcraft.Floors)if(P.Kind==TEXT("board_roof"))P.HeightCm=540;
         TestEqual(TEXT("The native catalog binds the charge and real escape location"),
             SoraCatalogTerminalCharge::Read(*O,Copy.Beats[9],Copy.Space),Case==0);
     }
