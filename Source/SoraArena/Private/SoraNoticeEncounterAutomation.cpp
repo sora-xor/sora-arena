@@ -148,7 +148,10 @@ struct FRoute
            !Check(Mark->IsBody()&&!Mark->IsUnconscious(),TEXT("Mapped melee defeats only the ridge marksman")))return false;
         for(FVector2D P:{FVector2D(1100,800),FVector2D(1100,1000),FVector2D(650,1250)})if(!Move(P,true))return false;
         if(!Flight(B,false)||!Move(FVector2D(500,1450),true)||!Flight(A,false))return false;
-        for(FVector2D P:{FVector2D(500,1750),FVector2D(350,1800),FVector2D(-350,1800),FVector2D(-350,700),FVector2D(-1000,700),FVector2D(-1000,950)})if(!Move(P,true))return false;
+        // Return along the east face of the alley wall, clear of the
+        // north-south street's approaching conscripts. This is ordinary
+        // swept walking through the existing layout, not added cover.
+        for(FVector2D P:{FVector2D(500,1750),FVector2D(350,1800),FVector2D(-350,1800),FVector2D(-880,1800),FVector2D(-880,700),FVector2D(-1000,700),FVector2D(-1000,950)})if(!Move(P,true))return false;
         return true;
     }
     bool Hold(SoraTerminalChargeRules::EStage Target)
@@ -160,10 +163,10 @@ struct FRoute
         for(int I=0;I<360&&W.Campaign()->TerminalState().Stage!=Target;++I)if(!Tick())return false;
         return W.World->InjectKey(Key,IE_Released)&&Tick()&&Check(W.Campaign()->TerminalState().Stage==Target,TEXT("The live encounter permits the complete physical work hold"));
     }
-    bool Charge()
+    bool Charge(bool WaitForFirstApproach=true)
     {
         using SoraTerminalChargeRules::EStage;
-        if(!AlleyWindow()||!Move(FVector2D(-1000,548),true)||!Move(FVector2D(-730,548),true)||!Hold(EStage::Planted)||!Hold(EStage::Burning))return false;
+        if((WaitForFirstApproach&&!AlleyWindow())||!Move(FVector2D(-1000,548),true)||!Move(FVector2D(-730,548),true)||!Hold(EStage::Planted)||!Hold(EStage::Burning))return false;
         // Running after ignition is legitimate: detection may call the
         // authored reinforcement wave, but the ordinary hero must escape it.
         AllowDetection=true;
@@ -188,10 +191,11 @@ void FSoraNoticeEncounterTest::GetTests(TArray<FString>& Names,TArray<FString>& 
 }
 bool FSoraNoticeEncounterTest::RunTest(const FString& Parameters)
 {
-    SoraNoticeEncounterTest::FRoute Route(*this,TEXT("NoticeEncounter")+Parameters,Parameters.EndsWith(TEXT("Controller")));
+    const bool Roof=Parameters.StartsWith(TEXT("Roof"));
+    SoraNoticeEncounterTest::FRoute Route(*this,TEXT("NoticeEncounter")+Parameters,Parameters.EndsWith(TEXT("Controller")),Roof?11.5f:21.5f);
     if(!Route.Start())return false;
-    if(Parameters.StartsWith(TEXT("Roof"))&&!Route.Roof())return false;
-    return Route.Charge()&&!HasAnyErrors();
+    if(Roof&&!Route.Roof())return false;
+    return Route.Charge(!Roof)&&!HasAnyErrors();
 }
 
 // Explicit exploratory selection: each candidate still fails on detection,
@@ -222,7 +226,8 @@ bool FSoraNoticeRouteProbe::RunTest(const FString& Parameters)
     SoraNoticeEncounterTest::FRoute Route(*this,TEXT("NoticeProbe")+Parameters,Parameters.EndsWith(TEXT("Controller")),FCString::Atof(*Departure));
     AddInfo(TEXT("Exploratory timing candidate; all seven guards, health and collisions remain live."));
     if(!Route.Start())return false;
-    if(RouteName==TEXT("Roof")&&!Route.Roof())return false;
-    return Route.Charge()&&!HasAnyErrors();
+    const bool Roof=RouteName==TEXT("Roof");
+    if(Roof&&!Route.Roof())return false;
+    return Route.Charge(!Roof)&&!HasAnyErrors();
 }
 #endif
