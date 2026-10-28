@@ -401,6 +401,9 @@ struct FShot
     FVector2D At;
     float Yaw;
     float Pitch;
+    // Optional authored surface height: fail instead of silently photographing
+    // the street beneath an elevated review point.
+    float SurfaceHeight=-1.f;
 };
 
 // Chapter 1's Tsumagizaka dojo hall (x 8000-11600, y -1300-1300): the
@@ -494,25 +497,35 @@ void ShowHUD(ASoraGameMode& Mode, bool bShow)
             HUD->bShowHUD = bShow;
 }
 
-void Stand(ASoraPlayerCharacter& Hero, const FShot& Shot)
+bool Stand(ASoraPlayerCharacter& Hero, const FShot& Shot)
 {
     const float Half = Hero.GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
     FVector Spot(Shot.At.X, Shot.At.Y, Hero.GetActorLocation().Z);
     FHitResult Hit;
     const FCollisionQueryParams Query(SCENE_QUERY_STAT(SoraArtReviewStand), false, &Hero);
     const float Top = Hero.GetActorLocation().Z + 600.f;
-    if (Hero.GetWorld()->LineTraceSingleByObjectType(Hit, FVector(Shot.At.X, Shot.At.Y, Top), FVector(Shot.At.X, Shot.At.Y, Top - 8000.f),
-            FCollisionObjectQueryParams(ECC_WorldStatic), Query))
-        Spot.Z = Hit.ImpactPoint.Z + Half + 2.f;
+    FCollisionObjectQueryParams Objects;Objects.AddObjectTypesToQuery(ECC_WorldStatic);Objects.AddObjectTypesToQuery(ECC_WorldDynamic);
+    if (Hero.GetWorld()->LineTraceSingleByObjectType(Hit, FVector(Shot.At.X, Shot.At.Y, Top), FVector(Shot.At.X, Shot.At.Y, Top - 8000.f),Objects,Query))
+    {
+        if(Shot.SurfaceHeight>=0&&FMath::Abs(Hit.ImpactPoint.Z-Shot.SurfaceHeight)>1.f)return false;
+        const float NormalZ=Hit.ImpactNormal.Z;
+        if(NormalZ<Hero.GetCharacterMovement()->GetWalkableFloorZ())return false;
+        const float RoundedContact=Hero.GetCapsuleComponent()->GetScaledCapsuleRadius()*(1.f/NormalZ-1.f);
+        Spot.Z=Hit.ImpactPoint.Z+Half+RoundedContact+2.15f;
+    }
+    else if(Shot.SurfaceHeight>=0)return false;
     Hero.GetCharacterMovement()->StopMovementImmediately();
     Hero.SetActorLocation(Spot, false, nullptr, ETeleportType::TeleportPhysics);
     if (APlayerController* Controller = Cast<APlayerController>(Hero.GetController()))
         Controller->SetControlRotation(FRotator(Shot.Pitch, Shot.Yaw, 0.f));
+    UE_LOG(LogTemp,Display,TEXT("SORA_ART_REVIEW_SUPPORT shot=%s surface_z=%.3f expected_z=%.3f component=%s hero_z=%.3f"),
+        Shot.Name,Hit.ImpactPoint.Z,Shot.SurfaceHeight,*GetNameSafe(Hit.GetComponent()),Hero.GetActorLocation().Z);
+    return true;
 }
 
 void Frame(FAutomationTestBase* Test, FSessionRef Session, const FShot& Shot)
 {
-    Queue([Session, Shot]()
+    Queue([Test,Session, Shot]()
     {
         ASoraGameMode* M = Session->M();
         ASoraPlayerCharacter* Hero = Session->Hero();
@@ -520,7 +533,7 @@ void Frame(FAutomationTestBase* Test, FSessionRef Session, const FShot& Shot)
             return;
         if (Session->Exposure) Session->Exposure->BeginShot(Shot.Name);
         UGameplayStatics::SetGamePaused(M, false);
-        Stand(*Hero, Shot);
+        if(!Test->TestTrue(TEXT("The review camera stands on its authored support surface"),Stand(*Hero,Shot)))Session->bLive=false;
     });
     Wait(0.4);
     Queue([Session]()
@@ -820,10 +833,10 @@ bool FSoraArtReviewNoticeRoofTest::RunTest(const FString& Parameters)
     // Directed architectural review, independent of the mapped traversal
     // tests. These views confer neither gameplay nor final-art acceptance.
     SoraArtReview::Run(this,2,9,{
-        {TEXT("NoticeRoof_StreetFacade"),FVector2D(1600,100),140,12},
-        {TEXT("NoticeRoof_LowerFlight"),FVector2D(380,1810),-70,24},
-        {TEXT("NoticeRoof_CanopyFlight"),FVector2D(500,1420),-38,22},
-        {TEXT("NoticeRoof_RidgeReturn"),FVector2D(1200,850),153,-20}});
+        {TEXT("NoticeRoof_StreetFacade"),FVector2D(1600,100),140,12,0},
+        {TEXT("NoticeRoof_LowerFlight"),FVector2D(380,1810),-70,24,0},
+        {TEXT("NoticeRoof_CanopyFlight"),FVector2D(500,1420),-38,22,320},
+        {TEXT("NoticeRoof_RidgeReturn"),FVector2D(1200,850),153,-20,726.25}});
     return true;
 }
 #endif

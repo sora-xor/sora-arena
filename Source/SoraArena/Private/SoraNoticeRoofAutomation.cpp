@@ -6,6 +6,13 @@
 #include "SoraNoticeSquareRules.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/DirectionalLightComponent.h"
+#include "Components/SkyLightComponent.h"
+#include "Components/PointLightComponent.h"
+#include "Engine/DirectionalLight.h"
+#include "Engine/SkyLight.h"
+#include "Engine/PostProcessVolume.h"
+#include "Engine/PointLight.h"
 #include "ProceduralMeshComponent.h"
 
 namespace SoraNoticeRoofTest
@@ -104,6 +111,7 @@ bool FSoraNoticeRoofSolidsTest::RunTest(const FString&)
     TestTrue(TEXT("The gabled building is closed to street movement"),W.World->GetTestWorld()->LineTraceSingleByChannel(
         Wall,FVector(500,1000,100),FVector(700,1000,100),ECC_Visibility,Query)&&FMath::Abs(Wall.ImpactPoint.X-600)<.2);
     const auto* Capsule=W.Hero()->GetCapsuleComponent();
+    FCollisionObjectQueryParams Solids;Solids.AddObjectTypesToQuery(ECC_WorldStatic);Solids.AddObjectTypesToQuery(ECC_WorldDynamic);
     for(const auto& L:W.Craft().Ladders)
     {
         const FVector Foot(L.Foot,L.BaseHeightCm+Capsule->GetScaledCapsuleHalfHeight()+2.15f);
@@ -112,7 +120,7 @@ bool FSoraNoticeRoofSolidsTest::RunTest(const FString&)
         {
             FHitResult Hit;
             const bool Blocked=W.World->GetTestWorld()->SweepSingleByObjectType(Hit,Segment.Key,Segment.Value,FQuat::Identity,
-                FCollisionObjectQueryParams(FCollisionObjectQueryParams::AllStaticObjects),
+                Solids,
                 FCollisionShape::MakeCapsule(Capsule->GetScaledCapsuleRadius(),Capsule->GetScaledCapsuleHalfHeight()),Query);
             if(Blocked)AddInfo(FString::Printf(TEXT("%s blocked by %s at %s"),*L.Id,*GetNameSafe(Hit.GetComponent()),*Hit.Location.ToString()));
             TestFalse(TEXT("A full standing capsule clears the authored ladder segments"),Blocked);
@@ -188,6 +196,56 @@ bool FSoraNoticeRoofRouteTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("Retry replaces the defeated rooftop guard at the actual ridge"),Fresh&&Fresh!=Mark&&!Fresh->IsBody()&&
         FVector::Dist2D(Fresh->GetActorLocation(),FVector(900,800,0))<10&&Fresh->GetActorLocation().Z>830);
     TestTrue(TEXT("Retry restores both flights without duplicate building bodies or a held ladder"),W.Craft().Ladders.Num()==2&&Bodies(W)==2&&!W.Fieldcraft()->IsOnLadder());
+    return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraNoticeNightLightTest,"SoraArena.Campaign.NoticeSquare.NightLight",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraNoticeNightLightTest::RunTest(const FString&)
+{
+    using namespace SoraNoticeRoofTest;
+    if(!FSoraCatalog::Get().Load())return false;
+    FBeatWorld W(*this,TEXT("NoticeNightLight"),2,9);
+    if(!W.Start()||!Controls(W))return false;
+    ADirectionalLight* Key=nullptr;ASkyLight* Sky=nullptr;APostProcessVolume* Grade=nullptr;
+    for(TActorIterator<ADirectionalLight> It(W.World->GetTestWorld());It;++It)Key=*It;
+    for(TActorIterator<ASkyLight> It(W.World->GetTestWorld());It;++It)Sky=*It;
+    for(TActorIterator<APostProcessVolume> It(W.World->GetTestWorld());It;++It)if(It->bUnbound)Grade=*It;
+    if(!TestNotNull(TEXT("A single world key exists"),Key)||!TestNotNull(TEXT("The night has diffuse sky light"),Sky)||!TestNotNull(TEXT("The world exposure volume exists"),Grade))return false;
+    auto* K=CastChecked<UDirectionalLightComponent>(Key->GetLightComponent());
+    TestTrue(TEXT("Early-night key is cool, broad, dim and not an atmospheric sun"),K->bUseTemperature&&K->Temperature>=8500&&
+        K->Intensity>=1&&K->Intensity<=4&&K->LightSourceAngle>=8&&!K->bAtmosphereSunLight);
+    TestTrue(TEXT("A dim existing overcast capture supplies diffuse night illumination"),Sky->GetLightComponent()->SourceType==SLS_SpecifiedCubemap&&
+        Sky->GetLightComponent()->Cubemap&&Sky->GetLightComponent()->Intensity>0&&Sky->GetLightComponent()->Intensity<.2f);
+    TestTrue(TEXT("The notice zone explicitly bounds both ends of auto-exposure"),Grade->Settings.bOverride_AutoExposureMinBrightness&&
+        Grade->Settings.bOverride_AutoExposureMaxBrightness&&Grade->Settings.AutoExposureMinBrightness<Grade->Settings.AutoExposureMaxBrightness);
+    const FVector Canopy(500,1250,410),Alley(-1000,2200,90),Ridge(1100,800,840);
+    const int Lit=W.Stealth()->LightAt(Canopy),AlleyLit=W.Stealth()->LightAt(Alley),RidgeLit=W.Stealth()->LightAt(Ridge);
+    int Windows=0;
+    for(TActorIterator<APointLight> It(W.World->GetTestWorld());It;++It)if(It->ActorHasTag(TEXT("NoticeRouteWindow")))
+    {
+        ++Windows;const auto* L=It->PointLightComponent.Get();
+        TestTrue(TEXT("Window spill is a finite warm shadowed world light"),L->Intensity>0&&L->Intensity<=300&&L->Temperature==1900&&L->CastShadows&&L->AttenuationRadius<=500);
+        It->PointLightComponent->SetVisibility(false);
+    }
+    TestEqual(TEXT("Only two house-window pools mark the ladder ends"),Windows,2);
+    const int Dark=W.Stealth()->LightAt(Canopy);
+    TestTrue(TEXT("Guard perception sees the same window light that reveals the canopy"),Lit>Dark+100);
+    TestEqual(TEXT("The distant alley stays outside both window pools"),W.Stealth()->LightAt(Alley),AlleyLit);
+    TestEqual(TEXT("The rear ridge stays outside both warm pools"),W.Stealth()->LightAt(Ridge),RidgeLit);
+    TestTrue(TEXT("The ridge retains a low ambient exposure to guards"),RidgeLit>=100&&RidgeLit<200);
+    AddInfo(FString::Printf(TEXT("Actual world illumination proxy: canopy lit=%d dark=%d alley=%d ridge=%d"),Lit,Dark,AlleyLit,RidgeLit));
+    // Staging changes the one existing rig, then restores its defaults when
+    // leaving the square. It must not leave this exposure clamp in later beats.
+    const auto& Chapter=*W.Campaign()->ActiveChapter();
+    for(int Beat:{10,11})
+    {
+        W.Mode()->Arena()->StageKit(Chapter,Beat);
+        TestTrue(TEXT("Both post-charge square beats retain the night profile"),Grade->Settings.bOverride_AutoExposureMinBrightness&&!K->bAtmosphereSunLight);
+    }
+    W.Mode()->Arena()->StageKit(Chapter,12);
+    TestTrue(TEXT("Leaving the square restores the map's exposure and atmospheric rig"),!Grade->Settings.bOverride_AutoExposureMinBrightness&&
+        !Grade->Settings.bOverride_AutoExposureMaxBrightness&&K->bAtmosphereSunLight&&FMath::IsNearlyEqual(K->Intensity,1.8f));
     return !HasAnyErrors();
 }
 #endif

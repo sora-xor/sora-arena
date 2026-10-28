@@ -1,6 +1,9 @@
 #include "SoraWorldBuilder.h"
 #include "SoraNoticeSquareRules.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/PointLightComponent.h"
+#include "Engine/PointLight.h"
+#include "Engine/World.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "PhysicsEngine/BodySetup.h"
 #include "ProceduralMeshComponent.h"
@@ -62,4 +65,28 @@ void ASoraWorldBuilder::BuildNoticeRoof()
         Box(TEXT("NoticeMoneyChangerShutter"),FVector(X,398,Z),FVector(150,4,95),Wood,false,FRotator::ZeroRotator,TEXT("Timber"));
     for(int Z:{40,310})
         Box(TEXT("NoticeMoneyChangerBeam"),FVector(960,395,Z),FVector(720,10,14),Wood,false,FRotator::ZeroRotator,TEXT("Timber"));
+    // Low warm spill behind the occupied house's shutters identifies the
+    // ladder ends. These are real world lights, also read by guard perception.
+    // Their frames stay clear of the validated capsule and drone corridors.
+    for(int I=0;I<2;++I)
+    {
+        const FVector Window=I?FVector(597,1120,450):FVector(680,1303,230);
+        const FVector Out=I?FVector(-1,0,0):FVector(0,1,0);
+        const FVector Across=I?FVector(0,1,0):FVector(1,0,0);
+        Box(TEXT("NoticeWarmWindowFrame"),Window,Across*110+Out.GetAbs()*8+FVector(0,0,100),Wood,false,FRotator::ZeroRotator,TEXT("Timber"));
+        auto* Pane=Box(TEXT("NoticeWarmWindowPaper"),Window+Out*5,Across*94+Out.GetAbs()*2+FVector(0,0,84),FLinearColor(1,.58,.23),false);
+        if(auto* Base=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Generated/Materials/M_ArenaGlow.M_ArenaGlow"),nullptr,LOAD_NoWarn))
+        {
+            auto* Mat=UMaterialInstanceDynamic::Create(Base,Pane);Mat->SetVectorParameterValue(TEXT("Color"),FLinearColor(1,.58,.23)*.18f);Pane->SetMaterial(0,Mat);
+        }
+        for(int Bar:{-30,0,30})
+            Box(TEXT("NoticeWarmWindowLattice"),Window+Out*8+Across*Bar,Across*4+Out.GetAbs()*4+FVector(0,0,84),Wood,false,FRotator::ZeroRotator,TEXT("Timber"));
+        if(auto* Light=GetWorld()->SpawnActor<APointLight>(Window+Out*30,FRotator::ZeroRotator))
+        {
+            Light->Tags.Add(TEXT("NoticeRouteWindow"));Light->SetMobility(EComponentMobility::Movable);
+            auto* Glow=Light->PointLightComponent.Get();Glow->SetIntensityUnits(ELightUnits::Lumens);Glow->SetIntensity(180.f);
+            Glow->SetAttenuationRadius(450.f);Glow->SetSourceRadius(24.f);
+            Glow->SetUseTemperature(true);Glow->SetTemperature(1900.f);Glow->SetCastShadows(true);DecorActors.Add(Light);
+        }
+    }
 }

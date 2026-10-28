@@ -410,16 +410,18 @@ private:
     // Sun, sky, fog and grade per map (SoraWorldBuilderLighting.cpp).
     void Lighting(int32 MapId);
     // The map's rig, re-aimed for an authored campaign beat: sun bearing and
-    // colour temperature, overcast dome or atmospheric sky. Intensities, sky
-    // light, exposure and fog never change; one rig serves every beat and retry.
+    // colour temperature, overcast dome or atmospheric sky. The notice-square
+    // night profile also bounds exposure and sets its dim cloud illumination.
     void BeatLight(const FSoraBeat& Beat);
     UPROPERTY() TObjectPtr<ADirectionalLight> RigSun;
     UPROPERTY() TObjectPtr<ASkyLight> RigSky;
+    UPROPERTY() TObjectPtr<APostProcessVolume> RigGrade;
     UPROPERTY() TObjectPtr<AExponentialHeightFog> RigFog;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> RigDome;
     UPROPERTY() TObjectPtr<UTextureCube> RigOvercast;
     FRotator RigDefaultRotation=FRotator::ZeroRotator;
     FLinearColor RigDefaultColor=FLinearColor::White;
+    float RigDefaultKeyIntensity=0.f,RigDefaultSkyIntensity=0.f,RigDefaultSourceAngle=0.f;
     bool bRigDefaultRealTimeCapture=true;
     bool bRigAuthored=false;
     FString RigBeat;

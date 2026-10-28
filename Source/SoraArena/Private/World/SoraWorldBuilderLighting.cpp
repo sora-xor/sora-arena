@@ -63,6 +63,8 @@ void ASoraWorldBuilder::Lighting(int32 MapId)
     RigSun=Sun;
     RigDefaultRotation=Sun->GetActorRotation();
     RigDefaultColor=SunColor;
+    RigDefaultKeyIntensity=SunComponent->Intensity;
+    RigDefaultSourceAngle=SunComponent->LightSourceAngle;
     RigDome=nullptr;
     RigOvercast=nullptr;
     RigBeat.Reset();
@@ -78,6 +80,7 @@ void ASoraWorldBuilder::Lighting(int32 MapId)
     Sky->GetLightComponent()->SetIntensity(bEstate?.65f:.7f);
     DecorActors.Add(Sky);
     RigSky=Sky;
+    RigDefaultSkyIntensity=Sky->GetLightComponent()->Intensity;
     if(MapId==0)
     {
         if(auto* HDRI=LoadObject<UTextureCube>(nullptr,TEXT("/Game/Generated/Environment/Textures/T_NyaagyuOvercast.T_NyaagyuOvercast"),nullptr,LOAD_NoWarn))
@@ -117,6 +120,7 @@ void ASoraWorldBuilder::Lighting(int32 MapId)
     RigFog=Fog;
 
     auto* Grade=GetWorld()->SpawnActor<APostProcessVolume>();
+    RigGrade=Grade;
     Grade->bUnbound=true;
     auto& Settings=Grade->Settings;
     // Keep silhouettes readable and prevent the sky and lanterns from driving
@@ -149,9 +153,34 @@ void ASoraWorldBuilder::BeatLight(const FSoraBeat& Beat)
     const FBeatLight* Light=nullptr;
     for(const FBeatLight& Entry:BeatLights)
         if(Beat.Id==Entry.Beat) { Light=&Entry; break; }
+    const bool bNoticeNight=Beat.Id==TEXT("ch03.b10")||Beat.Id==TEXT("ch03.b11")||Beat.Id==TEXT("ch03.b12");
+    const FBeatLight Night={TEXT("notice-night"),300.f,35.f,9000.f,false};
+    if(bNoticeNight)Light=&Night;
     if(!Light&&!bRigAuthored) return;
     auto* Key=CastChecked<UDirectionalLightComponent>(RigSun->GetLightComponent());
     USkyLightComponent* Sky=RigSky->GetLightComponent();
+    // A broad cool cloud key, not a visible sun. Its actual illuminance
+    // enters USoraStealth::LightAt; the window pools use real point lights.
+    Key->SetIntensity(bNoticeNight?3.f:RigDefaultKeyIntensity);
+    Key->SetLightSourceAngle(bNoticeNight?12.f:RigDefaultSourceAngle);
+    Key->SetAtmosphereSunLight(!bNoticeNight);
+    Sky->SetIntensity(bNoticeNight?.08f:RigDefaultSkyIntensity);
+    Sky->SetLightColor(bNoticeNight?FLinearColor::MakeFromColorTemperature(9000.f):FLinearColor::White);
+    if(RigGrade)
+    {
+        auto& Grade=RigGrade->Settings;
+        Grade.bOverride_AutoExposureMinBrightness=bNoticeNight;
+        Grade.bOverride_AutoExposureMaxBrightness=bNoticeNight;
+        // One stop of adaptation within the night zone; looking at the sky
+        // cannot erase its footholds, nor can looking down reveal every shadow.
+        // Match UE's white-point conversion if extended EV100 units are on.
+        const auto* Extended=IConsoleManager::Get().FindConsoleVariable(TEXT("r.DefaultFeature.AutoExposure.ExtendDefaultLuminanceRange"));
+        const auto* Lens=IConsoleManager::Get().FindConsoleVariable(TEXT("r.EyeAdaptation.LensAttenuation"));
+        const float LuminanceMax=.78f/FMath::Max(Lens?Lens->GetFloat():.78f,.01f);
+        const auto Units=[&](float L){return Extended&&Extended->GetInt()!=0?FMath::Log2(L/LuminanceMax):L;};
+        Grade.AutoExposureMinBrightness=Units(.06f);
+        Grade.AutoExposureMaxBrightness=Units(.12f);
+    }
     const bool bAtmosphere=Light&&Light->bAtmosphere;
     if(Light)
     {
@@ -173,7 +202,16 @@ void ASoraWorldBuilder::BeatLight(const FSoraBeat& Beat)
     // The sky: the estate's overcast dome and HDRI, or the atmosphere captured
     // once for this beat (never per tick); unauthored, the map's own capture.
     if(RigDome) RigDome->SetVisibility(!bAtmosphere);
-    if(bAtmosphere)
+    if(bNoticeNight)
+    {
+        // Reuse the existing licensed overcast capture as dim diffuse light.
+        // The atmospheric background has no sun; no bright daytime dome is shown.
+        Sky->bRealTimeCapture=false;
+        if(auto* Cloud=LoadObject<UTextureCube>(nullptr,TEXT("/Game/Generated/Environment/Textures/T_NyaagyuOvercast.T_NyaagyuOvercast"),nullptr,LOAD_NoWarn))
+        {Sky->SourceType=SLS_SpecifiedCubemap;Sky->SetCubemap(Cloud);}
+        else Sky->SourceType=SLS_CapturedScene;
+    }
+    else if(bAtmosphere)
     {
         Sky->bRealTimeCapture=false;
         Sky->SourceType=SLS_CapturedScene;
