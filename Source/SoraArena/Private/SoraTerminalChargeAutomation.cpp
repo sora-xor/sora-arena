@@ -124,7 +124,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraTerminalLoaderTest,"SoraArena.Campaign.Not
 bool FSoraTerminalLoaderTest::RunTest(const FString&)
 {
     if(!FSoraCatalog::Get().Load())return false;
-    for(int Case=0;Case<19;++Case)
+    for(int Case=0;Case<22;++Case)
     {
         TSharedPtr<FJsonObject> Data;if(!SoraCatalogJson::ReadJson(TEXT("campaign/chapter_03.json"),Data))return false;
         auto O=Data->GetObjectField(TEXT("space"))->GetArrayField(TEXT("beats"))[9]->AsObject();
@@ -148,6 +148,9 @@ bool FSoraTerminalLoaderTest::RunTest(const FString&)
         if(Case==16)Copy.Beats[9].Guards[4].Type=TEXT("enforcer_rifle");
         if(Case==17)Copy.Beats[9].Guards[2].bPost=true;
         if(Case==18)Copy.Beats[9].Space.Patrols[4][6].Y=1500;
+        if(Case==19)Copy.Beats[9].Space.Patrols[1][0].X+=1;
+        if(Case==20)Copy.Beats[9].Space.Patrols[1].Pop();
+        if(Case==21)O->GetObjectField(TEXT("terminal_charge"))->SetArrayField(TEXT("drone_circuit_cm_ms"),{MakeShared<FJsonValueNumber>(1200)});
         TestEqual(TEXT("The native catalog binds the charge and real escape location"),
             SoraCatalogTerminalCharge::Read(*O,Copy.Beats[9],Copy.Space),Case==0);
     }

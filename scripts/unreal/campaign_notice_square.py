@@ -3,7 +3,8 @@
 This binds the charge/escape contract and five ground patrol schedules. P1
 uses clearance waypoints around the existing board and side-passage walls;
 P2 keeps the authored -20 m / +38 m endpoints in separate passing lanes.
-The marksman's rooftop and the drone's circle remain provisional.
+The drone follows an explicit 5.4 m / 6 m / 36 s circuit clear of the
+money-changer footprint. The marksman's rooftop remains provisional.
 """
 
 BEATS=('ch03.b10','ch03.b11','ch03.b12')
@@ -11,6 +12,10 @@ ZONE=[-2200,-1000,3200,3200]
 ENTRY=[-1000,2800,-90]
 PANEL=[-730,560]
 SAFE=[-1600,3000]
+DRONE=[[540,0],[530,105],[499,207],[449,300],[382,382],[300,449],[207,499],[105,530],
+       [0,540],[-105,530],[-207,499],[-300,449],[-382,382],[-449,300],[-499,207],[-530,105],
+       [-540,0],[-530,-105],[-499,-207],[-449,-300],[-382,-382],[-300,-449],[-207,-499],[-105,-530],
+       [0,-540],[105,-530],[207,-499],[300,-449],[382,-382],[449,-300],[499,-207],[530,-105]]
 P1=[[-1020,-700],[-510,-700],[0,-700],[510,-700],[1020,-700],
     [1020,-350],[1020,0],[1020,350],[1020,700],[510,700],[0,700],[-510,700],
     [-1020,700],[-1020,233],[-1020,-233]]
@@ -30,6 +35,9 @@ def ground_authored_valid(beat,layout):
            paths[name]['alt_cm'] is not None or paths[name]['circle_cm'] is not None
            for name,seconds,points in expected):return False
     guards=beat['params']['guards']
+    drone=paths.get('pt_b10_d',{})
+    if (drone.get('loop_s')!=36 or drone.get('alt_cm')!=600 or
+            drone.get('circle_cm')!={'center':[0,0],'radius':540} or drone.get('points_cm')):return False
     kinds=['marksman','drone','enforcer_rifle','enforcer_rifle','bound_conscript','bound_conscript','blade_retainer']
     routes=['static:sp_b10_roof','pt_b10_d','pt_b10_p1','pt_b10_p1','pt_b10_p2','pt_b10_p2','pt_b10_p3']
     return (len(guards)==7 and [g['type'] for g in guards]==kinds and
@@ -44,7 +52,8 @@ def contract():
             'holds_ms':[4000,1000],'fuse_ms':[20000],
             'blast_cm_hp':[800,120],'safe_cm':[-2200,2900,0,-1000,3100,400,1500],
             'ground_patrol_periods_ms':[60000,60000,45000,45000,70000],
-            'ground_patrol_pair_spacing_ms':[4000,3000]}
+            'ground_patrol_pair_spacing_ms':[4000,3000],
+            'drone_circuit_cm_ms':[0,0,540,600,36000,32]}
 
 
 def place_notice_square(beats,records,zones,layout,fail):
@@ -64,8 +73,8 @@ def place_notice_square(beats,records,zones,layout,fail):
                           [[0,-600],[0,600]]])
         if b['id']=='ch03.b10':
             r['terminal_charge']=contract()
-            # The marksman's current platform and drone line stay provisional.
-            r['patrols']=[[[900,1200]],[[0,-600],[0,600]]]+ground_patrols()
+            # The marksman's current platform stays provisional.
+            r['patrols']=[[[900,1200]],DRONE]+ground_patrols()
             r['objectives']=[list(PANEL),list(PANEL),list(SAFE)]
             r['volumes']=[{'event':'volume_enter:vol_b10_glint','center':[0,0],'size':[1800,1400]},
                           {'event':'volume_enter:vol_b10_dobuita','center':[0,382],'size':[1800,300]}]
@@ -111,7 +120,7 @@ def notice_valid(chapter):
         r=next(r for r in selected if r['beat']=='ch03.b10')
         beat=next(b for b in chapter['beats'] if b['id']=='ch03.b10');task=beat['task']
         return (ground_authored_valid(beat,chapter['layout']) and r['terminal_charge']==contract() and r['objectives']==[PANEL,PANEL,SAFE] and
-                r['patrols']==[[[900,1200]],[[0,-600],[0,600]]]+ground_patrols() and
+                r['patrols']==[[[900,1200]],DRONE]+ground_patrols() and
                 task['goal']=='objectives' and task['count']==3 and task['objective_hold_ms']==[4000,1000,0] and
                 task['objectives']==['obj_plant_charge','obj_light_fuse','obj_reach_safe'] and
                 beat['ext']['charge']=={'fuse_s':20,'blast_radius_cm':800,'damages_player':True} and

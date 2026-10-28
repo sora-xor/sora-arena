@@ -42,6 +42,8 @@ struct FSoraPatrolRoute
     // A verified flight corridor follows each segment with ordinary swept
     // movement, without the free-roaming drone's long sidestep look-ahead.
     UPROPERTY() bool bDirectFlightSegments = false;
+    // Short circular flight legs need tighter arrivals than long corridors.
+    UPROPERTY() float FlightArrivalCm = 20.f;
     UPROPERTY() FVector PauseFacing=FVector::ZeroVector;
 };
 

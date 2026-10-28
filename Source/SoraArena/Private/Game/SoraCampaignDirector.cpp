@@ -1240,6 +1240,15 @@ ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int
         Post=Route.Points[0];
     }
     const bool NoticeGround=IsTerminalCharge()&&SoraNoticeSquareRules::GroundGuard(GuardIndex);
+    const bool NoticeDrone=IsTerminalCharge()&&GuardIndex==1;
+    if(NoticeDrone)
+    {
+        Route.Points.Reset();
+        for(const auto& P:Space->Patrols[GuardIndex])Route.Points.Add(FVector(P,SoraNoticeSquareRules::DroneHeight));
+        Route.PeriodMs=SoraNoticeSquareRules::DronePeriodMs;Route.PauseMs=0;
+        Route.bThreeDimensional=true;Route.bDirectFlightSegments=true;Route.FlightArrivalCm=2.f;
+        Post=Route.Points[0];
+    }
     if(NoticeGround)
     {
         Route.Points.Reset();
@@ -1336,6 +1345,11 @@ ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int
         GuardActor->SetActorRotation((Route.Points[1]-Route.Points[0]).Rotation());
         GuardActor->Tags.Add(FName(*FString::Printf(TEXT("NoticeGroundGuard%d"),GuardIndex)));
         if(auto* Brain=Cast<ASoraEnemyController>(GuardActor->GetController()))Brain->BeginPatrol(Route);
+    }
+    if(GuardActor&&NoticeDrone)
+    {
+        GuardActor->Tags.Add(TEXT("NoticeSquareDrone"));
+        GuardActor->SetActorRotation((Route.Points[1]-Route.Points[0]).Rotation());
     }
     if(GuardActor&&Space->Moat.bEnabled)
         if(auto* Craft=USoraFieldcraft::Get(this))Craft->AssignMoatGuard(*GuardActor,GuardIndex);

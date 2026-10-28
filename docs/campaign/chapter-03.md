@@ -585,12 +585,20 @@ The 高札場 is a widened crossing (18 × 14 m, not a firebreak plaza) where th
 
 Guards:
 - **Marksman:** on the ridge of the two-storey 両替屋 (money-changer's) at the north-east corner, about 7.5 m up. He sweeps a 120° arc over the square every 14 s. When he detects the player, he locks on with a 900 ms glint before firing.
-- **Drone:** circles the square at 6 m (radius 12 m, 36 s).
+- **Drone:** circles the square at 6 m (radius 5.4 m, 36 s).
 - **P1:** two enforcers loop the square, 4 s apart (60 s).
 - **P2:** two conscripts pace the north–south street (45 s).
 - **P3:** a blade retainer walks the main street between X −40 and +40 m (70 s).
 - **Lamps:** two licensed 辻行灯 (the existing `SM_Edo_LanternPost`) at the south-west and south-east corners can be snuffed.
 - **Noise:** 溝板 drain boards along both frontages rattle (×1.5 noise) except along their silent edge strip; the board roofs are also noisy.
+
+**Physical-layout amendment (2026-10-28):** the former 12 m drone radius
+crossed the money-changer footprint under its 7.5 m ridge. The 5.4 m radius
+keeps the flight above the crossing while preserving its 6 m altitude and
+36 s rhythm. Runtime uses 32 swept legs with rounded centimetre waypoints
+(under 3 cm chord error), requiring real arrivals. Every built corner/eave
+must clear the full 38 cm movement sphere; the unfinished roof route still
+requires its own collision and ordinary-play review.
 
 Routes:
 1. **North alley (intended):** from the tenement court east behind the north lots, then down a side passage to the notice board. It is dark and wet, with puddles.
@@ -2375,7 +2383,7 @@ layout:
     pt_b10_d:
       loop_s: 36
       alt_cm: 600
-      circle: {centre: [0, 0], radius: 1200}
+      circle: {centre: [0, 0], radius: 540}
     pt_b10_p1:
       loop_s: 60
       points: [[-800, -600], [800, -600], [800, 600], [-800, 600]]

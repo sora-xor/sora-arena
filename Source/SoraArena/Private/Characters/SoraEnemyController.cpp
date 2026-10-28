@@ -793,7 +793,7 @@ void ASoraEnemyController::ScheduledPatrol(ASoraEnemy& Enemy,float Dt,int32 NowM
         // The authored corridor already avoids the room's structure. Native
         // character movement still sweeps the body, so an added obstruction
         // holds the patrol here instead of advancing a visit on the clock.
-        if(Distance<=20.f)
+        if(Distance<=FMath::Clamp(Route.FlightArrivalCm,1.f,20.f))
         { Enemy.GetCharacterMovement()->StopMovementImmediately();Move=EMove::Arrived; }
         else
         { Heading=(Goal-Here).GetSafeNormal();Enemy.AddMovementInput(Heading,Pace);Move=EMove::Moving; }

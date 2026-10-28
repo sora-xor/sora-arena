@@ -47,5 +47,8 @@ int main()
     }
     std::cout<<"],\"periods_ms\":[";
     for(int G=2;G<7;++G){if(G>2)std::cout<<',';std::cout<<N::PatrolPeriod(G);}
-    std::cout<<"]}\n";
+    std::cout<<"],\"drone\":[";
+    for(int I=0;I<N::DroneCount;++I)
+    {if(I)std::cout<<',';const auto P=N::DroneCircuit[I];std::cout<<'['<<P.X<<','<<P.Y<<']';}
+    std::cout<<"],\"drone_contract\":[0,0,"<<N::DroneRadius<<','<<N::DroneHeight<<','<<N::DronePeriodMs<<','<<N::DroneCount<<"]}\n";
 }

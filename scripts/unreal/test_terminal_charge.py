@@ -34,6 +34,18 @@ class TerminalChargeTests(unittest.TestCase):
         self.assertEqual(compiled['patrols'],record['patrols'][2:])
         self.assertEqual(compiled['patrols'],square.ground_patrols())
         self.assertEqual(compiled['periods_ms'],[60000,60000,45000,45000,70000])
+        self.assertEqual(compiled['drone'],record['patrols'][1])
+        self.assertEqual(compiled['drone'],square.DRONE)
+        self.assertEqual(compiled['drone_contract'],square.contract()['drone_circuit_cm_ms'])
+        # Independently check the analytic circle, chord error and required
+        # physical speed; agreement between two copied tables is insufficient.
+        for i,a in enumerate(compiled['drone']):
+            angle=2*math.pi*i/32
+            self.assertLessEqual(math.dist(a,[540*math.cos(angle),540*math.sin(angle)]),.71)
+            b=compiled['drone'][(i+1)%32]
+            mid=[(a[j]+b[j])/2 for j in range(2)]
+            self.assertLess(abs(math.hypot(*mid)-540),3)
+            self.assertLess(math.dist(a,b)/(36/32),110)
         enemies={e['id']:e for e in json.loads((ROOT/'Content/Data/enemies.json').read_text())['archetypes']}
         types=['enforcer_rifle']*2+['bound_conscript']*2+['blade_retainer']
         for route,period,kind in zip(compiled['patrols'],compiled['periods_ms'],types,strict=True):
@@ -51,7 +63,7 @@ class TerminalChargeTests(unittest.TestCase):
             c=copy.deepcopy(chapter);r=next(r for r in c['space']['beats'] if r['beat']=='ch03.b10')
             r['terminal_charge'][key][0]+=1
             self.assertFalse(square.notice_valid(c),key)
-        for change in ('missing','unexpected','objective','lamp','zone','anchor','patrol','pair_phase','authored_period','authored_extent','authored_offset','guard_type'):
+        for change in ('missing','unexpected','objective','lamp','zone','anchor','patrol','pair_phase','authored_period','authored_extent','authored_offset','guard_type','drone_point','drone_count','drone_radius','drone_height','drone_period'):
             c=copy.deepcopy(chapter);r=next(r for r in c['space']['beats'] if r['beat']=='ch03.b10')
             if change=='missing':del r['terminal_charge']
             elif change=='unexpected':c['space']['beats'][0]['terminal_charge']=square.contract()
@@ -64,6 +76,11 @@ class TerminalChargeTests(unittest.TestCase):
             elif change=='guard_type':c['beats'][9]['task']['guards'][4]['type']='enforcer_rifle'
             elif change=='patrol':r['patrols'][6][1][0]=3200
             elif change=='pair_phase':r['patrols'][3]=copy.deepcopy(r['patrols'][2])
+            elif change=='drone_point':r['patrols'][1][0][0]+=1
+            elif change=='drone_count':r['patrols'][1].pop()
+            elif change=='drone_radius':next(p for p in c['layout']['patrols'] if p['id']=='pt_b10_d')['circle_cm']['radius']=1200
+            elif change=='drone_height':next(p for p in c['layout']['patrols'] if p['id']=='pt_b10_d')['alt_cm']=599
+            elif change=='drone_period':next(p for p in c['layout']['patrols'] if p['id']=='pt_b10_d')['loop_s']=35
             else:r['anchor'][0]-=1
             self.assertFalse(square.notice_valid(c),change)
 

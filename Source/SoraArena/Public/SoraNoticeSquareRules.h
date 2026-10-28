@@ -26,6 +26,16 @@ constexpr FBox StreetWalls[]={{-425,3250,220,50,1300,540},{425,3250,220,50,1300,
 constexpr FBox NorthWalls[]={{-670,2550,220,540,100,540},{1800,2550,220,2800,100,540}};
 
 struct FPoint { int X,Y; };
+// The original 12 m circle cut through the money-changer roof. This explicit
+// 5.4 m circuit stays over the crossing, at the same 6 m / 36 s rhythm.
+// Thirty-two rounded waypoints bound chord error below 3 cm; visits still
+// require actual swept arrivals. This does not qualify the unfinished roof.
+constexpr int DroneRadius=540,DroneHeight=600,DronePeriodMs=36000,DroneCount=32;
+constexpr FPoint DroneCircuit[]={
+    {540,0},{530,105},{499,207},{449,300},{382,382},{300,449},{207,499},{105,530},
+    {0,540},{-105,530},{-207,499},{-300,449},{-382,382},{-449,300},{-499,207},{-530,105},
+    {-540,0},{-530,-105},{-499,-207},{-449,-300},{-382,-382},{-300,-449},{-207,-499},{-105,-530},
+    {0,-540},{105,-530},{207,-499},{300,-449},{382,-382},{449,-300},{499,-207},{530,-105}};
 // Fifteen actual waypoints make a single-leg phase offset four seconds for
 // P1 and three seconds for P2. The second guard starts one leg behind; no
 // clock-driven position updates or skipped arrivals are needed.

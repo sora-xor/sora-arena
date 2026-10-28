@@ -37,9 +37,12 @@ bool Read(const FJsonObject& O,FSoraBeat& Beat,const FSoraSpace& Space)
        !Numbers(*C,TEXT("blast_cm_hp"),{R::BlastRadius,R::Damage})||
        !Numbers(*C,TEXT("safe_cm"),{-2200,2900,0,-1000,3100,400,R::SafeDistance})||
        !Numbers(*C,TEXT("ground_patrol_periods_ms"),{N::PatrolPeriod(2),N::PatrolPeriod(3),N::PatrolPeriod(4),N::PatrolPeriod(5),N::PatrolPeriod(6)})||
-       !Numbers(*C,TEXT("ground_patrol_pair_spacing_ms"),{4000,3000}))return false;
+       !Numbers(*C,TEXT("ground_patrol_pair_spacing_ms"),{4000,3000})||
+       !Numbers(*C,TEXT("drone_circuit_cm_ms"),{0,0,N::DroneRadius,N::DroneHeight,N::DronePeriodMs,N::DroneCount}))return false;
     if(B.Patrols.Num()!=7||Beat.Guards.Num()!=7||B.Patrols[0]!=TArray<FVector2D>{FVector2D(900,1200)}||
-       B.Patrols[1]!=TArray<FVector2D>{FVector2D(0,-600),FVector2D(0,600)})return false;
+       B.Patrols[1].Num()!=N::DroneCount)return false;
+    for(int I=0;I<N::DroneCount;++I)
+        if(B.Patrols[1][I]!=FVector2D(N::DroneCircuit[I].X,N::DroneCircuit[I].Y))return false;
     if(Beat.Guards[0].Type!=TEXT("marksman")||!Beat.Guards[0].bPost||Beat.Guards[1].Type!=TEXT("drone")||Beat.Guards[1].bPost)return false;
     const FName Types[]={TEXT("enforcer_rifle"),TEXT("enforcer_rifle"),TEXT("bound_conscript"),TEXT("bound_conscript"),TEXT("blade_retainer")};
     for(int G=2;G<7;++G)
