@@ -52,7 +52,7 @@ bool FSoraOpeningTextWrapTest::RunTest(const FString& Parameters)
 {
     using namespace SoraDojoTests;
     if(!FSoraCatalog::Get().Load()) return false;
-    FBeatWorld W(*this,TEXT("OpeningTextWrap"),0,2);
+    FBeatWorld W(*this,TEXT("OpeningTextWrap"),0,1);
     if(!W.Start()) return false;
     auto* HUD=W.World->GetTestWorld()->SpawnActor<ASoraHUD>();
     if(!TestNotNull(TEXT("The production HUD spawns"),HUD)) return false;
@@ -77,6 +77,9 @@ bool FSoraOpeningTextWrapTest::RunTest(const FString& Parameters)
         const auto Rows=HUD->WrappedLines(Chapter.NarrativeEnglish,Frame.EnglishSubtitleScale,Size.X-240*Frame.S);
         TestTrue(TEXT("The opening narrative fits the chapter card's four rows"),Rows.Num()<=4);
         TestEqual(TEXT("The actual opening keeps its complete words"),FString::Join(Rows,TEXT(" ")),Chapter.NarrativeEnglish);
+        FString Why;
+        const bool Fits=SoraHUDPanels::DojoLayoutFits(Frame,Why)&&SoraHUDPanels::StoryTrackerLayoutFits(Frame,Why)&&SoraHUDPanels::CaptionStoryLayoutFits(Frame,Why);
+        TestTrue(*FString::Printf(TEXT("Opening stance coaching and story fit %.0fx%.0f: %s"),Size.X,Size.Y,*Why),Fits);
     }
     return !HasAnyErrors();
 }
@@ -108,7 +111,7 @@ bool FSoraDojoPromptLayoutTest::RunTest(const FString& Parameters)
                 {
                     FString Why;
                     const FSoraHUDFrame Frame(*HUD,*W.Mode(),Size.X,Size.Y);
-                    const bool Fits=SoraHUDPanels::DojoLayoutFits(Frame,Why);
+                    const bool Fits=SoraHUDPanels::DojoLayoutFits(Frame,Why)&&SoraHUDPanels::StoryTrackerLayoutFits(Frame,Why)&&SoraHUDPanels::CaptionStoryLayoutFits(Frame,Why);
                     TestTrue(*FString::Printf(TEXT("Lesson %d fits %.0fx%.0f: %s"),W.Campaign()->DojoLessonStage(),Size.X,Size.Y,*Why),Fits);
                 }
             }

@@ -245,8 +245,11 @@ struct FStoryStrip
 };
 bool UsesAimLayout(const FSoraHUDFrame& F)
 {
+    // Readable dojo coaching needs the same measured side/bottom regions as
+    // archery; stacking every notice above the weapon leaves no room at 720p.
     return F.Mode.bCampaign&&!F.Mode.bDeterministicPractice&&F.Mode.Hero()&&
-        F.Mode.Campaign()->IsArcheryLesson();
+        (F.Mode.Campaign()->IsArcheryLesson()||
+            (F.Mode.Campaign()->ChapterId==0&&F.Mode.Campaign()->DojoLessonStage()<4));
 }
 FBox2D AimWindow(const FSoraHUDFrame& F)
 {

@@ -137,7 +137,7 @@ FObjectiveLayout DojoLayout(const FSoraHUDFrame& F)
     FObjectiveLayout L;
     if(!F.Mode.bCampaign||F.Mode.Campaign()->ChapterId!=0||F.Mode.Campaign()->DojoLessonStage()>=4) return L;
     const float Top=FMath::Max(static_cast<float>(ObjectivePanelBounds(F).Max.Y)+4*F.S,F.Mode.bEnglishSubtitles?FMath::Max(217*F.S,164*F.S+2*F.EnglishSubtitleLineHeight+8*F.S):169*F.S);
-    const float Left=25*F.S,Right=FMath::Min(745*F.S,F.W-20*F.S),Padding=10*F.S,Gap=4.f;
+    const float Left=25*F.S,Right=FMath::Min(745*F.S,SoraAimHUDLayout::Aim(F.W,F.H).X-6*F.S),Padding=10*F.S,Gap=4.f;
     float Y=Top+Padding;
     for(int32 Language=0;Language<(F.Mode.bEnglishSubtitles?2:1);++Language)
     {
