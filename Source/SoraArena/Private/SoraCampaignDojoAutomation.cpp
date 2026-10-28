@@ -91,7 +91,7 @@ bool FSoraDojoPromptLayoutTest::RunTest(const FString& Parameters)
     if(!W.Start()||!W.Tick(30)) return false;
     auto* HUD=W.World->GetTestWorld()->SpawnActor<ASoraHUD>();
     if(!TestNotNull(TEXT("The production HUD spawns"),HUD)) return false;
-    if(!W.Press(EKeys::Escape)||!TestTrue(TEXT("Guard can be rebound in the ordinary menu"),W.Hero()->RemapCombatAction(TEXT("Guard"),EKeys::J))||
+    if(!W.Press(EKeys::Escape)||!TestTrue(TEXT("Guard can be rebound in the ordinary menu"),W.Hero()->RemapCombatAction(TEXT("Block"),EKeys::J))||
         !Menu(W,SoraUI::EAction::Resume)) return false;
     const auto Check=[&](const TCHAR* Action)
     {
@@ -115,12 +115,12 @@ bool FSoraDojoPromptLayoutTest::RunTest(const FString& Parameters)
         }
         W.Mode()->FrontEnd()->NoteDevice(SoraUI::EDevice::KeyboardMouse);
     };
-    TestEqual(TEXT("The guard hint uses the rebound key"),SoraUI::ActionKey(HUD,TEXT("Guard")).English,FString(TEXT("J")));
-    Check(TEXT("Guard"));
+    TestEqual(TEXT("The guard hint uses the rebound key"),SoraUI::ActionKey(HUD,TEXT("Block")).English,FString(TEXT("J")));
+    Check(TEXT("Block"));
     FMeeting Met;
     if(!Meet(*this,*W.World,false,Met,EKeys::J)) return false;
     TestEqual(TEXT("Real front guard opens parry coaching"),W.Campaign()->DojoLessonStage(),2);
-    Check(TEXT("Guard"));
+    Check(TEXT("Block"));
     if(!Meet(*this,*W.World,true,Met,EKeys::J)||!Meet(*this,*W.World,true,Met,EKeys::J)) return false;
     TestEqual(TEXT("Real parries open recovery coaching"),W.Campaign()->DojoLessonStage(),3);
     Check(TEXT("Fire"));

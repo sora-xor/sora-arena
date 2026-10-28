@@ -2636,7 +2636,7 @@ FString USoraCampaignDirector::DojoLessonText(bool bEnglish) const
         NSLOCTEXT("SoraArena.Campaign","DojoParry","参・捌き：防御を解き、金色の予兆に合わせて［{Guard}］を押す"),
         NSLOCTEXT("SoraArena.Campaign","DojoRecovery","肆・残心：［{Fire}］で木刀を一度振り、攻撃を止めて刃の戻りを待つ")};
     const auto Line=SoraText::Format(Lessons[DojoLessonStage()],{
-        {TEXT("Guard"),SoraUI::ActionKey(this,TEXT("Guard"))},
+        {TEXT("Guard"),SoraUI::ActionKey(this,TEXT("Block"))},
         {TEXT("Fire"),SoraUI::ActionKey(this,TEXT("Fire"))}});
     return bEnglish?Line.English:Line.Japanese;
 }
