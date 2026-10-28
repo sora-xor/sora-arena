@@ -6,6 +6,11 @@ capsule-clearance sweep omitted WorldDynamic objects. Both queries are repaired
 and requalified there. The original evidence and visual rejection below are
 preserved; do not treat the old canopy image as a view from the canopy.
 
+The later [live encounter rehearsal](notice-live-encounter-2026-10-28.md)
+adds complete saved-start approaches with all seven guards initially active,
+both inputs, the charge and escape. It preserves the earlier fixture scope
+below and still leaves ordinary play and timing robustness open.
+
 Chapter 3's former floating platform is replaced with a closed money-changer
 building, pitched roof and supported board canopy. The authored amendment
 retains the wall footprint X600–1320, Y400–1300 cm and east-west ridge at

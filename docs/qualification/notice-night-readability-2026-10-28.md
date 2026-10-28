@@ -32,6 +32,11 @@ This is the existing coarse intensity/radius proxy, not rendered-pixel
 luminance or a shadow-occlusion simulation. Ordinary all-seven-guard stealth
 balance still needs play review.
 
+The later [live encounter rehearsal](notice-live-encounter-2026-10-28.md)
+completes both routes with keyboard and controller and all seven guards live
+at the saved start. Its fixed departure timings and retained failures do not
+close ordinary-play or timing-robustness acceptance.
+
 All 24 selected native tests pass with zero selected errors/warnings,
 including both mapped-input roof routes, the live ridge marksman's takedown,
 pause/return/retry, missing support, drone and ground patrols, charge,
