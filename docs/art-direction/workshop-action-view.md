@@ -86,6 +86,16 @@ physical and view checks throughout the admitted region. Runtime region/yaw
 admission and the presenter remain unimplemented.
 
 No workshop craft paw assets or presenter are integrated by this interface.
+
+The shell bench's final Inspect unit may check the three completed festival
+shells' fuse cords in sequence (Coordination 277). The tube remains supported
+behind the work area, clear of the moving arms; inspection need not touch its
+touch-hole. Each cord must receive a visible physical check. This presentation
+does not light, load or discharge a shell, change recipe counts or timing, or
+change the separate b10 charge-fuse interaction. The signed layout must still
+pass reach, view, body and arm-clearance checks, including cancellation and
+retry. This decision accepts the inspection subject, not the pending art.
+
 The [station-lifetime and continuous-exit follow-up](../qualification/workshop-lifetime-2026-10-27.md)
 passes all 70 selected native cases at signed `94eb18bb`, including the mapped
 exit and death/retry checks. This does not qualify visible contact or final art.
