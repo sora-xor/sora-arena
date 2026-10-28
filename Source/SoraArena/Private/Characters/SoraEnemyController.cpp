@@ -784,7 +784,11 @@ void ASoraEnemyController::ScheduledPatrol(ASoraEnemy& Enemy,float Dt,int32 NowM
         for(int I=PathIndex+1;I<Path.Num();++I) Distance+=FVector::Dist(Path[I-1],Path[I]);
     }
     const long long Until=SoraPatrolRules::Deadline(PatrolLoop,Count,Route.PeriodMs)-PatrolLoop.ElapsedMs-Route.PauseMs;
-    const float Seconds=FMath::Max(.1f,float(Until)/1000.f);
+    // The controller submits input before the pawn's physics tick, then
+    // observes arrival on its next tick. Reserve those two frames for short
+    // flight legs; the scheduled release and missed-deadline rules stay exact.
+    const float FlightLead=Route.bDirectFlightSegments&&Enemy.IsFlying()?2.f*FMath::Max(0.f,Dt):0.f;
+    const float Seconds=FMath::Max(.1f,float(Until)/1000.f-FlightLead);
     const float FullSpeed=FMath::Max(1.f,float(Enemy.Archetype()->SpeedCmPerSecond));
     const float Pace=FMath::Clamp(Distance/(Seconds*FullSpeed),.1f,1.f);
     EMove Move;
