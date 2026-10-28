@@ -82,7 +82,7 @@ def place_notice_square(beats,records,zones,layout,fail):
         r.update(entry=list(ENTRY),height_cm=0,anchor=list(PANEL),
                  exit={'center':[-1000,2800],'size':[300,300]},
                  spawns=[[2800,-300],[2800,0],[2800,300],[2500,-300],[2500,0],[2500,300]],
-                 patrols=[[[-800,-500],[700,-500],[700,550],[-800,550]],
+                 patrols=[[[-800,-500],[440,-500],[440,550],[-800,550]],
                           [[0,-600],[0,600]]])
         if b['id']=='ch03.b10':
             r['terminal_charge']=contract()

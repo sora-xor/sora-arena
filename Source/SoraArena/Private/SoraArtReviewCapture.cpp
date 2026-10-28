@@ -812,4 +812,18 @@ bool FSoraArtReviewArchiveRevealTest::RunTest(const FString& Parameters)
     SoraArtReview::RunArchiveReveal(this);
     return true;
 }
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraArtReviewNoticeRoofTest, "SoraCapture.ArtReview.NoticeRoof",
+    EAutomationTestFlags::ClientContext | EAutomationTestFlags::ProductFilter)
+bool FSoraArtReviewNoticeRoofTest::RunTest(const FString& Parameters)
+{
+    // Directed architectural review, independent of the mapped traversal
+    // tests. These views confer neither gameplay nor final-art acceptance.
+    SoraArtReview::Run(this,2,9,{
+        {TEXT("NoticeRoof_StreetFacade"),FVector2D(1600,100),140,12},
+        {TEXT("NoticeRoof_LowerFlight"),FVector2D(380,1810),-70,24},
+        {TEXT("NoticeRoof_CanopyFlight"),FVector2D(500,1420),-38,22},
+        {TEXT("NoticeRoof_RidgeReturn"),FVector2D(1200,850),153,-20}});
+    return true;
+}
 #endif

@@ -122,6 +122,25 @@ bool FSoraNoticeRoofSolidsTest::RunTest(const FString&)
     TestEqual(TEXT("Kawara does not inherit board noise"),W.Stealth()->SurfaceAt(FVector(900,800,752)).StepPermille,1000);
     TestEqual(TEXT("The building consists of two closed convex halves"),Bodies(W),2);
     TestNull(TEXT("The world roof does not stage the old floating slab"),Part(W,TEXT("Roof_ladder_b10")));
+    // Removing physical support is isolated from enemy injury: a hit is
+    // correctly allowed to release the grip and must not obscure this check.
+    W.Stand(FVector(500,1750,0),-90);
+    if(!W.Tick(10)||!W.Press(EKeys::Escape)||!W.Hero()->RemapCombatAction(TEXT("Jump"),EKeys::J)||!W.Press(EKeys::Escape))return false;
+    const auto A=W.Craft().Ladders[0],B=W.Craft().Ladders[1];
+    if(!Walk(W,A.Foot,false)||!Flight(W,A,true,false)||!W.Tick(5)||!Walk(W,B.Foot,false))return false;
+    auto* Roof=Part(W,TEXT("NoticeMoneyChangerRoofNorth"));
+    if(!TestNotNull(TEXT("The real upper roof can be removed in the support fixture"),Roof))return false;
+    const auto Collision=Roof->GetCollisionEnabled();Roof->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    if(!Flight(W,B,true,false))return false;
+    FFindFloorResult Floor;W.Hero()->GetCharacterMovement()->FindFloor(W.Hero()->GetActorLocation(),Floor,false);
+    AddInfo(FString::Printf(TEXT("Removed roof: held=%d reached=%d released=%d floor=%s distance=%.3f feet=%s"),
+        W.Fieldcraft()->IsOnLadder(),W.Raised(TEXT("roof_reached:")+B.Id),W.Raised(TEXT("ladder_release:")+B.Id),
+        *GetNameSafe(Floor.HitResult.GetComponent()),Floor.FloorDist,*Feet(W).ToString()));
+    TestTrue(TEXT("The missing pitched roof cannot award arrival"),W.Fieldcraft()->IsOnLadder()&&!W.Raised(TEXT("roof_reached:")+B.Id));
+    Roof->SetCollisionEnabled(Collision);
+    if(!W.Tick(10))return false;
+    TestTrue(TEXT("Restoring the roof completes the held climb exactly once"),!W.Fieldcraft()->IsOnLadder()&&
+        W.Hero()->GetCharacterMovement()->IsMovingOnGround()&&W.Count(*(TEXT("roof_reached:")+B.Id))==1);
     return !HasAnyErrors();
 }
 
@@ -149,17 +168,7 @@ bool FSoraNoticeRoofRouteTest::RunTest(const FString& Parameters)
     if(!Walk(W,A.Foot,Controller)||!Flight(W,A,true,Controller,true)||!W.Tick(5)||
        !TestTrue(TEXT("The first flight ends on its supported canopy"),!W.Fieldcraft()->IsOnLadder()&&W.Hero()->GetCharacterMovement()->IsMovingOnGround()&&FMath::Abs(Feet(W).Z-322.15)<1)||
        !Walk(W,B.Foot,Controller))return false;
-    auto* Roof=Part(W,TEXT("NoticeMoneyChangerRoofNorth"));
-    if(!TestNotNull(TEXT("The second flight uses the real pitched roof"),Roof))return false;
-    const auto Collision=Roof->GetCollisionEnabled();
-    if(!Controller)Roof->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     if(!Flight(W,B,true,Controller))return false;
-    if(!Controller)
-    {
-        TestTrue(TEXT("The missing roof cannot award arrival"),W.Fieldcraft()->IsOnLadder()&&!W.Raised(TEXT("roof_reached:")+B.Id));
-        Roof->SetCollisionEnabled(Collision);
-        if(!W.Tick(10))return false;
-    }
     if(!TestTrue(TEXT("The second flight finishes on the real roof"),!W.Fieldcraft()->IsOnLadder()&&W.Hero()->GetCharacterMovement()->IsMovingOnGround())||
        !W.Press(Controller?EKeys::Gamepad_RightThumbstick:EKeys::C)||!W.Tick(3))return false;
     for(const FVector2D Point:{FVector2D(1100,1000),FVector2D(1100,800),FVector2D(1010,800)})if(!Walk(W,Point,Controller))return false;
