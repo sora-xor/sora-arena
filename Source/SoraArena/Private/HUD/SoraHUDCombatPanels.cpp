@@ -421,7 +421,7 @@ bool SoraHUDPanels::DojoLayoutFits(const FSoraHUDFrame& F,FString& Why)
 {
     const auto L=DojoLayout(F); if(!L.Bounds.bIsValid) return true;
     if(L.Bounds.Min.X<0||L.Bounds.Max.X>F.W||L.Bounds.Min.Y<0||L.Bounds.Max.Y>GameplayStoryTop(F))
-    { Why=TEXT("Dojo lesson panel escapes the available gameplay area"); return false; }
+    { Why=FString::Printf(TEXT("Dojo lesson panel [%.1f,%.1f]-[%.1f,%.1f] escapes viewport %.0fx%.0f or story top %.1f; English=%d"),L.Bounds.Min.X,L.Bounds.Min.Y,L.Bounds.Max.X,L.Bounds.Max.Y,F.W,F.H,GameplayStoryTop(F),F.Mode.bEnglishSubtitles); return false; }
     TArray<FBox2D> Occupied; FString Joined[2];
     for(const auto& Row:L.Text)
     {
