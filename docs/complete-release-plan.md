@@ -1,6 +1,25 @@
 # Complete first-release plan
 
-## Latest isolated runtime slice: notice-square drone circuit
+## Latest isolated runtime slice: enemy dialogue routing
+
+`c7f1dfe4` fixes the ignored enemy-source restrictions on 57 authored dialogue
+rows. A reacting guard now queues its own line; unsourced mission events no
+longer impersonate every guard. Source context survives delayed cues, direct
+Combat has its Alert bark, and retreat reaches the authored withdrawal line.
+All 18 selected native cases pass with zero selected errors/warnings, including
+both live encounter routes, existing dialogue regressions and the assisted
+campaign. The host validator rejects 76 malformed variants. Both earlier
+failed runs remain in [the validation record](qualification/enemy-dialogue-routing-2026-10-28.md).
+
+The [two-stage roof route](qualification/notice-roof-route-2026-10-28.md),
+[night readability](qualification/notice-night-readability-2026-10-28.md) and
+[four live encounter rehearsals](qualification/notice-live-encounter-2026-10-28.md)
+have separate scoped evidence. Their prescribed departure times do not
+establish ordinary play or robust first-time discovery. Subtitle timing and
+final art remain open. ROOT stays frozen at `b6ba3c11`; the preserved package
+remains `1b6dfadc` and does not include these isolated changes.
+
+## October 28 notice-square drone circuit
 
 `0b4d133d` implements the explicit 5.4 m / 6 m / 36 s flight circuit with
 swept arrivals. All 18 selected native cases pass, including the assisted
@@ -8,7 +27,8 @@ campaign; all 66 gameplay source gates pass at `b6dc3bc3`. The test-only
 `06235881` follow-up also passes with the drone blocked longer than a full
 lap, then completing real arrivals after removal. Original failure and
 passing evidence are preserved in [the validation record](qualification/notice-drone-circuit-2026-10-28.md).
-The supported roof climb, rear marksman approach and final art remain open.
+At this checkpoint, the supported roof climb, rear marksman approach and final
+art remained open; the later scoped route evidence is linked above.
 ROOT stays frozen at `b6ba3c11`; its package remains `1b6dfadc`.
 
 ## October 28 opening HUD readability
@@ -2093,7 +2113,7 @@ content, final art, performance, Windows, M1 or economic/network release gates.
 | --- | --- | --- | --- |
 | T1 | Reproducible Mac development toolchain | Codex toolchain lane | UE 5.8.3 / CL 58210709 and project-scoped Xcode 26.1.1 are installed and build/cook-ready on M2 Ultra; Xcode 27 and global selection are preserved and unqualified. Integrated c4b47fbb restores all 16 dojo-kit modules through the production importer, preserves a full backup, and passes separate saved geometry/material readback. Actual SM6 and SM5 captures pass on M2. The isolated permanent saved-module guard at da669a33 passes 38 host checks and read-only Unreal validation. Full asset/art acceptance and actual M1 remain separate; general doctor still notes Git LFS 3.8.1 versus the 3.8.0 pin. |
 | G1 | Complete authored offline campaign mechanics | Codex gameplay lane | The 1b6 Mac client passes all 271 selected cases including the assisted eight-chapter campaign. Integrated c4b47fbb separately passes 15 save, settings, input and campaign regressions. The standing-workshop case passed within the 42-case editor run at `558df255`. These directed fixtures do not establish normal campaign controls, pacing, difficulty or all authored mechanics. Remaining encounter and presentation work stays open. |
-| G2 | Complete playable campaign spaces and encounters | Codex + Claude | The four cases that failed in package `541` (MoatHands, Spaces, Stones and GuardedWork) pass in packages `5b45` and `1b6` after the documented runtime/fixture repairs. The authored marksman roof and drone circuit, squeeze route, charge/rubble and blackout presentation, final art and normal traversal/stealth remain open. Verify all eight chapters and 133 beats with ordinary mapped controls; assisted checkpoints and prepared collision fixtures do not qualify the complete spaces. |
+| G2 | Complete playable campaign spaces and encounters | Codex + Claude | The four prior package failures pass in `5b45` and `1b6`. Later isolated SOURCE qualifies the drone circuit, supported two-stage roof route and night visibility, plus four full live alley/roof encounter rehearsals on keyboard/controller at normal health. `c7f1dfe4` fixes guard dialogue source routing and passes all 18 selected regressions. Prescribed departure timings, narrow sampled margins, unfinished squeeze/blackout presentation and rejected final art still prevent ordinary-play acceptance. Verify all eight chapters and 133 beats with ordinary mapped controls; directed and assisted fixtures do not qualify the complete spaces. |
 | U1 | Readable bilingual gameplay and accessible controls | Codex HUD lane | The earlier nine-scene SM6 HUD matrix at 1280×720 and 1920×1080 retains its 36 reviewed originals and scoped results. Package1b6 includes 20 reviewed 1280×720 menu/startup originals with readable credits, settings and keyboard/pad prompts. SOURCE `b489` repairs the UI-tour collector with 54 host tests and a 19-frame replay against preserved originals; its earlier failed wrapper stays failed. Dense gameplay labels, all scrolling/resolution states, motion, controller/accessibility usability and ordinary play remain open. |
 | A1 | Unique timber kit and golden-hour Estate/dojo slice | Claude | Baseline kit and prior captures remain WIP. Integrated `c4b47fbb` restores four required rails and verifies all 16 existing modules, then reviews six SM6 and six SM5 originals on M2. The hall still has overbright highlights, repeated timber/coffer surfaces, floor seams, proxy props and missing dressing. Earlier v2.1/v2.2 timber visual failures remain rejected. Unique per-placement geometry, provenance, golden-hour composition and photoreal acceptance remain open. M2 SM5 does not qualify M1. |
 | A2 | Complete character and first-person presentation | Claude | Nyaakoto, paws, sword/saya, clothing, fur and motion must pass [photoreal acceptance](art-direction/photoreal-acceptance.md) in actual gameplay and cinematics. Generated references and Blender images are source evidence only. |

@@ -13,6 +13,11 @@ play, arbitrary checkpoint/patrol phases, variable-frame-rate robustness or
 full campaign acceptance. Final art remains rejected as recorded in
 [the night-readability review](notice-night-readability-2026-10-28.md).
 
+The later [enemy dialogue fix](enemy-dialogue-routing-2026-10-28.md) prevents
+one reacting guard from queuing other archetypes' lines. All four encounter
+rehearsals also pass at that implementation; ordinary cue timing and route
+discoverability remain open.
+
 ## Qualified source and outcome
 
 Signed source `5bca00274c1a3d5ef54b753794f04e1445b91cf5`, tree
