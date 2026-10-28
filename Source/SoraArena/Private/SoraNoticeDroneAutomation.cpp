@@ -99,14 +99,17 @@ bool FSoraNoticeDroneBlockedCircuitTest::RunTest(const FString&)
     auto* Box=NewObject<UBoxComponent>(Barrier);Barrier->SetRootComponent(Box);Barrier->AddInstanceComponent(Box);
     Box->SetBoxExtent(FVector(80,5,80));Box->SetCollisionProfileName(TEXT("BlockAll"));Box->RegisterComponent();
     Barrier->SetActorLocation(FVector(535,55,600));
-    if(!W.Tick(120,.02f))return false;
+    // Hold longer than a complete scheduled lap: time alone must not credit
+    // any waypoint, even when the entire 36 second period has elapsed.
+    if(!W.Tick(2000,.02f))return false;
     const auto& T=Brain->PatrolTiming();
     TestTrue(TEXT("The swept body stops without inventing the obstructed arrival"),
-        Drone->GetActorLocation().Y<14.f&&T.Legs==0&&T.Cycles==0&&T.Visited==0&&T.Overdue);
+        Drone->GetActorLocation().Y<14.f&&T.Legs==0&&T.Cycles==0&&T.Visited==0&&T.Overdue&&T.ElapsedMs>N::DronePeriodMs);
+    const long long BlockedUntil=T.ElapsedMs;
     Barrier->Destroy();
     for(int I=0;I<2400&&T.Cycles==0;++I)if(!W.Tick(1,.02f))return false;
     TestTrue(TEXT("Removing the obstruction allows a real late circuit, retaining the missed deadline"),
-        T.Cycles>=1&&T.LastCycleMs>N::DronePeriodMs&&T.Visited==0xffffffffu&&T.Overdue);
+        T.Cycles>=1&&T.LastCycleMs>BlockedUntil&&T.Visited==0xffffffffu&&T.Overdue);
     AddInfo(FString::Printf(TEXT("Obstructed notice drone: cycles=%d last_ms=%lld visited=%u overdue=%d"),T.Cycles,T.LastCycleMs,T.Visited,T.Overdue));
     return !HasAnyErrors();
 }
