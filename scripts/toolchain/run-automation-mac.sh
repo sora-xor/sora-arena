@@ -16,7 +16,7 @@ esac
 AUTOMATION_SETUP=""
 case "${SORA_AUTOMATION_TEST_CATEGORY:-}" in
   '') ;;
-  Stress) AUTOMATION_SETUP="Automation SetFilter Stress;" ;;
+  Stress) AUTOMATION_SETUP="SetFilter Stress;" ;;
   *) echo 'SORA_AUTOMATION_TEST_CATEGORY must be unset or Stress.' >&2; exit 2;;
 esac
 MIN_FREE_GIB="${SORA_MIN_FREE_GIB:-30}"
@@ -70,7 +70,7 @@ set +e
 # Trace descendants can retain stdout after the editor exits. Only the
 # collector owns the log file; finish its inherited stream before validation.
 python3 "$SCRIPT_DIR/run_logged_process.py" --log "$LOG" --receipt "$LOG_COMPLETION" -- \
-  "$EDITOR_CMD" "$PROJECT" "-ExecCmds=${AUTOMATION_SETUP}Automation RunTests $FILTER;Quit" \
+  "$EDITOR_CMD" "$PROJECT" "-ExecCmds=Automation ${AUTOMATION_SETUP}RunTests $FILTER;Quit" \
   -unattended -nopause -nullrhi -nosplash -nosound -stdout -FullStdOutLogOutput \
   "${EDITOR_CONFIG_ARGS[@]}" "-ReportExportPath=$REPORT"
 EDITOR_STATUS=$?
