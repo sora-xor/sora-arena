@@ -1856,4 +1856,52 @@ bool FSoraCaptureWeaponHUDFixtureTest::RunTest(const FString& Parameters)
     return true;
 }
 
+// Prepared checkpoint UI capture; no ordinary playthrough or art acceptance.
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraOpeningHUDCaptureTest,"SoraCapture.OpeningHUD.Live",
+    EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraOpeningHUDCaptureTest::RunTest(const FString& Parameters)
+{
+    using namespace SoraCapture;
+    const FSessionRef Session=MakeShared<FSession>();
+    if(!OpenSession(*this,*Session,TEXT("OpeningHUD"))) return false;
+    for(int32 Case=0;Case<3;++Case)
+    {
+        const FString Name=Case==0?TEXT("OpeningHUD_ChapterCard"):Case==1?TEXT("OpeningHUD_StanceKeyboard"):TEXT("OpeningHUD_GuardGamepad");
+        Queue([this,Session,Case]()
+        {
+            Session->bShotLive=false;
+            auto* M=Session->M(); auto* Save=NewObject<USoraSaveGame>();
+            if(!M||!USoraCampaignDirector::SeedCheckpoint(*Save,0,Case))
+            { AddError(TEXT("Opening HUD fixture checkpoint is invalid")); return; }
+            Save->EnglishSubtitles=true;
+            if(!UGameplayStatics::SaveGameToSlot(Save,Session->Slot,0))
+            { AddError(TEXT("Opening HUD fixture save failed")); return; }
+            if(!M->bMenu) M->SetMenuOpen(true);
+            M->SaveSlotName=Session->Slot; M->bDeterministicPractice=false; M->bCampaign=true;
+            if(!M->Campaign()->LoadSave()) { AddError(TEXT("Opening HUD fixture load failed")); return; }
+            M->ResetRound(); M->BeginRound();
+            if(!InBeat(this,*Session,0,Case,TEXT("Opening HUD fixture"))) return;
+            auto* PC=M->GetWorld()->GetFirstPlayerController();
+            auto* HUD=PC?Cast<ASoraHUD>(PC->GetHUD()):nullptr;
+            if(!TestNotNull(TEXT("The fixture has the ordinary HUD"),HUD)) return;
+            HUD->bShowHUD=true;
+            M->FrontEnd()->NoteDevice(Case==2?SoraUI::EDevice::Gamepad:SoraUI::EDevice::KeyboardMouse);
+            if(Case==0 && !TestTrue(TEXT("The opening chapter card is active"),M->TitleCardChapter()!=nullptr)) return;
+            if(Case>0 && !TestEqual(TEXT("The requested lesson is active"),M->Campaign()->DojoLessonStage(),Case-1)) return;
+            Session->bShotLive=true;
+        });
+        Freeze(Session,true);
+        if(Case==0) SaveFrame(this,Session,Name,true);
+        else SaveFrame(this,Session,Name,true,[](const FSoraHUDFrame& Frame,FString& Why) { return SoraHUDPanels::DojoLayoutFits(Frame,Why); });
+        Queue([this,Session,Name]()
+        {
+            if(TestTrue(*Name,Session->bFrameWritten&&!Session->bFrameLayoutRejected))
+                UE_LOG(LogTemp,Display,TEXT("SORA_OPENING_HUD_FRAME %s"),*FPaths::ConvertRelativePathToFull(Session->File));
+        });
+        Freeze(Session,false);
+    }
+    CloseSession(Session);
+    return true;
+}
+
 #endif

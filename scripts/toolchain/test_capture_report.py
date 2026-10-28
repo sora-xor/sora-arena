@@ -429,8 +429,16 @@ class CaptureArchiveTests(unittest.TestCase):
         self.assertEqual(frames[0]["sha256"], hashlib.sha256(self.png).hexdigest())
         self.assertEqual(frames[0]["capture_kind"], "prepared gameplay UI fixture; not playthrough evidence")
 
+    def test_opening_hud_fixture_keeps_original_pixels_and_scope(self):
+        self.report = {"tests": [{"fullTestPath": "SoraCapture.OpeningHUD.Live"}]}
+        frames = self.archive(log="LogTemp: Display: SORA_OPENING_HUD_FRAME " + str(self.source))
+        self.assertEqual((self.root / "run-sm6" / frames[0]["path"]).read_bytes(), self.png)
+        self.assertEqual(frames[0]["sha256"], hashlib.sha256(self.png).hexdigest())
+        self.assertEqual(frames[0]["capture_kind"], "prepared opening HUD fixture; not playthrough or art acceptance")
+
     def test_capture_families_require_their_own_markers(self):
-        families = (("ArtReview.Dojo", "SORA_ART_REVIEW_FRAME"),
+        families = (("OpeningHUD.Live", "SORA_OPENING_HUD_FRAME"),
+                    ("ArtReview.Dojo", "SORA_ART_REVIEW_FRAME"),
                     ("RegistryFixture.Chapter4", "SORA_REGISTRY_FIXTURE_FRAME"),
                     ("WeaponHUDFixture.Katana", "SORA_WEAPON_HUD_FIXTURE_FRAME"),
                     ("BowAim.Live", "SORA_BOW_AIM_FRAME"),

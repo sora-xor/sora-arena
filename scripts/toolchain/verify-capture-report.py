@@ -308,6 +308,7 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
                    output: Path, start_ns: int, width: int, height: int) -> list[dict]:
     """Copy acknowledged original frames, retaining each fixture's scope."""
     kinds = {
+        "SORA_OPENING_HUD_FRAME": ("SoraCapture.OpeningHUD.", "prepared opening HUD fixture; not playthrough or art acceptance"),
         "SORA_ART_REVIEW_FRAME": ("SoraCapture.ArtReview.", "art-review"),
         "SORA_REGISTRY_FIXTURE_FRAME": ("SoraCapture.RegistryFixture.", "completed-save registry UI fixture; not playthrough evidence"),
         "SORA_WEAPON_HUD_FIXTURE_FRAME": ("SoraCapture.WeaponHUDFixture.", "prepared gameplay UI fixture; not playthrough evidence"),
