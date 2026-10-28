@@ -203,12 +203,24 @@ void FSoraNoticeRouteProbe::GetTests(TArray<FString>& Names,TArray<FString>& Com
 {
     for(const TCHAR* Route:{TEXT("NorthAlley"),TEXT("Roof")})for(int Second=9;Second<=78;Second+=3)
     {const FString Name=FString::Printf(TEXT("%s.Depart%02d"),Route,Second);Names.Add(Name);Commands.Add(Name);}
+    // Refine around the two most informative coarse candidates. Preserve
+    // the original sweep and its failures instead of replacing its samples.
+    for(const TCHAR* Route:{TEXT("NorthAlley"),TEXT("Roof")})
+    {
+        const bool Roof=FString(Route)==TEXT("Roof");
+        for(int Ms=Roof?11000:19000;Ms<=(Roof?14000:23000);Ms+=500)
+            for(const TCHAR* Input:{TEXT("Keyboard"),TEXT("Controller")})
+            {
+                const FString Name=FString::Printf(TEXT("%s.Depart%.1f.%s"),Route,Ms/1000.f,Input);
+                Names.Add(Name);Commands.Add(Name);
+            }
+    }
 }
 bool FSoraNoticeRouteProbe::RunTest(const FString& Parameters)
 {
     FString RouteName,Departure;Parameters.Split(TEXT(".Depart"),&RouteName,&Departure);
-    SoraNoticeEncounterTest::FRoute Route(*this,TEXT("NoticeProbe")+Parameters,false,FCString::Atof(*Departure));
-    AddInfo(TEXT("Exploratory keyboard timing candidate; all seven guards, health and collisions remain live."));
+    SoraNoticeEncounterTest::FRoute Route(*this,TEXT("NoticeProbe")+Parameters,Parameters.EndsWith(TEXT("Controller")),FCString::Atof(*Departure));
+    AddInfo(TEXT("Exploratory timing candidate; all seven guards, health and collisions remain live."));
     if(!Route.Start())return false;
     if(RouteName==TEXT("Roof")&&!Route.Roof())return false;
     return Route.Charge()&&!HasAnyErrors();
