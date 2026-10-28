@@ -1,6 +1,17 @@
 # Complete first-release plan
 
-## Latest isolated runtime slice: opening HUD readability
+## Latest isolated runtime slice: notice-square drone circuit
+
+`0b4d133d` implements the explicit 5.4 m / 6 m / 36 s flight circuit with
+swept arrivals. All 18 selected native cases pass, including the assisted
+campaign; all 66 gameplay source gates pass at `b6dc3bc3`. The test-only
+`06235881` follow-up also passes with the drone blocked longer than a full
+lap, then completing real arrivals after removal. Original failure and
+passing evidence are preserved in [the validation record](qualification/notice-drone-circuit-2026-10-28.md).
+The supported roof climb, rear marksman approach and final art remain open.
+ROOT stays frozen at `b6ba3c11`; its package remains `1b6dfadc`.
+
+## October 28 opening HUD readability
 
 `c5c5092e` fixes word wrapping, readable dojo hints and mapped control labels.
 All nine selected native cases pass with zero selected errors or warnings.
@@ -11,7 +22,7 @@ See [the scoped validation record](qualification/opening-hud-readability-2026-10
 ROOT stays frozen at published `b6ba3c11`, whose authenticated CI passes all
 125 source gates; its preserved passing package is still `1b6dfadc`.
 
-## Latest isolated runtime slice: elevated ladder flights
+## October 27 elevated ladder flights
 
 `4c4fb7fa` supports ladders beginning on raised landings while preserving
 street-level defaults. Seven selected native ladder/notice/campaign-space
