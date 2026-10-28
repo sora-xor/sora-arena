@@ -81,6 +81,9 @@ struct FSoraDialogueTrigger
     int32 AtMs = INDEX_NONE;
     bool bRepeatable = false;
     float CooldownSeconds = 0.f;
+    // Empty accepts any event. Otherwise only a cue from these enemy
+    // archetypes may enqueue this line; generic mission events have no source.
+    TArray<FName> EnemySources;
     unsigned long long RequiresCollectible = 0ull;
     unsigned RequiresFlags = 0u;
 };

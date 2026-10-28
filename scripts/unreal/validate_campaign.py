@@ -1213,6 +1213,14 @@ def validate(catalog, campaign, chapters, legacy, roster):
                 bouts += beat["task"]["count"]
         for row in chapter["triggers"]:
             context = f"{where} trigger {row['beat']} {row['on']}"
+            ext = row.get("ext")
+            require(isinstance(ext, dict), f"{context}: dialogue extensions must be an object")
+            if "source" in ext:
+                sources = ext["source"]
+                require(isinstance(sources, list) and bool(sources) and
+                        all(isinstance(source, str) and source in archetypes for source in sources) and
+                        len(sources) == len(set(sources)),
+                        f"{context}: dialogue sources must be unique known enemy archetypes")
             require(row["beat"] is None or row["beat"] in by_id, f"{context}: unknown beat")
             if row["beat"] is not None:
                 problem = director_event_error(row, by_id[row["beat"]], offsets[row["beat"]], chapter)
@@ -1484,6 +1492,18 @@ def self_test(catalog, campaign, chapters, legacy, roster):
     def boss_cue_time(data):
         trigger(data, "ch02.b15", "intro_cinematic")["on"] = "intro@6.0"
 
+    def unknown_bark_source(data):
+        trigger(data, "ch03.b10", "alert_state:suspicious")["ext"]["source"] = ["enforcer_musket"]
+
+    def empty_bark_sources(data):
+        trigger(data, "ch03.b10", "alert_state:suspicious")["ext"]["source"] = []
+
+    def malformed_bark_sources(data):
+        trigger(data, "ch03.b10", "alert_state:suspicious")["ext"]["source"] = "marksman"
+
+    def duplicate_bark_source(data):
+        trigger(data, "ch03.b10", "alert_state:suspicious")["ext"]["source"] = ["marksman", "marksman"]
+
     def unraised_rate_band(data):
         trigger(data, "ch05.b06", "rate_band:in:first")["on"] = "rate_band:inside:first"
 
@@ -1571,7 +1591,8 @@ def self_test(catalog, campaign, chapters, legacy, roster):
                  cinematic_with_closing_anchor, dialogue_without_closing_anchor, cinematic_with_cache,
                  explore_without_cache, cinematic_without_camera, dialogue_with_camera,
                  yumi_to_the_right, short_escort, spawn_in_building, swap_unlock, fast_line, long_gap, cache_without_save,
-                 boss_cue_time, unraised_rate_band, bout_numbered_per_beat,
+                 boss_cue_time, unknown_bark_source, empty_bark_sources, malformed_bark_sources, duplicate_bark_source,
+                 unraised_rate_band, bout_numbered_per_beat,
                  gun_on_horse, site_table_mismatch, site_chain_broken, orphan_line, dangling_line,
                  unknown_speaker, legacy_edit, muto_everywhere, conscript_quota, pacing, registry_on_combat,
                  lost_pickup, unknown_boss, optional_site, blocking_speech, story_flag_twice, unmet_condition,

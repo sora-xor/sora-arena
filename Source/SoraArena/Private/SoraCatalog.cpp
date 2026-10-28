@@ -2,6 +2,7 @@
 #include "SoraCaptureRules.h"
 #include "SoraCampaignRules.h"
 #include "SoraCatalogJson.h"
+#include "SoraCatalogDialogue.h"
 #include "SoraCatalogRegistry.h"
 #include "SoraCatalogArchery.h"
 #include "SoraCatalogDojo.h"
@@ -873,6 +874,8 @@ bool FSoraCatalog::LoadCampaign()
                 (!IsNull(*O, TEXT("at_ms")) && (!Int(*O, TEXT("at_ms"), Trigger.AtMs) || Trigger.AtMs < 0)))
                 return Bad(TEXT("invalid trigger row"));
             Trigger.CooldownSeconds = static_cast<float>(Cooldown);
+            if(!SoraCatalogDialogue::ReadSources(*O,Trigger.EnemySources))
+                return Bad(TEXT("invalid dialogue enemy sources"));
             // A conditional line waits for a collectible found here or earlier, or a story flag.
             if (Condition.StartsWith(TEXT("collectible:")))
             {

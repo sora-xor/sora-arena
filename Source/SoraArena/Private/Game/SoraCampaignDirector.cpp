@@ -190,6 +190,8 @@ void USoraCampaignDirector::EnemyCue(const FSoraEnemyCueEvent& Event)
 {
     if(!Mode().bCampaign||!ActiveBeatData()||Mode().bDeterministicPractice) return;
     const FString Detail=Event.Detail.ToString();
+    const auto FromEnemy=[&](const FString& Name,const FString& Alias=FString())
+        { Fire(Name,INDEX_NONE,false,Event.Archetype,Alias); };
     switch(Event.Cue)
     {
     case ESoraEnemyCue::AlertState:
@@ -197,32 +199,40 @@ void USoraCampaignDirector::EnemyCue(const FSoraEnemyCueEvent& Event)
         // The guards' barks for their state; detection itself (and what it
         // fails) comes from the stealth zone, never from a bark.
         const TWeakObjectPtr<const AActor> Key(Event.Enemy.Get());
-        const FName* Before=GuardStates.Find(Key);
-        if(Before&&*Before==TEXT("search")&&Event.Detail==TEXT("unaware")) Fire(TEXT("alert_state:search_to_unaware"));
+        const FName Before=GuardStates.FindRef(Key);
+        if(Before==TEXT("search")&&Event.Detail==TEXT("unaware")) FromEnemy(TEXT("alert_state:search_to_unaware"));
         GuardStates.Add(Key,Event.Detail);
-        if(Event.Detail==TEXT("retreat")) { Fire(TEXT("ai_event:retreat")); Fire(TEXT("enemy_retreat")); Fire(TEXT("event:enemy_retreat")); }
-        else Fire(TEXT("alert_state:")+Detail);
+        if(Event.Detail==TEXT("retreat"))
+        { FromEnemy(TEXT("ai_event:retreat"),TEXT("x_ai:withdraw")); FromEnemy(TEXT("enemy_retreat")); FromEnemy(TEXT("event:enemy_retreat")); }
+        else
+        {
+            // Visible detection can enter Combat directly. Its source-bound
+            // alert bark still plays once; Alert -> Combat must not repeat it.
+            // This alias does not raise another mission event or HUD prompt.
+            const bool DirectCombat=Event.Detail==TEXT("combat")&&Before!=TEXT("alert")&&Before!=TEXT("combat");
+            FromEnemy(TEXT("alert_state:")+Detail,DirectCombat?TEXT("alert_state:alert"):FString());
+        }
         return;
     }
-    case ESoraEnemyCue::Alarm: Fire(TEXT("ai_event:alarm_run")); return;
+    case ESoraEnemyCue::Alarm: FromEnemy(TEXT("ai_event:alarm_run")); return;
     case ESoraEnemyCue::KnockedOut:
-        Fire(TEXT("ai_event:takedown"));
-        if(!BeatEvents.Contains(TEXT("ai_event:first_takedown"))) Fire(TEXT("ai_event:first_takedown"));
+        FromEnemy(TEXT("ai_event:takedown"));
+        if(!BeatEvents.Contains(TEXT("ai_event:first_takedown"))) FromEnemy(TEXT("ai_event:first_takedown"));
         return;
-    case ESoraEnemyCue::Subdued: Fire(TEXT("conscript_downed")); return;
+    case ESoraEnemyCue::Subdued: FromEnemy(TEXT("conscript_downed")); return;
     case ESoraEnemyCue::Freed:
         if(auto* Craft=USoraFieldcraft::Get(this);Craft&&Craft->FreeWardKidoban(Event.Enemy.Get()))
-            Fire(TEXT("npc_freed:kidoban"));
-        Fire(TEXT("conscript_freed")); return;
-    case ESoraEnemyCue::ShieldTurned: Fire(TEXT("ai:shield_turned")); return;
+            FromEnemy(TEXT("npc_freed:kidoban"));
+        FromEnemy(TEXT("conscript_freed")); return;
+    case ESoraEnemyCue::ShieldTurned: FromEnemy(TEXT("ai:shield_turned")); return;
     case ESoraEnemyCue::AttackWindup:
         // An opponent's attack telegraph, as the scripts key it: the marksman's
         // glint (pattern:marksman_lock), the grenadier's shell, a walker's sweep.
         if(Event.Detail.IsNone()) return;
-        Fire(TEXT("pattern:")+Detail);
-        Fire(TEXT("ai:")+Detail);
+        FromEnemy(TEXT("pattern:")+Detail);
+        FromEnemy(TEXT("ai:")+Detail);
         return;
-    case ESoraEnemyCue::BarrierBroken: Fire(TEXT("shield_broken")); return;
+    case ESoraEnemyCue::BarrierBroken: FromEnemy(TEXT("shield_broken")); return;
     default: return;
     }
 }
@@ -1550,9 +1560,10 @@ void USoraCampaignDirector::FireDialogueTrigger(FName Event)
 {
     if(Mode().bCampaign&&ActiveBeatData()) Fire(Event.ToString());
 }
-bool USoraCampaignDirector::TriggerAllowed(int32 Index) const
+bool USoraCampaignDirector::TriggerAllowed(int32 Index,FName EnemySource) const
 {
     const FSoraDialogueTrigger& Trigger=ActiveChapter()->Triggers[Index];
+    if(!Trigger.EnemySources.IsEmpty()&&!Trigger.EnemySources.Contains(EnemySource))return false;
     if(!Trigger.bRepeatable&&FiredTriggers.Contains(Index)) return false;
     // A conditional line waits for its find or its story flag.
     if((CollectedMask()&Trigger.RequiresCollectible)!=Trigger.RequiresCollectible||
@@ -1561,7 +1572,7 @@ bool USoraCampaignDirector::TriggerAllowed(int32 Index) const
     const double* Last=TriggerTimes.Find(Index);
     return !Last||!GetWorld()||GetWorld()->GetTimeSeconds()-*Last>=Trigger.CooldownSeconds;
 }
-void USoraCampaignDirector::Fire(const FString& Event,int32 Beat,bool bReplayLines)
+void USoraCampaignDirector::Fire(const FString& Event,int32 Beat,bool bReplayLines,FName EnemySource,const FString& SourceAlias)
 {
     const FSoraChapter* Chapter=ActiveChapter();
     if(Beat==INDEX_NONE) Beat=BeatIndex;
@@ -1580,7 +1591,8 @@ void USoraCampaignDirector::Fire(const FString& Event,int32 Beat,bool bReplayLin
         const FSoraDialogueTrigger& Trigger=Chapter->Triggers[Index];
         // The beat's own rows and the chapter's bark pools.
         if((Trigger.Beat!=Beat&&Trigger.Beat!=INDEX_NONE)||
-            (Trigger.On!=Event&&!(bFirst&&Trigger.On==First)&&!(Raises>0&&Trigger.On==Nth))||!TriggerAllowed(Index))
+            (Trigger.On!=Event&&!(bFirst&&Trigger.On==First)&&!(Raises>0&&Trigger.On==Nth)&&
+             !(!SourceAlias.IsEmpty()&&!Trigger.EnemySources.IsEmpty()&&Trigger.On==SourceAlias))||!TriggerAllowed(Index,EnemySource))
             continue;
         FiredTriggers.Add(Index);
         if(GetWorld()) TriggerTimes.Add(Index,GetWorld()->GetTimeSeconds());
@@ -1598,12 +1610,13 @@ void USoraCampaignDirector::Fire(const FString& Event,int32 Beat,bool bReplayLin
         const FString Delayed=Event+TEXT("+");
         TSet<FString> Due;
         for(const FSoraDialogueTrigger& Trigger:Chapter->Triggers)
-            if(Trigger.Beat==Beat&&Trigger.On.StartsWith(Delayed)&&Trigger.On.EndsWith(TEXT("s"))) Due.Add(Trigger.On);
+            if(Trigger.Beat==Beat&&Trigger.On.StartsWith(Delayed)&&Trigger.On.EndsWith(TEXT("s"))&&
+               (Trigger.EnemySources.IsEmpty()||Trigger.EnemySources.Contains(EnemySource))) Due.Add(Trigger.On);
         for(const FSoraPrompt& Prompt:Chapter->Prompts)
             if(Prompt.Beats.Contains(Beat)&&Prompt.On.StartsWith(Delayed)&&Prompt.On.EndsWith(TEXT("s"))) Due.Add(Prompt.On);
         for(const FString& Row:Due)
-            if(!BeatEvents.Contains(Row)&&!Scheduled.ContainsByPredicate([&](const TPair<double,FString>& Entry) { return Entry.Value==Row; }))
-                Scheduled.Emplace(GetWorld()->GetTimeSeconds()+FCString::Atod(*Row.Mid(Delayed.Len(),Row.Len()-Delayed.Len()-1)),Row);
+            if(!BeatEvents.Contains(Row)&&!Scheduled.ContainsByPredicate([&](const FScheduledDialogue& Entry) { return Entry.Event==Row&&Entry.EnemySource==EnemySource; }))
+                Scheduled.Add({GetWorld()->GetTimeSeconds()+FCString::Atod(*Row.Mid(Delayed.Len(),Row.Len()-Delayed.Len()-1)),Row,EnemySource});
     }
     // Allies that join with a wave step in as it comes.
     if(USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this)) Fieldcraft->NoteBeatEvent(Event);
@@ -1612,10 +1625,10 @@ void USoraCampaignDirector::TickScheduled()
 {
     if(Scheduled.IsEmpty()||!GetWorld()) return;
     const double Now=GetWorld()->GetTimeSeconds();
-    TArray<FString> Due;
+    TArray<FScheduledDialogue> Due;
     for(int32 Index=Scheduled.Num()-1;Index>=0;--Index)
-        if(Now>=Scheduled[Index].Key) { Due.Insert(Scheduled[Index].Value,0); Scheduled.RemoveAt(Index); }
-    for(const FString& Event:Due) Fire(Event);
+        if(Now>=Scheduled[Index].At) { Due.Insert(Scheduled[Index],0); Scheduled.RemoveAt(Index); }
+    for(const auto& Entry:Due) Fire(Entry.Event,INDEX_NONE,false,Entry.EnemySource);
 }
 void USoraCampaignDirector::ShowPrompt(const FString& Event,int32 Beat)
 {

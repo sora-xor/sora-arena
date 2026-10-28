@@ -549,7 +549,8 @@ private:
     TSet<FString> BeatEvents;
     TMap<FString,int32> EventRaises;
     // "<event>+Ns" rows waiting on the beat clock (world seconds, event).
-    TArray<TPair<double, FString>> Scheduled;
+    struct FScheduledDialogue { double At; FString Event; FName EnemySource; };
+    TArray<FScheduledDialogue> Scheduled;
     // When a whistle brings the horse back (or -1).
     double WhistleAt=-1.0;
     // Work held at a point: what it is, the pickup or objective, the ms held
@@ -725,8 +726,9 @@ private:
     // (the active beat by default) and the chapter's bark pools.
     // Explicit memories may replay a line heard in an earlier beat; trigger
     // eligibility and once-per-event guards still apply.
-    void Fire(const FString& Event, int32 Beat = INDEX_NONE, bool bReplayLines = false);
-    bool TriggerAllowed(int32 Index) const;
+    void Fire(const FString& Event, int32 Beat = INDEX_NONE, bool bReplayLines = false,
+        FName EnemySource = NAME_None, const FString& SourceAlias = FString());
+    bool TriggerAllowed(int32 Index,FName EnemySource = NAME_None) const;
     void Enqueue(const TArray<int32>& Lines, bool bForce, const FString& TriggerMode);
     void RefreshDialogueHold();
     void ClearDialogue();
