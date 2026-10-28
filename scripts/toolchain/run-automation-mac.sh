@@ -3,6 +3,8 @@
 # the Mac editor, and fail unless every selected test reports Success in
 # Unreal's exported JSON report and nothing under Config/ changed during the run.
 # Usage: run-automation-mac.sh [Filter[+Filter...]] [output-directory]
+# SORA_AUTOMATION_TEST_CATEGORY optionally selects an Unreal test category;
+# leave it unset for the editor's default. Stress probes require Stress.
 set -euo pipefail
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd -- "$SCRIPT_DIR/../.." && pwd)"
@@ -10,6 +12,12 @@ FILTER="${1:-SoraArena}"
 OUTPUT="${2:-$PROJECT_ROOT/Saved/Automation/$(date -u +%Y%m%dT%H%M%SZ)}"
 case "$FILTER" in
   ''|*[!A-Za-z0-9_.+]*) echo 'Usage: run-automation-mac.sh [Filter[+Filter...]] [output-directory]' >&2; exit 2;;
+esac
+AUTOMATION_SETUP=""
+case "${SORA_AUTOMATION_TEST_CATEGORY:-}" in
+  '') ;;
+  Stress) AUTOMATION_SETUP="Automation SetFilter Stress;" ;;
+  *) echo 'SORA_AUTOMATION_TEST_CATEGORY must be unset or Stress.' >&2; exit 2;;
 esac
 MIN_FREE_GIB="${SORA_MIN_FREE_GIB:-30}"
 TOOLCHAIN_EXPORTS="$(PYTHONDONTWRITEBYTECODE=1 python3 - "$SCRIPT_DIR" <<'PY'
@@ -62,7 +70,7 @@ set +e
 # Trace descendants can retain stdout after the editor exits. Only the
 # collector owns the log file; finish its inherited stream before validation.
 python3 "$SCRIPT_DIR/run_logged_process.py" --log "$LOG" --receipt "$LOG_COMPLETION" -- \
-  "$EDITOR_CMD" "$PROJECT" "-ExecCmds=Automation RunTests $FILTER;Quit" \
+  "$EDITOR_CMD" "$PROJECT" "-ExecCmds=${AUTOMATION_SETUP}Automation RunTests $FILTER;Quit" \
   -unattended -nopause -nullrhi -nosplash -nosound -stdout -FullStdOutLogOutput \
   "${EDITOR_CONFIG_ARGS[@]}" "-ReportExportPath=$REPORT"
 EDITOR_STATUS=$?
