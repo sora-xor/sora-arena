@@ -1495,6 +1495,9 @@ def self_test(catalog, campaign, chapters, legacy, roster):
     def unknown_bark_source(data):
         trigger(data, "ch03.b10", "alert_state:suspicious")["ext"]["source"] = ["enforcer_musket"]
 
+    def noncanonical_bark_source(data):
+        trigger(data, "ch03.b10", "alert_state:suspicious")["ext"]["source"] = ["Marksman"]
+
     def empty_bark_sources(data):
         trigger(data, "ch03.b10", "alert_state:suspicious")["ext"]["source"] = []
 
@@ -1591,7 +1594,7 @@ def self_test(catalog, campaign, chapters, legacy, roster):
                  cinematic_with_closing_anchor, dialogue_without_closing_anchor, cinematic_with_cache,
                  explore_without_cache, cinematic_without_camera, dialogue_with_camera,
                  yumi_to_the_right, short_escort, spawn_in_building, swap_unlock, fast_line, long_gap, cache_without_save,
-                 boss_cue_time, unknown_bark_source, empty_bark_sources, malformed_bark_sources, duplicate_bark_source,
+                 boss_cue_time, unknown_bark_source, noncanonical_bark_source, empty_bark_sources, malformed_bark_sources, duplicate_bark_source,
                  unraised_rate_band, bout_numbered_per_beat,
                  gun_on_horse, site_table_mismatch, site_chain_broken, orphan_line, dangling_line,
                  unknown_speaker, legacy_edit, muto_everywhere, conscript_quota, pacing, registry_on_combat,

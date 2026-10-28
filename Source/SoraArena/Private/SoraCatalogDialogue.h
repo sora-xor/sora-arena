@@ -17,7 +17,7 @@ inline bool ReadSources(const FJsonObject& Row,TArray<FName>& Out)
     {
         const FName Name(*Source);
         const auto* Enemy=FSoraEnemyCatalog::Get().Find(Name);
-        if(!Enemy||Enemy->Id.ToString()!=Source||Out.Contains(Name))return false;
+        if(!Enemy||!Enemy->Id.ToString().Equals(Source,ESearchCase::CaseSensitive)||Out.Contains(Name))return false;
         Out.Add(Name);
     }
     return true;
