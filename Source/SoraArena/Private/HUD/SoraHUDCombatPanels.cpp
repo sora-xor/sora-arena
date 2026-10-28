@@ -144,7 +144,20 @@ FObjectiveLayout DojoLayout(const FSoraHUDFrame& F)
         L.Original[Language]=F.Mode.Campaign()->DojoLessonText(Language==1);
         const float Scale=Language==0?F.JapaneseSubtitleScale:F.EnglishSubtitleScale;
         const float Leading=Language==0?F.JapaneseSubtitleLineHeight:F.EnglishSubtitleLineHeight;
-        for(const auto& Row:F.HUD.WrappedLines(L.Original[Language],Scale,Right-Left-2*Padding))
+        const float Inner=Right-Left-2*Padding;
+        float WrapWidth=Inner;
+        TArray<FString> Rows;
+        // Canvas advance widths and raster ink differ (notably with Latin
+        // kerning). Retain word boundaries but fit the actual drawn glyphs.
+        for(int32 Attempt=0;Attempt<8;++Attempt)
+        {
+            Rows=F.HUD.WrappedLines(L.Original[Language],Scale,WrapWidth);
+            float Excess=0.f;
+            for(const auto& Row:Rows) Excess=FMath::Max(Excess,static_cast<float>(SoraHUDPanels::CaptionGlyphBounds(F,Row,Scale).GetSize().X)-Inner);
+            if(Excess<=0.f) break;
+            WrapWidth=FMath::Max(1.f,WrapWidth-Excess-1.f);
+        }
+        for(const auto& Row:Rows)
         {
             const auto Ink=SoraHUDPanels::CaptionGlyphBounds(F,Row,Scale);
             L.Text.Add({Row,FVector2D(Left+Padding,Y)-Ink.Min,Scale,Language==0?F.Ivory:F.Muted,Language});
@@ -428,7 +441,7 @@ bool SoraHUDPanels::DojoLayoutFits(const FSoraHUDFrame& F,FString& Why)
         const auto Ink=CaptionGlyphBounds(F,Row.Text,Row.Scale);
         const FBox2D Box(Row.At+Ink.Min,Row.At+Ink.Max);
         if(Row.Scale<(Row.Group==0?.65f:.6f)||Box.Min.X<L.Bounds.Min.X||Box.Max.X>L.Bounds.Max.X+.5f||Box.Min.Y<L.Bounds.Min.Y||Box.Max.Y>L.Bounds.Max.Y+.5f)
-        { Why=TEXT("Dojo lesson text is too small or escapes its measured panel"); return false; }
+        { Why=FString::Printf(TEXT("Dojo lesson row '%s' scale %.3f at [%.2f,%.2f]-[%.2f,%.2f] escapes panel [%.2f,%.2f]-[%.2f,%.2f]"),*Row.Text,Row.Scale,Box.Min.X,Box.Min.Y,Box.Max.X,Box.Max.Y,L.Bounds.Min.X,L.Bounds.Min.Y,L.Bounds.Max.X,L.Bounds.Max.Y); return false; }
         for(const auto& Other:Occupied) if(Box.Intersect(Other))
         { Why=TEXT("Dojo lesson text rows overlap"); return false; }
         Occupied.Add(Box); Joined[Row.Group]+=Row.Text;
