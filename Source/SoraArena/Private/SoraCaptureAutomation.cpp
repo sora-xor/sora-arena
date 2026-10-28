@@ -1890,7 +1890,7 @@ bool FSoraOpeningHUDCaptureTest::RunTest(const FString& Parameters)
             if(Case>0 && !TestEqual(TEXT("The requested lesson is active"),M->Campaign()->DojoLessonStage(),Case-1)) return;
             Session->bShotLive=true;
         });
-        Freeze(Session,true);
+        SoraCapture::Freeze(Session,true);
         if(Case==0) SaveFrame(this,Session,Name,true);
         else SaveFrame(this,Session,Name,true,[](const FSoraHUDFrame& Frame,FString& Why) { return SoraHUDPanels::DojoLayoutFits(Frame,Why); });
         Queue([this,Session,Name]()
@@ -1898,7 +1898,7 @@ bool FSoraOpeningHUDCaptureTest::RunTest(const FString& Parameters)
             if(TestTrue(*Name,Session->bFrameWritten&&!Session->bFrameLayoutRejected))
                 UE_LOG(LogTemp,Display,TEXT("SORA_OPENING_HUD_FRAME %s"),*FPaths::ConvertRelativePathToFull(Session->File));
         });
-        Freeze(Session,false);
+        SoraCapture::Freeze(Session,false);
     }
     CloseSession(Session);
     return true;
