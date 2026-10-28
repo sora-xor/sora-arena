@@ -13,14 +13,14 @@ namespace SoraNoticeEncounterTest
 struct FRoute
 {
     SoraFieldcraftAutomation::FBeatWorld W;
-    bool Pad=false,AllowDetection=false,Detected=false;
-    float Seconds=0,StartingHealth=0;
+    bool Pad=false,AllowDetection=false,Detected=false,FirstAlley=true;
+    float Seconds=0,StartingHealth=0,DepartureSecond=-1;
     int32 PeakMeter=0,MostEnemies=0;
     FString Step=TEXT("checkpoint"),Detector;
     FDelegateHandle Detection;
     TArray<TWeakObjectPtr<ASoraEnemy>> InitialGuards;
-    FRoute(FAutomationTestBase& Test,const FString& Name,bool Controller)
-        :W(Test,*Name,2,9),Pad(Controller){}
+    FRoute(FAutomationTestBase& Test,const FString& Name,bool Controller,float Departure=-1)
+        :W(Test,*Name,2,9),Pad(Controller),DepartureSecond(Departure){}
     ~FRoute(){if(W.World)W.Stealth()->OnDetected.Remove(Detection);}
     FVector Feet()const
     {return W.Hero()->GetActorLocation()-FVector(0,0,W.Hero()->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());}
@@ -125,7 +125,9 @@ struct FRoute
         if(!Move(FVector2D(-1000,950),true))return false;
         Step=TEXT("wait behind alley wall for drone pass");
         const float Phase=FMath::Fmod(Seconds,36.f);
-        const float Delay=Phase<=18.f?18.f-Phase:54.f-Phase;
+        const float Delay=FirstAlley&&DepartureSecond>=0?FMath::Max(0.f,DepartureSecond-Seconds):
+            Phase<=18.f?18.f-Phase:54.f-Phase;
+        FirstAlley=false;
         if(!Tick(FMath::CeilToInt(Delay*60)))return false;
         W.Test.AddInfo(FString::Printf(TEXT("Alley patrol window at %.3fs; feet=%s peak_meter=%d"),Seconds,*Feet().ToString(),PeakMeter));
         return true;
@@ -189,6 +191,26 @@ bool FSoraNoticeEncounterTest::RunTest(const FString& Parameters)
     SoraNoticeEncounterTest::FRoute Route(*this,TEXT("NoticeEncounter")+Parameters,Parameters.EndsWith(TEXT("Controller")));
     if(!Route.Start())return false;
     if(Parameters.StartsWith(TEXT("Roof"))&&!Route.Roof())return false;
+    return Route.Charge()&&!HasAnyErrors();
+}
+
+// Explicit exploratory selection: each candidate still fails on detection,
+// collision or death. A passing clocked rehearsal would establish only that
+// one route exists, not that a new player can discover it or read its timing.
+IMPLEMENT_COMPLEX_AUTOMATION_TEST(FSoraNoticeRouteProbe,"SoraArena.Campaign.NoticeSquare.RouteProbe",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::StressFilter)
+void FSoraNoticeRouteProbe::GetTests(TArray<FString>& Names,TArray<FString>& Commands)const
+{
+    for(const TCHAR* Route:{TEXT("NorthAlley"),TEXT("Roof")})for(int Second=9;Second<=78;Second+=3)
+    {const FString Name=FString::Printf(TEXT("%s.Depart%02d"),Route,Second);Names.Add(Name);Commands.Add(Name);}
+}
+bool FSoraNoticeRouteProbe::RunTest(const FString& Parameters)
+{
+    FString RouteName,Departure;Parameters.Split(TEXT(".Depart"),&RouteName,&Departure);
+    SoraNoticeEncounterTest::FRoute Route(*this,TEXT("NoticeProbe")+Parameters,false,FCString::Atof(*Departure));
+    AddInfo(TEXT("Exploratory keyboard timing candidate; all seven guards, health and collisions remain live."));
+    if(!Route.Start())return false;
+    if(RouteName==TEXT("Roof")&&!Route.Roof())return false;
     return Route.Charge()&&!HasAnyErrors();
 }
 #endif
