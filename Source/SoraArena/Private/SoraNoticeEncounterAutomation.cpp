@@ -116,9 +116,24 @@ struct FRoute
         return Tick(4)&&Check(!W.Fieldcraft()->IsOnLadder()&&W.Hero()->GetCharacterMovement()->IsMovingOnGround()&&Largest<=2.6,
             TEXT("Both real ladder flights finish supported at the authored pace"));
     }
+    bool AlleyWindow()
+    {
+        // The 1.2 m passage is closed along its east side until y=760.
+        // Wait behind that real wall for the drone's northward pass, then
+        // use the opening. This fixed rehearsal timing is not evidence of
+        // first-time player discoverability or arbitrary entry phases.
+        if(!Move(FVector2D(-1000,950),true))return false;
+        Step=TEXT("wait behind alley wall for drone pass");
+        const float Phase=FMath::Fmod(Seconds,36.f);
+        const float Delay=Phase<=18.f?18.f-Phase:54.f-Phase;
+        if(!Tick(FMath::CeilToInt(Delay*60)))return false;
+        W.Test.AddInfo(FString::Printf(TEXT("Alley patrol window at %.3fs; feet=%s peak_meter=%d"),Seconds,*Feet().ToString(),PeakMeter));
+        return true;
+    }
     bool Roof()
     {
-        for(FVector2D P:{FVector2D(-1000,1800),FVector2D(-350,1800),FVector2D(350,1800),FVector2D(500,1750),FVector2D(500,1600)})if(!Move(P,true))return false;
+        if(!AlleyWindow())return false;
+        for(FVector2D P:{FVector2D(-1000,700),FVector2D(-350,700),FVector2D(-350,1800),FVector2D(350,1800),FVector2D(500,1750),FVector2D(500,1600)})if(!Move(P,true))return false;
         const auto A=W.Craft().Ladders[0],B=W.Craft().Ladders[1];
         if(!Flight(A,true)||!Move(B.Foot,true)||!Flight(B,true))return false;
         for(FVector2D P:{FVector2D(1100,1000),FVector2D(1100,800),FVector2D(1010,800)})if(!Move(P,true))return false;
@@ -131,7 +146,7 @@ struct FRoute
            !Check(Mark->IsBody()&&!Mark->IsUnconscious(),TEXT("Mapped melee defeats only the ridge marksman")))return false;
         for(FVector2D P:{FVector2D(1100,800),FVector2D(1100,1000),FVector2D(650,1250)})if(!Move(P,true))return false;
         if(!Flight(B,false)||!Move(FVector2D(500,1450),true)||!Flight(A,false))return false;
-        for(FVector2D P:{FVector2D(500,1750),FVector2D(350,1800),FVector2D(-350,1800),FVector2D(-1000,1800)})if(!Move(P,true))return false;
+        for(FVector2D P:{FVector2D(500,1750),FVector2D(350,1800),FVector2D(-350,1800),FVector2D(-350,700),FVector2D(-1000,700),FVector2D(-1000,950)})if(!Move(P,true))return false;
         return true;
     }
     bool Hold(SoraTerminalChargeRules::EStage Target)
@@ -146,7 +161,7 @@ struct FRoute
     bool Charge()
     {
         using SoraTerminalChargeRules::EStage;
-        if(!Move(FVector2D(-1000,548),true)||!Move(FVector2D(-730,548),true)||!Hold(EStage::Planted)||!Hold(EStage::Burning))return false;
+        if(!AlleyWindow()||!Move(FVector2D(-1000,548),true)||!Move(FVector2D(-730,548),true)||!Hold(EStage::Planted)||!Hold(EStage::Burning))return false;
         // Running after ignition is legitimate: detection may call the
         // authored reinforcement wave, but the ordinary hero must escape it.
         AllowDetection=true;
