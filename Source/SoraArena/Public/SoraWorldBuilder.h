@@ -421,6 +421,7 @@ private:
     UPROPERTY() TObjectPtr<UTextureCube> RigOvercast;
     FRotator RigDefaultRotation=FRotator::ZeroRotator;
     FLinearColor RigDefaultColor=FLinearColor::White;
+    FLinearColor RigDefaultFogColor=FLinearColor::Black;
     float RigDefaultKeyIntensity=0.f,RigDefaultSkyIntensity=0.f,RigDefaultSourceAngle=0.f;
     bool bRigDefaultRealTimeCapture=true;
     bool bRigAuthored=false;

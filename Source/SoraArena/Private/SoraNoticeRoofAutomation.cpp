@@ -9,10 +9,12 @@
 #include "Components/DirectionalLightComponent.h"
 #include "Components/SkyLightComponent.h"
 #include "Components/PointLightComponent.h"
+#include "Components/ExponentialHeightFogComponent.h"
 #include "Engine/DirectionalLight.h"
 #include "Engine/SkyLight.h"
 #include "Engine/PostProcessVolume.h"
 #include "Engine/PointLight.h"
+#include "Engine/ExponentialHeightFog.h"
 #include "ProceduralMeshComponent.h"
 
 namespace SoraNoticeRoofTest
@@ -208,10 +210,12 @@ bool FSoraNoticeNightLightTest::RunTest(const FString&)
     FBeatWorld W(*this,TEXT("NoticeNightLight"),2,9);
     if(!W.Start()||!Controls(W))return false;
     ADirectionalLight* Key=nullptr;ASkyLight* Sky=nullptr;APostProcessVolume* Grade=nullptr;
+    AExponentialHeightFog* Fog=nullptr;
     for(TActorIterator<ADirectionalLight> It(W.World->GetTestWorld());It;++It)Key=*It;
     for(TActorIterator<ASkyLight> It(W.World->GetTestWorld());It;++It)Sky=*It;
+    for(TActorIterator<AExponentialHeightFog> It(W.World->GetTestWorld());It;++It)Fog=*It;
     for(TActorIterator<APostProcessVolume> It(W.World->GetTestWorld());It;++It)if(It->bUnbound)Grade=*It;
-    if(!TestNotNull(TEXT("A single world key exists"),Key)||!TestNotNull(TEXT("The night has diffuse sky light"),Sky)||!TestNotNull(TEXT("The world exposure volume exists"),Grade))return false;
+    if(!TestNotNull(TEXT("A single world key exists"),Key)||!TestNotNull(TEXT("The night has diffuse sky light"),Sky)||!TestNotNull(TEXT("The world exposure volume exists"),Grade)||!TestNotNull(TEXT("The night fog exists"),Fog))return false;
     auto* K=CastChecked<UDirectionalLightComponent>(Key->GetLightComponent());
     TestTrue(TEXT("Early-night key is cool, broad, dim and not an atmospheric sun"),K->bUseTemperature&&K->Temperature>=8500&&
         K->Intensity>=1&&K->Intensity<=4&&K->LightSourceAngle>=8&&!K->bAtmosphereSunLight);
@@ -219,6 +223,8 @@ bool FSoraNoticeNightLightTest::RunTest(const FString&)
         Sky->GetLightComponent()->Cubemap&&Sky->GetLightComponent()->Intensity>0&&Sky->GetLightComponent()->Intensity<.2f);
     TestTrue(TEXT("The notice zone explicitly bounds both ends of auto-exposure"),Grade->Settings.bOverride_AutoExposureMinBrightness&&
         Grade->Settings.bOverride_AutoExposureMaxBrightness&&Grade->Settings.AutoExposureMinBrightness<Grade->Settings.AutoExposureMaxBrightness);
+    const FLinearColor NightFog=Fog->GetComponent()->FogInscatteringLuminance;
+    TestTrue(TEXT("Night fog does not emit the map's bright daytime horizon"),FMath::Max3(NightFog.R,NightFog.G,NightFog.B)<.02f&&NightFog.B>NightFog.R);
     const FVector Canopy(500,1250,410),Alley(-1000,2200,90),Ridge(1100,800,840);
     const int Lit=W.Stealth()->LightAt(Canopy),AlleyLit=W.Stealth()->LightAt(Alley),RidgeLit=W.Stealth()->LightAt(Ridge);
     int Windows=0;
@@ -246,6 +252,7 @@ bool FSoraNoticeNightLightTest::RunTest(const FString&)
     W.Mode()->Arena()->StageKit(Chapter,12);
     TestTrue(TEXT("Leaving the square restores the map's exposure and atmospheric rig"),!Grade->Settings.bOverride_AutoExposureMinBrightness&&
         !Grade->Settings.bOverride_AutoExposureMaxBrightness&&K->bAtmosphereSunLight&&FMath::IsNearlyEqual(K->Intensity,1.8f));
+    TestTrue(TEXT("Leaving the square restores its original fog"),Fog->GetComponent()->FogInscatteringLuminance.Equals(FLinearColor(.25f,.30f,.35f)));
     return !HasAnyErrors();
 }
 #endif

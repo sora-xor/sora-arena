@@ -118,6 +118,7 @@ void ASoraWorldBuilder::Lighting(int32 MapId)
     }
     DecorActors.Add(Fog);
     RigFog=Fog;
+    RigDefaultFogColor=FogComponent->FogInscatteringLuminance;
 
     auto* Grade=GetWorld()->SpawnActor<APostProcessVolume>();
     RigGrade=Grade;
@@ -166,6 +167,7 @@ void ASoraWorldBuilder::BeatLight(const FSoraBeat& Beat)
     Key->SetAtmosphereSunLight(!bNoticeNight);
     Sky->SetIntensity(bNoticeNight?.08f:RigDefaultSkyIntensity);
     Sky->SetLightColor(bNoticeNight?FLinearColor::MakeFromColorTemperature(9000.f):FLinearColor::White);
+    if(RigFog)RigFog->GetComponent()->SetFogInscatteringColor(bNoticeNight?FLinearColor(.006f,.008f,.014f):RigDefaultFogColor);
     if(RigGrade)
     {
         auto& Grade=RigGrade->Settings;
@@ -178,8 +180,8 @@ void ASoraWorldBuilder::BeatLight(const FSoraBeat& Beat)
         const auto* Lens=IConsoleManager::Get().FindConsoleVariable(TEXT("r.EyeAdaptation.LensAttenuation"));
         const float LuminanceMax=.78f/FMath::Max(Lens?Lens->GetFloat():.78f,.01f);
         const auto Units=[&](float L){return Extended&&Extended->GetInt()!=0?FMath::Log2(L/LuminanceMax):L;};
-        Grade.AutoExposureMinBrightness=Units(.06f);
-        Grade.AutoExposureMaxBrightness=Units(.12f);
+        Grade.AutoExposureMinBrightness=Units(.48f);
+        Grade.AutoExposureMaxBrightness=Units(.96f);
     }
     const bool bAtmosphere=Light&&Light->bAtmosphere;
     if(Light)
