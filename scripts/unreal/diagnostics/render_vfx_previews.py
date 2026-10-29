@@ -27,10 +27,11 @@ Some shots move instead of stepping in place. The blade trail ("sweep")
 swings the component through a 100-degree cut in the plane that faces the
 camera, with +X along the blade as a sword socket would hold it. The
 projectile trail ("flight") flies the component along its +X at 45 m/s.
-advance_simulation does not step GPU emitters, so rain ("realtime") runs on
-real editor ticks for about its age, with a scene capture on every tick to
-dispatch the GPU simulation; its age is approximate. None of the three has
-been run yet.
+Rain ("render_steps") advances one 1/60 s simulation step per editor callback,
+then captures the scene to dispatch that GPU step. Waiting for Slate callbacks
+alone does not prove the offscreen editor world simulated the effect. A batch
+of CPU steps without intervening renders also cannot qualify the GPU result.
+The captured rain age is a prescribed simulation age, not a wall-clock age.
 
 After the stills it checks that Niagara lights light the scene: on the dusk
 stage it measures the floor under NS_SoraVFX_Lantern (150 lm by default)
@@ -78,7 +79,7 @@ class Shot(NamedTuple):
     mode: str                 # "day" or "dusk"
     user: dict
     ages: list
-    motion: str | None = None  # None (stepped in place), "sweep", "flight" or "realtime"
+    motion: str | None = None  # None (stepped in place), "sweep", "flight" or "render_steps"
     tag: str = ""             # tells apart stills of one system and light with other user parameters
 
 
@@ -127,7 +128,7 @@ SHOTS = [
          {"Temperature": 1.0, "Bellows": 1.0}, [2.0], tag="White"),
     Shot("NS_SoraVFX_Steam", (V(0, 0, 1), R(0, 0, 0)), (V(-300, 0, 120), V(0, 0, 90)), "day", {}, [3.0]),
     Shot("NS_SoraVFX_Steam_Burst", (V(0, 0, 1), R(0, 0, 0)), (V(-350, 0, 130), V(0, 0, 100)), "day", {}, [.25, 1.0]),
-    Shot("NS_SoraVFX_Rain", (V(0, 0, 1), R(0, 0, 0)), (V(-300, 0, 160), V(300, 0, 120)), "day", {}, [2.5], "realtime"),
+    Shot("NS_SoraVFX_Rain", (V(0, 0, 1), R(0, 0, 0)), (V(-300, 0, 160), V(300, 0, 120)), "day", {}, [2.5], "render_steps"),
     Shot("NS_SoraVFX_Mist", (V(0, 0, 1), R(0, 0, 0)), (V(-1400, 0, 200), V(0, 0, 100)), "day", {}, [16.0]),
     Shot("NS_SoraVFX_Lantern", (V(0, 0, 150), R(0, 0, 0)), (V(-300, 0, 150), V(0, 0, 120)), "dusk", {}, [1.3]),
 ]
@@ -296,7 +297,7 @@ class Runner:
         self.written = []
         self.light = None
         self.delta = 0.0
-        self.realtime_left = 0.0
+        self.render_steps_left = 0
         self.handle = unreal.register_slate_post_tick_callback(self.tick)
 
     def finish(self):
@@ -382,9 +383,9 @@ class Runner:
             age = self.ages.pop(0)
             self.pending = still_name(shot, age)
             component.set_paused(False)
-            if shot.motion == "realtime":
-                self.realtime_left = age
-                self.phase = "realtime"
+            if shot.motion == "render_steps":
+                self.render_steps_left = max(1, int(round(age * 60)))
+                self.phase = "render_steps"
                 return
             steps = max(1, int(round(age * 60)))
             if shot.motion == "flight":
@@ -406,11 +407,14 @@ class Runner:
             self.phase = "capture"
             self.wait = 2
             return
-        if self.phase == "realtime":
-            # GPU emitters run on the world's own ticks; each scene render dispatches their queued simulation.
+        if self.phase == "render_steps":
+            # UE5.8.3 AdvanceSimulation queues the GPU tick through ManualTick.
+            # The offscreen editor has no realtime viewport to advance it for
+            # us. Dispatch each prescribed step with a render before the next.
+            self.actor.niagara_component.advance_simulation(1, 1 / 60)
             capture.capture_scene()
-            self.realtime_left -= self.delta
-            if self.realtime_left <= 0.0:
+            self.render_steps_left -= 1
+            if self.render_steps_left <= 0:
                 self.actor.niagara_component.set_paused(True)
                 self.phase = "capture"
                 self.wait = 2
