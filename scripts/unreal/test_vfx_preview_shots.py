@@ -125,7 +125,8 @@ class PreviewShots(unittest.TestCase):
 
     def test_rain_uses_main_view_draws_before_capture_and_pause(self):
         rain = [shot for shot in self.previews.SHOTS if shot.name == "NS_SoraVFX_Rain"]
-        self.assertEqual([shot.motion for shot in rain], ["render_steps"])
+        self.assertTrue(rain)
+        self.assertTrue(all(shot.motion == "render_steps" for shot in rain))
         runner = object.__new__(self.previews.Runner)
         runner.wait = 0
         runner.phase = "render_steps"
@@ -157,6 +158,15 @@ class PreviewShots(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "requires a level editor viewport"):
                 self.previews.aim_simulation_viewport(Vector(-300, 0, 160), Vector(300, 0, 120))
             editor.set_level_viewport_camera_info.assert_not_called()
+
+    def test_rain_dry_control_keeps_camera_light_and_simulation_age(self):
+        wet, dry = [shot for shot in self.previews.SHOTS if shot.name == "NS_SoraVFX_Rain"]
+        self.assertEqual(dry.tag, "DryControl")
+        self.assertEqual(wet.user, {})
+        self.assertEqual(dry.user, {"Intensity": 0.0})
+        self.assertEqual((wet.mode, wet.ages, wet.motion), (dry.mode, dry.ages, dry.motion))
+        for a, b in zip(wet.placement + wet.camera, dry.placement + dry.camera):
+            self.assertEqual(vars(a), vars(b))
 
     def test_the_blade_sweeps_its_edge_across_its_path_facing_the_camera(self):
         pivot = self.previews.CUT_PIVOT

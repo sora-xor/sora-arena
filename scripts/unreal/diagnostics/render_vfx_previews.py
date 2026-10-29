@@ -33,6 +33,8 @@ post-opaque update used by depth collisions; a scene capture alone cannot
 dispatch this effect correctly. Solo mode with component ticking disabled
 prevents the editor world from adding simulation steps between manual steps.
 The captured rain age is a prescribed simulation age, not a wall-clock age.
+The matching "DryControl" shot uses zero intensity, so its wall and floor can
+be compared with the wet shot without changing the camera or lighting.
 
 After the stills it checks that Niagara lights light the scene: on the dusk
 stage it measures the floor under NS_SoraVFX_Lantern (150 lm by default)
@@ -132,6 +134,8 @@ SHOTS = [
     Shot("NS_SoraVFX_Steam", (V(0, 0, 1), R(0, 0, 0)), (V(-300, 0, 120), V(0, 0, 90)), "day", {}, [3.0]),
     Shot("NS_SoraVFX_Steam_Burst", (V(0, 0, 1), R(0, 0, 0)), (V(-350, 0, 130), V(0, 0, 100)), "day", {}, [.25, 1.0]),
     Shot("NS_SoraVFX_Rain", (V(0, 0, 1), R(0, 0, 0)), (V(-300, 0, 160), V(300, 0, 120)), "day", {}, [2.5], "render_steps"),
+    Shot("NS_SoraVFX_Rain", (V(0, 0, 1), R(0, 0, 0)), (V(-300, 0, 160), V(300, 0, 120)), "day",
+         {"Intensity": 0.0}, [2.5], "render_steps", tag="DryControl"),
     Shot("NS_SoraVFX_Mist", (V(0, 0, 1), R(0, 0, 0)), (V(-1400, 0, 200), V(0, 0, 100)), "day", {}, [16.0]),
     Shot("NS_SoraVFX_Lantern", (V(0, 0, 150), R(0, 0, 0)), (V(-300, 0, 150), V(0, 0, 120)), "dusk", {}, [1.3]),
 ]
