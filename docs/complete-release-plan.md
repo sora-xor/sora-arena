@@ -1,5 +1,16 @@
 # Complete first-release plan
 
+## October 29 rain preview investigation
+
+The existing rain preview remains visually rejected. Engine source shows
+that scene captures skip the GPU update stage used by rain's depth collisions.
+`578064f7` changes the diagnostic to draw a main editor view and adds a matched
+dry control; ten host tests pass. The new path awaits Unreal validation after
+disk reserve is restored. The failed run and the 6.4 GiB cache cleanup are
+recorded in [the investigation](qualification/rain-preview-2026-10-29.md).
+Rain, roof/eave handling, splashes and sky remain unfinished. No release gate
+is closed; frozen ROOT and the preserved package remain unchanged.
+
 ## Latest isolated runtime slice: enemy dialogue routing
 
 `c7f1dfe4` fixes the ignored enemy-source restrictions on 57 authored dialogue

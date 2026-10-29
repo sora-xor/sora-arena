@@ -1,5 +1,13 @@
 # VFX: Niagara systems, materials and particle textures
 
+**Rain diagnostic update (2026-10-29):** Two Metal SM6 previews of the existing
+rain asset were viewed and rejected; the second also failed its disk reserve.
+The scene-capture path skips the GPU stage used by depth collisions. The
+main-viewport diagnostic and matching dry control pass ten host tests but
+await an Unreal run. Rain is not integrated or visually accepted. See the
+[current investigation](qualification/rain-preview-2026-10-29.md). The
+September observations below retain their historical scope.
+
 **Status (2026-09-27), step 1 of the VFX lane (C8):**
 
 - **Step 1 does not meet the binding photoreal AAA directive.** The stills of
