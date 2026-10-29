@@ -27,10 +27,11 @@ Some shots move instead of stepping in place. The blade trail ("sweep")
 swings the component through a 100-degree cut in the plane that faces the
 camera, with +X along the blade as a sword socket would hold it. The
 projectile trail ("flight") flies the component along its +X at 45 m/s.
-Rain ("render_steps") advances one 1/60 s simulation step per editor callback,
-then captures the scene to dispatch that GPU step. Waiting for Slate callbacks
-alone does not prove the offscreen editor world simulated the effect. A batch
-of CPU steps without intervening renders also cannot qualify the GPU result.
+Rain ("render_steps") advances one 1/60 s simulation step, then draws the main
+editor viewport before continuing. UE's SceneCapture views exclude the GPU
+post-opaque update used by depth collisions; a scene capture alone cannot
+dispatch this effect correctly. Solo mode with component ticking disabled
+prevents the editor world from adding simulation steps between manual steps.
 The captured rain age is a prescribed simulation age, not a wall-clock age.
 
 After the stills it checks that Niagara lights light the scene: on the dusk
@@ -60,6 +61,8 @@ OUT.mkdir(parents=True, exist_ok=True)
 ONLY = {name for name in os.environ.get("SORA_VFX_PREVIEW_ONLY", "").split(",") if name}
 WIDTH, HEIGHT = 960, 540
 actors = unreal.get_editor_subsystem(unreal.EditorActorSubsystem)
+levels = unreal.get_editor_subsystem(unreal.LevelEditorSubsystem)
+editor = unreal.get_editor_subsystem(unreal.UnrealEditorSubsystem)
 V, C = unreal.Vector, unreal.LinearColor
 
 
@@ -220,6 +223,15 @@ def aim(camera, location, look_at):
     camera.set_actor_rotation(unreal.MathLibrary.make_rot_from_x(direction), False)
 
 
+def aim_simulation_viewport(location, look_at):
+    """Depth-collision GPU simulations need a main view at the capture's camera."""
+    if editor.get_level_viewport_camera_info() is None:
+        raise RuntimeError("GPU preview requires a level editor viewport")
+    editor.set_level_viewport_camera_info(location, unreal.MathLibrary.make_rot_from_x(look_at - location))
+    levels.editor_invalidate_viewports()
+    log("GPU simulation uses the main editor viewport at the shot camera")
+
+
 def floor_median():
     """Median luminance of the floor below the light-check spot (the lantern hangs 150 cm above it)."""
     x0, y0, x1, y1 = int(WIDTH * .44), int(HEIGHT * .70), int(WIDTH * .56), int(HEIGHT * .80)
@@ -354,11 +366,15 @@ class Runner:
             system = unreal.load_asset(f"/Game/Generated/VFX/{shot.name}")
             self.actor = actors.spawn_actor_from_object(system, *shot.placement)
             component = self.actor.niagara_component
-            component.set_auto_activate(False)
+            if shot.motion == "render_steps":
+                aim_simulation_viewport(*shot.camera)
+                component.set_force_solo(True)
             apply_user(component, shot.user)
             self.ages = list(shot.ages)
             # A system's first activation can wait on pipeline precaching; run it once and throw that away.
             component.activate(True)
+            if shot.motion == "render_steps":
+                component.set_component_tick_enabled(False)
             component.advance_simulation(30, 1 / 60)
             self.phase = "age"
             self.wait = 30
@@ -373,6 +389,8 @@ class Runner:
             elif self.shot.motion == "flight":
                 self.actor.set_actor_location(self.shot.placement[0], False, False)
             component.activate(True)
+            if self.shot.motion == "render_steps":
+                component.set_component_tick_enabled(False)
             component.set_paused(True)
             self.phase = "advance"
             self.wait = 3
@@ -384,6 +402,7 @@ class Runner:
             self.pending = still_name(shot, age)
             component.set_paused(False)
             if shot.motion == "render_steps":
+                component.set_component_tick_enabled(False)
                 self.render_steps_left = max(1, int(round(age * 60)))
                 self.phase = "render_steps"
                 return
@@ -408,16 +427,20 @@ class Runner:
             self.wait = 2
             return
         if self.phase == "render_steps":
-            # UE5.8.3 AdvanceSimulation queues the GPU tick through ManualTick.
-            # The offscreen editor has no realtime viewport to advance it for
-            # us. Dispatch each prescribed step with a render before the next.
+            # SceneView::AllowGPUParticleUpdate excludes scene captures. Let a
+            # main viewport draw consume this tick, including scene depth.
             self.actor.niagara_component.advance_simulation(1, 1 / 60)
-            capture.capture_scene()
+            levels.editor_invalidate_viewports()
             self.render_steps_left -= 1
+            self.wait = 1
             if self.render_steps_left <= 0:
-                self.actor.niagara_component.set_paused(True)
-                self.phase = "capture"
+                self.phase = "render_flush"
                 self.wait = 2
+            return
+        if self.phase == "render_flush":
+            self.actor.niagara_component.set_paused(True)
+            self.phase = "capture"
+            self.wait = 2
             return
         if self.phase == "capture":
             capture.capture_scene()

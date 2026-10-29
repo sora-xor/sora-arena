@@ -123,7 +123,7 @@ class PreviewShots(unittest.TestCase):
         self.assertTrue(trails)
         self.assertTrue(all(shot.motion == "flight" for shot in trails))
 
-    def test_rain_dispatches_each_simulation_step_with_a_render(self):
+    def test_rain_uses_main_view_draws_before_capture_and_pause(self):
         rain = [shot for shot in self.previews.SHOTS if shot.name == "NS_SoraVFX_Rain"]
         self.assertEqual([shot.motion for shot in rain], ["render_steps"])
         runner = object.__new__(self.previews.Runner)
@@ -133,17 +133,30 @@ class PreviewShots(unittest.TestCase):
         runner.actor = mock.Mock()
         calls = mock.Mock()
         calls.attach_mock(runner.actor.niagara_component, "effect")
-        with mock.patch.object(self.previews, "capture", calls.capture):
+        with mock.patch.object(self.previews, "capture", calls.capture), \
+                mock.patch.object(self.previews, "levels", calls.levels):
             runner._tick()
             self.assertEqual(runner.phase, "render_steps")
+            runner._tick()  # allow the first main view to draw
+            runner._tick()
+            self.assertEqual(runner.phase, "render_flush")
+            runner._tick()
+            runner._tick()  # drain the final main view before pausing
             runner._tick()
         self.assertEqual(calls.mock_calls, [
-            mock.call.effect.advance_simulation(1, 1 / 60), mock.call.capture.capture_scene(),
-            mock.call.effect.advance_simulation(1, 1 / 60), mock.call.capture.capture_scene(),
+            mock.call.effect.advance_simulation(1, 1 / 60), mock.call.levels.editor_invalidate_viewports(),
+            mock.call.effect.advance_simulation(1, 1 / 60), mock.call.levels.editor_invalidate_viewports(),
             mock.call.effect.set_paused(True),
         ])
         self.assertEqual(runner.phase, "capture")
         self.assertEqual(runner.wait, 2)
+
+    def test_gpu_preview_refuses_a_missing_main_viewport(self):
+        with mock.patch.object(self.previews, "editor") as editor:
+            editor.get_level_viewport_camera_info.return_value = None
+            with self.assertRaisesRegex(RuntimeError, "requires a level editor viewport"):
+                self.previews.aim_simulation_viewport(Vector(-300, 0, 160), Vector(300, 0, 120))
+            editor.set_level_viewport_camera_info.assert_not_called()
 
     def test_the_blade_sweeps_its_edge_across_its_path_facing_the_camera(self):
         pivot = self.previews.CUT_PIVOT
