@@ -556,7 +556,8 @@ the two points apart instead pushed the lowest hoop out of the 21:9 frame.
 - **Hoop 6 (45):** mostly the right sleeve during the slide to the guide.
 - **Also:** a few elbow jumps of 5.0–8.9 cm during the press and slide (hoops 4–6).
 
-Many of these are under 0.5 cm by only 0.04–0.4 cm. The failed runs are kept: `rib-gate-candidate2.*`, the
+These are not near misses: 846 of the 1,231 failing sleeve rows are under 0.1 cm, and only 7 of the 61 failing
+samples fail by sleeves at 0.10–0.49 cm alone. The failed runs are kept: `rib-gate-candidate2.*`, the
 `tools/rib_clear_*` logs and the signed run.
 
 **The flex gauge fails the first-person check from the working side (open, `OPEN_VIEW_DEFECTS`).**
@@ -596,7 +597,8 @@ Many of these are under 0.5 cm by only 0.04–0.4 cm. The failed runs are kept: 
 **Paste-step results** (signed `fa8c644a`: `paste-gate-signed-fa8c644a.*`, broken down per action in
 `paste-breakdown-signed-fa8c644a.json`). 10/10/10 is the best viable layout so far, not a pass. For the paste action:
 - **Pose:** 390/395 passes. The stroke's last sample at the upper rim line fails: reach 98.1–99.8 % at the far-left
-  stands, and wrist 76–78° at the near-right stands. One sample of the lay fails reach.
+  stands, and wrist 76–78° at the near-right stands. At the far-right stand, the lay's end and the stroke's start
+  reach 98.88 %.
 - **View:** 16:9 passes 48/99 and 21:9 passes 19/99. Mostly that same last sample is hidden behind the laid gore.
 - **Clearance: 15/99 passes (open).** Nearly every failure is in the lay, as the left paw brings the sheet onto the
   frame: the left sleeve within 0.5 cm of a prop, the two arms within 0.5 cm of each other (down to touching), the
