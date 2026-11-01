@@ -536,21 +536,28 @@ records its inputs' sha256 and runs:
 **Why the choreography changed.** Side by side, at press 185° and hook 180°, the palms met (0.00–0.50 cm). Spreading
 the two points apart instead pushed the lowest hoop out of the 21:9 frame.
 
-**Results.**
+**Results** (signed `fa8c644a`: `rib-gate-signed-fa8c644a.*`).
 
 | Gate | Result |
 |---|---|
 | Pose | passes 395/395 |
 | View | passes 594/594 at both aspects |
+| Body | passes 45/45 (least 3.181 cm) |
 | Clearance | **fails: 38 of 99 region samples pass (open)** |
 
-**What still fails clearance:**
-- the right sleeve during the slide to the guide at hoops 5–6;
-- the left sleeve against the turning form late in the wind at hoops 3–4;
-- the carry at hoops 1, 3 and 4.
+**What still fails clearance**, as region samples failing of 99 (`rib-breakdown-signed-fa8c644a.json`):
+- **Hoop 1 (12):** the right palm passes into a part it works during the carry to the notch.
+- **Hoop 2 (0):** passes everywhere (least 0.51 cm).
+- **Hoop 3 (32):** mostly the left sleeve against the turning form during the wind, then during the press and slide.
+- **Hoop 4 (48):** the left sleeve during the wind, both sleeves during the press and slide, the right sleeve during
+  the carry, and the left wrist over 75° during the carry.
+- **Hoop 5 (37):** mostly the right sleeve during the slide to the guide, then the left wrist during the carry and the
+  right palm into the strip.
+- **Hoop 6 (45):** mostly the right sleeve during the slide to the guide.
+- **Also:** a few elbow jumps of 5.0–8.9 cm during the press and slide (hoops 4–6).
 
-Many of these are under 0.5 cm by 0.04–0.4 cm. The failed runs are kept: `rib-gate-candidate2.*` and the
-`tools/rib_clear_*` logs.
+Many of these are under 0.5 cm by only 0.04–0.4 cm. The failed runs are kept: `rib-gate-candidate2.*`, the
+`tools/rib_clear_*` logs and the signed run.
 
 **The flex gauge fails the first-person check from the working side (open, `OPEN_VIEW_DEFECTS`).**
 - **At the craft stand:** it reads (facing 46.7°, band 8.66°).
@@ -586,17 +593,21 @@ Many of these are under 0.5 cm by 0.04–0.4 cm. The failed runs are kept: `rib-
 - **The rim shelf:** on the sheet rail's standard.
 - **Clashes and supports:** no clashes, and all supports within 1.2 mm.
 
-**Paste-step results.** 10/10/10 itself is a measured feasibility, not yet a pass:
+**Paste-step results** (signed `fa8c644a`: `paste-gate-signed-fa8c644a.*`, broken down per action in
+`paste-breakdown-signed-fa8c644a.json`). 10/10/10 is the best viable layout so far, not a pass. For the paste action:
 - **Pose:** 390/395 passes. The stroke's last sample at the upper rim line fails: reach 98.1–99.8 % at the far-left
-  stands, and wrist 76–78° at the near-right stands.
+  stands, and wrist 76–78° at the near-right stands. One sample of the lay fails reach.
 - **View:** 16:9 passes 48/99 and 21:9 passes 19/99. Mostly that same last sample is hidden behind the laid gore.
-
+- **Clearance: 15/99 passes (open).** Nearly every failure is in the lay, as the left paw brings the sheet onto the
+  frame: the left sleeve within 0.5 cm of a prop, the two arms within 0.5 cm of each other (down to touching), the
+  right sleeve, and the right palm into a part it works. A few are in the stroke: the right palm into the washi.
+- **Body, clashes and supports:** pass (45/45, at least 3.5 cm; no clashes).
 - **First person (open, `OPEN_VIEW_DEFECTS`):** during the last panel's stroke, the seam's top end at the upper rim
   line (`Seam_8`) hides behind the third pasted gore from the craft stand. The seam passes from 63.24 % of the 68
   working-side positions, against the required 90 %. The check had laid the pasted gores untilted at the old lantern
   centre; it now lays them on the tilted frame, as the region gates do.
 
-**The rims step fails at every stand on this pose.** The upper mouth is out of reach (151 %).
+**The rims step fails every gate at every stand on this pose.** The upper mouth is out of reach (151.5 %).
 
 **Proposed fix:** the cradle re-tilts the frame for the rims. It would be a two-axis cradle bringing the upper mouth
 to the front, as `PASTE_FIRST_POSE` did, where the rims action passed. This is not yet built.

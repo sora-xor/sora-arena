@@ -242,5 +242,7 @@ actual shoulders at each stand and facing.
   - 15/10/10 is infeasible: the brush's reach to the seam's far end.
   - At 10/10/10, the stroke's last sample at the upper rim line fails reach, wrist and view at some stands. The same
     top end hides behind the third pasted gore in the first-person check (63.24 % of the working side).
+  - At 10/10/10, the paste action's clearance passes at 15 of 99 region samples: laying the sheet crowds the arms
+    (§13.2).
   - The rims step needs the cradle to re-tilt the frame (§13.2).
 - **The timing conflicts:** the preparation and completion clips against an immediate re-press (§13.5).
