@@ -15,7 +15,7 @@ import weapon_socket_gates as G
 
 SOURCE = "Content/SourceArt/Weapons/Runtime"
 ENVELOPE = "scripts/unreal/data/runtime_weapon_review.json"
-ENVELOPE_SHA256 = "0f84ef765a6f3e8cbd7967123dd260c5cbd21467d5634c26c259a63d9cc5886e"
+ENVELOPE_SHA256 = "b1006c53bbc4f875bf91ef1d49fb717d8a398fd6b20365b563cf2110b441edab"
 DESTINATION = "/Game/ArtReview/RuntimeWeapons"
 KIT_IDS = (0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 12, 14, 15, 17, 19, 20)
 ASSETS = tuple(sorted([f"SM_Weapon_{i:02}" for i in KIT_IDS] +

@@ -2,7 +2,7 @@
   "schema": "sora.weapon-review.v1",
   "source_manifest": {
     "file": "Content/SourceArt/Weapons/Runtime/manifest.json",
-    "sha256": "cdb2bb8e1d9173093d0e6900cb92147ccd93a77ce9aaddfcb1525df2a2ef33ab"
+    "sha256": "de25cf553dea42dd31f61d5a18e1fc8d0e5869d97f447aee61842606dd506b06"
   },
   "kits": {
     "W00_Katana": {

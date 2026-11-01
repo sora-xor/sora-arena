@@ -50,9 +50,12 @@ def weapon7():
     collar and cord, not a stand-in. Read once."""
     if "mesh" not in _WEAPON:
         import fbx_unreal_sockets as F
-        g = F.geometry_arrays(str(ROOT / B.WEAPON7["fbx"]))["SM_Weapon_07"]
-        v = g["Vertices"].reshape(-1, 3) * 100.0
-        v[:, 1] *= -1.0
+        path = ROOT / B.WEAPON7["fbx"]
+        g = F.geometry_arrays(str(path))["SM_Weapon_07"]
+        # Socket-corrected exports bake centimetres into the vertices; older
+        # exports carry the same unit conversion on the mesh node. Compose
+        # the file's axes and node transforms instead of assuming raw metres.
+        v = F.interchange(F.read_fbx(path))["vertices"]["SM_Weapon_07"]
         idx = g["PolygonVertexIndex"].astype(np.int64)
         tris, start = [], 0
         for k in np.nonzero(idx < 0)[0]:

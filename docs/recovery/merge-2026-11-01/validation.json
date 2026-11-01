@@ -1,0 +1,58 @@
+{
+  "integrated_commit": "589469a394635dd13618d322371249779b65273a",
+  "standard_source_gates": {
+    "total": 125,
+    "initial_passed": 123,
+    "initial_failed": [
+      "weapon-review-admission",
+      "dojo-timber-binding-current"
+    ],
+    "failed_gates_pass_on_targeted_rerun": true,
+    "rust_format_clippy_tests": "passed",
+    "full_runs_source_unchanged": true
+  },
+  "added_art_modules": {
+    "total": 37,
+    "passed_after_fix": 36,
+    "existing_failure": "scripts/art/test_sora_timber_v2.py::Baseline.test_frozen_v1_kit_inputs_are_unchanged",
+    "existing_failure_detail": "create_runtime_weapon_lib.py SHA-256 7312e9f2c21532b99f38b332505ec085f9860c0b310026de573903cd51262338 differs from the frozen timber manifest input 1068e8c096a6860de657f722add2c45ed5cc7f20757d07ab4d2d058af111fc86. Reproduced on claude/photoreal-art; test, library and both frozen manifests are byte-identical there. All other 29 tests in that module passed.",
+    "interrupted_numeric_modules": "Four modules resumed with one numerical thread per process; original logs retained.",
+    "workshop_fix": "All six prop-clash tests passed against candidate bytes identical to the final source; direct final-source weapon frame tests also passed.",
+    "dependent_workshop_poses": "Final-source rerun succeeded: 20 tests, including three existing expected failures; log: Saved/SourceChecks/merge-20261101-integration-fixes/workshop-craft-poses.log."
+  },
+  "fixes": [
+    "Compose the FBX axis and mesh transforms in the workshop checker; raw vertices are not always metres.",
+    "Regenerate the dojo campaign binding for the existing chapter-three data.",
+    "Refresh the weapon review manifest pin and envelope digest; the same 20 meshes and 60 LOD envelopes independently reproduce unchanged."
+  ],
+  "reports": [
+    {
+      "path": "Saved/SourceChecks/merge-20261101-rust/report.json",
+      "sha256": "88ea95fec80d6b7646afeabef17a511da4300e37a40ce23a44ca3b24102a0129"
+    },
+    {
+      "path": "Saved/SourceChecks/merge-20261101-source/report.json",
+      "sha256": "516b67dbcb1f6db4b1b5717d2e32edb00ccf30cef6bf0b6deeadf7a06c972ae0"
+    },
+    {
+      "path": "Saved/SourceChecks/merge-20261101-added-art/report.json",
+      "sha256": "b3855b2f382364560dc7de684275d40c16b2cc60645157eb9fc5f2fa2af945dc"
+    },
+    {
+      "path": "Saved/SourceChecks/merge-20261101-art-resume/report.json",
+      "sha256": "2c48794f3e11b0d4c3509b326e3709294b4be161ea6962eda8e44e2c903f2827"
+    },
+    {
+      "path": "Saved/SourceChecks/merge-20261101-integration-fixes/report.json",
+      "sha256": "ed3dfe81763874d2e7ff639854b898bdf23974692bbc5a516ed1baa850b63dd5"
+    },
+    {
+      "path": "Saved/SourceChecks/merge-20261101-final-metadata/report.json",
+      "sha256": "195ea5d6e812a99809e4492762861ec65804aab96950ffde2c7b4484427c4d5c"
+    }
+  ],
+  "outside_scope": [
+    "Unreal compilation, editor automation, cooking and packaged play",
+    "Rendered visual acceptance and release qualification"
+  ]
+}
