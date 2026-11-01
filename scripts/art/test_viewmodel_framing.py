@@ -125,7 +125,8 @@ class Framing(unittest.TestCase):
         self.fails(c, "replace, not add")
         rep, _ = F.run(self.contract, F.ROOT)
         stacked = next(u for label, name, u, v in rep.rows if name == "stacked legacy -15 miss")
-        self.assertAlmostEqual(stacked, 0.654, places=2)
+        # 0.654 at the first authored hold (60, -3, -9.5); 0.659 at the proposed kai hold (60, -6, -14).
+        self.assertAlmostEqual(stacked, 0.659, places=2)
         c = self.mutated()
         c["poses"]["bow.drawn"]["rest"]["rotation_deg"] = [2.0, 1.0, 0.0]
         self.fails(c, "misses the reticle")

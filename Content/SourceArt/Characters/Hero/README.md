@@ -52,6 +52,19 @@ Side and eye close-ups are in `Nyaagyu_HeroFace_Blender.png` and
 contains the same-camera before side and full-body renders in those paths;
 the current side and full-body images are the after review.
 
+**Production proportions (study A, 2026-10-26).** Root chose the two-paw study's
+variant A as the production rig basis: arms 1.2 times as long, the chest's front
+0.85 times as deep. The generator applies it with the studies' own rule
+(`nyaakoto_runtime_parts.apply_variant`) and records it in `manifest.proportions`.
+Each SORA kamon rides rigidly with its lacquer backing, so its two SVG paths stay
+exact: the chest kamon moved 3.5 cm back with the dō's front, each sode kamon about
+2 mm with its upper arm, and the waist kamon not at all. `manifest.sora_kamon_marks`
+records where each now sits; the hero, runtime and LOD validators check every path
+vertex there. The editable source keeps its own open paws; the runtime body and its
+LODs replace them with the furred third-person paws (`scripts/art/nyaakoto_tp_paws.py`).
+The generator's triangle count is not reproducible from run to run (head fibre scatter
+and kamon path order); downstream uses this hash-pinned blend.
+
 The broad smooth skull, nearly planar ear cartilage, bead-like eye aperture,
 shallow muzzle profile, exposed skull-to-throat seam, rigid neck/armor, and
 coarse fur direction remain visibly stylized. The new geometry is an incremental

@@ -1,0 +1,196 @@
+{
+ "schema_version": 1,
+ "kind": "art-run-archive",
+ "label": "schema-2 rig attempt (PIDs 92985 build, 93544 review): string-to-stave webs at both hazu, root-caused; kept as evidence",
+ "run_dir": "Local/ArtCache/W18YumiRig_schema2_attempt",
+ "archived_utc": "2026-10-25T06:51:15Z",
+ "exit_code": 0,
+ "log": {
+  "path": "Saved/YumiRig/rig_schema2.log",
+  "bytes": 2316,
+  "sha256": "255394d34722ca18ef07c647ad6f55bd03f62703947a9e9320a9d3b3570162cd",
+  "markers": [
+   "YUMI_RIG_WEIGHTS {\"string\": 1568, \"stave\": 29306}",
+   "YUMI_RIG_KEY {\"frame\": 0, \"draw\": 0.0, \"stave_max_error_m\": 0.0, \"string_off_segment_m\": 0.0, \"string_length_m\": 2.134557, \"braced_max_diff_m\": 2.4620758953479386e-07}",
+   "YUMI_RIG_KEY {\"frame\": 1, \"draw\": 0.1, \"stave_max_error_m\": 5e-05, \"string_off_segment_m\": 0.0, \"string_length_m\": 2.1345569, \"braced_max_diff_m\": null}",
+   "YUMI_RIG_KEY {\"frame\": 2, \"draw\": 0.2, \"stave_max_error_m\": 0.000165, \"string_off_segment_m\": 0.0, \"string_length_m\": 2.1345569, \"braced_max_diff_m\": null}",
+   "YUMI_RIG_KEY {\"frame\": 3, \"draw\": 0.3, \"stave_max_error_m\": 0.000315, \"string_off_segment_m\": 0.0, \"string_length_m\": 2.1345569, \"braced_max_diff_m\": null}",
+   "YUMI_RIG_KEY {\"frame\": 4, \"draw\": 0.4, \"stave_max_error_m\": 0.000487, \"string_off_segment_m\": 0.0, \"string_length_m\": 2.1345569, \"braced_max_diff_m\": null}",
+   "YUMI_RIG_KEY {\"frame\": 5, \"draw\": 0.5, \"stave_max_error_m\": 0.000675, \"string_off_segment_m\": 0.0, \"string_length_m\": 2.1345569, \"braced_max_diff_m\": null}",
+   "YUMI_RIG_KEY {\"frame\": 6, \"draw\": 0.6, \"stave_max_error_m\": 0.000877, \"string_off_segment_m\": 0.0, \"string_length_m\": 2.1345568, \"braced_max_diff_m\": null}",
+   "YUMI_RIG_KEY {\"frame\": 7, \"draw\": 0.7, \"stave_max_error_m\": 0.001091, \"string_off_segment_m\": 0.0, \"string_length_m\": 2.1345569, \"braced_max_diff_m\": null}",
+   "YUMI_RIG_KEY {\"frame\": 8, \"draw\": 0.8, \"stave_max_error_m\": 0.001317, \"string_off_segment_m\": 0.0, \"string_length_m\": 2.1345568, \"braced_max_diff_m\": null}",
+   "YUMI_RIG_KEY {\"frame\": 9, \"draw\": 0.9, \"stave_max_error_m\": 0.001556, \"string_off_segment_m\": 0.0, \"string_length_m\": 2.134557, \"braced_max_diff_m\": null}",
+   "YUMI_RIG_KEY {\"frame\": 10, \"draw\": 1.0, \"stave_max_error_m\": 0.00181, \"string_off_segment_m\": 0.0, \"string_length_m\": 2.1345569, \"braced_max_diff_m\": null}",
+   "YUMI_RIG_GEOMETRY {\"bow_vertices\": 30874, \"bow_triangles\": 61556, \"arrow_vertices\": 2209, \"arrow_triangles\": 4382, \"arrow_bounds_m\": [0.982, 0.037913, 0.032833]}",
+   "YUMI_RIG_READY Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/SK_Weapon_18.fbx 7504444 bytes 34.0s"
+  ]
+ },
+ "totals": {
+  "files": 30,
+  "bytes": 31552884,
+  "by_folder": {
+   "Rig": {
+    "files": 16,
+    "bytes": 19910532
+   },
+   "Saved": {
+    "files": 14,
+    "bytes": 11642352
+   }
+  }
+ },
+ "files_digest": "5f05925f7054d16590cb9c498438cf9b2606e0562c47a7697174d50ad9d8dffc",
+ "files": [
+  {
+   "path": "Rig/Review/SK_Weapon_18_Braced_FullProfile.png",
+   "bytes": 828693,
+   "sha256": "2f6073c1e5057a2cdc1b1450d56c03cffc350ed364c52a392af0ba62711a4757"
+  },
+  {
+   "path": "Rig/Review/SK_Weapon_18_Braced_GripClose.png",
+   "bytes": 941872,
+   "sha256": "9de827dcff6446bdc3d96187f088149fca50178dde7c86d6f1f33347ecb77193"
+  },
+  {
+   "path": "Rig/Review/SK_Weapon_18_Braced_Profile.png",
+   "bytes": 850684,
+   "sha256": "64587e5829d41bbee937823db8c97574cf81cf8918b1a4b209b2e6f707f05bcc"
+  },
+  {
+   "path": "Rig/Review/SK_Weapon_18_Full_FullProfile.png",
+   "bytes": 831844,
+   "sha256": "4809e325cb6573dd39033b40974534030a5581b8607d6b6db62ed3b0b8eb04a6"
+  },
+  {
+   "path": "Rig/Review/SK_Weapon_18_Full_GripClose.png",
+   "bytes": 906787,
+   "sha256": "ceaf25d362d932a81d65b995ca6ef944483a7cb1ff1300f3480bb3637e499722"
+  },
+  {
+   "path": "Rig/Review/SK_Weapon_18_Full_Profile.png",
+   "bytes": 877752,
+   "sha256": "eb260a6f0fb8747540cea69baaffe691da99f29f410176b3614fee1e04299fb3"
+  },
+  {
+   "path": "Rig/Review/SK_Weapon_18_Half_FullProfile.png",
+   "bytes": 835809,
+   "sha256": "ee016ba02b289350dddff478554f2a974e808acc9aa772147907af18f87575d6"
+  },
+  {
+   "path": "Rig/Review/SK_Weapon_18_Half_GripClose.png",
+   "bytes": 906956,
+   "sha256": "e613845fa75f53fdd840f6c39903f307bb9e6e9802db6c2c4c6d98104d16d483"
+  },
+  {
+   "path": "Rig/Review/SK_Weapon_18_Half_Profile.png",
+   "bytes": 867228,
+   "sha256": "62df0cae21d4720854f9d50134cd7106ceb472395450980e1ed86aabe548fcd4"
+  },
+  {
+   "path": "Rig/Review/W18_rig_playback_blender.npz",
+   "bytes": 3790335,
+   "sha256": "328e36025e8669478f03d430e2e344809c2dc9d9b2a4e7b3281fb384003c7c50"
+  },
+  {
+   "path": "Rig/Review/review.log",
+   "bytes": 1972,
+   "sha256": "31daa63b13dfd52f2ba2154ae7b9bfa0d0df0196ae892ecdc1b1c75495ca6df2"
+  },
+  {
+   "path": "Rig/Review/rig_build.log",
+   "bytes": 2316,
+   "sha256": "255394d34722ca18ef07c647ad6f55bd03f62703947a9e9320a9d3b3570162cd"
+  },
+  {
+   "path": "Rig/SK_Weapon_18.fbx",
+   "bytes": 7504444,
+   "sha256": "8247d52cd9ac7781be5722720680181c4af3060adb09a3b6919347c70537f663"
+  },
+  {
+   "path": "Rig/W18_rig_check_geometry.npz",
+   "bytes": 695292,
+   "sha256": "e52573ecd88add3ac14fc64982d629ae65aa9ff229871e2ecc0cfe162d2fa9d4"
+  },
+  {
+   "path": "Rig/manifest.ledger.json",
+   "bytes": 4341,
+   "sha256": "b09555668a8a01ca0af81ecac2c6326c8c4145cf52b8b13a233578d7e48a4750"
+  },
+  {
+   "path": "Rig/rig_record.json",
+   "bytes": 64207,
+   "sha256": "086408d98438bf09e39cb01c964cb665624c2cef2f8f204d042c0cee00217620"
+  },
+  {
+   "path": "Saved/Review_schema2/SK_Weapon_18_Braced_FullProfile.png",
+   "bytes": 828693,
+   "sha256": "2f6073c1e5057a2cdc1b1450d56c03cffc350ed364c52a392af0ba62711a4757"
+  },
+  {
+   "path": "Saved/Review_schema2/SK_Weapon_18_Braced_GripClose.png",
+   "bytes": 941872,
+   "sha256": "9de827dcff6446bdc3d96187f088149fca50178dde7c86d6f1f33347ecb77193"
+  },
+  {
+   "path": "Saved/Review_schema2/SK_Weapon_18_Braced_Profile.png",
+   "bytes": 850684,
+   "sha256": "64587e5829d41bbee937823db8c97574cf81cf8918b1a4b209b2e6f707f05bcc"
+  },
+  {
+   "path": "Saved/Review_schema2/SK_Weapon_18_Full_FullProfile.png",
+   "bytes": 831844,
+   "sha256": "4809e325cb6573dd39033b40974534030a5581b8607d6b6db62ed3b0b8eb04a6"
+  },
+  {
+   "path": "Saved/Review_schema2/SK_Weapon_18_Full_GripClose.png",
+   "bytes": 906787,
+   "sha256": "ceaf25d362d932a81d65b995ca6ef944483a7cb1ff1300f3480bb3637e499722"
+  },
+  {
+   "path": "Saved/Review_schema2/SK_Weapon_18_Full_Profile.png",
+   "bytes": 877752,
+   "sha256": "eb260a6f0fb8747540cea69baaffe691da99f29f410176b3614fee1e04299fb3"
+  },
+  {
+   "path": "Saved/Review_schema2/SK_Weapon_18_Half_FullProfile.png",
+   "bytes": 835809,
+   "sha256": "ee016ba02b289350dddff478554f2a974e808acc9aa772147907af18f87575d6"
+  },
+  {
+   "path": "Saved/Review_schema2/SK_Weapon_18_Half_GripClose.png",
+   "bytes": 906956,
+   "sha256": "e613845fa75f53fdd840f6c39903f307bb9e6e9802db6c2c4c6d98104d16d483"
+  },
+  {
+   "path": "Saved/Review_schema2/SK_Weapon_18_Half_Profile.png",
+   "bytes": 867228,
+   "sha256": "62df0cae21d4720854f9d50134cd7106ceb472395450980e1ed86aabe548fcd4"
+  },
+  {
+   "path": "Saved/Review_schema2/W18_rig_playback_blender.npz",
+   "bytes": 3790335,
+   "sha256": "328e36025e8669478f03d430e2e344809c2dc9d9b2a4e7b3281fb384003c7c50"
+  },
+  {
+   "path": "Saved/review_schema2.log",
+   "bytes": 1972,
+   "sha256": "31daa63b13dfd52f2ba2154ae7b9bfa0d0df0196ae892ecdc1b1c75495ca6df2"
+  },
+  {
+   "path": "Saved/review_schema2.times",
+   "bytes": 52,
+   "sha256": "ad812b44017ca5c88fbe7334acafcf58cab592dce57b0b00e1b6007d6d1dae60"
+  },
+  {
+   "path": "Saved/rig_schema2.log",
+   "bytes": 2316,
+   "sha256": "255394d34722ca18ef07c647ad6f55bd03f62703947a9e9320a9d3b3570162cd"
+  },
+  {
+   "path": "Saved/rig_schema2.times",
+   "bytes": 52,
+   "sha256": "8eda670b7fc6a431b676ff687234966934cc8f62a46de7a58c1a45bdc97eeee4"
+  }
+ ]
+}

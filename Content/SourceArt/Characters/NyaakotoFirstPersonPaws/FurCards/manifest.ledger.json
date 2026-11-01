@@ -1,0 +1,61 @@
+{
+  "schema_version": 2,
+  "kind": "asset-ledger",
+  "ledger_id": "own-NyaakotoFP_FurCards",
+  "source": "project",
+  "purpose": "OWN record for the bow paw's fur-card atlas (v5): albedo with strand coverage as alpha, DirectX normal and linear masks. Each clump is opaque strand groups with fringed hair tips, irregular in length, spacing and width, its lateral edges faded; odd rows root at the top. Every strand is drawn by the seeded generator; no external image, scan or third-party texture. The Unreal uses are the isolated qualification import (import_nyaakoto_fp_paws.py), not the game. The schema-4 manifest.json beside them is the build record and holds the atlas's dither measure (fur_atlas_coverage.py); it is not this ledger.",
+  "generator": "scripts/assets/write_own_ledger.py",
+  "records": [
+    {
+      "asset_id": "NyaakotoFP_FurCards",
+      "name": "Nyaakoto first-person bow paw: fur-card atlas (v5)",
+      "kind": "generated-art",
+      "tier": "OWN",
+      "license": "project-owned",
+      "license_url": null,
+      "origin_url": "scripts/art/create_nyaakoto_fp_fur_textures.py, scripts/art/fur_atlas_coverage.py",
+      "mirror_url": null,
+      "commercial_use": true,
+      "redistribution": "unrestricted",
+      "derivatives": true,
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "attribution_text": null,
+      "changes": null,
+      "access": "generated",
+      "acquired_at_utc": "2026-10-25T21:18:02Z",
+      "acquired_by": "agent",
+      "storage": "repo-lfs",
+      "used_by": [
+        "/Game/Generated/Qualification/NyaakotoFPPaws/Textures/T_NyaakotoFP_FurCards_Albedo.T_NyaakotoFP_FurCards_Albedo",
+        "/Game/Generated/Qualification/NyaakotoFPPaws/Textures/T_NyaakotoFP_FurCards_NormalDX.T_NyaakotoFP_FurCards_NormalDX",
+        "/Game/Generated/Qualification/NyaakotoFPPaws/Textures/T_NyaakotoFP_FurCards_Masks.T_NyaakotoFP_FurCards_Masks",
+        "/Game/Generated/Qualification/NyaakotoFPPaws/M_NyaakotoFP_FurCards.M_NyaakotoFP_FurCards"
+      ],
+      "fallback": null,
+      "generator": [
+        "scripts/art/create_nyaakoto_fp_fur_textures.py",
+        "scripts/art/fur_atlas_coverage.py"
+      ],
+      "derived_from": [],
+      "files": [
+        {
+          "path": "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/FurCards/T_NyaakotoFP_FurCards_Albedo.png",
+          "bytes": 933972,
+          "sha256": "8b47b4805f467896a948142102a7ed56b0a51b591ff5776dd8c21a3a038832ac"
+        },
+        {
+          "path": "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/FurCards/T_NyaakotoFP_FurCards_Masks.png",
+          "bytes": 641476,
+          "sha256": "897de43557a34fcf901882487ad70dd86944ee2ce55b31dc63a68869e17d2784"
+        },
+        {
+          "path": "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/FurCards/T_NyaakotoFP_FurCards_NormalDX.png",
+          "bytes": 942801,
+          "sha256": "4b1bd4e8733b39beecb8850ea85677cd1e8186d36278da4e34efd3c95d368210"
+        }
+      ]
+    }
+  ]
+}

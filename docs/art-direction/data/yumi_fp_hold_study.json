@@ -1,0 +1,148 @@
+{
+ "schema_version": 1,
+ "scope": "first-person review holds for the drawn yumi: root's control, as root's contract has it, and Codex's right_cheek candidate, which captures recompute from the sockets they actually pose (scripts/art/yumi_fp_holds.py). Review only: not a contract edit or an admission; root's viewmodels.json stays unchanged.",
+ "root_control": {
+  "source": "root Content/Data/viewmodels.json poses['bow.drawn'] (complete-game worktree, last changed at f63d34f)",
+  "source_sha256": "ddde96ed9db721240af3f7218f2c4a0d59c120aac0b14d575c874848d6999799",
+  "anchor_cm": [
+   60.0,
+   -3.0,
+   -9.5
+  ],
+  "rotation_deg": [
+   0.25,
+   0.1,
+   0.0
+  ],
+  "screen": {
+   "Grip_L": {
+    "u": [
+     -0.3,
+     0.0
+    ],
+    "v": [
+     -0.6,
+     -0.2
+    ]
+   },
+   "Muzzle": {
+    "u": [
+     -0.12,
+     0.0
+    ],
+    "v": [
+     -0.25,
+     -0.1
+    ]
+   }
+  },
+  "aim_line": {
+   "from": "Muzzle",
+   "distance_cm": 2000.0,
+   "tolerance": 0.02
+  },
+  "camera": {
+   "first_person_fov_deg": 70.0,
+   "aspect": [
+    16,
+    9
+   ],
+   "near_plane_cm": 10.0,
+   "reticle_clear_radius": 0.12
+  },
+  "mesh_scale": 0.75
+ },
+ "right_cheek": {
+  "rule": "keep the control's full-draw nock X and Z, mirror its Y; roll 0; the posed nock-to-Muzzle line through the aim point; the anchor puts the posed nock on its target",
+  "aim_cm": [
+   2000.0,
+   0.0,
+   0.0
+  ],
+  "codex_candidate": {
+   "source": "Saved/Qualification/2026-10-25/yumi-right-cheek-study/candidate.json (complete-game worktree)",
+   "source_sha256": "17077edc826ee11acde3185d00900e9c202dd3f60a491e66b7b585785440390f",
+   "sockets_source_sha256": "9db5f60feca6645f1fa26cf12f99459a57742bfeb7346f469ffdb1771129237e",
+   "sockets_commit": "15d67adf994e16543cab8b32739101745450e9ed",
+   "anchor_cm": [
+    59.97461235575663,
+    1.5560089538440687,
+    -9.59115039644611
+   ],
+   "rotation_deg": [
+    0.1705898949630688,
+    -1.3582865790559604,
+    0.0
+   ],
+   "limitations": [
+    "Current left-side screen envelopes do not admit this right-cheek candidate; do not weaken them based on socket math alone.",
+    "Actual paw pixels, stave/string occlusion and camera-near-plane clipping need fresh originals.",
+    "Only full draw; draw transition and nocking remain unreviewed."
+   ]
+  }
+ },
+ "right_cheek_clear": {
+  "rule": "right_cheek's construction with one change: the full-draw nock target 6.0 cm right of the eye instead of the control's mirrored 3.11 cm (the control's nock X and Z kept, no cant). That is the least lateral change, on a 0.5 cm grid, at which the whole skinned bow (string included), the arrow and the paw clear the reticle's 0.12 disc by at least 5 px at 1920 x 1080 (yumi_fp_raster, validated against capture v3)",
+  "nock_target_cm": [
+   -5.769999473861986,
+   6.0,
+   -4.487487571287388
+  ],
+  "cant_right_deg": 0.0,
+  "aim_cm": [
+   2000.0,
+   0.0,
+   0.0
+  ],
+  "anchor_cm": [
+   59.97230204971197,
+   4.3466065033901895,
+   -9.591150877431854
+  ],
+  "rotation_deg": [
+   0.17058947590651996,
+   -1.440702245693795,
+   -0.0
+  ],
+  "sockets_source": "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/W18_rig_review_arrow.json",
+  "sockets_source_sha256": "9db5f60feca6645f1fa26cf12f99459a57742bfeb7346f469ffdb1771129237e",
+  "rig_geometry_sha256": "4ad4656d1f4d37b4651d85f836238acb575d874a605028619862fbf69ae980d8",
+  "cpu_raster": {
+   "resolution": [
+    1920,
+    1080
+   ],
+   "disc_pixels": 13200,
+   "in_disc": {
+    "bow": 0,
+    "arrow": 0,
+    "paw": 0
+   },
+   "clearance_half_heights": {
+    "bow": 0.138,
+    "arrow": 0.259,
+    "paw": 0.2803
+   },
+   "right_cheek_for_comparison": {
+    "in_disc": {
+     "bow": 5025,
+     "arrow": 0,
+     "paw": 0
+    },
+    "clearance_half_heights": {
+     "bow": 0.0195,
+     "arrow": 0.1894,
+     "paw": 0.2141
+    }
+   },
+   "validation": "docs/art-direction/YUMI_FP_RETICLE_STUDY.md (capture v3's bow in the disc: 1,330 / 4,956 px captured, 1,309 / 5,025 px rasterised)"
+  },
+  "limitations": [
+   "A review candidate from CPU geometry. Capture v4's ID pass confirmed it in both runs (2026-10-25): no bow, arrow or paw pixel in the disc, bow clearance 0.138 half-heights as rasterised. A candidate, not admitted.",
+   "Root's left-side screen boxes do not admit it, as they do not admit right_cheek; they are recorded, not relaxed.",
+   "Eye space is one centred virtual viewpoint, the player's Eye component at (4, 0, 64) cm on the capsule (root, 2026-10-25). Whether the anchor fits the cat hero's anatomy is not established here, and no human eye spacing is used for it (YUMI_FP_RETICLE_STUDY.md).",
+   "Kyudo's own aim lets the bow cover part of the target; a clear reticle is a stylisation for play.",
+   "Only full draw; root's viewmodels.json and the runtime pose contract are unchanged."
+  ]
+ }
+}

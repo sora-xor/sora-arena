@@ -1,25 +1,25 @@
 {
   "schema_version": 1,
   "generator": "scripts/art/generate_nyaakoto_lods.py",
-  "source_blend_sha256": "d5cda854af9f5b312de354877d833b612989067abb1ae938f736a7a8dde97b5d",
-  "lod0_fbx_sha256": "ead9d602a89f367516ebfac386ff3d6483f14013a07401f3d8d8df4ee1d6b740",
+  "source_blend_sha256": "8f8f68578392147f276bfa61690ce34919383b5e2e28175ba8245bd6317ab2f0",
+  "lod0_fbx_sha256": "79395b187ec57eaeba32830ad9c6ae7e73043045be4e5560b5b353ecc680188e",
   "sora_kamon_svg_sha256": "d66413a71b70e25dcb8b2f118dcfe846a6446ed1db3de53ce88fc70c16ac0910",
   "lods": [
     {
       "level": 1,
       "fbx": "SK_NyaagyuSamurai_LOD1.fbx",
-      "sha256": "aaba57526b2b1d293beebb577238fd6617e21372a816d7bb56754a7cb27dea7f",
-      "source_parts": 422,
-      "vertices": 65964,
-      "triangles": 90062,
+      "sha256": "5a2cc06f990f6d059ab1537a41eaf4098932dbbb99edf6ec3058496bb5d883e8",
+      "source_parts": 381,
+      "vertices": 84988,
+      "triangles": 110228,
       "bounds_m": {
         "x": [
           -0.6542,
-          0.2737
+          0.2713
         ],
         "y": [
-          -0.552,
-          0.552
+          -0.5669,
+          0.5669
         ],
         "z": [
           -0.001,
@@ -73,23 +73,169 @@
         "upperarm_L",
         "upperarm_R"
       ],
-      "card_fur": "20% sampled source triangle cards"
+      "card_fur": "20% sampled source triangle cards",
+      "part_rules": "nyaakoto_runtime_parts.py: LOD0's body (slice A)",
+      "paws": {
+        "step_m": 0.0045,
+        "by_side": {
+          "R": {
+            "step_m": 0.0045,
+            "vertices": 10775,
+            "triangles": 12545,
+            "skin": {
+              "vertices": 5372,
+              "triangles": 10744
+            },
+            "strands": {
+              "count": 1801,
+              "share_of_lod0": 0.35,
+              "pruned": 5,
+              "crossing_the_skin": {
+                "grip": 0,
+                "empty": 0
+              }
+            },
+            "palm_radii_m": [
+              0.0690000168979168,
+              0.0780000239610672,
+              0.0899999737739563
+            ],
+            "frame": {
+              "c": [
+                0.16990460455417633,
+                -0.5120000243186951,
+                0.679398775100708
+              ],
+              "z": [
+                -0.5890634470311097,
+                0.0,
+                0.808086787029603
+              ],
+              "w": [
+                0.8080867870296031,
+                -0.0,
+                0.5890634470311098
+              ],
+              "a": 0.0215,
+              "b": 0.0165,
+              "sign": -1,
+              "palm": [
+                0.10940000414848328,
+                -0.5120000243186951,
+                0.7623999714851379
+              ]
+            },
+            "closed_manifold": true,
+            "volume_cm3": {
+              "grip": 1140.15,
+              "empty": 1067.57
+            },
+            "self_crossings": {
+              "grip": 0,
+              "empty": 0
+            },
+            "min_offset_from_channel_mm": 1.0232,
+            "vertices_inside_channel": 0,
+            "breadth_along_channel_cm": 10.917,
+            "faces_turned_over_by_morph": 0,
+            "max_morph_move_cm": 3.01,
+            "fold_margin": 0.0759,
+            "failed": []
+          },
+          "L": {
+            "step_m": 0.0045,
+            "vertices": 10859,
+            "triangles": 12573,
+            "skin": {
+              "vertices": 5372,
+              "triangles": 10744
+            },
+            "strands": {
+              "count": 1829,
+              "share_of_lod0": 0.35,
+              "pruned": 6,
+              "crossing_the_skin": {
+                "grip": 0,
+                "empty": 0
+              }
+            },
+            "palm_radii_m": [
+              0.0690000168979168,
+              0.0780000239610672,
+              0.0899999737739563
+            ],
+            "frame": {
+              "c": [
+                0.16990460455417633,
+                0.5119999647140503,
+                0.679398775100708
+              ],
+              "z": [
+                -0.5890634470311097,
+                0.0,
+                0.808086787029603
+              ],
+              "w": [
+                0.8080867870296031,
+                -0.0,
+                0.5890634470311098
+              ],
+              "a": 0.0215,
+              "b": 0.0165,
+              "sign": 1,
+              "palm": [
+                0.10940000414848328,
+                0.5119999647140503,
+                0.7623999714851379
+              ]
+            },
+            "closed_manifold": true,
+            "volume_cm3": {
+              "grip": 1140.07,
+              "empty": 1067.42
+            },
+            "self_crossings": {
+              "grip": 0,
+              "empty": 0
+            },
+            "min_offset_from_channel_mm": 1.0232,
+            "vertices_inside_channel": 0,
+            "breadth_along_channel_cm": 10.909,
+            "faces_turned_over_by_morph": 0,
+            "max_morph_move_cm": 3.01,
+            "fold_margin": 0.0759,
+            "failed": []
+          }
+        }
+      },
+      "morph_targets": {
+        "PawEmpty_R": {
+          "paw_vertices": 10775,
+          "moved_vertices": 3399,
+          "max_move_cm": 3.01
+        },
+        "PawEmpty_L": {
+          "paw_vertices": 10859,
+          "moved_vertices": 3406,
+          "max_move_cm": 3.01
+        }
+      }
     },
     {
       "level": 2,
       "fbx": "SK_NyaagyuSamurai_LOD2.fbx",
-      "sha256": "b76c67bacc5d20915c9fe50b3beb4cc1c5184c8c187906384a49e4acc3664ddd",
-      "source_parts": 204,
-      "vertices": 29117,
-      "triangles": 50638,
+      "sha256": "504f30b5e378a58e737bfa4966e0e4d2eb59b61a9afeb6c451a2cd413c0a1e54",
+      "source_parts": 171,
+      "vertices": 31391,
+      "triangles": 55374,
       "bounds_m": {
         "x": [
           -0.6542,
-          0.2737
+          0.2713
         ],
         "y": [
-          -0.5518,
-          0.5518
+          -0.5669,
+          0.5669
         ],
         "z": [
           -0.0011,
@@ -143,7 +289,153 @@
         "upperarm_L",
         "upperarm_R"
       ],
-      "card_fur": "none; surface normal maps only"
+      "card_fur": "none; surface normal maps only",
+      "part_rules": "nyaakoto_runtime_parts.py: LOD0's body (slice A)",
+      "paws": {
+        "step_m": 0.007,
+        "by_side": {
+          "R": {
+            "step_m": 0.007,
+            "vertices": 2250,
+            "triangles": 4500,
+            "skin": {
+              "vertices": 2250,
+              "triangles": 4500
+            },
+            "strands": {
+              "count": 0,
+              "share_of_lod0": 0.0,
+              "pruned": 0,
+              "crossing_the_skin": {
+                "grip": 0,
+                "empty": 0
+              }
+            },
+            "palm_radii_m": [
+              0.0690000168979168,
+              0.0780000239610672,
+              0.0899999737739563
+            ],
+            "frame": {
+              "c": [
+                0.16990460455417633,
+                -0.5120000243186951,
+                0.679398775100708
+              ],
+              "z": [
+                -0.5890634470311097,
+                0.0,
+                0.808086787029603
+              ],
+              "w": [
+                0.8080867870296031,
+                -0.0,
+                0.5890634470311098
+              ],
+              "a": 0.0215,
+              "b": 0.0165,
+              "sign": -1,
+              "palm": [
+                0.10940000414848328,
+                -0.5120000243186951,
+                0.7623999714851379
+              ]
+            },
+            "closed_manifold": true,
+            "volume_cm3": {
+              "grip": 1135.29,
+              "empty": 1063.65
+            },
+            "self_crossings": {
+              "grip": 0,
+              "empty": 0
+            },
+            "min_offset_from_channel_mm": 1.0232,
+            "vertices_inside_channel": 0,
+            "breadth_along_channel_cm": 10.82,
+            "faces_turned_over_by_morph": 0,
+            "max_morph_move_cm": 3.01,
+            "fold_margin": 0.0759,
+            "failed": []
+          },
+          "L": {
+            "step_m": 0.007,
+            "vertices": 2248,
+            "triangles": 4496,
+            "skin": {
+              "vertices": 2248,
+              "triangles": 4496
+            },
+            "strands": {
+              "count": 0,
+              "share_of_lod0": 0.0,
+              "pruned": 0,
+              "crossing_the_skin": {
+                "grip": 0,
+                "empty": 0
+              }
+            },
+            "palm_radii_m": [
+              0.0690000168979168,
+              0.0780000239610672,
+              0.0899999737739563
+            ],
+            "frame": {
+              "c": [
+                0.16990460455417633,
+                0.5119999647140503,
+                0.679398775100708
+              ],
+              "z": [
+                -0.5890634470311097,
+                0.0,
+                0.808086787029603
+              ],
+              "w": [
+                0.8080867870296031,
+                -0.0,
+                0.5890634470311098
+              ],
+              "a": 0.0215,
+              "b": 0.0165,
+              "sign": 1,
+              "palm": [
+                0.10940000414848328,
+                0.5119999647140503,
+                0.7623999714851379
+              ]
+            },
+            "closed_manifold": true,
+            "volume_cm3": {
+              "grip": 1135.22,
+              "empty": 1063.5
+            },
+            "self_crossings": {
+              "grip": 0,
+              "empty": 0
+            },
+            "min_offset_from_channel_mm": 1.0232,
+            "vertices_inside_channel": 0,
+            "breadth_along_channel_cm": 10.804,
+            "faces_turned_over_by_morph": 0,
+            "max_morph_move_cm": 3.01,
+            "fold_margin": 0.0759,
+            "failed": []
+          }
+        }
+      },
+      "morph_targets": {
+        "PawEmpty_R": {
+          "paw_vertices": 2250,
+          "moved_vertices": 833,
+          "max_move_cm": 3.01
+        },
+        "PawEmpty_L": {
+          "paw_vertices": 2248,
+          "moved_vertices": 831,
+          "max_move_cm": 3.01
+        }
+      }
     }
   ],
   "license": "Original project-owned source geometry and distance LODs; user-supplied SORA crest retained exactly",

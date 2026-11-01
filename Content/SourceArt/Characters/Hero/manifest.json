@@ -6,15 +6,15 @@
   "generator": "scripts/art/create_nyaagyu_hero_character.py",
   "validator": "scripts/art/validate_nyaagyu_hero_character.py",
   "source_blend": "Nyaagyu_HeroCharacter.blend",
-  "blend_sha256": "eb8e3561c9d8ee8d75c366a57b7116fa54331f502556ab0df9cfb54bf15abf08",
+  "blend_sha256": "7b6f0d4f0c92e41cb023aa4ad8f34e027b9a12a40bb664d1565300b4960e1b74",
   "fbx": "SM_Nyaagyu_HeroCharacter.fbx",
-  "fbx_sha256": "af5df8002a2923b7832cf513ef00e68c48da4b94ce24d418d70e049476981d75",
+  "fbx_sha256": "604184670195691e4364d8cbe79419dcf249437fe8b39ffc4003b27fc5f0c405",
   "preview": "Nyaagyu_HeroCharacter_Blender.png",
-  "preview_sha256": "5dd2d29a3bb39f9636cfbab39127abd3ba8bf5eb928dd53bc3498687990ca124",
+  "preview_sha256": "9c159d8143f14e2d4ea3bc6fbd25adc5639f3a201f5cfd0a9ca3d388d5bb5f24",
   "detail_preview": "Nyaagyu_HeroFace_Blender.png",
-  "detail_preview_sha256": "5f079e9242bfb8a1908cf28d5836558adb51bd235eebf57384f4002f7bfa74ae",
+  "detail_preview_sha256": "2b0a039955fac1c59352d1e587b5c4847bf0f1aaeaec845f41190da00d092b51",
   "eye_macro": "EyeStudy/Nyaakoto_Eye_Macro_Blender.png",
-  "eye_macro_sha256": "017209cdb9120fe2efa736a0443275718e8a31bd5f6f233949296941ec33ec3f",
+  "eye_macro_sha256": "1bf42d04646f456ecfbd1ac719974596ddf19c11efe4c03e42984d36b1e090e4",
   "generated_textures": [
     {
       "path": "EyeStudy/T_Nyaakoto_Iris_Albedo.png",
@@ -23,16 +23,16 @@
   ],
   "unreal_asset": "/Game/ArtReview/Characters/SM_Nyaagyu_HeroCharacter.SM_Nyaagyu_HeroCharacter",
   "source_parts": 422,
-  "source_triangles": 128650,
+  "source_triangles": 128729,
   "bounds_m": {
     "min": [
       -0.6542,
-      -0.552,
+      -0.59,
       -0.001
     ],
     "max": [
       0.2737,
-      0.552,
+      0.59,
       2.195
     ]
   },
@@ -63,6 +63,75 @@
     "sode_-1",
     "sode_1"
   ],
+  "sora_kamon_marks": {
+    "chest": {
+      "center": [
+        0.1997500067949295,
+        -0.108,
+        1.207
+      ],
+      "diameter": 0.069,
+      "plane": "YZ"
+    },
+    "waist": {
+      "center": [
+        0.245,
+        0.0,
+        0.858
+      ],
+      "diameter": 0.068,
+      "plane": "YZ"
+    },
+    "sode_-1": {
+      "center": [
+        0.1262189427614212,
+        -0.3461998414993286,
+        1.3232659816741943
+      ],
+      "diameter": 0.052,
+      "plane": "YZ"
+    },
+    "sode_1": {
+      "center": [
+        0.1262189427614212,
+        0.3461998414993286,
+        1.3232659816741943
+      ],
+      "diameter": 0.052,
+      "plane": "YZ"
+    }
+  },
+  "proportions": {
+    "variant": {
+      "arm": 1.2,
+      "chest": 0.85
+    },
+    "rule": "scripts/art/nyaakoto_runtime_parts.py apply_variant",
+    "parts_moved": 127,
+    "kamon_moved_m": {
+      "chest": [
+        -0.035249993205070496,
+        0.0,
+        0.0
+      ],
+      "sode_-1": [
+        0.0002189427614212036,
+        -0.0011998414993286133,
+        -0.001734018325805664
+      ],
+      "sode_1": [
+        0.0002189427614212036,
+        0.0011998414993286133,
+        -0.001734018325805664
+      ],
+      "waist": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "selected": "Root, 2026-10-26 05:15 UTC: study A (arms 1.2, chest front 0.85) as the production rig basis, from the two-paw studies (Saved/W18Rebuild/s91_twopaw_A)"
+  },
   "license": "Original project-owned character geometry, shaders and review renders; exact user-supplied SORA insignia paths retain their user-provided provenance and are licensed only for this game. No purchased or external models/textures",
   "limitations": "Stylized concept/blockout, not the photoreal shipping character. Unrigged static mesh; the bow and quiver are static pose source, not functional carry/draw animation. Blender procedural shaders and fur geometry have not been evaluated in UE 5.8.2. No animation, cloth simulation, groom, UE import, or in-game performance claim."
 }

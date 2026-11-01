@@ -1,0 +1,52 @@
+{
+ "asset": "SM_SoraMaku",
+ "generator": "scripts/art/create_sora_maku.py",
+ "generator_sha256": "d09e3bd447e619f96d05f79a6247203a8d3345b56516f19935f08a053a44ced4",
+ "svg": "Content/SourceArt/UI/sora_logo_NOtext2.svg",
+ "svg_sha256": "d66413a71b70e25dcb8b2f118dcfe846a6446ed1db3de53ce88fc70c16ac0910",
+ "size_m": [
+  3.5999999999999996,
+  1.7
+ ],
+ "widths": 10,
+ "loop_pitch_m": 0.3,
+ "mon_diameter_m": 1.1,
+ "frame": "kamiza back wall: X along it centred, -Y the room, Z up from the dais floor; loops at z 3.05",
+ "material_slots": [
+  "M_Maku_Cord",
+  "M_Maku_Gilt",
+  "M_Maku_Hemp",
+  "M_Maku_Pole"
+ ],
+ "triangles": 126472,
+ "fbx": "Content/SourceArt/Environment/SoraCraft/SoraMaku/SM_SoraMaku.fbx",
+ "fbx_sha256": "913d4524b760135dbad2b0a0d1dcd759db4b126da28adf223ccd9301e6e27ad4",
+ "textures": {
+  "BaseColor": {
+   "file": "Content/SourceArt/Environment/SoraCraft/SoraMaku/T_SoraMaku_BaseColor.png",
+   "sha256": "c11fd30c9464757bde4ab4f1af009f18c54523fe4f48ce8b27a3aab383a864b3"
+  },
+  "Transmission": {
+   "file": "Content/SourceArt/Environment/SoraCraft/SoraMaku/T_SoraMaku_Transmission.png",
+   "sha256": "58f240e36cbae6ad7c608dd6b8a2a4817f06c6b970d698320c4a082932c86f39"
+  },
+  "WeaveNormalDX": {
+   "file": "Content/SourceArt/Environment/SoraCraft/SoraMaku/T_SoraMaku_WeaveNormalDX.png",
+   "sha256": "10e917bdb3667275d5774eb2bd3d54d5329f5b18c2a2c08411440e4461758b37"
+  }
+ },
+ "renders": [
+  {
+   "file": "Content/SourceArt/Environment/SoraCraft/SoraMaku/Renders/SM_SoraMaku_Dawn.png",
+   "rig": "Dawn",
+   "kind": "Blender Cycles source render",
+   "seconds": 23.0
+  },
+  {
+   "file": "Content/SourceArt/Environment/SoraCraft/SoraMaku/Renders/SM_SoraMaku_Lantern.png",
+   "rig": "Lantern",
+   "kind": "Blender Cycles source render",
+   "seconds": 23.9
+  }
+ ]
+}

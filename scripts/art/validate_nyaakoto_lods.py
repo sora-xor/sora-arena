@@ -1,6 +1,11 @@
 """Round-trip Nyaakoto's authored skeletal LOD FBXs in a clean Blender session.
 
 Run: blender -b --factory-startup --python scripts/art/validate_nyaakoto_lods.py
+
+Each LOD FBX, re-imported: its record's hash, counts, 20 bones, 23 slots, CoatBlend, bounds (its own and LOD0's), the
+four exact SORA kamon at the hero source's recorded placements, and its empty-fist morph targets. PawEmpty_R and
+PawEmpty_L are 0, each moves exactly its paw's vertices to where nyaakoto_tp_paws.empty_points puts them from this
+LOD's own bind, and nothing else moves.
 """
 
 import atexit
@@ -12,9 +17,11 @@ import sys
 from pathlib import Path
 
 import bpy
+import numpy as np
 from mathutils import Vector
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import nyaakoto_tp_paws as TPP  # noqa: E402
 from sora_kamon_validation import assert_paths_embedded, expected_paths, reference_paths
 
 
@@ -46,12 +53,10 @@ assert record["lods"][1]["vertices"] < record["lods"][0]["vertices"] * .5
 assert hashlib.sha256((root / "Content/SourceArt/SK_NyaagyuSamurai.fbx").read_bytes()).hexdigest() == record["lod0_fbx_sha256"]
 
 paths = reference_paths(root)
-marks = {
-    "chest": expected_paths(paths, (.235, -.108, 1.207), .069, "YZ"),
-    "waist": expected_paths(paths, (.245, 0, .858), .068, "YZ"),
-    "sode_-1": expected_paths(paths, (.126, -.345, 1.325), .052, "YZ"),
-    "sode_1": expected_paths(paths, (.126, .345, 1.325), .052, "YZ"),
-}
+# Each placement as the hero source records it: study A moved the chest and sode kamon rigidly (proportions).
+assert set(source["sora_kamon_marks"]) == {"chest", "waist", "sode_-1", "sode_1"}
+marks = {placement: expected_paths(paths, m["center"], m["diameter"], m["plane"])
+         for placement, m in source["sora_kamon_marks"].items()}
 for entry in record["lods"]:
     file = lod_dir / entry["fbx"]
     assert file.is_file() and file.stat().st_size > 10000
@@ -87,11 +92,36 @@ for entry in record["lods"]:
         high = max(point[axis_index] for point in world)
         assert math.isclose(low, entry["bounds_m"][axis_name][0], abs_tol=.012)
         assert math.isclose(high, entry["bounds_m"][axis_name][1], abs_tol=.012)
-        assert math.isclose(low, source["bounds_m"]["min"][axis_index], abs_tol=.02)
-        assert math.isclose(high, source["bounds_m"]["max"][axis_index], abs_tol=.02)
+        assert math.isclose(low, runtime["bounds_m"]["min"][axis_index], abs_tol=.02)    # LOD0's bounds
+        assert math.isclose(high, runtime["bounds_m"]["max"][axis_index], abs_tol=.02)
     assert_paths_embedded((mesh.matrix_world @ vertex.co for vertex in mesh.data.vertices), marks)
     assert mesh.data.uv_layers.active is not None
+    keys = mesh.data.shape_keys
+    assert keys is not None and [kb.name for kb in keys.key_blocks] == ["Basis", "PawEmpty_R", "PawEmpty_L"]
+    assert all(kb.value == 0.0 for kb in keys.key_blocks[1:])
+    mw = np.array([list(r) for r in mesh.matrix_world])
+
+    def key_world(block):
+        co = np.empty(len(block.data) * 3, np.float32)
+        block.data.foreach_get("co", co)
+        return co.reshape(-1, 3).astype(np.float64) @ mw[:3, :3].T + mw[:3, 3]
+
+    bind = key_world(keys.key_blocks["Basis"])
+    group = np.array([mesh.vertex_groups[v.groups[0].group].name for v in mesh.data.vertices])
+    morph = {}
+    for side in ("R", "L"):
+        paw = entry["paws"]["by_side"][side]
+        skel = TPP.skeleton({k: (np.array(v) if isinstance(v, list) else v) for k, v in paw["frame"].items()},
+                            paw["palm_radii_m"])
+        hand = group == f"hand_{side}"
+        assert int(hand.sum()) == paw["vertices"], (entry["level"], side, int(hand.sum()), paw["vertices"])
+        got = key_world(keys.key_blocks[f"PawEmpty_{side}"])
+        rule = float(np.abs(got[hand] - TPP.empty_points(bind[hand], skel)).max())
+        others = float(np.abs(got[~hand] - bind[~hand]).max())
+        moved = float(np.linalg.norm(got[hand] - bind[hand], axis=1).max())
+        assert rule < 1e-5 and others == 0.0 and moved > 0.02, (entry["level"], side, rule, others, moved)
+        morph[side] = [round(rule * 1000.0, 5), round(moved * 100.0, 3)]
     print("NYAAKOTO_LOD_FBX_PASS", entry["level"], len(mesh.data.vertices),
-          triangles, len(mesh.data.materials), len(rig.data.bones))
+          triangles, len(mesh.data.materials), len(rig.data.bones), "morph rule mm / move cm", morph)
 
 passed = True

@@ -5,6 +5,15 @@ Run: blender -b --factory-startup --python scripts/art/generate_nyaakoto_lods.py
 LOD0 is deliberately untouched. LOD1 thins the actual fur triangle cards and
 reduces selected curved volumes; LOD2 removes cards and ornamental micro-forms.
 The same 20-bone armature, 23 material identities and exact vector kamon remain.
+
+Every LOD carries LOD0's body (nyaakoto_runtime_parts.py, the third-person
+grip contract's slice A): anatomical sides, the sheathed sword set and the
+source's open paws left out. The furred paws are meshed again for each LOD at
+its own step (nyaakoto_tp_paws.LOD_STEPS) with its share of the fur strands
+(nyaakoto_tp_fur.LOD_DENSITY: all, a third, none), and each LOD's PawEmpty_R and
+PawEmpty_L shape keys come from the same rule as LOD0's (empty_points, a rule
+of position), so the empty and holding states hold at every distance. The
+bounds are LOD0's.
 """
 
 from __future__ import annotations
@@ -12,11 +21,18 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import sys
 from pathlib import Path
 
 import bmesh
 import bpy
+import numpy as np
 from mathutils import Vector
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import nyaakoto_runtime_parts as RP  # noqa: E402
+import nyaakoto_tp_fur as TPF  # noqa: E402
+import nyaakoto_tp_paws as TPP  # noqa: E402
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -43,39 +59,8 @@ iris_nodes = bpy.data.materials["M_Hero_BlueEye"].node_tree.nodes
 iris_node = iris_nodes.get("Painted radial iris pigment")
 assert iris_node is not None
 iris_nodes.remove(iris_node)
-
-
-def rig_bone(name: str, p: Vector) -> str:
-    if name.startswith(("UserSupplied_SORAKamon_sode_", "Sode_kamon_backing_")):
-        return "upperarm_L" if "_-1" in name else "upperarm_R"
-    if name.startswith("UserSupplied_SORAKamon_waist"):
-        return "pelvis"
-    if name.startswith("UserSupplied_SORAKamon_chest"):
-        return "spine"
-    if name.startswith(("Skull", "Head_", "Lower_jaw", "Ear_", "Cheek_", "Muzzle_", "Eye_", "Vertical_pupil", "Corneal_", "Angular_", "Whisker_", "Tiger_", "Guard_hair_", "Soft_nose", "White_nose", "Forehead_", "Triangular_nose", "Philtrum", "Mouth_")):
-        return "head"
-    if name.startswith(("Fur_neck", "White_throat")):
-        return "neck"
-    if name.startswith("Tail_"):
-        return "tail_01" if p.x > -.34 else "tail_02" if p.x > -.49 else "tail_03"
-    if name.startswith(("Saya_", "Sageo_", "Katana_", "Obi_", "Resistance_sash", "Clan_mon", "Layered_hakama")):
-        return "pelvis"
-    if name.startswith(("Ebira_", "Ya_", "Yumi_", "Resistance_insignia", "Linen_under", "Indigo_samurai", "Under_kimono", "Do_")):
-        return "spine"
-    side = "L" if p.y < 0 else "R"
-    if name.startswith(("Hakama_upper_leg", "Hakama_fold")):
-        return f"thigh_{side}"
-    if name.startswith(("Hakama_shin", "Kyahan_", "Greave_")):
-        return f"shin_{side}"
-    if name.startswith(("Heel_", "Tabi_", "Toe_", "Claw_")):
-        return f"foot_{side}"
-    if name.startswith(("Shoulder_", "Linen_sleeve", "Sode_")):
-        return f"upperarm_{side}"
-    if name.startswith(("Fur_forearm", "Kote_", "Karakuri_", "Wrist_cell_")):
-        return f"forearm_{side}"
-    if name.startswith(("Paw_hand", "Finger_", "Thumb_")):
-        return f"hand_{side}"
-    raise ValueError(f"Unclassified Nyaakoto LOD part: {name}")
+by_name = {obj.name: obj for obj in parts}
+ARMS = RP.arm_joints(by_name)
 
 
 FUR_CARDS = (
@@ -96,8 +81,8 @@ LOD2_OMIT = (
 CURVED = (
     "Skull", "Lower_jaw", "Cheek_ruff_", "Muzzle_pad_", "Eye_socket_",
     "Eye_iris_", "Vertical_pupil_", "Fur_neck", "White_throat_bib",
-    "Shoulder_joint_", "Paw_hand_", "Heel_paw_", "Tabi_toe_paw_",
-    "Toe_", "Finger_knuckle_", "Soft_nose_bridge", "White_nose_blaze",
+    "Shoulder_joint_", "Heel_paw_", "Tabi_toe_paw_",
+    "Toe_", "Soft_nose_bridge", "White_nose_blaze",
     "Triangular_nose", "Tail_white_tip", "Clan_mon_roundel",
 )
 
@@ -116,19 +101,25 @@ def thin_cards(obj, stride: int) -> None:
 
 
 records = []
-base_bounds = source_manifest["bounds_m"]
+base_bounds = runtime_manifest["bounds_m"]                 # LOD0's: the runtime body, not the editable source
 for level in (1, 2):
     collection = bpy.data.collections.new(f"Nyaakoto_LOD{level}_Export")
     bpy.context.scene.collection.children.link(collection)
     pieces = []
-    for src in parts:
+    paws = {side: RP.fur_paw(side, ARMS, by_name, step=TPP.LOD_STEPS[level], strands=TPF.LOD_DENSITY[level])
+            for side in ("R", "L")}
+    paw_side = {paws[side][0].name: k + 1 for k, side in enumerate(("R", "L"))}   # 1 right, 2 left; 0 the rest
+    for src in [p for p in parts if RP.kept(p.name)] + [paws[side][0] for side in ("R", "L")]:
         name = src.name
         if level == 2 and (name.startswith(FUR_CARDS) or name.startswith(LOD2_OMIT)):
             continue
-        obj = src.copy()
-        obj.data = src.data.copy()
+        fresh = name.startswith(RP.FRESH)
+        obj = src if fresh else src.copy()
+        if not fresh:
+            obj.data = src.data.copy()
         collection.objects.link(obj)
-        obj.matrix_world = src.matrix_world.copy()
+        if not fresh:
+            obj.matrix_world = src.matrix_world.copy()
         obj.hide_set(False)
         obj.hide_render = False
         if level == 1 and name.startswith(FUR_CARDS):
@@ -146,10 +137,12 @@ for level in (1, 2):
             for loop in obj.data.loops:
                 p = obj.matrix_world @ obj.data.vertices[loop.vertex_index].co
                 uv.data[loop.index].uv = ((p.y + .8) * 2.4, (p.z - .55) * 2.4)
+        tag = obj.data.attributes.new("nyaakoto_paw_side", "INT", "POINT")   # which paw, through the join
+        tag.data.foreach_set("value", [paw_side.get(name, 0)] * len(obj.data.vertices))
         group_names = tuple(rig.data.bones.keys())
         groups = {bone: obj.vertex_groups.new(name=bone) for bone in group_names}
         for vertex in obj.data.vertices:
-            bone = rig_bone(name, obj.matrix_world @ vertex.co)
+            bone = RP.rig_bone(name, obj.matrix_world @ vertex.co)
             groups[bone].add([vertex.index], 1.0, "REPLACE")
         pieces.append(obj)
     bpy.ops.object.select_all(action="DESELECT")
@@ -159,6 +152,33 @@ for level in (1, 2):
     bpy.ops.object.join()
     mesh = bpy.context.object
     mesh.name = f"SK_NyaagyuSamurai_LOD{level}"
+    side_of = np.empty(len(mesh.data.vertices), np.int32)
+    mesh.data.attributes["nyaakoto_paw_side"].data.foreach_get("value", side_of)
+    mesh.data.attributes.remove(mesh.data.attributes["nyaakoto_paw_side"])
+    # The empty fists: LOD0's rule on this LOD's own paw vertices, 0 at bind (Blender 5.2 starts a key at 1.0, s90).
+    mw = np.array([list(r) for r in mesh.matrix_world])
+    inv = np.linalg.inv(mw)
+    co = np.empty(len(mesh.data.vertices) * 3, np.float32)
+    mesh.data.vertices.foreach_get("co", co)
+    world = co.reshape(-1, 3).astype(np.float64) @ mw[:3, :3].T + mw[:3, 3]
+    mesh.shape_key_add(name="Basis", from_mix=False)
+    morph = {}
+    for k, side in enumerate(("R", "L")):
+        key = mesh.shape_key_add(name=f"PawEmpty_{side}", from_mix=False)
+        key.value = 0.0
+        idx = np.nonzero(side_of == k + 1)[0]
+        assert len(idx) == len(paws[side][1]["verts"]), (level, side, len(idx), len(paws[side][1]["verts"]))
+        kco = co.reshape(-1, 3).copy()
+        kco[idx] = (TPP.empty_points(world[idx], paws[side][1]["skeleton"]) @ inv[:3, :3].T + inv[:3, 3]).astype(np.float32)
+        key.data.foreach_set("co", kco.ravel())
+        # in world metres: the joined mesh's local frame is its first piece's, which need not be unit (s104 reported
+        # 3.541 "cm" at LOD1 in local units; s107 measured 3.01 cm in world)
+        moved = np.linalg.norm(TPP.empty_points(world[idx], paws[side][1]["skeleton"]) - world[idx], axis=1)
+        morph[f"PawEmpty_{side}"] = {"paw_vertices": int(len(idx)), "moved_vertices": int((moved > 1e-7).sum()),
+                                     "max_move_cm": round(float(moved.max()) * 100.0, 3)}
+    assert [(kb.name, kb.value) for kb in mesh.data.shape_keys.key_blocks[1:]] == [("PawEmpty_R", 0.0), ("PawEmpty_L", 0.0)]
+    paw_records = {side: RP.fur_paw_record(side, ARMS, paws[side][1]) for side in ("R", "L")}
+    assert not any(r["failed"] for r in paw_records.values()), paw_records
     coat=mesh.data.color_attributes.get("CoatBlend")
     assert coat is not None and coat.domain=="CORNER"
     mesh.data.color_attributes.active_color=coat
@@ -201,6 +221,9 @@ for level in (1, 2):
         "material_slots": sorted(material_names),
         "bone_names": sorted(rig.data.bones.keys()),
         "card_fur": "20% sampled source triangle cards" if level == 1 else "none; surface normal maps only",
+        "part_rules": "nyaakoto_runtime_parts.py: LOD0's body (slice A)",
+        "paws": {"step_m": TPP.LOD_STEPS[level], "by_side": paw_records},
+        "morph_targets": morph,
     })
     mesh.hide_set(True)
     mesh.hide_render = True

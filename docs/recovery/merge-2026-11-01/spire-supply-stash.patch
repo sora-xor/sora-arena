@@ -1,0 +1,248 @@
+diff --git a/Source/SoraArena/Private/Characters/SoraEquipmentSupply.cpp b/Source/SoraArena/Private/Characters/SoraEquipmentSupply.cpp
+new file mode 100644
+index 00000000..1edb0c0d
+--- /dev/null
++++ b/Source/SoraArena/Private/Characters/SoraEquipmentSupply.cpp
+@@ -0,0 +1,21 @@
++#include "SoraEquipmentComponent.h"
++#include "SoraBeatRules.h"
++#include "SoraCatalog.h"
++#include "SoraHistoricalArms.h"
++#include "SoraPlayerCharacter.h"
++#include "SoraSupplyRules.h"
++
++int32 USoraEquipmentComponent::RestockUnlocked(unsigned Weapons)
++{
++    // A cache cannot cancel a reload, strike, draw, guard, step, stagger or
++    // weapon cooldown. A fully sheathed blade remains exactly as it was.
++    if(!Hero()->CanPlay()||bReloading||bCommittedStrike||bHistoricalRecovery||bBowDrawing||
++        bFireHeld||bGuardHeld||bStepping||IsStaggered()||(bSheathed&&!IsSheathed())||
++        GetWorld()->GetTimeSeconds()<NextShot) return -1;
++    constexpr int32 Count=SoraBeatRules::WeaponCount;
++    if(AmmoByWeapon.Num()!=Count) return -1;
++    int Caps[Count]{};
++    for(int32 Id=0;Id<Count;++Id)
++        if(!SoraHistoricalArms::IsMelee(Id)) Caps[Id]=FSoraCatalog::Get().Weapon(Id).Magazine;
++    return SoraSupplyRules::Restock(AmmoByWeapon.GetData(),Caps,Count,Weapons,Hero()->WeaponId,Ammo);
++}
+diff --git a/Source/SoraArena/Private/Game/SoraCampaignDirector.cpp b/Source/SoraArena/Private/Game/SoraCampaignDirector.cpp
+index 6ef4dec4..be0207c1 100644
+--- a/Source/SoraArena/Private/Game/SoraCampaignDirector.cpp
++++ b/Source/SoraArena/Private/Game/SoraCampaignDirector.cpp
+@@ -1591,6 +1591,7 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
+     if(InteractSpine()) return;
+     // A knocked-down conscript within reach: Interact held cuts its seal.
+     if(BeginSealCut(Player)) return;
++    if(InteractSupply(Player)) return;
+     const FSoraBeatSpace& Space=Beat->Space;
+     IdleMs=0;
+     const int32 Before=SoraBeatRules::ProgressPermille(TaskState,Task);
+diff --git a/Source/SoraArena/Private/Game/SoraCampaignSupply.cpp b/Source/SoraArena/Private/Game/SoraCampaignSupply.cpp
+new file mode 100644
+index 00000000..af7e1884
+--- /dev/null
++++ b/Source/SoraArena/Private/Game/SoraCampaignSupply.cpp
+@@ -0,0 +1,27 @@
++#include "SoraCampaignDirector.h"
++#include "SoraCatalog.h"
++#include "SoraEquipmentComponent.h"
++#include "SoraGameMode.h"
++#include "SoraPlayerCharacter.h"
++#include "SoraWorldBuilder.h"
++
++bool USoraCampaignDirector::InteractSupply(ASoraPlayerCharacter& Player)
++{
++    const FSoraBeat* Beat=ActiveBeatData();
++    const auto* Arena=Mode().Arena();
++    if(!Beat||!Mode().IsPlaying()||!Player.CanPlay()||!Arena||
++        !Arena->CanReachSupply(Beat->SupplyPoint,Player)) return false;
++    unsigned Unlocked=0;
++    for(int32 Id=0;Id<SoraBeatRules::WeaponCount;++Id) if(IsWeaponUnlocked(Id)) Unlocked|=1u<<Id;
++    const int32 Refilled=Player.GetEquipment()->RestockUnlocked(Unlocked);
++    if(Refilled<0)
++        Notify(TEXT("動作を終えてから補給しよう。"),TEXT("Finish your current action before taking supplies."),3.f);
++    else if(Refilled==0)
++        Notify(TEXT("矢と弾は満杯だ。"),TEXT("Your arrows and ammunition are already full."),3.f);
++    else
++    {
++        Notify(TEXT("同盟の補給箱から矢と弾を補充した。"),TEXT("Arrows and ammunition replenished from the League cache."),4.f);
++        Fire(TEXT("supply_restocked:")+Beat->SupplyPoint);
++    }
++    return true;
++}
+diff --git a/Source/SoraArena/Private/SoraCatalog.cpp b/Source/SoraArena/Private/SoraCatalog.cpp
+index b1337d6f..97eca17c 100644
+--- a/Source/SoraArena/Private/SoraCatalog.cpp
++++ b/Source/SoraArena/Private/SoraCatalog.cpp
+@@ -658,6 +658,9 @@ bool FSoraCatalog::LoadCampaign()
+                 (!LineRefs(Rows(*Params, TEXT("lines")), Beat.Lines) || Beat.Lines.Num() != Beat.Task.Count || Beat.LinesEvent.IsEmpty()))
+                 return Bad(FString::Printf(TEXT("beat %s has invalid dialogue lines"), *Beat.Id));
+             // Blocking lines are some of the dialogue's own lines.
++            if (const TSharedPtr<FJsonObject> Ext = Child(*O, TEXT("ext")); Ext && Ext->HasField(TEXT("supply_point")) &&
++                (!Ext->TryGetStringField(TEXT("supply_point"), Beat.SupplyPoint) || Beat.SupplyPoint.IsEmpty()))
++                return Bad(FString::Printf(TEXT("beat %s has an invalid supply point"), *Beat.Id));
+             if (const TSharedPtr<FJsonObject> Ext = Child(*O, TEXT("ext")); Ext && Ext->HasField(TEXT("blocking_lines")) &&
+                 (!LineRefs(Rows(*Ext, TEXT("blocking_lines")), Beat.BlockingLines) ||
+                  Beat.BlockingLines.ContainsByPredicate([&](int32 Line) { return !Beat.Lines.Contains(Line); })))
+diff --git a/Source/SoraArena/Private/World/SoraWorldBuilderLayoutTasks.cpp b/Source/SoraArena/Private/World/SoraWorldBuilderLayoutTasks.cpp
+index 60ca3adc..405b8a56 100644
+--- a/Source/SoraArena/Private/World/SoraWorldBuilderLayoutTasks.cpp
++++ b/Source/SoraArena/Private/World/SoraWorldBuilderLayoutTasks.cpp
+@@ -120,6 +120,7 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
+     const FSoraBeat& Beat=Chapter.Beats[BeatIndex];
+     const FSoraBeatSpace& Space=Beat.Space;
+     StageEpilogue(Beat);
++    StageSupply(Beat);
+     bSummitActive=Space.Summit.Enabled();
+     ResetSpireAlarm(Space.Spire.Enabled());
+     ShowSummitSpine(false,Beat.Id==TEXT("ch08.b15")?1.f:0.f);
+@@ -369,6 +370,7 @@ void ASoraWorldBuilder::ClearKit()
+ {
+     SetActorTickEnabled(false);
+     ResetSpireAlarm(false);
++    SupplyCrate=nullptr; SupplyId.Reset();
+     bSummitActive=false; ResetSeizure();
+     for(const auto& Label:EpilogueLabels) if(Label) Label->DestroyComponent();
+     EpilogueLabels.Reset();
+diff --git a/Source/SoraArena/Private/World/SoraWorldBuilderSupply.cpp b/Source/SoraArena/Private/World/SoraWorldBuilderSupply.cpp
+new file mode 100644
+index 00000000..1d4d7a28
+--- /dev/null
++++ b/Source/SoraArena/Private/World/SoraWorldBuilderSupply.cpp
+@@ -0,0 +1,45 @@
++#include "SoraWorldBuilder.h"
++#include "SoraCatalog.h"
++#include "SoraPlayerCharacter.h"
++#include "Game/SoraCampaignReach.h"
++#include "Camera/CameraComponent.h"
++#include "Components/CapsuleComponent.h"
++#include "Components/StaticMeshComponent.h"
++#include "Engine/World.h"
++#include "GameFramework/CharacterMovementComponent.h"
++
++void ASoraWorldBuilder::StageSupply(const FSoraBeat& Beat)
++{
++    // This slice stages the authored L1 engineers' cache only. Other supply
++    // identities remain data for their own place-specific implementations.
++    if(Beat.SupplyPoint!=TEXT("sp_spire_base")||!Beat.Space.Spire.Enabled()||
++        Beat.Space.Spire.Ramp.IsEmpty()) return;
++    SupplyId=Beat.SupplyPoint;
++    SupplyAt=Beat.Space.Spire.Ramp[0]+FVector(300,100,0);
++    const TCHAR* Cube=TEXT("/Engine/BasicShapes/Cube.Cube");
++    const FLinearColor Wood(.30f,.19f,.09f),Teal(.05f,.42f,.35f),Paper(.8f,.73f,.55f);
++    SupplyCrate=KitShape(TEXT("LeagueSupply"),Cube,SupplyAt+FVector(0,0,35),FVector(1.2,.8,.7),Wood,TEXT("Timber"),true);
++    KitShape(TEXT("SupplyCloth"),Cube,SupplyAt+FVector(0,0,71),FVector(1.22,.82,.02),Teal);
++    // Explicit functional proxies: an arrow bundle, wrapped cartridges and
++    // a registry sheet. Final crate craft and League mark belong to the art lane.
++    for(int32 N=0;N<6;++N)
++        KitShape(TEXT("SupplyArrow"),Cube,SupplyAt+FVector(-28+N*6,0,75),FVector(.018,.7,.018),Paper);
++    KitShape(TEXT("SupplyCartridges"),Cube,SupplyAt+FVector(35,10,78),FVector(.25,.3,.12),Paper);
++}
++bool ASoraWorldBuilder::SupplyFloor(const FString& Id,FVector& Out) const
++{
++    if(Id.IsEmpty()||Id!=SupplyId||!SupplyCrate) return false;
++    Out=SupplyAt;
++    return true;
++}
++bool ASoraWorldBuilder::CanReachSupply(const FString& Id,const ASoraPlayerCharacter& Hero) const
++{
++    FVector Floor;
++    if(!SupplyFloor(Id,Floor)||!Hero.GetCharacterMovement()->IsMovingOnGround()) return false;
++    const float Feet=Hero.GetActorLocation().Z-Hero.GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
++    if(FMath::Abs(Feet-Floor.Z)>20||FVector::Dist2D(Hero.GetActorLocation(),Floor)>SoraCampaignReach::Interact) return false;
++    FHitResult Hit;
++    const FCollisionQueryParams Query(SCENE_QUERY_STAT(SoraSupplyReach),false,&Hero);
++    return GetWorld()->LineTraceSingleByChannel(Hit,Hero.GetCamera()->GetComponentLocation(),Floor+FVector(0,0,55),
++        ECC_Visibility,Query)&&Hit.GetComponent()==SupplyCrate;
++}
+diff --git a/Source/SoraArena/Public/SoraCampaignDirector.h b/Source/SoraArena/Public/SoraCampaignDirector.h
+index aa276421..06550d39 100644
+--- a/Source/SoraArena/Public/SoraCampaignDirector.h
++++ b/Source/SoraArena/Public/SoraCampaignDirector.h
+@@ -530,6 +530,7 @@ private:
+     // E on a loose collectible within reach, or on the horse (tack-up, mount, dismount); true when used.
+     bool PickUp();
+     bool InteractSpace(ASoraPlayerCharacter& Player);
++    bool InteractSupply(ASoraPlayerCharacter& Player);
+     void Dismount();
+     void ClearHorses();
+     void ShowKit();
+diff --git a/Source/SoraArena/Public/SoraCatalog.h b/Source/SoraArena/Public/SoraCatalog.h
+index 9d6ef632..bf1bc147 100644
+--- a/Source/SoraArena/Public/SoraCatalog.h
++++ b/Source/SoraArena/Public/SoraCatalog.h
+@@ -657,6 +657,8 @@ struct FSoraBeat
+     FString CarryGatePoint;
+     FString RecoveryItem;
+     FString RecoveryInteract;
++    // Authored supply station identity; it grants ammunition, never unlocks.
++    FString SupplyPoint;
+     TArray<FString> Targets;
+     TArray<FString> StepKinds;
+     // A duel's opponent or the boss; sparring beats use bokuto, shinai or targets.
+diff --git a/Source/SoraArena/Public/SoraEquipmentComponent.h b/Source/SoraArena/Public/SoraEquipmentComponent.h
+index 67af8851..564bac3f 100644
+--- a/Source/SoraArena/Public/SoraEquipmentComponent.h
++++ b/Source/SoraArena/Public/SoraEquipmentComponent.h
+@@ -49,6 +49,9 @@ public:
+     void ReleaseTrigger() { bFireHeld = false; }
+     bool EquipClassSlot(int32 Slot);
+     bool EquipCampaignWeapon(int32 WeaponId);
++    // Supply cache: fill only unlocked ranged magazines, preserving the held
++    // weapon and every action timer. -1 while busy, otherwise weapons refilled.
++    int32 RestockUnlocked(unsigned Weapons);
+     // Guard reserve drains while held and recovers otherwise (not in the dojo);
+     // a 残心 hold after a defeat restores it instead.
+     void TickGuard(float DeltaSeconds);
+diff --git a/Source/SoraArena/Public/SoraSupplyRules.h b/Source/SoraArena/Public/SoraSupplyRules.h
+new file mode 100644
+index 00000000..473ba32b
+--- /dev/null
++++ b/Source/SoraArena/Public/SoraSupplyRules.h
+@@ -0,0 +1,22 @@
++#pragma once
++
++// No reserve-stock amount is authored for the League cache. Each explicit
++// use fills existing magazines to catalog caps; repeated full use does nothing.
++namespace SoraSupplyRules
++{
++inline int Restock(int* Stored,const int* Caps,int Count,unsigned Unlocked,int Held,int& Ammo)
++{
++    int Changed=0;
++    for(int Id=0;Id<Count&&Id<32;++Id)
++    {
++        if((Unlocked&(1u<<Id))==0||Caps[Id]<=0) continue;
++        // The currently held count is authoritative: firing and reload update
++        // Ammo, while the stored copy normally catches up on weapon switch.
++        const int Before=Id==Held?Ammo:Stored[Id];
++        if(Before<Caps[Id]) ++Changed;
++        Stored[Id]=Caps[Id];
++        if(Id==Held) Ammo=Caps[Id];
++    }
++    return Changed;
++}
++}
+diff --git a/Source/SoraArena/Public/SoraWorldBuilder.h b/Source/SoraArena/Public/SoraWorldBuilder.h
+index 37d2ba8a..c766057a 100644
+--- a/Source/SoraArena/Public/SoraWorldBuilder.h
++++ b/Source/SoraArena/Public/SoraWorldBuilder.h
+@@ -107,6 +107,8 @@ public:
+     void ShowKit(const FSoraKitView& View);
+     void ClearKit();
+     ASoraCampaignLift* CampaignLift() const;
++    bool SupplyFloor(const FString& Id,FVector& Out) const;
++    bool CanReachSupply(const FString& Id,const ASoraPlayerCharacter& Hero) const;
+     // Only an active spire's hunting auditors use these physical L3 panels.
+     // A shout never closes the shortcut; arrival checks the actual floor.
+     bool SpireAlarmGoal(const ASoraEnemy& Auditor,FVector& Out) const;
+@@ -147,6 +149,10 @@ private:
+     void BuildArena(int32 MapId, bool bSites);
+     void BuildCampaign(const FSoraChapter& Chapter);
+     void BuildSpire(const FSoraBeat& Beat);
++    void StageSupply(const FSoraBeat& Beat);
++    UPROPERTY() TObjectPtr<UStaticMeshComponent> SupplyCrate;
++    FString SupplyId;
++    FVector SupplyAt=FVector::ZeroVector;
+     void ResetSpireAlarm(bool Active);
+     void TickSpireAlarm();
+     UPROPERTY() TObjectPtr<UStaticMeshComponent> SpireShutter;

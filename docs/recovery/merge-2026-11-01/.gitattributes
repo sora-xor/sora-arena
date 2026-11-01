@@ -1,0 +1,2 @@
+# Keep the original stash patch byte-for-byte.
+*.patch whitespace=-blank-at-eol

@@ -8,12 +8,17 @@ a laminated stave of rounded-rectangular section (2.85 x 2.15 cm at the
 grip, tapering to the tips) in black urushi; groups of bands of flat split
 rattan, each wound two-and-a-bit turns by hand (pitch, width and start
 wander) and lacquered, worn through to the golden skin on the crowns; a
-deerskin nigiri wound as a shingled spiral strip; horn hazu with string
+built-up nigiri wound with one skived deerskin strip whose laps step a
+fraction of a millimetre (yumi_nigiri); horn hazu with string
 grooves and a resin-coated hemp string with a thickened nakajikake. The bow
 shape is integrated from a curvature profile solved so both tips sit on the
 string line, the upper limb (two thirds) bending more gently than the lower.
 
-The ya is a 98 cm yadake arrow: tapered bamboo shaft with four nodes, horn
+The ya is a 98 cm yadake arrow: a tapered bamboo shaft, polished, not
+lacquered, with four nodes each placed, raised and shaped a little
+differently. The shaft is browned in patches where it was straightened over
+a fire, heaviest at the nodes, and each length between them has its own
+tone. Then the horn
 hazu, three dyed hawk-feather vanes (三立羽; the red dye is Nyaakoto's
 character choice) whose barbs, natural barring and ragged trimmed edge are
 an alpha-masked texture on thin vane geometry, silk bindings and a forged
@@ -33,6 +38,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import create_runtime_weapon_lib as L  # noqa: E402
 import create_runtime_weapon_nihonto as N  # noqa: E402
 import create_runtime_weapon_specs as S  # noqa: E402
+import yumi_nigiri as NG  # noqa: E402
+import yumi_ya as YA  # noqa: E402
 
 LENGTH = 2.21
 L_LOW = LENGTH / 3.0          # grip centre one third from the lower tip
@@ -153,7 +160,6 @@ def build_yumi(b: L.Build):
                             soil=0.6)
     horn = L.mat_horn("M_Yumi_Hazu", color=(0.030, 0.022, 0.016))
     hemp = L.mat_rope("M_Yumi_Tsuru", "Rope001", tint=(0.72, 0.56, 0.33), tile=0.012, value=0.8, sat=0.8)
-    shaft_m = L.mat_bamboo("M_Ya_Yadake", (0.42, 0.27, 0.10), smoked=0.25, rough=0.34, axis="X", lacquer=0.5)
     feather = L.mat_feather("M_Ya_Hane")
     silk = L.mat_urushi("M_Ya_Silk", (0.012, 0.008, 0.007), 0.2, undercoat=(0.2, 0.05, 0.03), wear=0.1)
     point = L.mat_iron("M_Ya_Yajiri", oxide=(0.03, 0.027, 0.024), rust=0.1, polish_edges=0.9, rough=0.4, metal=0.6)
@@ -200,14 +206,16 @@ def build_yumi(b: L.Build):
         return sig, p0.lerp(p1, f), t0.lerp(t1, f).normalized(), n0.lerp(n1, f).normalized()
 
     def wound_strip(name, sig0, sig1, width, thick, overlap, mat, e0, seed, spt=40, a0=0.0, jitter=0.06):
-        """A flat strip wound on the stave from sig0 to sig1: turn k+1 laps
-        turn k by ``overlap`` of the width (0 = butted side by side); the
-        pitch wanders by hand."""
+        """A flat strip wound on the stave from sig0 to sig1, its turns butted
+        side by side; the pitch wanders by hand. Lapped turns are
+        nigiri_wrap's. This one sheared its whole section to lap, which tilted
+        every turn of the old nigiri into a plate (yumi_nigiri)."""
+        if overlap:
+            raise ValueError(f"{name}: wound_strip butts its turns; a lapped wrap is nigiri_wrap's")
         pitch = width * (1.0 - overlap)
         turns = max((sig1 - sig0) / pitch, 1.0)
         n_pts = max(int(turns * spt), 12)
         path, nrms = [], []
-        tilt = thick / max(width * max(overlap, 0.05), 1e-6) * 0.9
         for i in range(n_pts + 1):
             f = i / n_pts
             a = a0 + math.tau * turns * f
@@ -218,21 +226,47 @@ def build_yumi(b: L.Build):
             q, nr = section_point(p, n, w, d, a, e0 + thick / 2)
             path.append(q)
             nrms.append(nr)
-        prof = [(a_ - b_ * tilt, b_) for a_, b_ in L.lens2d(width, thick, 8, 4.0)] if overlap > 0 else \
-            L.lens2d(width, thick, 8, 4.0)
+        prof = L.lens2d(width, thick, 8, 4.0)
         return N.sweep_with_normals(name, path, nrms, prof, mat, [0.0] * len(path), [(1.0, 1.0)] * len(path))
 
-    # Nigiri: a leather underlay built up on the grip, wound with a deerskin
-    # strip whose shingled laps show as a spiral seam.
+    def nigiri_wrap(name, sig0, sig1, mat, seed, spt=40, a0=0.0, jitter=0.04):
+        """One deerskin strip wound from sig0 to sig1 over the underlay
+        (yumi_nigiri). Its section spans one pitch along the stave, so turn
+        k+1 starts where turn k ends: one surface with a skived spiral step.
+        The pitch wanders a little by hand."""
+        pitch = NG.pitch()
+        turns = max((sig1 - sig0) / pitch, 1.0)
+        n_pts = max(int(turns * spt), 12)
+        prof = NG.section()
+        rings = []
+        for i in range(n_pts + 1):
+            f = i / n_pts
+            a = a0 + math.tau * turns * f
+            wob = jitter * pitch * (math.sin(a * 0.41 + seed) * 0.6 + math.sin(a * 1.27 + 2.0 * seed) * 0.4)
+            sig = sig0 + (sig1 - sig0) * f + wob
+            s_, p, t, n = at_exact(sig)
+            w, d = thickness(sig)
+            e = NG.UNDERLAY_M * NG.shoulder(sig, GRIP_HALF)
+            q, nr = section_point(p, n, w, d, a, e)
+            # Radial along the section's outward normal, on the underlay where
+            # each point lies (so the strip rides the shoulders' taper); along,
+            # the stave's own axis.
+            rings.append([q + nr * (pa + NG.UNDERLAY_M * NG.shoulder(sig + pb, GRIP_HALF) - e) + t * pb
+                          for pa, pb in prof])
+        return L.loft(name, rings, mat, closed=True, chunk=0.12, sharp_angle=50.0)
+
+    # Nigiri: a built-up leather underlay over the grip, its shoulders
+    # tapering into the stave, wound end to end with one skived deerskin
+    # strip that rides the shoulders (yumi_nigiri.wrap_span).
     grip_rings = []
-    for sig in [-GRIP_HALF + k * (2 * GRIP_HALF) / 20 for k in range(21)]:
-        s_, p, t, n = at(sig)
+    for sig in [-GRIP_HALF + k * (2 * GRIP_HALF) / 40 for k in range(41)]:
+        s_, p, t, n = at_exact(sig)
         w, d = thickness(sig)
-        e = 0.0007 * (1.0 if abs(sig) < GRIP_HALF - 0.004 else 0.4)
+        e = NG.UNDERLAY_M * NG.shoulder(sig, GRIP_HALF)
         grip_rings.append([section_point(p, n, w, d, math.tau * k / 28, e)[0] for k in range(28)])
     b.add(L.loft("Nigiri", grip_rings, leather, closed=True, chunk=0.0))
-    b.add(wound_strip("Nigiri_Wrap", -GRIP_HALF + 0.002, GRIP_HALF - 0.004, 0.019, 0.0011, 0.18, leather, 0.0007,
-                      0.9, spt=44, a0=0.4, jitter=0.05))
+    sig0, sig1 = NG.wrap_span(GRIP_HALF)
+    b.add(nigiri_wrap("Nigiri_Wrap", sig0, sig1, leather, 0.9, spt=40, a0=0.4))
     # Shigetō: groups of bands of flat split rattan, each band a strip wound
     # a little over two turns side by side, under lacquer.
     groups = [0.13, 0.26, 0.40, 0.55, 0.70, 0.86, 1.02, 1.18, 1.32, -0.12, -0.24, -0.37, -0.50, -0.62]
@@ -292,7 +326,7 @@ def build_yumi(b: L.Build):
     w0, d0 = thickness(0.0)
     arrow_y = -(w0 / 2 + 0.0055)
     nock = Vector((nock_pt.x + 0.004, arrow_y, nock_z))
-    build_ya(b, nock, shaft_m, feather, silk, point, horn)
+    build_ya(b, nock, feather, silk, point, horn)
     rest = Vector((d0 / 2 + 0.002, arrow_y, nock_z))
     b.socket("Grip_L", (0.0, 0.0, 0.0))
     b.socket("Grip_R", tuple(nock_pt))
@@ -305,27 +339,23 @@ def build_yumi(b: L.Build):
                     "nocking_point_z_m": nock_z})
 
 
-def build_ya(b, nock, shaft_m, feather, silk, point, horn):
-    L_ya = 0.98
+def build_ya(b, nock, feather, silk, point, horn):
+    L_ya = YA.L_YA
     x0 = nock.x
     ox = Vector((0.0, nock.y, nock.z))
 
     def P(x, y=0.0, z=0.0):
         return ox + Vector((x0 + x, y, z))
 
-    def r_shaft(x):
-        u = x / L_ya
-        return 0.0041 + 0.0005 * math.sin(math.pi * min(max(u, 0), 1)) ** 0.8
-
-    nodes = (0.085, 0.36, 0.63, 0.905)
-    secs = []
-    x = 0.018
-    while x < L_ya - 0.05:
-        r = r_shaft(x)
-        for nd in nodes:
-            r += 0.00045 * math.exp(-((x - nd) / 0.0022) ** 2)
-        secs.append((x0 + x, r, r, ox.y, ox.z))
-        x += 0.004 if any(abs(x - nd) < 0.01 for nd in nodes) else 0.02
+    r_shaft = YA.r_shaft
+    nodes = YA.ya_nodes()
+    # Polished bare yadake (not lacquered): its roughness about 0.42, browned
+    # where it was straightened over a fire, each internode its own tone, the
+    # node bands and sheath scars at the nodes' own places (object X, as baked).
+    shaft_m = L.mat_bamboo("M_Ya_Yadake", (0.40, 0.26, 0.10), smoked=0.15, rough=0.42, axis="X", lacquer=0.0,
+                           nodes=tuple(x0 + xn for xn, _a, _s in nodes), scorch=0.55, internode=0.07)
+    secs = [(x0 + x, r_shaft(x) + YA.node_bulge(x, nodes), r_shaft(x) + YA.node_bulge(x, nodes), ox.y, ox.z)
+            for x in YA.stations(nodes)]
     b.add(L.tube("Ya_Shaft", secs, shaft_m, sides=16, max_seg=0.0, chunk=0.25), group="ya")
     # Hazu: horn nock with the string slot.
     hz = L.tube("Ya_Hazu", [(x0 - 0.002, 0.0036, 0.0036, ox.y, ox.z), (x0 + 0.004, 0.0043, 0.0043, ox.y, ox.z),

@@ -1,0 +1,27 @@
+{
+ "schema_version": 1,
+ "scope": "the material each first-person part's slots must bind, by exact slot count and name; read by scripts/unreal/fp_material_bindings.py for verify_yumi_rig_materials.py and render_yumi_fp_review.py",
+ "assets": {
+  "/Game/Generated/Qualification/W18YumiRig/SK_Weapon_18": {
+   "slots": {
+    "M_Weapon_18": "/Game/Generated/Qualification/W18YumiRig/MI_W18_Weapon.MI_W18_Weapon"
+   }
+  },
+  "/Game/Generated/Qualification/W18YumiRig/SM_Weapon_18_Ya": {
+   "slots": {
+    "M_Weapon_18": "/Game/Generated/Qualification/W18YumiRig/MI_W18_Hane.MI_W18_Hane"
+   }
+  },
+  "/Game/Generated/Qualification/NyaakotoFPPaws/SM_NyaakotoFP_PawL_Yumi": {
+   "slots": {
+    "M_NyaakotoFP_FurSkin": "/Game/Generated/Qualification/NyaakotoFPPaws/M_NyaakotoFP_FurSkin.M_NyaakotoFP_FurSkin",
+    "M_NyaakotoFP_PawPad": "/Game/Generated/Qualification/NyaakotoFPPaws/M_NyaakotoFP_PawPad.M_NyaakotoFP_PawPad",
+    "M_NyaakotoFP_FurShells": "/Game/Generated/Qualification/NyaakotoFPPaws/M_NyaakotoFP_FurShells.M_NyaakotoFP_FurShells",
+    "M_NyaakotoFP_KoteSilk": "/Game/Generated/Qualification/NyaakotoFPPaws/M_NyaakotoFP_KoteSilk.M_NyaakotoFP_KoteSilk",
+    "M_NyaakotoFP_KoteUrushi": "/Game/Generated/Qualification/NyaakotoFPPaws/M_NyaakotoFP_KoteUrushi.M_NyaakotoFP_KoteUrushi",
+    "M_NyaakotoFP_CordVermilion": "/Game/Generated/Qualification/NyaakotoFPPaws/M_NyaakotoFP_CordVermilion.M_NyaakotoFP_CordVermilion",
+    "M_NyaakotoFP_MonGold": "/Game/Generated/Qualification/NyaakotoFPPaws/M_NyaakotoFP_MonGold.M_NyaakotoFP_MonGold"
+   }
+  }
+ }
+}

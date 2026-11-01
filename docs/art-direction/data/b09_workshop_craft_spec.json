@@ -1,0 +1,6658 @@
+{
+ "schema": 1,
+ "generator": "scripts/art/b09_workshop_craft.py",
+ "inputs": {
+  "root_commit": "b6ba3c111abf088124d758ef195b8a47e85ed8ca",
+  "blobs": {
+   "Source/SoraArena/Public/SoraLanternWorkshopRules.h": "c7aa71efafc72ecfdd085f67bedbdf84899c4b51",
+   "Source/SoraArena/Public/SoraWorkshopCraftRules.h": "132697936dcd8676fe0a2657990265ea264d089e",
+   "Source/SoraArena/Public/SoraWorldBuilder.h": "d844f7e305bb8769d884accd6e6b15dd36207e45",
+   "Source/SoraArena/Private/Game/SoraCampaignReach.h": "96ede9639f397714300be52c4a0b5e5b2520418f",
+   "Source/SoraArena/Private/Game/SoraCampaignWorkshopCraft.cpp": "e213d66377966ae8c2c95301909453cc58543718",
+   "Source/SoraArena/Private/Characters/SoraCharacterBase.cpp": "3221fa817a15e57d94f0426b202409e8d56289b2",
+   "Source/SoraArena/Private/Characters/SoraPlayerCharacter.cpp": "b64a1c4460df55d1072bf2bd5770d395ad1a1c4b",
+   "docs/art-direction/workshop-action-view.md": "b55c8def0fb595cff5a9df36c1d3a7b8c7d730a8",
+   "docs/campaign/chapter-03.md": "4141dcc335b4ecf24e9d3ad626b55f1325f3647d",
+   "Content/Data/campaign/chapter_03.json": "75874ff583570026946b889c31e075dcedd07e79",
+   "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/build_record.json": "95f796814125b324f8a5325a92c2b537307d502b"
+  }
+ },
+ "frames": "Unreal cm, Z up. A station's frame: its origin is the station point on its floor (world X, Y, FloorAt), with the world's axes. The hero works from -X, facing +X.",
+ "view_contract": "SoraWorkshopCraftRules::FView via FSoraKitView::LanternCraft: Active, RecipeComplete, Assist, Step, Committed[6], HeldStep, HeldMs, FailedStripSerial, FailedStripAgeMs, LastAction (Serial, Step, Unit, AgeMs; AgeMs saturates at ActionPresentationMs 1200)",
+ "states_all": [
+  {
+   "view": "RecipeComplete (later checkpoints)",
+   "shows": "every station in its finished state and all 40 slots filled"
+  },
+  {
+   "view": "!Active && !RecipeComplete",
+   "shows": "every station at its start; the suggested 24 craftspeople's lanterns"
+  }
+ ],
+ "state_contract_common": {
+  "reads": "FView only (Active, Step, Committed[6], HeldStep, HeldMs, FailedStripSerial/AgeMs, LastAction); it never advances a hold, credits a unit or imposes a cooldown",
+  "Idle": "not Active, or not admitted at the station: the station's props in Committed's state, the paws free",
+  "Ready": "admitted (b09_craft_region.admitted), the step active, not held: the paws in the first working pose of the next unit, after its preparation clip",
+  "Held": "HeldStep == the step: the pose and props are a function of HeldMs alone",
+  "Committed": "Committed[step] advanced: the completion clip, then Ready for the next unit or the next step",
+  "Cancelled": "a timed hold ends uncredited (early release, ineligible, or a bend outside 640-960 ms): the presenter returns to Ready from where it is; work already shown by contact stays shown",
+  "Retry": "the next press after the release (root's WaitRelease): HeldMs restarts at 0",
+  "press_steps": "steps 2, 4, 5 are credited at the press; their clip is a function of LastAction.AgeMs for the matching Step and Unit; leaving, crouching or combat mid-clip only stops presenting it (nothing rolls back, nothing to retry); a reset or reload clears the record and the presenter's cursor"
+ },
+ "inspect_decision": "Coordination 277: the single Inspect unit checks the three completed festival shells' fuse cords (FuseCheck3 to FuseCheck1); nothing is lit, loaded or discharged; recipe counts, timing, reward and b10's charge fuse are unchanged; weapon 7 stays visibly supported in its block, clear of the hand path. A presentation decision, not a contact-gate waiver",
+ "recipe": {
+  "steps": [
+   {
+    "step": 0,
+    "kind": "bend",
+    "count": 6,
+    "station": "st_b09_rib_form"
+   },
+   {
+    "step": 1,
+    "kind": "paste",
+    "count": 4,
+    "station": "st_b09_paste_bench"
+   },
+   {
+    "step": 2,
+    "kind": "assemble",
+    "count": 1,
+    "station": "st_b09_paste_bench"
+   },
+   {
+    "step": 3,
+    "kind": "paste",
+    "count": 1,
+    "station": "st_b09_oil_rack"
+   },
+   {
+    "step": 4,
+    "kind": "assemble",
+    "count": 3,
+    "station": "st_b09_shell_bench"
+   },
+   {
+    "step": 5,
+    "kind": "inspect",
+    "count": 1,
+    "station": "st_b09_shell_bench"
+   }
+  ],
+  "bend_ms": [
+   800,
+   160
+  ],
+  "paste_ms": 1500,
+  "output_lanterns": 40
+ },
+ "collision": "every mesh is visual only; root keeps or replaces its boxes with the proposed proxies. Each proxy is under the standing station trace's 88 cm start, so no standing ray meets one. That covers the standing capsule only: crouched (half-height 44) the trace starts at 44 cm, and proxy tops of 75-78 cm can block close crouched approaches, as today's generic benches can. Crouched and native coverage are root's",
+ "lantern": {
+  "height_cm": 44.0,
+  "diameter_cm": 30.0,
+  "rim_diameter_cm": 18.0,
+  "hoop_heights_cm": [
+   -15.714,
+   -9.429,
+   -3.143,
+   3.143,
+   9.429,
+   15.714
+  ],
+  "hoop_radii_cm": [
+   13.549,
+   14.638,
+   15.042,
+   15.042,
+   14.638,
+   13.549
+  ],
+  "hang_point_cm": [
+   0.0,
+   0.0,
+   34.2
+  ],
+  "flex_stages": [
+   0.0,
+   0.25,
+   0.5,
+   0.75,
+   1.0
+  ],
+  "wind_deg": 385.0,
+  "form_yaw": "wind_deg * (Committed[0] + FLEX_STAGES[flex_stage(HeldMs)]) while bending, else wind_deg * Committed[0]",
+  "pivot": "its centre (lantern frame); at the rib form and paste bench it sits at the station point",
+  "stages": {
+   "frame": {
+    "meshes": [
+     "SM_B09_Form",
+     "SM_B09_Hoop1",
+     "SM_B09_Hoop2",
+     "SM_B09_Hoop3",
+     "SM_B09_Hoop4",
+     "SM_B09_Hoop5",
+     "SM_B09_Hoop6"
+    ],
+    "bounds_cm": [
+     [
+      -15.12,
+      -15.12,
+      -30.0
+     ],
+     [
+      15.12,
+      15.12,
+      38.0
+     ]
+    ]
+   },
+   "papered": {
+    "meshes": [
+     "SM_B09_Form",
+     "SM_B09_Hoop1",
+     "SM_B09_Hoop2",
+     "SM_B09_Hoop3",
+     "SM_B09_Hoop4",
+     "SM_B09_Hoop5",
+     "SM_B09_Hoop6",
+     "SM_B09_Washi1",
+     "SM_B09_Washi2",
+     "SM_B09_Washi3",
+     "SM_B09_Washi4"
+    ],
+    "bounds_cm": [
+     [
+      -15.28,
+      -15.24,
+      -30.0
+     ],
+     [
+      15.26,
+      15.28,
+      38.0
+     ]
+    ]
+   },
+   "rimmed": {
+    "meshes": [
+     "SM_B09_Form",
+     "SM_B09_Hoop1",
+     "SM_B09_Hoop2",
+     "SM_B09_Hoop3",
+     "SM_B09_Hoop4",
+     "SM_B09_Hoop5",
+     "SM_B09_Hoop6",
+     "SM_B09_RimBottom",
+     "SM_B09_RimTop",
+     "SM_B09_Washi1",
+     "SM_B09_Washi2",
+     "SM_B09_Washi3",
+     "SM_B09_Washi4"
+    ],
+    "bounds_cm": [
+     [
+      -15.28,
+      -15.24,
+      -30.0
+     ],
+     [
+      15.26,
+      15.28,
+      38.0
+     ]
+    ]
+   },
+   "finished": {
+    "meshes": [
+     "SM_B09_Bail",
+     "SM_B09_Hoop1",
+     "SM_B09_Hoop2",
+     "SM_B09_Hoop3",
+     "SM_B09_Hoop4",
+     "SM_B09_Hoop5",
+     "SM_B09_Hoop6",
+     "SM_B09_RimBottom",
+     "SM_B09_RimTop",
+     "SM_B09_Washi1",
+     "SM_B09_Washi2",
+     "SM_B09_Washi3",
+     "SM_B09_Washi4"
+    ],
+    "bounds_cm": [
+     [
+      -15.28,
+      -15.24,
+      -24.0
+     ],
+     [
+      15.26,
+      15.28,
+      34.3
+     ]
+    ]
+   }
+  }
+ },
+ "camera": {
+  "world_hfov_deg": 94.0,
+  "aspects": [
+   "16:9",
+   "21:9"
+  ],
+  "margin_deg": 2.0,
+  "dial_facing_max_deg": 65.0,
+  "band_min_deg": 2.0,
+  "note": "a CPU geometric estimate of framing from the standing eye; it does not establish Unreal framing, materials or hand contact"
+ },
+ "lantern_centre_by_station_cm": {
+  "st_b09_rib_form": [
+   -28.5,
+   0.0,
+   127.0
+  ],
+  "st_b09_paste_bench": [
+   -27.5,
+   0.0,
+   110.0
+  ],
+  "st_b09_oil_rack": [
+   -29.0,
+   0.0,
+   114.0
+  ]
+ },
+ "gauge": {
+  "pivot_cm": [
+   -28.0,
+   -26.0,
+   127.0
+  ],
+  "angles_deg": [
+   -90.0,
+   90.0
+  ],
+  "full_ms": 960,
+  "band_radii_cm": [
+   5.6,
+   8.4
+  ],
+  "face_radius_cm": 9.5,
+  "ticks_ms": [
+   0,
+   400,
+   800
+  ],
+  "needle": "points along (0, sin a, cos a) in the station frame, a = gauge_angle(ms)",
+  "green_band_deg": [
+   30.0,
+   90.0
+  ]
+ },
+ "shells": {
+  "core_cm": 4.8,
+  "wrapped_cm": 5.4,
+  "neck_cm": 1.6,
+  "bore_fit": {
+   "bore_cm": 5.6,
+   "wrapped_shell_cm": 5.4,
+   "radial_clear_mm": 1.0
+  }
+ },
+ "room": {
+  "solids_cm": [
+   [
+    2050.0,
+    -950.0,
+    22.5,
+    540.0,
+    1100.0,
+    45.0
+   ],
+   [
+    1745.0,
+    -950.0,
+    11.25,
+    70.0,
+    1088.0,
+    22.5
+   ],
+   [
+    1900.0,
+    -1535.0,
+    11.25,
+    140.0,
+    70.0,
+    22.5
+   ],
+   [
+    1600.0,
+    -950.0,
+    215.0,
+    12.0,
+    1100.0,
+    430.0
+   ],
+   [
+    2320.0,
+    -950.0,
+    215.0,
+    12.0,
+    1100.0,
+    430.0
+   ],
+   [
+    1960.0,
+    -400.0,
+    215.0,
+    720.0,
+    12.0,
+    430.0
+   ],
+   [
+    1715.0,
+    -1500.0,
+    215.0,
+    230.0,
+    12.0,
+    430.0
+   ],
+   [
+    2145.0,
+    -1500.0,
+    215.0,
+    350.0,
+    12.0,
+    430.0
+   ],
+   [
+    1900.0,
+    -1500.0,
+    345.0,
+    140.0,
+    12.0,
+    170.0
+   ],
+   [
+    1960.0,
+    -950.0,
+    440.0,
+    750.0,
+    1130.0,
+    20.0
+   ],
+   [
+    2860.0,
+    -650.0,
+    210.0,
+    1080.0,
+    500.0,
+    420.0
+   ],
+   [
+    1600.0,
+    -1850.0,
+    100.0,
+    12.0,
+    700.0,
+    200.0
+   ],
+   [
+    1755.0,
+    -2200.0,
+    100.0,
+    310.0,
+    12.0,
+    200.0
+   ],
+   [
+    2495.0,
+    -2200.0,
+    100.0,
+    810.0,
+    12.0,
+    200.0
+   ],
+   [
+    3400.0,
+    -1375.0,
+    80.0,
+    12.0,
+    450.0,
+    160.0
+   ],
+   [
+    3700.0,
+    -1450.0,
+    100.0,
+    12.0,
+    2100.0,
+    200.0
+   ],
+   [
+    2535.0,
+    -1400.0,
+    40.0,
+    30.0,
+    160.0,
+    80.0
+   ],
+   [
+    2600.0,
+    -1465.0,
+    40.0,
+    100.0,
+    30.0,
+    80.0
+   ],
+   [
+    2665.0,
+    -1400.0,
+    40.0,
+    30.0,
+    160.0,
+    80.0
+   ],
+   [
+    2600.0,
+    -1335.0,
+    40.0,
+    100.0,
+    30.0,
+    80.0
+   ],
+   [
+    3400.0,
+    -1900.0,
+    319.0,
+    16.0,
+    600.0,
+    638.0
+   ],
+   [
+    3150.0,
+    -1600.0,
+    319.0,
+    500.0,
+    16.0,
+    638.0
+   ],
+   [
+    3150.0,
+    -2200.0,
+    319.0,
+    500.0,
+    16.0,
+    638.0
+   ],
+   [
+    2900.0,
+    -2095.0,
+    319.0,
+    16.0,
+    210.0,
+    638.0
+   ],
+   [
+    2900.0,
+    -1705.0,
+    319.0,
+    16.0,
+    210.0,
+    638.0
+   ],
+   [
+    2900.0,
+    -1900.0,
+    444.0,
+    16.0,
+    180.0,
+    388.0
+   ],
+   [
+    3050.0,
+    -1900.0,
+    644.0,
+    700.0,
+    640.0,
+    12.0
+   ]
+  ],
+  "floor_slabs": [
+   0,
+   1,
+   2
+  ],
+  "ceilings": [
+   9,
+   26
+  ],
+  "surfaces": [
+   "Wood",
+   "Wood",
+   "Wood",
+   "Wood",
+   "Wood",
+   "Wood",
+   "Wood",
+   "Wood",
+   "Wood",
+   "Wood",
+   "Wood",
+   "Wood",
+   "Wood",
+   "Wood",
+   "Wood",
+   "Stone",
+   "Stone",
+   "Stone",
+   "Stone",
+   "Stone",
+   "Stone",
+   "Stone",
+   "Stone",
+   "Stone",
+   "Stone",
+   "Stone",
+   "Wood"
+  ],
+  "source": "SoraLanternWorkshopRules::Solids (the ground slab left out)"
+ },
+ "stations": [
+  {
+   "id": "st_b09_rib_form",
+   "index": 0,
+   "world_cm": [
+    2100.0,
+    -620.0
+   ],
+   "floor_cm": 45.0,
+   "steps": [
+    0
+   ],
+   "work_stand": {
+    "local_cm": [
+     -66.0,
+     0.0,
+     0.0
+    ],
+    "yaw_deg": 0.0,
+    "note": "the craft stand: the capsule 1 cm clear of the proxy's front (b09_craft_poses.py)"
+   },
+   "work_point_cm": [
+    -36.0,
+    -0.1,
+    125.54
+   ],
+   "parts": [
+    {
+     "name": "SM_B09_RibFormBench",
+     "slots": [
+      "M_B09_TimberBench"
+     ],
+     "triangles": 84,
+     "bounds_cm": [
+      [
+       -31.0,
+       -50.0,
+       0.0
+      ],
+      [
+       31.0,
+       50.0,
+       75.0
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_FormBase",
+     "slots": [
+      "M_B09_TimberForm"
+     ],
+     "triangles": 524,
+     "bounds_cm": [
+      [
+       -35.0,
+       -7.0,
+       75.0
+      ],
+      [
+       -14.5,
+       7.0,
+       97.0
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_FlexGauge",
+     "slots": [
+      "M_B09_GaugeBand",
+      "M_B09_GaugeFace",
+      "M_B09_GaugeMarks",
+      "M_B09_TimberBench"
+     ],
+     "triangles": 1928,
+     "bounds_cm": [
+      [
+       -31.0,
+       -35.5,
+       75.0
+      ],
+      [
+       -25.0,
+       -16.5,
+       136.5
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_StripRack",
+     "slots": [
+      "M_B09_TimberBench"
+     ],
+     "triangles": 96,
+     "bounds_cm": [
+      [
+       -29.0,
+       17.4,
+       75.0
+      ],
+      [
+       28.0,
+       26.6,
+       126.4
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_StripStock",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 144,
+     "bounds_cm": [
+      [
+       -37.5,
+       18.5,
+       125.02
+      ],
+      [
+       69.58,
+       25.4,
+       125.34
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    }
+   ],
+   "sockets": {
+    "FormSpindle": {
+     "cm": [
+      -28.5,
+      0.0,
+      97.0
+     ],
+     "x_axis": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "GaugePivot": {
+     "cm": [
+      -28.0,
+      -26.0,
+      127.0
+     ],
+     "x_axis": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "HoopSeat1": {
+     "cm": [
+      -28.5,
+      0.0,
+      111.286
+     ]
+    },
+    "HoopSeat2": {
+     "cm": [
+      -28.5,
+      0.0,
+      117.571
+     ]
+    },
+    "HoopSeat3": {
+     "cm": [
+      -28.5,
+      0.0,
+      123.857
+     ]
+    },
+    "HoopSeat4": {
+     "cm": [
+      -28.5,
+      0.0,
+      130.143
+     ]
+    },
+    "HoopSeat5": {
+     "cm": [
+      -28.5,
+      0.0,
+      136.429
+     ]
+    },
+    "HoopSeat6": {
+     "cm": [
+      -28.5,
+      0.0,
+      142.714
+     ]
+    },
+    "LanternCentre": {
+     "cm": [
+      -28.5,
+      0.0,
+      127.0
+     ],
+     "x_axis": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "LookPoint": {
+     "cm": [
+      -36.0,
+      -0.097,
+      125.54
+     ]
+    },
+    "SplitStripRest": {
+     "cm": [
+      12.0,
+      -6.0,
+      75.0
+     ],
+     "x_axis": [
+      0.0,
+      1.0,
+      0.0
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "StationPoint": {
+     "cm": [
+      0.0,
+      0.0,
+      110.0
+     ]
+    },
+    "StripStock": {
+     "cm": [
+      -37.5,
+      25.2,
+      125.341
+     ],
+     "x_axis": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "WindGuide1": {
+     "cm": [
+      -42.049,
+      3.0,
+      111.286
+     ],
+     "x_axis": [
+      0.0,
+      1.0,
+      0.0
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "WindGuide2": {
+     "cm": [
+      -43.138,
+      3.0,
+      117.571
+     ],
+     "x_axis": [
+      0.0,
+      1.0,
+      0.0
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "WindGuide3": {
+     "cm": [
+      -43.542,
+      3.0,
+      123.857
+     ],
+     "x_axis": [
+      0.0,
+      1.0,
+      0.0
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "WindGuide4": {
+     "cm": [
+      -43.542,
+      3.0,
+      130.143
+     ],
+     "x_axis": [
+      0.0,
+      1.0,
+      0.0
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "WindGuide5": {
+     "cm": [
+      -43.138,
+      3.0,
+      136.429
+     ],
+     "x_axis": [
+      0.0,
+      1.0,
+      0.0
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "WindGuide6": {
+     "cm": [
+      -42.049,
+      3.0,
+      142.714
+     ],
+     "x_axis": [
+      0.0,
+      1.0,
+      0.0
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "WindPress1": {
+     "cm": [
+      -41.831,
+      -2.834,
+      111.286
+     ],
+     "x_axis": [
+      -0.946818,
+      -0.201252,
+      -0.251063
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "WindPress2": {
+     "cm": [
+      -42.896,
+      -3.06,
+      117.571
+     ],
+     "x_axis": [
+      -0.972476,
+      -0.206706,
+      -0.107532
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "WindPress3": {
+     "cm": [
+      -43.292,
+      -3.144,
+      123.857
+     ],
+     "x_axis": [
+      -0.977802,
+      -0.207838,
+      -0.026592
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "WindPress4": {
+     "cm": [
+      -43.292,
+      -3.144,
+      130.143
+     ],
+     "x_axis": [
+      -0.977802,
+      -0.207838,
+      0.026592
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "WindPress5": {
+     "cm": [
+      -42.896,
+      -3.06,
+      136.429
+     ],
+     "x_axis": [
+      -0.972476,
+      -0.206706,
+      0.107532
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "WindPress6": {
+     "cm": [
+      -41.831,
+      -2.834,
+      142.714
+     ],
+     "x_axis": [
+      -0.946818,
+      -0.201252,
+      0.251063
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "WindSteady1": {
+     "cm": [
+      -41.798,
+      -5.645,
+      116.0
+     ],
+     "x_axis": [
+      -0.912143,
+      -0.387182,
+      -0.134484
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "WindSteady2": {
+     "cm": [
+      -42.2,
+      -5.815,
+      120.4
+     ],
+     "x_axis": [
+      -0.91845,
+      -0.389859,
+      -0.066786
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "WindSteady3": {
+     "cm": [
+      -42.365,
+      -5.885,
+      124.8
+     ],
+     "x_axis": [
+      -0.920368,
+      -0.390673,
+      -0.017265
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "WindSteady4": {
+     "cm": [
+      -42.365,
+      -5.885,
+      129.2
+     ],
+     "x_axis": [
+      -0.920368,
+      -0.390673,
+      0.017265
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "WindSteady5": {
+     "cm": [
+      -42.2,
+      -5.815,
+      133.6
+     ],
+     "x_axis": [
+      -0.91845,
+      -0.389859,
+      0.066786
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "WindSteady6": {
+     "cm": [
+      -41.798,
+      -5.645,
+      138.0
+     ],
+     "x_axis": [
+      -0.912143,
+      -0.387182,
+      0.134484
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "WorkStand": {
+     "cm": [
+      -66.0,
+      0.0,
+      0.0
+     ],
+     "x_axis": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    }
+   },
+   "collision_proxies": [
+    {
+     "lo_cm": [
+      -32.0,
+      -52.0,
+      0.0
+     ],
+     "hi_cm": [
+      33.0,
+      52.0,
+      78.0
+     ]
+    }
+   ],
+   "states": [
+    {
+     "view": "Committed[0] = n (0..6)",
+     "shows": "SM_B09_RibForm and SM_B09_Hoop1..n, in the form's frame, at LanternCentre, turned by form_yaw_deg(n, 0)"
+    },
+    {
+     "view": "HeldStep == 0, HeldMs",
+     "shows": "one-ended winding: hoop n+1's strip, hooked in its notch, at flex_stage(HeldMs) (SM_B09_Hoop{n+1}_Flex000..075, then Hoop{n+1}), and the form turned by form_yaw_deg(n, flex), so the strip leaves at the front for the paws (WindPress, WindGuide); the needle along gauge_angle(HeldMs)"
+    },
+    {
+     "view": "HeldStep == -1",
+     "shows": "the needle at rest (gauge_angle(0), -90 deg); no strip on the form"
+    },
+    {
+     "view": "FailedStripAgeMs >= 0",
+     "shows": "SM_B09_SplitStrip at SplitStripRest while FailedStripAgeMs < 1200 (suggested), then a fresh strip; a new press clears it (root's -1)"
+    },
+    {
+     "view": "Assist",
+     "shows": "the same gauge; the strip completes at 800 ms (the rules' assist pass)"
+    }
+   ],
+   "clearance": {
+    "posture": "standing: rays from the capsule's centre at 88 cm. Crouched (half-height 44) is not covered by this proof; crouched and native coverage are root's",
+    "eligible_positions": 1500,
+    "grid_cm": 10.0,
+    "rays_blocked_by_proposed_proxies": 0,
+    "rays_blocked_by_room_today": 0,
+    "crouched_estimate": {
+     "ray_from_cm": 44.0,
+     "rays_blocked_by_proposed_proxies": 56,
+     "note": "a CPU estimate on the same plan positions and boxes, not root's coverage"
+    },
+    "work_stand_eligible": true,
+    "work_stand_ray_clear": true,
+    "capsule_gap_cm": -3.0,
+    "eye_to_work_cm": 37.1,
+    "eye_pitch_deg": -45.5,
+    "sight_occluded_by": [],
+    "proxy_tops_cm": [
+     78.0
+    ]
+   },
+   "state_meshes": [
+    {
+     "name": "SM_B09_Hoop1_Flex000",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "pivot": "the form's frame (the rib form's centre)",
+     "placed_at": "LanternCentre, turned by form_yaw_deg",
+     "bounds_cm": [
+      [
+       -13.63,
+       0.0,
+       -15.91
+      ],
+      [
+       -13.47,
+       91.04,
+       -15.51
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop1_Flex025",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "pivot": "the form's frame (the rib form's centre)",
+     "placed_at": "LanternCentre, turned by form_yaw_deg",
+     "bounds_cm": [
+      [
+       -13.55,
+       -0.0,
+       -15.91
+      ],
+      [
+       69.36,
+       13.63,
+       -15.51
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop1_Flex050",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "pivot": "the form's frame (the rib form's centre)",
+     "placed_at": "LanternCentre, turned by form_yaw_deg",
+     "bounds_cm": [
+      [
+       -13.55,
+       -47.39,
+       -15.91
+      ],
+      [
+       13.63,
+       13.63,
+       -15.51
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop1_Flex075",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "pivot": "the form's frame (the rib form's centre)",
+     "placed_at": "LanternCentre, turned by form_yaw_deg",
+     "bounds_cm": [
+      [
+       -25.93,
+       -13.63,
+       -15.91
+      ],
+      [
+       13.63,
+       13.63,
+       -15.51
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop1",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "pivot": "the form's frame (the rib form's centre)",
+     "placed_at": "LanternCentre, turned by form_yaw_deg",
+     "bounds_cm": [
+      [
+       -13.63,
+       -13.63,
+       -15.91
+      ],
+      [
+       13.63,
+       13.63,
+       -15.51
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop2_Flex000",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "pivot": "the form's frame (the rib form's centre)",
+     "placed_at": "LanternCentre, turned by form_yaw_deg",
+     "bounds_cm": [
+      [
+       -13.27,
+       6.15,
+       -9.63
+      ],
+      [
+       28.3,
+       95.36,
+       -9.23
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop2_Flex025",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "pivot": "the form's frame (the rib form's centre)",
+     "placed_at": "LanternCentre, turned by form_yaw_deg",
+     "bounds_cm": [
+      [
+       -13.27,
+       -25.75,
+       -9.63
+      ],
+      [
+       70.7,
+       14.72,
+       -9.23
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop2_Flex050",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "pivot": "the form's frame (the rib form's centre)",
+     "placed_at": "LanternCentre, turned by form_yaw_deg",
+     "bounds_cm": [
+      [
+       -18.32,
+       -47.98,
+       -9.63
+      ],
+      [
+       14.72,
+       14.72,
+       -9.23
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop2_Flex075",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "pivot": "the form's frame (the rib form's centre)",
+     "placed_at": "LanternCentre, turned by form_yaw_deg",
+     "bounds_cm": [
+      [
+       -27.94,
+       -14.72,
+       -9.63
+      ],
+      [
+       14.72,
+       14.72,
+       -9.23
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop2",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "pivot": "the form's frame (the rib form's centre)",
+     "placed_at": "LanternCentre, turned by form_yaw_deg",
+     "bounds_cm": [
+      [
+       -14.72,
+       -14.72,
+       -9.63
+      ],
+      [
+       14.72,
+       14.72,
+       -9.23
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop3_Flex000",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "pivot": "the form's frame (the rib form's centre)",
+     "placed_at": "LanternCentre, turned by form_yaw_deg",
+     "bounds_cm": [
+      [
+       -9.67,
+       11.46,
+       -3.34
+      ],
+      [
+       67.76,
+       76.55,
+       -2.94
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop3_Flex025",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "pivot": "the form's frame (the rib form's centre)",
+     "placed_at": "LanternCentre, turned by form_yaw_deg",
+     "bounds_cm": [
+      [
+       -9.67,
+       -54.67,
+       -3.34
+      ],
+      [
+       54.69,
+       15.12,
+       -2.94
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop3_Flex050",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "pivot": "the form's frame (the rib form's centre)",
+     "placed_at": "LanternCentre, turned by form_yaw_deg",
+     "bounds_cm": [
+      [
+       -37.88,
+       -36.75,
+       -3.34
+      ],
+      [
+       15.12,
+       15.12,
+       -2.94
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop3_Flex075",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "pivot": "the form's frame (the rib form's centre)",
+     "placed_at": "LanternCentre, turned by form_yaw_deg",
+     "bounds_cm": [
+      [
+       -23.25,
+       -15.12,
+       -3.34
+      ],
+      [
+       15.12,
+       18.1,
+       -2.94
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop3",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "pivot": "the form's frame (the rib form's centre)",
+     "placed_at": "LanternCentre, turned by form_yaw_deg",
+     "bounds_cm": [
+      [
+       -15.12,
+       -15.12,
+       -3.34
+      ],
+      [
+       15.12,
+       15.12,
+       -2.94
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop4_Flex000",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "pivot": "the form's frame (the rib form's centre)",
+     "placed_at": "LanternCentre, turned by form_yaw_deg",
+     "bounds_cm": [
+      [
+       -3.89,
+       14.45,
+       2.94
+      ],
+      [
+       93.74,
+       40.77,
+       3.34
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop4_Flex025",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "pivot": "the form's frame (the rib form's centre)",
+     "placed_at": "LanternCentre, turned by form_yaw_deg",
+     "bounds_cm": [
+      [
+       -3.89,
+       -72.64,
+       2.94
+      ],
+      [
+       26.48,
+       15.04,
+       3.34
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop4_Flex050",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "pivot": "the form's frame (the rib form's centre)",
+     "placed_at": "LanternCentre, turned by form_yaw_deg",
+     "bounds_cm": [
+      [
+       -49.83,
+       -17.31,
+       2.94
+      ],
+      [
+       15.12,
+       15.04,
+       3.34
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop4_Flex075",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "pivot": "the form's frame (the rib form's centre)",
+     "placed_at": "LanternCentre, turned by form_yaw_deg",
+     "bounds_cm": [
+      [
+       -15.12,
+       -15.12,
+       2.94
+      ],
+      [
+       15.12,
+       26.2,
+       3.34
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop4",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "pivot": "the form's frame (the rib form's centre)",
+     "placed_at": "LanternCentre, turned by form_yaw_deg",
+     "bounds_cm": [
+      [
+       -15.12,
+       -15.12,
+       2.94
+      ],
+      [
+       15.12,
+       15.12,
+       3.34
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop5_Flex000",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "pivot": "the form's frame (the rib form's centre)",
+     "placed_at": "LanternCentre, turned by form_yaw_deg",
+     "bounds_cm": [
+      [
+       2.53,
+       -2.66,
+       9.23
+      ],
+      [
+       99.42,
+       14.41,
+       9.63
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop5_Flex025",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "pivot": "the form's frame (the rib form's centre)",
+     "placed_at": "LanternCentre, turned by form_yaw_deg",
+     "bounds_cm": [
+      [
+       -6.59,
+       -74.94,
+       9.23
+      ],
+      [
+       14.72,
+       14.41,
+       9.63
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop5_Flex050",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "pivot": "the form's frame (the rib form's centre)",
+     "placed_at": "LanternCentre, turned by form_yaw_deg",
+     "bounds_cm": [
+      [
+       -51.07,
+       -14.72,
+       9.23
+      ],
+      [
+       14.72,
+       14.41,
+       9.63
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop5_Flex075",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "pivot": "the form's frame (the rib form's centre)",
+     "placed_at": "LanternCentre, turned by form_yaw_deg",
+     "bounds_cm": [
+      [
+       -14.72,
+       -14.72,
+       9.23
+      ],
+      [
+       14.72,
+       28.64,
+       9.63
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop5",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "pivot": "the form's frame (the rib form's centre)",
+     "placed_at": "LanternCentre, turned by form_yaw_deg",
+     "bounds_cm": [
+      [
+       -14.72,
+       -14.72,
+       9.23
+      ],
+      [
+       14.72,
+       14.72,
+       9.63
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop6_Flex000",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "pivot": "the form's frame (the rib form's centre)",
+     "placed_at": "LanternCentre, turned by form_yaw_deg",
+     "bounds_cm": [
+      [
+       7.73,
+       -41.12,
+       15.51
+      ],
+      [
+       82.39,
+       11.1,
+       15.91
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop6_Flex025",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "pivot": "the form's frame (the rib form's centre)",
+     "placed_at": "LanternCentre, turned by form_yaw_deg",
+     "bounds_cm": [
+      [
+       -34.83,
+       -60.32,
+       15.51
+      ],
+      [
+       13.63,
+       11.1,
+       15.91
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop6_Flex050",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "pivot": "the form's frame (the rib form's centre)",
+     "placed_at": "LanternCentre, turned by form_yaw_deg",
+     "bounds_cm": [
+      [
+       -40.8,
+       -13.63,
+       15.51
+      ],
+      [
+       13.63,
+       24.41,
+       15.91
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop6_Flex075",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "pivot": "the form's frame (the rib form's centre)",
+     "placed_at": "LanternCentre, turned by form_yaw_deg",
+     "bounds_cm": [
+      [
+       -13.63,
+       -13.63,
+       15.51
+      ],
+      [
+       13.63,
+       24.45,
+       15.91
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop6",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "pivot": "the form's frame (the rib form's centre)",
+     "placed_at": "LanternCentre, turned by form_yaw_deg",
+     "bounds_cm": [
+      [
+       -13.63,
+       -13.63,
+       15.51
+      ],
+      [
+       13.63,
+       13.63,
+       15.91
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_SplitStrip",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 656,
+     "pivot": "its middle, lying flat",
+     "placed_at": "SplitStripRest",
+     "bounds_cm": [
+      [
+       -45.52,
+       -3.2,
+       0.0
+      ],
+      [
+       45.52,
+       3.2,
+       0.76
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_GaugeNeedle",
+     "slots": [
+      "M_B09_GaugeNeedle",
+      "M_B09_Iron"
+     ],
+     "triangles": 108,
+     "pivot": "its hinge",
+     "placed_at": "GaugePivot",
+     "bounds_cm": [
+      [
+       -0.75,
+       -0.9,
+       -1.2
+      ],
+      [
+       0.0,
+       0.9,
+       8.0
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    }
+   ],
+   "first_person": {
+    "hfov_deg": 94.0,
+    "margin_deg": 2.0,
+    "stand": {
+     "16:9": {
+      "gauge": {
+       "in_frame": true,
+       "occluded_by": [],
+       "facing_deg": 46.7,
+       "band_deg": 8.66,
+       "ok": true
+      },
+      "hoops": {
+       "in_frame": true,
+       "occluded_by": [],
+       "ok": true
+      }
+     },
+     "21:9": {
+      "gauge": {
+       "in_frame": true,
+       "occluded_by": [],
+       "facing_deg": 46.7,
+       "band_deg": 8.66,
+       "ok": true
+      },
+      "hoops": {
+       "in_frame": true,
+       "occluded_by": [],
+       "ok": true
+      }
+     }
+    },
+    "approach": {
+     "16:9": {
+      "gauge": 0.4605,
+      "hoops": 1.0
+     },
+     "21:9": {
+      "gauge": 0.4605,
+      "hoops": 1.0
+     }
+    },
+    "approach_positions": 152
+   },
+   "region": {
+    "region": {
+     "depth_cm": 15.0,
+     "lateral_cm": 10.0,
+     "yaw_deg": 10.0
+    },
+    "natural_stop_cm": [
+     -66.0,
+     0.0,
+     0.0
+    ],
+    "look_point_cm": [
+     -36.0,
+     -0.097,
+     125.54
+    ],
+    "admission": "admitted(stand, yaw) = x0 - depth_cm <= stand.x <= x0 and |stand.y| <= lateral_cm and |wrap180(yaw - atan2(LookPoint.y - stand.y, LookPoint.x - stand.x))| <= yaw_deg and the capsule (radius 34 cm, half-height 88 cm) clear of every collision proxy; stand = the capsule's axis on the floor; x0 = natural_stop_cm.x (b09_craft_region.admitted)",
+    "near_boundary_cm": [
+     [
+      -66.0,
+      -10.0
+     ],
+     [
+      -66.0,
+      -7.5
+     ],
+     [
+      -66.0,
+      -5.0
+     ],
+     [
+      -66.0,
+      -2.5
+     ],
+     [
+      -66.0,
+      0.0
+     ],
+     [
+      -66.0,
+      2.5
+     ],
+     [
+      -66.0,
+      5.0
+     ],
+     [
+      -66.0,
+      7.5
+     ],
+     [
+      -66.0,
+      10.0
+     ]
+    ],
+    "sampling": {
+     "stands": "33 stands (near boundary, far edge, lateral edges, interior) x 3 facings (the band's ends and middle)",
+     "dense_pose": "395 samples (9 lateral x 6 depths x 5 facings)"
+    },
+    "not_covered": "Unreal's swept capsule, mapped keyboard/controller walk-up, turning, release/retry and backing out are root's evidence (Coordination 271)"
+   },
+   "state_contract": {
+    "step": 0,
+    "kind": "timed hold, released within BendMs 800 +- 160",
+    "Ready": "hoop n+1 prepared (about 900 ms): the right paw takes the top layer's right-hand strip end (StripStock), lifts it out and carries it round the form's right to the notch and hooks it (the left paw waits off the form at WindSteady{n+1}); then the left comes in to press the hooked strip (WindPress{n+1}) as the right slides out along it to the guide (WindGuide{n+1})",
+    "Held": "HeldMs 0-800: the strip at flex_stage(HeldMs), the form turned by form_yaw_deg(n, flex), the needle at gauge_angle(HeldMs); the left paw presses, the right holds the free strip as it draws through its grip",
+    "Committed": "Committed[0] = n+1: the hoop seats; the right paw lets the strip's end go into its lap; the next hoop's preparation follows (none after hoop 6)",
+    "Cancelled": "a release outside 640-960 ms or an early release: the split strip at SplitStripRest while FailedStripAgeMs < SPLIT_SHOW_MS, then a fresh strip's preparation",
+    "timing_conflict": "a re-press sooner than the preparation's ~900 ms after a commit or a split cuts the preparation short; with no cooldown the presenter must blend from where the paws are to the Held pose (measured, to be agreed with root)"
+   },
+   "actions": [
+    {
+     "action": "wind hoop 1",
+     "phases": [
+      {
+       "phase": "take a strip",
+       "kind": "phase",
+       "samples": 1,
+       "L": {
+        "from_cm": [
+         -43.8,
+         -6.5,
+         115.7
+        ],
+        "to_cm": [
+         -43.8,
+         -6.5,
+         115.7
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -37.5,
+         25.2,
+         125.34
+        ],
+        "to_cm": [
+         -37.5,
+         25.2,
+         125.34
+        ]
+       }
+      },
+      {
+       "phase": "carry it to the notch",
+       "kind": "transition",
+       "samples": 23,
+       "L": {
+        "from_cm": [
+         -43.8,
+         -6.5,
+         115.7
+        ],
+        "to_cm": [
+         -43.8,
+         -6.5,
+         115.7
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -37.5,
+         25.2,
+         126.74
+        ],
+        "to_cm": [
+         -43.93,
+         0.0,
+         111.29
+        ]
+       }
+      },
+      {
+       "phase": "hook its end",
+       "kind": "phase",
+       "samples": 1,
+       "L": {
+        "from_cm": [
+         -43.8,
+         -6.5,
+         115.7
+        ],
+        "to_cm": [
+         -43.8,
+         -6.5,
+         115.7
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -42.13,
+         0.0,
+         111.29
+        ],
+        "to_cm": [
+         -42.13,
+         0.0,
+         111.29
+        ]
+       }
+      },
+      {
+       "phase": "press the hooked strip; slide to the guide",
+       "kind": "transition",
+       "samples": 17,
+       "L": {
+        "from_cm": [
+         -43.8,
+         -6.5,
+         115.7
+        ],
+        "to_cm": [
+         -43.02,
+         -3.09,
+         110.97
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -43.93,
+         0.0,
+         111.29
+        ],
+        "to_cm": [
+         -43.93,
+         3.0,
+         111.29
+        ]
+       }
+      },
+      {
+       "phase": "wind (HeldMs 0-800)",
+       "kind": "phase",
+       "samples": 17,
+       "L": {
+        "from_cm": [
+         -41.88,
+         -2.84,
+         111.27
+        ],
+        "to_cm": [
+         -41.88,
+         -2.84,
+         111.27
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -42.13,
+         3.0,
+         111.29
+        ],
+        "to_cm": [
+         -42.13,
+         3.0,
+         111.29
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "action": "wind hoop 2",
+     "phases": [
+      {
+       "phase": "take a strip",
+       "kind": "phase",
+       "samples": 1,
+       "L": {
+        "from_cm": [
+         -44.22,
+         -6.67,
+         120.25
+        ],
+        "to_cm": [
+         -44.22,
+         -6.67,
+         120.25
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -37.5,
+         25.2,
+         125.34
+        ],
+        "to_cm": [
+         -37.5,
+         25.2,
+         125.34
+        ]
+       }
+      },
+      {
+       "phase": "carry it to the notch",
+       "kind": "transition",
+       "samples": 22,
+       "L": {
+        "from_cm": [
+         -44.22,
+         -6.67,
+         120.25
+        ],
+        "to_cm": [
+         -44.22,
+         -6.67,
+         120.25
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -37.5,
+         25.2,
+         126.74
+        ],
+        "to_cm": [
+         -45.02,
+         0.0,
+         117.57
+        ]
+       }
+      },
+      {
+       "phase": "hook its end",
+       "kind": "phase",
+       "samples": 1,
+       "L": {
+        "from_cm": [
+         -44.22,
+         -6.67,
+         120.25
+        ],
+        "to_cm": [
+         -44.22,
+         -6.67,
+         120.25
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -43.22,
+         0.0,
+         117.57
+        ],
+        "to_cm": [
+         -43.22,
+         0.0,
+         117.57
+        ]
+       }
+      },
+      {
+       "phase": "press the hooked strip; slide to the guide",
+       "kind": "transition",
+       "samples": 17,
+       "L": {
+        "from_cm": [
+         -44.22,
+         -6.67,
+         120.25
+        ],
+        "to_cm": [
+         -44.08,
+         -3.31,
+         117.44
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -45.02,
+         0.0,
+         117.57
+        ],
+        "to_cm": [
+         -45.02,
+         3.0,
+         117.57
+        ]
+       }
+      },
+      {
+       "phase": "wind (HeldMs 0-800)",
+       "kind": "phase",
+       "samples": 17,
+       "L": {
+        "from_cm": [
+         -42.92,
+         -3.06,
+         117.57
+        ],
+        "to_cm": [
+         -42.92,
+         -3.06,
+         117.57
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -43.22,
+         3.0,
+         117.57
+        ],
+        "to_cm": [
+         -43.22,
+         3.0,
+         117.57
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "action": "wind hoop 3",
+     "phases": [
+      {
+       "phase": "take a strip",
+       "kind": "phase",
+       "samples": 1,
+       "L": {
+        "from_cm": [
+         -44.39,
+         -6.74,
+         124.76
+        ],
+        "to_cm": [
+         -44.39,
+         -6.74,
+         124.76
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -37.5,
+         25.2,
+         125.34
+        ],
+        "to_cm": [
+         -37.5,
+         25.2,
+         125.34
+        ]
+       }
+      },
+      {
+       "phase": "carry it to the notch",
+       "kind": "transition",
+       "samples": 21,
+       "L": {
+        "from_cm": [
+         -44.39,
+         -6.74,
+         124.76
+        ],
+        "to_cm": [
+         -44.39,
+         -6.74,
+         124.76
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -37.5,
+         25.2,
+         126.74
+        ],
+        "to_cm": [
+         -45.42,
+         0.0,
+         123.86
+        ]
+       }
+      },
+      {
+       "phase": "hook its end",
+       "kind": "phase",
+       "samples": 1,
+       "L": {
+        "from_cm": [
+         -44.39,
+         -6.74,
+         124.76
+        ],
+        "to_cm": [
+         -44.39,
+         -6.74,
+         124.76
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -43.62,
+         0.0,
+         123.86
+        ],
+        "to_cm": [
+         -43.62,
+         0.0,
+         123.86
+        ]
+       }
+      },
+      {
+       "phase": "press the hooked strip; slide to the guide",
+       "kind": "transition",
+       "samples": 17,
+       "L": {
+        "from_cm": [
+         -44.39,
+         -6.74,
+         124.76
+        ],
+        "to_cm": [
+         -44.47,
+         -3.39,
+         123.83
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -45.42,
+         0.0,
+         123.86
+        ],
+        "to_cm": [
+         -45.42,
+         3.0,
+         123.86
+        ]
+       }
+      },
+      {
+       "phase": "wind (HeldMs 0-800)",
+       "kind": "phase",
+       "samples": 17,
+       "L": {
+        "from_cm": [
+         -43.3,
+         -3.15,
+         123.86
+        ],
+        "to_cm": [
+         -43.3,
+         -3.15,
+         123.86
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -43.62,
+         3.0,
+         123.86
+        ],
+        "to_cm": [
+         -43.62,
+         3.0,
+         123.86
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "action": "wind hoop 4",
+     "phases": [
+      {
+       "phase": "take a strip",
+       "kind": "phase",
+       "samples": 1,
+       "L": {
+        "from_cm": [
+         -44.39,
+         -6.74,
+         129.24
+        ],
+        "to_cm": [
+         -44.39,
+         -6.74,
+         129.24
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -37.5,
+         25.2,
+         125.34
+        ],
+        "to_cm": [
+         -37.5,
+         25.2,
+         125.34
+        ]
+       }
+      },
+      {
+       "phase": "carry it to the notch",
+       "kind": "transition",
+       "samples": 21,
+       "L": {
+        "from_cm": [
+         -44.39,
+         -6.74,
+         129.24
+        ],
+        "to_cm": [
+         -44.39,
+         -6.74,
+         129.24
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -37.5,
+         25.2,
+         126.74
+        ],
+        "to_cm": [
+         -45.42,
+         0.0,
+         130.14
+        ]
+       }
+      },
+      {
+       "phase": "hook its end",
+       "kind": "phase",
+       "samples": 1,
+       "L": {
+        "from_cm": [
+         -44.39,
+         -6.74,
+         129.24
+        ],
+        "to_cm": [
+         -44.39,
+         -6.74,
+         129.24
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -43.62,
+         0.0,
+         130.14
+        ],
+        "to_cm": [
+         -43.62,
+         0.0,
+         130.14
+        ]
+       }
+      },
+      {
+       "phase": "press the hooked strip; slide to the guide",
+       "kind": "transition",
+       "samples": 17,
+       "L": {
+        "from_cm": [
+         -44.39,
+         -6.74,
+         129.24
+        ],
+        "to_cm": [
+         -44.47,
+         -3.39,
+         130.17
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -45.42,
+         0.0,
+         130.14
+        ],
+        "to_cm": [
+         -45.42,
+         3.0,
+         130.14
+        ]
+       }
+      },
+      {
+       "phase": "wind (HeldMs 0-800)",
+       "kind": "phase",
+       "samples": 17,
+       "L": {
+        "from_cm": [
+         -43.3,
+         -3.15,
+         130.14
+        ],
+        "to_cm": [
+         -43.3,
+         -3.15,
+         130.14
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -43.62,
+         3.0,
+         130.14
+        ],
+        "to_cm": [
+         -43.62,
+         3.0,
+         130.14
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "action": "wind hoop 5",
+     "phases": [
+      {
+       "phase": "take a strip",
+       "kind": "phase",
+       "samples": 1,
+       "L": {
+        "from_cm": [
+         -44.22,
+         -6.67,
+         133.75
+        ],
+        "to_cm": [
+         -44.22,
+         -6.67,
+         133.75
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -37.5,
+         25.2,
+         125.34
+        ],
+        "to_cm": [
+         -37.5,
+         25.2,
+         125.34
+        ]
+       }
+      },
+      {
+       "phase": "carry it to the notch",
+       "kind": "transition",
+       "samples": 22,
+       "L": {
+        "from_cm": [
+         -44.22,
+         -6.67,
+         133.75
+        ],
+        "to_cm": [
+         -44.22,
+         -6.67,
+         133.75
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -37.5,
+         25.2,
+         126.74
+        ],
+        "to_cm": [
+         -45.02,
+         0.0,
+         136.43
+        ]
+       }
+      },
+      {
+       "phase": "hook its end",
+       "kind": "phase",
+       "samples": 1,
+       "L": {
+        "from_cm": [
+         -44.22,
+         -6.67,
+         133.75
+        ],
+        "to_cm": [
+         -44.22,
+         -6.67,
+         133.75
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -43.22,
+         0.0,
+         136.43
+        ],
+        "to_cm": [
+         -43.22,
+         0.0,
+         136.43
+        ]
+       }
+      },
+      {
+       "phase": "press the hooked strip; slide to the guide",
+       "kind": "transition",
+       "samples": 17,
+       "L": {
+        "from_cm": [
+         -44.22,
+         -6.67,
+         133.75
+        ],
+        "to_cm": [
+         -44.08,
+         -3.31,
+         136.56
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -45.02,
+         0.0,
+         136.43
+        ],
+        "to_cm": [
+         -45.02,
+         3.0,
+         136.43
+        ]
+       }
+      },
+      {
+       "phase": "wind (HeldMs 0-800)",
+       "kind": "phase",
+       "samples": 17,
+       "L": {
+        "from_cm": [
+         -42.92,
+         -3.06,
+         136.43
+        ],
+        "to_cm": [
+         -42.92,
+         -3.06,
+         136.43
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -43.22,
+         3.0,
+         136.43
+        ],
+        "to_cm": [
+         -43.22,
+         3.0,
+         136.43
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "action": "wind hoop 6",
+     "phases": [
+      {
+       "phase": "take a strip",
+       "kind": "phase",
+       "samples": 1,
+       "L": {
+        "from_cm": [
+         -43.8,
+         -6.5,
+         138.3
+        ],
+        "to_cm": [
+         -43.8,
+         -6.5,
+         138.3
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -37.5,
+         25.2,
+         125.34
+        ],
+        "to_cm": [
+         -37.5,
+         25.2,
+         125.34
+        ]
+       }
+      },
+      {
+       "phase": "carry it to the notch",
+       "kind": "transition",
+       "samples": 23,
+       "L": {
+        "from_cm": [
+         -43.8,
+         -6.5,
+         138.3
+        ],
+        "to_cm": [
+         -43.8,
+         -6.5,
+         138.3
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -37.5,
+         25.2,
+         126.74
+        ],
+        "to_cm": [
+         -43.93,
+         0.0,
+         142.71
+        ]
+       }
+      },
+      {
+       "phase": "hook its end",
+       "kind": "phase",
+       "samples": 1,
+       "L": {
+        "from_cm": [
+         -43.8,
+         -6.5,
+         138.3
+        ],
+        "to_cm": [
+         -43.8,
+         -6.5,
+         138.3
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -42.13,
+         0.0,
+         142.71
+        ],
+        "to_cm": [
+         -42.13,
+         0.0,
+         142.71
+        ]
+       }
+      },
+      {
+       "phase": "press the hooked strip; slide to the guide",
+       "kind": "transition",
+       "samples": 17,
+       "L": {
+        "from_cm": [
+         -43.8,
+         -6.5,
+         138.3
+        ],
+        "to_cm": [
+         -43.02,
+         -3.09,
+         143.03
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -43.93,
+         0.0,
+         142.71
+        ],
+        "to_cm": [
+         -43.93,
+         3.0,
+         142.71
+        ]
+       }
+      },
+      {
+       "phase": "wind (HeldMs 0-800)",
+       "kind": "phase",
+       "samples": 17,
+       "L": {
+        "from_cm": [
+         -41.88,
+         -2.84,
+         142.73
+        ],
+        "to_cm": [
+         -41.88,
+         -2.84,
+         142.73
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -42.13,
+         3.0,
+         142.71
+        ],
+        "to_cm": [
+         -42.13,
+         3.0,
+         142.71
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "supports": [
+    {
+     "state": "hoop 1 at flex 0, needle at 0 ms",
+     "rests": [
+      [
+       "SM_B09_SplitStrip",
+       "SM_B09_RibFormBench"
+      ],
+      [
+       "SM_B09_GaugeNeedle",
+       "SM_B09_FlexGauge"
+      ]
+     ]
+    },
+    {
+     "state": "hoop 1 at flex 0.5, needle at 400 ms",
+     "rests": [
+      [
+       "SM_B09_SplitStrip",
+       "SM_B09_RibFormBench"
+      ],
+      [
+       "SM_B09_GaugeNeedle",
+       "SM_B09_FlexGauge"
+      ]
+     ]
+    },
+    {
+     "state": "hoop 1 at flex 1, needle at 800 ms",
+     "rests": [
+      [
+       "SM_B09_SplitStrip",
+       "SM_B09_RibFormBench"
+      ],
+      [
+       "SM_B09_GaugeNeedle",
+       "SM_B09_FlexGauge"
+      ]
+     ]
+    },
+    {
+     "state": "hoop 4 at flex 0, needle at 0 ms",
+     "rests": [
+      [
+       "SM_B09_SplitStrip",
+       "SM_B09_RibFormBench"
+      ],
+      [
+       "SM_B09_GaugeNeedle",
+       "SM_B09_FlexGauge"
+      ]
+     ]
+    },
+    {
+     "state": "hoop 4 at flex 0.5, needle at 400 ms",
+     "rests": [
+      [
+       "SM_B09_SplitStrip",
+       "SM_B09_RibFormBench"
+      ],
+      [
+       "SM_B09_GaugeNeedle",
+       "SM_B09_FlexGauge"
+      ]
+     ]
+    },
+    {
+     "state": "hoop 4 at flex 1, needle at 800 ms",
+     "rests": [
+      [
+       "SM_B09_SplitStrip",
+       "SM_B09_RibFormBench"
+      ],
+      [
+       "SM_B09_GaugeNeedle",
+       "SM_B09_FlexGauge"
+      ]
+     ]
+    },
+    {
+     "state": "hoop 6 at flex 0, needle at 0 ms",
+     "rests": [
+      [
+       "SM_B09_SplitStrip",
+       "SM_B09_RibFormBench"
+      ],
+      [
+       "SM_B09_GaugeNeedle",
+       "SM_B09_FlexGauge"
+      ]
+     ]
+    },
+    {
+     "state": "hoop 6 at flex 0.5, needle at 400 ms",
+     "rests": [
+      [
+       "SM_B09_SplitStrip",
+       "SM_B09_RibFormBench"
+      ],
+      [
+       "SM_B09_GaugeNeedle",
+       "SM_B09_FlexGauge"
+      ]
+     ]
+    },
+    {
+     "state": "hoop 6 at flex 1, needle at 800 ms",
+     "rests": [
+      [
+       "SM_B09_SplitStrip",
+       "SM_B09_RibFormBench"
+      ],
+      [
+       "SM_B09_GaugeNeedle",
+       "SM_B09_FlexGauge"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "st_b09_paste_bench",
+   "index": 1,
+   "world_cm": [
+    2100.0,
+    -950.0
+   ],
+   "floor_cm": 45.0,
+   "steps": [
+    1,
+    2
+   ],
+   "work_stand": {
+    "local_cm": [
+     -71.0,
+     0.0,
+     0.0
+    ],
+    "yaw_deg": 0.0,
+    "note": "the craft stand: the capsule 1 cm clear of the proxy's front (b09_craft_poses.py)"
+   },
+   "work_point_cm": [
+    -41.16,
+    2.84,
+    124.8
+   ],
+   "parts": [
+    {
+     "name": "SM_B09_PasteBench",
+     "slots": [
+      "M_B09_TimberBench"
+     ],
+     "triangles": 84,
+     "bounds_cm": [
+      [
+       -35.0,
+       -55.0,
+       0.0
+      ],
+      [
+       35.0,
+       55.0,
+       75.0
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop1",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "bounds_cm": [
+      [
+       -46.8,
+       -16.18,
+       94.92
+      ],
+      [
+       -21.09,
+       -4.3,
+       121.46
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop2",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "bounds_cm": [
+      [
+       -45.64,
+       -10.95,
+       95.39
+      ],
+      [
+       -17.89,
+       1.86,
+       124.04
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop3",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "bounds_cm": [
+      [
+       -43.84,
+       -5.42,
+       96.52
+      ],
+      [
+       -15.33,
+       7.72,
+       125.96
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop4",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "bounds_cm": [
+      [
+       -41.67,
+       0.28,
+       98.04
+      ],
+      [
+       -13.16,
+       13.42,
+       127.48
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop5",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "bounds_cm": [
+      [
+       -39.11,
+       6.14,
+       99.96
+      ],
+      [
+       -11.36,
+       18.95,
+       128.61
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Hoop6",
+     "slots": [
+      "M_B09_Bamboo"
+     ],
+     "triangles": 1560,
+     "bounds_cm": [
+      [
+       -35.92,
+       12.3,
+       102.54
+      ],
+      [
+       -10.21,
+       24.18,
+       129.08
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Form",
+     "slots": [
+      "M_B09_TimberForm"
+     ],
+     "triangles": 4464,
+     "bounds_cm": [
+      [
+       -46.35,
+       -23.72,
+       95.24
+      ],
+      [
+       -10.65,
+       38.97,
+       128.76
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_PasteCradle",
+     "slots": [
+      "M_B09_Iron",
+      "M_B09_TimberBench"
+     ],
+     "triangles": 560,
+     "bounds_cm": [
+      [
+       -42.02,
+       -26.1,
+       75.0
+      ],
+      [
+       -9.24,
+       41.35,
+       124.21
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_SheetRack",
+     "slots": [
+      "M_B09_TimberBench"
+     ],
+     "triangles": 24,
+     "bounds_cm": [
+      [
+       -45.0,
+       -17.2,
+       75.0
+      ],
+      [
+       3.2,
+       -14.0,
+       151.5
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_PastePot",
+     "slots": [
+      "M_B09_Ceramic"
+     ],
+     "triangles": 480,
+     "bounds_cm": [
+      [
+       -47.2,
+       22.8,
+       96.0
+      ],
+      [
+       -34.8,
+       35.2,
+       103.0
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_PotBracket",
+     "slots": [
+      "M_B09_Iron",
+      "M_B09_TimberBench"
+     ],
+     "triangles": 216,
+     "bounds_cm": [
+      [
+       -46.8,
+       23.2,
+       75.0
+      ],
+      [
+       -31.4,
+       34.8,
+       96.0
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_RimShelf",
+     "slots": [
+      "M_B09_TimberBench"
+     ],
+     "triangles": 216,
+     "bounds_cm": [
+      [
+       -14.6,
+       -33.6,
+       151.5
+      ],
+      [
+       4.6,
+       -14.0,
+       155.0
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    }
+   ],
+   "sockets": {
+    "BrushRest": {
+     "cm": [
+      -44.5,
+      29.0,
+      97.409
+     ],
+     "x_axis": [
+      0.0,
+      1.0,
+      0.0
+     ],
+     "z_axis": [
+      0.576422,
+      0.0,
+      -0.817152
+     ]
+    },
+    "CradleAxis": {
+     "cm": [
+      -28.5,
+      4.0,
+      112.0
+     ],
+     "x_axis": [
+      0.603041,
+      -0.017038,
+      -0.797528
+     ],
+     "z_axis": [
+      0.346189,
+      0.906308,
+      0.242404
+     ]
+    },
+    "HoopSeat1": {
+     "cm": [
+      -33.94,
+      -10.242,
+      108.191
+     ]
+    },
+    "HoopSeat2": {
+     "cm": [
+      -31.764,
+      -4.545,
+      109.714
+     ]
+    },
+    "HoopSeat3": {
+     "cm": [
+      -29.588,
+      1.152,
+      111.238
+     ]
+    },
+    "HoopSeat4": {
+     "cm": [
+      -27.412,
+      6.848,
+      112.762
+     ]
+    },
+    "HoopSeat5": {
+     "cm": [
+      -25.236,
+      12.545,
+      114.286
+     ]
+    },
+    "HoopSeat6": {
+     "cm": [
+      -23.06,
+      18.242,
+      115.809
+     ]
+    },
+    "LanternCentre": {
+     "cm": [
+      -28.5,
+      4.0,
+      112.0
+     ],
+     "x_axis": [
+      0.603041,
+      -0.017038,
+      -0.797528
+     ],
+     "z_axis": [
+      0.346189,
+      0.906308,
+      0.242404
+     ]
+    },
+    "LookPoint": {
+     "cm": [
+      -41.156,
+      2.842,
+      124.803
+     ]
+    },
+    "PasteDip": {
+     "cm": [
+      -41.0,
+      29.0,
+      101.0
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "RimBottomRest": {
+     "cm": [
+      -36.462,
+      -16.845,
+      106.425
+     ],
+     "x_axis": [
+      0.603041,
+      -0.017038,
+      -0.797528
+     ],
+     "z_axis": [
+      0.346189,
+      0.906308,
+      0.242404
+     ]
+    },
+    "RimBottomSeat": {
+     "cm": [
+      -36.462,
+      -16.845,
+      106.425
+     ],
+     "x_axis": [
+      0.603041,
+      -0.017038,
+      -0.797528
+     ],
+     "z_axis": [
+      0.346189,
+      0.906308,
+      0.242404
+     ]
+    },
+    "RimTopRest": {
+     "cm": [
+      -5.0,
+      -24.0,
+      156.0
+     ],
+     "x_axis": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "RimTopSeat": {
+     "cm": [
+      -20.538,
+      24.845,
+      117.575
+     ],
+     "x_axis": [
+      0.603041,
+      -0.017038,
+      -0.797528
+     ],
+     "z_axis": [
+      0.346189,
+      0.906308,
+      0.242404
+     ]
+    },
+    "Seam_0": {
+     "cm": [
+      -42.038,
+      -15.771,
+      114.499
+     ]
+    },
+    "Seam_1": {
+     "cm": [
+      -42.702,
+      -10.714,
+      119.228
+     ]
+    },
+    "Seam_2": {
+     "cm": [
+      -41.466,
+      -5.711,
+      121.445
+     ]
+    },
+    "Seam_3": {
+     "cm": [
+      -39.865,
+      -0.717,
+      123.179
+     ]
+    },
+    "Seam_4": {
+     "cm": [
+      -38.04,
+      4.27,
+      124.617
+     ]
+    },
+    "Seam_5": {
+     "cm": [
+      -36.057,
+      9.252,
+      125.846
+     ]
+    },
+    "Seam_6": {
+     "cm": [
+      -33.85,
+      14.228,
+      126.778
+     ]
+    },
+    "Seam_7": {
+     "cm": [
+      -31.277,
+      19.194,
+      127.227
+     ]
+    },
+    "Seam_8": {
+     "cm": [
+      -26.806,
+      24.106,
+      125.165
+     ]
+    },
+    "SheetHold": {
+     "cm": [
+      -45.718,
+      0.427,
+      108.695
+     ],
+     "x_axis": [
+      -0.973858,
+      0.203225,
+      -0.101492
+     ]
+    },
+    "SheetTake": {
+     "cm": [
+      -44.0,
+      -16.45,
+      136.484
+     ],
+     "x_axis": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "StationPoint": {
+     "cm": [
+      0.0,
+      0.0,
+      110.0
+     ]
+    },
+    "WashiSheet1": {
+     "cm": [
+      -22.0,
+      -16.45,
+      149.5
+     ],
+     "x_axis": [
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "z_axis": [
+      1.0,
+      0.0,
+      0.0
+     ]
+    },
+    "WashiSheet2": {
+     "cm": [
+      -22.0,
+      -16.35,
+      149.5
+     ],
+     "x_axis": [
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "z_axis": [
+      1.0,
+      0.0,
+      0.0
+     ]
+    },
+    "WashiSheet3": {
+     "cm": [
+      -22.0,
+      -16.25,
+      149.5
+     ],
+     "x_axis": [
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "z_axis": [
+      1.0,
+      0.0,
+      0.0
+     ]
+    },
+    "WashiSheet4": {
+     "cm": [
+      -22.0,
+      -16.15,
+      149.5
+     ],
+     "x_axis": [
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "z_axis": [
+      1.0,
+      0.0,
+      0.0
+     ]
+    },
+    "WorkStand": {
+     "cm": [
+      -71.0,
+      0.0,
+      0.0
+     ],
+     "x_axis": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    }
+   },
+   "collision_proxies": [
+    {
+     "lo_cm": [
+      -37.0,
+      -57.0,
+      0.0
+     ],
+     "hi_cm": [
+      37.0,
+      57.0,
+      78.0
+     ]
+    }
+   ],
+   "states": [
+    {
+     "view": "Committed[0] == 6",
+     "shows": "the frame with all six hoops on its cradle (the bends are done to come here)"
+    },
+    {
+     "view": "Committed[1] = n (0..4)",
+     "shows": "SM_B09_Washi for PASTE_ORDER[:n] on the frame, turned by panel_turn_deg(n + 1) so panel n + 1's seam faces the hero; the rail keeps sheets n+1..4 (sheet n+1 in the left paw while a paste is held)"
+    },
+    {
+     "view": "HeldStep == 1, HeldMs",
+     "shows": "STATE_CONTRACT: the sheet laid (0-400 ms) and held at SheetHold, the brush along Seam_0..8 (400-1500 ms); paste only where the bristles have swept"
+    },
+    {
+     "view": "Committed[2] == 1",
+     "shows": "SM_B09_RimTop from RimTopRest to RimTopSeat: a press clip (root's last-action serial and age); the bottom rim is fitted from the start (RimBottomSeat). Open: on the paste pose the upper mouth is out of reach; the cradle must re-tilt the frame for it (STATE_CONTRACT)"
+    }
+   ],
+   "clearance": {
+    "posture": "standing: rays from the capsule's centre at 88 cm. Crouched (half-height 44) is not covered by this proof; crouched and native coverage are root's",
+    "eligible_positions": 1648,
+    "grid_cm": 10.0,
+    "rays_blocked_by_proposed_proxies": 0,
+    "rays_blocked_by_room_today": 0,
+    "crouched_estimate": {
+     "ray_from_cm": 44.0,
+     "rays_blocked_by_proposed_proxies": 80,
+     "note": "a CPU estimate on the same plan positions and boxes, not root's coverage"
+    },
+    "work_stand_eligible": true,
+    "work_stand_ray_clear": true,
+    "capsule_gap_cm": -9.42,
+    "eye_to_work_cm": 37.6,
+    "eye_pitch_deg": -46.3,
+    "sight_occluded_by": [],
+    "proxy_tops_cm": [
+     78.0
+    ]
+   },
+   "state_meshes": [
+    {
+     "name": "SM_B09_Washi1",
+     "slots": [
+      "M_B09_Washi"
+     ],
+     "triangles": 4608,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre (the frame on its cradle, turned by panel_turn_deg)",
+     "bounds_cm": [
+      [
+       -15.22,
+       -15.22,
+       -22.0
+      ],
+      [
+       1.06,
+       1.06,
+       22.0
+      ]
+     ],
+     "attributes": [
+      "azimuth_frac",
+      "height_frac"
+     ],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Washi2",
+     "slots": [
+      "M_B09_Washi"
+     ],
+     "triangles": 4608,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre (the frame on its cradle, turned by panel_turn_deg)",
+     "bounds_cm": [
+      [
+       -1.06,
+       -15.24,
+       -22.0
+      ],
+      [
+       15.24,
+       1.06,
+       22.0
+      ]
+     ],
+     "attributes": [
+      "azimuth_frac",
+      "height_frac"
+     ],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Washi3",
+     "slots": [
+      "M_B09_Washi"
+     ],
+     "triangles": 4608,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre (the frame on its cradle, turned by panel_turn_deg)",
+     "bounds_cm": [
+      [
+       -1.06,
+       -1.06,
+       -22.0
+      ],
+      [
+       15.26,
+       15.26,
+       22.0
+      ]
+     ],
+     "attributes": [
+      "azimuth_frac",
+      "height_frac"
+     ],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_Washi4",
+     "slots": [
+      "M_B09_Washi"
+     ],
+     "triangles": 4608,
+     "pivot": "the lantern's centre",
+     "placed_at": "LanternCentre (the frame on its cradle, turned by panel_turn_deg)",
+     "bounds_cm": [
+      [
+       -15.28,
+       -1.07,
+       -22.0
+      ],
+      [
+       1.07,
+       15.28,
+       22.0
+      ]
+     ],
+     "attributes": [
+      "azimuth_frac",
+      "height_frac"
+     ],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_WashiSheet1",
+     "slots": [
+      "M_B09_Washi"
+     ],
+     "triangles": 180,
+     "pivot": "its near edge's middle",
+     "placed_at": "WashiSheet1 (hung on the rack; sheet 1, outermost, taken first)",
+     "bounds_cm": [
+      [
+       0.0,
+       0.0,
+       -22.0
+      ],
+      [
+       26.03,
+       0.05,
+       22.0
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_WashiSheet2",
+     "slots": [
+      "M_B09_Washi"
+     ],
+     "triangles": 180,
+     "pivot": "its near edge's middle",
+     "placed_at": "WashiSheet2 (hung on the rack; sheet 1, outermost, taken first)",
+     "bounds_cm": [
+      [
+       0.0,
+       0.0,
+       -22.0
+      ],
+      [
+       26.03,
+       0.05,
+       22.0
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_WashiSheet3",
+     "slots": [
+      "M_B09_Washi"
+     ],
+     "triangles": 180,
+     "pivot": "its near edge's middle",
+     "placed_at": "WashiSheet3 (hung on the rack; sheet 1, outermost, taken first)",
+     "bounds_cm": [
+      [
+       0.0,
+       0.0,
+       -22.0
+      ],
+      [
+       26.03,
+       0.05,
+       22.0
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_WashiSheet4",
+     "slots": [
+      "M_B09_Washi"
+     ],
+     "triangles": 180,
+     "pivot": "its near edge's middle",
+     "placed_at": "WashiSheet4 (hung on the rack; sheet 1, outermost, taken first)",
+     "bounds_cm": [
+      [
+       0.0,
+       0.0,
+       -22.0
+      ],
+      [
+       26.03,
+       0.05,
+       22.0
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_RimTop",
+     "slots": [
+      "M_B09_RimLacquer"
+     ],
+     "triangles": 768,
+     "pivot": "the ring's centre",
+     "placed_at": "RimTopRest, then RimTopSeat",
+     "bounds_cm": [
+      [
+       -9.4,
+       -9.4,
+       -1.0
+      ],
+      [
+       9.4,
+       9.4,
+       1.0
+      ]
+     ],
+     "attributes": [
+      "azimuth_frac",
+      "height_frac"
+     ],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_RimBottom",
+     "slots": [
+      "M_B09_RimLacquer"
+     ],
+     "triangles": 768,
+     "pivot": "the ring's centre",
+     "placed_at": "RimBottomRest, then RimBottomSeat",
+     "bounds_cm": [
+      [
+       -9.4,
+       -9.4,
+       -1.0
+      ],
+      [
+       9.4,
+       9.4,
+       1.0
+      ]
+     ],
+     "attributes": [
+      "azimuth_frac",
+      "height_frac"
+     ],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_PasteBrush",
+     "slots": [
+      "M_B09_Bristle",
+      "M_B09_TimberBench"
+     ],
+     "triangles": 24,
+     "pivot": "the bristles' tip",
+     "placed_at": "BrushRest, then along Seam_0..8",
+     "bounds_cm": [
+      [
+       -3.0,
+       0.0,
+       -0.6
+      ],
+      [
+       3.0,
+       22.0,
+       0.6
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    }
+   ],
+   "first_person": {
+    "hfov_deg": 94.0,
+    "margin_deg": 2.0,
+    "stand": {
+     "16:9": {
+      "seam": {
+       "in_frame": true,
+       "occluded_by": [
+        "SM_B09_Washi3"
+       ],
+       "ok": false
+      }
+     },
+     "21:9": {
+      "seam": {
+       "in_frame": true,
+       "occluded_by": [
+        "SM_B09_Washi3"
+       ],
+       "ok": false
+      }
+     }
+    },
+    "approach": {
+     "16:9": {
+      "seam": 0.6405
+     },
+     "21:9": {
+      "seam": 0.6405
+     }
+    },
+    "approach_positions": 153
+   },
+   "region": {
+    "region": {
+     "depth_cm": 10.0,
+     "lateral_cm": 10.0,
+     "yaw_deg": 10.0
+    },
+    "natural_stop_cm": [
+     -71.0,
+     0.0,
+     0.0
+    ],
+    "look_point_cm": [
+     -41.156,
+     2.842,
+     124.803
+    ],
+    "admission": "admitted(stand, yaw) = x0 - depth_cm <= stand.x <= x0 and |stand.y| <= lateral_cm and |wrap180(yaw - atan2(LookPoint.y - stand.y, LookPoint.x - stand.x))| <= yaw_deg and the capsule (radius 34 cm, half-height 88 cm) clear of every collision proxy; stand = the capsule's axis on the floor; x0 = natural_stop_cm.x (b09_craft_region.admitted)",
+    "near_boundary_cm": [
+     [
+      -71.0,
+      -10.0
+     ],
+     [
+      -71.0,
+      -7.5
+     ],
+     [
+      -71.0,
+      -5.0
+     ],
+     [
+      -71.0,
+      -2.5
+     ],
+     [
+      -71.0,
+      0.0
+     ],
+     [
+      -71.0,
+      2.5
+     ],
+     [
+      -71.0,
+      5.0
+     ],
+     [
+      -71.0,
+      7.5
+     ],
+     [
+      -71.0,
+      10.0
+     ]
+    ],
+    "sampling": {
+     "stands": "33 stands (near boundary, far edge, lateral edges, interior) x 3 facings (the band's ends and middle)",
+     "dense_pose": "395 samples (9 lateral x 6 depths x 5 facings)"
+    },
+    "not_covered": "Unreal's swept capsule, mapped keyboard/controller walk-up, turning, release/retry and backing out are root's evidence (Coordination 271)"
+   },
+   "state_contract": {
+    "steps": [
+     1,
+     2
+    ],
+    "kind": "step 1 a timed hold (PasteMs 1500) per panel; step 2 a press",
+    "Ready": "panel n+1: the frame turned by panel_turn_deg(n + 1) so its seam faces the hero; the left paw has taken sheet n+1 by its near end from the rail (SheetTake); the brush dipped at PasteDip",
+    "Held": "HeldMs 0-400: the left paw lays the sheet on the frame (gore PASTE_ORDER[n], wrapping from the seam toward the hero's left) and holds it by its fingertips at SheetHold; the brush to the lower rim line. 400-1500: the stroke from the lower rim line to the upper (Seam_0..8), the bristle edge turned square at each rim line; paste only where the bristles have swept",
+    "Committed": "Committed[1] = n+1: the left paw lets go, the cradle turns the frame +90 deg, the left takes the next sheet and the brush re-dips (about 800 ms)",
+    "Cancelled": "an early release: after 400 ms the sheet stays laid and held with the paste swept so far, the brush back to the pot; before 400 ms the paw keeps the sheet and returns to Ready",
+    "Retry": "the stroke from the lower rim line again (already pasted washi stays as it is)",
+    "timing_conflict": "a re-press sooner than the completion's ~800 ms (turn, next sheet, re-dip) leaves that preparation unfinished; with no cooldown the presenter must compress it (measured, to be agreed with root)",
+    "rims": "step 2's press seats the top rim from RimTopRest on the upper mouth (RimTopSeat). Measured conflict: on the paste pose the upper mouth is out of reach (151 %); proposed: the cradle re-tilts the frame for the rims (a two-axis cradle bringing the upper mouth to the front, as PASTE_FIRST_POSE did)",
+    "open": "the stroke's last sample at the upper rim line: hidden behind the laid gore from some stands, and reach 98.1-99.8 % / wrist 76-78 deg at the far-left and near-right stands (b09_craft_region)"
+   },
+   "actions": [
+    {
+     "action": "paste a panel",
+     "phases": [
+      {
+       "phase": "take the next sheet; dip the brush",
+       "kind": "phase",
+       "samples": 1,
+       "L": {
+        "from_cm": [
+         -44.0,
+         -16.45,
+         136.48
+        ],
+        "to_cm": [
+         -44.0,
+         -16.45,
+         136.48
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -41.0,
+         29.0,
+         101.0
+        ],
+        "to_cm": [
+         -41.0,
+         29.0,
+         101.0
+        ]
+       }
+      },
+      {
+       "phase": "lay the sheet on the frame; to the seam's lower end",
+       "kind": "transition",
+       "samples": 17,
+       "L": {
+        "from_cm": [
+         -46.5,
+         -16.45,
+         136.48
+        ],
+        "to_cm": [
+         -49.13,
+         -2.31,
+         109.34
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -48.88,
+         28.66,
+         107.18
+        ],
+        "to_cm": [
+         -47.81,
+         -8.39,
+         118.06
+        ]
+       }
+      },
+      {
+       "phase": "paste the seam, rim line to rim line (HeldMs 0-1500)",
+       "kind": "phase",
+       "samples": 33,
+       "L": {
+        "from_cm": [
+         -45.72,
+         0.43,
+         108.69
+        ],
+        "to_cm": [
+         -45.72,
+         0.43,
+         108.69
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -42.04,
+         -15.77,
+         114.5
+        ],
+        "to_cm": [
+         -26.81,
+         24.11,
+         125.16
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "action": "seat the rims (a press clip, at most 1200 ms)",
+     "phases": [
+      {
+       "phase": "take the top rim; steady the frame",
+       "kind": "phase",
+       "samples": 1,
+       "L": {
+        "from_cm": [
+         -13.6,
+         -24.0,
+         157.0
+        ],
+        "to_cm": [
+         -13.6,
+         -24.0,
+         157.0
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -40.95,
+         6.46,
+         120.59
+        ],
+        "to_cm": [
+         -40.95,
+         6.46,
+         120.59
+        ]
+       }
+      },
+      {
+       "phase": "to the upper mouth",
+       "kind": "transition",
+       "samples": 17,
+       "L": {
+        "from_cm": [
+         -13.6,
+         -24.0,
+         158.2
+        ],
+        "to_cm": [
+         -22.66,
+         25.68,
+         126.55
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -40.95,
+         6.46,
+         120.59
+        ],
+        "to_cm": [
+         -40.95,
+         6.46,
+         120.59
+        ]
+       }
+      },
+      {
+       "phase": "seat it",
+       "kind": "phase",
+       "samples": 1,
+       "L": {
+        "from_cm": [
+         -23.08,
+         24.6,
+         126.26
+        ],
+        "to_cm": [
+         -23.08,
+         24.6,
+         126.26
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -40.95,
+         6.46,
+         120.59
+        ],
+        "to_cm": [
+         -40.95,
+         6.46,
+         120.59
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "supports": [
+    {
+     "state": "panel 1 laid; sheets 2-4 on the rack; the top rim on its shelf; the brush in the pot",
+     "rests": [
+      [
+       "SM_B09_WashiSheet4",
+       "SM_B09_SheetRack"
+      ],
+      [
+       "SM_B09_WashiSheet3",
+       "SM_B09_WashiSheet4"
+      ],
+      [
+       "SM_B09_WashiSheet2",
+       "SM_B09_WashiSheet3"
+      ],
+      [
+       "SM_B09_PastePot",
+       "SM_B09_PotBracket"
+      ],
+      [
+       "SM_B09_PasteBrush",
+       "SM_B09_PastePot"
+      ],
+      [
+       "SM_B09_RimBottom",
+       "SM_B09_Form"
+      ],
+      [
+       "SM_B09_PasteCradle",
+       "SM_B09_PasteBench"
+      ],
+      [
+       "SM_B09_PotBracket",
+       "SM_B09_PasteBench"
+      ],
+      [
+       "SM_B09_SheetRack",
+       "SM_B09_PasteBench"
+      ],
+      [
+       "SM_B09_RimShelf",
+       "SM_B09_SheetRack"
+      ],
+      [
+       "SM_B09_RimTop",
+       "SM_B09_RimShelf"
+      ]
+     ]
+    },
+    {
+     "state": "all four panels on; the rims seated",
+     "rests": [
+      [
+       "SM_B09_RimTop",
+       "SM_B09_Form"
+      ],
+      [
+       "SM_B09_RimBottom",
+       "SM_B09_Form"
+      ]
+     ]
+    }
+   ],
+   "paste_order": [
+    1,
+    4,
+    3,
+    2
+   ],
+   "panel_turn_deg": [
+    -90.0,
+    0.0,
+    90.0,
+    180.0
+   ],
+   "adhesive_mask": "paste only where the bristles have swept: the union of the brush's bristle edge (its two corners, PASTE_BRUSH_W apart) along Seam_0..8 up to HeldMs; nothing beyond it"
+  },
+  {
+   "id": "st_b09_oil_rack",
+   "index": 2,
+   "world_cm": [
+    2100.0,
+    -1300.0
+   ],
+   "floor_cm": 45.0,
+   "steps": [
+    3
+   ],
+   "work_stand": {
+    "local_cm": [
+     -70.0,
+     0.0,
+     0.0
+    ],
+    "yaw_deg": 0.0,
+    "note": "the craft stand: the capsule 1 cm clear of the proxy's front (b09_craft_poses.py)"
+   },
+   "work_point_cm": [
+    -40.5,
+    5.07,
+    125.36
+   ],
+   "parts": [
+    {
+     "name": "SM_B09_OilRack",
+     "slots": [
+      "M_B09_TimberBench"
+     ],
+     "triangles": 120,
+     "bounds_cm": [
+      [
+       -41.0,
+       -48.0,
+       0.0
+      ],
+      [
+       35.0,
+       48.0,
+       171.2
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_RackHook",
+     "slots": [
+      "M_B09_Iron"
+     ],
+     "triangles": 320,
+     "bounds_cm": [
+      [
+       -30.23,
+       -0.35,
+       147.37
+      ],
+      [
+       -2.5,
+       0.35,
+       164.03
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_DishStand",
+     "slots": [
+      "M_B09_Iron",
+      "M_B09_TimberBench"
+     ],
+     "triangles": 676,
+     "bounds_cm": [
+      [
+       -40.4,
+       15.6,
+       20.5
+      ],
+      [
+       -27.6,
+       28.4,
+       117.6
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_OilDish",
+     "slots": [
+      "M_B09_Ceramic"
+     ],
+     "triangles": 480,
+     "bounds_cm": [
+      [
+       -40.0,
+       16.0,
+       116.8
+      ],
+      [
+       -28.0,
+       28.0,
+       118.6
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_OilJar",
+     "slots": [
+      "M_B09_Ceramic"
+     ],
+     "triangles": 1024,
+     "bounds_cm": [
+      [
+       1.0,
+       15.0,
+       20.5
+      ],
+      [
+       19.0,
+       33.0,
+       44.5
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_DripTray",
+     "slots": [
+      "M_B09_Ceramic"
+     ],
+     "triangles": 512,
+     "bounds_cm": [
+      [
+       -40.0,
+       -11.0,
+       20.5
+      ],
+      [
+       -18.0,
+       11.0,
+       22.5
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    }
+   ],
+   "sockets": {
+    "BrushRest": {
+     "cm": [
+      -40.2,
+      22.0,
+      119.2
+     ],
+     "x_axis": [
+      0.0,
+      -1.0,
+      0.0
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "LanternHang": {
+     "cm": [
+      -29.0,
+      0.0,
+      148.2
+     ]
+    },
+    "LanternSteady": {
+     "cm": [
+      -42.664,
+      -4.973,
+      126.0
+     ],
+     "x_axis": [
+      -0.928504,
+      -0.337948,
+      0.153854
+     ]
+    },
+    "LookPoint": {
+     "cm": [
+      -40.499,
+      5.067,
+      125.362
+     ]
+    },
+    "OilDip": {
+     "cm": [
+      -34.0,
+      22.0,
+      118.0
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "OilJar": {
+     "cm": [
+      10.0,
+      24.0,
+      44.5
+     ]
+    },
+    "OilSwath_0": {
+     "cm": [
+      -38.882,
+      0.865,
+      136.0
+     ]
+    },
+    "OilSwath_1": {
+     "cm": [
+      -42.091,
+      1.145,
+      133.25
+     ]
+    },
+    "OilSwath_2": {
+     "cm": [
+      -43.124,
+      1.236,
+      130.5
+     ]
+    },
+    "OilSwath_3": {
+     "cm": [
+      -43.777,
+      1.293,
+      127.75
+     ]
+    },
+    "OilSwath_4": {
+     "cm": [
+      -44.228,
+      1.332,
+      125.0
+     ]
+    },
+    "OilSwath_5": {
+     "cm": [
+      -44.535,
+      1.359,
+      122.25
+     ]
+    },
+    "OilSwath_6": {
+     "cm": [
+      -44.729,
+      1.376,
+      119.5
+     ]
+    },
+    "OilSwath_7": {
+     "cm": [
+      -44.831,
+      1.385,
+      116.75
+     ]
+    },
+    "OilSwath_8": {
+     "cm": [
+      -44.859,
+      1.388,
+      114.0
+     ]
+    },
+    "StationPoint": {
+     "cm": [
+      0.0,
+      0.0,
+      110.0
+     ]
+    },
+    "WorkStand": {
+     "cm": [
+      -70.0,
+      0.0,
+      0.0
+     ],
+     "x_axis": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    }
+   },
+   "collision_proxies": [
+    {
+     "lo_cm": [
+      -36.0,
+      -52.0,
+      0.0
+     ],
+     "hi_cm": [
+      36.0,
+      52.0,
+      78.0
+     ]
+    }
+   ],
+   "states": [
+    {
+     "view": "Committed[2] == 1, Committed[3] == 0",
+     "shows": "the papered, rimmed lantern (bail fitted, form drawn out) on LanternHang, oiled but for its remaining swath; before that the rack is empty"
+    },
+    {
+     "view": "HeldStep == 3, HeldMs",
+     "shows": "STATE_CONTRACT: the brush from OilDip to the swath's top, then down OilSwath_0..8; the washi wet only where the bristles have swept; the other paw's fingertips steady the lantern (LanternSteady)"
+    },
+    {
+     "view": "Committed[3] == 1",
+     "shows": "the rack empties; the lantern hangs at PLAYER_SLOT in the rafters"
+    }
+   ],
+   "clearance": {
+    "posture": "standing: rays from the capsule's centre at 88 cm. Crouched (half-height 44) is not covered by this proof; crouched and native coverage are root's",
+    "eligible_positions": 1454,
+    "grid_cm": 10.0,
+    "rays_blocked_by_proposed_proxies": 0,
+    "rays_blocked_by_room_today": 0,
+    "crouched_estimate": {
+     "ray_from_cm": 44.0,
+     "rays_blocked_by_proposed_proxies": 98,
+     "note": "a CPU estimate on the same plan positions and boxes, not root's coverage"
+    },
+    "work_stand_eligible": true,
+    "work_stand_ray_clear": true,
+    "capsule_gap_cm": -5.0,
+    "eye_to_work_cm": 37.2,
+    "eye_pitch_deg": -45.7,
+    "sight_occluded_by": [],
+    "proxy_tops_cm": [
+     78.0
+    ]
+   },
+   "state_meshes": [
+    {
+     "name": "SM_B09_LanternFinished",
+     "slots": [
+      "M_B09_Bamboo",
+      "M_B09_Iron",
+      "M_B09_RimLacquer",
+      "M_B09_Washi"
+     ],
+     "triangles": 30348,
+     "pivot": "the lantern's centre; it hangs from its hang point",
+     "placed_at": "LanternHang - hang_point",
+     "bounds_cm": [
+      [
+       -15.28,
+       -15.24,
+       -24.0
+      ],
+      [
+       15.26,
+       15.28,
+       34.3
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_OilBrush",
+     "slots": [
+      "M_B09_Bristle",
+      "M_B09_TimberBench"
+     ],
+     "triangles": 24,
+     "pivot": "the bristles' tip",
+     "placed_at": "BrushRest, then along OilStroke*",
+     "bounds_cm": [
+      [
+       -2.5,
+       0.0,
+       -0.6
+      ],
+      [
+       2.5,
+       20.0,
+       0.6
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    }
+   ],
+   "first_person": {
+    "hfov_deg": 94.0,
+    "margin_deg": 2.0,
+    "stand": {
+     "16:9": {
+      "oil swath": {
+       "in_frame": true,
+       "occluded_by": [],
+       "ok": true
+      }
+     },
+     "21:9": {
+      "oil swath": {
+       "in_frame": true,
+       "occluded_by": [],
+       "ok": true
+      }
+     }
+    },
+    "approach": {
+     "16:9": {
+      "oil swath": 1.0
+     },
+     "21:9": {
+      "oil swath": 1.0
+     }
+    },
+    "approach_positions": 149
+   },
+   "region": {
+    "region": {
+     "depth_cm": 15.0,
+     "lateral_cm": 10.0,
+     "yaw_deg": 10.0
+    },
+    "natural_stop_cm": [
+     -70.0,
+     0.0,
+     0.0
+    ],
+    "look_point_cm": [
+     -40.499,
+     5.067,
+     125.362
+    ],
+    "admission": "admitted(stand, yaw) = x0 - depth_cm <= stand.x <= x0 and |stand.y| <= lateral_cm and |wrap180(yaw - atan2(LookPoint.y - stand.y, LookPoint.x - stand.x))| <= yaw_deg and the capsule (radius 34 cm, half-height 88 cm) clear of every collision proxy; stand = the capsule's axis on the floor; x0 = natural_stop_cm.x (b09_craft_region.admitted)",
+    "near_boundary_cm": [
+     [
+      -70.0,
+      -10.0
+     ],
+     [
+      -70.0,
+      -7.5
+     ],
+     [
+      -70.0,
+      -5.0
+     ],
+     [
+      -70.0,
+      -2.5
+     ],
+     [
+      -70.0,
+      0.0
+     ],
+     [
+      -70.0,
+      2.5
+     ],
+     [
+      -70.0,
+      5.0
+     ],
+     [
+      -70.0,
+      7.5
+     ],
+     [
+      -70.0,
+      10.0
+     ]
+    ],
+    "sampling": {
+     "stands": "33 stands (near boundary, far edge, lateral edges, interior) x 3 facings (the band's ends and middle)",
+     "dense_pose": "395 samples (9 lateral x 6 depths x 5 facings)"
+    },
+    "not_covered": "Unreal's swept capsule, mapped keyboard/controller walk-up, turning, release/retry and backing out are root's evidence (Coordination 271)"
+   },
+   "state_contract": {
+    "step": 3,
+    "kind": "timed hold, PasteMs 1500",
+    "Ready": "the left paw's fingertips steady the hanging lantern (LanternSteady); the right brush dipped at OilDip",
+    "Held": "HeldMs 0-300: the carry from the dish to the swath's top (OilSwath_0, sagging OIL carry_lift_cm); 300-1500: the stroke down the remaining swath (OilSwath_0..8); the washi is wet only where the bristles have swept (the swept footprint, a monotone union)",
+    "Committed": "Committed[3] = 1: the brush back to BrushRest; the lantern leaves the rack for PLAYER_SLOT",
+    "Cancelled": "early release: the wetness swept so far stays; the brush returns to the dish (Ready)",
+    "Retry": "the stroke from the swath's top again; already-wet washi stays as it is"
+   },
+   "actions": [
+    {
+     "action": "finish the remaining swath",
+     "phases": [
+      {
+       "phase": "dip the brush; steady the lantern",
+       "kind": "phase",
+       "samples": 1,
+       "L": {
+        "from_cm": [
+         -42.66,
+         -4.97,
+         126.0
+        ],
+        "to_cm": [
+         -42.66,
+         -4.97,
+         126.0
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -34.0,
+         22.0,
+         118.0
+        ],
+        "to_cm": [
+         -34.0,
+         22.0,
+         118.0
+        ]
+       }
+      },
+      {
+       "phase": "to the swath's top, at the top rim line",
+       "kind": "transition",
+       "samples": 17,
+       "L": {
+        "from_cm": [
+         -42.66,
+         -4.97,
+         126.0
+        ],
+        "to_cm": [
+         -42.66,
+         -4.97,
+         126.0
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -43.47,
+         23.23,
+         121.06
+        ],
+        "to_cm": [
+         -48.2,
+         4.23,
+         134.48
+        ]
+       }
+      },
+      {
+       "phase": "finish the swath (HeldMs 0-1500)",
+       "kind": "phase",
+       "samples": 33,
+       "L": {
+        "from_cm": [
+         -42.66,
+         -4.97,
+         126.0
+        ],
+        "to_cm": [
+         -42.66,
+         -4.97,
+         126.0
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -38.88,
+         0.86,
+         136.0
+        ],
+        "to_cm": [
+         -44.86,
+         1.39,
+         114.0
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "supports": [
+    {
+     "state": "the finished lantern hung; the brush at rest",
+     "rests": [
+      [
+       "SM_B09_OilBrush",
+       "SM_B09_OilDish"
+      ],
+      [
+       "SM_B09_OilDish",
+       "SM_B09_DishStand"
+      ],
+      [
+       "SM_B09_DishStand",
+       "SM_B09_OilRack"
+      ],
+      [
+       "SM_B09_Bail",
+       "SM_B09_RackHook"
+      ],
+      [
+       "SM_B09_OilJar",
+       "SM_B09_OilRack"
+      ],
+      [
+       "SM_B09_DripTray",
+       "SM_B09_OilRack"
+      ]
+     ]
+    }
+   ],
+   "wetness_mask": {
+    "swath_sockets": [
+     "OilSwath_0",
+     "OilSwath_1",
+     "OilSwath_2",
+     "OilSwath_3",
+     "OilSwath_4",
+     "OilSwath_5",
+     "OilSwath_6",
+     "OilSwath_7",
+     "OilSwath_8"
+    ],
+    "swath": {
+     "az_deg": 175.0,
+     "s_cm": [
+      22.0,
+      0.0
+     ],
+     "offset_cm": 0.7,
+     "half_width_cm": 2.5,
+     "contact_cm": 1.5,
+     "square_cm": 4.0,
+     "square": 1.0,
+     "tilt": 0.1
+    },
+    "rule": "wet only where the bristles have swept: the union of the bristle edge's footprint along OilSwath_0..8 up to HeldMs; the rest of the lantern was oiled before (Committed[2]) and the remaining swath is what the hold finishes"
+   }
+  },
+  {
+   "id": "st_b09_shell_bench",
+   "index": 3,
+   "world_cm": [
+    2790.0,
+    -2050.0
+   ],
+   "floor_cm": 0.0,
+   "steps": [
+    4,
+    5
+   ],
+   "work_stand": {
+    "local_cm": [
+     -71.0,
+     0.0,
+     0.0
+    ],
+    "yaw_deg": 0.0,
+    "note": "the craft stand: the capsule 1 cm clear of the proxy's front (b09_craft_poses.py)"
+   },
+   "work_point_cm": [
+    -41.0,
+    0.0,
+    123.95
+   ],
+   "parts": [
+    {
+     "name": "SM_B09_ShellBench",
+     "slots": [
+      "M_B09_TimberBench"
+     ],
+     "triangles": 84,
+     "bounds_cm": [
+      [
+       -35.0,
+       -60.0,
+       0.0
+      ],
+      [
+       35.0,
+       60.0,
+       72.0
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_ShellStand",
+     "slots": [
+      "M_B09_TimberBench"
+     ],
+     "triangles": 60,
+     "bounds_cm": [
+      [
+       -48.0,
+       -23.5,
+       72.0
+      ],
+      [
+       -26.5,
+       15.6,
+       110.0
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_WeaponCradle",
+     "slots": [
+      "M_B09_Iron",
+      "M_B09_TimberBench"
+     ],
+     "triangles": 792,
+     "bounds_cm": [
+      [
+       -26.02,
+       -5.02,
+       72.0
+      ],
+      [
+       -10.5,
+       5.02,
+       94.0
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_ShellRack",
+     "slots": [
+      "M_B09_TimberBench"
+     ],
+     "triangles": 1164,
+     "bounds_cm": [
+      [
+       -47.5,
+       -23.3,
+       110.0
+      ],
+      [
+       -38.5,
+       -4.3,
+       113.2
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_ShellTray",
+     "slots": [
+      "M_B09_TimberBench"
+     ],
+     "triangles": 512,
+     "bounds_cm": [
+      [
+       -48.2,
+       3.6,
+       110.0
+      ],
+      [
+       -36.4,
+       15.4,
+       112.4
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_WrapPost",
+     "slots": [
+      "M_B09_TimberBench"
+     ],
+     "triangles": 576,
+     "bounds_cm": [
+      [
+       -45.4,
+       -3.65,
+       110.0
+      ],
+      [
+       -38.6,
+       3.15,
+       124.0
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_WrapPaper",
+     "slots": [
+      "M_B09_ShellPaper"
+     ],
+     "triangles": 12,
+     "bounds_cm": [
+      [
+       -45.2,
+       -3.45,
+       124.0
+      ],
+      [
+       -38.8,
+       2.95,
+       124.2
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_FuseCoil",
+     "slots": [
+      "M_B09_FuseCord"
+     ],
+     "triangles": 1800,
+     "bounds_cm": [
+      [
+       -36.59,
+       -5.65,
+       110.01
+      ],
+      [
+       -28.05,
+       2.27,
+       110.49
+      ]
+     ],
+     "pivot": "station frame origin",
+     "collision": "none (visual only)"
+    }
+   ],
+   "sockets": {
+    "FuseCheck1": {
+     "cm": [
+      -43.7,
+      -7.6,
+      121.2
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "FuseCheck2": {
+     "cm": [
+      -42.5,
+      -13.8,
+      121.2
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "FuseCheck3": {
+     "cm": [
+      -41.3,
+      -20.0,
+      121.2
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "FuseCoil": {
+     "cm": [
+      -32.0,
+      -2.0,
+      110.5
+     ]
+    },
+    "LookPoint": {
+     "cm": [
+      -41.0,
+      0.0,
+      123.947
+     ]
+    },
+    "Muzzle": {
+     "cm": [
+      -21.0,
+      0.0,
+      158.0
+     ],
+     "x_axis": [
+      0.0,
+      0.0,
+      1.0
+     ],
+     "z_axis": [
+      -1.0,
+      0.0,
+      0.0
+     ]
+    },
+    "ShellCore1": {
+     "cm": [
+      -40.875,
+      11.968,
+      113.2
+     ]
+    },
+    "ShellCore2": {
+     "cm": [
+      -45.15,
+      9.5,
+      113.2
+     ]
+    },
+    "ShellCore3": {
+     "cm": [
+      -40.875,
+      7.032,
+      113.2
+     ]
+    },
+    "ShellSeat1": {
+     "cm": [
+      -44.2,
+      -7.6,
+      113.9
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "ShellSeat2": {
+     "cm": [
+      -43.0,
+      -13.8,
+      113.9
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "ShellSeat3": {
+     "cm": [
+      -41.8,
+      -20.0,
+      113.9
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "StationPoint": {
+     "cm": [
+      0.0,
+      0.0,
+      110.0
+     ]
+    },
+    "TubeFuse": {
+     "cm": [
+      -27.0,
+      -1.2,
+      94.2
+     ],
+     "x_axis": [
+      0.0,
+      0.0,
+      1.0
+     ],
+     "z_axis": [
+      -1.0,
+      0.0,
+      0.0
+     ]
+    },
+    "WeaponRest": {
+     "cm": [
+      -21.0,
+      0.0,
+      94.0
+     ],
+     "x_axis": [
+      0.0,
+      0.0,
+      1.0
+     ],
+     "z_axis": [
+      -1.0,
+      0.0,
+      0.0
+     ]
+    },
+    "WorkStand": {
+     "cm": [
+      -71.0,
+      0.0,
+      0.0
+     ],
+     "x_axis": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "z_axis": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "WrapPaper": {
+     "cm": [
+      -42.0,
+      -0.25,
+      126.9
+     ]
+    },
+    "WrapSpot": {
+     "cm": [
+      -42.0,
+      -0.25,
+      133.9
+     ]
+    }
+   },
+   "collision_proxies": [
+    {
+     "lo_cm": [
+      -37.0,
+      -62.0,
+      0.0
+     ],
+     "hi_cm": [
+      37.0,
+      62.0,
+      75.0
+     ]
+    }
+   ],
+   "states": [
+    {
+     "view": "Committed[4] = n (0..3)",
+     "shows": "n wrapped shells seated (ShellSeat1..n) in the rack's cups; 3 - n cores in the tray. Each press: a clip, the core taken, wrapped and twisted over the paper (WrapSpot) and seated"
+    },
+    {
+     "view": "Committed[5] == 1",
+     "shows": "the fuses checked (Coordination 277): a press clip, the left paw over the three seated shells' fuse cord tips (FuseCheck3 to FuseCheck1); weapon 7, the tube, stands in its block behind the board, clear of the hand path, and is handed over at the beat's end"
+    }
+   ],
+   "clearance": {
+    "posture": "standing: rays from the capsule's centre at 88 cm. Crouched (half-height 44) is not covered by this proof; crouched and native coverage are root's",
+    "eligible_positions": 1336,
+    "grid_cm": 10.0,
+    "rays_blocked_by_proposed_proxies": 0,
+    "rays_blocked_by_room_today": 386,
+    "crouched_estimate": {
+     "ray_from_cm": 44.0,
+     "rays_blocked_by_proposed_proxies": 56,
+     "note": "a CPU estimate on the same plan positions and boxes, not root's coverage"
+    },
+    "work_stand_eligible": true,
+    "work_stand_ray_clear": true,
+    "capsule_gap_cm": -11.0,
+    "eye_to_work_cm": 38.2,
+    "eye_pitch_deg": -47.2,
+    "sight_occluded_by": [],
+    "proxy_tops_cm": [
+     75.0
+    ]
+   },
+   "state_meshes": [
+    {
+     "name": "SM_B09_ShellCore",
+     "slots": [
+      "M_B09_FuseCord",
+      "M_B09_ShellCore"
+     ],
+     "triangles": 2268,
+     "pivot": "its centre",
+     "placed_at": "ShellCore1..3",
+     "bounds_cm": [
+      [
+       -2.4,
+       -2.4,
+       -2.4
+      ],
+      [
+       2.4,
+       2.4,
+       5.45
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    },
+    {
+     "name": "SM_B09_ShellWrapped",
+     "slots": [
+      "M_B09_FuseCord",
+      "M_B09_ShellPaper",
+      "M_B09_Twine"
+     ],
+     "triangles": 2652,
+     "pivot": "its centre",
+     "placed_at": "WrapSpot, then ShellSeat1..3",
+     "bounds_cm": [
+      [
+       -2.7,
+       -2.7,
+       -2.7
+      ],
+      [
+       2.7,
+       2.7,
+       7.35
+      ]
+     ],
+     "attributes": [],
+     "collision": "none (visual only)"
+    }
+   ],
+   "first_person": {
+    "hfov_deg": 94.0,
+    "margin_deg": 2.0,
+    "stand": {
+     "16:9": {
+      "shells": {
+       "in_frame": true,
+       "occluded_by": [],
+       "ok": true
+      },
+      "fuses": {
+       "in_frame": true,
+       "occluded_by": [],
+       "ok": true
+      }
+     },
+     "21:9": {
+      "shells": {
+       "in_frame": true,
+       "occluded_by": [],
+       "ok": true
+      },
+      "fuses": {
+       "in_frame": true,
+       "occluded_by": [],
+       "ok": true
+      }
+     }
+    },
+    "approach": {
+     "16:9": {
+      "shells": 1.0,
+      "fuses": 0.9922
+     },
+     "21:9": {
+      "shells": 1.0,
+      "fuses": 0.9922
+     }
+    },
+    "approach_positions": 129
+   },
+   "region": {
+    "region": {
+     "depth_cm": 15.0,
+     "lateral_cm": 10.0,
+     "yaw_deg": 10.0
+    },
+    "natural_stop_cm": [
+     -71.0,
+     0.0,
+     0.0
+    ],
+    "look_point_cm": [
+     -41.0,
+     0.0,
+     123.947
+    ],
+    "admission": "admitted(stand, yaw) = x0 - depth_cm <= stand.x <= x0 and |stand.y| <= lateral_cm and |wrap180(yaw - atan2(LookPoint.y - stand.y, LookPoint.x - stand.x))| <= yaw_deg and the capsule (radius 34 cm, half-height 88 cm) clear of every collision proxy; stand = the capsule's axis on the floor; x0 = natural_stop_cm.x (b09_craft_region.admitted)",
+    "near_boundary_cm": [
+     [
+      -71.0,
+      -10.0
+     ],
+     [
+      -71.0,
+      -7.5
+     ],
+     [
+      -71.0,
+      -5.0
+     ],
+     [
+      -71.0,
+      -2.5
+     ],
+     [
+      -71.0,
+      0.0
+     ],
+     [
+      -71.0,
+      2.5
+     ],
+     [
+      -71.0,
+      5.0
+     ],
+     [
+      -71.0,
+      7.5
+     ],
+     [
+      -71.0,
+      10.0
+     ]
+    ],
+    "sampling": {
+     "stands": "33 stands (near boundary, far edge, lateral edges, interior) x 3 facings (the band's ends and middle)",
+     "dense_pose": "395 samples (9 lateral x 6 depths x 5 facings)"
+    },
+    "not_covered": "Unreal's swept capsule, mapped keyboard/controller walk-up, turning, release/retry and backing out are root's evidence (Coordination 271)"
+   },
+   "state_contract": {
+    "steps": [
+     4,
+     5
+    ],
+    "kind": "press steps (credited at the press)",
+    "Committed[4]": "each press: a clip of at most 1200 ms over LastAction.AgeMs: take core k, to the paper, wrap and twist, to the rack, seat it (five phases, about 240 ms each)",
+    "Committed[5]": "the Inspect press (Coordination 277): a clip of at most 900 ms; the left paw passes over the three seated shells' fuse cord tips, FuseCheck3 to FuseCheck1, its elbow raised over them; nothing is lit, loaded or discharged; recipe counts, timing, reward and b10's charge fuse are unchanged; weapon 7 stays in its block, clear of the hand path",
+    "cancellation": "as every press step: credited at the press, so leaving or crouching mid-clip only stops presenting it; nothing to retry"
+   },
+   "actions": [
+    {
+     "action": "wrap and seat shell 1 (a press clip, at most 1200 ms)",
+     "phases": [
+      {
+       "phase": "take a core",
+       "kind": "phase",
+       "samples": 1,
+       "L": {
+        "from_cm": [
+         -42.63,
+         -1.98,
+         135.88
+        ],
+        "to_cm": [
+         -42.63,
+         -1.98,
+         135.88
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -40.88,
+         11.97,
+         118.65
+        ],
+        "to_cm": [
+         -40.88,
+         11.97,
+         118.65
+        ]
+       }
+      },
+      {
+       "phase": "to the paper",
+       "kind": "transition",
+       "samples": 17,
+       "L": {
+        "from_cm": [
+         -42.63,
+         -1.98,
+         135.88
+        ],
+        "to_cm": [
+         -42.63,
+         -1.98,
+         135.88
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -40.88,
+         11.97,
+         120.05
+        ],
+        "to_cm": [
+         -43.09,
+         2.75,
+         137.34
+        ]
+       }
+      },
+      {
+       "phase": "wrap and twist",
+       "kind": "phase",
+       "samples": 1,
+       "L": {
+        "from_cm": [
+         -42.63,
+         -1.98,
+         135.88
+        ],
+        "to_cm": [
+         -42.63,
+         -1.98,
+         135.88
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -42.63,
+         1.48,
+         135.88
+        ],
+        "to_cm": [
+         -42.63,
+         1.48,
+         135.88
+        ]
+       }
+      },
+      {
+       "phase": "to the rack (the right paw lets go)",
+       "kind": "transition",
+       "samples": 17,
+       "L": {
+        "from_cm": [
+         -43.09,
+         -3.25,
+         137.34
+        ],
+        "to_cm": [
+         -44.2,
+         -7.6,
+         122.65
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -42.63,
+         1.48,
+         135.88
+        ],
+        "to_cm": [
+         -42.63,
+         1.48,
+         135.88
+        ]
+       }
+      },
+      {
+       "phase": "seat it",
+       "kind": "phase",
+       "samples": 1,
+       "L": {
+        "from_cm": [
+         -44.2,
+         -7.6,
+         121.25
+        ],
+        "to_cm": [
+         -44.2,
+         -7.6,
+         121.25
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -42.63,
+         1.48,
+         135.88
+        ],
+        "to_cm": [
+         -42.63,
+         1.48,
+         135.88
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "action": "wrap and seat shell 2 (a press clip, at most 1200 ms)",
+     "phases": [
+      {
+       "phase": "take a core",
+       "kind": "phase",
+       "samples": 1,
+       "L": {
+        "from_cm": [
+         -42.63,
+         -1.98,
+         135.88
+        ],
+        "to_cm": [
+         -42.63,
+         -1.98,
+         135.88
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -45.15,
+         9.5,
+         118.65
+        ],
+        "to_cm": [
+         -45.15,
+         9.5,
+         118.65
+        ]
+       }
+      },
+      {
+       "phase": "to the paper",
+       "kind": "transition",
+       "samples": 17,
+       "L": {
+        "from_cm": [
+         -42.63,
+         -1.98,
+         135.88
+        ],
+        "to_cm": [
+         -42.63,
+         -1.98,
+         135.88
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -45.15,
+         9.5,
+         120.05
+        ],
+        "to_cm": [
+         -43.09,
+         2.75,
+         137.34
+        ]
+       }
+      },
+      {
+       "phase": "wrap and twist",
+       "kind": "phase",
+       "samples": 1,
+       "L": {
+        "from_cm": [
+         -42.63,
+         -1.98,
+         135.88
+        ],
+        "to_cm": [
+         -42.63,
+         -1.98,
+         135.88
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -42.63,
+         1.48,
+         135.88
+        ],
+        "to_cm": [
+         -42.63,
+         1.48,
+         135.88
+        ]
+       }
+      },
+      {
+       "phase": "to the rack (the right paw lets go)",
+       "kind": "transition",
+       "samples": 17,
+       "L": {
+        "from_cm": [
+         -43.09,
+         -3.25,
+         137.34
+        ],
+        "to_cm": [
+         -43.0,
+         -13.8,
+         122.65
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -42.63,
+         1.48,
+         135.88
+        ],
+        "to_cm": [
+         -42.63,
+         1.48,
+         135.88
+        ]
+       }
+      },
+      {
+       "phase": "seat it",
+       "kind": "phase",
+       "samples": 1,
+       "L": {
+        "from_cm": [
+         -43.0,
+         -13.8,
+         121.25
+        ],
+        "to_cm": [
+         -43.0,
+         -13.8,
+         121.25
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -42.63,
+         1.48,
+         135.88
+        ],
+        "to_cm": [
+         -42.63,
+         1.48,
+         135.88
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "action": "wrap and seat shell 3 (a press clip, at most 1200 ms)",
+     "phases": [
+      {
+       "phase": "take a core",
+       "kind": "phase",
+       "samples": 1,
+       "L": {
+        "from_cm": [
+         -42.63,
+         -1.98,
+         135.88
+        ],
+        "to_cm": [
+         -42.63,
+         -1.98,
+         135.88
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -40.88,
+         7.03,
+         118.65
+        ],
+        "to_cm": [
+         -40.88,
+         7.03,
+         118.65
+        ]
+       }
+      },
+      {
+       "phase": "to the paper",
+       "kind": "transition",
+       "samples": 17,
+       "L": {
+        "from_cm": [
+         -42.63,
+         -1.98,
+         135.88
+        ],
+        "to_cm": [
+         -42.63,
+         -1.98,
+         135.88
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -40.88,
+         7.03,
+         120.05
+        ],
+        "to_cm": [
+         -43.09,
+         2.75,
+         137.34
+        ]
+       }
+      },
+      {
+       "phase": "wrap and twist",
+       "kind": "phase",
+       "samples": 1,
+       "L": {
+        "from_cm": [
+         -42.63,
+         -1.98,
+         135.88
+        ],
+        "to_cm": [
+         -42.63,
+         -1.98,
+         135.88
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -42.63,
+         1.48,
+         135.88
+        ],
+        "to_cm": [
+         -42.63,
+         1.48,
+         135.88
+        ]
+       }
+      },
+      {
+       "phase": "to the rack (the right paw lets go)",
+       "kind": "transition",
+       "samples": 17,
+       "L": {
+        "from_cm": [
+         -43.09,
+         -3.25,
+         137.34
+        ],
+        "to_cm": [
+         -41.8,
+         -20.0,
+         122.65
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -42.63,
+         1.48,
+         135.88
+        ],
+        "to_cm": [
+         -42.63,
+         1.48,
+         135.88
+        ]
+       }
+      },
+      {
+       "phase": "seat it",
+       "kind": "phase",
+       "samples": 1,
+       "L": {
+        "from_cm": [
+         -41.8,
+         -20.0,
+         121.25
+        ],
+        "to_cm": [
+         -41.8,
+         -20.0,
+         121.25
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -42.63,
+         1.48,
+         135.88
+        ],
+        "to_cm": [
+         -42.63,
+         1.48,
+         135.88
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "action": "check the fuses (a press clip, at most 900 ms)",
+     "phases": [
+      {
+       "phase": "along the fuse cords, shell 3 to shell 1",
+       "kind": "phase",
+       "samples": 17,
+       "L": {
+        "from_cm": [
+         -41.8,
+         -20.0,
+         121.25
+        ],
+        "to_cm": [
+         -44.2,
+         -7.6,
+         121.25
+        ]
+       },
+       "R": {
+        "from_cm": [
+         -42.63,
+         1.48,
+         135.88
+        ],
+        "to_cm": [
+         -42.63,
+         1.48,
+         135.88
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "supports": [
+    {
+     "state": "every core in the tray, every seat filled; weapon 7 in its block",
+     "rests": [
+      [
+       "SM_B09_ShellWrapped1",
+       "SM_B09_ShellRack"
+      ],
+      [
+       "SM_B09_ShellWrapped2",
+       "SM_B09_ShellRack"
+      ],
+      [
+       "SM_B09_ShellWrapped3",
+       "SM_B09_ShellRack"
+      ],
+      [
+       "SM_B09_ShellCore1",
+       "SM_B09_ShellTray"
+      ],
+      [
+       "SM_B09_ShellCore2",
+       "SM_B09_ShellTray"
+      ],
+      [
+       "SM_B09_ShellCore3",
+       "SM_B09_ShellTray"
+      ],
+      [
+       "SM_B09_ShellRack",
+       "SM_B09_ShellStand"
+      ],
+      [
+       "SM_B09_ShellTray",
+       "SM_B09_ShellStand"
+      ],
+      [
+       "SM_B09_WrapPost",
+       "SM_B09_ShellStand"
+      ],
+      [
+       "SM_B09_FuseCoil",
+       "SM_B09_ShellStand"
+      ],
+      [
+       "SM_B09_WrapPaper",
+       "SM_B09_WrapPost"
+      ],
+      [
+       "SM_Weapon_07",
+       "SM_B09_WeaponCradle"
+      ],
+      [
+       "SM_B09_ShellStand",
+       "SM_B09_ShellBench"
+      ]
+     ]
+    }
+   ]
+  }
+ ],
+ "hanging_output": {
+  "poles_y_cm": [
+   -560.0,
+   -820.0,
+   -1080.0,
+   -1340.0
+  ],
+  "pole_z_cm": 395.0,
+  "pole_x_cm": [
+   1795.0,
+   2305.0
+  ],
+  "slots": [
+   {
+    "slot": 1,
+    "hook_cm": [
+     1830.0,
+     -557.6,
+     391.0
+    ],
+    "yaw_deg": 90.0
+   },
+   {
+    "slot": 2,
+    "hook_cm": [
+     1880.0,
+     -557.6,
+     391.0
+    ],
+    "yaw_deg": 270.0
+   },
+   {
+    "slot": 3,
+    "hook_cm": [
+     1930.0,
+     -557.6,
+     391.0
+    ],
+    "yaw_deg": 90.0
+   },
+   {
+    "slot": 4,
+    "hook_cm": [
+     1980.0,
+     -557.6,
+     391.0
+    ],
+    "yaw_deg": 270.0
+   },
+   {
+    "slot": 5,
+    "hook_cm": [
+     2030.0,
+     -557.6,
+     391.0
+    ],
+    "yaw_deg": 90.0
+   },
+   {
+    "slot": 6,
+    "hook_cm": [
+     2080.0,
+     -557.6,
+     391.0
+    ],
+    "yaw_deg": 270.0
+   },
+   {
+    "slot": 7,
+    "hook_cm": [
+     2130.0,
+     -557.6,
+     391.0
+    ],
+    "yaw_deg": 90.0
+   },
+   {
+    "slot": 8,
+    "hook_cm": [
+     2180.0,
+     -557.6,
+     391.0
+    ],
+    "yaw_deg": 270.0
+   },
+   {
+    "slot": 9,
+    "hook_cm": [
+     2230.0,
+     -557.6,
+     391.0
+    ],
+    "yaw_deg": 90.0
+   },
+   {
+    "slot": 10,
+    "hook_cm": [
+     2280.0,
+     -557.6,
+     391.0
+    ],
+    "yaw_deg": 270.0
+   },
+   {
+    "slot": 11,
+    "hook_cm": [
+     1830.0,
+     -817.6,
+     391.0
+    ],
+    "yaw_deg": 270.0
+   },
+   {
+    "slot": 12,
+    "hook_cm": [
+     1880.0,
+     -817.6,
+     391.0
+    ],
+    "yaw_deg": 90.0
+   },
+   {
+    "slot": 13,
+    "hook_cm": [
+     1930.0,
+     -817.6,
+     391.0
+    ],
+    "yaw_deg": 270.0
+   },
+   {
+    "slot": 14,
+    "hook_cm": [
+     1980.0,
+     -817.6,
+     391.0
+    ],
+    "yaw_deg": 90.0
+   },
+   {
+    "slot": 15,
+    "hook_cm": [
+     2030.0,
+     -817.6,
+     391.0
+    ],
+    "yaw_deg": 270.0
+   },
+   {
+    "slot": 16,
+    "hook_cm": [
+     2080.0,
+     -817.6,
+     391.0
+    ],
+    "yaw_deg": 90.0
+   },
+   {
+    "slot": 17,
+    "hook_cm": [
+     2130.0,
+     -817.6,
+     391.0
+    ],
+    "yaw_deg": 270.0
+   },
+   {
+    "slot": 18,
+    "hook_cm": [
+     2180.0,
+     -817.6,
+     391.0
+    ],
+    "yaw_deg": 90.0
+   },
+   {
+    "slot": 19,
+    "hook_cm": [
+     2230.0,
+     -817.6,
+     391.0
+    ],
+    "yaw_deg": 270.0
+   },
+   {
+    "slot": 20,
+    "hook_cm": [
+     2280.0,
+     -817.6,
+     391.0
+    ],
+    "yaw_deg": 90.0
+   },
+   {
+    "slot": 21,
+    "hook_cm": [
+     1830.0,
+     -1077.6,
+     391.0
+    ],
+    "yaw_deg": 90.0
+   },
+   {
+    "slot": 22,
+    "hook_cm": [
+     1880.0,
+     -1077.6,
+     391.0
+    ],
+    "yaw_deg": 270.0
+   },
+   {
+    "slot": 23,
+    "hook_cm": [
+     1930.0,
+     -1077.6,
+     391.0
+    ],
+    "yaw_deg": 90.0
+   },
+   {
+    "slot": 24,
+    "hook_cm": [
+     1980.0,
+     -1077.6,
+     391.0
+    ],
+    "yaw_deg": 270.0
+   },
+   {
+    "slot": 25,
+    "hook_cm": [
+     2030.0,
+     -1077.6,
+     391.0
+    ],
+    "yaw_deg": 90.0
+   },
+   {
+    "slot": 26,
+    "hook_cm": [
+     2080.0,
+     -1077.6,
+     391.0
+    ],
+    "yaw_deg": 270.0
+   },
+   {
+    "slot": 27,
+    "hook_cm": [
+     2130.0,
+     -1077.6,
+     391.0
+    ],
+    "yaw_deg": 90.0
+   },
+   {
+    "slot": 28,
+    "hook_cm": [
+     2180.0,
+     -1077.6,
+     391.0
+    ],
+    "yaw_deg": 270.0
+   },
+   {
+    "slot": 29,
+    "hook_cm": [
+     2230.0,
+     -1077.6,
+     391.0
+    ],
+    "yaw_deg": 90.0
+   },
+   {
+    "slot": 30,
+    "hook_cm": [
+     2280.0,
+     -1077.6,
+     391.0
+    ],
+    "yaw_deg": 270.0
+   },
+   {
+    "slot": 31,
+    "hook_cm": [
+     1830.0,
+     -1337.6,
+     391.0
+    ],
+    "yaw_deg": 270.0
+   },
+   {
+    "slot": 32,
+    "hook_cm": [
+     1880.0,
+     -1337.6,
+     391.0
+    ],
+    "yaw_deg": 90.0
+   },
+   {
+    "slot": 33,
+    "hook_cm": [
+     1930.0,
+     -1337.6,
+     391.0
+    ],
+    "yaw_deg": 270.0
+   },
+   {
+    "slot": 34,
+    "hook_cm": [
+     1980.0,
+     -1337.6,
+     391.0
+    ],
+    "yaw_deg": 90.0
+   },
+   {
+    "slot": 35,
+    "hook_cm": [
+     2030.0,
+     -1337.6,
+     391.0
+    ],
+    "yaw_deg": 270.0
+   },
+   {
+    "slot": 36,
+    "hook_cm": [
+     2080.0,
+     -1337.6,
+     391.0
+    ],
+    "yaw_deg": 90.0
+   },
+   {
+    "slot": 37,
+    "hook_cm": [
+     2130.0,
+     -1337.6,
+     391.0
+    ],
+    "yaw_deg": 270.0
+   },
+   {
+    "slot": 38,
+    "hook_cm": [
+     2180.0,
+     -1337.6,
+     391.0
+    ],
+    "yaw_deg": 90.0
+   },
+   {
+    "slot": 39,
+    "hook_cm": [
+     2230.0,
+     -1337.6,
+     391.0
+    ],
+    "yaw_deg": 270.0
+   },
+   {
+    "slot": 40,
+    "hook_cm": [
+     2280.0,
+     -1337.6,
+     391.0
+    ],
+    "yaw_deg": 90.0
+   }
+  ],
+  "player_slot": 36,
+  "lantern_pivot": "its hang point (the bail's ring) on the hook",
+  "clearance": {
+   "slots": 40,
+   "min_head_clear_cm": 93.8,
+   "hook_top_below_ceiling_cm": 33.0,
+   "neighbour_gap_cm": 20.0,
+   "pole_gap_cm": 230.0,
+   "inside_room": true
+  },
+  "suggested_fill": "root's, from the completion mask: e.g. 24 of the craftspeople's lanterns from the start, the player's at PLAYER_SLOT once the oil step completes, and all 40 at the beat's end"
+ }
+}

@@ -1,0 +1,816 @@
+"""Tests for yumi_draw: the bow model, the full draw, the rig and the first-person envelopes.
+
+Run: python3 -m unittest scripts/art/test_yumi_draw.py
+
+Numpy and the standard library; about a minute. It proves:
+* the model reproduces the committed SM_Weapon_18 sockets and string;
+* the full draw keeps the string's length, and puts the arrow's point 10 cm
+  past the grip;
+* the string never stretches through draw and release, and a draw past brace
+  is refused (Codex's review of fa6aa2b: the old overshoot added 1.87 mm);
+* the continuous rig (RIG_BONES) holds the stave within 2 mm of the solved
+  shape through the draw;
+* the envelopes are closed and conservative: capsules with end caps, the
+  stave containing the generator's own section, and the batch placement
+  equal to the checker's;
+* geometry behind the camera never passes, and a near-plane cut inside the
+  frame is reported;
+* the authored kai pose (60, -6, -14), with the pose following the draw,
+  keeps every envelope outside the reticle radius in rest and both bobs,
+  through draw, hold and release. Its residual is reported, not hidden: the
+  draw paw's forearm crosses the near plane in the frame's bottom-left
+  region (u <= -0.82, v <= -0.74) for 10 sampled frames (0.17 s) early in the
+  draw.
+
+Everything here is a sampled design envelope (yumi_draw.SCOPE), not the
+emitted or skinned asset, continuous time, or the native camera path.
+"""
+from __future__ import annotations
+
+import json
+import math
+import random
+import sys
+import unittest
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import yumi_draw as Y  # noqa: E402
+
+ROOT = Path(__file__).resolve().parents[2]
+RECORD = ROOT / "Content/SourceArt/Weapons/Runtime/W18_Yumi/build_record.json"
+
+
+def contract():
+    return json.loads(Y.F.CONTRACT.read_text())
+
+
+class Model(unittest.TestCase):
+    def test_reproduces_the_committed_sockets(self):
+        committed = json.loads(RECORD.read_text())["assets"]["SM_Weapon_18"]["sockets"]
+        built = Y.braced()["sockets"]
+        for name, want in committed.items():
+            for a, b in zip(built[name], want):
+                self.assertAlmostEqual(a, b, places=5, msg=name)
+        notes = json.loads(RECORD.read_text())["notes"]
+        self.assertAlmostEqual(Y.braced()["string_m"], notes["string_chord_m"], places=4)
+        self.assertEqual((Y.LENGTH, Y.BRACE), (notes["bow_length_m"], notes["brace_height_m"]))
+
+    def test_full_draw_keeps_the_string_and_the_arrow_length(self):
+        dr = Y.drawn()
+        self.assertAlmostEqual(dr["string_m"], Y.braced()["string_m"], places=6)
+        nock, tip = dr["arrow"]
+        self.assertEqual(nock, (-Y.DRAW_M, 0.0, Y.NOCK_Z))
+        self.assertAlmostEqual(math.dist(tip, nock), Y.ARROW_M, places=9)
+        self.assertTrue(0.09 <= tip[0] <= 0.11, tip)           # the point 10 cm past the grip
+        br = Y.braced()["sockets"]
+        self.assertLess(dr["sockets"]["String_Upper"][0], br["String_Upper"][0])
+        self.assertLess(dr["sockets"]["String_Lower"][0], br["String_Lower"][0])
+
+    def test_the_string_never_stretches_and_never_passes_brace(self):
+        length = Y.braced()["string_m"]
+        tl = Y.timeline(fps=30.0)
+        self.assertLess(max(abs(fr["string_m"] - length) for fr in tl["frames"]), 1e-6)
+        self.assertGreaterEqual(min(fr["draw"] for fr in tl["frames"]), 0.0)
+        with self.assertRaises(ValueError):
+            Y.shape_at(-0.06)
+        with self.assertRaises(ValueError):
+            Y.shape_at(1.1)
+
+    def test_the_rig_holds_the_stave_through_the_draw(self):
+        for d in (0.05, 0.25, 0.5, 0.75, 1.0):
+            e = Y.skinning_error(d)
+            self.assertLess(e["upper"], 0.002, d)
+            self.assertLess(e["lower"], 0.002, d)
+
+
+class Envelopes(unittest.TestCase):
+    def test_capsules_are_closed(self):
+        rings = Y._capsule((0.0, 0.0, 0.0), (1.0, 0.0, 0.0), 0.5)
+        xs = [p[0] for ring in rings for p in ring]
+        self.assertAlmostEqual(min(xs), -0.5, places=9)
+        self.assertAlmostEqual(max(xs), 1.5, places=9)
+        sphere = Y._sphere((0.0, 0.0, 0.0), 0.045)
+        self.assertAlmostEqual(max(abs(p[2]) for ring in sphere for p in ring), 0.045, places=9)
+        # A zero-length capsule is a sphere, not a degenerate cylinder.
+        self.assertEqual(Y._capsule((0.0, 0.0, 0.0), (0.0, 0.0, 0.0), 0.1)[0], Y._sphere((0.0, 0.0, 0.0), 0.1, 12, 16)[0])
+
+    def test_the_stave_envelope_contains_the_generators_section(self):
+        shape = Y.braced()
+        rings = Y._stave_envelope(shape, every=1)
+        frames = Y._frames(shape["low"], shape["up"])
+        for i in (0, len(frames) // 4, len(frames) // 2, 3 * len(frames) // 4, len(frames) - 1):
+            sig, p, _t, n = frames[i]
+            w, d = Y.thickness(sig)
+            ring = rings[i]
+            half_w = max(abs(q[1] - p[1]) for q in ring)
+            half_d = max(abs((q[0] - p[0]) * n[0] + (q[2] - p[2]) * n[2]) for q in ring)
+            rem = min(sig + Y.L_LOW, Y.L_UP - sig)
+            taper = 0.62 + 0.38 * rem / 0.035 if rem < 0.035 else 1.0
+            self.assertGreaterEqual(half_w + 1e-12, w * taper / 2, sig)
+            self.assertGreaterEqual(half_d + 1e-12, d * taper / 2, sig)
+            self.assertEqual(len(ring), Y.STAVE_SECTION_POINTS)
+
+    def test_ring_edges_close_last_to_first(self):
+        # Codex's counterexample on 4481327: a ring whose last edge crosses the
+        # near plane counted no cut, but did once its first point was repeated.
+        import numpy as np
+        screen = Y.F.Screen(contract()["camera"])
+        near_x = screen.near / screen.scale
+        ring = [(30.0, 1.0, 0.0), (30.0, 0.0, 1.0), (30.0, -1.0, 0.0), (5.0, 0.0, -1.0)]
+        implicit, _ = Y.near_cuts(np.array([ring]), near_x, screen)
+        explicit, _ = Y.near_cuts(np.array([ring + [ring[0]]]), near_x, screen)
+        self.assertEqual(implicit, 2)                # into and out of the point behind the plane
+        self.assertEqual(explicit, implicit)         # repeating the first point adds only a zero-length edge
+        E = np.array([ring])
+        unclosed = int(np.sum((E[:, :-1, 0] > near_x) != (E[:, 1:, 0] > near_x)))
+        self.assertEqual(unclosed, 1)                # 4481327's traversal saw only one of the two
+
+    def test_batch_placement_equals_the_checker(self):
+        c = contract()
+        rest = c["poses"]["bow.drawn"]["rest"]
+        rng = random.Random(7)
+        pts = [(rng.uniform(-1, 1), rng.uniform(-0.2, 0.2), rng.uniform(-0.8, 1.5)) for _ in range(50)]
+        for state_name in ("rest", "bob_up_right", "reload"):
+            state = c["envelopes"]["states"][state_name]
+            batch = Y.place_many(rest, pts, c["mesh_scale"], state)
+            sockets = {"Grip_L": (0.0, 0.0, 0.0), **{f"p{i}": p for i, p in enumerate(pts)}}
+            ref, _q = Y.F.place(rest, sockets, "Grip_L", c["mesh_scale"], state)
+            for i in range(len(pts)):
+                for k in range(3):
+                    self.assertAlmostEqual(batch[i][k], ref[f"p{i}"][k], places=9)
+
+
+class FirstPerson(unittest.TestCase):
+    def test_geometry_behind_the_camera_never_passes(self):
+        c = contract()
+        c["poses"]["bow.drawn"]["rest"]["anchor_cm"] = [-200.0, -6.0, -14.0]
+        fp = Y.footprint("bow.drawn", contract=c)
+        self.assertFalse(fp["clear"])
+        self.assertEqual(set(fp["missing"]), {"stave", "arrow", "paw_L"})
+        self.assertTrue(all(p["in_front"] == 0.0 for p in fp["parts"].values()))
+
+    def test_the_old_high_hold_cuts_the_arrow_inside_the_frame(self):
+        c = contract()
+        c["poses"]["bow.drawn"]["rest"]["anchor_cm"] = [60.0, -5.0, -9.5]
+        fp = Y.footprint("bow.drawn", contract=c)
+        self.assertGreater(fp["parts"]["arrow"]["near_clip_in_frame"], 0)
+        self.assertFalse(fp["clear"])
+
+    def test_the_authored_kai_pose_keeps_every_envelope_clear(self):
+        c = contract()
+        self.assertEqual(c["poses"]["bow.drawn"]["rest"]["anchor_cm"], [60.0, -6.0, -14.0])
+        fp = Y.footprint("bow.drawn", contract=c)
+        self.assertTrue(fp["clear"], fp)
+        tl = Y.timeline(contract=c, pose_follows_draw=True)
+        sm = Y.summary(tl)
+        self.assertEqual(set(sm), {"stave", "string", "arrow", "paw_L", "paw_R"})
+        residual = {("paw_R", "draw"): 10, ("arrow", "draw"): 10}
+        for part, phases in sm.items():
+            for phase, v in phases.items():
+                self.assertGreaterEqual(v["nearest"], 0.12, (part, phase, v))
+                self.assertEqual(v["inside_s"], 0.0, (part, phase))
+                self.assertEqual(v["hidden_frames"], 0, (part, phase))
+                self.assertEqual(v["near_clip_frames"], residual.get((part, phase), 0), (part, phase))
+        # The residual cuts, exact in count and bounded over every cut point
+        # (not display examples): early in the draw, the draw paw's forearm and
+        # the conservative fletching envelope, in the frame's bottom-left region.
+        u0, u1, v0, v1 = sm["paw_R"]["draw"]["clip_box"]
+        self.assertTrue(u1 <= -0.8 and v1 <= -0.7, sm["paw_R"]["draw"]["clip_box"])
+        u0, u1, v0, v1 = sm["arrow"]["draw"]["clip_box"]
+        self.assertTrue(u1 <= -0.75 and v1 <= -0.8, sm["arrow"]["draw"]["clip_box"])
+
+    def test_todays_high_hold_puts_the_stave_in_the_clear_zone(self):
+        sm = Y.summary(Y.timeline(anchor_y=-3.0, anchor_z=-9.5, pose_follows_draw=True, fps=30.0))
+        self.assertLess(sm["stave"]["hold"]["nearest"], 0.12)
+
+    def test_without_the_draw_led_pose_the_string_is_cut_mid_frame(self):
+        # Blending to bow.drawn at once (today's runtime) brings the string past
+        # the face inside the near plane, mid-frame. Following the draw leaves
+        # only the draw paw's forearm at the frame's corner.
+        def cuts(tl, part):
+            return [pt for fr in tl["frames"] for pt in fr["parts"][part]["clip_points"]]
+        ahead = Y.timeline(pose_follows_draw=False)
+        follow = Y.timeline(pose_follows_draw=True)
+        mid = [pt for pt in cuts(ahead, "string") if abs(pt[0]) < 0.9 and abs(pt[1]) < 0.9]
+        self.assertTrue(mid, cuts(ahead, "string"))
+        self.assertEqual(cuts(follow, "string"), [])
+
+    def test_summary_counts_every_cut_even_when_a_part_is_not_visible(self):
+        # Codex's review of 4481327: cuts were skipped on frames where the part was not visible.
+        tl = Y.timeline(pose_follows_draw=True)
+        direct = sum(1 for fr in tl["frames"] if fr["parts"]["paw_R"]["near_clip_in_frame"])
+        sm = Y.summary(tl)
+        self.assertEqual(sum(v["near_clip_frames"] for v in sm["paw_R"].values()), direct)
+
+    def test_every_report_states_its_scope(self):
+        self.assertIn("not the emitted or skinned asset", Y.footprint("bow.drawn")["scope"])
+        self.assertIn("not a continuous-time bound", Y.timeline(fps=10.0, end=0.2)["scope"])
+
+
+class MeshChecker(unittest.TestCase):
+    """assess_eye on exact eye-space triangles: Codex's three counterexamples
+    to f1433a7 (yumi-b55fe81-independent-review/checker-reproductions.json)."""
+
+    @classmethod
+    def setUpClass(cls):
+        import numpy as np
+        cls.np = np
+        cls.screen = Y.F.Screen(contract()["camera"])
+
+    def test_a_triangle_covering_the_viewport_with_every_vertex_outside_is_visible(self):
+        T = self.np.array([[[100.0, -1000.0, -1000.0], [100.0, 1000.0, -1000.0], [100.0, 0.0, 2000.0]]])
+        r = Y.assess_eye(T, self.screen)
+        self.assertTrue(r["visible"])
+        self.assertEqual(r["nearest_half_heights"], 0.0)
+
+    def test_a_near_cut_across_the_screen_counts_although_its_ends_are_off_screen(self):
+        # One vertex in front, two behind: its cut runs u -1.83 to +1.83 at v 0.
+        T = self.np.array([[[30.0, 0.0, 0.0], [5.0, -40.0, 0.0], [5.0, 40.0, 0.0]]])
+        r = Y.assess_eye(T, self.screen)
+        self.assertEqual(r["near_clip_in_frame"], 1)
+        u0, u1, v0, v1 = r["clip_box"]
+        self.assertAlmostEqual(u0, -1.0, places=9)
+        self.assertAlmostEqual(u1, 1.0, places=9)
+        self.assertAlmostEqual(v0, 0.0, places=9)
+
+    def test_a_crossing_triangles_remainder_is_kept(self):
+        # Two vertices in front on screen, one behind; the remainder covers the reticle at x 27.5 cm.
+        T = self.np.array([[[50.0, -10.0, -10.0], [50.0, 10.0, -10.0], [5.0, 0.0, 10.0]]])
+        r = Y.assess_eye(T, self.screen)
+        self.assertTrue(r["visible"])
+        self.assertEqual(r["nearest_half_heights"], 0.0)
+        self.assertEqual(r["near_clip_in_frame"], 1)
+
+    def test_summary_counts_time_inside_the_radius_whatever_the_visibility(self):
+        tl = {"clear_radius": 0.12, "fps": 30.0, "release_at": 1.0,
+              "frames": [{"t": 0.7, "draw": 1.0, "parts": {"arrow": {"visible": False, "nearest_conservative": 0.0,
+                                                                     "near_clip_in_frame": 0, "clip_box": None}}}]}
+        sm = Y.summary(tl)
+        self.assertGreater(sm["arrow"]["hold"]["inside_s"], 0.0)
+        self.assertEqual(sm["arrow"]["hold"]["nearest"], 0.0)
+
+    def test_an_edge_on_triangle_off_the_reticle_does_not_cover_it(self):
+        # Root's review of ec5df08 (yumi-ec5df08-root-review/degenerate-distance.json),
+        # through assess_eye: a triangle in a plane through the eye projects
+        # flat, here on v = 0 from u 0.2 to 0.3 (unscaled), and measured 0.
+        s = self.screen
+        T = self.np.array([[[100.0, 20.0, 0.0], [200.0, 60.0, 0.0], [150.0, 45.0, 0.0]]])
+        r = Y.assess_eye(T, s)
+        self.assertTrue(r["visible"])
+        self.assertAlmostEqual(r["nearest_half_heights"], 0.2 / s.tan_h * s.aspect, places=4)
+
+    def test_a_flat_triangle_on_a_frame_edges_line_off_screen_is_not_visible(self):
+        # The same fault in _tris_hit_rect's corner test: wholly right of the
+        # frame on the line of its bottom edge, it counted as covering the
+        # corner (ax, -1), so as visible.
+        ax = self.screen.aspect
+        P = self.np.array([[[ax + 1.0, -1.0], [ax + 2.0, -1.0], [ax + 3.0, -1.0]]])
+        self.assertFalse(bool(Y._tris_hit_rect(P, ax)[0]))
+
+
+class EmittedGeometry(unittest.TestCase):
+    """The built rig (RIG_SCHEMA only) and the committed arrow, as triangles."""
+
+    PLAYBACK_BLENDER = ROOT / "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/W18_rig_playback_blender.npz"
+    PLAYBACK_TOL_M = 1e-5               # 0.01 mm bound; measured 0.55 um (FBX keys are float32)
+    PLAYBACK_TOL_RAD = 1e-5
+    # The playback's 41 times: every key, quarter point and midpoint, in frames and in seconds.
+    PLAYBACK_FRAMES = tuple(f + q for f in range(10) for q in (0.0, 0.25, 0.5, 0.75)) + (10.0,)
+    PLAYBACK_TIMES = tuple(f / 10 + q / 10 for f in range(10) for q in (0.0, 0.25, 0.5, 0.75)) + (1.0,)
+    FBX_UNIT_IN_BLENDER = 0.01          # the centimetre FBX in the review's metre scene
+    SCALE_TOL = 1e-5                    # a bone scale off 1 beyond float32 noise (1.2e-7); a unit factor gives 100
+    QUAT_NORM_TOL = 1e-6                # float32 quaternions, normalised; read back to 9 decimals
+    PLAYBACK_UNREAL = ROOT / "Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/Review/W18_rig_unreal_readback.json"
+    # Unreal's RAW playback blends the same float32 keys as Blender's, the same
+    # way (each bone's local translation lerped and rotation nlerped, under the
+    # fixed Grip), so Blender's bound holds, in centimetres.
+    UNREAL_RAW_TOL = (100.0 * PLAYBACK_TOL_M, PLAYBACK_TOL_RAD)
+    # Two results, kept apart (Codex's scope review of bfaded4):
+    # - **Canonical:** Unreal's raw playback against _deform_at at the fixed
+    #   bound FAILS on 8 of 1,148 samples: LimbU_01 from 0.075 to 0.225 s and
+    #   LimbL_01 at 0.025 s, at most 5.92e-5 rad and 8.9e-5 cm. Every other
+    #   sample passes.
+    # - **Snap-aware:** a model of one observed engine behaviour. A bone whose
+    #   evaluated local transform Equals its reference pose within
+    #   UE_KINDA_SMALL_NUMBER (FTransform::Equals: every translation,
+    #   quaternion and scale component within 1e-4) comes back as the
+    #   reference pose exactly. The rule fits the 10 snapped samples with
+    #   margin: each sat within 8.9e-5 cm of its reference, and every other
+    #   sample 1.06e-4 cm or more away. The 8 canonical failures are 8 of them;
+    #   the other two, LimbU_01 at 0.025 and 0.05 s, snap within the fixed bound.
+    # Its source is not located. The take uses AnimationSequencerDataModel
+    # with an FKControlRig in Direct mode (its asset). The one site found with
+    # this rule, AnimSequencerDataModel.cpp:1389, runs only when the pose's
+    # reference skeleton differs from the model skeleton's, and AnimPose's
+    # skeleton-built container shares it (BoneContainer.cpp:156-158), so that
+    # branch does not apply here.
+    REFERENCE_SNAP_TOL = 1e-4
+    # COMPRESSED adds the codec's own bound. ACL keeps three virtual vertices,
+    # at DefaultVirtualVertexDistance d along each bone's axes, within
+    # ErrorThreshold e (cm) of its source pose (ACLImpl.cpp; no bone here has a
+    # skeleton socket or a key end-effector name, so d is the default for all).
+    # For small turns that bounds a bone's head within 1.94e and its turn
+    # within 1.63e/d; 2e and 2e/d are used. The source pose may itself carry the
+    # snap above: at most sqrt(3) x 1e-4 cm, and a turn of 4 asin(1e-4) rad
+    # (every quaternion component within 1e-4).
+    # The codec must be this one. Its settings are INFERRED, not read: Python
+    # wraps the codec as its base class, so every runtime property read fails
+    # and the readback keeps each error. A setting counts only when it is
+    # read back at the value below, or when the settings asset serializes no
+    # tag for it, leaving the class default (AnimBoneCompressionCodec_ACLBase.cpp:71-74,
+    # AnimBoneCompressionCodec_ACL.cpp:27-28): 0.01 cm, 3 cm, no keyframe
+    # stripping. Static evidence, not runtime readback.
+    ACL_SETTINGS = "/ACLPlugin/ACLAnimBoneCompressionSettings.ACLAnimBoneCompressionSettings"
+    ACL_CODEC = "AnimBoneCompressionCodec_ACL"
+    ACL_DEFAULTS = {"error_threshold": ("ErrorThreshold", 0.01),
+                    "default_virtual_vertex_distance": ("DefaultVirtualVertexDistance", 3.0),
+                    "keyframe_stripping_proportion": ("KeyframeStrippingProportion", 0.0),
+                    "keyframe_stripping_threshold": ("KeyframeStrippingThreshold", 0.0)}
+    UNREAL_COMPRESSED_TOL = (UNREAL_RAW_TOL[0] + 2 * 0.01 + math.sqrt(3.0) * REFERENCE_SNAP_TOL,
+                             UNREAL_RAW_TOL[1] + 2 * 0.01 / 3.0 + 4.0 * math.asin(REFERENCE_SNAP_TOL))
+
+    @classmethod
+    def setUpClass(cls):
+        cls.rig = Y.load_rig()
+
+    def test_only_the_current_rig_schema_loads(self):
+        # Codex's review of 1b3cd68: no legacy format or fallback decoder.
+        # The b55fe81 npz had deform matrices and no schema, bind or pose.
+        import tempfile
+        import numpy as np
+        old = {k: self.rig[k] for k in ("rest", "tris", "bone_index", "bone_weight", "bones", "fractions",
+                                         "arrow_verts", "arrow_tris")}
+        old["deform"] = np.einsum("kbij,bjl->kbil", self.rig["pose"], np.linalg.inv(self.rig["bind"]))
+        both = {"bind": self.rig["bind"], "pose": self.rig["pose"]}
+        with tempfile.TemporaryDirectory() as tmp:
+            for name, arrays in (("b55fe81", old), ("unversioned", {**old, **both}),
+                                 ("v1", {**old, **both, "schema": np.array("sora-yumi-rig-check-v1")}),
+                                 ("no_pose", {**old, "bind": self.rig["bind"], "schema": np.array(Y.RIG_SCHEMA)})):
+                path = Path(tmp) / f"{name}.npz"
+                np.savez(path, **arrays)
+                with self.assertRaisesRegex(ValueError, Y.RIG_SCHEMA, msg=name):
+                    Y.load_rig(path)
+        with self.assertRaisesRegex(ValueError, "no bind and pose"):
+            Y._deform_at({"fractions": self.rig["fractions"], "deform": old["deform"]}, 0.5)
+
+    def test_blender_plays_the_exported_take_as_the_checker_interpolates(self):
+        # The exported FBX imported and played by Blender (render_yumi_rig_review.py)
+        # at keys, quarter points and midpoints, against _deform_at and skinned.
+        import numpy as np
+        z = np.load(self.PLAYBACK_BLENDER)
+        self.assertEqual(z["interpolation"].tolist(), ["LINEAR"])
+        self.assertEqual(z["key_frames"].tolist(), [float(f) for f in range(11)])
+        self.assertEqual(z["bone_names"].tolist(), list(self.rig["bones"]))
+        self.assertEqual(z["times"].tolist(), list(self.PLAYBACK_FRAMES))
+        # The FBX is in centimetres (the rig record's "fbx") and the review's
+        # scene in metres: Blender's importer puts 0.01 on the armature object,
+        # and nothing may turn, move or otherwise scale it.
+        A = z["armature_world"]
+        unit = float(np.cbrt(np.linalg.det(A[:3, :3])))
+        self.assertAlmostEqual(unit, self.FBX_UNIT_IN_BLENDER, delta=1e-9)
+        np.testing.assert_allclose(A[:3, :3] / unit, np.eye(3), atol=1e-6)
+        self.assertLess(float(np.linalg.norm(A[:3, 3])), 1e-9)
+        for t, V in zip(z["full_times"], z["verts"]):
+            err = float(np.linalg.norm(V - Y.skinned(self.rig, t / 10.0), axis=1).max())
+            self.assertLess(err, self.PLAYBACK_TOL_M, f"vertices at frame {t}: {err:.2e} m")
+        # World bone matrices are the unit times each bone's pose; divided out,
+        # no bone may carry a scale of its own.
+        bones = z["bones"].copy()
+        bones[..., :3, :3] /= unit
+        dev = float(np.abs(np.linalg.norm(bones[..., :3, :3], axis=-2) - 1.0).max())
+        self.assertLess(dev, self.SCALE_TOL, f"a bone's basis is {dev:.2e} off unit length")
+        P0 = self.rig["pose"][0][:, :3, :3]
+        B0 = bones[0][:, :3, :3]
+        for t, B in zip(z["times"], bones):
+            P = Y._deform_at(self.rig, t / 10.0) @ self.rig["bind"]
+            head = float(np.linalg.norm(B[:, :3, 3] - P[:, :3, 3], axis=1).max())
+            self.assertLess(head, self.PLAYBACK_TOL_M, f"bone heads at frame {t}: {head:.2e} m")
+            # Each turn from the braced key, so the importer's own bone axes cancel.
+            turn_imported = B[:, :3, :3] @ np.transpose(B0, (0, 2, 1))
+            turn_checker = P[:, :3, :3] @ np.transpose(P0, (0, 2, 1))
+            # The angle between them from the antisymmetric part: arccos of the
+            # trace near 1 inflates float32 noise (it read 1.7e-3 rad for bases
+            # then ~6e-6 off orthonormal, before Grip pointed along +Y).
+            D = np.transpose(turn_imported, (0, 2, 1)) @ turn_checker
+            axis = np.stack([D[:, 2, 1] - D[:, 1, 2], D[:, 0, 2] - D[:, 2, 0], D[:, 1, 0] - D[:, 0, 1]], 1) / 2.0
+            ang = float(np.arctan2(np.linalg.norm(axis, axis=1), (np.trace(D, axis1=1, axis2=2) - 1.0) / 2.0).max())
+            self.assertLess(ang, self.PLAYBACK_TOL_RAD, f"bone turns at frame {t}: {ang:.2e} rad")
+
+    def test_unreal_plays_the_exported_take_as_the_checker_interpolates(self):
+        # The exported FBX imported into Unreal (import_runtime_weapon_yumi_rig.py),
+        # its AnimPose read at keys, quarter points and midpoints, raw and
+        # compressed, against _deform_at. Unreal = 100 x (x, -y, z) cm from
+        # Blender metres, so a Blender turn R appears as M R M, M = diag(1, -1, 1).
+        # Each bone's row is [x, y, z, qx, qy, qz, qw, sx, sy, sz], component space.
+        import json
+        import numpy as np
+        r = json.loads(self.PLAYBACK_UNREAL.read_text())
+        names = list(self.rig["bones"])
+        times = list(self.PLAYBACK_TIMES)
+        self.assertEqual(len(times), 41)
+        self.assertEqual(sorted(r["skeleton_bones"]), sorted(names))
+        self.assertEqual(r["times_s"], times)
+        take = r["take"]
+        self.assertAlmostEqual(float(take["length_s"]), 1.0, places=6)
+        self.assertEqual((take["frames"], take["keys"]), (10, 11))
+        self.assert_the_compressed_bound_applies(take["compression"])
+        record = json.loads((self.PLAYBACK_UNREAL.parents[1] / "rig_record.json").read_text())
+        parent = {b["name"]: b["parent"] for b in record["bones"]}
+        self.assertEqual({parent[n] for n in names if n != "Grip"}, {"Grip"})
+        self.assertIsNone(parent["Grip"])
+        M = np.diag([1.0, -1.0, 1.0])
+
+        def qmat(q):
+            x, y, z, w = q
+            return np.array([[1 - 2 * (y * y + z * z), 2 * (x * y - w * z), 2 * (x * z + w * y)],
+                             [2 * (x * y + w * z), 1 - 2 * (x * x + z * z), 2 * (y * z - w * x)],
+                             [2 * (x * z - w * y), 2 * (y * z + w * x), 1 - 2 * (x * x + y * y)]])
+
+        def quat(R):
+            """(x, y, z, w) of a rotation matrix (Shepperd)."""
+            t = float(np.trace(R))
+            if t > max(R[0, 0], R[1, 1], R[2, 2]):
+                w = math.sqrt(1.0 + t) / 2.0
+                return np.array([(R[2, 1] - R[1, 2]) / (4 * w), (R[0, 2] - R[2, 0]) / (4 * w),
+                                 (R[1, 0] - R[0, 1]) / (4 * w), w])
+            i = int(np.argmax([R[0, 0], R[1, 1], R[2, 2]]))
+            j, k = (i + 1) % 3, (i + 2) % 3
+            s = math.sqrt(1.0 + R[i, i] - R[j, j] - R[k, k]) * 2.0
+            q = np.zeros(4)
+            q[i], q[j], q[k], q[3] = s / 4.0, (R[j, i] + R[i, j]) / s, (R[k, i] + R[i, k]) / s, (R[k, j] - R[j, k]) / s
+            return q
+
+        def turn(A, B):
+            D = A.T @ B
+            ax = np.array((D[2, 1] - D[1, 2], D[0, 2] - D[2, 0], D[1, 0] - D[0, 1])) / 2.0
+            return math.atan2(float(np.linalg.norm(ax)), (float(np.trace(D)) - 1.0) / 2.0)
+
+        def complete(label, bones_of_rows):
+            # Every bone in every row, ten finite numbers each, unit quaternions
+            # and unit scales, before any error is measured: a truncated or
+            # partial readback fails here instead of passing by omission.
+            for at, bones in bones_of_rows:
+                self.assertEqual(sorted(bones), sorted(names), f"{label} {at}")
+                for n in names:
+                    self.assertEqual(len(bones[n]), 10, f"{label} {at} {n}")
+            a = np.array([[bones[n] for n in names] for _at, bones in bones_of_rows], np.float64)
+            self.assertTrue(np.isfinite(a).all(), label)
+            q = float(np.abs(np.linalg.norm(a[..., 3:7], axis=-1) - 1.0).max())
+            self.assertLess(q, self.QUAT_NORM_TOL, f"{label}: a quaternion's norm is off 1 by {q:.2e}")
+            s = float(np.abs(a[..., 7:10] - 1.0).max())
+            self.assertLess(s, self.SCALE_TOL, f"{label}: a bone's scale is off 1 by {s:.2e}")
+            return a
+
+        ref = complete("reference", [("pose", r["reference_cm"])])[0]
+        head = float(np.linalg.norm(ref[:, :3] - 100.0 * (self.rig["bind"][:, :3, 3] @ M), axis=1).max())
+        self.assertLess(head, self.UNREAL_RAW_TOL[0], f"reference heads {head:.2e} cm")
+        samples = {}
+        for label in ("RAW", "COMPRESSED"):
+            rows = r["samples"][label]
+            self.assertIsInstance(rows, list, label)
+            self.assertEqual([row["t"] for row in rows], times, label)
+            samples[label] = complete(label, [(row["t"], row["bones"]) for row in rows])
+        # Unreal evaluates the raw data, silently, when compressed data is
+        # missing (UAnimSequence::ShouldUseRawDataForPoseExtraction), so the
+        # compressed rows must be the codec's own (compared by head: a
+        # quaternion and its negation are one turn).
+        self.assertGreater(float(np.abs(samples["COMPRESSED"][..., :3] - samples["RAW"][..., :3]).max()), 0.0)
+
+        # The checker's pose in Unreal's component space, built on Unreal's own
+        # reference pose: heads 100 M p, turns M (P P0^T) M from the reference
+        # rotation. Every bone's parent is Grip, which never moves.
+        g = names.index("Grip")
+        RG, TG = qmat(ref[g, 3:7]), ref[g, :3]
+        P0 = self.rig["pose"][0][:, :3, :3]
+        expected, snapped = [], set()
+        for t in times:
+            P = Y._deform_at(self.rig, t) @ self.rig["bind"]
+            pose = []
+            for i, n in enumerate(names):
+                T, R = 100.0 * (M @ P[i, :3, 3]), M @ (P[i, :3, :3] @ P0[i].T) @ M @ qmat(ref[i, 3:7])
+                Rr, Tr = qmat(ref[i, 3:7]), ref[i, :3]
+                local = (RG.T @ (T - TG), quat(RG.T @ R))
+                local_ref = (RG.T @ (Tr - TG), quat(RG.T @ Rr))
+                same = (float(np.abs(local[0] - local_ref[0]).max()) <= self.REFERENCE_SNAP_TOL
+                        and min(float(np.abs(local[1] - local_ref[1]).max()),
+                                float(np.abs(local[1] + local_ref[1]).max())) <= self.REFERENCE_SNAP_TOL)
+                if same and i != g:
+                    snapped.add((n, t))
+                pose.append((T, R, Tr, Rr, same))
+            expected.append(pose)
+        for label, (tol_cm, tol_rad) in (("RAW", self.UNREAL_RAW_TOL), ("COMPRESSED", self.UNREAL_COMPRESSED_TOL)):
+            a = samples[label]
+            worst_head = worst_turn = 0.0
+            for k, t in enumerate(times):
+                for i in range(len(names)):
+                    T, R, Tr, Rr, same = expected[k][i]
+                    if label == "RAW" and same:
+                        T, R = Tr, Rr                     # the reference snap, modelled
+                    worst_head = max(worst_head, float(np.linalg.norm(a[k, i, :3] - T)))
+                    worst_turn = max(worst_turn, turn(qmat(a[k, i, 3:7]), R))
+            self.assertLess(worst_head, tol_cm, f"{label} bone heads {worst_head:.2e} cm")
+            self.assertLess(worst_turn, tol_rad, f"{label} bone turns {worst_turn:.2e} rad")
+        # The modelled snap is the one observed: exactly the raw samples equal to
+        # the reference pose are the ones within its tolerance. This is the
+        # snap-aware result; test_unreal_raw_canonical_comparison keeps the
+        # canonical one.
+        raw = samples["RAW"]
+
+        def at_reference(k, i):
+            q, qr = raw[k, i, 3:7], ref[i, 3:7]
+            return (float(np.abs(raw[k, i, :3] - ref[i, :3]).max()) < 1e-6
+                    and min(float(np.abs(q - qr).max()), float(np.abs(q + qr).max())) < 1e-6)
+        observed = {(n, t) for k, t in enumerate(times) if t > 0.0 for i, n in enumerate(names)
+                    if n != "Grip" and at_reference(k, i)}
+        self.assertEqual(observed, {s for s in snapped if s[1] > 0.0})
+
+    def assert_the_compressed_bound_applies(self, compression):
+        """UNREAL_COMPRESSED_TOL is derived for ACL at its defaults: the readback
+        must report that codec. Each setting must be either read back at that
+        value (runtime) or left unserialized by the settings asset (inferred:
+        the class default holds). Returns {setting: "runtime" | "inferred"}."""
+        self.assertEqual(compression["settings"], self.ACL_SETTINGS)
+        self.assertEqual([c["class"] for c in compression["codecs"]], [self.ACL_CODEC])
+        codec = compression["codecs"][0]
+        serialized = compression["package"]["settings_serialized"]
+        how = {}
+        for key, (prop, want) in self.ACL_DEFAULTS.items():
+            got = codec[key]
+            if isinstance(got, str) and got.startswith("unreadable"):
+                self.assertNotIn(prop, serialized, f"{key} is overridden in the settings asset but unreadable")
+                how[key] = "inferred"
+            else:
+                self.assertAlmostEqual(float(got), want, delta=1e-6 * max(1.0, want), msg=key)
+                how[key] = "runtime"
+        return how
+
+    def test_unreal_raw_canonical_comparison(self):
+        # The canonical result, kept apart from the snap-aware model above: the
+        # raw readback against _deform_at at the fixed RAW bound, with no engine
+        # rule. It fails on 8 samples, all of them returned as their bone's
+        # reference pose. There the deviation stays within the observed rule's
+        # own maximum (sqrt(3) x 1e-4 cm and 4 asin(1e-4) rad).
+        import json
+        import numpy as np
+        r = json.loads(self.PLAYBACK_UNREAL.read_text())
+        names, times = list(self.rig["bones"]), list(self.PLAYBACK_TIMES)
+        M = np.diag([1.0, -1.0, 1.0])
+
+        def qmat(q):
+            x, y, z, w = q
+            return np.array([[1 - 2 * (y * y + z * z), 2 * (x * y - w * z), 2 * (x * z + w * y)],
+                             [2 * (x * y + w * z), 1 - 2 * (x * x + z * z), 2 * (y * z - w * x)],
+                             [2 * (x * z - w * y), 2 * (y * z + w * x), 1 - 2 * (x * x + y * y)]])
+        ref = np.array([r["reference_cm"][n] for n in names], np.float64)
+        raw = np.array([[row["bones"][n] for n in names] for row in r["samples"]["RAW"]], np.float64)
+        P0 = self.rig["pose"][0][:, :3, :3]
+        over, worst = [], (0.0, 0.0)
+        for k, t in enumerate(times):
+            P = Y._deform_at(self.rig, t) @ self.rig["bind"]
+            for i, n in enumerate(names):
+                T = 100.0 * (M @ P[i, :3, 3])
+                R = M @ (P[i, :3, :3] @ P0[i].T) @ M @ qmat(ref[i, 3:7])
+                D = qmat(raw[k, i, 3:7]).T @ R
+                ax = np.array((D[2, 1] - D[1, 2], D[0, 2] - D[2, 0], D[1, 0] - D[0, 1])) / 2.0
+                turn = math.atan2(float(np.linalg.norm(ax)), (float(np.trace(D)) - 1.0) / 2.0)
+                head = float(np.linalg.norm(raw[k, i, :3] - T))
+                if head >= self.UNREAL_RAW_TOL[0] or turn >= self.UNREAL_RAW_TOL[1]:
+                    over.append((n, t))
+                    worst = (max(worst[0], head), max(worst[1], turn))
+        # It fails: these are the samples past the fixed bound, and every one of
+        # them came back as its bone's reference pose exactly.
+        at_reference = set()
+        for k, t in enumerate(times):
+            for i, n in enumerate(names):
+                q, qr = raw[k, i, 3:7], ref[i, 3:7]
+                if (t > 0.0 and float(np.abs(raw[k, i, :3] - ref[i, :3]).max()) < 1e-6
+                        and min(float(np.abs(q - qr).max()), float(np.abs(q + qr).max())) < 1e-6):
+                    at_reference.add((n, t))
+        self.assertEqual(len(over), 8)
+        self.assertEqual(sorted({n for n, _t in over}), ["LimbL_01", "LimbU_01"])
+        self.assertTrue(set(over) <= at_reference, sorted(set(over) - at_reference))
+        # Only within the observed rule's maximum.
+        self.assertLess(worst[0], math.sqrt(3.0) * self.REFERENCE_SNAP_TOL)
+        self.assertLess(worst[1], 4.0 * math.asin(self.REFERENCE_SNAP_TOL))
+
+    def test_the_review_nocks_the_arrow_where_the_checker_does(self):
+        # render_yumi_rig_review.py nocks the committed arrow at the posed
+        # Grip_R and lays it through the Muzzle in every state (Codex's review
+        # of 6f3875b: the arrow was absent from the grey originals).
+        import json
+        import numpy as np
+        r = json.loads((self.PLAYBACK_BLENDER.parent / "W18_rig_review_arrow.json").read_text())
+        states = r["states"]
+        self.assertEqual(sorted(states), sorted(("Braced", "Quarter", "Half", "ThreeQuarter", "Full")))
+        braced = Y.braced()["sockets"]
+        i = list(self.rig["bones"]).index("String_Nock")
+        for label, s in states.items():
+            d = float(s["frame"]) / 10.0
+            M = Y._deform_at(self.rig, d)[i]
+            nock = M[:3, :3] @ np.array(braced["Grip_R"]) + M[:3, 3]
+            self.assertLess(float(np.linalg.norm(np.array(s["nock_m"]) - nock)), self.PLAYBACK_TOL_M, label)
+            self.assertLess(float(np.linalg.norm(np.array(s["muzzle_m"]) - np.array(braced["Muzzle"]))),
+                            self.PLAYBACK_TOL_M, label)
+            want = (np.array(braced["Muzzle"]) - nock) / np.linalg.norm(np.array(braced["Muzzle"]) - nock)
+            self.assertLess(float(np.linalg.norm(np.array(s["direction"]) - want)), 1e-5, label)
+
+    def test_the_rig_reproduces_the_static_bow_and_the_drawn_nock(self):
+        import numpy as np
+        self.assertLess(float(np.abs(Y.skinned(self.rig, 0.0) - self.rig["rest"]).max()), 1e-5)
+        i = list(self.rig["bones"]).index("String_Nock")
+        M = Y._deform_at(self.rig, 1.0)[i]
+        nock = M[:3, :3] @ np.array(Y.braced()["sockets"]["Grip_R"]) + M[:3, 3]
+        # The arrow's nock rides the apex of the string's bend, 3.4 mm inside
+        # the model's sharp V at (-DRAW_M, 0, NOCK_Z), toward the bow.
+        np.testing.assert_allclose(nock, Y.string_frames(1.0)["String_Nock"][0], atol=1e-5)
+        v = np.array((-Y.DRAW_M, 0.0, Y.NOCK_Z))
+        self.assertLess(float(np.linalg.norm(nock - v)), 0.004)
+        self.assertGreater(float(nock[0]), float(v[0]))
+        self.assertEqual(self.rig["arrow_verts"].shape[1], 3)
+        size = self.rig["arrow_verts"].max(0) - self.rig["arrow_verts"].min(0)
+        self.assertGreater(float(size[1]), 0.03)                 # the feathers, not a 4 mm shaft
+
+    def test_local_interpolation_reproduces_keys_and_rotations(self):
+        # The take's playback between keys (local nlerp and lerp), on a synthetic two-bone rig.
+        import numpy as np
+
+        def rot_y(a):
+            c, s = math.cos(a), math.sin(a)
+            return np.array([[c, 0, s], [0, 1, 0], [-s, 0, c]])
+        bind = np.stack([np.eye(4), np.eye(4)])
+        bind[1, :3, 3] = (0.0, 0.0, 1.0)
+        pose = np.zeros((2, 2, 4, 4))
+        for k, a in enumerate((0.0, 0.4)):
+            for b in range(2):
+                pose[k, b] = np.eye(4)
+                pose[k, b, :3, :3] = rot_y(a * b) @ bind[b, :3, :3]
+                pose[k, b, :3, 3] = bind[b, :3, 3] + (0.1 * k * b, 0.0, 0.0)
+        rig = {"fractions": np.array([0.0, 1.0]), "bind": bind, "pose": pose}
+        keys = np.einsum("kbij,bjl->kbil", pose, np.linalg.inv(bind))
+        np.testing.assert_allclose(Y._deform_at(rig, 0.0), keys[0], atol=1e-12)
+        np.testing.assert_allclose(Y._deform_at(rig, 1.0 - 1e-12), keys[1], atol=1e-9)
+        mid = Y._deform_at(rig, 0.5) @ bind
+        np.testing.assert_allclose(mid[1, :3, :3], rot_y(0.2), atol=1e-12)     # nlerp meets slerp halfway
+        quarter = Y._deform_at(rig, 0.25) @ bind                              # and leads it a quarter of the way
+        a = math.atan2(0.25 * math.sin(0.2), 0.75 + 0.25 * math.cos(0.2)) * 2   # the half-angle blend, doubled
+        np.testing.assert_allclose(quarter[1, :3, :3], rot_y(a), atol=1e-12)
+        self.assertGreater(abs(a - 0.1), 1e-4)
+        np.testing.assert_allclose(mid[1, :3, 3], (0.05, 0.0, 1.0), atol=1e-12)  # translation lerped
+
+    def test_no_face_stretches_through_the_draw(self):
+        # Codex's review of the schema-2 attempt: faces joining the string to
+        # the stave stretched up to 14.9x at full draw, pale webs by both hazu,
+        # although every vertex alone passed its own check.
+        import numpy as np
+        T = self.rig["tris"].astype(np.int64)
+        rest = self.rig["rest"].astype(np.float64)
+
+        def edges(V):
+            return np.stack([np.linalg.norm(V[T[:, i]] - V[T[:, (i + 1) % 3]], axis=1) for i in range(3)], 1)
+        e0 = edges(rest)
+        names = list(self.rig["bones"])
+        string_bones = [names.index(n) for n in Y.STRING_BONES]
+        driven = (np.isin(self.rig["bone_index"], string_bones) & (self.rig["bone_weight"] > 0)).any(1)
+        # Every face, the nakajikake's included (Codex rejected a serving-only
+        # exception): no edge grows past 25% and 1 mm at any key.
+        for d in self.rig["fractions"]:
+            e1 = edges(Y.skinned(self.rig, float(d)))
+            ratio, grow = e1 / np.maximum(e0, 1e-9), e1 - e0
+            bad = ((ratio > 1.25) & (grow > 0.001)).any(1)
+            self.assertEqual(int(bad.sum()), 0, f"draw {float(d):.1f}: {int(bad.sum())} faces stretch")
+        # A face may join string-driven to limb-driven vertices only at a groove.
+        spanning = driven[T].any(1) & ~driven[T].all(1)
+        grooves = np.array([Y.braced()["sockets"][k] for k in ("String_Upper", "String_Lower")])
+        centres = rest[T[spanning]].mean(1)
+        far = np.linalg.norm(centres[:, None, :] - grooves[None], axis=2).min(1) > 0.015 if len(centres) else []
+        self.assertEqual(int(np.sum(far)), 0, "a face spans string and limb away from the grooves")
+
+    def test_everything_on_the_string_travels_with_it(self):
+        # Corrected attempt 1 left the nakajikake (its own island, wound on the
+        # string at the nock) on the limb, to float near brace at full draw;
+        # no face stretched, so only island membership can catch it.
+        import numpy as np
+        rest = self.rig["rest"].astype(np.float64)
+        T = self.rig["tris"].astype(np.int64)
+        br = Y.braced()["sockets"]
+        a, b = np.array(br["String_Lower"]), np.array(br["String_Upper"])
+        ab = b - a
+        t = (rest - a) @ ab / (ab @ ab)
+        off = np.linalg.norm(a + t[:, None] * ab - rest, axis=1)
+        parent = np.arange(len(rest))
+
+        def find(x):
+            while parent[x] != x:
+                parent[x] = parent[parent[x]]
+                x = parent[x]
+            return x
+        for tri in T:
+            r0 = find(tri[0])
+            for v in tri[1:]:
+                r = find(v)
+                if r != r0:
+                    parent[r] = r0
+        comp = np.array([find(v) for v in range(len(rest))])
+        names = list(self.rig["bones"])
+        driven = (np.isin(self.rig["bone_index"], [names.index(n) for n in Y.STRING_BONES])
+                  & (self.rig["bone_weight"] > 0)).any(1)
+        on_line = 0
+        for c in np.unique(comp):
+            m = comp == c
+            if float((off[m] < 0.004).mean()) >= 0.98 and 0.02 <= t[m].min() and t[m].max() <= 0.98 or \
+                    float((off[m] < 0.004).mean()) >= 0.98 and t[m].max() - t[m].min() > 0.5:
+                on_line += 1
+                self.assertTrue(bool(driven[m].all()), f"island {c} lies on the string but rides the limb")
+        self.assertGreaterEqual(on_line, 2)                                   # the string and its nakajikake
+
+    def test_the_string_bends_round_the_nock_without_stretching(self):
+        # The string's bend: a fillet tangent to both segments, its arc length
+        # held at 2 x STRING_BEND_M from brace to full draw, its bones turning
+        # in equal steps, its apex inside the V by R (sec(turn / 2) - 1).
+        import numpy as np
+        for d in (0.0, 0.3, 0.6, 1.0):
+            f = Y.string_frames(d)
+            sk = Y.shape_at(d)["sockets"]
+            a, b, v = (np.array(sk[k]) for k in ("String_Lower", "String_Upper", "Grip_R"))
+            cl = Y.string_centreline(d, 400)
+            arc = float(np.sum(np.linalg.norm(np.diff(cl[1:-1], axis=0), axis=1)))
+            self.assertAlmostEqual(arc, 2 * Y.STRING_BEND_M, places=7, msg=d)
+            ang = [f[k][1] for k in Y.STRING_BONES]
+            self.assertAlmostEqual(ang[0], ang[1], places=12)             # Tip_L turns with its segment
+            self.assertAlmostEqual(ang[-1], ang[-2], places=12)           # and Tip_U with its own
+            steps = np.diff(ang[1:-1])
+            np.testing.assert_allclose(steps, steps[0], atol=1e-9)
+            turn = ang[-1] - ang[0]
+            if abs(turn) > 1e-9:
+                R = 2 * Y.STRING_BEND_M / abs(turn)
+                apex_off = float(np.linalg.norm(f["String_Nock"][0] - v))
+                self.assertAlmostEqual(apex_off, R * (1 / math.cos(turn / 2) - 1), places=9)
+            for name, (q0, q1) in (("String_Bend_L2", (a, v)), ("String_Bend_U2", (v, b))):
+                u = (q1 - q0) / np.linalg.norm(q1 - q0)
+                w = f[name][0] - q0
+                self.assertLess(float(np.linalg.norm(w - (w @ u) * u)), 1e-9, (d, name))
+
+    def test_quaternions_keep_small_and_half_turns_exact(self):
+        # The playback test found _quat's all-square-root form 1e-5 rad off
+        # near the identity (20 um at the rig's 1.45 m arms).
+        import numpy as np
+        rng = np.random.default_rng(18)
+        axes = rng.normal(size=(600, 3))
+        axes /= np.linalg.norm(axes, axis=1, keepdims=True)
+        angles = np.concatenate([10.0 ** rng.uniform(-9, -3, 200), rng.uniform(0, math.pi, 200),
+                                 math.pi - 10.0 ** rng.uniform(-9, -3, 200)])
+        K = np.zeros((600, 3, 3))
+        K[:, 0, 1], K[:, 0, 2], K[:, 1, 2] = -axes[:, 2], axes[:, 1], -axes[:, 0]
+        K -= np.transpose(K, (0, 2, 1))
+        s, c = np.sin(angles)[:, None, None], np.cos(angles)[:, None, None]
+        R = np.eye(3)[None] + s * K + (1 - c) * (K @ K)
+        np.testing.assert_allclose(Y._quat_matrix(Y._quat(R)), R, atol=1e-12)
+
+    def test_point_to_triangle_distance(self):
+        import numpy as np
+        P = np.array([[[-1.0, -1.0], [1.0, -1.0], [0.0, 1.0]],      # contains the origin
+                      [[1.0, 1.0], [2.0, 1.0], [1.0, 2.0]]])        # nearest corner at (1, 1)
+        d = Y._point_tri_dist(P)
+        self.assertEqual(float(d[0]), 0.0)
+        self.assertAlmostEqual(float(d[1]), 2 ** 0.5, places=12)
+
+    def test_a_flat_triangle_is_measured_by_its_edges(self):
+        # Root's review of ec5df08: collinear, off the origin, it measured 0
+        # because every edge orientation was zero along its whole line.
+        import numpy as np
+        cases = [([[2.0, 0.0], [3.0, 0.0], [4.0, 0.0]], 2.0),        # root's reproduction
+                 ([[-4.0, 0.0], [-3.0, 0.0], [-2.0, 0.0]], 2.0),     # the other side
+                 ([[1.0, 2.0], [2.0, 4.0], [3.0, 6.0]], 5 ** 0.5),   # oblique, on a line through the origin
+                 ([[2.0, 0.0], [2.0, 0.0], [4.0, 0.0]], 2.0),        # two vertices shared
+                 ([[3.0, 4.0], [3.0, 4.0], [3.0, 4.0]], 5.0),        # all three
+                 ([[-1.0, 0.0], [0.5, 0.0], [2.0, 0.0]], 0.0)]       # the origin on it
+        d = Y._point_tri_dist(np.array([c for c, _ in cases]))
+        for (tri, want), got in zip(cases, d):
+            self.assertAlmostEqual(float(got), want, places=12, msg=tri)
+        # A solid triangle still contains the origin, however thin or small.
+        P = np.array([[[-1.0, -1e-9], [1.0, -1e-9], [0.0, 1e-9]],
+                      [[-1e-9, -1e-9], [1e-9, -1e-9], [0.0, 1e-9]]])
+        self.assertEqual(Y._point_tri_dist(P).tolist(), [0.0, 0.0])
+
+    def test_the_kai_pose_clears_the_reticle_with_the_real_bow_and_arrow(self):
+        sm = Y.summary(Y.timeline_mesh(rig=self.rig, fps=30.0))
+        for part, phases in sm.items():
+            for phase, v in phases.items():
+                self.assertGreaterEqual(v["nearest"], 0.12, (part, phase, v))
+                self.assertEqual(v["hidden_frames"], 0, (part, phase))
+        for phase in sm["bow"]:
+            self.assertEqual(sm["bow"][phase]["near_clip_frames"], 0, phase)
+        self.assertEqual(sm["arrow"]["hold"]["near_clip_frames"], 0)
+        # Reported residual: the real feathers cross the near plane at the
+        # frame's bottom-left corner briefly in the draw (draw about 0.64-0.69).
+        # With the arrow nocked on the string's bend (the v3 rig's apex, up to
+        # 3.4 mm forward of the old sharp V) it is 3 sampled frames at this
+        # test's 30 fps (2 before) and 3 at 60 fps, as before.
+        self.assertEqual(sm["arrow"]["draw"]["near_clip_frames"], 3)
+        u0, u1, v0, v1 = sm["arrow"]["draw"]["clip_box"]
+        self.assertTrue(u1 <= -0.88 and v1 <= -0.88, sm["arrow"]["draw"]["clip_box"])
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -1,0 +1,300 @@
+{
+ "schema_version": 1,
+ "kind": "art-run-archive",
+ "label": "v2.2 pilot run 1 at 0d9a6ef (PID 96256)",
+ "run_dir": "Local/ArtCache/NyaagyuDojoTimbersV22Pilot",
+ "archived_utc": "2026-10-25T06:44:45Z",
+ "exit_code": 0,
+ "log": {
+  "path": "Saved/DojoTimbers/pilot_v22.log",
+  "bytes": 9870,
+  "sha256": "6fc2206b73942d5c450e06c73b8bf5a2d6ec8ef8e5f4dfcba0bb09aa841fca5f",
+  "markers": [
+   "PILOT_MEMBER SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B01_V2 546658 45696 21.5",
+   "PILOT_MEMBER SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B00_V2 1270000 67048 98.0",
+   "PILOT_MEMBER SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B00_V2 337872 9746 17.4",
+   "PILOT_MEMBER SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B00_V2 41090 10012 10.4",
+   "PILOT_MEMBER SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B00_V2 145202 6836 12.3",
+   "PILOT_MEMBER SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B00_V2 98208 7074 12.5",
+   "PILOT_RENDER Local/ArtCache/NyaagyuDojoTimbersV22Pilot/Renders/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B01_V2_Clay_GrainClose.png 56.2",
+   "PILOT_RENDER Local/ArtCache/NyaagyuDojoTimbersV22Pilot/Renders/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B01_V2_Nanite_GrainClose.png 136.8",
+   "PILOT_RENDER Local/ArtCache/NyaagyuDojoTimbersV22Pilot/Renders/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B01_V2_Clay_CheckClose.png 59.7",
+   "PILOT_RENDER Local/ArtCache/NyaagyuDojoTimbersV22Pilot/Renders/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B01_V2_Nanite_CheckClose.png 93.5",
+   "PILOT_RENDER Local/ArtCache/NyaagyuDojoTimbersV22Pilot/Renders/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B01_V2_Fallback_CheckClose.png 82.9",
+   "PILOT_RENDER Local/ArtCache/NyaagyuDojoTimbersV22Pilot/Renders/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B01_V2_Clay_DentClose.png 25.1",
+   "PILOT_RENDER Local/ArtCache/NyaagyuDojoTimbersV22Pilot/Renders/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B01_V2_Nanite_DentClose.png 57.3",
+   "PILOT_RENDER Local/ArtCache/NyaagyuDojoTimbersV22Pilot/Renders/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B01_V2_Clay_ArrisMid.png 48.4",
+   "PILOT_RENDER Local/ArtCache/NyaagyuDojoTimbersV22Pilot/Renders/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B01_V2_Nanite_ArrisMid.png 64.5",
+   "PILOT_RENDER Local/ArtCache/NyaagyuDojoTimbersV22Pilot/Renders/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B00_V2_Clay_WornTopClose.png 34.9",
+   "PILOT_RENDER Local/ArtCache/NyaagyuDojoTimbersV22Pilot/Renders/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B00_V2_Nanite_WornTopClose.png 43.2",
+   "PILOT_RENDER Local/ArtCache/NyaagyuDojoTimbersV22Pilot/Renders/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B00_V2_Clay_AdzeMid.png 25.0",
+   "PILOT_RENDER Local/ArtCache/NyaagyuDojoTimbersV22Pilot/Renders/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B00_V2_Nanite_AdzeMid.png 26.6",
+   "PILOT_RENDER Local/ArtCache/NyaagyuDojoTimbersV22Pilot/Renders/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B00_V2_Clay_GrainClose.png 45.1",
+   "PILOT_RENDER Local/ArtCache/NyaagyuDojoTimbersV22Pilot/Renders/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B00_V2_Nanite_GrainClose.png 72.0",
+   "PILOT_READY 6 members, 2439030 Nanite source triangles, 15 renders"
+  ]
+ },
+ "totals": {
+  "files": 46,
+  "bytes": 477383434,
+  "by_folder": {
+   "Dense": {
+    "files": 6,
+    "bytes": 419249064
+   },
+   "Fallback": {
+    "files": 6,
+    "bytes": 20195784
+   },
+   "Maps": {
+    "files": 12,
+    "bytes": 11590786
+   },
+   "Renders": {
+    "files": 16,
+    "bytes": 23377673
+   },
+   "Shared": {
+    "files": 3,
+    "bytes": 2921021
+   },
+   ".": {
+    "files": 3,
+    "bytes": 49106
+   }
+  }
+ },
+ "files_digest": "a19050fdfccb4ff2025bb1b3e65c70fc197631e81d6378491a0756daad9c8673",
+ "files": [
+  {
+   "path": "Dense/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B00_V2.fbx",
+   "bytes": 223761532,
+   "sha256": "84bd7700f283f1dfa54ddf807ccdacb069e2c719a98da9417cce9f8d01784f96"
+  },
+  {
+   "path": "Dense/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B01_V2.fbx",
+   "bytes": 93050668,
+   "sha256": "04e2b511ea469236c5dd0b59a33e6c3789d06ef6542eaa90ff4242bdc2d91f8d"
+  },
+  {
+   "path": "Dense/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B00_V2.fbx",
+   "bytes": 5686540,
+   "sha256": "f073a272ed099b2903beda9759952f8ad3e9eb7192830e778d04de8e8a5ef228"
+  },
+  {
+   "path": "Dense/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B00_V2.fbx",
+   "bytes": 21690220,
+   "sha256": "581a335eaca0142e09587594427754f002e6169302a90120390d2140e841b0a4"
+  },
+  {
+   "path": "Dense/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B00_V2.fbx",
+   "bytes": 60505100,
+   "sha256": "8758a6df8f69f7b5cbad856801fd8116b9118744b4db5eea3097fbdd1393e3c8"
+  },
+  {
+   "path": "Dense/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B00_V2.fbx",
+   "bytes": 14555004,
+   "sha256": "4064b76c6276c9ff4ff2c4b6846e7871db250f930f8b0436cd158a856ed6f036"
+  },
+  {
+   "path": "Fallback/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B00_V2_Fallback.fbx",
+   "bytes": 9397772,
+   "sha256": "0f23ef9fad5899645271843dbb4dae906c94af76e4f92949018bd258fe874c1c"
+  },
+  {
+   "path": "Fallback/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B01_V2_Fallback.fbx",
+   "bytes": 6457612,
+   "sha256": "4906f72eea88db049339ce2ffb7b937b0b89a38108f4e0a96fada4d75a19fb69"
+  },
+  {
+   "path": "Fallback/SM_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B00_V2_Fallback.fbx",
+   "bytes": 1215948,
+   "sha256": "78d54b6d5971606e436f0bf29c8e332405fbad31f29f9146bc81ee3c4aac6ca0"
+  },
+  {
+   "path": "Fallback/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B00_V2_Fallback.fbx",
+   "bytes": 926156,
+   "sha256": "1f399fd29b7eb61fc6ec574f1aa1b6d5278fdfd90d22eb5c7daddaaeedb0d460"
+  },
+  {
+   "path": "Fallback/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B00_V2_Fallback.fbx",
+   "bytes": 1161660,
+   "sha256": "9e9acdeeebb8bcc8f576633dd5792eba5334b07a03f0b2a095d59b9e11baaaf5"
+  },
+  {
+   "path": "Fallback/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B00_V2_Fallback.fbx",
+   "bytes": 1036636,
+   "sha256": "56f1da1716acba5f1a32ffc220795bbd62a7c4eca8e8a4aa61d0be36c0db3d4a"
+  },
+  {
+   "path": "Maps/T_DojoTimberColumn_8000_m1300_11600_1300_S0_B00_V2_Masks.png",
+   "bytes": 1669454,
+   "sha256": "2e738178f323adf1175b0b3cb720985e691310dfb5065816c0e56bef26afa27c"
+  },
+  {
+   "path": "Maps/T_DojoTimberColumn_8000_m1300_11600_1300_S0_B00_V2_NormalDX.png",
+   "bytes": 826493,
+   "sha256": "5aeb0add354c04ff103d19efc8d6d74ff912ddc49f3e236a953010a3f513c399"
+  },
+  {
+   "path": "Maps/T_DojoTimberColumn_8000_m1300_11600_1300_S0_B01_V2_Masks.png",
+   "bytes": 1416506,
+   "sha256": "b23c2b6a1e064d0065e509524d9deea06a0d2ad45e97b8e44b0bdac1e7b3eb85"
+  },
+  {
+   "path": "Maps/T_DojoTimberColumn_8000_m1300_11600_1300_S0_B01_V2_NormalDX.png",
+   "bytes": 601303,
+   "sha256": "e7eeb33f3386342ab7149ab9f51d54b8349efde682640a0e9b9315a57520ae28"
+  },
+  {
+   "path": "Maps/T_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B00_V2_Masks.png",
+   "bytes": 874906,
+   "sha256": "be40c2907143f776b83da89cfa49d441aa38a304aeddfe2d927a325be36e03b5"
+  },
+  {
+   "path": "Maps/T_DojoTimberRail_Cornice_8000_m1300_11600_1300_S0_B00_V2_NormalDX.png",
+   "bytes": 235077,
+   "sha256": "ca3c60fd1f439441891b7820358ac99e733cb85595112f3c442cdd94791f0dc5"
+  },
+  {
+   "path": "Maps/T_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B00_V2_Masks.png",
+   "bytes": 1547777,
+   "sha256": "383953e3f75f629f9e43e21f50e13f91ffa3dd42ad6045d7cf3552835ce2dc71"
+  },
+  {
+   "path": "Maps/T_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B00_V2_NormalDX.png",
+   "bytes": 815902,
+   "sha256": "b1dfbecc1becd1a0578a1fc0276e54e9d0712375207de5e93506ae47b20e2555"
+  },
+  {
+   "path": "Maps/T_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B00_V2_Masks.png",
+   "bytes": 1029546,
+   "sha256": "13f2fd066686f8b655b8afec1278adda1faa9debeb6b9123ec7be22315455b4e"
+  },
+  {
+   "path": "Maps/T_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B00_V2_NormalDX.png",
+   "bytes": 554027,
+   "sha256": "0d307e2d38a9476c026cdea9e2f9efc50a97871e15afb41d510e69c67d4dade1"
+  },
+  {
+   "path": "Maps/T_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B00_V2_Masks.png",
+   "bytes": 1454845,
+   "sha256": "8c0e08bcb34466270d4e0cd4c90bb66dcab88ad83a52f13c67f8b313135a7e45"
+  },
+  {
+   "path": "Maps/T_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B00_V2_NormalDX.png",
+   "bytes": 564950,
+   "sha256": "f9ea512d1d0d14ac7dd3f99332baf55f2bcd2376f3d45dfd3c432e03bfd1caef"
+  },
+  {
+   "path": "Renders/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B01_V2_Clay_ArrisMid.png",
+   "bytes": 1507399,
+   "sha256": "6620b52b84fe5064ada23e569d2f691a8fcd6a6ad470cc41016ba2dcb9a5b018"
+  },
+  {
+   "path": "Renders/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B01_V2_Clay_CheckClose.png",
+   "bytes": 1552461,
+   "sha256": "25fd4dd87ba24e3b8fe0e1e9060beff17eddd48dc37876a6d640ddcbd2836bcc"
+  },
+  {
+   "path": "Renders/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B01_V2_Clay_DentClose.png",
+   "bytes": 1501994,
+   "sha256": "e833aeeab860040c8d45aea3d6f8ab3e4e209758d057b3fe14fe5417fd76a71f"
+  },
+  {
+   "path": "Renders/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B01_V2_Clay_GrainClose.png",
+   "bytes": 1547521,
+   "sha256": "640ea283e91b113095be51bb34d9a7e43024b80d1f791035c0d04c718cb84004"
+  },
+  {
+   "path": "Renders/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B01_V2_Fallback_CheckClose.png",
+   "bytes": 1558320,
+   "sha256": "54874edaa1d75acdfca602cf6b3076b91962a42d8598d9c98de5a03723e390b3"
+  },
+  {
+   "path": "Renders/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B01_V2_Nanite_ArrisMid.png",
+   "bytes": 1577167,
+   "sha256": "afa05a637027867617154f45eeb0e73e314574220ec671030de628768e62bda8"
+  },
+  {
+   "path": "Renders/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B01_V2_Nanite_CheckClose.png",
+   "bytes": 1560735,
+   "sha256": "80d5acb908d04476d991bf1f44255efab0fc4c167c7e65902872d29b04bad9d0"
+  },
+  {
+   "path": "Renders/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B01_V2_Nanite_DentClose.png",
+   "bytes": 1534967,
+   "sha256": "460e4d81ae9879a304b02f98cb7ca0228d78d193d9e32da6db8f20d925970d50"
+  },
+  {
+   "path": "Renders/SM_DojoTimberColumn_8000_m1300_11600_1300_S0_B01_V2_Nanite_GrainClose.png",
+   "bytes": 1580175,
+   "sha256": "4ab124f68da8ee54d857e01022ce1a20530aa51d136cdf8388adf057dada4cbd"
+  },
+  {
+   "path": "Renders/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B00_V2_Clay_WornTopClose.png",
+   "bytes": 1599617,
+   "sha256": "008447783697424fe6179e8ff5b5b0424682b86933b4b618fb8c6a50f3e19ccc"
+  },
+  {
+   "path": "Renders/SM_DojoTimberRail_Koshi_8000_m1300_11600_1300_S1_B00_V2_Nanite_WornTopClose.png",
+   "bytes": 1655501,
+   "sha256": "66481137026bf5ba7feef919ab1f4e50fef1c876788d39c306a5627ec0117ab1"
+  },
+  {
+   "path": "Renders/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B00_V2_Clay_GrainClose.png",
+   "bytes": 1602503,
+   "sha256": "edeb4757c5f4a4934a74ac705a5756fddbd9f55d3fa5c138f792b5a1a1567697"
+  },
+  {
+   "path": "Renders/SM_DojoTimberRail_Nageshi_8000_m1300_11600_1300_S0_B00_V2_Nanite_GrainClose.png",
+   "bytes": 1487107,
+   "sha256": "4484c4e055d1b4e00dc0aea31555787aafa5fc826c417294a89e38c766e8b6e7"
+  },
+  {
+   "path": "Renders/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B00_V2_Clay_AdzeMid.png",
+   "bytes": 1548932,
+   "sha256": "475bfe675e35c8daad30fa887d39eb17200c9a65a064812c7d9d6c3fc93b84ce"
+  },
+  {
+   "path": "Renders/SM_DojoTimberRail_Nuki_8000_m1300_11600_1300_S0_B00_V2_Nanite_AdzeMid.png",
+   "bytes": 1557901,
+   "sha256": "f206e1c0075d8b165f38c9af7d9a1f24bd92419ee91d276a9fed31fdee267b95"
+  },
+  {
+   "path": "Renders/renders.json",
+   "bytes": 5373,
+   "sha256": "29792f7ada85add5b480a99f7565d7cc29e422e9306622d154b12871706fa886"
+  },
+  {
+   "path": "Shared/T_TimberFibre.png",
+   "bytes": 2723912,
+   "sha256": "fa480dd6ab128159bb5e322e2bd0eb7c5180e00f813be810e78ec1efd192e080"
+  },
+  {
+   "path": "Shared/T_TimberRingNoise.png",
+   "bytes": 131229,
+   "sha256": "a2c12211434d34553bf9b5a9d950a62ab6e344bce3d298e4db55404f414269df"
+  },
+  {
+   "path": "Shared/T_TimberRingRandom.png",
+   "bytes": 65880,
+   "sha256": "061d124c8e0faa73f0905220bcdad05aecf4ae4a83fcc5bb34ef5410d3bd016d"
+  },
+  {
+   "path": "checks.json",
+   "bytes": 22913,
+   "sha256": "8cd53bda01f2b7fd0240ea306faf389e930525ff0f7157e52e0680fb13a12728"
+  },
+  {
+   "path": "evidence.json",
+   "bytes": 3860,
+   "sha256": "9044eded0223f7102292eca2e6d8ee0feabc3b22e25e1320e0ccef018a50fc08"
+  },
+  {
+   "path": "manifest.json",
+   "bytes": 22333,
+   "sha256": "f857f1fdc9503137ad14a667e55510d02c2588b35c8cb4debd72561e027a0072"
+  }
+ ]
+}

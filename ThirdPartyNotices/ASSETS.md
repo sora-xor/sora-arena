@@ -10,7 +10,7 @@ Policy: `docs/art-research/free-asset-acquisition-plan.md` section 2. Every asse
 |---|---:|---:|---:|
 | PUB-CC0 | 192 | 2572 | 4,591,086,361 |
 | PUB-BY | 11 | 12 | 206,629,366 |
-| OWN | 14 | 558 | 906,751,823 |
+| OWN | 18 | 600 | 1,064,620,551 |
 | REF | 6 | 6 | 9,778,972 |
 
 ## Public domain and CC0 (PUB-CC0, PUB-PD)
@@ -325,7 +325,11 @@ Credit format (plan section 2.3): "Title" by Author, source link, license link, 
 - `Content/SourceArt/Audio/Original`: 133 files, generator `scripts/audio/synth/build_sfx.py, scripts/audio/synth/dsp.py, scripts/audio/synth/sfx_ui.py, scripts/audio/synth/sfx_melee.py, scripts/audio/synth/sfx_scifi.py, scripts/audio/synth/sfx_foley.py`, derived from -
 - `Content/SourceArt/VFX/Textures`: 8 files, generator `scripts/art/create_vfx_textures.py`, derived from -
 - `Nyaagyu_PBR_Palette_Preview`: 1 files, generator `scripts/art/render_environment_palette.py`, derived from `wood_planks_dirt`, `stone_floor`, `brown_mud_leaves_01`, `rusty_metal_02`, `kloofendal_overcast_puresky`
+- `NyaakotoFP_FurCards`: 3 files, generator `scripts/art/create_nyaakoto_fp_fur_textures.py`, `scripts/art/fur_atlas_coverage.py`, derived from -
+- `NyaakotoFP_FurShells`: 2 files, generator `scripts/art/create_nyaakoto_fp_shell_texture.py`, derived from -
+- `NyaakotoFP_PawL_Yumi`: 6 files, generator `scripts/art/create_nyaakoto_fp_paws.py`, `scripts/art/nyaakoto_fp_paws.py`, `scripts/art/nyaakoto_fp_kote.py`, derived from `Content/SourceArt/Characters/NyaakotoFirstPersonPaws/FurCards/manifest.json`, `Content/SourceArt/Characters/NyaakotoFirstPersonPaws/FurShells/manifest.json`, `Content/SourceArt/Characters/NyaakotoFirstPersonPaws/FurShells/T_NyaakotoFP_FurShells_Strands.png`, `Content/SourceArt/Characters/NyaakotoFirstPersonPaws/FurShells/T_NyaakotoFP_FurShells_Tint.png`, `Content/SourceArt/UI/SoraKamonMon/SM_SoraKamon.fbx`, `Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/SK_Weapon_18.fbx`, `Content/SourceArt/Weapons/Runtime/W18_Yumi/Rig/rig_record.json`, `Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_Ya.fbx`, `Content/SourceArt/Characters/NyaakotoFirstPersonPaws/FurCards/T_NyaakotoFP_FurCards_Albedo.png`, `Content/SourceArt/Characters/NyaakotoFirstPersonPaws/FurCards/T_NyaakotoFP_FurCards_Masks.png`, `Content/SourceArt/Characters/NyaakotoFirstPersonPaws/FurCards/T_NyaakotoFP_FurCards_NormalDX.png`, `Content/SourceArt/Characters/NyaakotoFirstPersonPaws/Textures/T_Nyaakoto_PawPad_Albedo.png`, `Content/SourceArt/Characters/NyaakotoFirstPersonPaws/Textures/T_Nyaakoto_PawPad_NormalDX.png`, `Content/SourceArt/Characters/NyaakotoFirstPersonPaws/Textures/T_Nyaakoto_PawPad_ORM.png`, `Content/SourceArt/Characters/Hero/PBR/T_Nyaakoto_fur_white_Albedo.png`, `Content/SourceArt/Characters/Hero/PBR/T_Nyaakoto_fur_white_NormalDX.png`, `Content/SourceArt/Characters/Hero/PBR/T_Nyaakoto_silk_indigo_Albedo.png`, `Content/SourceArt/Characters/Hero/PBR/T_Nyaakoto_silk_indigo_NormalDX.png`, `Content/SourceArt/Characters/Hero/PBR/T_Nyaakoto_silk_indigo_ORM.png`
 - `SM_NyaagyuFernGroundTransition:derived`: 3 files, generator `scripts/art/create_nyaagyu_fern_ground_transition.py`, derived from `fern_02`
+- `W18_Yumi_Rig`: 31 files, generator `scripts/art/create_runtime_weapon_yumi_rig.py`, `scripts/art/render_yumi_rig_review.py`, derived from `Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18.fbx`, `Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_Ya.fbx`, `Content/SourceArt/Weapons/Runtime/W18_Yumi/build_record.json`
 - `fern_02:derived`: 11 files, generator `scripts/art/create_nyaagyu_fern_shoulder.py`, derived from `fern_02`
 - `inventory-drone`: 14 files, generator `scripts/art/create_inventory_drone.py`, `scripts/art/create_runtime_weapon_lib.py`, `scripts/art/reexport_inventory_drone_lod0.py`, derived from -
 - `nyaagyu-dojo-kit`: 19 files, generator `scripts/art/create_nyaagyu_dojo_kit.py`, `scripts/art/sora_arch_lib.py`, `scripts/art/craft_textures.py`, `scripts/art/sora_mark.py`, `scripts/art/create_runtime_weapon_lib.py`, derived from `Content/SourceArt/UI/sora_logo_NOtext2.svg`

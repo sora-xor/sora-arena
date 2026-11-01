@@ -1,0 +1,557 @@
+{
+  "original_master": "610bb9753322cd813788331ce169e492ddea5fce",
+  "gameplay_tip": "e322bb33e29067b7e0722c5a841c2e174094b3af",
+  "art_tip": "733604b09f6b174168c01c75191dfaf37dae2d5e",
+  "stash": "4a0d945be1c335c3abc330165f37a330e6110590",
+  "stash_status": "Superseded by the integrated spire supply implementation; original stash retained. Patch includes the four formerly untracked implementation files.",
+  "art_files": [
+    {
+      "original_path": "Content/SourceArt/Environment/SoraCraft/SoraMaku/Renders/SM_SoraMaku_Dawn.png",
+      "snapshot": "untracked-art/Content/SourceArt/Environment/SoraCraft/SoraMaku/Renders/SM_SoraMaku_Dawn.png",
+      "bytes": 1630776,
+      "sha256": "9fb7cffcdd95d2bb05e527bac06d301452d37b2f62d13785d6ac2c584093e849"
+    },
+    {
+      "original_path": "Content/SourceArt/Environment/SoraCraft/SoraMaku/Renders/SM_SoraMaku_Lantern.png",
+      "snapshot": "untracked-art/Content/SourceArt/Environment/SoraCraft/SoraMaku/Renders/SM_SoraMaku_Lantern.png",
+      "bytes": 1318301,
+      "sha256": "287f34f4981d911675c38e282427c5b89dc02c3cb667b9b9467cfed4c4c48c0b"
+    },
+    {
+      "original_path": "Content/SourceArt/Environment/SoraCraft/SoraMaku/SM_SoraMaku.fbx",
+      "snapshot": "untracked-art/Content/SourceArt/Environment/SoraCraft/SoraMaku/SM_SoraMaku.fbx",
+      "bytes": 16723004,
+      "sha256": "913d4524b760135dbad2b0a0d1dcd759db4b126da28adf223ccd9301e6e27ad4"
+    },
+    {
+      "original_path": "Content/SourceArt/Environment/SoraCraft/SoraMaku/T_SoraMaku_BaseColor.png",
+      "snapshot": "untracked-art/Content/SourceArt/Environment/SoraCraft/SoraMaku/T_SoraMaku_BaseColor.png",
+      "bytes": 1331406,
+      "sha256": "c11fd30c9464757bde4ab4f1af009f18c54523fe4f48ce8b27a3aab383a864b3"
+    },
+    {
+      "original_path": "Content/SourceArt/Environment/SoraCraft/SoraMaku/T_SoraMaku_Transmission.png",
+      "snapshot": "untracked-art/Content/SourceArt/Environment/SoraCraft/SoraMaku/T_SoraMaku_Transmission.png",
+      "bytes": 279243,
+      "sha256": "58f240e36cbae6ad7c608dd6b8a2a4817f06c6b970d698320c4a082932c86f39"
+    },
+    {
+      "original_path": "Content/SourceArt/Environment/SoraCraft/SoraMaku/T_SoraMaku_WeaveNormalDX.png",
+      "snapshot": "untracked-art/Content/SourceArt/Environment/SoraCraft/SoraMaku/T_SoraMaku_WeaveNormalDX.png",
+      "bytes": 659148,
+      "sha256": "10e917bdb3667275d5774eb2bd3d54d5329f5b18c2a2c08411440e4461758b37"
+    },
+    {
+      "original_path": "Content/SourceArt/Environment/SoraCraft/SoraMaku/build_record.json",
+      "snapshot": "untracked-art/Content/SourceArt/Environment/SoraCraft/SoraMaku/build_record.json",
+      "bytes": 1775,
+      "sha256": "6730d5d3f0d28a5f8ec98d4973ad7883add1941fce8d6b40fad62ec1d1aba475"
+    }
+  ],
+  "branches": [
+    {
+      "branch": "refs/heads/codex/zero-life-fixture-clock",
+      "tip": "a8ab4312edceb83a2e8bb6e9fdefcd8aa65f6994",
+      "cherry_equivalent": 4,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/weapon-hud-wrap",
+      "tip": "fb914712a7ecc212ff28e43364e2edd5d1a020a6",
+      "cherry_equivalent": 8,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/w14-recovery",
+      "tip": "ff533574cac02ba6d2f8b5a8c8c85616e64fb9b6",
+      "cherry_equivalent": 1,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/toshiya-reader-evidence",
+      "tip": "c2324655225a4dd349f37c24f1c29d2e053047e4",
+      "cherry_equivalent": 1,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/timber-visible-shader-readiness",
+      "tip": "bb97eedb89d677fe7daae0c4518de60dbeee5bc5",
+      "cherry_equivalent": 1,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/timber-uv-roundtrip",
+      "tip": "014a80e6ef9312dab0c194afe31bb50ca9150497",
+      "cherry_equivalent": 1,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/timber-probe-resolution",
+      "tip": "8fa05183623aca9a6c3dce7f98793662da7bf8d9",
+      "cherry_equivalent": 1,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/timber-probe-draw",
+      "tip": "7aebdba88a9ca23893f35c306650c263e37c0d52",
+      "cherry_equivalent": 1,
+      "unmatched": [
+        "dbb2de94 Capture isolated timber probe materials and actual Metal draw evidence"
+      ],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/timber-metal-sampler-fix",
+      "tip": "325e7ee3c975f64c3a0ac99b236aadabe2b4b726",
+      "cherry_equivalent": 1,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/timber-material-inputs",
+      "tip": "4a69b0399a845313e9a7db71bb14584fbbbc3153",
+      "cherry_equivalent": 1,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/timber-import-probe",
+      "tip": "5ce787570e99b56ee4c8bd01929dcddaa8deb862",
+      "cherry_equivalent": 2,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/source-validation",
+      "tip": "a3fd25f0e3fb3addd436cecb4709df3996e8eb6d",
+      "cherry_equivalent": 2,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/palace-fusuma",
+      "tip": "29947da158f2c09a4f1e453cdb676daddfa26d50",
+      "cherry_equivalent": 1,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/package-qualification",
+      "tip": "69cc3c6ca334ef556a71d478811ddf09c8ad6c9c",
+      "cherry_equivalent": 2,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/muto-transition-diagnostic",
+      "tip": "0e969a06dc349b20c17403c2be10de9a68d2c3b6",
+      "cherry_equivalent": 2,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/moat-playthrough",
+      "tip": "aef3d3ff5f1300b2eef370c4a0add2ba99f89207",
+      "cherry_equivalent": 2,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/moat-depth",
+      "tip": "86b8f598e98b5587a92cc6a668648efbe3fc7b2f",
+      "cherry_equivalent": 6,
+      "unmatched": [
+        "b780a872 Implement physical chapter-six moat swimming and submerged gate"
+      ],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/margin-linger-fixture",
+      "tip": "a79bc725c2447761a3a15583bcd38ed4c4f9a908",
+      "cherry_equivalent": 1,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/lfs-ledger-materialization",
+      "tip": "839bed7ddf1cae7375f30939cbb00cb54d591b25",
+      "cherry_equivalent": 1,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/ledger-lockdown",
+      "tip": "3ecc4627998ae9ad7ce20bfdcfe805b1289e3d19",
+      "cherry_equivalent": 1,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/hud-tracker",
+      "tip": "94c787444baeb11ba9d7534d5607c20588010852",
+      "cherry_equivalent": 11,
+      "unmatched": [
+        "94c78744 Finalize capture logs after inherited writers close",
+        "572f0392 Gate packaged navigation on untouched rendered startup",
+        "b70bc46e Separate the rhythm metronome from measured interaction text",
+        "ac4c0279 Connect workshop rhythm cues to cleared audio and station motions",
+        "e670c8a7 Preserve bellows progress before dispatching threshold events",
+        "0763c01c Implement authored rhythm phrases and opt-in production assist",
+        "63e87186 Implement alternating bellows treads and live rate gauge",
+        "a0a4f631 Apply authored crank stamina and interruptible held wheel input",
+        "44e292a3 Build the spire lift as a physical moving stage",
+        "749a436b Preserve and enforce named carry drop-off capacities"
+      ],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/helm-active-hold-pause",
+      "tip": "f481431c3646a8701f2f5608a232e5dba933c544",
+      "cherry_equivalent": 2,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/hangar-fuel-canisters",
+      "tip": "eb6c4aaa5c2a1073a59f85364cd459813c57c1b8",
+      "cherry_equivalent": 0,
+      "unmatched": [
+        "eb6c4aaa Make the authored hangar fuel canisters burst when shot"
+      ],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/gameplay-integration",
+      "tip": "e31e249d760f1d896b71272427364a16f2b450be",
+      "cherry_equivalent": 2,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/frontend-input-diagnostic",
+      "tip": "2f4fffe1149eefdb2543a4a65bab889f2a143dc6",
+      "cherry_equivalent": 1,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/foundry-repair-fixture",
+      "tip": "e08a74426030ffa23b0853fbfd23545ac32ec395",
+      "cherry_equivalent": 3,
+      "unmatched": [
+        "66ba87a8 Implement authored foundry defense supplies, rescue and furnace pressure"
+      ],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/flood-companion-contact",
+      "tip": "9e5cf846905f9a39df804467bce0991beeae6eea",
+      "cherry_equivalent": 1,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/flood-carrier-diagnostics",
+      "tip": "9f6f16110592d4b10f3c9f5275f756ff5f3d47ca",
+      "cherry_equivalent": 0,
+      "unmatched": [
+        "9f6f1611 Sample carrier bank support within the existing wait"
+      ],
+      "resolution": "Merged missing carrier bank support sampling"
+    },
+    {
+      "branch": "refs/heads/codex/flood-bank-clearance",
+      "tip": "f58528c3ac04846381ba6aa4cd55e53f930fbd48",
+      "cherry_equivalent": 2,
+      "unmatched": [
+        "ae9df3b7 Implement the flooding culvert and physical dive route as a WIP checkpoint"
+      ],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/first-person-presentation",
+      "tip": "51d411f2b942c4af92e2d62db33618213b680484",
+      "cherry_equivalent": 5,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/fallback-bow-clearance",
+      "tip": "da99931e4afe1a239de387b805e5336e0f21b4c6",
+      "cherry_equivalent": 1,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/eye-adaptation-diagnostic",
+      "tip": "671c7ef144ac344c8941aea0bcfe10e51caedf2c",
+      "cherry_equivalent": 1,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/dojo-timber-capture",
+      "tip": "dfc697b3f0ace894b60d86ea53ff29b81ab6e778",
+      "cherry_equivalent": 4,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/dojo-pupil-timing",
+      "tip": "156f191680b6b224c564bc1a86ecdb5d524a79ce",
+      "cherry_equivalent": 1,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/dojo-nanite-import",
+      "tip": "b72c5ac6aa3d3499178f7e5c73dbb8cae43298c3",
+      "cherry_equivalent": 2,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/dojo-fallback-geometry-audit",
+      "tip": "d04f246a48415827405395bf9c62db6d0e77ce35",
+      "cherry_equivalent": 2,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/dojo-derived-data-diagnostic",
+      "tip": "fe08933ea7541acf3079a641616ba92c24ed3dbe",
+      "cherry_equivalent": 2,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/dojo-awase-zanshin",
+      "tip": "fab4a1ab09fc59939ecc44875923a05c814f81da",
+      "cherry_equivalent": 1,
+      "unmatched": [
+        "5f47ed5b Wire real dojo awase feedback and learned post-point zanshin"
+      ],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/dialogue-input-hold",
+      "tip": "4ee60624766ec2ce8350546f94028b132ea254d9",
+      "cherry_equivalent": 12,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/credits-diagnostic",
+      "tip": "69c0707a740eb6e8652f4efb5a84cbdab6fbf1ea",
+      "cherry_equivalent": 2,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/credits-arabic-font",
+      "tip": "13f6031ad9c8b4628d393dea5ac362024dcd87fb",
+      "cherry_equivalent": 1,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/collector-cane-thrust-controls",
+      "tip": "6fff22a16260585b8c442f23ae0caba4c3adadea",
+      "cherry_equivalent": 1,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/collatera-margin-call",
+      "tip": "384cc33fe474bb40cfa2a2c01369b64f2a282d8a",
+      "cherry_equivalent": 3,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/climb-fall-support",
+      "tip": "736ae885a988c9d2d6905a2c5219438f00566b15",
+      "cherry_equivalent": 11,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/chapter6-loadout",
+      "tip": "d14a4bd437695475d765cc7dac69ef89cb088b4e",
+      "cherry_equivalent": 0,
+      "unmatched": [
+        "d14a4bd4 Enforce chapter-six infiltration weapon permissions"
+      ],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/chapter01-wood-clapper",
+      "tip": "792a38270d22ea6c9b1b080ce8ba17e86bad3c90",
+      "cherry_equivalent": 0,
+      "unmatched": [
+        "792a3827 Implement optional wood traversal and separate clapper discoveries"
+      ],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/chapter-six-climb-data",
+      "tip": "8c16b7e5e32c29b4a191ed3a8bb104a0d799d0dc",
+      "cherry_equivalent": 3,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/chapter-seven-wind-fall-fixes",
+      "tip": "7d72c9449c0ed3da8b84a8fad7c6c56d0a023659",
+      "cherry_equivalent": 1,
+      "unmatched": [
+        "801b4fd0 Implement authored Chapter 7 ridge and wind gameplay"
+      ],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/chapter-seven-helm",
+      "tip": "3a1fef741ba56c052f0031ec258bdef0a6ddc0ae",
+      "cherry_equivalent": 2,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/ch6-loadout-cache-fixture",
+      "tip": "d749c28dfa27a1c4ef7a05963f258cdc50d7398e",
+      "cherry_equivalent": 1,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/ch06-bulkhead-capture",
+      "tip": "b94bee94ac9f4afe65ac0a9954cc64c99a54c607",
+      "cherry_equivalent": 1,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/ch02-pod-arrivals",
+      "tip": "11b057ee7c9490583d478fd4faf270ac0a3be9d8",
+      "cherry_equivalent": 1,
+      "unmatched": [
+        "11b057ee Implement timed authored drop-pod arrivals and horse placement"
+      ],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/casting-channel-hazards",
+      "tip": "035c2aa9891843d8276a2e4a721822330c0f4c43",
+      "cherry_equivalent": 0,
+      "unmatched": [
+        "035c2aa9 Implement authored casting-floor channel cycles and contact damage"
+      ],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/cargo-unload-hold",
+      "tip": "0f600d5b80e3e4b13e4dcf98db650d7749d012a8",
+      "cherry_equivalent": 1,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/cargo-rendered-capture",
+      "tip": "0d3235783c3122ef69e86cfb871c00d11c3567ed",
+      "cherry_equivalent": 14,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/canister-approach-fixture",
+      "tip": "00ca7d6ccb778a02826258602c9bc12d86e34fe4",
+      "cherry_equivalent": 1,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/campaign-space-support",
+      "tip": "b3a5139826ada1cc319cb06377cc34a7f5eebba4",
+      "cherry_equivalent": 1,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/campaign-maai",
+      "tip": "c88083491b8dc35ed39a08d83bb2b06e6e5cfb9f",
+      "cherry_equivalent": 19,
+      "unmatched": [
+        "626a0acb Localize the range instructions and chapter-one ammo notices",
+        "ae8acc6d Implement the dojo range with real arrows and recoverable finite sets",
+        "db005fd7 Add persistent optional seized-gallery toy and mon interactions",
+        "50fea8b5 Add the spire base supply cache and capped unlocked restocking",
+        "32e8697f Implement the spire auditor's physical shortcut shutter",
+        "a72952a1 Implement summit collateral slam and exposed core release",
+        "c752480b Cancel held spine cuts at input boundaries",
+        "54ddac94 Require physical summit retreat before phase checkpoints",
+        "260b91de Review held spine capture inputs and improve reach diagnostics",
+        "b971ea22 WIP: preserve the held summit spine cut while traversal is qualified",
+        "d479e493 Make the summit seizure field remove physical floor tiles",
+        "87273bba Derive spire aperture and grade from authored dimensions",
+        "734cf44b Adapt lift movement bases to Unreal 5.8 interfaces",
+        "f79ffb0f Build the physical summit approach and elevated arena",
+        "3952ee65 Build the spire spiral and require physical L4 arrival",
+        "6b436ac4 Build the spire lift as a physical moving stage"
+      ],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/campaign-codex",
+      "tip": "04b229696fa3a408ae4bc1d756d2c1fc0dd78cd4",
+      "cherry_equivalent": 3,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/campaign-arrow-cache-rewards",
+      "tip": "a06a996bcbc0f2fdd5bb0a0e013a97e9ca1a5246",
+      "cherry_equivalent": 1,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/bow-sway-capture",
+      "tip": "0d29384ca5a81c5294321777e2629708655b8b78",
+      "cherry_equivalent": 1,
+      "unmatched": [
+        "0d29384c Capture live mapped bow sway with original pixel and release evidence"
+      ],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/bow-canvas-frame",
+      "tip": "7f40424312ee98b61c1b87053612ff7b0e55ea8a",
+      "cherry_equivalent": 1,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/archive-reveal",
+      "tip": "86470d1cb627d1140397f5c4031d0bf8af26cb9f",
+      "cherry_equivalent": 2,
+      "unmatched": [],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    },
+    {
+      "branch": "refs/heads/codex/archery-hud-clearance",
+      "tip": "117a296a064eca198ea1a0e4be40a6d21b3aaf34",
+      "cherry_equivalent": 0,
+      "unmatched": [
+        "117a296a Keep archery lesson text outside the target view"
+      ],
+      "resolution": "Retained existing integrated implementation after cherry-pick/patch review"
+    }
+  ]
+}

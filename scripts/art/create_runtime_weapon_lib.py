@@ -2152,12 +2152,21 @@ def mat_horn(name, color=(0.020, 0.016, 0.013), rough=0.2):
 
 
 def mat_bamboo(name, color=(0.42, 0.30, 0.13), smoked=0.0, rough=0.38, axis="X", lacquer=0.0, nodes=(),
-               tube=None):
+               tube=None, scorch=0.0, internode=0.0):
     """Bamboo culm: waxy skin with fine longitudinal fibre and mottling
     (original procedural). ``nodes`` (positions along ``axis``) darken the
     node bands with their sheath scars; ``tube`` (cy, cz, r_bore) marks the
     cut end grain (vascular dots) and the pale inner skin of a hollow culm
-    about an X axis."""
+    about an X axis.
+
+    Two options, off by default so every existing culm bakes as before:
+
+    - ``scorch``: the browned patches a shaft takes when it is straightened
+      over a fire (yadake's tame). They are about 4 cm along the axis and
+      1 cm round it, and heavier at the nodes, where the culm is heated to be
+      bent true. A browned patch is a little rougher.
+    - ``internode``: each length between nodes takes its own tone, about this
+      fraction either way, as a culm's segments differ in colour."""
     nb = NB(name)
     o = nb.obj()
     x, y, z = nb.vxyz(o)
@@ -2168,17 +2177,32 @@ def mat_bamboo(name, color=(0.42, 0.30, 0.13), smoked=0.0, rough=0.38, axis="X",
     if smoked:
         col = nb.mixc(nb.mul(nb.remap(mott, 0.3, 0.7), smoked), col, nb.rgb((0.07, 0.035, 0.015)))
     ax = {"X": x, "Y": y, "Z": z}[axis]
+    if internode:
+        # Slow along the axis (about a segment's length), constant round it.
+        seg = nb.noise1(nb.mul(ax, 3.2), 1.0)
+        col = nb.hsv(col, v=nb.add(1.0, nb.mul(nb.sub(seg, 0.5), 2.0 * internode)))
     height = nb.mul(nb.sub(fib, 0.5), 0.000090)
     height = nb.add(height, nb.mul(nb.sub(mott, 0.5), 0.00010))
+    band = None
     if nodes:
         band = nb.zones(ax, [(p - 0.004, p + 0.004) for p in nodes], 0.006)
         scar = nb.zones(ax, [(p - 0.0012, p + 0.0012) for p in nodes], 0.001)
         col = nb.mixc(nb.mul(band, 0.45), col, nb.mulc(col, nb.rgb((0.62, 0.55, 0.45))))
         col = nb.mixc(nb.mul(scar, 0.7), col, nb.rgb((0.06, 0.045, 0.03)))
         height = nb.sub(height, nb.mul(scar, 0.00012))
+    burn = None
+    if scorch:
+        patch_sc = tuple(1.0 / 0.04 if s < 100 else 1.0 / 0.010 for s in sc)
+        patch = nb.noise(nb.vmul(o, patch_sc), 1.0, 2.0, 0.55, 0.4)
+        burn = nb.smoothstep(patch, 0.52, 0.72)
+        if band is not None:
+            burn = nb.clamp01(nb.add(burn, nb.mul(band, 0.6)))
+        col = nb.mixc(nb.mul(burn, scorch), col, nb.mulc(col, nb.rgb((0.52, 0.38, 0.24))))
     cav = nb.cavity(0.003)
     col = nb.mixc(nb.mul(cav, 0.5), col, nb.mulc(col, nb.rgb((0.3, 0.25, 0.2))))
     rgh = nb.add(rough, nb.mul(nb.sub(fib, 0.5), 0.1))
+    if burn is not None:
+        rgh = nb.add(rgh, nb.mul(burn, 0.08 * scorch))
     if lacquer:
         rgh = nb.lerp(rgh, 0.15, lacquer)
     if tube is not None:

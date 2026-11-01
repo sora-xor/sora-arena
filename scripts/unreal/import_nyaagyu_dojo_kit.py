@@ -160,9 +160,12 @@ def arch_master(name, defaults, two_sided):
     link(uv, "", div, "A")
     link(tile, "", div, "B")
     # Per-copy random UV offset from a hash of the object (instance) position.
-    # PerInstanceRandom sampled garbage UV derivatives on instanced sets under
-    # Mac Metal SM5 (blocky lowest-mip texels); the position hash is the same
-    # for instanced and single components.
+    # Computed in the pixel shader, instance data (PerInstanceRandom, then this
+    # amplified position hash) gave instanced sets garbage UV derivatives under
+    # Mac Metal SM5: blocky lowest-mip texels, while single components rendered
+    # correctly. The offset is now evaluated per vertex, where instancing
+    # happens, and interpolated (VertexInterpolator), so pixel derivatives see
+    # only a constant per copy. Retest on SM5 and SM6 instanced halls.
     opos = node(m, unreal.MaterialExpressionObjectPositionWS, -1900, 260)
     hseed = node(m, unreal.MaterialExpressionConstant3Vector, -1900, 340,
                  constant=unreal.LinearColor(0.01237, 0.00711, 0.00391, 0))
@@ -181,9 +184,11 @@ def arch_master(name, defaults, two_sided):
     link(rnd, "", off, "A")
     seven = node(m, unreal.MaterialExpressionConstant2Vector, -1700, 360, r=0.731, g=0.377)
     link(seven, "", off, "B")
+    per_vertex = node(m, unreal.MaterialExpressionVertexInterpolator, -1400, 260)
+    link(off, "", per_vertex, "VS")
     uvf = node(m, unreal.MaterialExpressionAdd, -1300, 100)
     link(div, "", uvf, "A")
-    link(off, "", uvf, "B")
+    link(per_vertex, "PS", uvf, "B")
     bc = node(m, unreal.MaterialExpressionTextureSampleParameter2D, -1050, -400, parameter_name="BaseColorMap",
               texture=defaults["BaseColor"])
     nm = node(m, unreal.MaterialExpressionTextureSampleParameter2D, -1050, -50, parameter_name="NormalMap",

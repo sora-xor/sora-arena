@@ -15,6 +15,7 @@ import hashlib
 import json
 import math
 import random
+import sys
 from pathlib import Path
 
 import bpy
@@ -709,7 +710,11 @@ logo_svg=ROOT / "Content/SourceArt/UI/sora_logo_NOtext2.svg"
 logo_record=json.loads((logo_svg.parent/"sora_logo_manifest.json").read_text())
 assert hashlib.sha256(logo_svg.read_bytes()).hexdigest()==logo_record["source_sha256"]
 
+KAMON_MARKS = {}                       # each placement's SVG centre, diameter and plane, for the validators
+
+
 def sora_kamon(name, center, diameter, material):
+    KAMON_MARKS[name] = {"center": list(center), "diameter": diameter, "plane": "YZ"}
     before=set(bpy.data.objects)
     bpy.ops.import_curve.svg(filepath=str(logo_svg))
     curves=[o for o in set(bpy.data.objects)-before if o.type=="CURVE"]
@@ -996,6 +1001,27 @@ box("Karakuri_wrist_cell",(.062,-.461,1.00),(.052,.040,.092),IRON,.008)
 for z in (.971,.990,1.009):
     line(f"Wrist_cell_trace_{z}",[(.092,-.482,z),(.105,-.490,z+.010)],.003,TEAL)
 
+# --- Production proportions: study A (root's selection, 2026-10-26 05:15 UTC) ------------------------------------
+# The arms are 1.2 times as long:
+# - each upper arm about its shoulder, along shoulder-to-elbow;
+# - each forearm about the moved elbow, along elbow-to-wrist;
+# - the paw moves with the wrist.
+# The chest's front (x > 0) is 0.85 times as deep, scaled about x = 0.
+# The rule is nyaakoto_runtime_parts.apply_variant, which the two-paw studies applied in memory
+# (Saved/W18Rebuild/s91_twopaw_A). The chest kamon and insignia are in its CHEST_FRONT, so they stay on the do; the
+# sode kamon ride the upper arms. The runtime body, its LODs and their kamon inherit A from this source.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import nyaakoto_runtime_parts as RP  # noqa: E402
+
+PROPORTIONS = {"arm": 1.2, "chest": 0.85}
+_mesh_parts = sorted((o for o in parts.objects if o.type == "MESH"), key=lambda o: o.name)
+proportions_record = RP.apply_variant(_mesh_parts, {o.name: o for o in _mesh_parts}, PROPORTIONS)
+assert proportions_record["parts_moved"] > 0, proportions_record
+# Each kamon moved rigidly with its backing; its marks move with it, exactly.
+assert set(proportions_record["kamon_moved_m"]) == set(KAMON_MARKS), proportions_record["kamon_moved_m"]
+for _placement, _d in proportions_record["kamon_moved_m"].items():
+    KAMON_MARKS[_placement]["center"] = [c + d for c, d in zip(KAMON_MARKS[_placement]["center"], _d)]
+
 # Export a separate joined static mesh; editable source parts remain untouched.
 source_parts=[o for o in parts.objects if o.type=="MESH"]
 for piece in source_parts:
@@ -1128,6 +1154,11 @@ manifest={
     "insignia_source":"../../UI/sora_logo_NOtext2.svg",
     "insignia_sha256":logo_record["source_sha256"],
     "sora_kamon_placements":["chest","waist","sode_-1","sode_1"],
+    "sora_kamon_marks":KAMON_MARKS,
+    "proportions":{"variant":PROPORTIONS,"rule":"scripts/art/nyaakoto_runtime_parts.py apply_variant",
+                   "parts_moved":proportions_record["parts_moved"],
+                   "kamon_moved_m":proportions_record["kamon_moved_m"],
+                   "selected":"Root, 2026-10-26 05:15 UTC: study A (arms 1.2, chest front 0.85) as the production rig basis, from the two-paw studies (Saved/W18Rebuild/s91_twopaw_A)"},
     "license":"Original project-owned character geometry, shaders and review renders; exact user-supplied SORA insignia paths retain their user-provided provenance and are licensed only for this game. No purchased or external models/textures",
     "limitations":"Stylized concept/blockout, not the photoreal shipping character. Unrigged static mesh; the bow and quiver are static pose source, not functional carry/draw animation. Blender procedural shaders and fur geometry have not been evaluated in UE 5.8.2. No animation, cloth simulation, groom, UE import, or in-game performance claim.",
 }

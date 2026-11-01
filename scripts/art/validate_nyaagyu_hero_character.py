@@ -74,6 +74,12 @@ assert len([o for o in parts if o.name.startswith("Toe_")])==8
 assert len([o for o in parts if o.name.startswith("Whisker_")])==16
 assert len([o for o in parts if o.name.startswith("Muzzle_follicle_")])==24
 assert manifest["sora_kamon_placements"]==["chest","waist","sode_-1","sode_1"]
+# Study A, root's production basis (2026-10-26): arms 1.2, the chest's front 0.85, by the studies' own rule.
+assert manifest["proportions"]["variant"]=={"arm":1.2,"chest":0.85}
+assert manifest["proportions"]["rule"]=="scripts/art/nyaakoto_runtime_parts.py apply_variant"
+assert manifest["proportions"]["parts_moved"]>0
+assert set(manifest["sora_kamon_marks"])==set(manifest["sora_kamon_placements"])
+assert set(manifest["proportions"]["kamon_moved_m"])==set(manifest["sora_kamon_placements"])
 for placement in manifest["sora_kamon_placements"]:
     paths=[o for o in parts if o.name.startswith(f"UserSupplied_SORAKamon_{placement}_Path_")]
     assert len(paths)==2,(placement,[o.name for o in paths])
@@ -143,6 +149,13 @@ assert len(mesh.data.color_attributes)==1 and len(coat.data)==len(mesh.data.loop
 fbx_mask=[item.color[0] for item in coat.data]
 assert min(fbx_mask)<.01 and max(fbx_mask)>.99
 assert sum(.1<item<.9 for item in fbx_mask)>1000
+# The four kamon, exact: every SVG path vertex at its recorded placement (moved rigidly by study A).
+sys.path.insert(0,str(Path(__file__).resolve().parent))
+from sora_kamon_validation import assert_paths_embedded,expected_paths,reference_paths
+kamon_paths=reference_paths(root)
+assert_paths_embedded((mesh.matrix_world @ v.co for v in mesh.data.vertices),
+                      {p:expected_paths(kamon_paths,m["center"],m["diameter"],m["plane"])
+                       for p,m in manifest["sora_kamon_marks"].items()})
 corners=[mesh.matrix_world @ Vector(v) for v in mesh.bound_box]
 for axis in range(3):
     assert abs(min(v[axis] for v in corners)-manifest["bounds_m"]["min"][axis])<.02

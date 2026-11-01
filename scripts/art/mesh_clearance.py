@@ -1,0 +1,1002 @@
+"""Visible-mesh clearance between two triangle sets, for the third-person grip contract
+(docs/art-direction/THIRD_PERSON_GRIP_CONTRACT.md).
+
+It replaces two weaker tests:
+- a movement capsule, which is not what anyone sees (hip gear lies inside it by design);
+- vertex-to-vertex distances, which can miss a crossing: two triangles can intersect while every pair of their
+  vertices is centimetres apart.
+
+**What each measure establishes, for one pose:**
+- **Crossings:** the pairs of triangles whose surfaces intersect.
+  - The rig build uses Blender's BVHTree.overlap, which runs an exact triangle-triangle test (isect_tri_tri) on each
+    candidate pair. The CPU backend tests every pair.
+  - Neither backend is trusted with coplanar triangles. So every pair within CONTACT_EPS that the backend did not
+    report is tested here for a coplanar overlap of positive area, which counts as a crossing. Pairs that only touch
+    (an edge or a vertex) are counted as touching.
+- **Allowed and hidden crossings:** a saya is thrust through the obi, so its crossings with the obi's own parts are
+  the intended tuck, counted as allowed. A crossing counts as hidden only if all of its intersection segment lies
+  inside one closed "hide" island (that obi): both ends inside by ray parity, and no triangle of the island crossing
+  the segment. That holds for a non-convex volume too. A midpoint, or the ends alone, would not do. Otherwise, and
+  for every coplanar overlap, the crossing counts as visible. In the same way, an island sealed inside an allowed
+  part (the saya's mouth fittings inside the obi) is counted as allowed containment, not as containment.
+- **Containment:** with no crossings between them, a connected island lies wholly inside or wholly outside each closed
+  island of the other set. One vertex per island decides it, by ray parity along two directions against each closed
+  island whose bounds hold it; directions that disagree count as ambiguous. Open islands (an edge used once, or more
+  than twice) bound no inside, so they are counted, not tested.
+- **Separation:** the exact least distance between the two surfaces, up to a limit. Every pair of triangles whose
+  bounds come within the limit is measured: the least of its 6 vertex-face and 9 edge-edge closest-point distances,
+  or 0 when the two cross. For triangles that do not cross, that is their exact distance, since the closest pair
+  of two disjoint triangles is a vertex and a face or two edges. No pair within the limit certifies "at least the
+  limit". The least vertex-to-surface distance alone would be only an upper bound, since two edges can pass closer
+  than any vertex comes to a face. So it certifies no minimum and is not used.
+
+`calibrate` runs a backend on known geometry, each case with its expected value:
+- a crossing pair;
+- a tetrahedron inside a cube;
+- two cubes 2 cm apart;
+- two bars whose edges pass 5 mm apart, their nearest vertices 27 cm apart;
+- a rod crossing a box inside a hide volume;
+- a 1.6 m crossing whose midpoint alone lies in a 10 cm hide cube (root's probe, 2026-10-26), which must stay visible;
+- two coplanar triangles overlapping with positive area (root's probe), which must count as a crossing.
+"""
+from __future__ import annotations
+
+import math
+
+import numpy as np
+
+RAYS = (np.array([0.6211, 0.4729, 0.6249]) / np.linalg.norm([0.6211, 0.4729, 0.6249]),
+        np.array([-0.3127, 0.8846, -0.3459]) / np.linalg.norm([-0.3127, 0.8846, -0.3459]))
+EPS = 1e-12
+CONTACT_EPS = 1e-7                                   # m: a pair this close touches
+
+
+# --- Topology --------------------------------------------------------------------------------------------------------
+def islands(tris):
+    """Each triangle's island, 0..k-1: triangles sharing a vertex are one island."""
+    tris = np.asarray(tris, np.int64)
+    if not len(tris):
+        return np.zeros(0, np.int64)
+    parent = list(range(int(tris.max()) + 1))
+
+    def find(a):
+        while parent[a] != a:
+            parent[a] = parent[parent[a]]
+            a = parent[a]
+        return a
+
+    for a, b, c in tris.tolist():
+        ra = find(a)
+        for v in (b, c):
+            rv = find(v)
+            if rv != ra:
+                parent[rv] = ra
+    roots = np.array([find(t[0]) for t in tris.tolist()])
+    return np.unique(roots, return_inverse=True)[1].astype(np.int64)
+
+
+def closed_islands(tris, island):
+    """Per island: True when each of its edges is used by exactly two of its triangles."""
+    tris = np.asarray(tris, np.int64)
+    k = int(island.max()) + 1 if len(island) else 0
+    ok = np.ones(k, bool)
+    if not k:
+        return ok
+    e = np.concatenate([tris[:, [0, 1]], tris[:, [1, 2]], tris[:, [2, 0]]])
+    e.sort(axis=1)
+    keys = np.stack([np.concatenate([island] * 3), e[:, 0], e[:, 1]], 1)
+    uniq, counts = np.unique(keys, axis=0, return_counts=True)
+    ok[uniq[counts != 2, 0]] = False
+    return ok
+
+
+def oriented_manifold(tris):
+    """Whether triangles (one island's) are a closed, coherently oriented 2-manifold, by topology alone:
+    - no triangle repeats a vertex;
+    - every directed edge occurs once, and its reverse once: each edge is on two faces that run it opposite ways;
+    - every vertex's faces form one fan. Its link edges (b to c for each face (v, b, c)) make a single cycle, so two
+      surfaces meeting at a vertex (a bowtie, or two opposed shells touching) fail.
+    With the island's vertex connectivity, that makes it one closed surface whose winding number is an integer field.
+    Root's 18:28 UTC counterexample (2026-10-26), a tetrahedron with two faces turned, passes closed_islands and fails
+    here."""
+    t = np.asarray(tris, np.int64).reshape(-1, 3)
+    if not len(t) or (t[:, 0] == t[:, 1]).any() or (t[:, 1] == t[:, 2]).any() or (t[:, 0] == t[:, 2]).any():
+        return False
+    directed = np.concatenate([t[:, [0, 1]], t[:, [1, 2]], t[:, [2, 0]]])
+    n = int(t.max()) + 1
+    key = directed[:, 0] * n + directed[:, 1]
+    if len(np.unique(key)) != len(key):
+        return False
+    if not np.isin(directed[:, 1] * n + directed[:, 0], key).all():
+        return False
+    link = {}
+    for a, b, c in t.tolist():
+        for v, x, y in ((a, b, c), (b, c, a), (c, a, b)):
+            link.setdefault(v, {})[x] = y
+    for nxt in link.values():
+        start = next(iter(nxt))
+        x, steps = start, 0
+        while True:
+            x = nxt.get(x)
+            steps += 1
+            if x is None or steps > len(nxt):
+                return False
+            if x == start:
+                break
+        if steps != len(nxt):
+            return False
+    return True
+
+
+class TriSet:
+    """A set's topology, fixed across poses: its triangles (indices into a full point array), one part name per
+    triangle, and its islands. Positions come with each measurement."""
+
+    def __init__(self, tris, names):
+        tris = np.asarray(tris, np.int64).reshape(-1, 3)
+        self.used = np.unique(tris)
+        remap = np.full(int(tris.max()) + 1 if len(tris) else 1, -1, np.int64)
+        remap[self.used] = np.arange(len(self.used))
+        self.tris = remap[tris]
+        self.names = np.asarray(names).reshape(-1)
+        assert len(self.names) == len(self.tris)
+        self.island = islands(self.tris)
+        self.closed = closed_islands(self.tris, self.island)
+        # Per island: a closed, coherently oriented manifold (oriented_manifold), the only kind whose winding number
+        # may decide a containment test the rays leave undecided (_inside).
+        self.oriented = np.array([bool(c) and oriented_manifold(self.tris[self.island == k])
+                                  for k, c in enumerate(self.closed)], bool)
+        self.first_vertex = np.zeros(len(self.closed), np.int64)
+        seen = np.zeros(len(self.closed), bool)
+        for t, isl in zip(self.tris[:, 0].tolist(), self.island.tolist()):
+            if not seen[isl]:
+                seen[isl], self.first_vertex[isl] = True, t
+
+    def __len__(self):
+        return len(self.tris)
+
+    def positions(self, pts_full):
+        return np.asarray(pts_full, np.float64)[self.used]
+
+
+# --- Geometry (numpy): exact for non-coplanar triangles ---------------------------------------------------------------
+def segment_triangle(p0, p1, a, b, c):
+    """Where segment p0-p1 crosses triangle abc (Moller-Trumbore, the segment's t in [0, 1]), or None."""
+    d = p1 - p0
+    e1, e2 = b - a, c - a
+    h = np.cross(d, e2)
+    det = float(e1 @ h)
+    if abs(det) < EPS:
+        return None
+    f = 1.0 / det
+    s = p0 - a
+    u = f * float(s @ h)
+    if u < 0.0 or u > 1.0:
+        return None
+    q = np.cross(s, e1)
+    v = f * float(d @ q)
+    if v < 0.0 or u + v > 1.0:
+        return None
+    t = f * float(e2 @ q)
+    if t < 0.0 or t > 1.0:
+        return None
+    return p0 + t * d
+
+
+def tri_tri_points(t1, t2):
+    """The points where an edge of one triangle crosses the other: empty when they do not cross. For non-coplanar
+    triangles these are the ends of their intersection segment."""
+    out = []
+    for p, q in ((t1, t2), (t2, t1)):
+        for i in range(3):
+            x = segment_triangle(p[i], p[(i + 1) % 3], *q)
+            if x is not None:
+                out.append(x)
+    return out
+
+
+def coplanar_overlap(t1, t2, plane_tol=1e-7, area_tol=1e-14):
+    """Whether two coplanar triangles overlap with positive area in their common plane: an edge of one properly
+    crossing an edge of the other, a vertex strictly inside the other, or (congruent) each centroid inside the other.
+    Triangles not within plane_tol (m) of one plane return False."""
+    n = np.cross(t1[1] - t1[0], t1[2] - t1[0])
+    nn = float(np.linalg.norm(n))
+    if nn < 1e-15:
+        return False
+    n = n / nn
+    if float(np.max(np.abs((t2 - t1[0]) @ n))) > plane_tol:
+        return False
+    axes = [i for i in range(3) if i != int(np.argmax(np.abs(n)))]
+    a2, b2 = t1[:, axes], t2[:, axes]
+
+    def orient(p, q, r):
+        return float((q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0]))
+
+    def inside(p, tri):
+        s = [orient(tri[i], tri[(i + 1) % 3], p) for i in range(3)]
+        return all(x > area_tol for x in s) or all(x < -area_tol for x in s)
+
+    def proper(p1, p2, q1, q2):
+        d1, d2, d3, d4 = orient(q1, q2, p1), orient(q1, q2, p2), orient(p1, p2, q1), orient(p1, p2, q2)
+        return (d1 * d2 < -area_tol ** 2 and min(abs(d1), abs(d2)) > area_tol
+                and d3 * d4 < -area_tol ** 2 and min(abs(d3), abs(d4)) > area_tol)
+
+    if any(proper(a2[i], a2[(i + 1) % 3], b2[j], b2[(j + 1) % 3]) for i in range(3) for j in range(3)):
+        return True
+    if any(inside(q, b2) for q in a2) or any(inside(q, a2) for q in b2):
+        return True
+    return inside(a2.mean(0), b2) and inside(b2.mean(0), a2)
+
+
+def crossing_segment(t1, t2):
+    """The intersection segment of two crossing triangles: its two farthest edge-crossing points, or None when the
+    edge tests find none (a coplanar pair)."""
+    pts = tri_tri_points(t1, t2)
+    if not pts:
+        return None
+    q = np.array(pts)
+    d = np.linalg.norm(q[:, None] - q[None], axis=2)
+    i, j = np.unravel_index(int(np.argmax(d)), d.shape)
+    return q[i], q[j]
+
+
+def ray_triangle_t(origin, direction, a, b, c):
+    """The ray's parameter where it meets triangle abc (t > 1e-9), or None."""
+    e1, e2 = b - a, c - a
+    h = np.cross(direction, e2)
+    det = float(e1 @ h)
+    if abs(det) < EPS:
+        return None
+    f = 1.0 / det
+    s = origin - a
+    u = f * float(s @ h)
+    if u < 0.0 or u > 1.0:
+        return None
+    q = np.cross(s, e1)
+    v = f * float(direction @ q)
+    if v < 0.0 or u + v > 1.0:
+        return None
+    t = f * float(e2 @ q)
+    return t if t > 1e-9 else None
+
+
+def point_triangle(p, a, b, c):
+    """The closest point of triangle abc to p (Ericson, Real-Time Collision Detection 5.1.5)."""
+    ab, ac, ap = b - a, c - a, p - a
+    d1, d2 = ab @ ap, ac @ ap
+    if d1 <= 0 and d2 <= 0:
+        return a
+    bp = p - b
+    d3, d4 = ab @ bp, ac @ bp
+    if d3 >= 0 and d4 <= d3:
+        return b
+    vc = d1 * d4 - d3 * d2
+    if vc <= 0 and d1 >= 0 and d3 <= 0:
+        return a + ab * (d1 / (d1 - d3))
+    cp = p - c
+    d5, d6 = ab @ cp, ac @ cp
+    if d6 >= 0 and d5 <= d6:
+        return c
+    vb = d5 * d2 - d1 * d6
+    if vb <= 0 and d2 >= 0 and d6 <= 0:
+        return a + ac * (d2 / (d2 - d6))
+    va = d3 * d6 - d5 * d4
+    if va <= 0 and (d4 - d3) >= 0 and (d5 - d6) >= 0:
+        return b + (c - b) * ((d4 - d3) / ((d4 - d3) + (d5 - d6)))
+    denom = 1.0 / (va + vb + vc)
+    return a + ab * (vb * denom) + ac * (vc * denom)
+
+
+# --- Exact triangle-pair distance (numpy, vectorised over pairs) ----------------------------------------------------
+def _dot(u, v):
+    return np.einsum("ij,ij->i", u, v)
+
+
+def _safe(x):
+    return np.where(np.abs(x) > 1e-300, x, 1.0)
+
+
+def closest_point_triangle_v(p, a, b, c):
+    """point_triangle for n points and n triangles at once ((n, 3) each). Ericson's regions are tried in his order
+    (A, B, AB, C, AC, BC, inside): the later np.where calls below take precedence."""
+    ab, ac = b - a, c - a
+    d1, d2 = _dot(ab, p - a), _dot(ac, p - a)
+    d3, d4 = _dot(ab, p - b), _dot(ac, p - b)
+    d5, d6 = _dot(ab, p - c), _dot(ac, p - c)
+    va, vb, vc = d3 * d6 - d5 * d4, d5 * d2 - d1 * d6, d1 * d4 - d3 * d2
+    den = _safe(va + vb + vc)
+    out = a + ab * (vb / den)[:, None] + ac * (vc / den)[:, None]
+    m = (va <= 0) & (d4 - d3 >= 0) & (d5 - d6 >= 0)
+    out = np.where(m[:, None], b + (c - b) * ((d4 - d3) / _safe((d4 - d3) + (d5 - d6)))[:, None], out)
+    m = (vb <= 0) & (d2 >= 0) & (d6 <= 0)
+    out = np.where(m[:, None], a + ac * (d2 / _safe(d2 - d6))[:, None], out)
+    out = np.where(((d6 >= 0) & (d5 <= d6))[:, None], c, out)
+    m = (vc <= 0) & (d1 >= 0) & (d3 <= 0)
+    out = np.where(m[:, None], a + ab * (d1 / _safe(d1 - d3))[:, None], out)
+    out = np.where(((d3 >= 0) & (d4 <= d3))[:, None], b, out)
+    return np.where(((d1 <= 0) & (d2 <= 0))[:, None], a, out)
+
+
+def closest_segments_v(p1, q1, p2, q2):
+    """The closest points of n segment pairs (Ericson 5.1.9, with his degenerate cases)."""
+    d1, d2, r = q1 - p1, q2 - p2, p1 - p2
+    a, e, f = _dot(d1, d1), _dot(d2, d2), _dot(d2, r)
+    c, b = _dot(d1, r), _dot(d1, d2)
+    tiny = 1e-24
+    den = a * e - b * b
+    s = np.where(den > tiny, np.clip((b * f - c * e) / _safe(den), 0.0, 1.0), 0.0)
+    t = (b * s + f) / _safe(np.where(e > tiny, e, 1.0))
+    s = np.where(t < 0.0, np.clip(-c / _safe(np.where(a > tiny, a, 1.0)), 0.0, 1.0),
+                 np.where(t > 1.0, np.clip((b - c) / _safe(np.where(a > tiny, a, 1.0)), 0.0, 1.0), s))
+    t = np.clip(t, 0.0, 1.0)
+    first_point = a <= tiny                                  # the first segment is a point
+    second_point = e <= tiny
+    s = np.where(first_point, 0.0, np.where(second_point, np.clip(-c / _safe(a), 0.0, 1.0), s))
+    t = np.where(first_point & ~second_point, np.clip(f / _safe(e), 0.0, 1.0), np.where(second_point, 0.0, t))
+    return p1 + d1 * s[:, None], p2 + d2 * t[:, None]
+
+
+def segments_cross_triangles_v(p0, p1, a, b, c):
+    """For n segments and n triangles: whether each segment crosses its triangle (segment_triangle, vectorised), and
+    where."""
+    d, e1, e2 = p1 - p0, b - a, c - a
+    h = np.cross(d, e2)
+    det = _dot(e1, h)
+    ok = np.abs(det) > EPS
+    f = 1.0 / _safe(det)
+    s = p0 - a
+    u = f * _dot(s, h)
+    q = np.cross(s, e1)
+    v = f * _dot(d, q)
+    t = f * _dot(e2, q)
+    return ok & (u >= 0) & (u <= 1) & (v >= 0) & (u + v <= 1) & (t >= 0) & (t <= 1), p0 + d * t[:, None]
+
+
+def triangle_distances_v(t1, t2):
+    """Exact distances of n triangle pairs ((n, 3, 3) each): 0 for a crossing pair, else the least vertex-face or
+    edge-edge distance. Returns the distances, the closest points on each, and the kind of the closest pair."""
+    n = len(t1)
+    best = np.full(n, np.inf)
+    q1, q2 = np.zeros((n, 3)), np.zeros((n, 3))
+    kind = np.zeros(n, np.int8)                              # 0 crossing, 1 vertex-face, 2 edge-edge
+    for p_set, tri, swap in ((t1, t2, False), (t2, t1, True)):
+        for i in range(3):
+            cp = closest_point_triangle_v(p_set[:, i], tri[:, 0], tri[:, 1], tri[:, 2])
+            d = np.linalg.norm(p_set[:, i] - cp, axis=1)
+            m = d < best
+            best = np.where(m, d, best)
+            a_pt, b_pt = (cp, p_set[:, i]) if swap else (p_set[:, i], cp)
+            q1, q2 = np.where(m[:, None], a_pt, q1), np.where(m[:, None], b_pt, q2)
+            kind = np.where(m, 1, kind)
+    for i in range(3):
+        for j in range(3):
+            c1, c2 = closest_segments_v(t1[:, i], t1[:, (i + 1) % 3], t2[:, j], t2[:, (j + 1) % 3])
+            d = np.linalg.norm(c1 - c2, axis=1)
+            m = d < best
+            best = np.where(m, d, best)
+            q1, q2 = np.where(m[:, None], c1, q1), np.where(m[:, None], c2, q2)
+            kind = np.where(m, 2, kind)
+    cross = np.zeros(n, bool)
+    for p_set, tri in ((t1, t2), (t2, t1)):
+        for i in range(3):
+            m, x = segments_cross_triangles_v(p_set[:, i], p_set[:, (i + 1) % 3], tri[:, 0], tri[:, 1], tri[:, 2])
+            m &= ~cross                                      # the first crossing point found, on both triangles
+            q1, q2 = np.where(m[:, None], x, q1), np.where(m[:, None], x, q2)
+            cross |= m
+    best = np.where(cross, 0.0, best)
+    kind = np.where(cross, 0, kind)
+    return best, q1, q2, kind
+
+
+KINDS = ("crossing", "vertex-face", "edge-edge")
+
+
+def bbox_pairs(alo, ahi, blo, bhi, grow, rows=None):
+    """Every pair (i in a, j in b) whose bounds, a's grown by grow, overlap on all three axes: exactly the set the
+    pairwise test (lo_a - grow <= hi_b and hi_a + grow >= lo_b) selects, sorted by (i, j), found through a grid.
+
+    The broad-phase is a grid whose cell is the finer set's 99th-percentile triangle extent (h0) plus grow.
+    - **Small triangles** (extent at most h0, in either set) sit in the cell of their low corner. The low corners of
+      two small triangles that overlap lie within one cell of each other on every axis, so each small triangle of a
+      is matched against b's small triangles in its 27 neighbouring cells.
+    - **A large triangle** gathers the other set's small triangles from every cell their low corners can occupy and
+      still overlap it: its grown bounds, reaching h0 further down. Large triangles of the two sets meet directly.
+    - Every candidate takes the exact test as it is found, and only the answer is sorted. The paths are disjoint and
+      each finds a pair once, so the answer is the pairwise test's, each pair once.
+    rows limits a to those indices (ascending).
+
+    The coarser set's extent set the cell until s117. The katana's p99 is 15 mm against the paws' 7 mm, so tens of
+    millions of candidates came out to find 69 overlapping pairs at StrikeMakko@16, and sorting them was most of each
+    check."""
+    rows = np.arange(len(alo)) if rows is None else np.asarray(rows, np.int64)
+    if not len(rows) or not len(blo):
+        return np.zeros((0, 2), np.int64)
+    alo_r, ahi_r = alo[rows], ahi[rows]
+    ext_a, ext_b = (ahi_r - alo_r).max(1), (bhi - blo).max(1)
+    h0 = max(min(float(np.percentile(ext_a, 99)), float(np.percentile(ext_b, 99))), 1e-9)
+    big_a, big_b = ext_a > h0, ext_b > h0
+    h = h0 + grow
+    origin = np.minimum(alo_r.min(0), blo.min(0)) - h                # every gather's reach has a cell of 0 or more
+    top = np.maximum(ahi_r.max(0), bhi.max(0)) + grow
+    dims = np.floor((top - origin) / h).astype(np.int64) + 3
+
+    def cells(lo):
+        return np.floor((lo - origin) / h).astype(np.int64)
+
+    def keys(c):                                                    # cells shifted by one, so a neighbour of 0 is valid
+        return ((c[..., 0] + 1) * dims[1] + (c[..., 1] + 1)) * dims[2] + (c[..., 2] + 1)
+
+    def binned(lo, idx):
+        k = keys(cells(lo[idx]))
+        order = np.argsort(k, kind="stable")
+        return k[order], idx[order]
+
+    def take(sorted_keys, members, want):
+        start, stop = np.searchsorted(sorted_keys, want, "left"), np.searchsorted(sorted_keys, want, "right")
+        count = stop - start
+        n = int(count.sum())
+        if not n:
+            return np.zeros(0, np.int64), count
+        return members[np.repeat(start, count) + (np.arange(n) - np.repeat(np.cumsum(count) - count, count))], count
+
+    def test(i, j):                                                  # the pairwise test (i into rows, j into b)
+        return np.all((alo_r[i] - grow <= bhi[j]) & (ahi_r[i] + grow >= blo[j]), 1)
+
+    def reach(lo, hi, members):
+        """The other set's small triangles a large box gathers: those binned in the cells their low corners can
+        occupy and still overlap it. A box reaching more cells than there are members takes them all instead; the
+        exact test follows either way."""
+        c0, c1 = cells(lo - grow - h0), cells(hi + grow)
+        if int(np.prod(c1 - c0 + 1)) > len(members):
+            return None
+        g = np.meshgrid(*(np.arange(c0[d], c1[d] + 1) for d in range(3)), indexing="ij")
+        return keys(np.stack([x.ravel() for x in g], 1))
+
+    sa, sb = np.nonzero(~big_a)[0], np.nonzero(~big_b)[0]
+    la, lb = np.nonzero(big_a)[0], np.nonzero(big_b)[0]
+    found = []
+    if len(sb):
+        skb, mb = binned(blo, sb)
+        if len(sa):                                                  # small against small
+            ca = cells(alo_r[sa])
+            for dx in (-1, 0, 1):
+                for dy in (-1, 0, 1):
+                    for dz in (-1, 0, 1):
+                        j, count = take(skb, mb, keys(ca + np.array([dx, dy, dz])))
+                        if len(j):
+                            i = np.repeat(sa, count)
+                            ok = test(i, j)
+                            found.append(np.stack([i[ok], j[ok]], 1))
+        for k in la:                                                 # a's large triangles: b's small ones
+            want = reach(alo_r[k], ahi_r[k], mb)
+            j = mb if want is None else take(skb, mb, want)[0]
+            if len(j):
+                ok = test(np.full(len(j), k), j)
+                found.append(np.stack([np.full(int(ok.sum()), k), j[ok]], 1))
+    if len(sa) and len(lb):
+        ska, ma = binned(alo_r, sa)
+        for k in lb:                                                 # b's large triangles: a's small ones
+            want = reach(blo[k], bhi[k], ma)
+            i = ma if want is None else take(ska, ma, want)[0]
+            if len(i):
+                ok = test(i, np.full(len(i), k))
+                found.append(np.stack([i[ok], np.full(int(ok.sum()), k)], 1))
+    if len(lb):
+        for k in la:                                                 # large against large
+            ok = test(np.full(len(lb), k), lb)
+            found.append(np.stack([np.full(int(ok.sum()), k), lb[ok]], 1))
+    if not found:
+        return np.zeros((0, 2), np.int64)
+    c = np.concatenate(found)
+    key = np.unique(c[:, 0] * np.int64(len(blo)) + c[:, 1])          # sorted by (row, j); unique as a guard
+    return np.stack([rows[key // len(blo)], key % len(blo)], 1)
+
+
+def touching_pairs(pa, tris_a, pb, tris_b, eps=CONTACT_EPS, chunk=200000):
+    """Every pair of triangles within eps of each other (exact triangle distance), as (index in a, index in b),
+    ordered by (a, b). Candidates come from bbox_pairs, the pairwise bounds test's own set."""
+    A, Bt = np.asarray(pa, np.float64)[tris_a], np.asarray(pb, np.float64)[tris_b]
+    out = []
+    if not len(A) or not len(Bt):
+        return out
+    alo, ahi, blo, bhi = A.min(1), A.max(1), Bt.min(1), Bt.max(1)
+    ia = np.nonzero(np.all((alo <= bhi.max(0) + eps) & (ahi >= blo.min(0) - eps), 1))[0]
+    ib = np.nonzero(np.all((blo <= ahi.max(0) + eps) & (bhi >= alo.min(0) - eps), 1))[0]
+    pairs = bbox_pairs(alo, ahi, blo[ib], bhi[ib], eps, rows=ia)
+    for s in range(0, len(pairs), chunk):
+        q = pairs[s:s + chunk]
+        ii, jj = q[:, 0], ib[q[:, 1]]
+        d = triangle_distances_v(A[ii], Bt[jj])[0]
+        keep = d <= eps
+        out += list(zip(ii[keep].tolist(), jj[keep].tolist()))
+    return out
+
+
+def nearest_vertex_gap(va, vb, limit):
+    """The least distance between a vertex of va and a vertex of vb, if below limit (else limit), through a grid of
+    cells of size limit: any two points within it lie in neighbouring cells. An upper bound on the two surfaces'
+    distance, since each vertex lies on its surface."""
+    if not len(va) or not len(vb):
+        return limit
+    origin = np.minimum(va.min(0), vb.min(0))
+    ca = np.floor((va - origin) / limit).astype(np.int64)
+    cb = np.floor((vb - origin) / limit).astype(np.int64)
+    dims = np.maximum(ca.max(0), cb.max(0)) + 3
+    kb = ((cb[:, 0] + 1) * dims[1] + (cb[:, 1] + 1)) * dims[2] + (cb[:, 2] + 1)
+    order = np.argsort(kb, kind="stable")
+    skb = kb[order]
+    best = limit
+    for dx in (-1, 0, 1):
+        for dy in (-1, 0, 1):
+            for dz in (-1, 0, 1):
+                ka = ((ca[:, 0] + 1 + dx) * dims[1] + (ca[:, 1] + 1 + dy)) * dims[2] + (ca[:, 2] + 1 + dz)
+                start, stop = np.searchsorted(skb, ka, "left"), np.searchsorted(skb, ka, "right")
+                count = stop - start
+                total = int(count.sum())
+                for s0 in range(0, len(va), 50000):        # bounded memory
+                    cnt = count[s0:s0 + 50000]
+                    n = int(cnt.sum())
+                    if not n:
+                        continue
+                    i = np.repeat(np.arange(s0, s0 + len(cnt)), cnt)
+                    j = order[np.repeat(start[s0:s0 + 50000], cnt) + (np.arange(n) - np.repeat(np.cumsum(cnt) - cnt, cnt))]
+                    best = min(best, float(np.sqrt(((va[i] - vb[j]) ** 2).sum(1)).min()))
+                del total
+    return best
+
+
+def exact_separation(pa, tris_a, pb, tris_b, limit, batch=200000):
+    """The exact least distance between two triangle sets, if it is below limit (else None), with its points (as
+    given), its kind, and how many pairs were measured.
+
+    The least vertex-to-vertex distance (nearest_vertex_gap) bounds the surfaces' distance from above. Every pair of
+    triangles whose bounds, grown by that bound, overlap is then measured by triangle_distances_v: any pair at the
+    least distance is among them, so the distance, its points and its kind are those of the first such pair in (a, b)
+    order, as before. (The pairwise loop this replaces grew the bounds by the limit and shrank them as it went; it
+    measured more pairs, so pairs_measured is smaller now. Its candidate test was |a| x |b|: the furred paws made it
+    take minutes a check, s103.)"""
+    A, Bt = np.asarray(pa, np.float64)[tris_a], np.asarray(pb, np.float64)[tris_b]
+    out = {"separation_m": None, "at": None, "kind": None, "pairs_measured": 0, "limit_m": limit}
+    if not len(A) or not len(Bt):
+        return out
+    alo, ahi, blo, bhi = A.min(1), A.max(1), Bt.min(1), Bt.max(1)
+    ia = np.nonzero(np.all((alo <= bhi.max(0) + limit) & (ahi >= blo.min(0) - limit), 1))[0]
+    ib = np.nonzero(np.all((blo <= ahi.max(0) + limit) & (bhi >= alo.min(0) - limit), 1))[0]
+    if not len(ia) or not len(ib):
+        return out
+    pa_, pb_ = np.asarray(pa, np.float64), np.asarray(pb, np.float64)
+    bound = nearest_vertex_gap(pa_[np.unique(np.asarray(tris_a)[ia])], pb_[np.unique(np.asarray(tris_b)[ib])], limit)
+    pairs = bbox_pairs(alo, ahi, blo[ib], bhi[ib], bound, rows=ia)
+    out["pairs_measured"] = int(len(pairs))
+    if not len(pairs):
+        return out
+    ii, jj = pairs[:, 0], ib[pairs[:, 1]]
+    best_d, best_k, keep = np.inf, -1, None
+    for s0 in range(0, len(pairs), batch):
+        d, q1, q2, kind = triangle_distances_v(A[ii[s0:s0 + batch]], Bt[jj[s0:s0 + batch]])
+        k = int(np.argmin(d))
+        if d[k] < best_d:
+            best_d, best_k, keep = float(d[k]), s0 + k, (q1[k], q2[k], int(kind[k]))
+    if best_d < limit:
+        out.update(separation_m=best_d, at=[keep[0], keep[1]], kind=KINDS[keep[2]])
+    return out
+
+
+# --- Backends -------------------------------------------------------------------------------------------------------
+class BruteBackend:
+    """Every pair, in numpy: for the CPU tests and the calibration's reference values."""
+    name = "numpy, every pair"
+
+    def tree(self, pts, tris):
+        return np.asarray(pts, np.float64), np.asarray(tris, np.int64)
+
+    def crossings(self, ta, tb):
+        (pa, fa), (pb, fb) = ta, tb
+        out = []
+        for i, f in enumerate(fa):
+            a = pa[f]
+            lo, hi = a.min(0), a.max(0)
+            for j, g in enumerate(fb):
+                b = pb[g]
+                if (hi < b.min(0)).any() or (b.max(0) < lo).any():
+                    continue
+                if tri_tri_points(a, b) or coplanar_overlap(a, b):
+                    out.append((i, j))
+        return out
+
+    def segment_hits(self, tree, p0, p1):
+        pa, fa = tree
+        return any(segment_triangle(p0, p1, *pa[f]) is not None for f in fa)
+
+    def ray_hits(self, tree, origin, direction):
+        return len(self.ray_hit_list(tree, origin, direction))
+
+    def ray_hit_list(self, tree, origin, direction):
+        """Every hit the count takes, as (distance along the ray, face index), nearer than 1e-9 m merged."""
+        pa, fa = tree
+        ts = sorted((t, f) for f, t in enumerate(ray_triangle_t(origin, direction, *pa[g]) for g in fa) if t is not None)
+        return [(float(t), int(f)) for i, (t, f) in enumerate(ts) if i == 0 or t - ts[i - 1][0] > 1e-9]
+
+
+class BlenderBackend:
+    """mathutils.bvhtree in the rig build: overlap runs isect_tri_tri on each candidate pair."""
+    name = "Blender mathutils.bvhtree (overlap: isect_tri_tri per candidate pair)"
+
+    def __init__(self):
+        from mathutils import Vector
+        from mathutils.bvhtree import BVHTree
+        self.vector, self.bvh = Vector, BVHTree
+
+    def tree(self, pts, tris):
+        return self.bvh.FromPolygons(np.asarray(pts, np.float64).tolist(), np.asarray(tris, np.int64).tolist(),
+                                     all_triangles=True)
+
+    def crossings(self, ta, tb):
+        return ta.overlap(tb)
+
+    def segment_hits(self, tree, p0, p1):
+        d = self.vector(tuple(map(float, p1))) - self.vector(tuple(map(float, p0)))
+        if d.length < 1e-12:
+            return False
+        return tree.ray_cast(self.vector(tuple(map(float, p0))), d.normalized(), d.length)[0] is not None
+
+    def ray_hits(self, tree, origin, direction, step=1e-5, cap=512):
+        o, d = self.vector(tuple(map(float, origin))), self.vector(tuple(map(float, direction))).normalized()
+        n = 0
+        while n < cap:
+            loc = tree.ray_cast(o, d)[0]
+            if loc is None:
+                break
+            n += 1
+            o = loc + d * step
+        return n
+
+    def ray_hit_list(self, tree, origin, direction, step=1e-5, cap=512):
+        """ray_hits' own casts, each hit as (distance from origin, face index, location): the evidence of a count."""
+        start = self.vector(tuple(map(float, origin)))
+        o, d = start.copy(), self.vector(tuple(map(float, direction))).normalized()
+        out = []
+        while len(out) < cap:
+            loc, _normal, face, _dist = tree.ray_cast(o, d)
+            if loc is None:
+                break
+            out.append((float((loc - start).length), int(face), [float(x) for x in loc]))
+            o = loc + d * step
+        return out
+
+
+# --- The measurement ------------------------------------------------------------------------------------------------
+def _bounds(pts, tset):
+    k = len(tset.closed)
+    lo, hi = np.full((k, 3), np.inf), np.full((k, 3), -np.inf)
+    corners = pts[tset.tris]
+    np.minimum.at(lo, tset.island, corners.min(1))
+    np.maximum.at(hi, tset.island, corners.max(1))
+    return lo, hi
+
+
+WINDING_CLEAR = 1e-6       # m: nearer the island than this, the winding number decides nothing
+WINDING_TOL = 1e-6         # turns: how near an integer a computed winding number must be to decide
+VOLUME_MIN = 1e-12         # m3: a target enclosing less is degenerate
+AREA_MIN = 1e-14           # m2: a target triangle smaller is degenerate
+
+
+def winding_number(p, tri_pts):
+    """The winding number of a closed triangle surface ((n, 3, 3)) about p, computed numerically in float64: the
+    triangles' solid angles (Van Oosterom and Strackee) summed over 4 pi. For a closed, coherently oriented surface
+    it is an integer up to rounding (the orientation's sign inside, 0 outside); near the surface it is
+    ill-conditioned."""
+    a, b, c = (np.asarray(tri_pts, np.float64)[:, k] - np.asarray(p, np.float64) for k in range(3))
+    la, lb, lc = (np.linalg.norm(x, axis=1) for x in (a, b, c))
+    num = np.einsum("ij,ij->i", a, np.cross(b, c))
+    den = la * lb * lc + _dot(a, b) * lc + _dot(b, c) * la + _dot(c, a) * lb
+    return float(np.sum(2.0 * np.arctan2(num, den)) / (4.0 * math.pi))
+
+
+def _inside(backend, cache, key, tset, pts, isl, p, resolve=False, log=None, name=None):
+    """Ray parity of p against closed island isl: True, False, or None (undecided).
+
+    The two rays decide when their parities agree. When they disagree, the result is None unless resolve is set, and
+    resolve decides only when every one of these holds; otherwise it stays None and the gate fails as before:
+    - the island is a closed, coherently oriented manifold (TriSet.oriented: oriented_manifold);
+    - p and the island's vertices are finite, no island triangle is degenerate (AREA_MIN), and the island encloses a
+      volume of at least VOLUME_MIN, whose sign is the orientation's;
+    - p is at least WINDING_CLEAR from the island;
+    - the island's winding number about p, computed numerically in float64, is within WINDING_TOL of 0 (outside) or
+      of the orientation's sign (inside).
+
+    Each disagreement is logged with the evidence an independent float64 replay needs: the point, the island's
+    vertices and triangles as evaluated, both rays' hit lists, and every quantity above.
+
+    Why: s117 and s118 failed StrikeMakko@16 on one disagreement. s119 recorded it: a left-paw point 12.05 mm
+    outside katana part 17. Its first ray grazes an edge of that part, entering and leaving 0.867 um apart. The
+    Blender backend's ray_hits casts again from 1e-5 m past each hit, so it never saw the exit: 3 hits, odd. Counted
+    in float64 without that step, the ray has 4, and the other ray 0 (replay_parity_evidence.py, and root's own
+    replay with eight more directions). Root (18:28 UTC, 2026-10-26) also found the first version's 0.25-wide bands
+    passing a tetrahedron with two faces turned, whose winding number inside is 0: the orientation check and the
+    near-integer tolerance close that."""
+    if key not in cache:
+        cache[key] = backend.tree(pts, tset.tris[tset.island == isl])
+        cache[("finite", key)] = bool(np.isfinite(np.asarray(pts, np.float64)[np.unique(tset.tris[tset.island == isl])]).all())
+    p = np.asarray(p, np.float64)
+    finite = bool(np.isfinite(p).all() and cache[("finite", key)])
+    hits = [backend.ray_hits(cache[key], p, d) for d in RAYS] if finite else [-1, -1]
+    if finite and hits[0] % 2 == hits[1] % 2:
+        return bool(hits[0] % 2)
+    # The rays disagree, or the data is not finite (no ray decides anything then): undecided unless resolved below.
+    faces = tset.tris[tset.island == isl]
+    used, local = np.unique(faces, return_inverse=True)
+    verts = np.asarray(pts, np.float64)[used]
+    local = local.reshape(-1, 3)
+    tri = verts[local]
+    area = 0.5 * np.linalg.norm(np.cross(tri[:, 1] - tri[:, 0], tri[:, 2] - tri[:, 0]), axis=1) if finite else np.zeros(1)
+    volume = float(np.einsum("ij,ij->i", tri[:, 0], np.cross(tri[:, 1], tri[:, 2])).sum() / 6.0) if finite else 0.0
+    gap = w = n = off = None
+    if finite:
+        q = np.repeat(p[None], len(tri), 0)
+        gap = float(np.linalg.norm(closest_point_triangle_v(q, tri[:, 0], tri[:, 1], tri[:, 2]) - q, axis=1).min())
+        w = winding_number(p, tri)
+        n = int(round(w))
+        off = abs(w - n)
+    sign = 1 if volume > 0 else -1
+    checks = {"oriented_manifold": bool(tset.oriented[isl]), "finite": finite,
+              "min_area_m2": float(area.min()), "signed_volume_m3": volume,
+              "gap_m": gap, "winding": w, "nearest_integer": n, "off_integer": off}
+    decidable = (finite and checks["oriented_manifold"] and float(area.min()) >= AREA_MIN and abs(volume) >= VOLUME_MIN
+                 and gap is not None and gap >= WINDING_CLEAR and off is not None and off <= WINDING_TOL
+                 and n in (0, sign))
+    verdict = (n == sign) if (resolve and decidable) else None
+    if log is not None:
+        rays = []
+        if finite and hasattr(backend, "ray_hit_list"):
+            rays = [backend.ray_hit_list(cache[key], p, d) for d in RAYS]
+        log.append({"point": p, "island": name() if callable(name) else name, "island_index": int(isl),
+                    "vertices": verts, "triangles": local, "rays": np.array(RAYS), "ray_hits": [int(h) for h in hits],
+                    "ray_hit_lists": rays, "decidable": bool(decidable), "verdict": verdict, **checks})
+    return verdict
+
+
+def _top(counter, n=8):
+    return [[*k, v] for k, v in sorted(counter.items(), key=lambda kv: -kv[1])[:n]]
+
+
+_TREES = []                                          # (full point array, {set: tree}), the few most recent
+
+
+def _tree(backend, tset, pts_full, pos):
+    """The backend's tree for a set at these positions, kept while the same full point array is in use: a pose's
+    checks measure several sets against a few arrays (the posed body, the placed katana and saya), and Blender builds
+    each tree from Python lists. Arrays are held and matched by identity, so a new pose (new arrays) builds afresh;
+    the four most recent are kept."""
+    for held, trees in _TREES:
+        if held is pts_full:
+            break
+    else:
+        trees = {}
+        _TREES.insert(0, (pts_full, trees))
+        del _TREES[4:]
+    key = (id(tset), id(backend))
+    if key not in trees:
+        trees[key] = (tset, backend, backend.tree(pos, tset.tris))
+    return trees[key][2]
+
+
+def measure(backend, set_a, pts_a, set_b, pts_b, limit=0.10, hide=None, allowed=(), to_report=lambda p: p,
+            resolve_parity=False, evidence=None):
+    """Crossings, containment and separation between set_a and set_b at these positions (full point arrays, each
+    indexed as its set's triangles are).
+    - limit: the exact separation is measured up to it; 0 skips it.
+    - hide: (TriSet, full points) of closed volumes whose inside is not seen; a crossing inside one counts as hidden.
+    - allowed: part-name prefixes in set_b whose crossings are intended (the obi's tuck), counted as allowed.
+    - to_report maps a position to the report's frame.
+    - resolve_parity: a containment test whose two rays disagree may be decided by the winding number, on the
+      conditions _inside lists; otherwise, and always when off, it stays ambiguous. Hide tests are never resolved: an
+      undecided hide stays not hidden. Every disagreement is reported either way (parity_disagreement_at).
+    - evidence: a list to which each disagreement's raw record is added, the island's evaluated vertices and
+      triangles and both rays' hits included, for an independent replay."""
+    parity_log = []
+    pa, pb = set_a.positions(pts_a), set_b.positions(pts_b)
+    ta, tb = _tree(backend, set_a, pts_a, pa), _tree(backend, set_b, pts_b, pb)
+    pairs = [tuple(map(int, ij)) for ij in backend.crossings(ta, tb)]
+    reported = set(pairs)
+    touching, coplanar = 0, set()
+    for i, j in touching_pairs(pa, set_a.tris, pb, set_b.tris):
+        if (i, j) in reported:
+            continue
+        if coplanar_overlap(pa[set_a.tris[i]], pb[set_b.tris[j]]):
+            coplanar.add((i, j))
+        else:
+            touching += 1
+    hide_cache, visible, hidden, allowed_n, crossing_islands = {}, {}, {}, {}, set()
+    first_visible = None
+    if hide is not None:
+        hset, hpts_full = hide
+        hp = hset.positions(hpts_full)
+        hlo, hhi = _bounds(hp, hset)
+
+    def segment_hidden(seg):
+        """All of seg inside one closed hide island: both ends inside, and no triangle of it crossing seg."""
+        if hide is None or seg is None:
+            return False
+        p0, p1 = seg
+        lo, hi = np.minimum(p0, p1), np.maximum(p0, p1)
+        for h in np.nonzero(hset.closed & np.all((hlo <= lo) & (hi <= hhi), 1))[0]:
+            key_h = ("h", int(h))
+            label = lambda: "hide:" + str(hset.names[hset.island == h][0])  # noqa: E731
+            if (_inside(backend, hide_cache, key_h, hset, hp, int(h), p0, log=parity_log, name=label) is True
+                    and _inside(backend, hide_cache, key_h, hset, hp, int(h), p1, log=parity_log, name=label) is True
+                    and not backend.segment_hits(hide_cache[key_h], p0, p1)):
+                return True
+        return False
+
+    for i, j in pairs + sorted(coplanar):
+        crossing_islands.add((int(set_a.island[i]), int(set_b.island[j])))
+        key = (str(set_a.names[i]), str(set_b.names[j]))
+        if allowed and key[1].startswith(tuple(allowed)):
+            allowed_n[key] = allowed_n.get(key, 0) + 1
+            continue
+        seg = None if (i, j) in coplanar else crossing_segment(pa[set_a.tris[i]], pb[set_b.tris[j]])
+        in_hide = segment_hidden(seg)                    # a coplanar overlap, or no segment found, stays visible
+        bucket = hidden if in_hide else visible
+        bucket[key] = bucket.get(key, 0) + 1
+        if not in_hide and first_visible is None:
+            first_visible = (np.mean(seg, 0) if seg is not None
+                             else (pa[set_a.tris[i]].mean(0) + pb[set_b.tris[j]].mean(0)) / 2.0)
+    # Containment, both ways, for island pairs that do not cross.
+    contained, contained_allowed, ambiguous, cache = {}, {}, {}, {}
+    for src, sp, dst, dp, flip in ((set_a, pa, set_b, pb, False), (set_b, pb, set_a, pa, True)):
+        lo, hi = _bounds(dp, dst)
+        for isl in range(len(src.closed)):
+            p = sp[src.first_vertex[isl]]
+            for k in np.nonzero(dst.closed & np.all((lo <= p) & (p <= hi), 1))[0]:
+                pair = (int(k), isl) if flip else (isl, int(k))
+                if pair in crossing_islands:
+                    continue
+                inside = _inside(backend, cache, (flip, int(k)), dst, dp, int(k), p, resolve=resolve_parity,
+                                 log=parity_log, name=lambda: str(src.names[src.island == isl][0]) + " in "
+                                 + str(dst.names[dst.island == k][0]))
+                if inside is False:
+                    continue
+                name_src = str(src.names[src.island == isl][0])
+                name_dst = str(dst.names[dst.island == k][0])
+                key = (name_dst, name_src) if flip else (name_src, name_dst)
+                tuck = (not flip) and bool(allowed) and name_dst.startswith(tuple(allowed))
+                bucket = (contained_allowed if tuck else contained) if inside else ambiguous
+                bucket[key] = bucket.get(key, 0) + 1
+    sep = (exact_separation(pa, set_a.tris, pb, set_b.tris, limit) if limit > 0 else
+           {"separation_m": None, "at": None, "kind": "not measured", "pairs_measured": 0})
+    if evidence is not None:
+        evidence.extend(parity_log)
+    return {
+        "crossing_pairs_visible": int(sum(visible.values())),
+        "crossing_pairs_hidden": int(sum(hidden.values())), "crossing_pairs_allowed": int(sum(allowed_n.values())),
+        "coplanar_overlap_pairs": len(coplanar), "touching_pairs": int(touching),
+        "crossing_parts_visible": _top(visible), "crossing_parts_hidden": _top(hidden),
+        "crossing_parts_allowed": _top(allowed_n),
+        "first_visible_crossing": None if first_visible is None else [round(float(v), 2) for v in to_report(first_visible)],
+        "contained": int(sum(contained.values())), "contained_parts": _top(contained),
+        "contained_allowed": int(sum(contained_allowed.values())), "contained_allowed_parts": _top(contained_allowed),
+        "ambiguous": int(sum(ambiguous.values())), "ambiguous_parts": _top(ambiguous),
+        "islands": [len(set_a.closed), len(set_b.closed)],
+        "open_islands": [int((~set_a.closed).sum()), int((~set_b.closed).sum())],
+        "separation_m": None if sep["separation_m"] is None else round(sep["separation_m"], 5),
+        "separation_kind": sep["kind"], "separation_pairs_measured": sep["pairs_measured"],
+        "separation_at": None if sep["at"] is None else [[round(float(v), 2) for v in to_report(q)] for q in sep["at"]],
+        "separation_limit_m": limit,
+        "parity_resolution": "winding" if resolve_parity else "off",
+        "parity_disagreements": len(parity_log),
+        "parity_resolved_outside": sum(1 for e in parity_log if e["verdict"] is False),
+        "parity_resolved_inside": sum(1 for e in parity_log if e["verdict"] is True),
+        # Every disagreement, at full precision; the arrays (the island as evaluated, both rays' hits) go to evidence.
+        "parity_disagreement_at": [{"point_m": [float(v) for v in e["point"]], "at_report": [float(v) for v in to_report(e["point"])],
+                                    "test": e["island"], "island_index": e["island_index"], "ray_hits": e["ray_hits"],
+                                    "decidable": e["decidable"], "verdict": e["verdict"],
+                                    **{k: e[k] for k in ("oriented_manifold", "finite", "min_area_m2", "signed_volume_m3",
+                                                         "gap_m", "winding", "nearest_integer", "off_integer")}}
+                                   for e in parity_log],
+    }
+
+
+def passes(result, min_separation_m=0.0):
+    """No visible crossing, nothing contained or ambiguous, and, when a minimum is asked, an exact separation of at
+    least it. A separation beyond the limit certifies only the limit, so the minimum may not exceed it."""
+    if min_separation_m > result["separation_limit_m"] + 1e-12:
+        raise ValueError(f"min {min_separation_m} m above the measured limit {result['separation_limit_m']} m")
+    sep = result["separation_m"]
+    return (result["crossing_pairs_visible"] == 0 and result["contained"] == 0 and result["ambiguous"] == 0
+            and (sep is None or sep >= min_separation_m))
+
+
+# --- Calibration on known geometry ----------------------------------------------------------------------------------
+def cube(centre, side):
+    c, h = np.asarray(centre, np.float64), side / 2.0
+    v = np.array([[x, y, z] for x in (-h, h) for y in (-h, h) for z in (-h, h)]) + c
+    f = [(0, 1, 3), (0, 3, 2), (4, 6, 7), (4, 7, 5), (0, 4, 5), (0, 5, 1), (2, 3, 7), (2, 7, 6), (0, 2, 6),
+         (0, 6, 4), (1, 5, 7), (1, 7, 3)]
+    return v, np.array(f)
+
+
+def tetra(centre, r):
+    c = np.asarray(centre, np.float64)
+    v = np.array([[1, 1, 1], [1, -1, -1], [-1, 1, -1], [-1, -1, 1]], np.float64) * r / math.sqrt(3) + c
+    return v, np.array([(0, 1, 2), (0, 3, 1), (0, 2, 3), (1, 3, 2)])
+
+
+def rod(a, b, r, sides=8):
+    """A closed prism of radius r from a to b."""
+    a, b = np.asarray(a, np.float64), np.asarray(b, np.float64)
+    ax = (b - a) / np.linalg.norm(b - a)
+    u = np.cross(ax, [0.0, 0.0, 1.0] if abs(ax[2]) < 0.9 else [1.0, 0.0, 0.0])
+    u /= np.linalg.norm(u)
+    w = np.cross(ax, u)
+    ring = [r * (math.cos(math.tau * k / sides) * u + math.sin(math.tau * k / sides) * w) for k in range(sides)]
+    v = np.array([a + q for q in ring] + [b + q for q in ring] + [a, b])
+    f = []
+    for k in range(sides):
+        k1 = (k + 1) % sides
+        f += [(k, k1, sides + k1), (k, sides + k1, sides + k), (2 * sides, k1, k), (2 * sides + 1, sides + k, sides + k1)]
+    return v, np.array(f)
+
+
+def diamond_bar(axis, half_length, s, lift):
+    """A bar along X or Y, its square section turned 45 deg: an edge on top at z = lift + s, one below at lift - s."""
+    sec = [(0.0, s), (s, 0.0), (0.0, -s), (-s, 0.0)]
+    v = [(end, a, z + lift) if axis == "x" else (a, end, z + lift) for end in (-half_length, half_length) for a, z in sec]
+    f = [q for k in range(4) for q in ((k, (k + 1) % 4, 4 + (k + 1) % 4), (k, 4 + (k + 1) % 4, 4 + k))]
+    return np.array(v, np.float64), np.array(f + [(0, 1, 2), (0, 2, 3), (4, 6, 5), (4, 7, 6)])
+
+
+def _set(mesh, name):
+    v, f = mesh
+    return TriSet(f, [name] * len(f)), v
+
+
+def calibrate(backend):
+    """The backend on known geometry, with each case's expected value."""
+    out = {}
+    tri_a = (np.array([[-0.01, -0.01, 0.0], [0.01, -0.01, 0.0], [0.0, 0.01, 0.0]]), np.array([(0, 1, 2)]))
+    tri_b = (np.array([[0.0, 0.0, -0.01], [0.005, 0.0, 0.01], [-0.005, 0.0, 0.01]]), np.array([(0, 1, 2)]))
+    r = measure(backend, *_set(tri_a, "a"), *_set(tri_b, "b"))
+    out["crossing_pair"] = {"crossings": r["crossing_pairs_visible"], "expect": 1}
+    r = measure(backend, *_set(tetra((0.0, 0.0, 0.0), 0.005), "tetra"), *_set(cube((0.0, 0.0, 0.0), 0.04), "cube"))
+    out["tetra_inside_cube"] = {"crossings": r["crossing_pairs_visible"], "contained": r["contained"],
+                                "expect": {"crossings": 0, "contained": 1}}
+    r = measure(backend, *_set(cube((0.0, 0.0, 0.0), 0.04), "a"), *_set(cube((0.06, 0.0, 0.0), 0.04), "b"))
+    out["cubes_2cm_apart"] = {"crossings": r["crossing_pairs_visible"], "contained": r["contained"],
+                              "separation_m": r["separation_m"], "expect": {"separation_m": 0.02}}
+    gap, s = 0.005, 0.01
+    r = measure(backend, *_set(diamond_bar("x", 0.2, s, 0.0), "a"), *_set(diamond_bar("y", 0.2, s, 2 * s + gap), "b"),
+                limit=0.05)
+    va, vb = diamond_bar("x", 0.2, s, 0.0)[0], diamond_bar("y", 0.2, s, 2 * s + gap)[0]
+    out["edges_5mm_apart"] = {"separation_m": r["separation_m"], "kind": r["separation_kind"],
+                              "nearest_vertex_pair_m": round(float(np.linalg.norm(va[:, None] - vb[None], axis=2).min()), 4),
+                              "expect": {"separation_m": gap, "kind": "edge-edge"}}
+    hide = _set(cube((0.0, 0.0, 0.0), 0.05), "hide")
+    r = measure(backend, *_set(rod((-0.05, 0.0, 0.0), (0.05, 0.0, 0.0), 0.004), "rod"),
+                *_set(cube((0.0, 0.0, 0.0), 0.03), "box"), hide=(hide[0], hide[1]))
+    out["rod_through_box_inside_hide"] = {"visible": r["crossing_pairs_visible"], "hidden": r["crossing_pairs_hidden"],
+                                          "expect": {"visible": 0, "hidden": "> 0"}}
+    blade = (np.array([[-1.0, -1.0, 0.0], [1.0, -1.0, 0.0], [0.0, 1.0, 0.0]]), np.array([(0, 1, 2)]))
+    long_body = (np.array([[0.0, -0.8, -1.0], [0.0, -0.8, 1.0], [0.0, 0.8, 0.0]]), np.array([(0, 1, 2)]))
+    seg = crossing_segment(blade[0], long_body[0])
+    small_hide = _set(cube((seg[0] + seg[1]) / 2.0, 0.10), "obi")
+    r = measure(backend, *_set(blade, "blade"), *_set(long_body, "body"), limit=0.0, hide=small_hide)
+    out["partial_hide_probe"] = {"visible": r["crossing_pairs_visible"], "hidden": r["crossing_pairs_hidden"],
+                                 "passes": passes(r), "expect": {"visible": 1, "passes": False}}
+    flat = (np.array([[-0.3, -0.3, 0.0], [0.5, -0.3, 0.0], [0.1, 0.5, 0.0]]), np.array([(0, 1, 2)]))
+    r = measure(backend, *_set(blade, "blade"), *_set(flat, "body"), limit=0.1)
+    out["coplanar_overlap_probe"] = {"visible": r["crossing_pairs_visible"], "coplanar": r["coplanar_overlap_pairs"],
+                                     "backend_reported": r["crossing_pairs_visible"] - r["coplanar_overlap_pairs"],
+                                     "passes": passes(r), "expect": {"visible": 1, "passes": False}}
+    out["ok"] = (out["partial_hide_probe"]["visible"] == 1 and not out["partial_hide_probe"]["passes"]
+                 and out["coplanar_overlap_probe"]["visible"] == 1 and not out["coplanar_overlap_probe"]["passes"]
+                 and out["crossing_pair"]["crossings"] == 1
+                 and out["tetra_inside_cube"]["crossings"] == 0 and out["tetra_inside_cube"]["contained"] == 1
+                 and out["cubes_2cm_apart"]["crossings"] == 0 and out["cubes_2cm_apart"]["contained"] == 0
+                 and abs((out["cubes_2cm_apart"]["separation_m"] or 0.0) - 0.02) < 1e-5
+                 and abs((out["edges_5mm_apart"]["separation_m"] or 0.0) - gap) < 1e-6
+                 and out["edges_5mm_apart"]["kind"] == "edge-edge"
+                 and out["rod_through_box_inside_hide"]["visible"] == 0
+                 and out["rod_through_box_inside_hide"]["hidden"] > 0)
+    out["backend"] = backend.name
+    return out

@@ -1,0 +1,162 @@
+{
+ "schema_version": 4,
+ "generator": "scripts/art/create_nyaakoto_fp_fur_textures.py",
+ "seed": 20261025,
+ "atlas": {
+  "columns": 8,
+  "rows": 2,
+  "tile_px": [
+   256,
+   512
+  ],
+  "uv": "even rows root at the tile's bottom (v up), odd rows root at its top: tips abut tips",
+  "strands_per_tile": [
+   7,
+   12
+  ],
+  "root_overlap": [
+   1.5,
+   2.1
+  ],
+  "tip_v": [
+   0.7,
+   1.0
+  ],
+  "clump": 0.3,
+  "hairs_per_strand": [
+   4,
+   9
+  ],
+  "version": 5,
+  "fringe_length": [
+   0.62,
+   1.0
+  ],
+  "fringe_jitter": 0.4,
+  "fringe_width": [
+   0.75,
+   1.5
+  ],
+  "edge": 0.04
+ },
+ "provenance": "original and procedural: every strand drawn by this script from its seed; no external image, scan or third-party texture",
+ "maps": {
+  "Albedo": {
+   "file": "T_NyaakotoFP_FurCards_Albedo.png",
+   "size": [
+    2048,
+    1024
+   ],
+   "mode": "RGBA",
+   "note": "sRGB colour; A = hair coverage (opacity mask)",
+   "sha256": "8b47b4805f467896a948142102a7ed56b0a51b591ff5776dd8c21a3a038832ac"
+  },
+  "NormalDX": {
+   "file": "T_NyaakotoFP_FurCards_NormalDX.png",
+   "size": [
+    2048,
+    1024
+   ],
+   "mode": "RGB",
+   "note": "tangent space, DirectX (green down): each strand's and hair's cylinder across its width",
+   "sha256": "4b1bd4e8733b39beecb8850ea85677cd1e8186d36278da4e34efd3c95d368210"
+  },
+  "Masks": {
+   "file": "T_NyaakotoFP_FurCards_Masks.png",
+   "size": [
+    2048,
+    1024
+   ],
+   "mode": "RGB",
+   "note": "linear: R root-to-tip, G per-strand random, B depth in the clump (1 front)",
+   "sha256": "897de43557a34fcf901882487ad70dd86944ee2ce55b31dc63a68869e17d2784"
+  }
+ },
+ "dither_measure": {
+  "clip": 0.33,
+  "tile_px": [
+   256,
+   512
+  ],
+  "views_pixel_mm": {
+   "eye_view": 0.4434647741994828,
+   "paw_close_up": 0.07825759486334133
+  },
+  "cards_mm": {
+   "digit": [
+    0.7875000000000001,
+    2.4749999999999996
+   ],
+   "dorsal": [
+    0.7875000000000001,
+    4.6875
+   ]
+  },
+  "base_level": {
+   "partial_share": 0.11189996384457856,
+   "mean_alpha": 0.6261487904716947
+  },
+  "at": {
+   "eye_view/digit": {
+    "footprint_texels": {
+     "along": 91.73897551116575,
+     "across": 144.16124723183185
+    },
+    "dithered_share": 0.46830205075443004,
+    "solid_share": 0.5316979492455699,
+    "speckle_variance": 0.06508909564135257,
+    "expected_coverage": 0.7395641167148344,
+    "alpha_quartiles": [
+     0.3596080355451322,
+     0.8520365634176414,
+     0.9288671023965295
+    ]
+   },
+   "eye_view/dorsal": {
+    "footprint_texels": {
+     "along": 48.43817906989551,
+     "across": 144.16124723183185
+    },
+    "dithered_share": 0.448419250864179,
+    "solid_share": 0.551580749135821,
+    "speckle_variance": 0.06217586848314043,
+    "expected_coverage": 0.750356196525591,
+    "alpha_quartiles": [
+     0.38536900871459967,
+     0.8648029003267884,
+     0.9328431372548914
+    ]
+   },
+   "paw_close_up/digit": {
+    "footprint_texels": {
+     "along": 16.189045886881118,
+     "across": 25.43992925081318
+    },
+    "dithered_share": 0.3906516971214484,
+    "solid_share": 0.6093483028785516,
+    "speckle_variance": 0.0614081603416644,
+    "expected_coverage": 0.777020938054923,
+    "alpha_quartiles": [
+     0.45948529411771233,
+     0.9984901960784236,
+     1.0
+    ]
+   },
+   "paw_close_up/dorsal": {
+    "footprint_texels": {
+     "along": 8.547816228273229,
+     "across": 25.43992925081318
+    },
+    "dithered_share": 0.38967896884671444,
+    "solid_share": 0.6103210311532855,
+    "speckle_variance": 0.06129255947664676,
+    "expected_coverage": 0.7775703575984337,
+    "alpha_quartiles": [
+     0.4611067538120066,
+     0.9993725490196246,
+     1.0
+    ]
+   }
+  }
+ }
+}

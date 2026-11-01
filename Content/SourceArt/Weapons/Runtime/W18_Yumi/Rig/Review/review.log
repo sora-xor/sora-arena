@@ -1,0 +1,73 @@
+FBX version: 7400
+YUMI_RIG_REVIEW_IMPORT {"bones": 28, "mesh": "SK_Weapon_18", "vertices": 34454, "action": "Armature|A_Weapon_18_Draw", "frame_range": [0, 10], "skinned": true, "armature_world": [[0.01, 4e-09, 0.0, 0.0], [-4e-09, 0.01, 0.0, 0.0], [0.0, 0.0, 0.01, 0.0], [0.0, 0.0, 0.0, 1.0]]}
+YUMI_RIG_REVIEW_PLAYBACK {"file": "W18_rig_playback_blender.npz", "times": 41, "vertex_frames": 12, "vertices": 34454, "interpolation": ["LINEAR"], "key_frames": [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], "rotation_modes": ["QUATERNION"], "fcurves": 289}
+FBX version: 7400
+YUMI_RIG_REVIEW_ARROW Braced {"nock_m": [-0.1664606, 1e-07, 0.0700001], "muzzle_m": [0.01475, -0.01975, 0.07], "direction": [0.994113, -0.108348, -5e-07], "frame": 0.0}
+00:01.212  render           | Saved: 'Saved/YumiRig/Review_w18rebuild/SK_Weapon_18_Braced_Profile.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_Braced_Profile.png
+00:01.280  render           | Saved: 'Saved/YumiRig/Review_w18rebuild/SK_Weapon_18_Braced_FullProfile.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_Braced_FullProfile.png
+00:01.355  render           | Saved: 'Saved/YumiRig/Review_w18rebuild/SK_Weapon_18_Braced_GripClose.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_Braced_GripClose.png
+00:01.426  render           | Saved: 'Saved/YumiRig/Review_w18rebuild/SK_Weapon_18_Braced_NockClose.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_Braced_NockClose.png
+00:01.498  render           | Saved: 'Saved/YumiRig/Review_w18rebuild/SK_Weapon_18_Braced_TipUClose.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_Braced_TipUClose.png
+00:01.571  render           | Saved: 'Saved/YumiRig/Review_w18rebuild/SK_Weapon_18_Braced_TipLClose.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_Braced_TipLClose.png
+YUMI_RIG_REVIEW_ARROW Quarter {"nock_m": [-0.3439561, 2e-07, 0.0700463], "muzzle_m": [0.01475, -0.01975, 0.07], "direction": [0.9984877, -0.0549763, -0.0001288], "frame": 2.5}
+00:01.795  render           | Saved: 'Saved/YumiRig/Review_w18rebuild/SK_Weapon_18_Quarter_Profile.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_Quarter_Profile.png
+00:01.863  render           | Saved: 'Saved/YumiRig/Review_w18rebuild/SK_Weapon_18_Quarter_FullProfile.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_Quarter_FullProfile.png
+00:01.932  render           | Saved: 'Saved/YumiRig/Review_w18rebuild/SK_Weapon_18_Quarter_GripClose.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_Quarter_GripClose.png
+00:02.003  render           | Saved: 'Saved/YumiRig/Review_w18rebuild/SK_Weapon_18_Quarter_NockClose.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_Quarter_NockClose.png
+00:02.072  render           | Saved: 'Saved/YumiRig/Review_w18rebuild/SK_Weapon_18_Quarter_TipUClose.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_Quarter_TipUClose.png
+00:02.143  render           | Saved: 'Saved/YumiRig/Review_w18rebuild/SK_Weapon_18_Quarter_TipLClose.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_Quarter_TipLClose.png
+YUMI_RIG_REVIEW_ARROW Half {"nock_m": [-0.521569, 3e-07, 0.0701588], "muzzle_m": [0.01475, -0.01975, 0.07], "direction": [0.9993225, -0.0368008, -0.000296], "frame": 5.0}
+00:02.373  render           | Saved: 'Saved/YumiRig/Review_w18rebuild/SK_Weapon_18_Half_Profile.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_Half_Profile.png
+00:02.443  render           | Saved: 'Saved/YumiRig/Review_w18rebuild/SK_Weapon_18_Half_FullProfile.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_Half_FullProfile.png
+00:02.513  render           | Saved: 'Saved/YumiRig/Review_w18rebuild/SK_Weapon_18_Half_GripClose.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_Half_GripClose.png
+00:02.587  render           | Saved: 'Saved/YumiRig/Review_w18rebuild/SK_Weapon_18_Half_NockClose.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_Half_NockClose.png
+00:02.657  render           | Saved: 'Saved/YumiRig/Review_w18rebuild/SK_Weapon_18_Half_TipUClose.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_Half_TipUClose.png
+00:02.731  render           | Saved: 'Saved/YumiRig/Review_w18rebuild/SK_Weapon_18_Half_TipLClose.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_Half_TipLClose.png
+YUMI_RIG_REVIEW_ARROW ThreeQuarter {"nock_m": [-0.6991519, 5e-07, 0.0703554], "muzzle_m": [0.01475, -0.01975, 0.07], "direction": [0.9996174, -0.027655, -0.0004977], "frame": 7.5}
+00:02.958  render           | Saved: 'Saved/YumiRig/Review_w18rebuild/SK_Weapon_18_ThreeQuarter_Profile.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_ThreeQuarter_Profile.png
+00:03.026  render           | Saved: 'Saved/YumiRig/Review_w18rebuild/SK_Weapon_18_ThreeQuarter_FullProfile.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_ThreeQuarter_FullProfile.png
+00:03.096  render           | Saved: 'Saved/YumiRig/Review_w18rebuild/SK_Weapon_18_ThreeQuarter_GripClose.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_ThreeQuarter_GripClose.png
+00:03.171  render           | Saved: 'Saved/YumiRig/Review_w18rebuild/SK_Weapon_18_ThreeQuarter_NockClose.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_ThreeQuarter_NockClose.png
+00:03.244  render           | Saved: 'Saved/YumiRig/Review_w18rebuild/SK_Weapon_18_ThreeQuarter_TipUClose.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_ThreeQuarter_TipUClose.png
+00:03.316  render           | Saved: 'Saved/YumiRig/Review_w18rebuild/SK_Weapon_18_ThreeQuarter_TipLClose.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_ThreeQuarter_TipLClose.png
+YUMI_RIG_REVIEW_ARROW Full {"nock_m": [-0.8766347, 6e-07, 0.0706592], "muzzle_m": [0.01475, -0.01975, 0.07], "direction": [0.9997543, -0.0221518, -0.0007393], "frame": 10.0}
+00:03.543  render           | Saved: 'Saved/YumiRig/Review_w18rebuild/SK_Weapon_18_Full_Profile.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_Full_Profile.png
+00:03.611  render           | Saved: 'Saved/YumiRig/Review_w18rebuild/SK_Weapon_18_Full_FullProfile.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_Full_FullProfile.png
+00:03.681  render           | Saved: 'Saved/YumiRig/Review_w18rebuild/SK_Weapon_18_Full_GripClose.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_Full_GripClose.png
+00:03.756  render           | Saved: 'Saved/YumiRig/Review_w18rebuild/SK_Weapon_18_Full_NockClose.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_Full_NockClose.png
+00:03.829  render           | Saved: 'Saved/YumiRig/Review_w18rebuild/SK_Weapon_18_Full_TipUClose.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_Full_TipUClose.png
+00:03.903  render           | Saved: 'Saved/YumiRig/Review_w18rebuild/SK_Weapon_18_Full_TipLClose.png'
+YUMI_RIG_REVIEW_RENDER SK_Weapon_18_Full_TipLClose.png
+YUMI_RIG_REVIEW_READY 30 renders
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:49:19)
+
+Blender quit

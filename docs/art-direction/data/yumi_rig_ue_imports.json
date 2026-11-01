@@ -1,0 +1,190 @@
+{
+ "subject": "W18 yumi rig: the isolated Unreal 5.8.3 imports of 2026-10-25 and the rig builds between them",
+ "logs": "Saved/YumiRig/Unreal (git-ignored); every attempt's log, times and wrapper output kept under its attempt name",
+ "pid_note": "pid_recorded is what pgrep -f returned at launch. Attempt 7's process tree showed that pattern returns the launching zsh subshell, so attempts 0-6 may have recorded the subshell rather than UnrealEditor-Cmd. Exits and logs are unaffected.",
+ "imports": [
+  {
+   "attempt": 0,
+   "start": "2026-10-25T07:24:56Z",
+   "end": "2026-10-25T07:25:43Z",
+   "wrapper_exit": 1,
+   "input": "signed v3 FBX (All Local)",
+   "result": "unexpected bow material slot M_Weapon_18: W18 bakes one atlas slot; the importer expected per-part slots",
+   "pid_recorded": 32218,
+   "wrapper_pid": 32213,
+   "log": "Saved/YumiRig/Unreal/attempt0_slots_import_v3.log",
+   "log_sha256": "abacc76e291513385ad540a554fdaa5c36ab73210ed7a39cb79ff649d0b63ee6",
+   "wrapper_out_sha256": "f8d8fbc73215879e81f958c797f96b950996cb7506e39ecb9c3749f44860fa0b"
+  },
+  {
+   "attempt": 1,
+   "start": "2026-10-25T07:26:13Z",
+   "end": "2026-10-25T07:26:35Z",
+   "wrapper_exit": 1,
+   "input": "signed v3 FBX (All Local)",
+   "result": "expected one take, got []: replace_existing reimported the mesh and skipped the take; the importer now deletes its namespace first",
+   "pid_recorded": 33827,
+   "log": "Saved/YumiRig/Unreal/attempt1_reimport_import_v3.log",
+   "log_sha256": "35357f0950bd20a5dd1d4d299d5241362ae64feb6332078b8dfcea664187bba7",
+   "wrapper_out_sha256": "972ea233ce3ab1ccee69f286f3a961fe9d3957fc041a566432b12324c50bd407"
+  },
+  {
+   "attempt": 2,
+   "start": "2026-10-25T07:26:55Z",
+   "end": "2026-10-25T07:27:17Z",
+   "wrapper_exit": 1,
+   "input": "signed v3 FBX (All Local)",
+   "result": "bone reference scale [100, 100, 100]: All Local puts Blender's x100 on the armature node, which Unreal folds into the root bone",
+   "pid_recorded": 34853,
+   "log": "Saved/YumiRig/Unreal/attempt2_bonescale_import_v3.log",
+   "log_sha256": "07b70a00523aad77996e06b72adeb86e68e6cc5d23741aeada42297ad62e80ad",
+   "wrapper_out_sha256": "c07d813ad08b8794d5f181455ddfa04b6ac935e91afb2eb3ac1cb0e3b13b964d"
+  },
+  {
+   "attempt": 3,
+   "start": "2026-10-25T07:28:20Z",
+   "end": "2026-10-25T07:28:41Z",
+   "wrapper_exit": 1,
+   "input": "signed v3 FBX (All Local), convert_scene_unit",
+   "result": "bone reference scale [100, 100, 100]",
+   "pid_recorded": 36280,
+   "log": "Saved/YumiRig/Unreal/attempt3_unitconvert_import_v3.log",
+   "log_sha256": "c7b67291f25c3e915089e30bfe04722dd6b0018635fcf33af549853ca9fd2147",
+   "wrapper_out_sha256": "63cebe893d7105fe27a2e08dbfe0de3508b42724cc9d796ebfc4684079701411"
+  },
+  {
+   "attempt": 4,
+   "start": "2026-10-25T07:29:36Z",
+   "end": "2026-10-25T07:30:01Z",
+   "wrapper_exit": 1,
+   "input": "v3b FBX (FBX Units Scale, header unit 100), convert_scene_unit",
+   "result": "bone reference scale [100, 100, 100]: Unreal's unit conversion puts x100 back on the root node",
+   "pid_recorded": 39092,
+   "log": "Saved/YumiRig/Unreal/attempt4_unitsfbx_import_v3.log",
+   "log_sha256": "02918170b8be46307f5f174c5ba06e9c5269ea5083a7fa011cb82858d8dca0c2",
+   "wrapper_out_sha256": "ca284209e4d7a9e616737ccc82eebd7636a8094ef8f3b11ae3eebdf79a68b4c1"
+  },
+  {
+   "attempt": 5,
+   "start": "2026-10-25T07:30:23Z",
+   "end": "2026-10-25T07:30:47Z",
+   "wrapper_exit": 1,
+   "input": "v3b FBX, convert_scene_unit",
+   "result": "bone reference scale [100, 100, 100]; reference_diagnostic.json: Grip local scale 100, children local scale 1 with metre translations",
+   "pid_recorded": 39698,
+   "log": "Saved/YumiRig/Unreal/attempt5_diagnostic_import_v3.log",
+   "log_sha256": "3bb9bd9b6bd2a12ecf994c86597dc27a1772ef5f1e59981387f3c401496d7790",
+   "wrapper_out_sha256": "6a813b52292c0230739e0208850633834556a81a0ea9948b909d85924e6b4106",
+   "reference_diagnostic_sha256": "c25ecd90a89249308f30c563c6fe1f077eee4f14f28314ffc109d2bc9e95ce00"
+  },
+  {
+   "attempt": 6,
+   "start": "2026-10-25T07:31:46Z",
+   "end": "2026-10-25T07:32:07Z",
+   "wrapper_exit": 1,
+   "input": "v3b FBX, no unit conversion, import_uniform_scale 100",
+   "result": "reference heads 1.45e4 cm off, Grip scale 10000: the import uniform scale multiplies the root bone too (FbxSkeletalMeshImport.cpp:1406-1415, root's reading)",
+   "pid_recorded": 42127,
+   "log": "Saved/YumiRig/Unreal/attempt6_uniformscale_import_v3.log",
+   "log_sha256": "d52a8267681afb2facc8aa1055aa943912197b2de0ff386fbb38aaa8991b10ac",
+   "wrapper_out_sha256": "5f1529f788d50f9a41d0f65e3fd9811bc70fffb3ab84a573b9479440b8d4f732",
+   "reference_diagnostic_sha256": "7e72a589e0430736c0e0a2c0ce578f5814443ca095c445cc61f6e01650f9d55f"
+  },
+  {
+   "attempt": 7,
+   "start": "2026-10-25T08:05:31Z",
+   "end": "2026-10-25T08:07:04Z",
+   "wrapper_exit": 1,
+   "input": "v3c centimetre FBX (header unit 1), no conversion, scale 1",
+   "result": "every bone at scale 1 and heads within 1e-3 cm; then SkeletalMeshSocket.socket_name is read-only to Python in UE 5.8 (SkeletalMeshSocket.h:24-28)",
+   "editor_pid": 90426,
+   "wrapper_pid": 90326,
+   "pid_recorded": 90324,
+   "log": "Saved/YumiRig/Unreal/attempt7_socketname_import_v3.log",
+   "log_sha256": "e500b64260a58210f140640364171a0c2423a6d4e05f3dd8dc7c2c7bc1bde123",
+   "wrapper_out_sha256": "4d69b9a0735129a770f90c51f2f2db8810e3121ef97d22b07f5a64f91e500f4a",
+   "reference_diagnostic_sha256": "cea8f514622334c22d37a48c5718312e3be2a702b1e8299f7d5ec567f60f6b9a"
+  },
+  {
+   "attempt": 8,
+   "start": "2026-10-25T08:11:21Z",
+   "end": "2026-10-25T08:12:52Z",
+   "wrapper_exit": 0,
+   "input": "v3c centimetre FBX",
+   "result": "YUMI_RIG_UE_READY; canonical raw turns 5.9e-5 rad against the fixed 1e-5 rad (FAIL on 8 samples, all returned as the reference pose). Explained by an observed engine snap to the reference pose within FTransform::Equals' 1e-4, now modelled by a separate snap-aware test; its source is not located (AnimSequencerDataModel.cpp:1389 does not apply to this path). Codec settings unread",
+   "wrapper_pid": 96916,
+   "pid_recorded": 96914,
+   "log": "Saved/YumiRig/Unreal/attempt8_ready_import_v3.log",
+   "log_sha256": "c6bb0b924625489103d582fe13689aaf0906d61df3017ee483238f11ae035c61",
+   "wrapper_out_sha256": "d0ece9102efa271112950077b1fb868e9d6f387a0ae8887a6d3da52ef0db9047",
+   "reference_diagnostic_sha256": "cea8f514622334c22d37a48c5718312e3be2a702b1e8299f7d5ec567f60f6b9a",
+   "W18_rig_unreal_readback_sha256": "e526e938e24015b8b623e987bd323448f6cb9224ab7e31ae1c8ea0161f01efa1"
+  },
+  {
+   "attempt": 9,
+   "start": "2026-10-25T08:35:23Z",
+   "end": "2026-10-25T08:37:40Z",
+   "wrapper_exit": 0,
+   "input": "v3c centimetre FBX",
+   "result": "YUMI_RIG_UE_READY: the delivered readback, identical to attempt 8's. Codec settings unreadable at runtime (Python wraps the codec as its base class; errors kept); their values are inferred from the settings asset serializing none of them, so the class defaults hold. Static evidence, not runtime readback",
+   "editor_pid": 28517,
+   "wrapper_pid": 28400,
+   "log": "Saved/YumiRig/Unreal/import_v3.log",
+   "log_sha256": "93bd34ef3aa303f8ee147047a100175c0720c73a85c35634abc41d1dd98b74f2",
+   "wrapper_out_sha256": "e7832001ada9149d9d1ad6a054ad87e5f27af4600f1c2a14982f23fc5f8d91ce",
+   "reference_diagnostic_sha256": "cea8f514622334c22d37a48c5718312e3be2a702b1e8299f7d5ec567f60f6b9a",
+   "W18_rig_unreal_readback_sha256": "3509c6cbe545df3610041611f52a2845bc20546fab1738705e1019345fa6c790"
+  }
+ ],
+ "builds": [
+  {
+   "run": "rig v3b (FBX Units Scale)",
+   "blender_pid": 38337,
+   "start": "2026-10-25T07:29:15Z",
+   "end": "2026-10-25T07:29:25Z",
+   "exit": 0,
+   "archive": "Saved/YumiRig/Archive/v3b_fbx_scale_units",
+   "fbx_sha256": "d07c38bd49ae20af3e5c4454fbcd7ba802f370008cc1c20cf0094c477666ac44",
+   "result": "superseded: header unit 100; Unreal scaled every bone (imports 4-6)"
+  },
+  {
+   "run": "rig v3c attempt 0 (centimetres, Grip +Z)",
+   "blender_pid": 70320,
+   "start": "2026-10-25T07:54:10Z",
+   "end": "2026-10-25T07:54:21Z",
+   "exit": 0,
+   "archive": "Saved/YumiRig/Archive/v3c_attempt0_grip_z",
+   "fbx_sha256": "d4f5c283314ffa2684bd1c2f346e060bb9b251e5f03c34ee693088d038894c9a",
+   "result": "rejected: rest bases up to 9.44e-6 off unit length, the singular case of Blender's bone-roll matrix with the lower limb anti-parallel to a +Z root"
+  },
+  {
+   "run": "rig v3c attempt 1 (Grip +Y)",
+   "blender_pid": 83833,
+   "start": "2026-10-25T07:58:36Z",
+   "end": "2026-10-25T07:58:46Z",
+   "exit": 0,
+   "archive": "Saved/YumiRig/Archive/v3c_attempt1_fps24",
+   "fbx_sha256": "ce57b2a564fa4c94265135077b68f2d784a2734ba7ba8962ee98af9ec5a0f3be",
+   "result": "rejected: 24 fps take of 0.417 s; the arrow import in check_geometry had reset the scene's frame rate"
+  },
+  {
+   "run": "rig v3c attempt 2 (delivered)",
+   "blender_pid": 86796,
+   "start": "2026-10-25T08:00:33Z",
+   "end": "2026-10-25T08:00:44Z",
+   "exit": 0,
+   "fbx_sha256": "23f73efce9a2115ae7546a5941796645cd7a53a40300da59a29ba569a360e1ab",
+   "result": "header unit 1, 10 fps take of 0-1 s, node and bind scales within 2.2e-7 of 1; centimetre copy within 0.70 um of the metre rig"
+  },
+  {
+   "run": "Blender round-trip review v3c",
+   "blender_pid": 87534,
+   "start": "2026-10-25T08:01:03Z",
+   "end": "2026-10-25T08:01:12Z",
+   "exit": 0,
+   "outputs": "Saved/YumiRig/Review_v3c (SHA256SUMS), copied byte-identical to Rig/Review",
+   "result": "armature at the 0.01 unit alone; vertices 0.71 um, heads 0.69 um, turns 8.2e-7 rad; 30 originals inspected, at most 9 pixels per image more than 8/255 from the v3 originals"
+  }
+ ],
+ "scope_note": "Codex's scope review of bfaded4: the canonical raw comparison (FAIL on 8 samples), the snap-aware comparison (a model of observed engine behaviour, source not located) and the inferred codec defaults are different results, named apart here and in test_yumi_draw."
+}

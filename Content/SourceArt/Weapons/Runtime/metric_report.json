@@ -1118,11 +1118,11 @@
      "expected": 0.0,
      "tol": 0.004,
      "pass": true,
-     "coverage": 0.5682
+     "coverage": 0.5792
     },
     {
      "name": "SM_Weapon_18_fbx_bounds_parity_m",
-     "measured": 3.279897083097172e-10,
+     "measured": 6.274418033747065e-10,
      "expected": 0.0,
      "tol": 0.0001,
      "pass": true
@@ -1130,9 +1130,9 @@
     {
      "name": "SM_Weapon_18_lod_triangles",
      "measured": [
-      61556,
-      25852,
-      9848
+      68716,
+      28860,
+      10994
      ],
      "budget_lod0": 80000,
      "pass": true
@@ -1143,7 +1143,7 @@
      "expected": 0.0,
      "tol": 0.004,
      "pass": true,
-     "coverage": 0.0918
+     "coverage": 0.0944
     },
     {
      "name": "SM_Weapon_18_Ya_fbx_bounds_parity_m",
@@ -1155,23 +1155,23 @@
     {
      "name": "SM_Weapon_18_Ya_lod_triangles",
      "measured": [
-      4382,
-      1840,
-      700
+      5502,
+      2310,
+      880
      ],
      "budget_lod0": 80000,
      "pass": true
     },
     {
      "name": "normal_tilt_mean",
-     "measured": 0.0423,
+     "measured": 0.0435,
      "expected_min": 0.04,
      "pass": true,
-     "covered_texels_mean": 0.0539
+     "covered_texels_mean": 0.054
     },
     {
      "name": "texel_density_p05_px_per_m",
-     "measured": 2899.9,
+     "measured": 2943.8,
      "expected_min": 1024.0,
      "pass": true
     },
