@@ -20,7 +20,7 @@ at their sockets:
 | Station | Shots |
 |---|---|
 | rib form | mid-bend (Committed 3, HeldMs 640: the fourth strip at flex 0.75 and the needle at the band's edge); a split strip; all six hoops |
-| paste bench | half a seam (Committed 2, HeldMs 750; the turntable at -180 deg); the rims seated |
+| paste bench | half a seam (Committed 2, HeldMs 750; the frame turned for panel 3 on its tilted cradle); the rims seated |
 | oil rack | half oiled (HeldMs 750) |
 | shell bench | two shells seated and one core in the tray; all three seated, before the inspection |
 | rafters | the suggested 24 craftspeople's lanterns; all 40; all 40 with Glow (a material demonstration, not a b09 state) |
@@ -364,32 +364,43 @@ def shots(spec):
             shot(label + "_21x9", 0, items, stand_eye(st), work, state, (2520, 1080))
             for side, dy in (("approach_left", -90.0), ("approach_right", 90.0)):
                 shot(f"{label}_{side}", 0, items, world_of(st, [-150.0, dy, EYE_CM[2]]), work, state)
-    # The paste bench (steps 1 and 2): seam n+1 at azimuth 180 + 90 n turns to the hero's side at yaw -90 n.
+    # The paste bench (steps 1 and 2): the frame on its tilted cradle (LanternCentre's axes), turned about its own axis
+    # by panel_turn_deg for the panel being laid, so that panel's seam stays at the cradle's Seam_0..8 facing the hero;
+    # the gores go on in paste_order.
     st = S[1]
     lc, work = sock(st, "LanternCentre"), world_of(st, st["work_point_cm"])
+    ax_x, ax_z = st["sockets"]["LanternCentre"]["x_axis"], st["sockets"]["LanternCentre"]["z_axis"]
+    ax_y = [ax_z[1] * ax_x[2] - ax_z[2] * ax_x[1], ax_z[2] * ax_x[0] - ax_z[0] * ax_x[2], ax_z[0] * ax_x[1] - ax_z[1] * ax_x[0]]
+
+    def frame_rot(turn):
+        a = math.radians(turn)
+        return rot_xz([math.cos(a) * ax_x[k] + math.sin(a) * ax_y[k] for k in range(3)], ax_z)
+
+    order = st["paste_order"]
     for label, n, ms, rims in (("paste_halfseam", 2, 750, False), ("paste_rims", 4, -1, True)):
-        turn = -90.0 * n
-        items = [("SM_B09_PasteFrame", lc, yaw(turn), None)]
-        items += [(f"SM_B09_Washi{k}", lc, yaw(turn), None) for k in range(1, n + 1)]
-        stack = 4 - n
+        panel = min(n + 1, 4)
+        turn = st["panel_turn_deg"][panel - 1]
+        items = [("SM_B09_PasteFrame", lc, frame_rot(turn), None)]
+        items += [(f"SM_B09_Washi{k}", lc, frame_rot(turn), None) for k in order[:n]]
         if ms >= 0:
-            items.append((f"SM_B09_Washi{n + 1}", lc, yaw(turn), {"M_B09_Washi": {"PasteReveal": ms / spec["recipe"]["paste_ms"]}}))
-            items.append(("SM_B09_PasteBrush", yawed(sock(st, f"Seam{n + 1}_4"), lc, turn), brush_rot, None))
-            stack -= 1                                     # the sheet being pasted has left the stack
+            items.append((f"SM_B09_Washi{order[n]}", lc, frame_rot(turn), {"M_B09_Washi": {"PasteReveal": ms / spec["recipe"]["paste_ms"]}}))
+            items.append(("SM_B09_PasteBrush", sock(st, "Seam_4"), brush_rot, None))
+            rail = range(n + 2, 5)                         # the sheet being pasted has left the rail
         else:
             items.append(("SM_B09_PasteBrush", sock(st, "BrushRest"), sock_rot(st, "BrushRest"), None))
-        items += [(f"SM_B09_WashiSheet{j}", sock(st, f"WashiSheet{j}"), None, None) for j in range(1, stack + 1)]
+            rail = range(n + 1, 5)
+        items += [(f"SM_B09_WashiSheet{j}", sock(st, f"WashiSheet{j}"), sock_rot(st, f"WashiSheet{j}"), None) for j in rail]
         for which in ("Bottom", "Top"):
-            items.append((f"SM_B09_Rim{which}", sock(st, f"Rim{which}{'Seat' if rims else 'Rest'}"), None, None))
+            items.append((f"SM_B09_Rim{which}", sock(st, f"Rim{which}{'Seat' if rims or which == 'Bottom' else 'Rest'}"), None, None))
         state = {"Committed": [6, n, 1 if rims else 0, 0, 0, 0], "HeldStep": 1 if ms >= 0 else -1, "HeldMs": max(ms, 0),
-                 "turntable_yaw_deg": turn}
+                 "panel_turn_deg": turn}
         shot(label, 1, items, stand_eye(st), work, state)
     # The oil rack (step 3): the finished lantern hangs from its hang point on LanternHang.
     st = S[2]
     h = sock(st, "LanternHang")
     centre = [h[0] - hang[0], h[1] - hang[1], h[2] - hang[2]]
     items = [("SM_B09_LanternFinished", centre, None, {"M_B09_Washi": {"OilWet": 750 / spec["recipe"]["paste_ms"]}}),
-             ("SM_B09_OilBrush", sock(st, "OilStroke0_4"), brush_rot, None)]
+             ("SM_B09_OilBrush", sock(st, "OilSwath_4"), brush_rot, None)]
     shot("oil_half", 2, items, stand_eye(st), world_of(st, st["work_point_cm"]),
          {"Committed": [6, 4, 1, 0, 0, 0], "HeldStep": 3, "HeldMs": 750})
     # The shell bench (steps 4 and 5), weapon 7's in-tree mesh as a review stand-in on its rest.

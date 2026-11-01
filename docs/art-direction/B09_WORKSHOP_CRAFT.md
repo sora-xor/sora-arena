@@ -490,3 +490,221 @@ log, outputs and failure are kept.
 - **The working region and its matching proxies** (`B09_CRAFT_PAWS.md` §6.3).
 - **The oil front stroke's bottom socket**, hidden under the lower bulge (`OPEN_VIEW_DEFECTS`).
 - **Two reported overhangs:** the paste lantern's front and weapon 7's handle.
+
+## 13. The working-region pass (2026-10-27 to 11-01, Coordinations 268–277)
+
+This section supersedes the layouts in §4.1–4.4 and the open list in §12. The earlier text stays as the record.
+
+**The region.** Each station's working region is set in `b09_craft_region.py`, and its record is in the spec under
+`stations[i].region`:
+- **The natural stop:** the capsule's axis where walking along +X on the centre line stops against the proxy. It is
+  the craft stand.
+- **Depth:** 15 cm back from the stop.
+- **Lateral:** ±10 cm.
+- **Facing:** within ±10° of the bearing from the capsule's axis to the station's fixed `LookPoint` (Coordination 271).
+- **Admission:** root's runtime and these gates share one rule, `b09_craft_region.admitted`, which is quoted in the
+  spec.
+- **The notch posts were withdrawn:** they came within 1.42 cm of the feet.
+- **The paste's region:** 10/10/10, a proposal for root (§13.2). Root reviews it before runtime admission.
+- **Support:** every region's capsule footprint lies on one level floor: FloorAt 45 cm at the rib form, the paste
+  bench and the oil rack, 0 at the shell bench.
+
+**The gates.** The qualification run is `Saved/Qualification/2026-10-27/b09-craft-region/par_full_gate.py`. It
+records its inputs' sha256 and runs:
+- **pose:** the dense set, 79 stands × 5 facings;
+- **view:** at 16:9 and 21:9;
+- **body:** 2.5 cm, on the production mesh;
+- **clearance:** triangle-exact, at all 99 region samples, the interior included;
+- **clash and supports.**
+
+`B09_CRAFT_PAWS.md` §8 gives the contact rules behind them.
+
+### 13.1 Rib form
+
+**Layout.**
+- **The form:** 37.5 cm ahead of the stop, its centre at 127 cm.
+- **The strips:** they lie in a two-layer stock on the right. The right paw pinches the top layer's right-hand strip
+  end from above (`StripStock`).
+
+**Choreography: the paws take turns.**
+1. While the right paw lifts the strip up and out, carries it round the form's right and hooks its end at the front
+   (180°), the left paw waits off the form at its front-left (`WindSteady`, 203°, part way toward the form's middle).
+2. The left paw then comes in to press the hooked strip (`WindPress`, 192°). At the same time the right paw slides
+   3 cm out along the free strip to the guide (`WindGuide`).
+3. The right paw holds the guide while the form turns and the strip draws through its grip.
+
+**Why the choreography changed.** Side by side, at press 185° and hook 180°, the palms met (0.00–0.50 cm). Spreading
+the two points apart instead pushed the lowest hoop out of the 21:9 frame.
+
+**Results.**
+
+| Gate | Result |
+|---|---|
+| Pose | passes 395/395 |
+| View | passes 594/594 at both aspects |
+| Clearance | **fails: 38 of 99 region samples pass (open)** |
+
+**What still fails clearance:**
+- the right sleeve during the slide to the guide at hoops 5–6;
+- the left sleeve against the turning form late in the wind at hoops 3–4;
+- the carry at hoops 1, 3 and 4.
+
+Many of these are under 0.5 cm by 0.04–0.4 cm. The failed runs are kept: `rib-gate-candidate2.*` and the
+`tools/rib_clear_*` logs.
+
+**The flex gauge fails the first-person check from the working side (open, `OPEN_VIEW_DEFECTS`).**
+- **At the craft stand:** it reads (facing 46.7°, band 8.66°).
+- **From the working side:** it passes from only 44.62 % of the 65 positions, against the required 90 %.
+- **Why:** it was scaled 0.7 to fit beside the form, so beyond about 2 m its 640–960 ms band is under 2°. From the
+  right, the form hides it, because the dial stands level with the form's left side.
+- **The fix:** part of the rib repair, a full-size dial clear of the form's silhouette and the left arm.
+
+### 13.2 Paste bench
+
+**The frame's new pose.**
+- **Axis:** rolled −65° about +X and pitched +55°, so its top leans away to the hero's right.
+- **Seam:** turned −50° about the axis, so the worked seam faces up toward the hero.
+- **Gores:** they go on in the order 1, 4, 3, 2, the frame turning +90° per panel. Each laid gore wraps from the seam
+  toward the hero's left, where the eye sees the left paw's fingertip hold (`SheetHold`).
+
+**Why the pose changed.** Pitched toward the hero (`PASTE_FIRST_POSE`), the hold was hidden at every stand (view 0 of
+198).
+
+**The search.** `paste_vis2.py` gave these results:
+
+| Region | Frames that pass |
+|---|---|
+| 10/10/10 | 21 of 27,648 |
+| 12/10/10 | none; the brush's reach to the seam's far end is 98.9 % at best |
+| 15/10/10 | none; the brush's reach to the seam's far end is 102.6 % at best |
+
+**The station rebuilt on this pose.**
+- **The cradle:** both bearings' posts stand on the bench, with arms to the bearings.
+- **The sheets:** they hang lengthwise from a rail running away from the hero, at 151 cm. The paw takes a sheet by its
+  near end (`SheetTake`).
+- **The pot:** on its own bracket at the bench's front right.
+- **The rim shelf:** on the sheet rail's standard.
+- **Clashes and supports:** no clashes, and all supports within 1.2 mm.
+
+**Paste-step results.** 10/10/10 itself is a measured feasibility, not yet a pass:
+- **Pose:** 390/395 passes. The stroke's last sample at the upper rim line fails: reach 98.1–99.8 % at the far-left
+  stands, and wrist 76–78° at the near-right stands.
+- **View:** 16:9 passes 48/99 and 21:9 passes 19/99. Mostly that same last sample is hidden behind the laid gore.
+
+- **First person (open, `OPEN_VIEW_DEFECTS`):** during the last panel's stroke, the seam's top end at the upper rim
+  line (`Seam_8`) hides behind the third pasted gore from the craft stand. The seam passes from 63.24 % of the 68
+  working-side positions, against the required 90 %. The check had laid the pasted gores untilted at the old lantern
+  centre; it now lays them on the tilted frame, as the region gates do.
+
+**The rims step fails at every stand on this pose.** The upper mouth is out of reach (151 %).
+
+**Proposed fix:** the cradle re-tilts the frame for the rims. It would be a two-axis cradle bringing the upper mouth
+to the front, as `PASTE_FIRST_POSE` did, where the rims action passed. This is not yet built.
+
+**Walk-up and capsule support at 10/10/10 (Coordination 277).** This is the best viable layout so far, and its
+admission is a proposal for root:
+- **The stop line:** the bench's proxy face is straight and 114 cm wide. Walking up anywhere within ±10 cm of the
+  centre line stops the capsule's axis on one line, 34 cm off the face (x = −71 in the station frame,
+  `stations[1].region.near_boundary_cm`).
+- **Admitted:** up to 10 cm back from that line, up to 10 cm to either side, facing within ±10° of the bearing to
+  `LookPoint`.
+- **Support:** the capsule's whole footprint over the region lies on the workshop's raised plank floor (FloorAt
+  45 cm everywhere), so the hero stands level, with no step or edge.
+- **Leaving it:** standing more than 10 cm back from the stop line or off the centre line, or facing more than 10°
+  from the bearing, ends admission. A hold in progress then cancels as ineligible (root's rules).
+- **Why not 15 cm deep:** no searched frame passes once the region is deeper. With 15 cm depth, the best frame still
+  needs 102.6 % of the arm's reach for the brush at the seam's far end; with 12 cm, 98.9 %. The limit is 98 %.
+- **Not mine to give:** the swept capsule, the mapped walk-up and backing out are root's evidence.
+
+### 13.3 Oil rack
+
+**Layout.**
+- **The lantern:** it hangs 41 cm ahead at 114 cm.
+- **The stroke:** it finishes the remaining swath at 175° (`OilSwath_0..8`) on an already-oiled lantern. The washi is
+  wet only where the bristles sweep.
+- **The steady:** the left paw's fingertips steady the lantern (`LanternSteady`, 200°).
+- **The dip:** a dish on a turned stand, low on the shelf. The dish stand was rebuilt with straps under the dish's
+  foot and a ring clear of its wall.
+- **The proxy:** 78 cm high, like the benches': a wall to the capsule (UE's default 45 cm step height, which root
+  keeps) and under the station ray's 88 cm start. At 200 cm it had covered the station point and blocked every
+  station ray (362 of 362 eligible positions on a 20 cm grid), and the old 24 cm box could be stepped onto.
+
+**Results (candidate 3).**
+
+| Gate | Result |
+|---|---|
+| Pose | 395/395 (reach 95.3 %, wrist 73.6°) |
+| View | 99/99 at both aspects |
+| Body | 45/45 |
+| Clearance | 99/99 (least 0.74 cm) |
+| Clash and supports | none; within 0.052 cm |
+
+### 13.4 Shell bench
+
+**Layout.**
+- **The board:** 110 cm high, over the bench's front edge.
+- **The cups:** a stepped row on a 0.7 cm rack plank.
+- **The tray:** its cores are taken right first.
+- **The wrapping post:** at 124 cm. The shell is lifted 7 cm off its paper to be twisted.
+
+**The hold and twist.** The two palms hold the shell on the ball's tangent plane, 35° up its sides and 20° round
+toward the hero (`P.palm_on_ball`). Earlier palms failed:
+- a flat side palm bent the far wrist to 80°;
+- a grip cut the ball;
+- on the ball's front, the ball hid the pads.
+
+**The look point** is on the bench's centre line, at the wrapping post's top under the paper. The eye's line to it
+may end in the post and paper, as the rib's ends in the form (`SIGHT_WORK`); the region's view gate sees every
+contact.
+
+**Weapon 7, the festival-shell tube,** stands in a turned socket block behind the board's middle:
+- **Placement:** its axis is 50 cm ahead, its handle end at 74 cm and its muzzle at 158 cm.
+- **Holder:** an iron collar ring on a post behind.
+- **Why it moved:** at the board's right it stood in the right elbow's sweep (63 of 72 samples failed). No upright
+  column of its radius is clear of the measured arm sweep within the far corners' reach.
+
+**The fuse check (Coordination 277).** The single Inspect unit checks the three seated shells' fuse cords:
+- The left paw passes over their tips (`FuseCheck3` to `FuseCheck1`), its elbow raised over them (`POLES_OVER`).
+- Nothing is lit, loaded or discharged.
+- Recipe counts, timing, reward and b10's charge fuse are unchanged.
+- The tube stays clear of the hand path.
+
+**Results (candidate 6).**
+
+| Gate | Result |
+|---|---|
+| Pose | 395/395 (reach 97.8 %, wrist 59.86° worst) |
+| View | 396/396 at both aspects |
+| Body | 45/45 (2.879 cm) |
+| Clearance | 99/99 (least 0.67 cm) |
+| Clash and supports | none; within 0.0122 cm |
+
+### 13.5 The presenter's state contract
+
+The full contract is in `STATE_CONTRACT`, and in the spec under `stations[i].state_contract`.
+
+**Common rules.**
+- The presenter only reads FView.
+- **Timed steps** (bend, paste, oil):
+  - Ready shows the first working pose after the preparation clip.
+  - Held is a function of HeldMs alone.
+  - An uncredited hold returns to Ready, with work already shown by contact kept.
+  - A retry restarts HeldMs at 0.
+- **Press steps** (the rims, the shells, the inspection):
+  - They are credited at the press.
+  - Their clip is a function of `LastAction.AgeMs` (at most 1200 ms; the inspection at most 900 ms).
+  - Leaving, crouching or combat mid-clip only stops presenting it. Nothing rolls back, and there is nothing to retry.
+
+**Measured timing conflicts, to agree with root.**
+- **Rib:** a re-press sooner than the ~900 ms preparation, after a commit or a split strip, cuts the preparation short.
+- **Paste:** a re-press sooner than the ~800 ms completion (the turn, the next sheet, the re-dip) cuts it short.
+- **In both cases,** with no cooldown, the presenter must blend or compress.
+
+### 13.6 Proxies
+
+The region brings each station's work over its bench's front edge at chest height, above the proxies' tops.
+
+- **Overhanging parts:** `PROXY_OVERHANG_OK` lists them with reasons, for root's proxy decision.
+- **The hero's body:** the body gate keeps it 2.5 cm off every prop in every state.
+- **Not mine to give:** Unreal's swept capsule, ordinary keyboard/controller walk-up, turning, release/retry and
+  backing out are root's evidence (Coordination 271).

@@ -52,13 +52,15 @@ class Stations(unittest.TestCase):
                     self.assertIsNotNone(gap, (label, item, carrier))
                     self.assertLessEqual(gap, C.CONTACT_CM, (label, item, carrier))
 
-    def test_weapon_cradles_hold_the_clean_cylinders(self):
-        origin, _ = B.weapon_rest()
+    def test_the_tubes_clean_cylinders_and_its_holder(self):
+        """Weapon 7's oak collar and bare muzzle end are clean cylinders of the recorded radii; its holder rings the
+        collar and its handle end stands in the socket block's bore."""
+        v = C.weapon7().verts
         for x0, x1, r in (B.WEAPON7["collar_cm"], B.WEAPON7["muzzle_bare_cm"]):
-            v = C.weapon7().verts
             band = v[(v[:, 0] > x0 + 0.3) & (v[:, 0] < x1 - 0.3)]
-            radius = np.hypot(band[:, 1], band[:, 2])
-            self.assertAlmostEqual(float(radius.max()), r, delta=0.011, msg=(x0, x1))
+            self.assertAlmostEqual(float(np.hypot(band[:, 1], band[:, 2]).max()), r, delta=0.011, msg=(x0, x1))
+        end = v[v[:, 0] < B.WEAPON7["x_range_cm"][0] + 4.0]
+        self.assertLessEqual(float(np.hypot(end[:, 1], end[:, 2]).max()), B.WEAPON7["handle_end_r_cm"] + 1e-6)
 
 
 if __name__ == "__main__":

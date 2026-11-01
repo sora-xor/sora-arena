@@ -84,16 +84,27 @@ INPUTS = {
     # Re-pinned to c096eb98 (Coordination 256), its diff from 541c61ae read: of these files only
     # SoraPlayerCharacter.cpp changed, refusing the guard and taking up an arm while the hands are stowed. The eye and
     # every b09 contract are unchanged.
-    "root_commit": "c096eb98f77d1aa78f8af531eda6befeb8e1886f",
+    # Re-pinned to 5b45dc86 (Coordination 265), its diff from c096eb98 read: root's standing-only rule.
+    # AtWorkshopStation refuses IsCrouched and bWantsToCrouch (SoraCampaignWorkshopCraft.cpp); a crouch press cancels
+    # workshop craft before the capsule lowers (SoraPlayerCharacter.cpp); the action contract adds the standing
+    # requirement and the presenter's serial consumption. The eye, capsule, timing, stations and recipe are unchanged.
+    # Re-pinned to 1b6dfadc (Coordination 271), the full diff from 5b45dc86 read. Two pinned files changed.
+    # SoraPlayerCharacter.cpp loads the control profile only if its save slot exists. The action contract records
+    # Coordinations 268 and 269: physical sheet placement, the contact-driven oil finish, a supported tilting cradle,
+    # and the 15 cm / +-10 cm / +-10 deg prototype region. The eye, capsule, crouch, timing, stations and recipe are
+    # unchanged.
+    # Re-pinned to b6ba3c11 (Coordination 276), its diff from 1b6dfadc read: none of these files changed (eight
+    # scripts/docs paths outside them did).
+    "root_commit": "b6ba3c111abf088124d758ef195b8a47e85ed8ca",
     "blobs": {
         "Source/SoraArena/Public/SoraLanternWorkshopRules.h": "c7aa71efafc72ecfdd085f67bedbdf84899c4b51",
         "Source/SoraArena/Public/SoraWorkshopCraftRules.h": "132697936dcd8676fe0a2657990265ea264d089e",
         "Source/SoraArena/Public/SoraWorldBuilder.h": "d844f7e305bb8769d884accd6e6b15dd36207e45",
         "Source/SoraArena/Private/Game/SoraCampaignReach.h": "96ede9639f397714300be52c4a0b5e5b2520418f",
-        "Source/SoraArena/Private/Game/SoraCampaignWorkshopCraft.cpp": "5828eff1cc44173166816c54a00a30c1c2600833",
+        "Source/SoraArena/Private/Game/SoraCampaignWorkshopCraft.cpp": "e213d66377966ae8c2c95301909453cc58543718",
         "Source/SoraArena/Private/Characters/SoraCharacterBase.cpp": "3221fa817a15e57d94f0426b202409e8d56289b2",
-        "Source/SoraArena/Private/Characters/SoraPlayerCharacter.cpp": "59555eb03aa4a68363d733bc629e6ae1cbbbcd57",
-        "docs/art-direction/workshop-action-view.md": "ea55c5119d308d5fa767f517b3587ff467ced79e",
+        "Source/SoraArena/Private/Characters/SoraPlayerCharacter.cpp": "b64a1c4460df55d1072bf2bd5770d395ad1a1c4b",
+        "docs/art-direction/workshop-action-view.md": "b55c8def0fb595cff5a9df36c1d3a7b8c7d730a8",
         "docs/campaign/chapter-03.md": "4141dcc335b4ecf24e9d3ad626b55f1325f3647d",
         "Content/Data/campaign/chapter_03.json": "75874ff583570026946b889c31e075dcedd07e79",
         "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/build_record.json": "95f796814125b324f8a5325a92c2b537307d502b",
@@ -127,7 +138,7 @@ WEAPON7 = {"bore_cm": 5.6, "culm_cm": 7.6, "x_range_cm": (-20.0, 64.0), "half_wi
            # are clean cylinders, (x from, x to, radius) cm. Between them the straw rope (nawa) wraps the culm to about
            # 4.3 cm with loose fibre cards to 6.2, and a fuse cord hangs to -11.5 at x 54-60. The cradle holds the two
            # clean cylinders.
-           "collar_cm": (-2.0, 0.0, 4.02), "muzzle_bare_cm": (60.4, 64.0, 3.80),
+           "collar_cm": (-2.0, 0.0, 4.02), "muzzle_bare_cm": (60.4, 64.0, 3.80), "handle_end_r_cm": 2.12,
            "fbx": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/SM_Weapon_07.fbx"}
 
 
@@ -173,12 +184,151 @@ WORK_Z = 110.0                               # the station point's height above 
 # eye height spans 55 deg of height, more than 21:9's 45.4 deg, so the brush's contact left the frame. At 110 and 116
 # every stroke sample but the one at the bottom mouth is in frame and unoccluded at 16:9 and 21:9 (b09_craft_poses
 # .contact_view); the paste's left hold and the oil's steady move to 245 deg for the wrist.
-LANTERN_Z = {0: 120.0, 1: 110.0, 2: 116.0}
+LANTERN_Z = {0: 127.0, 1: 110.0, 2: 114.0}
 # The craft layout (Coordination 241): each station's work comes toward the hero (-X), so both paws reach the whole
 # continuous action from one supported stand (b09_craft_poses.py). The rib form also rises to 120, so its lowest hoop
 # is in reach (it was 110). The paste bench's 27.5 keeps its pedestal on the bench. The shell bench's work instead
 # stands on a raised stand at its front edge (station_parts).
-WORK_SHIFT = {0: 15.0, 1: 27.5, 2: 19.0}
+WORK_SHIFT = {0: 28.5, 1: 27.5, 2: 29.0}
+# The working region's layouts (Coordinations 259, 268, 269, 271; b09_craft_region.py). From every admitted stand, 15 cm
+# deep, +-10 cm and +-10 deg, a paw's contact must lie 18-30 cm ahead of the natural stop's axis (24-30 below 130 cm
+# high) at z 112-144; a brush tip 24-36 cm ahead at z 104-144 (the body, the far corners' reach and 21:9's height). So
+# each station's work comes to the front of its proxy, on supports, and its matching proxy has a notch.
+NOTCH = {"depth_cm": 10.0, "half_cm": 28.1, "post_cm": 8.0}
+OIL_PROXY_FRONT = -36.0                      # the rack's proxy face (station x); the natural stop is CAPSULE_R before it
+RIB_BENCH = (62.0, 100.0, 75.0)              # the rib form bench: depth, width, top
+# The paste bench: its frame lies on a tilting spindle cradle (Coordination 268), rolled toward the hero's left and
+# pitched toward the hero, so a whole seam, rim line to rim line, lies inside the region's reach and 21:9's height.
+# No supported posture passed 15/10/10 (the searches in Saved/Qualification/2026-10-27/b09-craft-region); this one
+# passes the paste's own 10/10/10 region (b09_craft_region.REGION_BY_STATION).
+PASTE_PROXY_FRONT = -37.0
+# The paste frame on its cradle (paste_vis2, Saved/Qualification/2026-10-27/b09-craft-region): its axis rolled -65 deg
+# about +X (the top to the hero's right) and pitched 55 deg (the top away), the worked seam turned -50 deg about the
+# axis so it faces up toward the hero, and the laid gore wrapping from it toward the hero's left and up, where the eye
+# sees the left paw's hold. Pitched toward the hero (PASTE_FIRST_POSE) the frame's lower half and the gore faced away
+# and the hold was hidden at every stand (view 0 of 198); of 27,648 frames round this pose, 21 pass the search's
+# visibility, reach and framing at 10/10/10 and none at 12/10/10 or 15/10/10 (the brush's reach to the seam's far end:
+# 98.9 and 102.6 % at their best).
+PASTE_FIRST_POSE = {"centre": (40.5, 0.0, 112.0), "roll_deg": 45.0, "pitch_deg": -15.0, "seam_turn_deg": -15.0,
+                    "hold_turn_deg": 40.0, "hold_s_cm": 8.0}                          # for the record
+PASTE = {"centre": (42.5, 4.0, 112.0),       # the frame's centre: ahead of the natural stop, lateral, height
+         "roll_deg": -65.0, "pitch_deg": 55.0, "seam_turn_deg": -50.0,
+         "hold_turn_deg": -58.8, "hold_s_cm": -10.0,     # the hold on the laid gore: 0.6 of its 98 deg round, 10 cm down its axis
+         "dip": (30.0, 29.0, 101.0),
+         # The sheets hang lengthwise from a rail running away from the hero, the near end of each toward the paw: hung
+         # by their height they passed through the frame's lower end, and further left left the frame of view from the
+         # near left stand turned right.
+         "rack_y": -16.6, "rail_top": 151.0, "sheet_near_u": 27.0,
+         "rim_rest": (66.0, -24.0, 156.0),   # the top rim lies on a shelf of the left standard (the rims step re-tilts the frame)
+         "stroke_up": True,                  # the seam is brushed from the lower rim line (the frame's bottom mouth) up
+         "square": 0.5, "square_cm": 4.0,    # the bristle edge turned halfway square to each rim line, relaxing over square_cm
+         "stroke_tilt": 0.2,
+         "rim_steady": (160.0, 0.0)}         # the right paw's fingertips on the frame while the left seats the rim
+
+
+def _frame_cols(z):
+    """A rotation (columns) taking a local frame's Z to z."""
+    z = np.asarray(z, float) / np.linalg.norm(z)
+    x = np.cross([0.0, 1.0, 0.0], z) if abs(z[1]) < 0.9 else np.cross([1.0, 0.0, 0.0], z)
+    x /= np.linalg.norm(x)
+    return np.stack([x, np.cross(z, x), z], 1)
+
+
+PASTE_BRUSH_W = 6.0                          # the paste brush's flat bristles
+
+
+def flat_sheet(name):
+    """A pre-cut washi gore before it is laid: flat, in its own frame (X across its width, Z up its height, its near
+    edge's middle at the origin), each height's width the gore's arc there (90 + 2 x GORE_OVERLAP_DEG of paper_r)."""
+    zs = np.linspace(-LANTERN_H / 2, LANTERN_H / 2, 23)
+    w = np.radians(90.0 + 2 * GORE_OVERLAP_DEG) * paper_r(zs)
+    wmax = float(w.max())
+    v, t = [], []
+    for k, (z, wk) in enumerate(zip(zs, w)):
+        x0_ = (wmax - wk) / 2.0
+        v += [[x0_, 0.0, z], [x0_ + wk, 0.0, z], [x0_, 0.05, z], [x0_ + wk, 0.05, z]]
+        if k:
+            a_, b_ = 4 * (k - 1), 4 * k
+            t += [[a_, b_, a_ + 1], [a_ + 1, b_, b_ + 1], [a_ + 2, a_ + 3, b_ + 2], [a_ + 3, b_ + 3, b_ + 2],
+                  [a_, a_ + 2, b_], [a_ + 2, b_ + 2, b_], [a_ + 1, b_ + 1, a_ + 3], [a_ + 3, b_ + 1, b_ + 3]]
+    n = len(zs) - 1
+    t += [[0, 1, 2], [1, 3, 2], [4 * n, 4 * n + 2, 4 * n + 1], [4 * n + 1, 4 * n + 2, 4 * n + 3]]
+    return Mesh(name, np.array(v, float), np.array(t), "M_B09_Washi")
+
+
+def paste_axes():
+    """The paste frame's axes in the station frame (columns: the lantern frame's X, Y, Z): Z the frame's axis, from the
+    bottom mouth to the top; the lantern frame's -X (azimuth 180, its seam 1) toward the worked seam, d. The frame
+    turns about its axis by -90 deg per pasted panel, so each next seam comes to d."""
+    al, be, ph = (math.radians(PASTE[k]) for k in ("roll_deg", "pitch_deg", "seam_turn_deg"))
+    rx = np.array([[1, 0, 0], [0, math.cos(al), -math.sin(al)], [0, math.sin(al), math.cos(al)]])
+    ry = np.array([[math.cos(be), 0, math.sin(be)], [0, 1, 0], [-math.sin(be), 0, math.cos(be)]])
+    a = ry @ rx @ np.array([0.0, 0.0, 1.0])
+    d0 = np.array([-1.0, 0.0, 0.0]) - (-a[0]) * a
+    d0 /= np.linalg.norm(d0)
+    b0 = np.cross(a, d0)
+    d = math.cos(ph) * d0 - math.sin(ph) * b0
+    return np.stack([-d, np.cross(d, a), a], 1)
+
+
+# The gores go on in this order, the frame turning +90 deg about its axis per panel, so each laid gore wraps from the
+# worked seam toward the hero's left and its leading edge meets the gore before it at the seam (panel_turn_deg).
+PASTE_ORDER = (1, 4, 3, 2)
+
+
+def panel_turn_deg(panel):
+    """The frame's turn about its axis while panel `panel` (1..4) is laid: gore PASTE_ORDER[panel - 1] spans cradle
+    azimuth 86..184 deg, from the seam (180) toward the hero's left."""
+    return 90.0 * (panel - 2)
+
+
+def paste_frame(points, panel=None):
+    """Lantern-frame points placed on the paste cradle (station frame): as the frame stands while panel `panel` is laid,
+    or, with no panel, in the cradle's own frame (the worked seam at azimuth 180, which the frame turns under)."""
+    rz = np.eye(3) if panel is None else _rot_z(panel_turn_deg(panel))
+    x0 = PASTE_PROXY_FRONT - CAPSULE_R
+    c = np.array(PASTE["centre"]) + [x0, 0.0, 0.0]
+    return np.asarray(points, float) @ (paste_axes() @ rz).T + c
+RIB_PROXY_FRONT = -32.0
+RIB = {"form_ahead_cm": 37.5, "form_z": 127.0,
+       "press_az_deg": 192.0,                # the left paw on the wound strip (at 200 the far stands bent its wrist to 88 deg)
+       "steady_az_deg": 203.0,               # the left paw steadying the form while the right hooks the strip
+       "carry_out_cm": 1.5, "carry_lift_cm": 6.0,    # the carry lifts the strip this far toward the form and up first,
+       "carry_bow_cm": 5.0,                  # and comes onto the notch from this far on the hero's side
+       "wait_off_cm": 1.0,                   # the left paw waits this far off the form while the right hooks the strip,
+       "wait_toward_middle": 0.3,            # and this far from the hoop's height toward the form's middle
+       "look_down_deg": 0.0,                 # the look point below the contacts' vertical middle (look_point_for)
+       "guide_cm": 3.0,                      # the guiding paw on the free strip, this far along it (at 3.5 its knuckles left
+                                             # the 21:9 frame's right edge from the near stands turned left)
+       "grip_off_cm": 1.8,                   # the hooking and guiding knuckles off the strip, the digits curled round it
+       "leave_az_deg": 180.0,                # where the strip leaves the form (station azimuth), heading off its tangent
+       "rack_front": (-37.5, 22.0, 125.0)}   # the strips' ends (station x, y) and the rack's arm top
+OIL = {"lantern_ahead_cm": 41.0, "lantern_z": 114.0,
+       "dish": (36.0, 22.0, 118.0),          # the dip point on the dish's floor: ahead of the natural stop, lateral, height
+       "steady_az_deg": 200.0, "steady_s_cm": 12.0, "steady_fingers_deg": 0.0,   # fingertips (b09_craft_poses.steady)
+       "carry_lift_cm": -4.0}                # the carry from the dish to the swath's top sags this much at its middle
+OIL_SWATH = {"az_deg": 175.0, "s_cm": (22.0, 0.0), "offset_cm": 0.7, "half_width_cm": 2.5, "contact_cm": 1.5,
+             "square_cm": 4.0, "square": 1.0,   # the bristle edge square along the rim line, relaxing over 4 cm
+             "tilt": 0.1}                        # the stroke's handle lean toward the surface normal
+OIL_DISH_R = 6.0                            # the dish's rim radius; it is 1.4 cm deep
+OIL_BRUSH_W = 5.0
+OIL_DIP_TILT = 0.4                           # the dip's handle lean toward the surface normal (b09_craft_poses.brush)
+
+
+def look_point_for(points, x0, ahead=26.0, az_deg=None, el_offset_deg=0.0):
+    """A station's fixed look point: ahead cm before the natural stop's eye (x0 + EYE), at the vertical and lateral
+    angular middle of the work's contacts as that eye sees them (or, with az_deg, on that bearing from the eye: the
+    shell bench's is its centre line), el_offset_deg below the vertical middle where the region's near stands need it.
+    Root's runtime admission measures the facing band about the bearing to it (Coordination 271); nothing moves it."""
+    eye = np.array([x0 + EYE[0], 0.0, CAPSULE_HALF + EYE[2]])
+    P_ = np.asarray(points, float)
+    el = np.arctan2(P_[:, 2] - eye[2], np.hypot(P_[:, 0] - eye[0], P_[:, 1] - eye[1]))
+    az = np.arctan2(P_[:, 1] - eye[1], P_[:, 0] - eye[0])
+    e, a = 0.5 * (el.min() + el.max()), 0.5 * (az.min() + az.max())
+    if az_deg is not None:
+        a = math.radians(az_deg)
+    e -= math.radians(el_offset_deg)
+    return eye + ahead * np.array([math.cos(a), math.sin(a), 0.0]) + [0.0, 0.0, ahead * math.tan(e)]
 
 
 def lantern_centre(i):
@@ -441,18 +591,19 @@ def form_yaw_deg(n, flex=0.0):
 
 
 def hoop_hook_deg(k):
-    """Where hoop k's end hooks into its notch, in the form's frame. It is at the front (station azimuth 180) as the
-    form stands when that hoop starts, after k - 1 hoops."""
-    return (180.0 - form_yaw_deg(k - 1)) % 360.0
+    """Where hoop k's end hooks into its notch, in the form's frame. It is at RIB["leave_az_deg"] (station azimuth;
+    the front was 180) as the form stands when that hoop starts, after k - 1 hoops."""
+    return (RIB["leave_az_deg"] - form_yaw_deg(k - 1)) % 360.0
 
 
 def hoop_path(k, flex=1.0, segments=192):
     """Strip k's centreline as it winds on, in the FORM's frame: (points, outward normals, arc parameter s, end).
 
     **One-ended winding** (Coordination 241). The strip's end hooks into the form's notch at hoop_hook_deg(k), and
-    the form turns (form_yaw_deg) as the strip winds on. So the strip always leaves the form at its front (station
-    azimuth 180), heading for the hero's right (+Y), where the right paw guides it. The left paw presses the wound
-    strip to the form just past that point.
+    the form turns (form_yaw_deg) as the strip winds on. So the strip always leaves the form at station azimuth
+    RIB["leave_az_deg"], heading off its tangent toward the hero's right, where the right paw guides it. The left
+    paw presses the wound strip to the form just past that point. (Left at the front, 180, the straight strip ran 25
+    cm ahead of the hero's chest and met it from the region's right side; at 160 it heads 20 deg away.)
     - s runs from the hooked end (0) to the free end (the strip's length, constant at every flex).
     - flex is the wound share of the 385 deg wrap.
     - end is -1 on the hooked end's scarf and +1 on the free end's, which laps over it when the hoop closes."""
@@ -715,6 +866,9 @@ def lantern(stage):
 # --- Stations -------------------------------------------------------------------------------------------------------
 WORK_STAND = (-80.0, 0.0)                    # the earlier framing stand, kept as a reference; the hero works at craft_stand
 WORK_OBJECT = {"SM_B09_Form", "SM_B09_FormBase"} | {f"SM_B09_Hoop{k}" for k in range(1, 7)}
+# The work the eye's line to the look point may end in (clearance): the shell bench's look point lies at its wrapping
+# post's top, under the paper, where the shells are wrapped.
+SIGHT_WORK = {3: {"SM_B09_WrapPost", "SM_B09_WrapPaper"}}
 # The flex gauge: a dial on a post at the bench's front-left (the hero's left, -Y), its face toward the hero (-X).
 # - The one-ended winding's free strip leaves the form toward the hero's right, so it never sweeps the gauge.
 # - Its pivot stands at 128, low enough that the whole dial stays in frame from the craft stand at 16:9 and 21:9 (at
@@ -725,7 +879,9 @@ WORK_OBJECT = {"SM_B09_Form", "SM_B09_FormBase"} | {f"SM_B09_Hoop{k}" for k in r
 # - Angles are measured in the dial's plane from upright (+Z) toward the hero's right (+Y).
 # - The needle sweeps the whole half-dial, -90 to +90 deg, over 0-960 ms, so the 640-960 ms release band spans 60 deg
 #   (+30 to +90). The band then reads above 2 deg from the far edge of reach; a 40 deg band did not past about 2 m.
-GAUGE = {"pivot": (-19.0, -34.0, 128.0), "radius": 11.0, "band_r": (8.0, 12.0), "face_r": 13.5,
+# The flex gauge stands on the rib bench's front edge left of the form, its dial facing the hero (scaled 0.7 from the
+# first design, which stood at (-19, -34, 128) with a 13.5 cm face: no part of the form's side was clear for it).
+GAUGE = {"pivot": (-28.0, -26.0, 127.0), "radius": 7.7, "band_r": (5.6, 8.4), "face_r": 9.5,
          "angles_deg": (-90.0, 90.0), "full_ms": BEND_MS + BEND_TOL_MS, "ticks_ms": (0, 400, 800)}
 
 
@@ -800,21 +956,44 @@ def flex_stage(ms):
 
 
 def weapon_rest():
-    """Weapon 7 on its cradle beside the shell stand (station frame). Its bore runs along +X, away from the hero, its
-    handle end toward the hero and its fuse up. Two V-blocks on the bench carry its collar and its bare muzzle end;
-    the handle reaches 14 cm past the bench's front edge (reported: no placement on this bench keeps the fuse in reach
-    without it, and nothing else may cover the shells' work)."""
-    x_axis, z_axis = np.array([1.0, 0.0, 0.0]), np.array([0.0, 0.0, 1.0])
+    """Weapon 7, the festival-shell tube the bench's shells are made for (the rack's cups are bored to its bore), standing
+    upright in its socket block on the bench behind the board's middle (station frame): its bore up (local +X along +Z),
+    the handle end in the block at SHELL_LAYOUT["tube_foot_z"], its touch-hole side (local +Z) toward the hero (-X).
+
+    It is a prop the arms clear, not a contact. Standing at the board's right with its touch-hole fuse 30 cm ahead
+    (SHELL_FUSE_FIRST), its handle, holder and culm stood where the right elbow swings when the hero stands near and
+    turned left (b09_craft_region: 63 of 72 boundary samples failed), and the measured arm sweep leaves no upright
+    column clear of every arm within the far corners' reach: clear columns start 42-44 cm ahead (the middle) or 46 cm
+    to the right, and a fuse there is 35 cm or more ahead. The inspection checks the shells' own fuse cords instead."""
+    x_axis, z_axis = np.array([0.0, 0.0, 1.0]), np.array([-1.0, 0.0, 0.0])
     y_axis = np.cross(z_axis, x_axis)
-    origin = np.array(SHELL_WEAPON_ORIGIN, float)
     rot = np.stack([x_axis, y_axis, z_axis], 1)
-    return origin, rot
+    u, y = SHELL_LAYOUT["tube"]
+    return np.array([SHELL_PROXY_FRONT - CAPSULE_R + u, y, SHELL_LAYOUT["tube_foot_z"] - WEAPON7["x_range_cm"][0]]), rot
 
 
-# The shell bench's front arrangement (Coordination 241): a stand on the bench's front edge carries the shells' work
-# at chest height, and weapon 7 lies on a raised cradle at the stand's right, its fuse in reach.
-SHELL_STAND = {"lo": (-35.0, -50.0), "hi": (-12.0, 30.0), "top": 106.0}
-SHELL_WEAPON_ORIGIN = (-29.0, 40.0, 112.0)   # the fuse at 118 for the right paw; the muzzle's cradle on the bench
+# The shell bench (Coordinations 241, 269): a board on a stand overhangs the bench's front edge, carrying the shells'
+# work in one row 23-31 cm ahead of the natural stop, where both paws reach from the whole region: the rack's three
+# cups on the left, the wrapping paper, the core tray, and weapon 7 standing upright on the right, its fuse toward
+# the hero. (Its first layout, the stand at the bench's edge and the weapon lying on cradles, was 43-46 cm ahead.)
+SHELL_PROXY_FRONT = -37.0
+SHELL_LAYOUT = {"board": (23.0, 44.0, -23.5, 15.6), "top": 110.0,      # ahead from/to, lateral from/to, its top face
+                # (at 118 the rack's seated shells and the core tray stood in the forearms' way to the wrapping post)
+                "paper": (25.0, 33.0, -4.0, 3.5), "wrap": (29.0, -0.25),
+                "wrap_post_top": 124.0,              # the paper waits on a wrapping post (at 127 the holding forearm, its palm
+                                                     # on the shell's side toward the hero, passed 0-0.5 cm over the sheet)
+                "wrap_lift_cm": 7.0,                 # the wrapped shell is lifted this far off the paper to be twisted, in the
+                                                     # air: grips at the board's height ran the forearms up through its edge
+                "tray": (28.7, 9.5), "tray_r": 5.9, "core_r": 2.85,                # the cores 120 deg apart, clear
+                "cup_r": 3.1, "rack_plank_cm": 0.7,
+                # a row stepped ahead to the left: the far cup of a triangle was out of reach, and a straight row's left
+                # cup stood under the left forearm carrying a shell to the inner two
+                "cups": ((26.8, -7.6), (28.0, -13.8), (29.2, -20.0)),
+                "coil": (39.0, -2.0),
+                "tube": (50.0, 0.0), "tube_foot_z": 74.0}              # weapon 7's axis (ahead, lateral) and its handle end
+SHELL_FUSE_FIRST = (30.0, 21.0, 128.0)       # weapon 7's touch-hole fuse as a contact at the board's right, for the record
+SHELL_STAND = {"lo": (-35.0, -50.0), "hi": (-12.0, 30.0), "top": 106.0}     # the first layout, kept for the record
+SHELL_WEAPON_ORIGIN = (-29.0, 40.0, 112.0)
 
 
 def v_cradle(name, x0, x1, r, axis_y, axis_z, base, slot="M_B09_TimberBench", gap=0.03):
@@ -851,6 +1030,34 @@ def _stand(name, lo, hi, top, base, slot="M_B09_TimberBench", leg=3.0):
 
 
 CRAFT_STAND_CLEAR_CM = 1.0
+
+
+def centre_stop(proxies):
+    """The natural stop on a station's centre line: the capsule's axis (station x) where walking along +X at y = 0 first
+    meets a proxy, the capsule touching it. The working region's nearest boundary (b09_craft_region.natural_stop)."""
+    def hits(x):
+        return any(circle_hits_box2d(np.array([x, 0.0]), CAPSULE_R, lo, hi) for lo, hi in proxies
+                   if lo[2] < 2 * CAPSULE_HALF and hi[2] > 0.0)
+    lo, hi = -400.0, 0.0
+    for _ in range(60):
+        mid = 0.5 * (lo + hi)
+        lo, hi = (mid, hi) if not hits(mid) else (lo, mid)
+    return lo
+
+
+def notch(front_x, top, slot="M_B09_TimberBench"):
+    """The matching proxy's notch (b09_craft_region): two cheek posts standing NOTCH["depth_cm"] proud of a proxy face
+    at station x front_x, their inner faces NOTCH["half_cm"] off the centre line. A capsule walking in slides round a
+    cheek's corner and stops at the face within 3.9 cm of the centre line. Returns (the posts' mesh, their proxies);
+    each post stands 0.5 cm inside its proxy."""
+    d, h, w = NOTCH["depth_cm"], NOTCH["half_cm"], NOTCH["post_cm"]
+    posts, prox = [], []
+    for sgn in (-1.0, 1.0):
+        y0, y1 = sorted((sgn * (h + 0.5), sgn * (h + 0.5 + w)))
+        posts.append(box("SM_B09_NotchPost", (front_x - d + 0.5, y0, 0.0), (front_x - d + 0.5 + w, y1, top), slot))
+        y0, y1 = sorted((sgn * h, sgn * (h + w + 1.0)))
+        prox.append((np.array([front_x - d, y0, 0.0]), np.array([front_x, y1, top])))
+    return merge("SM_B09_NotchPost", posts, slot), prox
 PASTE_POT = [(108.0, 0.0), (108.0, 5.0), (108.6, 6.0), (114.5, 6.2), (115.0, 5.6), (109.0, 5.3), (109.0, 0.0)]   # (z, r)
 OIL_DISH_RIM = (6.5, 7.0)                    # the oil dish's flat rim, inner and outer radius, 0.4 cm over its centre
 
@@ -860,13 +1067,14 @@ def _rot_z(deg):
     return np.array([[math.cos(a), -math.sin(a), 0.0], [math.sin(a), math.cos(a), 0.0], [0.0, 0.0, 1.0]])
 
 
-def brush_in_pot(pot, inset=3.5, gap=0.03):
-    """The paste brush's rest: its bristles' tip on the pot's floor, inset cm toward the hero from the axis, leaning
+def brush_in_pot(pot, inset=3.5, gap=0.03, lip=None, floor=None):
+    """A brush's rest in a pot or cup: its bristles' tip on the floor, inset cm toward the hero from the axis, leaning
     away from the hero with its handle's underside on the far lip, where the handle's sides cross it (a flat handle on
-    a round lip touches at its edges), gap over it (the lip's 48 sides lie up to 0.12 mm inside its circle). Returns
-    the socket: the tip, the brush's local X (across the bristles) and Z."""
-    lip_z, lip_r = PASTE_POT[4]
-    floor = PASTE_POT[5][0]
+    a round lip touches at its edges), gap over it (the lip's 48 sides lie up to 0.12 mm inside its circle). lip is
+    (z, r) and floor a height; both default to the paste pot's. Returns the socket: the tip, the brush's local X (across
+    the bristles) and Z."""
+    lip_z, lip_r = PASTE_POT[4] if lip is None else lip
+    floor = PASTE_POT[5][0] if floor is None else floor
     half_w, bristle_t, handle_t = 1.0, 0.5, 0.6                 # brush(): the handle's half-width and half-thicknesses
     reach = math.sqrt(lip_r ** 2 - half_w ** 2)                  # the lip under the handle's edges
     th = math.atan2(lip_z - floor, reach + inset)                # a first guess, refined below
@@ -888,82 +1096,179 @@ def station_parts(i):
     chest height where the paws work (WORK_SHIFT, Coordination 241). Anything the paws take from stands on a
     supported stand there."""
     sockets, proxies = {}, []
-    if i in (0, 1):
-        lc = lantern_centre(i)
-        depth, width, top = (60.0, 100.0, 75.0) if i == 0 else (70.0, 110.0, 75.0)
-        parts = [bench("SM_B09_RibFormBench" if i == 0 else "SM_B09_PasteBench", depth, width, top)]
-        base_top = lc[2] - LANTERN_H / 2 - 8.0                   # the spindle starts 8 cm below the lantern
-        if base_top - top >= 8.0:                                 # a foot, a turned post and the plate
-            base = [(top, 0.0), (top, 7.5), (top + 3, 7.5), (top + 3.5, 2.6), (base_top - 3.5, 2.6), (base_top - 3, 6.5),
-                    (base_top, 6.5), (base_top, 0.0)]
-        else:                                                     # too short for a post: a plinth stepping to the plate
-            base = [(top, 0.0), (top, 7.5), (top + 0.5 * (base_top - top), 7.5), (top + 0.5 * (base_top - top) + 0.5, 6.5),
-                    (base_top, 6.5), (base_top, 0.0)]
-        parts.append(revolve("SM_B09_FormBase", base, "M_B09_TimberForm", n_az=64).moved((lc[0], lc[1], 0.0)))
-        proxies.append((np.array([-depth / 2 - 2, -width / 2 - 2, 0.0]), np.array([depth / 2 + 2, width / 2 + 2, top + 3])))
+    if i == 0:
+        # The rib form (Coordinations 241, 269): the form turns on a spindle whose post stands at the bench's front
+        # edge, RIB["form_ahead_cm"] ahead of the natural stop; the strips lie in a rack on the right with their ends
+        # toward the hero; the flex gauge stands on the left, its dial in the frame from the whole region.
+        lc = lantern_centre(0)
+        depth, width, top = RIB_BENCH
+        parts = [bench("SM_B09_RibFormBench", depth, width, top)]
+        base_top = lc[2] - LANTERN_H / 2 - 8.0                   # the spindle's plate 8 cm below the form
+        # The foot plate runs flush to the bench's front edge; the post (2.4 cm) stands inside it.
+        foot = box("SM_B09_FormBase", (-depth / 2, lc[1] - 7.0, top), (lc[0] + 14.0, lc[1] + 7.0, top + 2.5), "M_B09_TimberForm")
+        post = revolve("SM_B09_FormBase", [(top + 2.5, 0.0), (top + 2.5, 2.4), (base_top - 3.5, 2.4), (base_top - 3.0, 6.5),
+                                           (base_top, 6.5), (base_top, 0.0)], "M_B09_TimberForm", n_az=64).moved((lc[0], lc[1], 0.0))
+        parts.append(merge("SM_B09_FormBase", [foot, post], "M_B09_TimberForm"))
+        proxies.append((np.array([RIB_PROXY_FRONT, -width / 2 - 2, 0.0]), np.array([depth / 2 + 2, width / 2 + 2, top + 3])))
         sockets["LanternCentre"] = (lc, np.array([1.0, 0.0, 0.0]), np.array([0.0, 0.0, 1.0]))
         for k, (z, r) in enumerate(zip(hoop_z(), hoop_r()), 1):
             sockets[f"HoopSeat{k}"] = (lc + [0.0, 0.0, z], None, None)
-        if i == 0:
-            # The form turns on the pedestal's spindle (SM_B09_RibForm, placed at LanternCentre and turned by
-            # form_yaw_deg). The winding's contacts stay at its front for every hoop:
-            # - WindPress{k}: the left paw on the wound strip, 20 deg round to the hero's left;
-            # - WindGuide{k}: the right paw on the free strip, 9 cm out toward the hero's right.
-            sockets["FormSpindle"] = (np.array([lc[0], lc[1], base_top]), np.array([1.0, 0.0, 0.0]), np.array([0.0, 0.0, 1.0]))
-            for k, (z, r) in enumerate(zip(hoop_z(), hoop_r()), 1):
-                a = math.radians(200.0)
-                ro = r + HOOP_T / 2
-                slope = float(profile_r(z + 0.01) - profile_r(z - 0.01)) / 0.02      # dr/dz: 0.26 at the end hoops
-                n = np.array([math.cos(a), math.sin(a), -slope]) / math.sqrt(1.0 + slope * slope)   # the form's normal there
-                sockets[f"WindPress{k}"] = (lc + [ro * math.cos(a), ro * math.sin(a), z], n, np.array([0.0, 0.0, 1.0]))
-                sockets[f"WindGuide{k}"] = (lc + [-r, 9.0, z], np.array([0.0, 1.0, 0.0]), np.array([0.0, 0.0, 1.0]))
-            parts.append(gauge_mesh(top))
-            sockets["GaugePivot"] = (np.array(GAUGE["pivot"]), np.array([1.0, 0.0, 0.0]), np.array([0.0, 0.0, 1.0]))
-            # The strip quiver: a bamboo tube at the bench's front-right corner, the strips standing in it.
-            qx, qy = -22.0, 38.0
-            parts.append(revolve("SM_B09_StripQuiver", [(top, 0.0), (top, 4.2), (top + 42.0, 4.2), (top + 42.0, 3.6),
-                                                         (top + 2.0, 3.6), (top + 2.0, 0.0)], "M_B09_Bamboo", n_az=32).moved((qx, qy, 0.0)))
-            stock = [sweep("SM_B09_StripStock", [[qx + 1.6 * math.cos(2.4 * j), qy + 1.6 * math.sin(2.4 * j), top + 2.2],
-                                                  [qx + 2.4 * math.cos(2.4 * j), qy + 2.4 * math.sin(2.4 * j), top + 2.2 + 98.0]],
-                           "M_B09_Bamboo", rect=(HOOP_W, HOOP_T), up=(1, 0, 0)) for j in range(12)]
-            parts.append(merge("SM_B09_StripStock", stock))
-            sockets["StripStock"] = (np.array([qx, qy, top + 66.0]), np.array([0.0, 0.0, 1.0]), np.array([-1.0, 0.0, 0.0]))
-            # The split strip (91 cm) lies along the bench's back on the top: by the gauge's foot it crossed it and
-            # overhung the bench's end by 25 cm.
-            sockets["SplitStripRest"] = (np.array([20.0, 0.0, top]), np.array([0.0, 1.0, 0.0]), np.array([0.0, 0.0, 1.0]))
-        else:
-            parts += [m.moved(lc) for m in lantern("frame")]             # the form and the six hoops (on the turntable)
-            # The paper stand (the hero's left: the sheets, and the bottom rim) and the pot stand (the right: the
-            # paste pot, its brush, and the top rim), both on the bench's front edge.
-            # The paper stand carries the whole sheet stack; the bottom rim waits on the turntable's pegs (below). The
-            # pot stand carries the paste pot, its brush leaning in it, and the top rim, apart. (The clash gate found
-            # the bottom rim through the stack and the top rim through the pot.)
-            parts.append(_stand("SM_B09_PaperStand", (-35.0, -52.0), (-7.0, -22.0), 114.0, top))
-            parts.append(_stand("SM_B09_PotStand", (-35.0, 22.0), (-7.0, 55.0), 108.0, top))
-            for j in range(1, 5):
-                sockets[f"WashiSheet{j}"] = (np.array([-21.0, -37.0, 114.0 + 0.1 * (j - 1)]), None, None)
-            pot = np.array([-28.5, 29.0])
-            parts.append(revolve("SM_B09_PastePot", PASTE_POT, "M_B09_Ceramic", n_az=48).moved((pot[0], pot[1], 0.0)))
-            sockets["PasteDip"] = (np.array([pot[0], pot[1], 112.0]), None, np.array([0.0, 0.0, 1.0]))
-            sockets["BrushRest"] = brush_in_pot(pot)
-            sockets["RimTopRest"] = (np.array([-16.6, 44.5, 108.0 + RIM_H / 2]), None, None)
-            # The bottom rim is fitted to the frame's bottom mouth before the paper, as kuchiwa are set on the form
-            # before the ribs (its rest is its seat); the rims step seats the top rim. With the lantern below the eye,
-            # no paw reaches under it to lift a bottom rim (b09_craft_poses: 107-115 % of the arm).
-            sockets["RimBottomRest"] = (lc + [0.0, 0.0, -(LANTERN_H / 2 + RIM_H / 2)], None, None)
-            for which in ("Bottom", "Top"):                       # on the mouth: the boards' ends and the paper's edge
-                sockets[f"Rim{which}Seat"] = (lc + [0.0, 0.0, (1 if which == "Top" else -1) * (LANTERN_H / 2 + RIM_H / 2)], None, None)
-            sockets["Turntable"] = (np.array([lc[0], lc[1], base_top]), np.array([1.0, 0.0, 0.0]), np.array([0.0, 0.0, 1.0]))
-            for k in range(1, 5):
-                az = math.radians(180.0 + 90.0 * (k - 1))
-                for j, z in enumerate(np.linspace(-LANTERN_H / 2, LANTERN_H / 2, 9)):
-                    r = float(paper_r(z)) + 0.6
-                    sockets[f"Seam{k}_{j}"] = (lc + [r * math.cos(az), r * math.sin(az), z], None, None)
-        work = lc
+        # The form turns on the post's spindle (SM_B09_RibForm, placed at LanternCentre and turned by form_yaw_deg).
+        # The winding's contacts stay at its front for every hoop:
+        # - WindPress{k}: the left paw's fingertips on the wound strip, RIB["press_az_deg"] round to the hero's left;
+        # - WindGuide{k}: the right paw on the free strip, RIB["guide_cm"] out toward the hero's right.
+        sockets["FormSpindle"] = (np.array([lc[0], lc[1], base_top]), np.array([1.0, 0.0, 0.0]), np.array([0.0, 0.0, 1.0]))
+        for k, (z, r) in enumerate(zip(hoop_z(), hoop_r()), 1):
+            a = math.radians(RIB["press_az_deg"])
+            ro = r + HOOP_T / 2
+            slope = float(profile_r(z + 0.01) - profile_r(z - 0.01)) / 0.02      # dr/dz: 0.26 at the end hoops
+            n = np.array([math.cos(a), math.sin(a), -slope]) / math.sqrt(1.0 + slope * slope)   # the form's normal there
+            sockets[f"WindPress{k}"] = (lc + [ro * math.cos(a), ro * math.sin(a), z], n, np.array([0.0, 0.0, 1.0]))
+            # WindSteady{k}: where the left paw waits while the right hooks the strip: round to the hero's left of the
+            # press and part way toward the form's middle (at the top hoop's own height it topped the 21:9 frame).
+            a_s = math.radians(RIB["steady_az_deg"])
+            z_s = z * (1.0 - RIB["wait_toward_middle"])
+            ro_s = float(profile_r(z_s)) + HOOP_T / 2
+            sl_s = float(profile_r(z_s + 0.01) - profile_r(z_s - 0.01)) / 0.02
+            n_s = np.array([math.cos(a_s), math.sin(a_s), -sl_s]) / math.sqrt(1.0 + sl_s * sl_s)
+            sockets[f"WindSteady{k}"] = (lc + [ro_s * math.cos(a_s), ro_s * math.sin(a_s), z_s], n_s, np.array([0.0, 0.0, 1.0]))
+            la = math.radians(RIB["leave_az_deg"])
+            tang = np.array([math.sin(la), -math.cos(la), 0.0])             # the free strip's heading off the form
+            sockets[f"WindGuide{k}"] = (lc + [r * math.cos(la), r * math.sin(la), z] + tang * RIB["guide_cm"], tang,
+                                        np.array([0.0, 0.0, 1.0]))
+        parts.append(gauge_mesh(top))
+        sockets["GaugePivot"] = (np.array(GAUGE["pivot"]), np.array([1.0, 0.0, 0.0]), np.array([0.0, 0.0, 1.0]))
+        # The strip rack: two posts on the bench's right carry cross-arms; the strips lie along +X on them, their
+        # ends RIB["rack_front"] toward the hero, where the right paw takes the nearest.
+        rx, ry, rz = RIB["rack_front"]
+        rack = []
+        for x_arm in (RIB_PROXY_FRONT + 4.0, depth / 2 - 4.0):
+            rack.append(box("SM_B09_StripRack", (x_arm - 1.0, ry - 1.0, top), (x_arm + 1.0, ry + 1.0, rz - 0.6), "M_B09_TimberBench"))
+            rack.append(box("SM_B09_StripRack", (x_arm - 1.0, ry - 4.0, rz - 0.6), (x_arm + 1.0, ry + 4.0, rz), "M_B09_TimberBench"))
+            rack.append(box("SM_B09_StripRack", (x_arm - 1.0, ry - 4.6, rz), (x_arm + 1.0, ry - 4.0, rz + 1.4), "M_B09_TimberBench"))
+            rack.append(box("SM_B09_StripRack", (x_arm - 1.0, ry + 4.0, rz), (x_arm + 1.0, ry + 4.6, rz + 1.4), "M_B09_TimberBench"))
+        parts.append(merge("SM_B09_StripRack", rack))
+        length = float(hoop_r().max()) * math.radians(WIND_DEG) + 6.0          # the longest hoop's strip, with spare
+        stock = []
+        for j in range(12):
+            y = ry - 3.6 + (j % 6) * 1.3 + 0.1
+            z = rz + 0.02 + HOOP_T * (j // 6) + 0.001 * (j // 6)
+            stock.append(box("SM_B09_StripStock", (rx, y, z), (rx + length, y + HOOP_W, z + HOOP_T), "M_B09_Bamboo"))
+        parts.append(merge("SM_B09_StripStock", stock))
+        # The top layer's right-hand strip end, taken first: the right paw pinches it from above, its forearm coming in
+        # beside the stock (reaching the left-hand end, it lay over the stock's other strips).
+        sockets["StripStock"] = (np.array([rx, ry - 3.6 + 5 * 1.3 + 0.1 + HOOP_W / 2, rz + 0.02 + 2 * HOOP_T + 0.001]),
+                                 np.array([1.0, 0.0, 0.0]), np.array([0.0, 0.0, 1.0]))
+        # The split strip (91 cm) lies on the bench behind the form, clear of the rack and the gauge.
+        sockets["SplitStripRest"] = (np.array([12.0, -6.0, top]), np.array([0.0, 1.0, 0.0]), np.array([0.0, 0.0, 1.0]))
+        x0 = RIB_PROXY_FRONT - CAPSULE_R
+        contacts = [sockets[f"WindPress{k}"][0] for k in (1, 6)] + [sockets[f"WindGuide{k}"][0] for k in (1, 6)]
+        contacts += [sockets[f"WindGuide{k}"][0] - [2.5, 0.0, 0.0] for k in (1, 6)]      # the guiding paw's knuckles
+        contacts += [sockets["StripStock"][0]] + [dial_point(a, GAUGE["face_r"]) for a in GAUGE["angles_deg"]]
+        # 2 deg below the contacts' vertical middle: from the near stands turned off-axis, perspective put the lowest
+        # hoop's knuckles 6 % past the 21:9 frame's foot while the top hoop kept 12 % spare.
+        sockets["LookPoint"] = (look_point_for(contacts, x0, el_offset_deg=RIB["look_down_deg"]), None, None)
+        work = sockets["LookPoint"][0]
+    elif i == 1:
+        depth, width, top = 70.0, 110.0, 75.0
+        x0 = PASTE_PROXY_FRONT - CAPSULE_R
+        parts = [bench("SM_B09_PasteBench", depth, width, top)]
+        proxies.append((np.array([PASTE_PROXY_FRONT, -width / 2 - 2, 0.0]), np.array([depth / 2 + 2, width / 2 + 2, top + 3])))
+        A = paste_axes()
+        c = np.array(PASTE["centre"]) + [x0, 0.0, 0.0]
+        lc = c
+        ax = A[:, 2]
+        frame = [Mesh(m.name, paste_frame(m.verts), m.tris, m.slot) for m in lantern("frame")]
+        parts += frame
+        # The cradle: the form's spindle (local z -30 to +38) turns in two bearings, one on a post from the bench
+        # under its lower end, one on an arm from a post at the bench's left under its upper end.
+        lo_end, hi_end = c + ax * (-LANTERN_H / 2 - 8.0), c + ax * (LANTERN_H / 2 + 16.0)
+        cradle = []
+        for end_, post_x in ((lo_end, max(lo_end[0] + 4.5, -depth / 2 + 2.0)), (hi_end, max(hi_end[0] + 4.5, -depth / 2 + 2.0))):
+            bear = revolve("SM_B09_PasteCradle", [(-2.0, 1.3), (-2.0, 2.6), (2.0, 2.6), (2.0, 1.3), (-2.0, 1.3)], "M_B09_Iron", n_az=32)
+            bv = bear.verts @ _frame_cols(ax).T + end_
+            cradle.append(Mesh("SM_B09_PasteCradle", bv, bear.tris, "M_B09_Iron"))
+            cradle.append(box("SM_B09_PasteCradle", (post_x - 1.6, end_[1] - 1.6, top), (post_x + 1.6, end_[1] + 1.6, end_[2] - 2.6), "M_B09_TimberBench"))
+            if abs(post_x - end_[0]) > 2.0:                           # the arm from the post forward to the bearing
+                cradle.append(box("SM_B09_PasteCradle", (end_[0] + 1.6, end_[1] - 1.0, end_[2] - 4.4), (post_x - 1.6, end_[1] + 1.0, end_[2] - 2.4),
+                                  "M_B09_TimberBench"))
+        parts.append(merge("SM_B09_PasteCradle", cradle))
+        sockets["LanternCentre"] = (c, A[:, 0], A[:, 2])
+        sockets["CradleAxis"] = (c, A[:, 0], A[:, 2])
+        for k, (z, r) in enumerate(zip(hoop_z(), hoop_r()), 1):
+            sockets[f"HoopSeat{k}"] = (c + ax * z, None, None)
+        # The seam brushed (seam 1's meridian as the frame stands for each panel), rim line to rim line, 0.6 cm out.
+        for j, z in enumerate(np.linspace(-LANTERN_H / 2, LANTERN_H / 2, 9)):
+            r = float(paper_r(z)) + 0.6
+            sockets[f"Seam_{j}"] = (paste_frame([[-r, 0.0, z]])[0], None, None)
+        # The left paw's hold on the laid sheet, PASTE["hold_turn_deg"] round toward the hero's left of the seam.
+        th = math.radians(180.0 + PASTE["hold_turn_deg"])
+        hs = PASTE["hold_s_cm"]
+        rh = float(paper_r(hs)) + 0.1
+        slope = float(paper_r(hs + 0.05) - paper_r(hs - 0.05)) / 0.1
+        n_loc = np.array([math.cos(th), math.sin(th), -slope]) / math.sqrt(1 + slope * slope)
+        hold_p = paste_frame([[rh * math.cos(th), rh * math.sin(th), hs]])[0]
+        sockets["SheetHold"] = (hold_p, A @ n_loc, None)
+        # The left standard: a post on the bench at the sheet rail's far end carries the rail and the rim shelf.
+        ry, rail_top, near_u = PASTE["rack_y"], PASTE["rail_top"], PASTE["sheet_near_u"]
+        length = LANTERN_H                                        # a sheet's length, hung along the rail
+        stand_xy = np.array([x0 + near_u + length + 1.6, ry + 1.0])
+        gz = rail_top
+        # The rail, its top at rail_top; the four sheets hang from it, 0.1 cm apart, sheet 4 against it.
+        rack = [box("SM_B09_SheetRack", (x0 + near_u - 1.0, ry + 0.6, rail_top - 1.5), (stand_xy[0] - 1.6, ry + 1.4, rail_top + 0.5), "M_B09_TimberBench"),
+                box("SM_B09_SheetRack", (stand_xy[0] - 1.6, stand_xy[1] - 1.6, top), (stand_xy[0] + 1.6, stand_xy[1] + 1.6, rail_top + 0.5),
+                    "M_B09_TimberBench")]
+        parts.append(merge("SM_B09_SheetRack", rack))
+        for j in range(1, 5):                                     # sheet 1 outermost, taken first; sheet 4 against the rail
+            # flat_sheet's frame: X across its width (here down from the rail), Z along its length (here along +X).
+            sockets[f"WashiSheet{j}"] = (np.array([x0 + near_u + length / 2, ry + 0.55 - 0.1 * (5 - j), rail_top - 1.5]),
+                                         np.array([0.0, 0.0, -1.0]), np.array([1.0, 0.0, 0.0]))
+        w_sheet = float((np.radians(90.0 + 2 * GORE_OVERLAP_DEG) * paper_r(np.linspace(-LANTERN_H / 2, LANTERN_H / 2, 23))).max())
+        # The paw takes sheet 1 by its near end, halfway down it.
+        sockets["SheetTake"] = (np.array([x0 + near_u, ry + 0.55 - 0.4, rail_top - 1.5 - w_sheet / 2]), np.array([1.0, 0.0, 0.0]),
+                                np.array([0.0, 0.0, 1.0]))
+        # The paste pot sits in a ring on an arm from the cradle's lower post, beside the frame's lower end.
+        du, dy, dz = PASTE["dip"]
+        pot = np.array([x0 + du, dy])
+        pz = dz - 4.0 - PASTE_POT[5][0]                          # lift the pot so its floor is 4 cm under the dip
+        prof = [(z + pz, r) for z, r in PASTE_POT]
+        parts.append(revolve("SM_B09_PastePot", prof, "M_B09_Ceramic", n_az=48).moved((pot[0], pot[1], 0.0)))
+        foot_z, foot_r = prof[1]
+        ring = revolve("SM_B09_PotBracket", [(foot_z - 0.8, 0.0), (foot_z - 0.8, foot_r + 0.8), (foot_z, foot_r + 0.8),
+                                             (foot_z, 0.0)], "M_B09_Iron", n_az=48).moved((pot[0], pot[1], 0.0))
+        pp = np.array([-depth / 2 + 2.0, pot[1]])               # its post on the bench's front, under the frame's near side
+        arm = box("SM_B09_PotBracket", (pot[0], pot[1] - 1.0, foot_z - 1.6), (pp[0] - 1.6, pot[1] + 1.0, foot_z - 0.8), "M_B09_Iron")
+        post = box("SM_B09_PotBracket", (pp[0] - 1.6, pp[1] - 1.6, top), (pp[0] + 1.6, pp[1] + 1.6, foot_z - 0.8), "M_B09_TimberBench")
+        parts.append(merge("SM_B09_PotBracket", [ring, arm, post]))
+        sockets["PasteDip"] = (np.array([pot[0], pot[1], dz]), None, np.array([0.0, 0.0, 1.0]))
+        sockets["BrushRest"] = brush_in_pot(pot, lip=prof[4], floor=prof[5][0])
+        # The top rim lies flat on a round shelf on an arm from the left standard, above the sheet rail.
+        ru, ryy, rz = PASTE["rim_rest"]
+        post_xy = stand_xy
+        shelf_c = np.array([x0 + ru, ryy])
+        shelf = [revolve("SM_B09_RimShelf", [(rz - 1.2 - RIM_H / 2, 0.0), (rz - 1.2 - RIM_H / 2, LANTERN_RIM_R + 0.6), (rz - RIM_H / 2, LANTERN_RIM_R + 0.6),
+                                             (rz - RIM_H / 2, 0.0)], "M_B09_TimberBench", n_az=48).moved((shelf_c[0], shelf_c[1], 0.0)),
+                 box("SM_B09_RimShelf", (shelf_c[0] + 2.0, min(shelf_c[1], post_xy[1]) - 1.0, rz - RIM_H / 2 - 2.2),
+                     (post_xy[0] - 1.6, max(shelf_c[1], post_xy[1]) + 1.0, rz - RIM_H / 2 - 1.2), "M_B09_TimberBench"),
+                 box("SM_B09_RimShelf", (post_xy[0] - 1.6, post_xy[1] - 1.6, gz + 0.5), (post_xy[0] + 1.6, post_xy[1] + 1.6, rz - RIM_H / 2 - 1.2),
+                     "M_B09_TimberBench")]
+        parts.append(merge("SM_B09_RimShelf", shelf))
+        sockets["RimTopRest"] = (np.array([shelf_c[0], shelf_c[1], rz]), np.array([1.0, 0.0, 0.0]), np.array([0.0, 0.0, 1.0]))
+        # The bottom rim is fitted to the frame's lower mouth from the start (its rest is its seat); the rims step
+        # seats the top rim on the upper mouth, along the frame's axis.
+        for which, sgn in (("Bottom", -1.0), ("Top", 1.0)):
+            sockets[f"Rim{which}Seat"] = (c + ax * sgn * (LANTERN_H / 2 + RIM_H / 2), A[:, 0], A[:, 2])
+        sockets["RimBottomRest"] = sockets["RimBottomSeat"]
+        contacts = [sockets[f"Seam_{j}"][0] for j in range(9)] + [hold_p, sockets["PasteDip"][0], sockets["SheetTake"][0]]
+        sockets["LookPoint"] = (look_point_for(contacts, x0), None, None)
+        work = sockets["LookPoint"][0]
     elif i == 2:
+        # The oil rack (Coordinations 268, 269): the lantern hangs OIL["lantern_ahead_cm"] ahead of the natural stop, a
+        # prepared batch workpiece coated all over but for one remaining swath, which the brush finishes by contact.
+        x0 = OIL_PROXY_FRONT - CAPSULE_R                          # the natural stop on the centre line
         lc = lantern_centre(2)
         hp = hang_point()
-        hook_top = lc[2] + hp[2]                                # the lantern hangs with its centre at chest height
+        hook_top = lc[2] + hp[2]                                # the ring's top rests in the hook's bend
         bar = hook_top + 13.0
         top = bar + 10.0
         parts = []
@@ -971,97 +1276,248 @@ def station_parts(i):
             parts.append(box("SM_B09_OilRack", (-3.0, y - 3, 5.0), (3.0, y + 3, top), "M_B09_TimberBench"))
             parts.append(box("SM_B09_OilRack", (-35.0, y - 3, 0.0), (35.0, y + 3, 5.0), "M_B09_TimberBench"))
         parts.append(box("SM_B09_OilRack", (-2.5, -48.0, bar), (2.5, 48.0, bar + 5.0), "M_B09_TimberBench"))
-        parts.append(box("SM_B09_OilRack", (-35.0, -42.0, 18.0), (20.0, 42.0, 20.5), "M_B09_TimberBench"))   # the low shelf
+        # The low shelf, its front under the lantern for the drip tray, on four legs.
+        shelf_lo, shelf_hi = (OIL_PROXY_FRONT - 5.0, -42.0), (20.0, 42.0)
+        parts.append(box("SM_B09_OilRack", (shelf_lo[0], shelf_lo[1], 18.0), (shelf_hi[0], shelf_hi[1], 20.5), "M_B09_TimberBench"))
+        for x in (shelf_lo[0] + 1.5, shelf_hi[0] - 1.5):
+            for y in (shelf_lo[1] + 1.5, shelf_hi[1] - 1.5):
+                parts.append(box("SM_B09_OilRack", (x - 1.5, y - 1.5, 0.0), (x + 1.5, y + 1.5, 18.0), "M_B09_TimberBench"))
         parts = [merge("SM_B09_OilRack", parts)]
-        # The hook comes forward on an iron arm from the bar; the oil dish sits in a ring on a bracket from the right
-        # post, in front of the lantern's right side.
-        # The hook leaves the bar's face and bends down into a U in the bail's plane. The bail's ring, across that
-        # plane, rests with its top wire on the U's bottom: LanternHang is the ring's top (hang_point).
+        # The hook leaves the bar's face on an iron arm and bends down into a U in the bail's plane. The bail's ring,
+        # across that plane, rests with its top wire on the U's bottom: LanternHang is the ring's top (hang_point).
         u_bottom = hook_top - (HOOK_WIRE_R + BAIL_WIRE_R + HOOK_GAP)  # the ring's wire just over the U's: hung, not fused
+        arm_z = bar + 2.5
         bend = [[lc[0] + HOOK_BEND_R * math.cos(a), 0.0, u_bottom + HOOK_BEND_R + HOOK_BEND_R * math.sin(a)]
                 for a in np.linspace(math.pi, 2.0 * math.pi, 13)]
-        parts.append(sweep("SM_B09_RackHook", [[-2.5, 0.0, bar + 2.5], [lc[0] - HOOK_BEND_R, 0.0, bar + 2.5]] + bend
+        parts.append(sweep("SM_B09_RackHook", [[-2.5, 0.0, arm_z], [lc[0] - HOOK_BEND_R, 0.0, arm_z]] + bend
                            + [[lc[0] + HOOK_BEND_R, 0.0, u_bottom + HOOK_BEND_R + 1.6]], "M_B09_Iron", radius=HOOK_WIRE_R, segments=10))
-        dish = np.array([lc[0] - 11.5, 24.0, 118.0])               # below the shoulder; its bracket inside the proxy
-        arm = sweep("SM_B09_DishBracket", [[0.0, 42.0, dish[2] - 1.0], [0.0, 40.0, dish[2] - 1.0], [dish[0] + 7.0, dish[1], dish[2] - 1.0]],
-                    "M_B09_Iron", radius=0.45, segments=10)          # square off the post's face, then to the ring
-        ring = revolve("SM_B09_DishBracket", [(dish[2] - 1.4, 6.6), (dish[2] - 1.4, 7.4), (dish[2] - 0.6, 7.4), (dish[2] - 0.6, 6.6),
-                                              (dish[2] - 1.4, 6.6)], "M_B09_Iron", n_az=48).moved((dish[0], dish[1], 0.0))
-        parts.append(merge("SM_B09_DishBracket", [arm, ring]))
-        parts.append(revolve("SM_B09_OilDish", [(dish[2] - 1.8, 0.0), (dish[2] - 1.8, 4.5), (dish[2] - 0.6, 6.5), (dish[2] + 0.4, 7.0),
-                                                (dish[2] + 0.4, 6.5), (dish[2] - 1.0, 4.3), (dish[2] - 1.0, 0.0)], "M_B09_Ceramic",
+        # The oil dish sits in the ring of a turned stand on the low shelf, beside the lantern's lower right, where the
+        # brush dips with its handle leaning back toward the hand (OIL_DIP_TILT). (A notch post carried it; the feet
+        # reach 27-30 cm ahead and 22 to the side, so no floor post may stand inside 36.7 cm of the axis.)
+        dish = np.array([x0 + OIL["dish"][0], OIL["dish"][1], OIL["dish"][2]])
+        fz = dish[2] - 0.4                                       # the dish's floor, under the dipped tip
+        rim_r = OIL_DISH_R
+        base_z = fz - 0.8                                        # the dish's flat foot
+        stand = revolve("SM_B09_DishStand", [(20.5, 0.0), (20.5, 4.5), (22.0, 4.5), (23.0, 1.2), (base_z - 1.2, 1.2),
+                                             (base_z - 0.4, 0.0)], "M_B09_TimberBench", n_az=32)
+        # Two iron straps cross under the foot (the dish rests on them) and carry a ring round its lower wall, clear of it.
+        spokes = [box("SM_B09_DishStand", (-rim_r - 0.4, -0.4, base_z - 0.4), (rim_r + 0.4, 0.4, base_z), "M_B09_Iron"),
+                  box("SM_B09_DishStand", (-0.4, -rim_r - 0.4, base_z - 0.4), (0.4, rim_r + 0.4, base_z), "M_B09_Iron"),
+                  box("SM_B09_DishStand", (-0.6, -0.6, base_z - 1.2), (0.6, 0.6, base_z - 0.4), "M_B09_Iron")]
+        ring = revolve("SM_B09_DishStand", [(base_z, rim_r - 0.7), (base_z, rim_r + 0.4), (base_z + 0.8, rim_r + 0.4),
+                                            (base_z + 0.8, rim_r - 0.7), (base_z, rim_r - 0.7)], "M_B09_Iron", n_az=48)
+        parts.append(merge("SM_B09_DishStand", [stand, ring] + spokes).moved((dish[0], dish[1], 0.0)))
+        parts.append(revolve("SM_B09_OilDish", [(fz - 0.8, 0.0), (fz - 0.8, rim_r - 1.8), (fz + 0.2, rim_r - 0.6), (fz + 1.0, rim_r),
+                                                (fz + 1.0, rim_r - 0.5), (fz, rim_r - 2.0), (fz, 0.0)], "M_B09_Ceramic",
                              n_az=48).moved((dish[0], dish[1], 0.0)))
         parts.append(revolve("SM_B09_OilJar", [(20.5, 0.0), (20.5, 6.0), (24.0, 8.8), (34.0, 9.0), (41.0, 6.5), (43.5, 4.2),
                                                (44.5, 4.6), (44.5, 3.6), (36.0, 3.2), (36.0, 0.0)], "M_B09_Ceramic", n_az=64).moved((10.0, 24.0, 0.0)))
-        parts.append(revolve("SM_B09_DripTray", [(0.0, 0.0), (0.0, 17.0), (3.0, 18.0), (3.0, 17.2), (0.8, 16.4), (0.8, 0.0)],
+        parts.append(revolve("SM_B09_DripTray", [(0.0, 0.0), (0.0, 10.0), (2.0, 11.0), (2.0, 10.3), (0.6, 9.6), (0.6, 0.0)],
                              "M_B09_Ceramic", n_az=64).moved((lc[0], 0.0, 20.5)))
-        proxies.append((np.array([-38.0, -52.0, 0.0]), np.array([38.0, 52.0, 24.0])))
+        # The proxy is a wall to the capsule (above UE's default 45 cm step height, which root keeps) and stays under
+        # the station ray's start (RAY_FROM_Z), as the benches' proxies do: the station point is inside its plan.
+        proxies.append((np.array([OIL_PROXY_FRONT, -52.0, 0.0]), np.array([36.0, 52.0, 78.0])))
         sockets["LanternHang"] = (np.array([lc[0], 0.0, hook_top]), None, None)
-        sockets["OilDip"] = (dish + [0.0, 0.0, -0.4], None, np.array([0.0, 0.0, 1.0]))
-        # The oil brush lies across the dish on its rim at both sides, its bristles over the near rim and its handle
-        # back over the dish, inside the rack's proxy (it stood on the dish's centre with its handle through the rim).
-        sockets["BrushRest"] = (np.array([dish[0] - OIL_DISH_RIM[1] - 0.2, dish[1], dish[2] + 0.4 + 0.6]),
-                                np.array([0.0, -1.0, 0.0]), np.array([0.0, 0.0, 1.0]))
+        sockets["OilDip"] = (dish, None, np.array([0.0, 0.0, 1.0]))
+        # The brush lies across the dish on its rim at both sides, its bristles over the near rim, its handle back
+        # over the dish.
+        sockets["BrushRest"] = (np.array([dish[0] - rim_r - 0.2, dish[1], fz + 1.0 + 0.6]), np.array([0.0, -1.0, 0.0]),
+                                np.array([0.0, 0.0, 1.0]))
         sockets["OilJar"] = (np.array([10.0, 24.0, 44.5]), None, None)
-        for j, z in enumerate(np.linspace(LANTERN_H / 2, -LANTERN_H / 2, 9)):
-            for q, az in enumerate((180.0, 225.0, 135.0)):
-                r = float(paper_r(z)) + 0.7
-                a = math.radians(az)
-                sockets[f"OilStroke{q}_{j}"] = (lc + [r * math.cos(a), r * math.sin(a), z], None, None)
-        sockets["LanternSteady"] = (lc + [-float(LANTERN_RIM_R) * math.cos(math.radians(30.0)), -float(LANTERN_RIM_R) * 0.5,
-                                          -LANTERN_H / 2 - RIM_H / 2], None, None)
-        work = lc
+        # The remaining swath: the brush's path down the paper from the top rim line to the belly, OIL_SWATH["offset_cm"]
+        # out from the washi, at OIL_SWATH["az_deg"]; the bristles sweep OIL_SWATH["half_width_cm"] to either side.
+        a = math.radians(OIL_SWATH["az_deg"])
+        for j, z in enumerate(np.linspace(*OIL_SWATH["s_cm"], 9)):
+            r = float(paper_r(z)) + OIL_SWATH["offset_cm"]
+            sockets[f"OilSwath_{j}"] = (lc + [r * math.cos(a), r * math.sin(a), z], None, None)
+        al, s_st = math.radians(OIL["steady_az_deg"]), OIL["steady_s_cm"]
+        slope = float(paper_r(s_st + 0.05) - paper_r(s_st - 0.05)) / 0.1
+        n_st = np.array([math.cos(al), math.sin(al), -slope]) / math.sqrt(1.0 + slope * slope)   # the washi's normal there
+        sockets["LanternSteady"] = (lc + np.array([math.cos(al), math.sin(al), 0.0]) * (float(paper_r(s_st)) + 0.1) + [0.0, 0.0, s_st],
+                                    n_st, None)
+        contacts = [sockets[f"OilSwath_{j}"][0] for j in range(9)] + [dish, sockets["LanternSteady"][0]]
+        sockets["LookPoint"] = (look_point_for(contacts, x0), None, None)
+        work = sockets["LookPoint"][0]
     else:
         top = 72.0
-        st = SHELL_STAND
+        L_ = SHELL_LAYOUT
+        x0 = SHELL_PROXY_FRONT - CAPSULE_R
+        X = lambda u: x0 + u  # noqa: E731
         parts = [bench("SM_B09_ShellBench", 70.0, 120.0, top)]
-        proxies.append((np.array([-37.0, -62.0, 0.0]), np.array([37.0, 62.0, top + 3])))
-        parts.append(_stand("SM_B09_ShellStand", st["lo"], st["hi"], st["top"], top))
-        t2 = st["top"]
+        proxies.append((np.array([SHELL_PROXY_FRONT, -62.0, 0.0]), np.array([37.0, 62.0, top + 3])))
+        # The board: 3 cm thick, its front cantilevered from four legs on the bench.
+        u0, u1, y0, y1 = L_["board"]
+        t2 = L_["top"]
+        stand = [box("SM_B09_ShellStand", (X(u0), y0, t2 - 3.0), (X(u1), y1, t2), "M_B09_TimberBench")]
+        for xl in (-33.5, X(u1) - 2.5):
+            for yl in (y0 + 0.5, y1 - 3.5):
+                stand.append(box("SM_B09_ShellStand", (xl, yl, top), (xl + 3.0, yl + 3.0, t2 - 3.0), "M_B09_TimberBench"))
+        parts.append(merge("SM_B09_ShellStand", stand))
         origin, rot = weapon_rest()
-        # Two V-blocks on posts from the bench: one under the collar, one under the bare muzzle end. (The earlier
-        # blocks, sized to the bare culm, stood inside the real rope wrap.)
-        cradle = []
-        for (x0, x1, r), inset in ((WEAPON7["collar_cm"], 0.2), (WEAPON7["muzzle_bare_cm"], 0.8)):
-            cradle += v_cradle("SM_B09_WeaponCradle", origin[0] + x0 + inset, origin[0] + x1 - inset, r, origin[1], origin[2], top)
-        parts.append(merge("SM_B09_WeaponCradle", cradle))
+        # The tube's holder: a turned socket block on the bench top, the handle end standing in its bore on the bore's
+        # floor, and an iron ring round the clean collar on an arm from a post behind.
+        hz = origin[2] + WEAPON7["x_range_cm"][0]                          # the handle end's height
+        hr = WEAPON7["handle_end_r_cm"]
+        holder = [revolve("SM_B09_WeaponCradle", [(top, 0.0), (top, 4.6), (hz + 6.0, 4.6), (hz + 6.0, hr + 0.06), (hz, hr + 0.06),
+                                                  (hz, 0.0)], "M_B09_TimberBench", n_az=48).moved((origin[0], origin[1], 0.0))]
+        c0, c1, cr = WEAPON7["collar_cm"]
+        ring_z = origin[2] + 0.5 * (c0 + c1)
+        holder.append(revolve("SM_B09_WeaponCradle", [(ring_z - 0.7, cr + 0.04), (ring_z - 0.7, cr + 1.0), (ring_z + 0.7, cr + 1.0),
+                                                      (ring_z + 0.7, cr + 0.04), (ring_z - 0.7, cr + 0.04)], "M_B09_Iron", n_az=48)
+                      .moved((origin[0], origin[1], 0.0)))
+        post_x = origin[0] + 9.0
+        holder.append(box("SM_B09_WeaponCradle", (post_x - 1.5, origin[1] - 1.5, top), (post_x + 1.5, origin[1] + 1.5, ring_z + 1.0), "M_B09_TimberBench"))
+        holder.append(box("SM_B09_WeaponCradle", (origin[0] + cr + 0.9, origin[1] - 0.8, ring_z - 0.6), (post_x - 1.5, origin[1] + 0.8, ring_z + 0.6),
+                          "M_B09_Iron"))
+        parts.append(merge("SM_B09_WeaponCradle", holder))
         sockets["WeaponRest"] = (origin, rot[:, 0], rot[:, 2])
         sockets["Muzzle"] = (origin + rot @ np.array(WEAPON7["muzzle_cm"]), rot[:, 0], rot[:, 2])
-        sockets["FuseInspect"] = (origin + rot @ np.array(WEAPON7["fuse_cm"]), rot[:, 0], rot[:, 2])
-        sockets["WeaponSteady"] = (origin + rot @ np.array([-12.0, 0.0, WEAPON7["culm_cm"] / 2]), rot[:, 0], rot[:, 2])
-        # The rack: a plank with three cups bored to the weapon's bore (a solid block sank the shells 2 cm into it).
-        rack = [box("SM_B09_ShellRack", (-34.0, -46.0, t2), (-25.0, -22.0, t2 + 1.5), "M_B09_TimberBench")]
-        for k, y in enumerate((-42.0, -34.0, -26.0), 1):
-            rack.append(revolve("SM_B09_ShellRack", [(t2 + 1.5, 0.0), (t2 + 1.5, 3.6), (t2 + 4.0, 3.6), (t2 + 4.0, WEAPON7["bore_cm"] / 2),
-                                                     (t2 + 2.0, WEAPON7["bore_cm"] / 2), (t2 + 2.0, 0.0)], "M_B09_TimberBench", n_az=48)
-                        .moved((-29.5, y, 0.0)))
-            sockets[f"ShellSeat{k}"] = (np.array([-29.5, y, t2 + 2.0 + SHELL["wrapped_cm"] / 2]), None, np.array([0.0, 0.0, 1.0]))
+        sockets["TubeFuse"] = (origin + rot @ np.array(WEAPON7["fuse_cm"]), rot[:, 0], rot[:, 2])   # the touch hole (a prop)
+        # The rack: a thin plank with three cups bored to the weapon's bore (0.8 cm lower than its first 1.5 cm plank: a
+        # seated shell's fuse cord stood 0.4996 cm under the left forearm carrying the next one past it).
+        cu = L_["cups"]
+        cr_ = L_["cup_r"] + 0.2
+        pk = L_["rack_plank_cm"]
+        rack = [box("SM_B09_ShellRack", (X(min(c[0] for c in cu) - cr_), min(c[1] for c in cu) - cr_, t2),
+                    (X(max(c[0] for c in cu) + cr_), max(c[1] for c in cu) + cr_, t2 + pk), "M_B09_TimberBench")]
+        for k, (u, y) in enumerate(cu, 1):
+            rack.append(revolve("SM_B09_ShellRack", [(t2 + pk, 0.0), (t2 + pk, L_["cup_r"]), (t2 + pk + 2.5, L_["cup_r"]),
+                                                     (t2 + pk + 2.5, WEAPON7["bore_cm"] / 2), (t2 + pk + 0.5, WEAPON7["bore_cm"] / 2),
+                                                     (t2 + pk + 0.5, 0.0)], "M_B09_TimberBench", n_az=48)
+                        .moved((X(u), y, 0.0)))
+            sockets[f"ShellSeat{k}"] = (np.array([X(u), y, t2 + pk + 0.5 + SHELL["wrapped_cm"] / 2]), None, np.array([0.0, 0.0, 1.0]))
+            # The seated shell's fuse cord's tip (shell(): the cord leaves the neck's top and leans 0.5 cm along +X).
+            sockets[f"FuseCheck{k}"] = (sockets[f"ShellSeat{k}"][0] + [0.5, 0.0, SHELL_FUSE_TIP_CM], None, np.array([0.0, 0.0, 1.0]))
         parts.append(merge("SM_B09_ShellRack", rack))
-        parts.append(revolve("SM_B09_ShellTray", [(t2, 0.0), (t2, 8.0), (t2 + 3.0, 8.6), (t2 + 3.0, 8.0), (t2 + 1.0, 7.4), (t2 + 1.0, 0.0)],
-                             "M_B09_TimberBench", n_az=64).moved((-26.4, 19.0, 0.0)))
-        for k in (1, 2, 3):                                       # 120 deg apart on the tray's floor (they overlapped)
-            a = math.radians(180.0 + 120.0 * (k - 1))
-            sockets[f"ShellCore{k}"] = (np.array([-26.4 + 3.2 * math.cos(a), 19.0 + 3.2 * math.sin(a), t2 + 1.0 + SHELL["core_cm"] / 2]), None, None)
-        parts.append(box("SM_B09_WrapPaper", (-34.0, -7.0, t2), (-18.0, 9.0, t2 + 0.2), "M_B09_ShellPaper"))
-        sockets["WrapSpot"] = (np.array([-26.0, 1.0, t2 + 0.2 + SHELL["wrapped_cm"] / 2]), None, None)
-        coil = [[-20.0 + (1.6 + 0.26 * t) * math.cos(t), -14.0 + (1.6 + 0.26 * t) * math.sin(t), t2 + 0.25] for t in np.linspace(0, 5 * math.pi, 90)]
+        tu, ty = L_["tray"]
+        tr = L_["tray_r"]
+        parts.append(revolve("SM_B09_ShellTray", [(t2, 0.0), (t2, tr - 0.6), (t2 + 2.4, tr), (t2 + 2.4, tr - 0.6), (t2 + 0.8, tr - 1.2), (t2 + 0.8, 0.0)],
+                             "M_B09_TimberBench", n_az=64).moved((X(tu), ty, 0.0)))
+        for k in (1, 2, 3):                                       # 120 deg apart on the tray's floor, taken from the right
+            a = math.radians(60.0 + 120.0 * (k - 1))              # (the right forearm lies over the right of the core it takes)
+            cr = L_["core_r"]
+            sockets[f"ShellCore{k}"] = (np.array([X(tu) + cr * math.cos(a), ty + cr * math.sin(a), t2 + 0.8 + SHELL["core_cm"] / 2]), None, None)
+        wu, wy = L_["wrap"]
+        pt = L_["wrap_post_top"]
+        post = [revolve("SM_B09_WrapPost", [(t2, 0.0), (t2, 3.0), (t2 + 1.0, 3.0), (t2 + 1.5, 1.2), (pt - 1.4, 1.2), (pt - 0.9, 3.4),
+                                            (pt, 3.4), (pt, 0.0)], "M_B09_TimberBench", n_az=48).moved((X(wu), wy, 0.0))]
+        parts.append(merge("SM_B09_WrapPost", post))
+        parts.append(box("SM_B09_WrapPaper", (X(wu) - 3.2, wy - 3.2, pt), (X(wu) + 3.2, wy + 3.2, pt + 0.2), "M_B09_ShellPaper"))
+        sockets["WrapPaper"] = (np.array([X(wu), wy, pt + 0.2 + SHELL["wrapped_cm"] / 2]), None, None)   # the core laid on it
+        sockets["WrapSpot"] = (np.array([X(wu), wy, pt + 0.2 + SHELL["wrapped_cm"] / 2 + L_["wrap_lift_cm"]]), None, None)
+        cxu, cyy = L_["coil"]
+        coil = [[X(cxu) + (1.2 + 0.2 * t) * math.cos(t), cyy + (1.2 + 0.2 * t) * math.sin(t), t2 + 0.25] for t in np.linspace(0, 5 * math.pi, 90)]
         parts.append(sweep("SM_B09_FuseCoil", coil, "M_B09_FuseCord", radius=0.25, segments=10))
-        sockets["FuseCoil"] = (np.array([-20.0, -14.0, t2 + 0.5]), None, None)
-        work = np.array([-26.0, 1.0, t2 + 6.0])
+        sockets["FuseCoil"] = (np.array([X(cxu), cyy, t2 + 0.5]), None, None)
+        contacts = [sockets[n][0] for n in ("ShellCore1", "ShellCore2", "ShellCore3", "ShellSeat1", "ShellSeat2", "ShellSeat3", "WrapSpot",
+                                            "FuseCheck1", "FuseCheck2", "FuseCheck3")]
+        # On the bench's centre line (the wrapping post, the tube behind it): the cups reach 20 cm left and the tray 12
+        # right, and the contacts' lateral middle (3 cm left) turned the far right stands' facing band to 26 deg, past
+        # the left paw's reach to the paper.
+        sockets["LookPoint"] = (look_point_for(contacts, x0, az_deg=0.0), None, None)
+        work = sockets["LookPoint"][0]
     sockets["StationPoint"] = (np.array([0.0, 0.0, WORK_Z]), None, None)      # the trace's target, wherever the work sits
-    stand = np.array([min(lo[0] for lo, hi in proxies) - CAPSULE_R - CRAFT_STAND_CLEAR_CM, 0.0, 0.0])
+    stand = np.array([centre_stop(proxies), 0.0, 0.0])
     sockets["WorkStand"] = (stand, np.array([1.0, 0.0, 0.0]), np.array([0.0, 0.0, 1.0]))
     return parts, sockets, proxies, work
+
+
+STATE_CONTRACT = {
+    "common": {
+        "reads": "FView only (Active, Step, Committed[6], HeldStep, HeldMs, FailedStripSerial/AgeMs, LastAction); it "
+                 "never advances a hold, credits a unit or imposes a cooldown",
+        "Idle": "not Active, or not admitted at the station: the station's props in Committed's state, the paws free",
+        "Ready": "admitted (b09_craft_region.admitted), the step active, not held: the paws in the first working pose of "
+                 "the next unit, after its preparation clip",
+        "Held": "HeldStep == the step: the pose and props are a function of HeldMs alone",
+        "Committed": "Committed[step] advanced: the completion clip, then Ready for the next unit or the next step",
+        "Cancelled": "a timed hold ends uncredited (early release, ineligible, or a bend outside 640-960 ms): the presenter "
+                     "returns to Ready from where it is; work already shown by contact stays shown",
+        "Retry": "the next press after the release (root's WaitRelease): HeldMs restarts at 0",
+        "press_steps": "steps 2, 4, 5 are credited at the press; their clip is a function of LastAction.AgeMs for the "
+                       "matching Step and Unit; leaving, crouching or combat mid-clip only stops presenting it (nothing "
+                       "rolls back, nothing to retry); a reset or reload clears the record and the presenter's cursor",
+    },
+    "st_b09_rib_form": {
+        "step": 0, "kind": "timed hold, released within BendMs 800 +- 160",
+        "Ready": "hoop n+1 prepared (about 900 ms): the right paw takes the top layer's right-hand strip end (StripStock), "
+                 "lifts it out and carries it round the form's right to the notch and hooks it (the left paw waits off "
+                 "the form at WindSteady{n+1}); then the left comes in to press the hooked strip (WindPress{n+1}) as the "
+                 "right slides out along it to the guide (WindGuide{n+1})",
+        "Held": "HeldMs 0-800: the strip at flex_stage(HeldMs), the form turned by form_yaw_deg(n, flex), the needle at "
+                "gauge_angle(HeldMs); the left paw presses, the right holds the free strip as it draws through its grip",
+        "Committed": "Committed[0] = n+1: the hoop seats; the right paw lets the strip's end go into its lap; the next "
+                     "hoop's preparation follows (none after hoop 6)",
+        "Cancelled": "a release outside 640-960 ms or an early release: the split strip at SplitStripRest while "
+                     "FailedStripAgeMs < SPLIT_SHOW_MS, then a fresh strip's preparation",
+        "timing_conflict": "a re-press sooner than the preparation's ~900 ms after a commit or a split cuts the "
+                           "preparation short; with no cooldown the presenter must blend from where the paws are to the "
+                           "Held pose (measured, to be agreed with root)",
+    },
+    "st_b09_paste_bench": {
+        "steps": [1, 2], "kind": "step 1 a timed hold (PasteMs 1500) per panel; step 2 a press",
+        "Ready": "panel n+1: the frame turned by panel_turn_deg(n + 1) so its seam faces the hero; the left paw has "
+                 "taken sheet n+1 by its near end from the rail (SheetTake); the brush dipped at PasteDip",
+        "Held": "HeldMs 0-400: the left paw lays the sheet on the frame (gore PASTE_ORDER[n], wrapping from the seam "
+                "toward the hero's left) and holds it by its fingertips at SheetHold; the brush to the lower rim line. "
+                "400-1500: the stroke from the lower rim line to the upper (Seam_0..8), the bristle edge turned square "
+                "at each rim line; paste only where the bristles have swept",
+        "Committed": "Committed[1] = n+1: the left paw lets go, the cradle turns the frame +90 deg, the left takes the "
+                     "next sheet and the brush re-dips (about 800 ms)",
+        "Cancelled": "an early release: after 400 ms the sheet stays laid and held with the paste swept so far, the "
+                     "brush back to the pot; before 400 ms the paw keeps the sheet and returns to Ready",
+        "Retry": "the stroke from the lower rim line again (already pasted washi stays as it is)",
+        "timing_conflict": "a re-press sooner than the completion's ~800 ms (turn, next sheet, re-dip) leaves that "
+                           "preparation unfinished; with no cooldown the presenter must compress it (measured, to be "
+                           "agreed with root)",
+        "rims": "step 2's press seats the top rim from RimTopRest on the upper mouth (RimTopSeat). Measured conflict: "
+                "on the paste pose the upper mouth is out of reach (151 %); proposed: the cradle re-tilts the frame for "
+                "the rims (a two-axis cradle bringing the upper mouth to the front, as PASTE_FIRST_POSE did)",
+        "open": "the stroke's last sample at the upper rim line: hidden behind the laid gore from some stands, and "
+                "reach 98.1-99.8 % / wrist 76-78 deg at the far-left and near-right stands (b09_craft_region)",
+    },
+    "st_b09_oil_rack": {
+        "step": 3, "kind": "timed hold, PasteMs 1500",
+        "Ready": "the left paw's fingertips steady the hanging lantern (LanternSteady); the right brush dipped at OilDip",
+        "Held": "HeldMs 0-300: the carry from the dish to the swath's top (OilSwath_0, sagging OIL carry_lift_cm); "
+                "300-1500: the stroke down the remaining swath (OilSwath_0..8); the washi is wet only where the bristles "
+                "have swept (the swept footprint, a monotone union)",
+        "Committed": "Committed[3] = 1: the brush back to BrushRest; the lantern leaves the rack for PLAYER_SLOT",
+        "Cancelled": "early release: the wetness swept so far stays; the brush returns to the dish (Ready)",
+        "Retry": "the stroke from the swath's top again; already-wet washi stays as it is",
+    },
+    "st_b09_shell_bench": {
+        "steps": [4, 5], "kind": "press steps (credited at the press)",
+        "Committed[4]": "each press: a clip of at most 1200 ms over LastAction.AgeMs: take core k, to the paper, wrap and "
+                        "twist, to the rack, seat it (five phases, about 240 ms each)",
+        "Committed[5]": "the Inspect press (Coordination 277): a clip of at most 900 ms; the left paw passes over the "
+                        "three seated shells' fuse cord tips, FuseCheck3 to FuseCheck1, its elbow raised over them; "
+                        "nothing is lit, loaded or discharged; recipe counts, timing, reward and b10's charge fuse are "
+                        "unchanged; weapon 7 stays in its block, clear of the hand path",
+        "cancellation": "as every press step: credited at the press, so leaving or crouching mid-clip only stops "
+                        "presenting it; nothing to retry",
+    },
+}
 
 
 # Parts that reach past their station's proposed proxy, by design, with the reason (proxy_overhangs measures them).
 # Root's collision is root's; these are reported for its proxy decision.
 PROXY_OVERHANG_OK = {
-    "st_b09_paste_bench": ({"SM_B09_Form"} | {f"SM_B09_Hoop{k}" for k in range(1, 7)},
-                           "the lantern frame on its turntable, 27.5 cm forward (Coordination 241), its front past the "
-                           "bench's edge"),
+    "st_b09_rib_form": ({"SM_B09_FormBase", "SM_B09_StripStock"},
+                        "the form's foot flush with the bench's front edge and the strips' front ends toward the hero; "
+                        "the long strips also run out past the bench's back"),
+    "st_b09_paste_bench": ({"SM_B09_Form", "SM_B09_PasteCradle", "SM_B09_SheetRack", "SM_B09_PastePot", "SM_B09_PotBracket"}
+                           | {f"SM_B09_Hoop{k}" for k in range(1, 7)},
+                           "the frame on its tilted cradle, its lower end past the bench's front edge, and the pot and "
+                           "the sheet rail's near end in front of it, all at chest height (the region's work)"),
+    "st_b09_oil_rack": ({"SM_B09_OilRack", "SM_B09_DishStand", "SM_B09_OilDish", "SM_B09_DripTray"},
+                        "the low shelf, the dish on its stand and the drip tray, toward the hero"),
+    "st_b09_shell_bench": ({"SM_B09_ShellStand", "SM_B09_ShellRack", "SM_B09_ShellTray", "SM_B09_WrapPost", "SM_B09_WrapPaper"},
+                           "the board cantilevered over the bench's front edge with the shells' work on it"),
 }
-BODY_CLEAR_CM = 10.0                         # an overhang stays this far from the standing torso at the craft stand
+# The working region brings each station's work over its bench's front edge at chest height, above the proxies' tops.
+# These parts are reported for root's proxy decision; the hero's body is kept BODY_CLEAR_CM off every prop by the
+# region's body gate (b09_craft_region.body_gate).
 TORSO_FRONT_CM, TORSO_HALF_CM = 12.0, 17.0   # the torso's front and half-width from the stand (b09_craft_poses.TORSO)
 
 
@@ -1084,9 +1540,9 @@ def proxy_overhangs(i):
 
 
 def craft_stand(i):
-    """Where the hero stands to craft station i (station frame, facing +X): the capsule CRAFT_STAND_CLEAR_CM clear of
-    the front of the station's proposed proxy, centred on the work. b09_craft_poses.py checks both paws' whole
-    continuous actions from it, and the first-person checks look from its eye."""
+    """The natural stop (station frame): the capsule's axis where walking along +X on the station's centre line stops
+    against its proposed proxy (centre_stop), the near edge of the working region (b09_craft_region), whose gates check
+    every admitted stand and facing. The first-person checks look from its eye."""
     return station_parts(i)[1]["WorkStand"][0]
 
 
@@ -1119,11 +1575,11 @@ def state_meshes(i):
                 for k in range(1, 7) for f in FLEX_STAGES]
         rows += [(split_strip(), "its middle, lying flat", "SplitStripRest"), (needle(), "its hinge", "GaugePivot")]
     elif i == 1:
-        rows = [(gore(k), lf, "LanternCentre (turned by the turntable)") for k in range(1, 5)]
-        rows += [(box(f"SM_B09_WashiSheet{j}", (-14.0, -12.5, 0.0), (14.0, 12.5, 0.1), "M_B09_Washi"),
-                  "its bottom face's centre", f"WashiSheet{j} (the stack: sheet 4 on top, taken first)") for j in range(1, 5)]
+        rows = [(gore(k), lf, "LanternCentre (the frame on its cradle, turned by panel_turn_deg)") for k in range(1, 5)]
+        rows += [(flat_sheet(f"SM_B09_WashiSheet{j}"), "its near edge's middle", f"WashiSheet{j} (hung on the rack; sheet 1, outermost, taken first)")
+                 for j in range(1, 5)]
         rows += [(rim(w), "the ring's centre", f"Rim{w}Rest, then Rim{w}Seat") for w in ("Top", "Bottom")]
-        rows.append((brush("SM_B09_PasteBrush", 6.0), "the bristles' tip", "BrushRest, then along Seam{k}_0..8"))
+        rows.append((brush("SM_B09_PasteBrush", PASTE_BRUSH_W), "the bristles' tip", "BrushRest, then along Seam_0..8"))
     elif i == 2:
         rows = [(merge("SM_B09_LanternFinished", lantern("finished")), lf + "; it hangs from its hang point", "LanternHang - hang_point")]
         rows.append((brush("SM_B09_OilBrush", 5.0, 4.0, 16.0), "the bristles' tip", "BrushRest, then along OilStroke*"))
@@ -1134,6 +1590,7 @@ def state_meshes(i):
 
 # --- Shells ---------------------------------------------------------------------------------------------------------
 SHELL = {"core_cm": 4.8, "wrapped_cm": 5.4, "neck_cm": 1.6}
+SHELL_FUSE_TIP_CM = SHELL["wrapped_cm"] / 2 + SHELL["neck_cm"] + 3.0      # a wrapped shell's fuse cord's tip over its centre
 
 
 def shell(stage):
@@ -1276,7 +1733,8 @@ def clearance(i, step=10.0):
     eye = stand + [EYE[0], EYE[1], CAPSULE_HALF + EYE[2]]
     wp = work + o
     sight = wp - eye
-    occluders = sorted({m.name for m in parts if m.name not in WORK_OBJECT and _segment_meets_mesh(eye, wp, m.moved(o))})
+    own = WORK_OBJECT | SIGHT_WORK.get(i, set())
+    occluders = sorted({m.name for m in parts if m.name not in own and _segment_meets_mesh(eye, wp, m.moved(o))})
     pitch = math.degrees(math.atan2(sight[2], math.hypot(sight[0], sight[1])))
     return {"posture": "standing: rays from the capsule's centre at 88 cm. Crouched (half-height 44) is not covered by "
                        "this proof; crouched and native coverage are root's",
@@ -1338,27 +1796,39 @@ def key_points(i):
         return {"gauge": (dial, {"SM_B09_FlexGauge"}), "hoops": (hoops, WORK_OBJECT)}
     if i == 1:
         _, sockets, _, _ = station_parts(1)
-        # The seam's bottom end, at the rim line, is reported. From standing eye height the lantern's lower flare hides
-        # it, as a real lantern's would. The v5 gores' coarse facets dipped inside that flare and passed it; the
-        # 48-row gores resolve it.
-        return {"seam": ([sockets[f"Seam1_{j}"][0] for j in range(1, 9)], WORK_OBJECT),
-                "seam's bottom end at the rim (reported)": ([sockets["Seam1_0"][0]], WORK_OBJECT)}
+        # The worked seam on the tilted frame, rim line to rim line (Seam_0..8).
+        return {"seam": ([sockets[f"Seam_{j}"][0] for j in range(9)], WORK_OBJECT)}
     if i == 2:
         _, sockets, _, _ = station_parts(2)
-        # The front stroke is required. The side strokes (+-45 deg) are reported: their lowest samples, on the bottom
-        # shoulder, hide behind the belly from standing eye height, as a real lantern's do.
-        return {"oil front stroke": ([sockets[f"OilStroke0_{j}"][0] for j in range(9)], set()),
-                "oil side strokes (reported)": ([sockets[f"OilStroke{q}_{j}"][0] for q in (1, 2) for j in range(9)], set())}
+        # The remaining swath the stroke finishes (Coordination 268), from the top rim line down (OilSwath_0..8).
+        return {"oil swath": ([sockets[f"OilSwath_{j}"][0] for j in range(9)], set())}
     _, sockets, _, _ = station_parts(3)
     return {"shells": ([sockets[k][0] for k in ("ShellSeat1", "ShellSeat2", "ShellSeat3", "WrapSpot")], {"SM_B09_ShellRack", "SM_B09_WrapPaper"}),
-            "fuse": ([sockets["FuseInspect"][0], sockets["Muzzle"][0]], set())}
+            "fuses": ([sockets[f"FuseCheck{k}"][0] for k in (1, 2, 3)], set())}
 
 
 # OPEN DEFECTS of the first-person view from the craft stand (station, aspect, element): measured, not passed. Each
-# element is required; these fail it, and the tests keep them as expected failures until a layout repair lands
-# (B09_CRAFT_PAWS.md, the view repair proposal). Coordination 252: a span over the frame explains a defect; it is not
-# a readability pass.
+# element is required; a failing one is listed here and kept as an expected failure until a layout repair lands.
+# Coordination 252: a span over the frame explains a defect; it is not a readability pass. The working region's view
+# gate (b09_craft_region.view_gate, every admitted stand and facing) is the stronger requirement.
+# The first-person defects open on today's layouts (first_person at a 30 cm step, measured 2026-11-01), each asserted
+# as required and failing in test_b09_workshop_craft.ViewDefects:
+_GAUGE_OPEN = ("passes at the craft stand (facing 46.7 deg, band 8.66 deg), but from only 44.62 % of the 65 working-side "
+               "positions (90 % required): the dial, scaled 0.7 to fit beside the form, shows its 640-960 ms band under "
+               "2 deg beyond about 2 m, and from the right the form hides it, the dial standing level with the form's "
+               "left side (open: the rib repair)")
+_SEAM_OPEN = ("during the last panel's stroke the seam's top end at the upper rim line (Seam_8) hides behind the third "
+              "pasted gore (SM_B09_Washi3) from the craft stand, and the seam passes from 63.24 % of the 68 working-side "
+              "positions (90 % required); the region's view gate fails on the same sample (open: the paste's top end)")
 OPEN_VIEW_DEFECTS = {
+    ("st_b09_rib_form", "16:9", "gauge"): _GAUGE_OPEN,
+    ("st_b09_rib_form", "21:9", "gauge"): _GAUGE_OPEN,
+    ("st_b09_paste_bench", "16:9", "seam"): _SEAM_OPEN,
+    ("st_b09_paste_bench", "21:9", "seam"): _SEAM_OPEN,
+}
+# Withdrawn with the whole-lantern oil stroke (Coordination 268 replaced it by the remaining swath): its record, as last
+# measured on signed 0a64ce6b.
+WITHDRAWN_VIEW_DEFECTS = {
     ("st_b09_oil_rack", "16:9", "oil front stroke"):
         "its bottom socket, at the bottom mouth (OilStroke0_8), hides under the lantern's lower bulge from the craft "
         "stand's eye (the paste seam's bottom end is reported for the same reason; whether the oil's may be is root's); "
@@ -1454,7 +1924,10 @@ def first_person(i, step=10.0):
         for m in [form()] + [hoop(k) for k in range(1, 4)] + [hoop(4, 0.75)]:
             meshes.append(Mesh(m.name, to_station(m.verts, yaw, lantern_centre(0)), m.tris, m.slot, {}, m.collision, m.tri_slots))
     elif i == 1:
-        meshes += [gore(k).moved(lantern_centre(1)) for k in (2, 3, 4)]  # the gores already pasted, the seam's own one aside
+        # The last panel's stroke: the gores already pasted on the tilted frame as it stands for the fourth panel
+        # (b09_craft_poses lays them so), the seam's own one aside.
+        meshes += [Mesh(f"SM_B09_Washi{k}", paste_frame(gore(k).verts, 4), gore(k).tris, "M_B09_Washi")
+                   for k in PASTE_ORDER[:3]]
     elif i == 2:
         meshes += [m.moved(sockets["LanternHang"][0] - hang_point()) for m in lantern("finished")]
     eye_of = lambda pos: pos + [EYE[0], EYE[1], CAPSULE_HALF + EYE[2]]  # noqa: E731
@@ -1522,28 +1995,34 @@ STATES = {
                                                     "(suggested), then a fresh strip; a new press clears it (root's -1)"},
         {"view": "Assist", "shows": "the same gauge; the strip completes at 800 ms (the rules' assist pass)"}],
     "st_b09_paste_bench": [
-        {"view": "Committed[0] == 6", "shows": "the form with all six hoops (the bends are done to come here)"},
-        {"view": "Committed[1] = n (0..4)", "shows": "SM_B09_Washi1..n; the stack keeps sheets 1..4 - n (1..3 - n while a "
-                                                     "paste is held: its sheet is Washi{n+1}); the turntable turns the "
-                                                     "lantern by -90 deg x n about Z, so seam n+1 faces the hero"},
-        {"view": "HeldStep == 1, HeldMs", "shows": "Washi{n+1} revealed to height_frac <= HeldMs / 1500 along seam n+1 "
-                                                   "(sockets Seam{n+1}_0..8, bottom to top), the brush between them "
-                                                   "(dipped at PasteDip first)"},
-        {"view": "Committed[2] == 1", "shows": "SM_B09_RimTop/Bottom from Rim*Rest (the pot and paper stands) to "
-                                               "Rim*Seat: a press clip (root's last-action serial and age)"}],
+        {"view": "Committed[0] == 6", "shows": "the frame with all six hoops on its cradle (the bends are done to come here)"},
+        {"view": "Committed[1] = n (0..4)", "shows": "SM_B09_Washi for PASTE_ORDER[:n] on the frame, turned by "
+                                                     "panel_turn_deg(n + 1) so panel n + 1's seam faces the hero; the "
+                                                     "rail keeps sheets n+1..4 (sheet n+1 in the left paw while a paste "
+                                                     "is held)"},
+        {"view": "HeldStep == 1, HeldMs", "shows": "STATE_CONTRACT: the sheet laid (0-400 ms) and held at SheetHold, "
+                                                   "the brush along Seam_0..8 (400-1500 ms); paste only where the "
+                                                   "bristles have swept"},
+        {"view": "Committed[2] == 1", "shows": "SM_B09_RimTop from RimTopRest to RimTopSeat: a press clip (root's "
+                                               "last-action serial and age); the bottom rim is fitted from the start "
+                                               "(RimBottomSeat). Open: on the paste pose the upper mouth is out of "
+                                               "reach; the cradle must re-tilt the frame for it (STATE_CONTRACT)"}],
     "st_b09_oil_rack": [
-        {"view": "Committed[2] == 1, Committed[3] == 0", "shows": "the finished lantern (bail fitted, form drawn out) on "
-                                                                  "LanternHang, dry washi; before that the rack is empty"},
-        {"view": "HeldStep == 3, HeldMs", "shows": "oil wetness to height_frac >= 1 - HeldMs / 1500 (top down); the brush "
-                                                   "along OilStroke0_0..8, dipped at OilDip (the dish on its bracket) "
-                                                   "first; the other paw steadies the lantern (LanternSteady)"},
+        {"view": "Committed[2] == 1, Committed[3] == 0", "shows": "the papered, rimmed lantern (bail fitted, form drawn "
+                                                                  "out) on LanternHang, oiled but for its remaining "
+                                                                  "swath; before that the rack is empty"},
+        {"view": "HeldStep == 3, HeldMs", "shows": "STATE_CONTRACT: the brush from OilDip to the swath's top, then down "
+                                                   "OilSwath_0..8; the washi wet only where the bristles have swept; "
+                                                   "the other paw's fingertips steady the lantern (LanternSteady)"},
         {"view": "Committed[3] == 1", "shows": "the rack empties; the lantern hangs at PLAYER_SLOT in the rafters"}],
     "st_b09_shell_bench": [
-        {"view": "Committed[4] = n (0..3)", "shows": "n wrapped shells seated (ShellSeat1..n) on the shell stand; "
-                                                     "3 - n cores in the tray. Each press: a clip, the core taken, "
-                                                     "wrapped at WrapSpot and seated"},
-        {"view": "Committed[5] == 1", "shows": "the fuse inspected (FuseInspect, the other paw at WeaponSteady): a "
-                                               "press clip; weapon 7 is handed over at the beat's end"}],
+        {"view": "Committed[4] = n (0..3)", "shows": "n wrapped shells seated (ShellSeat1..n) in the rack's cups; 3 - n "
+                                                     "cores in the tray. Each press: a clip, the core taken, wrapped "
+                                                     "and twisted over the paper (WrapSpot) and seated"},
+        {"view": "Committed[5] == 1", "shows": "the fuses checked (Coordination 277): a press clip, the left paw over "
+                                               "the three seated shells' fuse cord tips (FuseCheck3 to FuseCheck1); "
+                                               "weapon 7, the tube, stands in its block behind the board, clear of "
+                                               "the hand path, and is handed over at the beat's end"}],
     "all": [
         {"view": "RecipeComplete (later checkpoints)", "shows": "every station in its finished state and all 40 slots filled"},
         {"view": "!Active && !RecipeComplete", "shows": "every station at its start; the suggested 24 craftspeople's lanterns"}],
@@ -1554,7 +2033,11 @@ def spec():
     out = {"schema": 1, "generator": "scripts/art/b09_workshop_craft.py", "inputs": INPUTS,
            "frames": "Unreal cm, Z up. A station's frame: its origin is the station point on its floor (world X, Y, "
                      "FloorAt), with the world's axes. The hero works from -X, facing +X.",
-           "view_contract": VIEW_CONTRACT, "states_all": STATES["all"],
+           "view_contract": VIEW_CONTRACT, "states_all": STATES["all"], "state_contract_common": STATE_CONTRACT["common"],
+           "inspect_decision": ("Coordination 277: the single Inspect unit checks the three completed festival shells' fuse "
+                                "cords (FuseCheck3 to FuseCheck1); nothing is lit, loaded or discharged; recipe counts, "
+                                "timing, reward and b10's charge fuse are unchanged; weapon 7 stays visibly supported in "
+                                "its block, clear of the hand path. A presentation decision, not a contact-gate waiver"),
            "recipe": {"steps": [{"step": k, "kind": kind, "count": n, "station": STATIONS[STEP_STATIONS[k]][0]}
                                 for k, (kind, n) in enumerate(STEPS)], "bend_ms": [BEND_MS, BEND_TOL_MS], "paste_ms": PASTE_MS,
                       "output_lanterns": OUTPUT_LANTERNS},
@@ -1611,6 +2094,24 @@ def spec():
                                         "placed_at": where, "bounds_cm": [lo.round(2).tolist(), hi.round(2).tolist()],
                                         "attributes": sorted(m.attrs), "collision": m.collision})
         row["first_person"] = first_person(i, step=20.0)
+        # The working region, the presenter's states, the contact paths and the supports (Coordinations 268-277).
+        import b09_craft_region as R_
+        import b09_craft_poses as P_
+        import b09_prop_clash as C_
+        row["region"] = R_.region_spec(i)
+        row["state_contract"] = STATE_CONTRACT[sid]
+        row["actions"] = P_.action_summary(i)
+        row["supports"] = [{"state": label, "rests": [list(pair) for pair in pairs]} for label, _, pairs in C_.scenes(i)]
+        if i == 1:
+            row["paste_order"] = list(PASTE_ORDER)
+            row["panel_turn_deg"] = [panel_turn_deg(k) for k in (1, 2, 3, 4)]
+            row["adhesive_mask"] = ("paste only where the bristles have swept: the union of the brush's bristle edge (its "
+                                    "two corners, PASTE_BRUSH_W apart) along Seam_0..8 up to HeldMs; nothing beyond it")
+        if i == 2:
+            row["wetness_mask"] = {"swath_sockets": [f"OilSwath_{j}" for j in range(9)], "swath": dict(OIL_SWATH),
+                                   "rule": "wet only where the bristles have swept: the union of the bristle edge's "
+                                           "footprint along OilSwath_0..8 up to HeldMs; the rest of the lantern was "
+                                           "oiled before (Committed[2]) and the remaining swath is what the hold finishes"}
         out["stations"].append(row)
     lantern_parts = {}
     for stage in ("frame", "papered", "rimmed", "finished"):
@@ -1637,7 +2138,7 @@ def candidates():
     """The candidate assets in export order: [(name, mesh, sockets {name: (point, x | None, z | None)}, frame,
     lantern_frame)].
     - Each station's static mesh, in the station frame. The paste bench's form and hoops are split out as
-      SM_B09_PasteFrame (lantern frame), since its turntable turns them.
+      SM_B09_PasteFrame (lantern frame), since the cradle turns them with it.
     - Every state mesh, in its own frame (state_meshes).
     - The drying poles and their 40 hooks, in world cm, placed at the world origin."""
     out = []

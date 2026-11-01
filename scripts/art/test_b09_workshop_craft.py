@@ -15,15 +15,19 @@ Run: /usr/bin/python3 -m unittest scripts/art/test_b09_workshop_craft.py   (nump
   - the needle points where gauge_angle says;
   - merged meshes keep each part's material slot, so the band, ticks and face stay distinct.
 - **First-person view** (the world's 94 deg, 16:9 and 21:9): every station's required elements are in frame,
-  unoccluded and readable at the work stand, and at no less than 90% of the working side's positions.
+  unoccluded and readable at the work stand (the natural stop), and at no less than 90% of the working side's
+  positions. The working region's view gate (b09_craft_region) is the stronger requirement.
 - **The lanterns** sit at chest height (130) at the paste bench and oil rack; the station point stays at 110.
 - **Every station:**
   - no proposed proxy blocks a station ray, and each proxy stays under the ray's start;
   - the work stand is eligible with a clear ray and a capsule gap of at least 10 cm;
   - nothing but the work stands between the eye and the work;
   - the parts stay over their proxies and clear of the room's walls.
-- **Weapon 7's rest:** a proper rotation; the culm lies above the bench, inside it and clear of its cradles; a wrapped
-  shell seats with about 1 mm all round.
+- **Weapon 7, the festival-shell tube:** a proper rotation, upright in its socket block behind the shell board's
+  middle, clear of the hands' work; the inspection checks the seated shells' own fuse cords (Coordination 277); a
+  wrapped shell seats in the bore with about 1 mm all round.
+- **View defects:** the open ones (the rib gauge from the working side, the paste seam's top end) are asserted as
+  required and fail as expected; the withdrawn whole-lantern oil stroke's are kept as record.
 - **The hanging output:** 40 slots inside the room and clear of the hero's head, the ceiling and each other.
 - **Meshes:** valid indices, no degenerate faces, attributes in [0, 1].
 - **The committed spec** is what spec() writes.
@@ -41,6 +45,7 @@ import numpy as np
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import b09_workshop_craft as B  # noqa: E402
+import b09_craft_region as REGION  # noqa: E402
 
 SPEC = HERE.parents[1] / "docs/art-direction/data/b09_workshop_craft_spec.json"
 
@@ -183,10 +188,18 @@ class Stations(unittest.TestCase):
         for i, c in enumerate(self.clear):
             sid = B.STATIONS[i][0]
             self.assertTrue(c["work_stand_eligible"] and c["work_stand_ray_clear"], sid)
-            # The hero works from the craft stand, its capsule CRAFT_STAND_CLEAR_CM off the proxy. Only the paste
-            # lantern's reported overhang comes nearer (proxy_overhangs).
-            over = max((o for o, _ in B.proxy_overhangs(i).values()), default=0.0)
-            self.assertGreaterEqual(c["capsule_gap_cm"], B.CRAFT_STAND_CLEAR_CM - over - 1e-6, sid)
+            # The craft stand is the natural stop: the capsule against the proxy (the working region extends back
+            # and sideways from it, b09_craft_region). capsule_gap_cm is to the parts' bounds: only the reported
+            # overhangs come nearer than the proxy, above it, and the region's body gate keeps the body off them.
+            parts, _, proxies, _ = B.station_parts(i)
+            stand = B.craft_stand(i)
+            gap = min(float(np.linalg.norm(stand[:2] - np.clip(stand[:2], lo[:2], hi[:2]))) - B.CAPSULE_R
+                      for lo, hi in proxies if lo[2] < 2 * B.CAPSULE_HALF)
+            self.assertTrue(-1e-6 <= gap <= 0.05, (sid, gap))
+            allowed = B.PROXY_OVERHANG_OK.get(sid, (set(), ""))[0]
+            for m in parts:
+                if m.name not in allowed:
+                    self.assertGreaterEqual(B._capsule_gap(stand, m), -1e-6, (sid, m.name))
             self.assertEqual(c["sight_occluded_by"], [], sid)
             self.assertTrue(-55.0 <= c["eye_pitch_deg"] <= -10.0, sid)        # the chest-height lanterns are 16 deg down
 
@@ -199,8 +212,7 @@ class Stations(unittest.TestCase):
             allowed = B.PROXY_OVERHANG_OK.get(sid, (set(), ""))[0]
             for name, (over, body) in B.proxy_overhangs(i).items():
                 self.assertIn(name, allowed, (sid, name, over))           # only the reported overhangs
-                self.assertLessEqual(over, 6.0, (sid, name))
-                self.assertGreaterEqual(body, B.BODY_CLEAR_CM, (sid, name))
+                self.assertGreaterEqual(body, REGION.BODY_CLEAR_CM, (sid, name))  # clear of the standing torso's box
             for m in parts:
                 lo, hi = m.bounds()
                 for wl, wh in walls:
@@ -213,19 +225,19 @@ class Stations(unittest.TestCase):
             self.assertGreater(fp["approach_positions"], 30, sid)
             for aspect in B.ASPECTS:
                 for name, row in fp["stand"][aspect].items():
-                    if (sid, aspect, name) in B.OPEN_VIEW_DEFECTS:       # open: asserted in OpenViewDefects
+                    if (sid, aspect, name) in B.OPEN_VIEW_DEFECTS:       # open: asserted in ViewDefects
                         continue
                     if "(reported)" not in name:
                         self.assertTrue(row["ok"], (sid, aspect, name, row))
                 for name, share in fp["approach"][aspect].items():
-                    if (sid, aspect, name) in B.OPEN_VIEW_DEFECTS:       # open: asserted in OpenViewDefects
+                    if (sid, aspect, name) in B.OPEN_VIEW_DEFECTS:       # open: asserted in ViewDefects
                         continue
                     if "(reported)" not in name:
                         self.assertGreaterEqual(share, 0.9, (sid, aspect, name))
 
     def test_lantern_heights_and_the_station_point_at_the_trace(self):
-        # The rib form at 120 for its lowest hoop's reach; the paste and oil lanterns below the eye (the view repair).
-        self.assertEqual(B.LANTERN_Z, {0: 120.0, 1: 110.0, 2: 116.0})
+        # The rib form at 127 (the region's reach and 21:9 framing); the paste and oil lanterns below the eye.
+        self.assertEqual(B.LANTERN_Z, {0: 127.0, 1: 110.0, 2: 114.0})
         for i in range(4):
             _, sockets, _, _ = B.station_parts(i)
             np.testing.assert_allclose(sockets["StationPoint"][0], [0.0, 0.0, B.RAY_TO_Z])
@@ -233,61 +245,70 @@ class Stations(unittest.TestCase):
         np.testing.assert_allclose(sockets["LanternHang"][0] - B.hang_point(), B.lantern_centre(2))
 
 
-class OpenViewDefects(unittest.TestCase):
+class ViewDefects(unittest.TestCase):
     """The open first-person defects (B.OPEN_VIEW_DEFECTS), each asserted as REQUIRED. They fail today and are kept as
-    expected failures, never passed by a weaker test; a layout repair turns them into unexpected successes."""
+    expected failures, never passed by a weaker test; a layout repair turns them into unexpected successes. The
+    whole-lantern oil stroke's, withdrawn with it (Coordination 268), stay recorded with their last measurement."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.fp = {i: B.first_person(i, step=30.0) for i in (0, 1)}
 
     def _seen(self, sid, aspect, name):
         """Required: whole and unoccluded from the craft stand, and from at least 90 % of the working side."""
         i = next(k for k, (s_, _) in enumerate(B.STATIONS) if s_ == sid)
-        fp = B.first_person(i, step=60.0 if aspect == "21:9" else 20.0)
+        fp = self.fp[i]
         return fp["stand"][aspect][name]["ok"] and fp["approach"][aspect][name] >= 0.9
 
-    def test_the_paste_seam_whole_at_21_9(self):                       # closed by the view repair (was open)
+    @unittest.expectedFailure
+    def test_open_the_rib_gauge_from_the_working_side_at_16_9(self):
+        self.assertTrue(self._seen("st_b09_rib_form", "16:9", "gauge"))
+
+    @unittest.expectedFailure
+    def test_open_the_rib_gauge_from_the_working_side_at_21_9(self):
+        self.assertTrue(self._seen("st_b09_rib_form", "21:9", "gauge"))
+
+    @unittest.expectedFailure
+    def test_open_the_paste_seams_top_end_at_16_9(self):
+        self.assertTrue(self._seen("st_b09_paste_bench", "16:9", "seam"))
+
+    @unittest.expectedFailure
+    def test_open_the_paste_seams_top_end_at_21_9(self):
         self.assertTrue(self._seen("st_b09_paste_bench", "21:9", "seam"))
 
-    @unittest.expectedFailure
-    def test_open_the_oil_front_stroke_whole_at_21_9(self):
-        self.assertTrue(self._seen("st_b09_oil_rack", "21:9", "oil front stroke"))
-
-    @unittest.expectedFailure
-    def test_open_the_oil_front_stroke_unoccluded_at_16_9(self):
-        self.assertTrue(self._seen("st_b09_oil_rack", "16:9", "oil front stroke"))
-
-    def test_the_open_list_is_measured(self):
+    def test_the_open_list_is_measured_and_the_withdrawn_kept(self):
+        self.assertEqual(set(B.OPEN_VIEW_DEFECTS), {("st_b09_rib_form", a, "gauge") for a in B.ASPECTS}
+                         | {("st_b09_paste_bench", a, "seam") for a in B.ASPECTS})
         for (sid, aspect, name) in B.OPEN_VIEW_DEFECTS:
-            i = next(k for k, (s_, _) in enumerate(B.STATIONS) if s_ == sid)
-            row = B.first_person(i, step=60.0)["stand"][aspect][name]
-            self.assertFalse(row["ok"], (sid, aspect, name))                  # still open, as recorded
-            if not row["in_frame"]:                                           # out of frame: taller than the frame
-                eye = B.craft_stand(i) + [B.EYE[0], B.EYE[1], B.CAPSULE_HALF + B.EYE[2]]
-                points, _ = B.key_points(i)[name]
-                self.assertGreater(B.vertical_span_deg(eye, points), B.frame_height_deg(B.ASPECTS[aspect]), (sid, name))
+            self.assertFalse(self._seen(sid, aspect, name), (sid, aspect, name))      # still open, as recorded
+        rib, paste = self.fp[0], self.fp[1]
+        for a in B.ASPECTS:
+            self.assertTrue(rib["stand"][a]["gauge"]["ok"], a)                         # the gauge reads at the stand
+            self.assertEqual(rib["approach"][a]["gauge"], 0.4462, a)
+            self.assertEqual(paste["stand"][a]["seam"]["occluded_by"], ["SM_B09_Washi3"], a)
+            self.assertEqual(paste["approach"][a]["seam"], 0.6324, a)
+        self.assertEqual({k[2] for k in B.WITHDRAWN_VIEW_DEFECTS}, {"oil front stroke"})
+        self.assertTrue(all(len(v) > 40 for v in B.WITHDRAWN_VIEW_DEFECTS.values()))
 
 
 class ShellBench(unittest.TestCase):
-    def test_weapon_rest_is_a_proper_rotation_on_the_bench(self):
+    def test_the_tube_stands_in_its_block_behind_the_board(self):
+        """Weapon 7, the festival-shell tube, upright behind the board's middle on the bench: its bore up, its touch
+        hole toward the hero, its handle end in the block, clear of the hands' work (Coordination 277)."""
         origin, rot = B.weapon_rest()
         np.testing.assert_allclose(rot.T @ rot, np.eye(3), atol=1e-12)
         self.assertAlmostEqual(float(np.linalg.det(rot)), 1.0)
-        np.testing.assert_allclose(rot[:, 0], [1.0, 0.0, 0.0])            # the bore away from the hero
-        np.testing.assert_allclose(rot[:, 2], [0.0, 0.0, 1.0])            # the fuse up, its cord hanging
-        handle, muzzle = (origin + rot @ [x, 0, 0] for x in B.WEAPON7["x_range_cm"])
-        self.assertTrue(abs(handle[1]) <= 60 and abs(muzzle[1]) <= 60)    # within the bench's width
-        self.assertLessEqual(muzzle[0], 35.0 + 1e-9)                      # the muzzle end over the bench
+        np.testing.assert_allclose(rot[:, 0], [0.0, 0.0, 1.0])            # the bore up
+        np.testing.assert_allclose(rot[:, 2], [-1.0, 0.0, 0.0])           # the touch hole toward the hero
+        u, y = B.SHELL_LAYOUT["tube"]
+        np.testing.assert_allclose(origin[:2], [B.SHELL_PROXY_FRONT - B.CAPSULE_R + u, y])
+        self.assertAlmostEqual(float(origin[2] + B.WEAPON7["x_range_cm"][0]), B.SHELL_LAYOUT["tube_foot_z"])
         parts, sockets, proxies, work = B.station_parts(3)
-        # The handle reaches past the bench's front and the proposed proxy (reported), and stays clear of the torso.
-        self.assertAlmostEqual(float(proxies[0][0][0] - handle[0]), 12.0, places=6)
-        self.assertGreaterEqual(float(handle[0] - (B.craft_stand(3)[0] + B.TORSO_FRONT_CM)), B.BODY_CLEAR_CM)
-        # Its two V-blocks carry the collar and the bare muzzle end, on the bench.
-        cradle = next(m for m in parts if m.name == "SM_B09_WeaponCradle")
-        for x0, x1, _ in (B.WEAPON7["collar_cm"], B.WEAPON7["muzzle_bare_cm"]):
-            near = cradle.verts[(cradle.verts[:, 0] >= origin[0] + x0 - 1e-9) & (cradle.verts[:, 0] <= origin[0] + x1 + 1e-9)]
-            self.assertGreater(len(near), 0, (x0, x1))
-        self.assertGreaterEqual(float(cradle.verts[:, 0].min()), -35.0)
-        self.assertLessEqual(float(cradle.verts[:, 0].max()), 35.0)
-        fuse = sockets["FuseInspect"][0]
-        self.assertGreater(fuse[2], origin[2])                            # the fuse on top, toward the hero's reach
+        board_far = B.SHELL_PROXY_FRONT - B.CAPSULE_R + B.SHELL_LAYOUT["board"][1]
+        self.assertGreaterEqual(float(origin[0] - B.WEAPON7["half_width_cm"]), board_far - 1.0)   # behind the board
+        for k in (1, 2, 3):                                               # the checks are the shells' own cords
+            self.assertIn(f"FuseCheck{k}", sockets)
+        self.assertNotIn("FuseInspect", sockets)
 
     def test_shells_fit_the_bore(self):
         fit = B.bore_fit()

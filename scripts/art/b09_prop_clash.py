@@ -63,6 +63,57 @@ def weapon7():
     return _WEAPON["mesh"]
 
 
+HERO_FBX = "Content/SourceArt/Characters/Hero/SM_Nyaagyu_HeroCharacter.fbx"
+BODY_HALF_WIDTH_CM = 22.0                    # the torso, legs, head and worn gear; the arms beyond are the sleeves' gate
+ARM_BAND_Z = (55.0, 140.0)                   # where the rest pose's arms and sleeves hang in front of the body
+TORSO_MARGIN = 0.08                          # the torso's section ellipse is grown by this share
+
+
+def hero_body():
+    """The hero's production mesh (SM_Nyaagyu_HeroCharacter.fbx) as Unreal places it: cm, its Y mirrored, feet on the
+    floor, the body's axis at x = y = 0, facing +X. Only the triangles within BODY_HALF_WIDTH_CM of the axis are kept,
+    so the rest-pose arms drop out (the pose gate's sleeves stand for the working arms); the gear worn on the body
+    stays. Read once."""
+    if "body" not in _WEAPON:
+        import fbx_unreal_sockets as F
+        g = F.geometry_arrays(str(ROOT / HERO_FBX))["SM_Nyaagyu_HeroCharacter"]
+        v = g["Vertices"].reshape(-1, 3) * 100.0
+        v[:, 1] *= -1.0
+        idx = g["PolygonVertexIndex"].astype(np.int64)
+        tris, start = [], 0
+        for k in np.nonzero(idx < 0)[0]:
+            poly = list(idx[start:k]) + [~idx[k]]
+            tris += [(poly[0], poly[j + 1], poly[j]) for j in range(1, len(poly) - 1)]
+            start = k + 1
+        t = np.array(tris, np.int64)
+        keep = np.all(np.abs(v[t][:, :, 1]) <= BODY_HALF_WIDTH_CM, axis=1)
+        # The rest pose's forearms and sleeves come forward at the front diagonals between ARM_BAND_Z (14-27 cm ahead,
+        # 14-37 cm out): inside the band, in the front half, keep only what lies within the torso's own section, an
+        # ellipse through its front (|y| < 4) and side (|x| < 4) extents at that height, grown by TORSO_MARGIN.
+        z0, z1 = ARM_BAND_Z
+        bands = np.arange(z0, z1 + 4.0, 4.0)
+        a_z, b_z = [], []
+        for zb in bands:
+            sl = v[(v[:, 2] >= zb - 2.0) & (v[:, 2] < zb + 2.0)]
+            fr = sl[(np.abs(sl[:, 1]) < 4.0) & (sl[:, 0] > 0.0)]
+            sd = sl[(np.abs(sl[:, 0]) < 4.0) & (np.abs(sl[:, 1]) <= BODY_HALF_WIDTH_CM)]
+            a_z.append(float(fr[:, 0].max()) if len(fr) else 20.0)
+            b_z.append(float(np.abs(sd[:, 1]).max()) if len(sd) else BODY_HALF_WIDTH_CM)
+        a_v, b_v = np.interp(v[:, 2], bands, a_z), np.interp(v[:, 2], bands, b_z)
+        inside = (np.maximum(v[:, 0], 0.0) / a_v) ** 2 + (v[:, 1] / b_v) ** 2 <= (1.0 + TORSO_MARGIN) ** 2
+        arm = (v[:, 2] >= z0) & (v[:, 2] <= z1) & (v[:, 0] > 0.0) & ~inside
+        keep &= ~np.any(arm[t], axis=1)
+        _WEAPON["body"] = B.Mesh("SM_Nyaagyu_HeroCharacter", v, t[keep], "M_Hero")
+    return _WEAPON["body"]
+
+
+def body_at(stand, yaw_deg=0.0):
+    """The hero's body standing at stand (station frame, the capsule's axis), facing +X turned by yaw_deg."""
+    a = math.radians(yaw_deg)
+    rz = np.array([[math.cos(a), -math.sin(a), 0.0], [math.sin(a), math.cos(a), 0.0], [0.0, 0.0, 1.0]])
+    return hero_body().moved(np.array([stand[0], stand[1], 0.0]), rot=rz)
+
+
 def weapon7_placed():
     origin, rot = B.weapon_rest()
     return weapon7().moved(origin, rot=rot)
@@ -182,18 +233,23 @@ def scenes(i):
                 out.append((f"hoop {k} at flex {f:g}, needle at {ms} ms", list(parts) + rib + [needle, split],
                             [("SM_B09_SplitStrip", "SM_B09_RibFormBench"), ("SM_B09_GaugeNeedle", "SM_B09_FlexGauge")]))
     elif i == 1:
-        lc = B.lantern_centre(1)
+        # The frame on its cradle (paste_frame): panel 1's gore laid on it with the next three sheets on the rack, and
+        # all four panels on with the rims seated. The bottom rim is fitted to the frame's lower mouth from the start.
         st = {m.name: m for m, _, _ in B.state_meshes(1)}
-        sheets = [at(st[f"SM_B09_WashiSheet{j}"], f"WashiSheet{j}") for j in range(1, 5)]
-        gores = [B.gore(k).moved(lc) for k in range(1, 5)]
-        rest = [at(B.rim(w), f"Rim{w}Rest", f"SM_B09_Rim{w}") for w in ("Top", "Bottom")]
-        seat = [at(B.rim(w), f"Rim{w}Seat", f"SM_B09_Rim{w}") for w in ("Top", "Bottom")]
         brush = at(st["SM_B09_PasteBrush"], "BrushRest")
-        sup = [("SM_B09_WashiSheet1", "SM_B09_PaperStand")] + [(f"SM_B09_WashiSheet{j}", f"SM_B09_WashiSheet{j - 1}") for j in (2, 3, 4)]
-        sup += [("SM_B09_PastePot", "SM_B09_PotStand"), ("SM_B09_PasteBrush", "SM_B09_PastePot")]
-        out.append(("sheets, rims and brush at rest; the four panels on", list(parts) + gores + sheets + rest + [brush],
-                    sup + [("SM_B09_RimTop", "SM_B09_PotStand"), ("SM_B09_RimBottom", "SM_B09_Form")]))
-        out.append(("the rims seated", list(parts) + gores + [brush] + seat,
+        sheets = [at(st[f"SM_B09_WashiSheet{j}"], f"WashiSheet{j}") for j in (2, 3, 4)]
+        first = B.Mesh(f"SM_B09_Washi{B.PASTE_ORDER[0]}", B.paste_frame(B.gore(B.PASTE_ORDER[0]).verts, 1), B.gore(B.PASTE_ORDER[0]).tris, "M_B09_Washi")
+        laid = [B.Mesh(f"SM_B09_Washi{k}", B.paste_frame(B.gore(k).verts, 4), B.gore(k).tris, "M_B09_Washi") for k in B.PASTE_ORDER]
+        bottom = at(B.rim("Bottom"), "RimBottomSeat", "SM_B09_RimBottom")
+        sup = [("SM_B09_WashiSheet4", "SM_B09_SheetRack"), ("SM_B09_WashiSheet3", "SM_B09_WashiSheet4"),
+               ("SM_B09_WashiSheet2", "SM_B09_WashiSheet3"), ("SM_B09_PastePot", "SM_B09_PotBracket"),
+               ("SM_B09_PasteBrush", "SM_B09_PastePot"), ("SM_B09_RimBottom", "SM_B09_Form"),
+               ("SM_B09_PasteCradle", "SM_B09_PasteBench"), ("SM_B09_PotBracket", "SM_B09_PasteBench"),
+               ("SM_B09_SheetRack", "SM_B09_PasteBench"), ("SM_B09_RimShelf", "SM_B09_SheetRack")]
+        out.append(("panel 1 laid; sheets 2-4 on the rack; the top rim on its shelf; the brush in the pot",
+                    list(parts) + [first] + sheets + [at(B.rim("Top"), "RimTopRest", "SM_B09_RimTop"), bottom, brush],
+                    sup + [("SM_B09_RimTop", "SM_B09_RimShelf")]))
+        out.append(("all four panels on; the rims seated", list(parts) + laid + [brush, bottom, at(B.rim("Top"), "RimTopSeat", "SM_B09_RimTop")],
                     [("SM_B09_RimTop", "SM_B09_Form"), ("SM_B09_RimBottom", "SM_B09_Form")]))
     elif i == 2:
         hp = sock("LanternHang")
@@ -201,16 +257,17 @@ def scenes(i):
         st = {m.name: m for m, _, _ in B.state_meshes(2)}
         brush = at(st["SM_B09_OilBrush"], "BrushRest")
         out.append(("the finished lantern hung; the brush at rest", list(parts) + lantern + [brush],
-                    [("SM_B09_OilBrush", "SM_B09_OilDish"), ("SM_B09_OilDish", "SM_B09_DishBracket"), ("SM_B09_Bail", "SM_B09_RackHook"),
-                     ("SM_B09_OilJar", "SM_B09_OilRack"), ("SM_B09_DripTray", "SM_B09_OilRack")]))
+                    [("SM_B09_OilBrush", "SM_B09_OilDish"), ("SM_B09_OilDish", "SM_B09_DishStand"), ("SM_B09_DishStand", "SM_B09_OilRack"),
+                     ("SM_B09_Bail", "SM_B09_RackHook"), ("SM_B09_OilJar", "SM_B09_OilRack"), ("SM_B09_DripTray", "SM_B09_OilRack")]))
     else:
         weapon = weapon7_placed()
         shells = [B.shell("wrapped").moved(sock(f"ShellSeat{k}"), name=f"SM_B09_ShellWrapped{k}") for k in (1, 2, 3)]
         cores = [B.shell("core").moved(sock(f"ShellCore{k}"), name=f"SM_B09_ShellCore{k}") for k in (1, 2, 3)]
         sup = [(f"SM_B09_ShellWrapped{k}", "SM_B09_ShellRack") for k in (1, 2, 3)] + [(f"SM_B09_ShellCore{k}", "SM_B09_ShellTray") for k in (1, 2, 3)]
-        sup += [(n, "SM_B09_ShellStand") for n in ("SM_B09_ShellRack", "SM_B09_ShellTray", "SM_B09_WrapPaper", "SM_B09_FuseCoil")]
+        sup += [(n, "SM_B09_ShellStand") for n in ("SM_B09_ShellRack", "SM_B09_ShellTray", "SM_B09_WrapPost", "SM_B09_FuseCoil")]
+        sup += [("SM_B09_WrapPaper", "SM_B09_WrapPost")]
         sup += [("SM_Weapon_07", "SM_B09_WeaponCradle"), ("SM_B09_ShellStand", "SM_B09_ShellBench")]
-        out.append(("every core in the tray, every seat filled; weapon 7 on its cradle", list(parts) + [weapon] + shells + cores, sup))
+        out.append(("every core in the tray, every seat filled; weapon 7 in its block", list(parts) + [weapon] + shells + cores, sup))
     return out
 
 

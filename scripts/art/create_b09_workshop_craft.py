@@ -16,7 +16,7 @@ The meshes, pivots, material slots and sockets are b09_workshop_craft's, in Unre
 
 **The assets** are b09_workshop_craft.candidates():
 - **each station's static mesh**, in the station frame. The paste bench's form and hoops are split out as
-  `SM_B09_PasteFrame` (lantern frame), since its turntable turns them;
+  `SM_B09_PasteFrame` (lantern frame), since the cradle turns them with it;
 - **every state mesh**, in its own frame (b09_workshop_craft.state_meshes);
 - **the drying poles and their 40 hooks**, in world cm, placed at the world origin.
 The UV layouts are the module's too (box_uv, reveal_uv), so check_b09_candidates_fbx.py compares the files with it.

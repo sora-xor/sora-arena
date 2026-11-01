@@ -124,8 +124,8 @@ class Capture(unittest.TestCase):
         for st in spec["stations"]:
             st["sockets"] = Recording(st["sockets"])
         self.R.shots(spec)
-        self.assertTrue({"GaugePivot", "SplitStripRest", "LanternCentre", "Seam3_4", "BrushRest", "WashiSheet1",
-                         "RimTopRest", "RimTopSeat", "RimBottomSeat", "LanternHang", "OilStroke0_4", "WeaponRest",
+        self.assertTrue({"GaugePivot", "SplitStripRest", "LanternCentre", "Seam_4", "BrushRest", "WashiSheet4",
+                         "RimTopRest", "RimTopSeat", "RimBottomSeat", "LanternHang", "OilSwath_4", "WeaponRest",
                          "ShellSeat3", "ShellCore3"} <= read, read)
         self.assertEqual(len(self.shots), 15)
         for name in ("rib_midbend", "rib_midbend_21x9", "paste_halfseam", "oil_half", "shell_two", "rafters_40"):
@@ -141,16 +141,18 @@ class Capture(unittest.TestCase):
         self.assertAlmostEqual(B.gauge_angle(640), 30.0)                    # mid-bend: the green band's edge
 
     def test_the_paste_brush_works_the_seam_facing_the_hero(self):
+        """The brush on the cradle's seam (Seam_4, the seam's middle), the seam facing the hero; the frame turned for the
+        panel being laid; the rail keeping the sheets not yet taken."""
         st = self.spec["stations"][1]
-        centre = self.R.world_of(st, st["sockets"]["LanternCentre"]["cm"])
         (mesh, loc, rot, _), = self.items("paste_halfseam", "SM_B09_PasteBrush")
-        self.assertAlmostEqual(math.degrees(math.atan2(loc[1] - centre[1], loc[0] - centre[0])) % 360.0, 180.0, places=6)
-        self.assertAlmostEqual(loc[2], centre[2], places=6)                 # Seam3_4, halfway up at 750 ms
+        np.testing.assert_allclose(loc, self.R.world_of(st, st["sockets"]["Seam_4"]["cm"]))
+        centre = self.R.world_of(st, st["sockets"]["LanternCentre"]["cm"])
+        self.assertLess(loc[0] - centre[0], 0.0)                            # on the hero's side of the frame
         sheets = [m for m, *_ in self.shots["paste_halfseam"]["items"] if m.startswith("SM_B09_WashiSheet")]
-        self.assertEqual(sheets, ["SM_B09_WashiSheet1"])                     # 4 - 2 committed - 1 held
-        (_, _, _, params), = self.items("paste_halfseam", "SM_B09_Washi3")
+        self.assertEqual(sheets, ["SM_B09_WashiSheet4"])                     # 2 laid, the third in the paw
+        (_, _, _, params), = self.items("paste_halfseam", f"SM_B09_Washi{st['paste_order'][2]}")
         self.assertEqual(params, {"M_B09_Washi": {"PasteReveal": 0.5}})
-        self.assertEqual(self.shots["paste_halfseam"]["state"]["turntable_yaw_deg"], -180.0)
+        self.assertEqual(self.shots["paste_halfseam"]["state"]["panel_turn_deg"], st["panel_turn_deg"][2])
 
     def test_tools_and_strip_lie_as_designed(self):
         for shot, mesh in (("paste_halfseam", "SM_B09_PasteBrush"), ("oil_half", "SM_B09_OilBrush")):
@@ -165,8 +167,8 @@ class Capture(unittest.TestCase):
         rows = rotation_rows(rot)
         np.testing.assert_allclose(rows[0], r[:, 0], atol=1e-9)                                     # the bore
         np.testing.assert_allclose(rows[2], r[:, 2], atol=1e-9)                                     # the fuse side
-        np.testing.assert_allclose(rows[0], [1.0, 0.0, 0.0], atol=1e-9)                             # away from the hero
-        np.testing.assert_allclose(rows[2], [0.0, 0.0, 1.0], atol=1e-9)                             # the fuse up
+        np.testing.assert_allclose(rows[0], [0.0, 0.0, 1.0], atol=1e-9)                             # upright in its block
+        np.testing.assert_allclose(rows[2], [-1.0, 0.0, 0.0], atol=1e-9)                            # the touch hole toward the hero
 
     def test_the_exposure_is_metered_from_the_lamps(self):
         ev, lux = self.R.metered_ev100(self.spec)

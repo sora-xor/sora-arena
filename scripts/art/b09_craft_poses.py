@@ -85,6 +85,15 @@ CROUCHED_EYE_Z = 44.0 + 40.0                             # CrouchedHalfHeight + 
 POLES_R = [np.array(v, float) for v in ((-0.3, 0.6, -0.75), (0.0, 0.6, -0.8), (0.3, 0.6, -0.75), (0.0, 1.0, -0.25),
                                         (0.0, 0.3, -1.0), (0.45, 0.45, -0.75))]
 POLES = {"R": POLES_R, "L": [v * [1.0, -1.0, 1.0] for v in POLES_R]}
+# Reaching over a row of standing parts (the seated shells' fuse cords) the elbow rises, out and up, so the forearm
+# passes over the parts the paw has passed: under the down-and-out poles it trailed down through them to the elbow.
+POLES_OVER_R = [np.array(v, float) for v in ((0.0, 0.7, 0.7), (-0.3, 0.7, 0.6), (0.3, 0.7, 0.6), (0.0, 0.95, 0.3),
+                                             (0.0, 0.5, 0.85))]
+POLES_OVER = {"R": POLES_OVER_R, "L": [v * [1.0, -1.0, 1.0] for v in POLES_OVER_R]}
+# Holding a small part up in front of the chest from its side toward the hero, the elbow may also lift level with the
+# work: under the down-and-out poles alone the shell's holding forearm ran down over the rack and the board.
+POLES_RAISED_R = [np.array(v, float) for v in ((0.0, 1.0, 0.0), (-0.3, 0.9, 0.25), (0.0, 0.85, 0.5))]
+POLES_RAISED = {"R": POLES_RAISED_R, "L": [v * [1.0, -1.0, 1.0] for v in POLES_RAISED_R]}
 ELBOW_MAX = 145.0                                        # elbow flexion, deg
 WRIST_MAX = 75.0                                         # the paw's finger direction from the forearm, deg
 ELBOW_STEP_CM = 5.0                                      # the elbow's largest move between samples
@@ -122,10 +131,27 @@ def press(point, surface_normal, shoulder, task):
     n = unit(surface_normal)
     c = np.asarray(point, float) + n * PAD_OFF
     f = _fingers(c, shoulder, task)
-    return {"C": c, "F": unit(f - (f @ n) * n), "N": -n, "P": np.asarray(point, float)}
+    return {"C": c, "F": unit(f - (f @ n) * n), "N": -n, "P": np.asarray(point, float), "plane": n}
 
 
-def grip(point, normal, shoulder, task, off=2.5):
+STEADY_LIFT_CM = 1.5                                     # a steadying paw's palm arched this far over its pads' plane
+STEADY_TIP_CM = 3.5                                      # its fingertips' contact ahead of the knuckle line
+
+
+def steady(point, surface_normal, shoulder, task):
+    """A paw steadying a round workpiece by its fingertips, as a hand steadies a hanging lantern: the fingertips on the
+    surface at point, the palm arched STEADY_LIFT_CM over it, the knuckle line STEADY_TIP_CM back from the tips along
+    the fingers. A flat palm on the lantern's curve kept the wrist 1.8 cm off the paper, so the sleeve's cuff met it
+    from every stand that folds the arm (b09_craft_region)."""
+    n = unit(surface_normal)
+    c0 = np.asarray(point, float) + n * (PAD_OFF + STEADY_LIFT_CM)
+    f = _fingers(c0, shoulder, task)
+    f = unit(f - (f @ n) * n)
+    return {"C": c0 - f * STEADY_TIP_CM, "F": f, "N": -n, "P": np.asarray(point, float), "plane": n, "pivot": c0,
+            "pivot_back": STEADY_TIP_CM}
+
+
+def grip(point, normal, shoulder, task, off=2.5, axis=None):
     """A grasp about a point (a strip, a rim's edge, a paper's edge): the knuckle line off cm from it along -normal,
     the digits curled round it. The palm faces it as nearly as the fingers' direction allows."""
     nn = unit(normal)
@@ -134,7 +160,50 @@ def grip(point, normal, shoulder, task, off=2.5):
     side = nn - (nn @ f) * f
     if np.linalg.norm(side) < 0.2:                                   # facing along the fingers: palm down instead
         side = -UP - (-UP @ f) * f
-    return {"C": c, "F": f, "N": unit(side), "P": np.asarray(point, float)}
+    # The fingers may turn about the palm's normal (the palm still faces the part), toward the actual forearm.
+    t = {"C": c, "F": f, "N": unit(side), "P": np.asarray(point, float), "plane": unit(side)}
+    if axis is not None:                                             # round a strip: the fingers square to its axis
+        t["plane"] = unit(axis)
+    return t
+
+
+PALM_BALL_BACK_DEG = 20.0                                # a palm on a ball touches it at least this far round toward the hero
+PALM_BALL_LAT_DEG = 35.0                                 # and this far up from its equator (pressing down and in, the digits
+                                                         # under it): level, the holding forearm ran low over the rack
+
+
+def _clamp_back(n, back_deg):
+    """A level inward normal n turned, if need be, so the ball's surface it touches faces the hero (-X) by back_deg."""
+    b = math.atan2(n[1], n[0])
+    lim = math.radians(90.0 - back_deg)
+    b = max(-lim, min(lim, b))
+    return np.array([math.cos(b), math.sin(b), 0.0])
+
+
+def palm_on_ball(centre, radius, inward, shoulder, task, lift=0.0, back_deg=None, lat_deg=None):
+    """A palm against a ball from one side (a shell held or turned between two paws): the palm's normal level, turned from
+    inward (toward the ball) as the fingers' line turns it, and the knuckle line PAD_OFF off the ball where the ball faces
+    that normal, lift above its centre, so the palm lies on the ball's tangent plane there and cannot cut into it. A
+    flat palm square to inward bent the far paw's wrist to 80 deg reaching across, and a grip's palm turned toward the
+    fingers' line cut the ball with its edge at the facing band's ends. The palm stays on the ball's side toward the
+    hero (back_deg): turned freely, it pressed the ball's front, and the ball hid the pads from the hero's eye. The
+    fingers may turn about the palm's normal."""
+    centre = np.asarray(centre, float)
+    back_deg = PALM_BALL_BACK_DEG if back_deg is None else back_deg
+    lat = math.radians(PALM_BALL_LAT_DEG if lat_deg is None else lat_deg)
+    nn = unit(inward)
+    n = nn
+    for _ in range(3):
+        c = centre - n * (radius + PAD_OFF) + UP * lift
+        f = _fingers(c, shoulder, task)
+        side = nn - (nn @ f) * f
+        side = unit([side[0], side[1], 0.0])
+        n = unit(_clamp_back(side, back_deg) * math.cos(lat) - UP * math.sin(lat))
+    c = centre - n * (radius + PAD_OFF) + UP * lift
+    f = _fingers(c, shoulder, task)
+    # The point worked: the ball under the knuckle line, where the pads press (the palm's flat touches it lower, at the
+    # tangent point on the ball's limb as the eye sees it).
+    return {"C": c, "F": unit(f - (f @ n) * n), "N": n, "P": centre + unit(c - centre) * radius, "plane": n}
 
 
 def claw(top, shoulder, task=FWD):
@@ -142,25 +211,39 @@ def claw(top, shoulder, task=FWD):
     CLAW_CLEAR_CM, the fingers along the reach, the digits reaching down round it."""
     c = np.asarray(top, float) + UP * (PAD_OFF + CLAW_CLEAR_CM)
     f = _fingers(c, shoulder, task)
-    return {"C": c, "F": unit(f - (f @ UP) * UP), "N": -UP, "P": np.asarray(top, float)}
+    return {"C": c, "F": unit(f - (f @ UP) * UP), "N": -UP, "P": np.asarray(top, float), "plane": UP}
 
 
-def brush(tip, surface_normal, shoulder, tilt=0.25):
+def brush(tip, surface_normal, shoulder, tilt=0.25, width=None, across=None, square=1.0):
     """A brush's bristle tip at tip, its handle back toward the hand: along the line to the shoulder, tipped toward the
     surface's normal so the bristles meet it at a working angle.
 
     It is held as a pencil is, not as a dagger: the digits pinch it BRUSH_PINCH_CM up the handle, BRUSH_REACH_CM
     ahead of the knuckle line, the handle BRUSH_GRIP_DEG from the fingers in the palm's plane, the tip on the palm's
     side. (Writing, a pencil lies about 50 deg from the forearm with the wrist straight.) The fingers lean from the
-    brush toward the reach."""
+    brush toward the reach.
+
+    With width (the flat bristles' width, cm), the target also carries the bristles' contact: "foot", the tip edge's
+    two corners, its flat face against the surface; and "brush_x", the brush's width axis (its mesh's local X; local
+    Y runs from the tip up the handle, along a). With across (a direction in the surface) and square 1, the bristle
+    edge lies along it, square across the stroke, as it must against an edge such as a rim line, and the handle leans
+    as near the hand as that allows; square 0 leaves the handle toward the hand, and between them it turns smoothly."""
     tip = np.asarray(tip, float)
-    a = unit(unit(shoulder - tip) + tilt * unit(surface_normal))      # from the tip toward the hand
+    n = unit(surface_normal)
+    a = unit(unit(shoulder - tip) + tilt * n)                         # from the tip toward the hand
+    if across is not None and square > 0.0:
+        across = unit(np.asarray(across, float) - (np.asarray(across, float) @ n) * n)
+        a = unit((1.0 - square) * a + square * unit(a - (a @ across) * across))
     pinch = tip + a * BRUSH_PINCH_CM
     reach = unit(pinch - shoulder)
     m = unit(reach - (reach @ a) * a)
     th = math.radians(BRUSH_GRIP_DEG)
     f = -math.cos(th) * a + math.sin(th) * m
-    return {"C": pinch - f * BRUSH_REACH_CM, "F": f, "N": -math.sin(th) * a - math.cos(th) * m, "P": tip}
+    t = {"C": pinch - f * BRUSH_REACH_CM, "F": f, "N": -math.sin(th) * a - math.cos(th) * m, "P": tip, "brush_y": a}
+    if width:
+        wx = unit(np.cross(a, unit(n - (n @ a) * a)))
+        t.update(brush_x=wx, foot=[tip - wx * width / 2, tip + wx * width / 2], width=width)
+    return t
 
 
 def wrist_of(t):
@@ -181,17 +264,196 @@ def _hold(t, n=SAMPLES):
     return [t] * n
 
 
+PATH_SAMPLE_CM = 1.5                                     # a curved carry's samples at most this far apart along its path, as
+                                                         # the 17-sample carries are (the elbow continuity gate is per sample)
+
+
+def _bezier(a, ctrl, b, n=SAMPLES, ctrl2=None):
+    """A path from a to b bowed toward ctrl (a quadratic Bezier), or leaving toward ctrl and arriving from ctrl2 (a cubic
+    one): a carry that lifts its part out and goes round another, not through it."""
+    def at(us):
+        if ctrl2 is None:
+            return [(1 - u) ** 2 * a + 2 * u * (1 - u) * ctrl + u ** 2 * b for u in us]
+        return [(1 - u) ** 3 * a + 3 * (1 - u) ** 2 * u * ctrl + 3 * (1 - u) * u ** 2 * ctrl2 + u ** 3 * b for u in us]
+    fine = np.array(at(np.linspace(0.0, 1.0, 200)))
+    length = float(np.sum(np.linalg.norm(np.diff(fine, axis=0), axis=1)))
+    n = max(n, int(math.ceil(length / PATH_SAMPLE_CM)) + 1)              # a long carry is sampled as finely as a short one
+    s = np.concatenate([[0.0], np.cumsum(np.linalg.norm(np.diff(fine, axis=0), axis=1))])
+    us = np.interp(np.linspace(0.0, s[-1], n), s, np.linspace(0.0, 1.0, 200))   # evenly along the path, not the parameter
+    return at(us)
+
+
+MOVE_RELAX = "slerp"                                     # how a carried paw's fingers turn in the air (_moving)
+
+
+def _slerp(a, b, u):
+    a, b = unit(a), unit(b)
+    w = math.acos(max(-1.0, min(1.0, float(a @ b))))
+    if w < 1e-6:
+        return a
+    return unit((math.sin((1 - u) * w) * a + math.sin(u * w) * b) / math.sin(w))
+
+
 def _moving(targets_from, targets_to, path, shoulder):
     """A paw carried along path (its knuckle line), from targets_from's fingers and palm to targets_to's. In the air
     between, the wrist relaxes: the fingers bend toward the reach from the shoulder (a quadratic Bezier in direction),
     and only the two ends are set poses."""
+    _fit_inplace(targets_from, shoulder)
+    _fit_inplace(targets_to, shoulder)
     out = []
+    ends = (targets_from, targets_to) if (targets_from.get("refit") or targets_to.get("refit")) else None
     for u, c in zip(np.linspace(0.0, 1.0, len(path)), path):
         relaxed = unit(c - shoulder)
-        f = unit((1 - u) ** 2 * targets_from["F"] + 2 * u * (1 - u) * relaxed + u ** 2 * targets_to["F"])
+        if MOVE_RELAX == "slerp":                                       # straight from the one pose's fingers to the other's
+            f = _slerp(targets_from["F"], targets_to["F"], u)
+        else:
+            f = unit((1 - u) ** 2 * targets_from["F"] + 2 * u * (1 - u) * relaxed + u ** 2 * targets_to["F"])
         n = unit((1 - u) * targets_from["N"] + u * targets_to["N"])
-        out.append({"C": c, "F": f, "N": unit(n - (n @ f) * f)})
+        row = {"C": c, "F": f, "N": unit(n - (n @ f) * f), "relax": RELAX_AIR * math.sin(math.pi * u)}
+        if ends is not None:
+            row.update(ends=ends, u=float(u))
+        out.append(row)
     return out
+
+
+RELAX_AIR = 0.85                                         # how far a carried paw's wrist relaxes toward its forearm, mid-air
+
+
+def _hero_rz(sh):
+    """The hero's facing frame (columns: ahead, right, up) from its two shoulders."""
+    right = np.asarray(sh["R"], float) - np.asarray(sh["L"], float)
+    right = unit([right[0], right[1], 0.0])
+    return np.stack([np.array([right[1], -right[0], 0.0]), right, UP], 1)
+
+
+def _fit(t, shoulder, rz, side, poles=None):
+    """A contact's fingers settled within its freedom (the plane square to its palm's normal: a palm or fingertips on
+    a surface, a grip about its part, a claw from above), toward the forearm the two-bone solve gives under the pole
+    of POLES that bends the wrist least. The contact point stays; a fingertip steady's knuckles swing about its tips.
+    Done when an action is built, so a carry runs between the settled poses."""
+    plane = t.get("plane")
+    if plane is None:
+        return t
+    best, best_bend = None, None
+    for pole in (poles or POLES[side]):
+        tt = dict(t)
+        for _ in range(4):
+            w = tt["C"] - tt["F"] * WRIST_BACK
+            try:
+                e = TPR.two_bone(shoulder, w, UPPER_ARM_CM, FOREARM_CM, rz @ unit(pole))
+            except ValueError:
+                break
+            fa = unit(w - e)
+            fp = fa - (fa @ plane) * plane
+            if np.linalg.norm(fp) < 1e-6:
+                break
+            f = unit(fp)
+            n = t["N"] - (t["N"] @ f) * f
+            tt.update(F=f, N=unit(n) if np.linalg.norm(n) > 1e-9 else t["N"])
+            if "pivot" in t:
+                tt["C"] = t["pivot"] - f * t["pivot_back"]
+        w = tt["C"] - tt["F"] * WRIST_BACK
+        try:
+            e = TPR.two_bone(shoulder, w, UPPER_ARM_CM, FOREARM_CM, rz @ unit(pole))
+        except ValueError:
+            continue
+        bend = math.degrees(math.acos(max(-1.0, min(1.0, float(unit(w - e) @ tt["F"])))))
+        # Within the wrist's limit, prefer an elbow not far below the knuckles: working at chest height the elbow
+        # rises, and a low elbow's forearm climbs through the bench under the work.
+        cost = bend + FIT_LOW_ELBOW * max(0.0, (tt["C"][2] - FIT_ELBOW_DROP_CM) - e[2]) + (1000.0 if bend > WRIST_MAX else 0.0)
+        if best_bend is None or cost < best_bend:
+            best, best_bend = tt, cost
+    out = dict(best if best is not None else t)
+    out.pop("plane", None)
+    return out
+
+
+_CTX = {}                                                # the hero's shoulders and facing while actions() builds
+FIT_LOW_ELBOW = 1.0                                      # deg of wrist bend traded per cm of elbow below FIT_ELBOW_DROP_CM
+FIT_ELBOW_DROP_CM = 12.0
+
+
+def _fit_with(t, shoulder, poles):
+    """Settle a contact in place under a phase's own pole set (poles: {"L": [...], "R": [...]})."""
+    if "plane" not in t or not _CTX:
+        return
+    side = "L" if np.allclose(shoulder, _CTX["sh"]["L"]) else "R"
+    fitted = _fit(t, np.asarray(shoulder, float), _CTX["rz"], side, poles=poles[side])
+    t.clear()
+    t.update(fitted)
+
+
+def _fit_inplace(t, shoulder):
+    """Settle a contact target where it stands (every phase and carry holding it sees the same settled pose). A "refit"
+    contact keeps its freedom: settled here for a default, it is settled again under each pole a gate tries (_arm)."""
+    if "plane" not in t or not _CTX:
+        return
+    if t.get("refit"):
+        if not t.get("_settled"):
+            side = "L" if np.allclose(shoulder, _CTX["sh"]["L"]) else "R"
+            fitted = _fit(t, np.asarray(shoulder, float), _CTX["rz"], side)
+            t.update(F=fitted["F"], N=fitted["N"], C=fitted["C"], _settled=True)
+        return
+    side = "L" if np.allclose(shoulder, _CTX["sh"]["L"]) else "R"
+    fitted = _fit(t, np.asarray(shoulder, float), _CTX["rz"], side)
+    t.clear()
+    t.update(fitted)
+
+
+def _fit_seq(targets, shoulder, poles=None):
+    """Settle a continuous path of contacts (a guide running along a strip, say) under ONE pole of POLES, the one whose
+    worst wrist bend over the path is least, so the fingers turn smoothly along it (one pole per sample made the
+    elbow jump between samples)."""
+    if not targets or "plane" not in targets[0] or not _CTX:
+        return
+    side = "L" if np.allclose(shoulder, _CTX["sh"]["L"]) else "R"
+    best, best_worst = None, None
+    for pole in (poles or POLES)[side]:
+        fitted = [_fit(tg, np.asarray(shoulder, float), _CTX["rz"], side, poles=[pole]) for tg in targets]
+        worst = 0.0
+        for tg in fitted:
+            w = tg["C"] - tg["F"] * WRIST_BACK
+            try:
+                e = TPR.two_bone(shoulder, w, UPPER_ARM_CM, FOREARM_CM, _CTX["rz"] @ unit(pole))
+            except ValueError:
+                worst = 999.0
+                break
+            worst = max(worst, math.degrees(math.acos(max(-1.0, min(1.0, float(unit(w - e) @ tg["F"]))))))
+        if best_worst is None or worst < best_worst:
+            best, best_worst = fitted, worst
+    for tg, f in zip(targets, best):
+        tg.clear()
+        tg.update(f)
+
+
+def _relax(shoulder, t, rz, pole):
+    """A carried paw's target with its wrist relaxed: its fingers turned toward its actual forearm (from the two-bone
+    solve under pole) by its "relax" weight, the knuckle line where the path puts it. A contact sets its own fingers
+    (relax 0); in the air the wrist follows the forearm, as a hand does, instead of an imposed blend."""
+    r = float(t.get("relax", 0.0))
+    plane = None                                                # contacts are fitted when built (_fit)
+    if r <= 0.0:
+        return t
+    tt = dict(t)
+    for _ in range(3):
+        w = tt["C"] - tt["F"] * WRIST_BACK
+        try:
+            e = TPR.two_bone(shoulder, w, UPPER_ARM_CM, FOREARM_CM, rz @ unit(pole))
+        except ValueError:
+            return tt
+        fa = unit(w - e)
+        if plane is not None:                                   # a contact: the fingers turn within its freedom
+            fp = fa - (fa @ plane) * plane
+            if np.linalg.norm(fp) < 1e-6:
+                return tt
+            f = unit(fp)
+        else:
+            f = _slerp(t["F"], fa, r)
+        n = t["N"] - (t["N"] @ f) * f
+        tt.update(F=f, N=unit(n) if np.linalg.norm(n) > 1e-9 else t["N"])
+        if "pivot" in t:                                        # fingertips stay put: the knuckles swing about them
+            tt["C"] = t["pivot"] - f * t["pivot_back"]
+    return tt
 
 
 def _move(a, b, shoulder, lift=6.0):
@@ -208,118 +470,202 @@ def _surface_path(lc, az_deg, z_from, z_to, off, n=33):
             for z in zs]
 
 
-def _phase(name, kind, left, right, state, works):
-    return {"phase": name, "kind": kind, "L": left, "R": right, "state": state, "works": frozenset(works)}
+def _phase(name, kind, left, right, state, works, poles=None, tiers=None):
+    """A phase (contacts) or a transition (carries) of an action; poles, if given, replace POLES for its elbows. With
+    tiers (pole sets in order of preference), a paw takes the first set under which it passes every gate, and only if
+    none does the best of all: a raised elbow serves where the natural ones fail, not wherever its margin is wider."""
+    ph = {"phase": name, "kind": kind, "L": left, "R": right, "state": state, "works": frozenset(works)}
+    if poles is not None:
+        ph["poles"] = poles
+    if tiers is not None:
+        ph["pole_tiers"] = tiers
+    return ph
 
 
+RIB_TIERS = [POLES, POLES_RAISED]
 RIB_WORKS = {"SM_B09_Form", "SM_B09_StripStock", "SM_B09_StripQuiver"} | {f"SM_B09_Hoop{k}" for k in range(1, 7)}
 LANTERN_WORKS = {"SM_B09_Form"} | {f"SM_B09_Hoop{k}" for k in range(1, 7)} | {f"SM_B09_Washi{k}" for k in range(1, 5)}
 
 
-def _front_strip(sk, shoulder, z):
-    """The stock strip nearest the shoulder, at height z: the strips stand round the quiver's axis, splaying outward
-    (b09_workshop_craft.station_parts), so a paw takes the front one, not the bundle's middle."""
-    q = np.asarray(sk["StripStock"][0], float)
-    top = B.station_parts(0)[0][0].verts[:, 2].max()                 # the bench's top
-    rad = 1.6 + 0.8 * (z - (top + 2.2)) / 98.0
-    pts = [q[:2] + rad * np.array([math.cos(2.4 * j), math.sin(2.4 * j)]) for j in range(12)]
-    best = min(pts, key=lambda p: float(np.linalg.norm(p - shoulder[:2])))
-    return np.array([best[0], best[1], z])
+def _front_strip(sk):
+    """The strip a paw takes next: the nearest end of the rack's top layer (StripStock), the strips lying along +X with
+    their ends toward the hero (b09_workshop_craft.station_parts)."""
+    return np.asarray(sk["StripStock"][0], float)
 
 
-def actions(i):
-    """[(action, [phase records])]: each paw's targets per sample, from the craft stand."""
+def actions(i, sh=None):
+    """[(action, [phase records])]: each paw's targets per sample. The contacts are the work's; each paw's fingers and
+    palm follow the reach from its shoulder (sh, from shoulders(); the craft stand's by default), as a paw does from
+    wherever the hero stands in the working region."""
     _, sk, _, _ = B.station_parts(i)
     sock = lambda n: np.asarray(sk[n][0], float)  # noqa: E731
-    sh, _ = shoulders(B.craft_stand(i))
+    if sh is None:
+        sh, _ = shoulders(B.craft_stand(i))
     L, R = sh["L"], sh["R"]
+    _CTX.clear()
+    _CTX.update(sh=sh, rz=_hero_rz(sh))
     out = []
     if i == 0:
         lc = B.lantern_centre(0)
-        strip = _front_strip(sk, R, sock("StripStock")[2] - 18.0)
+        strip = _front_strip(sk)
         for k, (z, r) in enumerate(zip(B.hoop_z(), B.hoop_r()), 1):
-            # The left paw takes its place at the form's front-left from the start, steadying the form: hovering where
-            # the strip will lie, then pressing the wound strip there, its fingers along the strip toward where it
-            # comes on (the elbow out).
-            n_press = np.asarray(sk[f"WindPress{k}"][1], float)
-            # The palm lies along the form's surface there, tilted with its profile; the strip's face is upright, so
-            # the palm stands off its edge by half the strip's width times the tilt.
-            tilt = abs(float(n_press[2])) / max(1e-9, float(np.linalg.norm(n_press[:2])))
-            presst = press(sock(f"WindPress{k}") + n_press * (B.HOOP_W / 2) * tilt, n_press, L, unit(np.cross(n_press, UP)))
-            hover = {"C": presst["C"] + n_press * 0.5, "F": presst["F"], "N": presst["N"], "P": presst["P"]}
-            take = grip(strip, unit(strip - R) * [1, 1, 0], R, FWD + UP)    # the front strip, from the quiver
-            hook = grip(lc + [-r, 0.0, z], FWD, R, FWD)
-            length = r * math.radians(B.WIND_DEG)
-            guides = [grip(lc + [-r, min(9.0, max(length * (1.0 - f) - 1.0, 0.0)), z], FWD, R, FWD)   # it runs in with
-                      for f in np.linspace(0.0, 1.0, SAMPLES)]                                         # the strip's end
+            # The two paws work the hooked end in turn (side by side they met: at press 185 and hook 180 the palms came
+            # within 0.00-0.50 cm, and spreading the points to 190/168 pushed the lowest hoop out of 21:9). The left paw
+            # steadies the form at its front-left (WindSteady) while the right paw hooks the strip's end at the front;
+            # then the left comes in to press the hooked strip (WindPress) as the right slides out along the free strip
+            # to the guide (WindGuide), and holds it there while the form turns and the strip draws through its grip.
+            def on_form(socket):
+                n_ = np.asarray(sk[socket][1], float)
+                # The palm lies along the form's surface, tilted with its profile; the strip's face is upright, so the
+                # palm stands off its edge by half the strip's width times the tilt.
+                tilt = abs(float(n_[2])) / max(1e-9, float(np.linalg.norm(n_[:2])))
+                t_ = press(sock(socket) + n_ * (B.HOOP_W / 2) * tilt, n_, L, unit(np.cross(n_, UP)))
+                t_["refit"] = True                                     # settled under each pole the gates try
+                _fit_inplace(t_, L)
+                return t_
+            presst = on_form(f"WindPress{k}")
+            # While the right paw hooks the strip the left waits off the form at its front-left (WindSteady), its hand
+            # as it will press (a flat palm on the form there bent the wrist past 75 deg from the far right stands).
+            n_w = np.asarray(sk[f"WindSteady{k}"][1], float)
+            c_w = sock(f"WindSteady{k}") + n_w * (PAD_OFF + B.RIB["wait_off_cm"])
+            steadyt = {"C": c_w, "F": presst["F"], "N": presst["N"], "P": c_w}       # it works nothing while it waits
+            # The front strip pinched from above at its end (a grip's palm, facing the ends, cut 0.4 cm into the stock).
+            take = claw(strip, R)
+            la = math.radians(B.RIB["leave_az_deg"])
+            leave = lc + [r * math.cos(la), r * math.sin(la), z]             # where the strip leaves the form
+            tang = np.array([math.sin(la), -math.cos(la), 0.0])             # its heading off the form, to the right
+            onto = -np.array([math.cos(la), math.sin(la), 0.0])             # from the hero's side onto the form
+            # The paw works the strip's outer face (hoop_r is its centre line: seen obliquely, the strip's own half
+            # thickness hid a centre-line point from the eye).
+            leave = leave - onto * (B.HOOP_T / 2)
+            hook = grip(leave, onto, R, FWD, off=B.RIB["grip_off_cm"])        # the knuckles off the strip, toward the hero
+            guide = grip(leave + tang * B.RIB["guide_cm"], onto, R, FWD, off=B.RIB["grip_off_cm"])   # held while the strip draws through
+            hook["refit"] = guide["refit"] = True
+            # The left paw's move from steadying to pressing follows the form round, PAD_OFF off it (a chord cut it).
+            a0 = math.radians(B.RIB["steady_az_deg"])
+            a1 = math.radians(B.RIB["press_az_deg"])
+            # Its knuckles keep their offset off the form's profile at every height between (the form is wider toward
+            # its middle), lifting 0.4 cm at the middle of the move.
+            off0 = float(np.linalg.norm((steadyt["C"] - lc)[:2])) - float(B.profile_r(steadyt["C"][2] - lc[2]))
+            off1 = float(np.linalg.norm((presst["C"] - lc)[:2])) - float(B.profile_r(presst["C"][2] - lc[2]))
+            round_path = []
+            for u in np.linspace(0.0, 1.0, SAMPLES):
+                zz = steadyt["C"][2] + (presst["C"][2] - steadyt["C"][2]) * u - lc[2]
+                rr = float(B.profile_r(zz)) + off0 + (off1 - off0) * u + 0.4 * math.sin(math.pi * u)
+                aa = a0 + (a1 - a0) * u
+                round_path.append(lc + [rr * math.cos(aa), rr * math.sin(aa), zz])
+            # The carry lifts the strip up and out of the stock, then comes round the form's right to the notch from
+            # the hero's side (straight, the palm passed down through the stock and met the form's face).
+            _fit_inplace(take, R)
+            out_of = take["C"] + np.array([0.0, -B.RIB["carry_out_cm"], B.RIB["carry_lift_cm"]])   # up and toward the form:
+            # pulled toward the hero, the right arm folded past 145 deg at the near right stands turned left
+            into = hook["C"] + np.array([-B.RIB["carry_bow_cm"], 0.6 * B.RIB["carry_bow_cm"], 1.0])
+            carry = _moving(take, hook, _bezier(take["C"], out_of, hook["C"], ctrl2=into), R)
             held, hooked, bend = {"hoop": k, "strip": "held"}, {"hoop": k, "strip": 0.0}, {"hoop": k, "strip": "bend"}
             out.append((f"wind hoop {k}", [
-                _phase("take a strip", "phase", [hover], [take], held, RIB_WORKS),
-                _phase("carry it to the notch", "transition", _hold(hover), _move(take, hook, R), held, RIB_WORKS),
-                _phase("hook its end", "phase", [hover], [hook], held, RIB_WORKS),
+                _phase("take a strip", "phase", [steadyt], [take], held, RIB_WORKS, tiers=RIB_TIERS),
+                _phase("carry it to the notch", "transition", _hold(steadyt), carry, held, RIB_WORKS),
+                _phase("hook its end", "phase", [steadyt], [hook], held, RIB_WORKS, tiers=RIB_TIERS),
                 _phase("press the hooked strip; slide to the guide", "transition",
-                       _moving(hover, presst, _line(hover["C"], presst["C"]), L),
-                       _moving(hook, guides[0], _line(hook["C"], guides[0]["C"]), R), hooked, RIB_WORKS),
-                _phase("wind (HeldMs 0-800)", "phase", _hold(presst), guides, bend, RIB_WORKS),
+                       _moving(steadyt, presst, round_path, L),
+                       _moving(hook, guide, _line(hook["C"], guide["C"]), R), hooked, RIB_WORKS),
+                _phase("wind (HeldMs 0-800)", "phase", _hold(presst), _hold(guide), bend, RIB_WORKS, tiers=RIB_TIERS),
             ]))
     elif i == 1:
-        lc = B.lantern_centre(1)
-        st = {m.name: m for m, _, _ in B.state_meshes(1)}
-        path = _surface_path(lc, 180.0, -B.LANTERN_H / 2, B.LANTERN_H / 2, 0.6)   # up seam 1 (Seam1_0..8's curve)
-        az = math.radians(245.0)                                    # the left hold, on the panel's left
-        nrm = np.array([math.cos(az), math.sin(az), 0.0])
-        hold = press(lc + nrm * (float(B.paper_r(6.0)) + 0.1) + [0.0, 0.0, 6.0], nrm, L, UP)
-        top = sock("WashiSheet4")
-        sheet_lo = st["SM_B09_WashiSheet4"].verts.min(0)
-        sheet = grip(np.array([top[0] + sheet_lo[0] + 1.0, top[1], top[2] + 0.1]), -UP, L, FWD)   # by the top sheet's near edge
-        dip = brush(sock("PasteDip"), UP, R, tilt=1.0)              # the handle rises about 54 deg, clear of the rim
-        strokes = [brush(q, -FWD, R) for q in path]
+        # The paste (Coordination 268), on the tilting cradle: the left paw lays the next complete sheet against the
+        # frame and holds it by its fingertips; the right brush pastes the seam, rim line to rim line, its bristle edge
+        # square along each rim line. The frame stands with the worked seam toward the hero for every panel.
+        A = B.paste_axes()
+        zs = np.linspace(-B.LANTERN_H / 2, B.LANTERN_H / 2, 33)
+        if not B.PASTE["stroke_up"]:
+            zs = zs[::-1]
+        path = B.paste_frame(np.stack([-(B.paper_r(zs) + 0.6), np.zeros_like(zs), zs], 1))
+        slope = np.gradient(B.paper_r(zs), zs)
+        normals = [unit(A @ np.array([-1.0, 0.0, -float(g)])) for g in slope]
+        across = A @ np.array([0.0, 1.0, 0.0])                   # round the frame at the seam
+        h = B.LANTERN_H / 2
+        sc = B.PASTE["square_cm"]
+        sq = B.PASTE["square"] * np.maximum(np.clip(1.0 - (zs + h) / sc, 0.0, 1.0), np.clip(1.0 - (h - zs) / sc, 0.0, 1.0))
+        strokes = [brush(qp, nq, R, tilt=B.PASTE["stroke_tilt"], width=B.PASTE_BRUSH_W, across=across, square=float(w))
+                   for qp, nq, w in zip(path, normals, sq)]
+        hold = steady(sock("SheetHold"), np.asarray(sk["SheetHold"][1], float), L, A @ np.array([0.0, 0.0, 1.0]))
+        sheet = grip(sock("SheetTake"), FWD, L, FWD + UP)          # by the next sheet's near end, on the rack
+        dip = brush(sock("PasteDip"), UP, R, tilt=0.4, width=B.PASTE_BRUSH_W)
         works = LANTERN_WORKS | {f"SM_B09_WashiSheet{j}" for j in range(1, 5)} | {"SM_B09_PastePot"}
-        state = {"sheets": 4, "rims": "rest", "brush": "paw"}
+        ready = {"panel": 1, "sheet": "rack", "rims": "rest", "brush": "paw"}
+        laid = {"panel": 1, "sheet": "laid", "rims": "rest", "brush": "paw"}
         out.append(("paste a panel", [
-            _phase("dip the brush; take a sheet", "phase", [sheet], [dip], state, works),
-            _phase("to the frame", "transition", _move(sheet, hold, L), _move(dip, strokes[0], R), state, works),
-            _phase("paste up the seam (HeldMs 0-1500)", "phase", _hold(hold, len(strokes)), strokes, state, works),
+            _phase("take the next sheet; dip the brush", "phase", [sheet], [dip], ready, works),
+            _phase("lay the sheet on the frame; to the seam's lower end", "transition", _move(sheet, hold, L, 4.0),
+                   _move(dip, strokes[0], R, 3.0), {**laid, "sheet": "paw"}, works),
+            _phase("paste the seam, rim line to rim line (HeldMs 0-1500)", "phase", _hold(hold, len(strokes)), strokes, laid, works),
         ]))
-        # The rims step: the bottom rim is on the frame from the start (its rest is its seat). The right paw sets the
-        # top rim, pads on its upper face, onto the top mouth; the left paw steadies the frame.
-        rest_t, seat_c = sock("RimTopRest"), sock("RimTopSeat")
-        near = math.atan2(R[1] - rest_t[1], R[0] - rest_t[0])       # the rim's point toward the right shoulder
-        take_t = press(rest_t + [B.LANTERN_RIM_R * math.cos(near), B.LANTERN_RIM_R * math.sin(near), B.RIM_H / 2], UP, R, FWD)
-        at = math.radians(150.0)
-        seat_t = press(seat_c + [B.LANTERN_RIM_R * math.cos(at), B.LANTERN_RIM_R * math.sin(at), B.RIM_H / 2], UP, R, FWD)
-        works = LANTERN_WORKS | {"SM_B09_RimTop", "SM_B09_RimBottom"}
+        # The rims step: the bottom rim is on the frame from the start (its rest is its seat). The left paw takes the
+        # top rim from its peg and seats it on the upper mouth, pads on its face; the right paw steadies the frame.
+        rc = sock("RimTopRest")
+        take_t = press(rc + np.array([-(B.LANTERN_RIM_R - 0.4), 0.0, B.RIM_H / 2]), UP, L, FWD)   # pads on its near rim
+        seat_c = sock("RimTopSeat")
+        sd = A @ np.array([math.cos(math.radians(200.0)), math.sin(math.radians(200.0)), 0.0])
+        seat_t = press(seat_c + sd * B.LANTERN_RIM_R + A[:, 2] * (B.RIM_H / 2), A[:, 2], L, FWD)
+        s_az, s_s = B.PASTE["rim_steady"]
+        st_p = B.paste_frame([[float(B.paper_r(s_s)) * math.cos(math.radians(s_az)), float(B.paper_r(s_s)) * math.sin(math.radians(s_az)), s_s]])[0]
+        st_n = unit(A @ np.array([math.cos(math.radians(s_az)), math.sin(math.radians(s_az)), 0.0]))
+        frame_steady = steady(st_p + st_n * 0.1, st_n, R, A[:, 2])
+        works_r = LANTERN_WORKS | {"SM_B09_RimTop", "SM_B09_RimBottom"}
+        done = {"panel": 5, "sheet": "none", "rims": "rest", "brush": "pot"}
         out.append((f"seat the rims (a press clip, at most {CLIP_MAX_MS['rims']} ms)", [
-            _phase("take the top rim; steady the frame", "phase", [hold], [take_t], {"sheets": 0, "rims": "rest", "brush": "pot"}, works),
-            _phase("to the lantern", "transition", _hold(hold), _move(take_t, seat_t, R, 10.0),
-                   {"sheets": 0, "rims": "paws", "brush": "pot"}, works),
-            _phase("seat it", "phase", [hold], [seat_t], {"sheets": 0, "rims": "paws", "brush": "pot"}, works),
+            _phase("take the top rim; steady the frame", "phase", [take_t], [frame_steady], done, works_r),
+            _phase("to the upper mouth", "transition", _move(take_t, seat_t, L, 6.0), _hold(frame_steady), {**done, "rims": "paws"}, works_r),
+            _phase("seat it", "phase", [seat_t], [frame_steady], {**done, "rims": "paws"}, works_r),
         ]))
     elif i == 2:
+        # The oil: a representative finishing stroke on a prepared batch lantern, already coated but for one remaining
+        # swath (Coordination 268). The brush dips in the dish by the lantern's lower right, comes to the top rim line,
+        # and finishes the swath down to the belly; the left paw steadies the hanging lantern on its upper left.
         lc = B.lantern_centre(2)
-        path = _surface_path(lc, 180.0, B.LANTERN_H / 2, -B.LANTERN_H / 2, 0.7)   # down the front (OilStroke0_0..8's curve)
-        az = math.radians(245.0)                                    # the left paw steadies the lantern's left
-        nrm = np.array([math.cos(az), math.sin(az), 0.0])
-        steady = press(lc + nrm * (float(B.paper_r(0.0)) + 0.1), nrm, L, UP)
-        dip = brush(sock("OilDip"), UP, R, tilt=1.0)
-        strokes = [brush(q, -FWD, R) for q in path]
+        sw = B.OIL_SWATH
+        path = _surface_path(lc, sw["az_deg"], sw["s_cm"][0], sw["s_cm"][1], sw["offset_cm"])
+        a = math.radians(sw["az_deg"])
+        zs = np.linspace(sw["s_cm"][0], sw["s_cm"][1], len(path))
+        slope = np.gradient(B.paper_r(zs), zs)
+        normals = [unit([math.cos(a), math.sin(a), -float(g)]) for g in slope]
+        # The left palm lies on the lantern's upper left, its fingers turned OIL["steady_fingers_deg"] in the surface from
+        # straight up toward the hero's right (the forearm must stay clear of the lantern's bulge below the palm).
+        n_st = np.asarray(sk["LanternSteady"][1], float)
+        al, th = math.radians(B.OIL["steady_az_deg"]), math.radians(B.OIL["steady_fingers_deg"])
+        up_t = unit(UP - (UP @ n_st) * n_st)
+        side_t = unit(np.cross(n_st, up_t))
+        steady_t = globals()[B.OIL.get("steady_kind", "steady")](sock("LanternSteady"), n_st, L, math.cos(th) * up_t + math.sin(th) * side_t)
+        dip = brush(sock("OilDip"), UP, R, tilt=B.OIL_DIP_TILT, width=B.OIL_BRUSH_W)
+        # Against the top rim line the bristle edge lies square along it, round the lantern; it relaxes toward the hand
+        # over the next OIL_SWATH["square_cm"].
+        across = np.array([-math.sin(a), math.cos(a), 0.0])
+        sq = sw["square"] * np.clip(1.0 - (sw["s_cm"][0] - zs) / sw["square_cm"], 0.0, 1.0)
+        strokes = [brush(q, nq, R, tilt=sw["tilt"], width=B.OIL_BRUSH_W, across=across, square=float(w))
+                   for q, nq, w in zip(path, normals, sq)]
         works = (LANTERN_WORKS - {"SM_B09_Form"}) | {"SM_B09_RimTop", "SM_B09_RimBottom", "SM_B09_OilDish"}
         state = {"brush": "paw"}
-        out.append(("oil the lantern", [
-            _phase("dip the brush; steady the lantern", "phase", [steady], [dip], state, works),
-            _phase("to the stroke's top", "transition", _hold(steady), _move(dip, strokes[0], R, 5.0), state, works),
-            _phase("oil down the front (HeldMs 0-1500)", "phase", _hold(steady, len(strokes)), strokes, state, works),
+        out.append(("finish the remaining swath", [
+            _phase("dip the brush; steady the lantern", "phase", [steady_t], [dip], state, works),
+            _phase("to the swath's top, at the top rim line", "transition", _hold(steady_t),
+                   _move(dip, strokes[0], R, B.OIL["carry_lift_cm"]), state, works),
+            _phase("finish the swath (HeldMs 0-1500)", "phase", _hold(steady_t, len(strokes)), strokes, state, works),
         ]))
     else:
         wrap = sock("WrapSpot")
         core_top = float(B.shell("core").verts[:, 2].max())         # the fuse stub's top, over the core's centre
         neck_top = float(B.shell("wrapped").verts[:, 2].max())      # the tied neck's top, over the shell's centre
         # The left paw holds the shell on the paper from its left, the right paw twists its neck from its right: both
-        # palms upright beside it, their lower edges over the paper.
+        # palms upright against the ball (palm_on_ball), their lower edges over the paper.
         lift = PALM_HALF[1] - B.SHELL["wrapped_cm"] / 2 + 0.3
         half = B.SHELL["wrapped_cm"] / 2
-        hold = grip(wrap + [0.0, -half, lift], [0.0, 1.0, 0.0], L, FWD, off=PAD_OFF)
-        twist = grip(wrap + [0.0, half, lift], [0.0, -1.0, 0.0], R, FWD, off=PAD_OFF)
+        hold = palm_on_ball(wrap, half, [0.0, 1.0, 0.0], L, FWD, lift)
+        twist = palm_on_ball(wrap, half, [0.0, -1.0, 0.0], R, FWD, lift)
+        hold_poles = {"L": POLES["L"] + POLES_RAISED["L"], "R": POLES["R"]}
+        if _CTX:                                                   # the hold settles under the poles its phases use
+            fitted = _fit(hold, L, _CTX["rz"], "L", poles=hold_poles["L"])
+            hold.clear()
+            hold.update(fitted)
         for k in (1, 2, 3):
             core = claw(sock(f"ShellCore{k}") + UP * core_top, R)
             seat = claw(sock(f"ShellSeat{k}") + UP * neck_top, L)  # by its neck, into the cup
@@ -333,23 +679,31 @@ def actions(i):
             wrapping = {"cores": later, "seated": before, "wrapping": True}
             seated = {"cores": later, "seated": before + (k,), "wrapping": False}
             out.append((f"wrap and seat shell {k} (a press clip, at most {CLIP_MAX_MS['shell']} ms)", [
-                _phase("take a core", "phase", [hold], [core], tray, works),
+                _phase("take a core", "phase", [hold], [core], tray, works, poles=hold_poles),
                 _phase("to the paper", "transition", _hold(hold), _move(core, twist, R, 5.0), carried, works),
-                _phase("wrap and twist", "phase", [hold], [twist], wrapping, works),
+                _phase("wrap and twist", "phase", [hold], [twist], wrapping, works, poles=hold_poles),
                 _phase("to the rack (the right paw lets go)", "transition", _move(hold, seat, L, 5.0), _hold(twist), carried, works),
                 _phase("seat it", "phase", [seat], [twist], seated, works),
             ]))
-        # The inspection starts where shell 3's clip ends: the left paw keeps the third shell seated (its last work),
-        # and the right paw goes from the paper to the fuse, its index pad on the fuse's wire.
-        seat3 = claw(sock("ShellSeat3") + UP * neck_top, L)
-        fuse = grip(sock("FuseInspect") + [0.0, 0.0, 1.0], -UP, R, FWD - UP)
-        works = {"SM_Weapon_07", "SM_B09_ShellWrapped3", "SM_B09_ShellRack"}
+        # The inspection starts where shell 3's clip ends: the left paw over the third shell's neck (its last work), the
+        # right paw at the paper. The left paw's pads pass along the seated shells' fuse cords from shell 3 to shell 1
+        # (the cups' row is straight), feeling each tip; the right paw waits. (Weapon 7's own touch-hole fuse could not
+        # stand in reach of the far corners with the tube clear of the arms: weapon_rest.)
+        tips = [sock(f"ShellSeat{k}") + UP * neck_top for k in (3, 1)]
+        along = [claw(p, L) for p in _line(tips[0], tips[1])]
+        _fit_seq(along, L, POLES_OVER)
+        works = {"SM_B09_ShellWrapped1", "SM_B09_ShellWrapped2", "SM_B09_ShellWrapped3", "SM_B09_ShellRack"}
         done = {"cores": (), "seated": (1, 2, 3), "wrapping": False}
-        out.append((f"inspect the fuse (a press clip, at most {CLIP_MAX_MS['inspect']} ms)", [
-            _phase("ready", "phase", [seat3], [twist], done, works),
-            _phase("to the fuse", "transition", _hold(seat3), _move(twist, fuse, R, 6.0), done, works),
-            _phase("touch the fuse", "phase", [seat3], [fuse], done, works),
+        out.append((f"check the fuses (a press clip, at most {CLIP_MAX_MS['inspect']} ms)", [
+            _phase("along the fuse cords, shell 3 to shell 1", "phase", along, _hold(twist, len(along)), done, works,
+                   poles={"L": POLES_OVER["L"], "R": POLES["R"]}),
         ]))
+    for _, steps in out:                                      # settle any contact no carry has settled
+        for ph in steps:
+            for side in ("L", "R"):
+                for tg in ph[side]:
+                    _fit_inplace(tg, sh[side])
+    _CTX.clear()
     return out
 
 
@@ -379,13 +733,16 @@ def props(i, state, u=0.0):
         meshes += [B.Mesh(m.name.split("_Flex")[0], B.to_station(m.verts, yaw, B.lantern_centre(0)), m.tris, m.slot) for m in rib]
         meshes.append(B.needle_at(ms))
     elif i == 1:
-        lc = B.lantern_centre(1)
         st = {m.name: m for m, _, _ in B.state_meshes(1)}
-        meshes += [B.gore(k).moved(lc) for k in range(1, 5)]
-        meshes += [st[f"SM_B09_WashiSheet{j}"].moved(sock(f"WashiSheet{j}")) for j in range(1, state["sheets"] + 1)]
-        meshes.append(B.rim("Bottom").moved(sock("RimBottomRest")))  # fitted to the frame from the start
+        panel = state["panel"]
+        on = list(B.PASTE_ORDER[:panel - 1]) + ([B.PASTE_ORDER[panel - 1]] if state.get("sheet") == "laid" and panel <= 4 else [])
+        meshes += [B.Mesh(f"SM_B09_Washi{k}", B.paste_frame(B.gore(k).verts, panel), B.gore(k).tris, "M_B09_Washi") for k in on]
+        left = [j for j in range(1, 5) if j >= panel + (0 if state.get("sheet") == "rack" else 1)]
+        meshes += [PC.placed(st[f"SM_B09_WashiSheet{j}"], sk[f"WashiSheet{j}"]) for j in left]
+        rb = sk["RimBottomSeat"]
+        meshes.append(PC.placed(B.rim("Bottom"), rb))              # fitted to the frame from the start
         if state["rims"] == "rest":
-            meshes.append(B.rim("Top").moved(sock("RimTopRest")))
+            meshes.append(PC.placed(B.rim("Top"), sk["RimTopRest"]))
         if state["brush"] == "pot":
             meshes.append(PC.placed(st["SM_B09_PasteBrush"], sk["BrushRest"]))
     elif i == 2:
@@ -465,16 +822,42 @@ def _sleeves(shoulder, e, w):
                            _cone("fore", e, w - f * 2.0, SLEEVE_R["fore"], SLEEVE_R["cuff"])])
 
 
-def _sep(a, b, limit=10.0):
+_BOUNDS = {}
+
+
+def tri_bounds(m):
+    """Each triangle's bounds of a (cached, unchanging) scene mesh."""
+    hit = _BOUNDS.get(id(m))
+    if hit is None or hit[0] is not m:
+        T = m.verts[m.tris]
+        hit = (m, T.min(1), T.max(1))
+        _BOUNDS[id(m)] = hit
+    return hit[1], hit[2]
+
+
+def near_tris(a, b, limit):
+    """b's triangles whose bounds come within limit of a's bounds (a moving part against a cached scene)."""
+    lo, hi = a.verts.min(0), a.verts.max(0)
+    blo, bhi = tri_bounds(b)
+    return b.tris[np.all((blo <= hi + limit) & (bhi >= lo - limit), 1)]
+
+
+SEP_LIMIT_CM = 3.0                                       # clearances are measured to here; beyond, reported as this
+
+
+def _sep(a, b, limit=SEP_LIMIT_CM):
     if a is None or b is None:
         return limit
-    r = MC.exact_separation(a.verts, a.tris, b.verts, b.tris, limit=limit)
+    tris = near_tris(a, b, limit)
+    if not len(tris):
+        return limit
+    r = MC.exact_separation(a.verts, a.tris, b.verts, tris, limit=limit)
     return limit if r["separation_m"] is None else float(r["separation_m"])
 
 
-def _torso_hit(stand, e, shoulder):
-    return (stand[0] + TORSO["back"] <= e[0] <= stand[0] + TORSO["front"] and
-            stand[1] - TORSO["half"] <= e[1] <= stand[1] + TORSO["half"] and e[2] < shoulder[2] + 5.0)
+def _torso_hit(stand, e, shoulder, rz):
+    x, y, _ = rz.T @ (np.asarray(e, float) - [stand[0], stand[1], 0.0])     # the elbow in the hero's facing frame
+    return TORSO["back"] <= x <= TORSO["front"] and -TORSO["half"] <= y <= TORSO["half"] and e[2] < shoulder[2] + 5.0
 
 
 def _u(ph, k):
@@ -482,13 +865,29 @@ def _u(ph, k):
     return k / (n - 1) if n > 1 else 0.0
 
 
+def _settled_for(t, shoulder, rz, side, pole):
+    """A target as it stands under pole: a refit contact's fingers settled within its freedom toward this pole's
+    forearm; a carry between refit contacts turning (slerp) between their poses so settled; anything else unchanged."""
+    if t.get("refit") and "plane" in t:
+        return _fit(t, shoulder, rz, side, poles=[pole])
+    if "ends" in t:
+        a_, b_ = (_fit(e, shoulder, rz, side, poles=[pole]) if (e.get("refit") and "plane" in e) else e for e in t["ends"])
+        f = _slerp(a_["F"], b_["F"], t["u"])
+        n = unit((1 - t["u"]) * a_["N"] + t["u"] * b_["N"])
+        out = {k_: v for k_, v in t.items() if k_ not in ("ends", "u")}
+        out.update(F=f, N=unit(n - (n @ f) * f))
+        return out
+    return t
+
+
 def _arm(i, stand, sh, rz, ph, k, side, pole, clearance):
     """One paw at sample k of phase ph under pole: (elbow, wrist, target, gate values, failures, its arm's mesh)."""
-    t = ph[side][min(k, len(ph[side]) - 1)]
+    t = _settled_for(ph[side][min(k, len(ph[side]) - 1)], sh[side], rz, side, pole)
+    t = _relax(sh[side], t, rz, pole)
     e, w, gate, why = solve(side, sh[side], t, rz, pole)
     if why:
         return None, w, t, gate, [why], None
-    fails = ["elbow inside the torso"] if _torso_hit(stand, e, sh[side]) else []
+    fails = ["elbow inside the torso"] if _torso_hit(stand, e, sh[side], rz) else []
     if not clearance:
         return e, w, t, gate, fails, None
     allm, hard, soft = _scene(i, ph["state"], _u(ph, k), ph["works"])
@@ -504,24 +903,40 @@ def _arm(i, stand, sh, rz, ph, k, side, pole, clearance):
     return e, w, t, gate, fails, B.merge("arm", [sleeves, palm])
 
 
-def _pole_for(i, stand, sh, rz, ph, side, clearance, every):
+def _pole_for(i, stand, sh, rz, ph, side, clearance, every, keyed=False):
     """The pole (of POLES) under which a phase's samples pass every gate for this paw, with the most margin."""
-    best, key = POLES[side][0], None
     n = max(len(ph["L"]), len(ph["R"]))
-    for pole in POLES[side]:
-        fails, margin = 0, math.inf
+    if "pole_tiers" in ph:
+        best_any = None
+        for tier in ph["pole_tiers"]:
+            pick = _pole_for(i, stand, sh, rz, {**{k: v for k, v in ph.items() if k != "pole_tiers"}, "poles": tier}, side,
+                             clearance, every, keyed=True)
+            if pick[1][0] == 0:
+                return pick[0]
+            if best_any is None or pick[1] < best_any[1]:
+                best_any = pick
+        return best_any[0]
+    choices = ph.get("poles", POLES)[side]
+    best, key = choices[0], None
+    for pole in choices:
+        fails, margin, prev = 0, math.inf, None
         for k in range(0, n, every):
             e, w, t, gate, why, _ = _arm(i, stand, sh, rz, ph, k, side, pole, clearance)
             fails += len(why)
             if e is None:
                 continue
+            # A pole nearly along the shoulder-wrist line swings the elbow round between close samples: a jump the
+            # continuity gate fails, so it counts here as a failure too.
+            if every == 1 and prev is not None and float(np.linalg.norm(e - prev)) > ELBOW_STEP_CM:
+                fails += 1
+            prev = e
             margin = min(margin, WRIST_MAX - gate["wrist_deg"], ELBOW_MAX - gate["elbow_flex_deg"])
             if "sleeve_cm" in gate:
                 margin = min(margin, 20.0 * (min(gate["sleeve_cm"], gate["palm_cm"]) - CLEAR_CM))
         k_ = (fails, -margin)
         if key is None or k_ < key:
             best, key = pole, k_
-    return best
+    return (best, key) if keyed else best
 
 
 def _swivel(pole, shoulder, wrist, deg):
@@ -564,7 +979,7 @@ def check(i, stand=None, yaw_deg=0.0, eye_z=STANDING_EYE_Z, clearance=True, ever
     stand = B.craft_stand(i) if stand is None else np.asarray(stand, float)
     sh, rz = shoulders(stand, yaw_deg, eye_z)
     report = {}
-    for name, steps in actions(i):
+    for name, steps in actions(i, sh):
         # Poles: each phase its own; each transition turns from the phase before to the phase after.
         pole = [{s: _pole_for(i, stand, sh, rz, ph, s, clearance, every) for s in ("L", "R")} if ph["kind"] == "phase" else None
                 for ph in steps]
@@ -577,7 +992,7 @@ def check(i, stand=None, yaw_deg=0.0, eye_z=STANDING_EYE_Z, clearance=True, ever
                 for side in ("L", "R"):
                     swing[(j, side)] = _transition_poles(i, stand, sh, rz, ph, side, a[side], b[side], clearance, every)
         fails = []
-        worst = {"reach_pct": 0.0, "elbow_flex_deg": 0.0, "wrist_deg": 0.0, "clear_cm": 10.0, "elbow_step_cm": 0.0}
+        worst = {"reach_pct": 0.0, "elbow_flex_deg": 0.0, "wrist_deg": 0.0, "clear_cm": SEP_LIMIT_CM, "elbow_step_cm": 0.0}
         for (j, side), (_, bump) in swing.items():
             if bump:
                 worst["swivel_deg"] = max(worst.get("swivel_deg", 0.0), abs(bump))
@@ -615,6 +1030,26 @@ def check(i, stand=None, yaw_deg=0.0, eye_z=STANDING_EYE_Z, clearance=True, ever
     return report
 
 
+def action_summary(i):
+    """Each action at the natural stop facing its bearing, for the spec: its phases (kind, samples) and, per paw, the
+    point worked at the phase's first and last sample (station frame, cm). The paths themselves follow the sockets and
+    the contact rules here at every admitted stand."""
+    import b09_craft_region as R_
+    st = B.craft_stand(i)
+    sh, _ = shoulders(st, R_.bearing_deg(i, st))
+    out = []
+    for name, steps in actions(i, sh):
+        rows = []
+        for ph in steps:
+            row = {"phase": ph["phase"], "kind": ph["kind"], "samples": max(len(ph["L"]), len(ph["R"]))}
+            for s in ("L", "R"):
+                first, last = ph[s][0], ph[s][-1]
+                row[s] = {"from_cm": np.round(first.get("P", first["C"]), 2).tolist(), "to_cm": np.round(last.get("P", last["C"]), 2).tolist()}
+            rows.append(row)
+        out.append({"action": name, "phases": rows})
+    return out
+
+
 def contact_view(i):
     """What the hero sees of the work while doing it, from the craft stand looking at the station's work point (the
     natural look; the camera is the player's and nothing moves it): {action: {aspect: {"in_frame", "samples",
@@ -648,6 +1083,49 @@ def contact_view(i):
             seen = sum(clear and B.in_view(eye, work, pts, a) for pts, clear in rows)
             out[name][aspect] = {"in_frame": int(seen), "samples": len(rows), "occluded": int(sum(not c for _, c in rows)),
                                  "span_deg": round(B.vertical_span_deg(eye, every), 2), "frame_deg": round(B.frame_height_deg(a), 2)}
+    return out
+
+
+def eye_at(stand, yaw_deg=0.0, eye_z=STANDING_EYE_Z):
+    a = math.radians(yaw_deg)
+    return np.array([stand[0] + B.EYE[0] * math.cos(a), stand[1] + B.EYE[0] * math.sin(a), eye_z])
+
+
+def look_target(eye, yaw_deg, look):
+    """A point the camera looks through: yawed to the facing, pitched toward the station's look point."""
+    a = math.radians(yaw_deg)
+    pitch = math.atan2(look[2] - eye[2], math.hypot(look[0] - eye[0], look[1] - eye[1]))
+    return eye + np.array([math.cos(pitch) * math.cos(a), math.cos(pitch) * math.sin(a), math.sin(pitch)]) * 100.0
+
+
+def view_at(i, stand, yaw_deg):
+    """What the hero sees of the work while doing it from any stand and facing: the camera yawed to the facing and
+    pitched toward the station's look point (the LookPoint socket; nothing moves the camera or the hero).
+    {action: {aspect: {"in_frame", "samples", "occluded"}}}. A working sample counts as seen if its active contacts
+    (both paws' knuckle lines and the points they work, and a brush's bristle corners) are all in frame and hidden by
+    no prop."""
+    stand = np.asarray(stand, float)
+    sh, _ = shoulders(stand, yaw_deg)
+    eye = eye_at(stand, yaw_deg)
+    target = look_target(eye, yaw_deg, np.asarray(B.station_parts(i)[1]["LookPoint"][0], float))
+    out = {}
+    for name, steps in actions(i, sh):
+        rows = []
+        for ph in steps:
+            if ph["kind"] != "phase":
+                continue
+            n = max(len(ph["L"]), len(ph["R"]))
+            for k in range(n):
+                pts = []
+                for side in ("L", "R"):
+                    t = ph[side][min(k, len(ph[side]) - 1)]
+                    pts += [t["C"], t["P"]] + list(t.get("foot", []))
+                allm = _scene(i, ph["state"], _u(ph, k), ph["works"])[0]
+                clear = not any(B._segment_meets_mesh(eye, eye + (p - eye) * 0.995, allm) for p in pts)
+                rows.append((pts, clear))
+        out[name] = {aspect: {"in_frame": int(sum(c and B.in_view(eye, target, pts, a) for pts, c in rows)),
+                              "samples": len(rows), "occluded": int(sum(not c for _, c in rows))}
+                     for aspect, a in B.ASPECTS.items()}
     return out
 
 

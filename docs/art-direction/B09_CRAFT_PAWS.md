@@ -95,7 +95,14 @@ The inspection needs a 30° elbow swing to clear weapon 7's overhanging handle.
 | shells ×3 (clips ≤ 1200 ms) | holds the shell on the paper, then seats it by its neck | takes the core, then twists the neck | `LastAction` |
 | inspect ×1 (clip ≤ 900 ms) | keeps the third shell seated | the index pad on the fuse | `LastAction` |
 
-## 5. The standing-only contract (proposed to root, 05:10 UTC; root's SOURCE `d52d428c` implements 1–3)
+## 5. The standing-only contract (proposed to root, 05:10 UTC)
+
+**What is implemented (Coordination 264):** root's SOURCE (`d52d428c`, now in `5b45dc86`) implements only the
+standing/crouch part of 1 and 2: crafting is refused while crouched or requesting crouch, and a crouch request
+cancels a hold. Still pending, root's:
+- the working-region and yaw gate in 1 and 2, which waits on the signed region spec (§6.3);
+- the presenter's ending and consumption of an invalid clip's serial (3);
+- the paw presenter itself.
 
 1. **Admission:** refuse the craft input unless the hero is standing (not IsCrouched and not bWantsToCrouch) and at
    a working stand. A working stand is inside the station's working region (§6.3), facing +X within its yaw band.
@@ -160,3 +167,80 @@ axes, yaw band and proxies will come together in the signed spec.
   - It would use a rig like the bokuto viewmodel's 15 bones.
   - Its poses would be keyed from these targets, and gated again triangle-exactly with the real meshes.
 - **Then** an Unreal capture of the paws at the stands, in its own bounded sequence.
+
+## 8. The working-region gate and the contact rules (2026-10-27 to 11-01, Coordinations 268–277)
+
+This section supersedes §3's one-stand gate and §6.3. The region, its admission rule and the station designs are in
+`B09_WORKSHOP_CRAFT.md` §13.
+
+### 8.1 The gate
+
+Every action, every sample and both paws are checked at each region sample. The paws' fingers and palms follow the
+actual shoulders at each stand and facing.
+
+**Pose** (`b09_craft_region.pose_gate`, dense):
+- reach at most 98 %;
+- elbow flexion at most 145°;
+- wrist bend at most 75°;
+- no elbow inside the torso;
+- the elbow moving at most 5 cm per sample.
+
+**View** (`view_gate`):
+- The checked points are both paws' knuckle lines, the points they work, and a brush's bristle corners.
+- Each must be in frame at 16:9 and 21:9, with the camera yawed to the facing and pitched toward the look point.
+- No prop may hide it.
+
+**Body** (`body_gate`): the production mesh stays 2.5 cm off every prop state.
+
+**Clearance** (`clearance_gate`):
+- the sleeves and the palm at least 0.5 cm off the props;
+- the two arms at least 0.5 cm apart;
+- a palm never into a part it works.
+
+**Where the evidence is.** The qualification run is `par_full_gate.py`, and the iteration tools are under
+`Saved/Qualification/2026-10-27/b09-craft-region/tools/`.
+
+### 8.2 Contact rules added in this pass
+
+**`palm_on_ball`** (the shell's hold and twist):
+- **Placement:** the palm lies on the ball's tangent plane where the ball faces its normal. It cannot cut into the
+  ball.
+- **Turning:** its normal turns from the inward direction as the fingers' line turns it. It is kept at least 20°
+  round toward the hero and 35° up from the equator.
+- **The point worked:** the ball under the knuckle line, where the pads press.
+
+**Refit contacts** (the rib's press, hook and guide):
+- **Rule:** a contact marked `refit` keeps its freedom. Its fingers are settled again under each elbow pole a gate
+  tries, so the pole is chosen fairly; the knuckle line and the worked point stay where they are.
+- **Carries:** a carry between refit contacts turns between their poses as settled under its own pole.
+- **Why:** settled once under the natural poles, a raised elbow then saw a bad wrist, and the fallback raised poles
+  could never serve.
+
+**Pole tiers** (`_phase(..., tiers=...)`):
+- **Rule:** a paw takes the first pole set under which it passes every gate. Only if none does is the best of all
+  used.
+- **Why:** a raised elbow serves where the natural down-and-out ones fail, not wherever its margin is wider. Taken by
+  margin alone, the rib hook raised the elbow 23 cm over the shoulder and swung it back for the wind.
+
+**Pole sets:**
+- **`POLES_RAISED`:** elbows level with or above the work, out to the side.
+- **`POLES_OVER`:** elbows raised to reach over a row of standing parts (the shells' fuse cords).
+- **Not used:** the forward-out poles were tried for the top hoop and dropped. They pushed elbow flexion to 150°.
+
+**Continuity:**
+- **Pole choice:** `_pole_for` counts an elbow jump over 5 cm between a phase's samples as a failure. A pole nearly
+  along the shoulder–wrist line swung the elbow round between close samples.
+- **Curved carries** (`_bezier`): they are sampled at most 1.5 cm apart along their path, as the 17-sample carries
+  are.
+
+### 8.3 Open, as failures (asserted expected failures in the tests)
+
+- **The rib form's clearance:** 38 of 99 region samples pass (`B09_WORKSHOP_CRAFT.md` §13.1).
+- **The rib's flex gauge from the working side:** it reads at the craft stand but passes from 44.62 % of the
+  working-side positions, against the required 90 % (§13.1).
+- **The paste:**
+  - 15/10/10 is infeasible: the brush's reach to the seam's far end.
+  - At 10/10/10, the stroke's last sample at the upper rim line fails reach, wrist and view at some stands. The same
+    top end hides behind the third pasted gore in the first-person check (63.24 % of the working side).
+  - The rims step needs the cradle to re-tilt the frame (§13.2).
+- **The timing conflicts:** the preparation and completion clips against an immediate re-press (§13.5).
